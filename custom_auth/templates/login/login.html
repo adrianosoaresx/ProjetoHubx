@@ -1,0 +1,103 @@
+{% extends "base.html" %} {% load static %} {% block title %}Login - Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/styles.css' %}"> {% endblock %} {% block content %}
+<div class="login-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Molecular Nodes -->
+    <div class="login-node" style="top: 20%; left: 10%;"></div>
+    <div class="login-node" style="top: 70%; left: 15%;"></div>
+    <div class="login-node" style="top: 30%; right: 10%;"></div>
+    <div class="login-node" style="top: 80%; right: 15%;"></div>
+    <div class="login-node" style="top: 50%; left: 50%;"></div>
+
+    <div class="login-card">
+        <div class="login-header">
+            <h1 class="login-title">Entrar</h1>
+            <p class="login-subtitle">Entre para conectar-se à sua rede de comunidades</p>
+        </div>
+
+        <form method="post" action="{% url 'custom_auth:login' %}">
+
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="username" class="form-label">Nome de usuário</label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="Digite seu nome de usuário" required>
+                <span class="input-icon">👤</span>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="Digite sua senha" required>
+                <span class="input-icon">🔒</span>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="remember" name="remember" class="checkbox-input">
+                <label for="remember" class="checkbox-label">Lembrar-me</label>
+            </div>
+
+            <button type="submit" class="login-button">Entrar</button>
+
+            <div class="login-footer">
+                <p>
+                    <a href="{% url 'custom_auth:password_reset' %}" class="login-link">Esqueceu sua senha?</a>
+                </p>
+            </div>
+        </form>
+
+        <div class="divider">ou</div>
+
+        <div class="social-login">
+            <a href="#" class="social-button" title="Google">G</a>
+            <a href="#" class="social-button" title="Facebook">f</a>
+            <a href="#" class="social-button" title="Apple">A</a>
+            <a href="#" class="social-button" title="GitHub">GH</a>
+        </div>
+
+        <div class="login-footer">
+            <p>Não tem uma conta?
+                <a href="{% url 'custom_auth:onboarding' %}" class="login-link">Cadastre-se</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    // Matrix Code Rain Effect
+    document.addEventListener('DOMContentLoaded', function() {
+        const matrixContainer = document.getElementById('matrixCode');
+        const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+        const columnCount = 15;
+
+        for (let i = 0; i < columnCount; i++) {
+            const column = document.createElement('div');
+            column.className = 'code-column';
+
+            // Random position and speed
+            column.style.left = `${Math.random() * 100}%`;
+            column.style.animationDuration = `${Math.random() * 10 + 5}s`;
+
+            // Generate random characters
+            const charCount = Math.floor(Math.random() * 20) + 10;
+            for (let j = 0; j < charCount; j++) {
+                const char = document.createElement('div');
+                char.textContent = characters.charAt(Math.floor(Math.random() * characters.length));
+                char.style.opacity = Math.random();
+                column.appendChild(char);
+            }
+
+            matrixContainer.appendChild(column);
+        }
+
+        // Animate login nodes
+        const nodes = document.querySelectorAll('.login-node');
+        nodes.forEach(node => {
+            // Random animation delay
+            node.style.animationDelay = `${Math.random() * 3}s`;
+        });
+    });
+</script>
+{% endblock %}

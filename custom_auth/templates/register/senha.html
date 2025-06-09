@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cadastro - Senha{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/register.css' %}">
+{% endblock %}
+{% block content %}
+<div class="register-step">
+    <h2>Crie uma senha</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="password" name="senha1" placeholder="Senha" required>
+        <input type="password" name="senha2" placeholder="Confirme a senha" required>
+        <button type="submit">Próximo</button>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/register.js' %}"></script>
+{% endblock %}

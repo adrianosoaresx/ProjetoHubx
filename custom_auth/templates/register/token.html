@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% load static %} {% block title %}Registro - Token | Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<div class="registro-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Molecular Network Background -->
+    <div class="molecular-network">
+        <div class="registro-node" style="top: 15%; left: 8%;"></div>
+        <div class="registro-node" style="top: 25%; right: 12%;"></div>
+        <div class="registro-node" style="top: 45%; left: 5%;"></div>
+        <div class="registro-node" style="top: 65%; right: 8%;"></div>
+        <div class="registro-node" style="top: 80%; left: 15%;"></div>
+    </div>
+
+    <div class="registro-card">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 14%"></div>
+            <div class="progress-step active" data-step="1">1</div>
+            <div class="progress-step" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+            <div class="progress-step" data-step="6">6</div>
+            <div class="progress-step" data-step="7">7</div>
+        </div>
+
+        <div class="registro-header">
+            <h1 class="registro-title">Bem-vindo ao HubX</h1>
+            <p class="registro-subtitle">Digite seu token de convite para começar</p>
+        </div>
+
+        <form id="tokenForm" class="registro-form" method="post" action="{% url 'custom_auth:token' %}" data-next-step="{% url 'custom_auth:nome' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="token" class="form-label">Token de Convite</label>
+                <input type="text" id="token" name="token" class="form-input" placeholder="Digite seu token de convite" required autofocus>
+                <div class="field-validation" id="token_validation"></div>
+                <small class="field-help">O token é necessário para continuar o cadastro</small>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'custom_auth:login' %}" class="cta-button">Voltar</a>
+                <button type="submit" class="btn-primary" id="submitButton">
+                    <span class="button-text">Continuar</span>
+                    <span class="button-loader" id="buttonLoader"></span>
+                </button>
+            </div>
+        </form>
+
+        <div class="registro-footer">
+            <p>Já tem uma conta? <a href="{% url 'custom_auth:login' %}" class="cta-button">Entrar</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}

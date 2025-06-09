@@ -1,0 +1,89 @@
+{% extends "base.html" %} {% load static %} {% block title %}Bem-vindo ao Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<div class="onboarding-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Connection Animation -->
+    <div class="connection-animation">
+        <div class="floating-node"></div>
+        <div class="floating-node"></div>
+        <div class="floating-node"></div>
+        <div class="floating-node"></div>
+        <div class="floating-node"></div>
+        <div class="floating-node"></div>
+        <div class="connection-line-animated"></div>
+        <div class="connection-line-animated"></div>
+        <div class="connection-line-animated"></div>
+    </div>
+
+    <div class="onboarding-card">
+        <div class="onboarding-logo">HubX</div>
+
+        <h1 class="onboarding-title">Conecte-se ao Futuro</h1>
+        <p class="onboarding-subtitle">
+            Uma plataforma revolucionária que conecta comunidades, entidades e associações através de redes orgânicas de colaboração e crescimento mútuo.
+        </p>
+
+        <div class="features-grid">
+            <div class="feature-item">
+                <span class="feature-icon">🌐</span>
+                <h3 class="feature-title">Rede Global</h3>
+                <p class="feature-description">
+                    Conecte-se com comunidades ao redor do mundo e expanda sua rede de contatos
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-icon">🤝</span>
+                <h3 class="feature-title">Colaboração</h3>
+                <p class="feature-description">
+                    Trabalhe em projetos conjuntos e fortaleça laços entre organizações
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <h3 class="feature-title">Gestão Inteligente</h3>
+                <p class="feature-description">
+                    Ferramentas avançadas para gerenciar sua comunidade de forma eficiente
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-icon">🔒</span>
+                <h3 class="feature-title">Segurança</h3>
+                <p class="feature-description">
+                    Ambiente seguro e confiável para suas interações e dados
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-icon">💡</span>
+                <h3 class="feature-title">Inovação</h3>
+                <p class="feature-description">
+                    Tecnologia de ponta para impulsionar o crescimento da sua organização
+                </p>
+            </div>
+
+            <div class="feature-item">
+                <span class="feature-icon">🚀</span>
+                <h3 class="feature-title">Crescimento</h3>
+                <p class="feature-description">
+                    Acelere o desenvolvimento da sua comunidade com nossas ferramentas
+                </p>
+            </div>
+        </div>
+
+        <div class="onboarding-actions">
+            <a href="{% url 'custom_auth:token' %}" class="btn-start">
+                Começar Agora
+                <span>→</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+
+{% endblock %}
