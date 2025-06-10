@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Cadastro Concluído | HubX{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}">
+{% endblock %}
+{% block content %}
+<div class="registro-container">
+    <div class="matrix-code" id="matrixCode"></div>
+    <div class="molecular-network">
+        <div class="registro-node" style="top: 15%; left: 8%;"></div>
+        <div class="registro-node" style="top: 25%; right: 12%;"></div>
+        <div class="registro-node" style="top: 45%; left: 5%;"></div>
+        <div class="registro-node" style="top: 65%; right: 8%;"></div>
+        <div class="registro-node" style="top: 80%; left: 15%;"></div>
+    </div>
+    <div class="registro-card">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%"></div>
+            <div class="progress-step completed" data-step="1">✓</div>
+            <div class="progress-step completed" data-step="2">✓</div>
+            <div class="progress-step completed" data-step="3">✓</div>
+            <div class="progress-step completed" data-step="4">✓</div>
+            <div class="progress-step completed" data-step="5">✓</div>
+            <div class="progress-step completed" data-step="6">✓</div>
+            <div class="progress-step completed" data-step="7">✓</div>
+        </div>
+        <div class="registro-header">
+            <h1 class="registro-title">Parabéns!</h1>
+            <p class="registro-subtitle">Seu cadastro foi concluído com sucesso.</p>
+        </div>
+        <div class="form-actions" style="text-align:center;">
+            <a href="{% url 'custom_auth:login' %}" class="btn-primary">Fazer login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}
