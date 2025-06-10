@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% load static %} {% block title %}Meu Perfil | Hubx{% endblock %} {% block extra_css %}
 <link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}">
-<link rel="stylesheet" href="{% static 'custom_auth/css/perfil.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'perfil/css/perfil.css' %}"> {% endblock %} {% block content %}
 <div class="perfil-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -755,5 +755,5 @@
     </div>
 </div>
 {% endblock %} {% block extra_js %}
-<script src="{% static 'custom_auth/js/perfil.js' %}"></script>
+<script src="{% static 'perfil/js/perfil.js' %}"></script>
 {% endblock %}
