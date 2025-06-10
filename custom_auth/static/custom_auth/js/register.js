@@ -4,6 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Matrix Code Rain Effect
     initMatrixRain()
 
+    // Initialize Success Page Effects
+    if (document.querySelector(".success-container")) {
+        initSuccessPage()
+    }
+
     // Initialize Form Validation
     initFormValidation()
 
@@ -519,10 +524,15 @@ function initFormSubmission() {
 }
 
 async function handleFormSubmission(event) {
-    event.preventDefault()
-
     const form = event.target
     const formId = form.id
+
+    if (formId === "termosForm") {
+        // Allow Django to handle submission of the final step
+        return
+    }
+
+    event.preventDefault()
     const submitButton = document.getElementById("submitButton")
     const buttonText = submitButton.querySelector(".button-text")
     const buttonLoader = document.getElementById("buttonLoader")
@@ -669,6 +679,51 @@ async function submitRegistration() {
     } catch (error) {
         console.error("Erro ao finalizar registro:", error)
         alert("Erro ao finalizar o cadastro. Tente novamente.")
+    }
+}
+
+// Success Page Animations
+function initSuccessPage() {
+    createConfetti()
+
+    const card = document.querySelector(".success-card")
+    if (card) {
+        card.style.opacity = "0"
+        card.style.transform = "translateY(30px)"
+
+        setTimeout(() => {
+            card.style.transition = "all 0.8s ease"
+            card.style.opacity = "1"
+            card.style.transform = "translateY(0)"
+        }, 100)
+    }
+}
+
+function createConfetti() {
+    const container = document.getElementById("confettiContainer")
+    if (!container) return
+
+    const colors = ["#00ff41", "#39ff14", "#00bf32", "#ffffff"]
+    const confettiCount = 100
+
+    for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement("div")
+        confetti.className = "confetti"
+        confetti.style.left = `${Math.random() * 100}%`
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
+        const size = Math.random() * 8 + 5
+        confetti.style.width = `${size}px`
+        confetti.style.height = `${size}px`
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`
+        if (Math.random() > 0.5) {
+            confetti.style.borderRadius = "50%"
+        } else {
+            confetti.style.borderRadius = "0"
+        }
+        const duration = Math.random() * 3 + 2
+        confetti.style.animationDuration = `${duration}s`
+        confetti.style.animationDelay = `${Math.random() * 5}s`
+        container.appendChild(confetti)
     }
 }
 
