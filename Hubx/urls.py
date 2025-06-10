@@ -23,6 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Página inicial
     path('custom_auth/', include('custom_auth.urls')),
-    path('usuarios/', include('usuarios.urls')),
+    path('perfil/', include('perfil.urls')),
     path('registro/sucesso/', auth_views.registro_sucesso, name='registro_sucesso'),
 ]

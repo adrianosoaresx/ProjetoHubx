@@ -68,4 +68,4 @@ def termos(request):
     return render(request, 'register/termos.html')
 
 def registro_sucesso(request):
-    return render(request, 'register/sucesso.html')
+    return render(request, 'register/registro_sucesso.html')
