@@ -15,11 +15,11 @@
 
     <div class="registro-card">
         <div class="progress-bar">
-            <div class="progress-fill" style="width: 42%"></div>
+            <div class="progress-fill" style="width: 56%"></div>
             <div class="progress-step completed" data-step="1">✓</div>
             <div class="progress-step completed" data-step="2">✓</div>
-            <div class="progress-step active" data-step="3">3</div>
-            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step completed" data-step="3">✓</div>
+            <div class="progress-step active" data-step="4">4</div>
             <div class="progress-step" data-step="5">5</div>
             <div class="progress-step" data-step="6">6</div>
             <div class="progress-step" data-step="7">7</div>
@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Usaremos para comunicação e recuperação de conta</p>
         </div>
 
-        <form id="emailForm" class="registro-form" data-next-step="{% url 'custom_auth:usuario' %}">
+        <form id="emailForm" class="registro-form" data-next-step="{% url 'custom_auth:senha' %}">
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" id="email" name="email" class="form-input" placeholder="Digite seu email" required autofocus>

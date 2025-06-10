@@ -15,11 +15,11 @@
 
     <div class="registro-card">
         <div class="progress-bar">
-            <div class="progress-fill" style="width: 56%"></div>
+            <div class="progress-fill" style="width: 28%"></div>
             <div class="progress-step completed" data-step="1">✓</div>
-            <div class="progress-step completed" data-step="2">✓</div>
-            <div class="progress-step completed" data-step="3">✓</div>
-            <div class="progress-step active" data-step="4">4</div>
+            <div class="progress-step active" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
             <div class="progress-step" data-step="5">5</div>
             <div class="progress-step" data-step="6">6</div>
             <div class="progress-step" data-step="7">7</div>
@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Como você será identificado na plataforma</p>
         </div>
 
-        <form id="usuarioForm" class="registro-form" data-next-step="{% url 'custom_auth:senha' %}">
+        <form id="usuarioForm" class="registro-form" data-next-step="{% url 'custom_auth:nome' %}">
             <div class="form-group">
                 <label for="usuario" class="form-label">Nome de Usuário</label>
                 <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Digite seu nome de usuário" required autofocus>

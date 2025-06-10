@@ -17,10 +17,12 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from custom_auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Página inicial
     path('custom_auth/', include('custom_auth.urls')),
     path('usuarios/', include('usuarios.urls')),
+    path('registro/sucesso/', auth_views.registro_sucesso, name='registro_sucesso'),
 ]
