@@ -1,17 +1,51 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Cadastro - Usuário{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/register.css' %}">
-{% endblock %}
-{% block content %}
-<div class="register-step">
-    <h2>Escolha seu nome de usuário</h2>
-    <form method="post">
-        {% csrf_token %}
-        <input type="text" name="usuario" placeholder="Nome de usuário" required>
-        <button type="submit">Próximo</button>
-    </form>
+{% extends "base.html" %} {% load static %} {% block title %}Registro - Usuário | Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<div class="registro-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Molecular Network Background -->
+    <div class="molecular-network">
+        <div class="registro-node" style="top: 15%; left: 8%;"></div>
+        <div class="registro-node" style="top: 25%; right: 12%;"></div>
+        <div class="registro-node" style="top: 45%; left: 5%;"></div>
+        <div class="registro-node" style="top: 65%; right: 8%;"></div>
+        <div class="registro-node" style="top: 80%; left: 15%;"></div>
+    </div>
+
+    <div class="registro-card">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 56%"></div>
+            <div class="progress-step completed" data-step="1">✓</div>
+            <div class="progress-step completed" data-step="2">✓</div>
+            <div class="progress-step completed" data-step="3">✓</div>
+            <div class="progress-step active" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+            <div class="progress-step" data-step="6">6</div>
+            <div class="progress-step" data-step="7">7</div>
+        </div>
+
+        <div class="registro-header">
+            <h1 class="registro-title">Escolha seu nome de usuário</h1>
+            <p class="registro-subtitle">Como você será identificado na plataforma</p>
+        </div>
+
+        <form id="usuarioForm" class="registro-form" data-next-step="senha.html">
+            <div class="form-group">
+                <label for="usuario" class="form-label">Nome de Usuário</label>
+                <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Digite seu nome de usuário" required autofocus>
+                <div class="field-validation" id="usuario_validation"></div>
+                <small class="field-help">Use apenas letras, números e underscore (_)</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="window.location.href='email.html'">Voltar</button>
+                <button type="submit" class="btn-primary" id="submitButton">
+                    <span class="button-text">Continuar</span>
+                    <span class="button-loader" id="buttonLoader"></span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-{% endblock %}
-{% block extra_js %}{% endblock %}
+{% endblock %} {% block extra_js %} {% endblock %}

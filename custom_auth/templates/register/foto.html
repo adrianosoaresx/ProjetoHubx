@@ -1,17 +1,63 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Cadastro - Foto{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/register.css' %}">
-{% endblock %}
-{% block content %}
-<div class="register-step">
-    <h2>Envie sua foto</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="foto" accept="image/*" required>
-        <button type="submit">Finalizar</button>
-    </form>
+{% extends "base.html" %} {% load static %} {% block title %}Registro - Foto | Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<div class="registro-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Molecular Network Background -->
+    <div class="molecular-network">
+        <div class="registro-node" style="top: 15%; left: 8%;"></div>
+        <div class="registro-node" style="top: 25%; right: 12%;"></div>
+        <div class="registro-node" style="top: 45%; left: 5%;"></div>
+        <div class="registro-node" style="top: 65%; right: 8%;"></div>
+        <div class="registro-node" style="top: 80%; left: 15%;"></div>
+    </div>
+
+    <div class="registro-card">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 84%"></div>
+            <div class="progress-step completed" data-step="1">✓</div>
+            <div class="progress-step completed" data-step="2">✓</div>
+            <div class="progress-step completed" data-step="3">✓</div>
+            <div class="progress-step completed" data-step="4">✓</div>
+            <div class="progress-step completed" data-step="5">✓</div>
+            <div class="progress-step active" data-step="6">6</div>
+            <div class="progress-step" data-step="7">7</div>
+        </div>
+
+        <div class="registro-header">
+            <h1 class="registro-title">Adicione uma foto de perfil</h1>
+            <p class="registro-subtitle">Personalize sua presença na comunidade</p>
+        </div>
+
+        <form id="fotoForm" class="registro-form" data-next-step="termos.html">
+            <div class="foto-upload-container">
+                <div class="foto-preview" id="fotoPreview">
+                    <div class="foto-placeholder">
+                        <span class="foto-icon">👤</span>
+                    </div>
+                </div>
+
+                <div class="foto-actions">
+                    <label for="foto" class="btn-upload">
+                        Escolher Foto
+                        <input type="file" id="foto" name="foto" accept="image/*" class="foto-input" hidden>
+                    </label>
+                    <button type="button" class="btn-remove" id="removePhoto" disabled>Remover</button>
+                </div>
+
+                <div class="field-validation" id="foto_validation"></div>
+                <small class="field-help">Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB</small>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="window.location.href='senha.html'">Voltar</button>
+                <button type="submit" class="btn-primary" id="submitButton">
+                    <span class="button-text">Continuar</span>
+                    <span class="button-loader" id="buttonLoader"></span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-{% endblock %}
-{% block extra_js %}{% endblock %}
+{% endblock %} {% block extra_js %} {% endblock %}

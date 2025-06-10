@@ -1,17 +1,50 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Cadastro - Nome{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/register.css' %}">
-{% endblock %}
-{% block content %}
-<div class="register-step">
-    <h2>Qual é o seu nome completo?</h2>
-    <form method="post">
-        {% csrf_token %}
-        <input type="text" name="nome" placeholder="Nome completo" required>
-        <button type="submit">Próximo</button>
-    </form>
+{% extends "base.html" %} {% load static %} {% block title %}Registro - Nome | Hubx{% endblock %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<div class="registro-container">
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
+
+    <!-- Molecular Network Background -->
+    <div class="molecular-network">
+        <div class="registro-node" style="top: 15%; left: 8%;"></div>
+        <div class="registro-node" style="top: 25%; right: 12%;"></div>
+        <div class="registro-node" style="top: 45%; left: 5%;"></div>
+        <div class="registro-node" style="top: 65%; right: 8%;"></div>
+        <div class="registro-node" style="top: 80%; left: 15%;"></div>
+    </div>
+
+    <div class="registro-card">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 28%"></div>
+            <div class="progress-step completed" data-step="1">✓</div>
+            <div class="progress-step active" data-step="2">2</div>
+            <div class="progress-step" data-step="3">3</div>
+            <div class="progress-step" data-step="4">4</div>
+            <div class="progress-step" data-step="5">5</div>
+            <div class="progress-step" data-step="6">6</div>
+            <div class="progress-step" data-step="7">7</div>
+        </div>
+
+        <div class="registro-header">
+            <h1 class="registro-title">Como podemos te chamar?</h1>
+            <p class="registro-subtitle">Digite seu nome completo</p>
+        </div>
+
+        <form id="nomeForm" class="registro-form" data-next-step="email.html">
+            <div class="form-group">
+                <label for="nome" class="form-label">Nome Completo</label>
+                <input type="text" id="nome" name="nome" class="form-input" placeholder="Digite seu nome completo" required autofocus>
+                <div class="field-validation" id="nome_validation"></div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="window.location.href='token.html'">Voltar</button>
+                <button type="submit" class="btn-primary" id="submitButton">
+                    <span class="button-text">Continuar</span>
+                    <span class="button-loader" id="buttonLoader"></span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-{% endblock %}
-{% block extra_js %}{% endblock %}
+{% endblock %} {% block extra_js %} {% endblock %}
