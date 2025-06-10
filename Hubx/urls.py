@@ -24,5 +24,6 @@ urlpatterns = [
     path('', include('core.urls')),  # Página inicial
     path('custom_auth/', include('custom_auth.urls')),
     path('perfil/', include('perfil.urls')),
+    path('empresas/', include('empresas.urls')),
     path('registro/sucesso/', auth_views.registro_sucesso, name='registro_sucesso'),
 ]
