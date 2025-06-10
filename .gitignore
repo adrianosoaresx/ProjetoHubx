@@ -6,3 +6,4 @@
 
    # Ignorar arquivos de log
    *.log
+__pycache__/

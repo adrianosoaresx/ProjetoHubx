@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Digite seu token de convite para começar</p>
         </div>
 
-        <form id="tokenForm" class="registro-form" method="post" action="{% url 'custom_auth:token' %}" data-next-step="{% url 'custom_auth:nome' %}">
+        <form id="tokenForm" class="registro-form" method="post" action="{% url 'custom_auth:token' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="token" class="form-label">Token de Convite</label>
@@ -53,6 +53,4 @@
         </div>
     </div>
 </div>
-{% endblock %} {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
 {% endblock %}
