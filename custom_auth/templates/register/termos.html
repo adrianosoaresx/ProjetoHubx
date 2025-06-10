@@ -30,7 +30,8 @@
             <p class="registro-subtitle">Revise e aceite os termos para finalizar</p>
         </div>
 
-        <form id="termosForm" class="registro-form" data-next-step="{% url 'registro_sucesso' %}">
+        <form id="termosForm" class="registro-form" method="post" action="{% url 'custom_auth:termos' %}">
+            {% csrf_token %}
             <div class="termos-container">
                 <div class="termos-content">
                     <h3>Termos de Uso e Política de Privacidade</h3>

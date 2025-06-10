@@ -62,10 +62,10 @@ def foto(request):
 
 def termos(request):
     if request.method == "POST":
-        if request.POST.get('termos'):
-            request.session['termos'] = True
-            return redirect('registro_sucesso')
-    return render(request, 'register/termos.html')
+        if request.POST.get("aceitar_termos"):
+            request.session["termos"] = True
+            return redirect("registro_sucesso")
+    return render(request, "register/termos.html")
 
 def registro_sucesso(request):
     return render(request, 'register/registro_sucesso.html')
