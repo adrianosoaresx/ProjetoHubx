@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Proteja sua conta com uma senha forte</p>
         </div>
 
-        <form id="senhaForm" class="registro-form" data-next-step="foto.html">
+        <form id="senhaForm" class="registro-form" data-next-step="{% url 'custom_auth:foto' %}">
             <div class="form-group">
                 <label for="senha" class="form-label">Senha</label>
                 <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='usuario.html'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:usuario' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -62,4 +62,7 @@
         </form>
     </div>
 </div>
-{% endblock %} {% block extra_js %} {% endblock %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}

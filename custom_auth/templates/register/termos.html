@@ -66,7 +66,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='foto.html'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:foto' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Finalizar Cadastro</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -75,4 +75,7 @@
         </form>
     </div>
 </div>
-{% endblock %} {% block extra_js %} {% endblock %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}

@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Personalize sua presença na comunidade</p>
         </div>
 
-        <form id="fotoForm" class="registro-form" data-next-step="termos.html">
+        <form id="fotoForm" class="registro-form" data-next-step="{% url 'custom_auth:termos' %}">
             <div class="foto-upload-container">
                 <div class="foto-preview" id="fotoPreview">
                     <div class="foto-placeholder">
@@ -51,7 +51,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='senha.html'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:senha' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -60,4 +60,7 @@
         </form>
     </div>
 </div>
-{% endblock %} {% block extra_js %} {% endblock %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}
