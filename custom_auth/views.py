@@ -23,7 +23,7 @@ def email(request):
         email_value = request.POST.get('email')
         if email_value:
             request.session['email'] = email_value
-            return redirect('custom_auth:usuario')
+            return redirect('custom_auth:senha')
     return render(request, 'register/email.html')
 
 def token(request):
@@ -31,8 +31,8 @@ def token(request):
         token_value = request.POST.get('token')
         if token_value:  # validações aqui
             request.session['invite_token'] = token_value
-            return redirect('custom_auth:nome')
-        
+            return redirect('custom_auth:usuario')
+
     return render(request, 'register/token.html')
 
 def usuario(request):
@@ -40,7 +40,7 @@ def usuario(request):
         usuario_value = request.POST.get('usuario')
         if usuario_value:
             request.session['usuario'] = usuario_value
-            return redirect('custom_auth:senha')
+            return redirect('custom_auth:nome')
     return render(request, 'register/usuario.html')
 
 def senha(request):
@@ -64,5 +64,8 @@ def termos(request):
     if request.method == "POST":
         if request.POST.get('termos'):
             request.session['termos'] = True
-            return redirect('custom_auth:login')
+            return redirect('registro_sucesso')
     return render(request, 'register/termos.html')
+
+def registro_sucesso(request):
+    return render(request, 'register/sucesso.html')
