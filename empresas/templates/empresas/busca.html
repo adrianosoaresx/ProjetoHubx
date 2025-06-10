@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Buscar Empresas{% endblock %}
+{% block content %}
+<h1>Buscar Empresas</h1>
+<form method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar...">
+    <button type="submit">Buscar</button>
+</form>
+<ul>
+    {% for empresa in empresas %}
+    <li>{{ empresa.nome }} - {{ empresa.palavras_chave }}</li>
+    {% empty %}
+    <li>Nenhuma empresa encontrada.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

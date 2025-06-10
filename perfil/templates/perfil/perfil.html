@@ -576,7 +576,7 @@
             </div>
 
             <div class="empresas-actions">
-                <a href="{% url 'empresa_cadastro' %}" class="btn-primary">
+                <a href="{% url 'empresas:nova' %}" class="btn-primary">
                     <span>+</span>
                     <span>Cadastrar Nova Empresa</span>
                 </a>
@@ -604,14 +604,13 @@
                         <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span> {% endif %}
                     </div>
                     <div class="empresa-actions">
-                        <a href="{% url 'empresa_detalhe' empresa.id %}" class="btn-view">Ver</a>
-                        <a href="{% url 'empresa_editar' empresa.id %}" class="btn-edit">Editar</a>
+                        <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
                     </div>
                 </div>
                 {% empty %}
                 <div class="empty-state">
                     <p>Você ainda não cadastrou nenhuma empresa.</p>
-                    <a href="{% url 'empresa_cadastro' %}" class="btn-secondary">Cadastrar Empresa</a>
+                    <a href="{% url 'empresas:nova' %}" class="btn-secondary">Cadastrar Empresa</a>
                 </div>
                 {% endfor %}
             </div>

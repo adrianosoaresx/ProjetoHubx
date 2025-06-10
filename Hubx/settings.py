@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'core',
     'custom_auth.apps.CustomAuthConfig',
     'perfil',
+    'empresas',
 ]
 
 MIDDLEWARE = [
