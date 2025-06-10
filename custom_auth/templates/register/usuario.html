@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Como você será identificado na plataforma</p>
         </div>
 
-        <form id="usuarioForm" class="registro-form" data-next-step="senha.html">
+        <form id="usuarioForm" class="registro-form" data-next-step="{% url 'custom_auth:senha' %}">
             <div class="form-group">
                 <label for="usuario" class="form-label">Nome de Usuário</label>
                 <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Digite seu nome de usuário" required autofocus>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='email.html'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:email' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -48,4 +48,7 @@
         </form>
     </div>
 </div>
-{% endblock %} {% block extra_js %} {% endblock %}
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'custom_auth/js/register.js' %}"></script>
+{% endblock %}
