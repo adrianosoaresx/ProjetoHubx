@@ -5,7 +5,7 @@ from django.core.management import call_command
 from django.db import connection
 
 REQUIRED_TABLES = [
-    'auth_user',
+    'usuarios_usuario',
     'auth_group',
     'auth_permission',
     'django_content_type',
@@ -14,7 +14,6 @@ REQUIRED_TABLES = [
     'empresas_empresa',
     'empresas_tag',
     'empresas_empresa_tags',
-    'perfil_perfil',
     'perfil_notificationsettings',
 ]
 
