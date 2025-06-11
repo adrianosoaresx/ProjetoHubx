@@ -23,6 +23,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Página inicial
     path('custom_auth/', include('custom_auth.urls')),
+    # A rota abaixo garante compatibilidade com o valor padrao de
+    # ``LOGIN_URL`` caso nao seja definido nas configuracoes.
+    path('accounts/login/', auth_views.login_view, name='accounts_login'),
     path('perfil/', include('perfil.urls')),
     path('empresas/', include('empresas.urls')),
     path('registro/sucesso/', auth_views.registro_sucesso, name='registro_sucesso'),
