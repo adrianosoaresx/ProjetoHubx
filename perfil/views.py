@@ -2,16 +2,15 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from empresas.models import Empresa
-from .models import Perfil, NotificationSettings
 
 
 @login_required
 def perfil_view(request):
-    perfil = request.user.profile
+    perfil = request.user
     notificacoes = request.user.notification_settings
 
     if request.method == "POST":
-        # Atualiza informacoes basicas do perfil
+        # Atualiza informacoes basicas do perfil armazenadas no usuario
         perfil.bio = request.POST.get("bio", perfil.bio)
         perfil.telefone = request.POST.get("telefone", perfil.telefone)
         perfil.whatsapp = request.POST.get("whatsapp", perfil.whatsapp)

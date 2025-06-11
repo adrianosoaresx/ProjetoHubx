@@ -15,8 +15,9 @@ def main(out_file="schema.sql"):
     django.setup()
 
     apps_and_migrations = {
+        "usuarios": "0001",
         "empresas": "0001",
-        "perfil": "0001",
+        "perfil": "0002",
     }
     with open(out_file, "w") as f:
         for app, mig in apps_and_migrations.items():
