@@ -5,6 +5,14 @@ Projeto Django que conecta comunidades e empresas. Agora inclui modelos de perfi
 e configurações de notificação, além de um script para gerar o SQL de criação das
 tabelas.
 
+Para garantir que o banco de dados possua todas as tabelas necessárias, execute:
+
+```bash
+python scriptDB.py
+```
+
+Esse script verifica as tabelas existentes e aplica as migrações faltantes.
+
 Para gerar o arquivo `schema.sql` com as instruções de criação das tabelas, execute:
 
 ```bash
