@@ -1,15 +1,20 @@
-from django.shortcuts import render
-from django.contrib.auth import get_user_model
-def create_user(username, email, password, first_name='', last_name=''):
-    """Create a new user if the username does not exist."""
-    User = get_user_model()
-    if User.objects.filter(username=username).exists():
+"""Serviços de manipulação de usuários."""
+
+from .models import Usuario
+
+
+def create_user(username, email, password, first_name="", last_name=""):
+    """Cria um novo usuário se o nome de usuário ainda não existir."""
+
+    if Usuario.objects.filter(username=username).exists():
         return None
-    user = User.objects.create_user(
+
+    user = Usuario.objects.create_user(
         username=username,
         email=email,
         password=password,
         first_name=first_name,
         last_name=last_name,
     )
+
     return user
