@@ -20,3 +20,6 @@ python scripts/generate_schema.py
 ```
 
 O resultado será salvo no arquivo `schema.sql` no diretório raiz.
+
+Após concluir o cadastro de um novo usuário, ele é autenticado automaticamente e
+redirecionado para sua página de perfil.
