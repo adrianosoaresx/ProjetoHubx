@@ -126,3 +126,11 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# URL usado pelo decorator ``login_required``. Sem esta configuracao
+# o Django redireciona para ``/accounts/login/``, que nao existe no
+# projeto e resultava em erro 404.
+LOGIN_URL = '/custom_auth/login/'
+
+# Redireciona o usuario autenticado para seu perfil apos o login.
+LOGIN_REDIRECT_URL = '/perfil/'
