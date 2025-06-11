@@ -1,8 +1,23 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 
 def login_view(request):
-    return render(request, 'login/login.html')
+    """Autentica o usuário utilizando credenciais de login."""
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("perfil")
+        return render(
+            request,
+            "login/login.html",
+            {"error": "Nome de usuário ou senha inválidos."},
+        )
+
+    return render(request, "login/login.html")
 
 def password_reset(request):
     return render(request, 'login/login.html')
@@ -64,7 +79,27 @@ def termos(request):
     if request.method == "POST":
         if request.POST.get("aceitar_termos"):
             request.session["termos"] = True
+
+            # Cria o usuario usando os dados armazenados na sessao
+            username = request.session.get("usuario")
+            email = request.session.get("email")
+            password = request.session.get("senha")
+            nome = request.session.get("nome", "").split()
+            first_name = nome[0] if nome else ""
+            last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
+
+            if username and password:
+                if not User.objects.filter(username=username).exists():
+                    user = User.objects.create_user(
+                        username=username,
+                        email=email,
+                        password=password,
+                        first_name=first_name,
+                        last_name=last_name,
+                    )
+                    login(request, user)
             return redirect("registro_sucesso")
+
     return render(request, "register/termos.html")
 
 def registro_sucesso(request):

@@ -16,6 +16,9 @@
             <h1 class="login-title">Entrar</h1>
             <p class="login-subtitle">Entre para conectar-se à sua rede de comunidades</p>
         </div>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
 
         <form method="post" action="{% url 'custom_auth:login' %}">
 
