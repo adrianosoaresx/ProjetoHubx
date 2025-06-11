@@ -1,5 +1,24 @@
+<<<<<<< HEAD
 import os
 import django
+=======
+"""Views de autenticação e registro de usuários."""
+
+from django.conf import settings
+
+if not settings.configured:
+    import os
+    import sys
+    import django
+
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if BASE_DIR not in sys.path:
+        sys.path.insert(0, BASE_DIR)
+
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
+    django.setup()
+
+>>>>>>> e57cf540df6d4c2db3b6680bb5c894111d86d40d
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
