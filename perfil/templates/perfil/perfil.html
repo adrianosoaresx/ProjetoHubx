@@ -101,22 +101,22 @@
 
                 <div class="form-group">
                     <label for="bio" class="form-label">Biografia</label>
-                    <textarea id="bio" name="bio" class="form-textarea" rows="4" placeholder="Conte um pouco sobre você...">{{ user.profile.bio }}</textarea>
+                    <textarea id="bio" name="bio" class="form-textarea" rows="4" placeholder="Conte um pouco sobre você...">{{ user.bio }}</textarea>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-                        <input type="date" id="data_nascimento" name="data_nascimento" class="form-input" value="{{ user.profile.data_nascimento|date:'Y-m-d' }}">
+                        <input type="date" id="data_nascimento" name="data_nascimento" class="form-input" value="{{ user.data_nascimento|date:'Y-m-d' }}">
                     </div>
 
                     <div class="form-group">
                         <label for="genero" class="form-label">Gênero</label>
                         <select id="genero" name="genero" class="form-select">
                             <option value="">Prefiro não informar</option>
-                            <option value="M" {% if user.profile.genero == 'M' %}selected{% endif %}>Masculino</option>
-                            <option value="F" {% if user.profile.genero == 'F' %}selected{% endif %}>Feminino</option>
-                            <option value="O" {% if user.profile.genero == 'O' %}selected{% endif %}>Outro</option>
+                            <option value="M" {% if user.genero == 'M' %}selected{% endif %}>Masculino</option>
+                            <option value="F" {% if user.genero == 'F' %}selected{% endif %}>Feminino</option>
+                            <option value="O" {% if user.genero == 'O' %}selected{% endif %}>Outro</option>
                         </select>
                     </div>
                 </div>
@@ -148,41 +148,41 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="telefone" class="form-label">Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" class="form-input" value="{{ user.profile.telefone }}" placeholder="(00) 00000-0000">
+                        <input type="tel" id="telefone" name="telefone" class="form-input" value="{{ user.telefone }}" placeholder="(00) 00000-0000">
                     </div>
 
                     <div class="form-group">
                         <label for="whatsapp" class="form-label">WhatsApp</label>
-                        <input type="tel" id="whatsapp" name="whatsapp" class="form-input" value="{{ user.profile.whatsapp }}" placeholder="(00) 00000-0000">
+                        <input type="tel" id="whatsapp" name="whatsapp" class="form-input" value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="endereco" class="form-label">Endereço</label>
-                    <input type="text" id="endereco" name="endereco" class="form-input" value="{{ user.profile.endereco }}" placeholder="Rua, número, complemento">
+                    <input type="text" id="endereco" name="endereco" class="form-input" value="{{ user.endereco }}" placeholder="Rua, número, complemento">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="cidade" class="form-label">Cidade</label>
-                        <input type="text" id="cidade" name="cidade" class="form-input" value="{{ user.profile.cidade }}">
+                        <input type="text" id="cidade" name="cidade" class="form-input" value="{{ user.cidade }}">
                     </div>
 
                     <div class="form-group">
                         <label for="estado" class="form-label">Estado</label>
                         <select id="estado" name="estado" class="form-select">
                             <option value="">Selecione...</option>
-                            <option value="AC" {% if user.profile.estado == 'AC' %}selected{% endif %}>Acre</option>
-                            <option value="AL" {% if user.profile.estado == 'AL' %}selected{% endif %}>Alagoas</option>
+                            <option value="AC" {% if user.estado == 'AC' %}selected{% endif %}>Acre</option>
+                            <option value="AL" {% if user.estado == 'AL' %}selected{% endif %}>Alagoas</option>
                             <!-- Outros estados... -->
-                            <option value="SP" {% if user.profile.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-                            <option value="TO" {% if user.profile.estado == 'TO' %}selected{% endif %}>Tocantins</option>
+                            <option value="SP" {% if user.estado == 'SP' %}selected{% endif %}>São Paulo</option>
+                            <option value="TO" {% if user.estado == 'TO' %}selected{% endif %}>Tocantins</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="cep" class="form-label">CEP</label>
-                        <input type="text" id="cep" name="cep" class="form-input" value="{{ user.profile.cep }}" placeholder="00000-000">
+                        <input type="text" id="cep" name="cep" class="form-input" value="{{ user.cep }}" placeholder="00000-000">
                     </div>
                 </div>
 
@@ -210,7 +210,7 @@
                         <div class="social-icon facebook">f</div>
                         <div class="form-group">
                             <label for="facebook" class="form-label">Facebook</label>
-                            <input type="url" id="facebook" name="facebook" class="form-input" value="{{ user.profile.facebook }}" placeholder="https://facebook.com/seuperfil">
+                            <input type="url" id="facebook" name="facebook" class="form-input" value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
                         </div>
                     </div>
 
@@ -218,7 +218,7 @@
                         <div class="social-icon twitter">𝕏</div>
                         <div class="form-group">
                             <label for="twitter" class="form-label">Twitter / X</label>
-                            <input type="url" id="twitter" name="twitter" class="form-input" value="{{ user.profile.twitter }}" placeholder="https://twitter.com/seuperfil">
+                            <input type="url" id="twitter" name="twitter" class="form-input" value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
                         </div>
                     </div>
 
@@ -226,7 +226,7 @@
                         <div class="social-icon instagram">📷</div>
                         <div class="form-group">
                             <label for="instagram" class="form-label">Instagram</label>
-                            <input type="url" id="instagram" name="instagram" class="form-input" value="{{ user.profile.instagram }}" placeholder="https://instagram.com/seuperfil">
+                            <input type="url" id="instagram" name="instagram" class="form-input" value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
                         </div>
                     </div>
 
@@ -234,7 +234,7 @@
                         <div class="social-icon linkedin">in</div>
                         <div class="form-group">
                             <label for="linkedin" class="form-label">LinkedIn</label>
-                            <input type="url" id="linkedin" name="linkedin" class="form-input" value="{{ user.profile.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
+                            <input type="url" id="linkedin" name="linkedin" class="form-input" value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
                         </div>
                     </div>
 
@@ -242,7 +242,7 @@
                         <div class="social-icon website">🌐</div>
                         <div class="form-group">
                             <label for="website" class="form-label">Website</label>
-                            <input type="url" id="website" name="website" class="form-input" value="{{ user.profile.website }}" placeholder="https://seusite.com">
+                            <input type="url" id="website" name="website" class="form-input" value="{{ user.website }}" placeholder="https://seusite.com">
                         </div>
                     </div>
                 </div>
@@ -630,19 +630,19 @@
                     <div class="form-group">
                         <label for="idioma" class="form-label">Idioma</label>
                         <select id="idioma" name="idioma" class="form-select">
-                            <option value="pt-br" {% if user.profile.idioma == 'pt-br' %}selected{% endif %}>Português (Brasil)</option>
-                            <option value="en" {% if user.profile.idioma == 'en' %}selected{% endif %}>English</option>
-                            <option value="es" {% if user.profile.idioma == 'es' %}selected{% endif %}>Español</option>
+                            <option value="pt-br" {% if user.idioma == 'pt-br' %}selected{% endif %}>Português (Brasil)</option>
+                            <option value="en" {% if user.idioma == 'en' %}selected{% endif %}>English</option>
+                            <option value="es" {% if user.idioma == 'es' %}selected{% endif %}>Español</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="fuso_horario" class="form-label">Fuso Horário</label>
                         <select id="fuso_horario" name="fuso_horario" class="form-select">
-                            <option value="America/Sao_Paulo" {% if user.profile.fuso_horario == 'America/Sao_Paulo' %}selected{% endif %}>Brasília (GMT-3)</option>
-                            <option value="America/Manaus" {% if user.profile.fuso_horario == 'America/Manaus' %}selected{% endif %}>Manaus (GMT-4)</option>
-                            <option value="America/New_York" {% if user.profile.fuso_horario == 'America/New_York' %}selected{% endif %}>New York (GMT-5)</option>
-                            <option value="Europe/London" {% if user.profile.fuso_horario == 'Europe/London' %}selected{% endif %}>London (GMT+0)</option>
+                            <option value="America/Sao_Paulo" {% if user.fuso_horario == 'America/Sao_Paulo' %}selected{% endif %}>Brasília (GMT-3)</option>
+                            <option value="America/Manaus" {% if user.fuso_horario == 'America/Manaus' %}selected{% endif %}>Manaus (GMT-4)</option>
+                            <option value="America/New_York" {% if user.fuso_horario == 'America/New_York' %}selected{% endif %}>New York (GMT-5)</option>
+                            <option value="Europe/London" {% if user.fuso_horario == 'Europe/London' %}selected{% endif %}>London (GMT+0)</option>
                         </select>
                     </div>
                 </div>
@@ -652,7 +652,7 @@
 
                     <div class="notification-item">
                         <div class="checkbox-container">
-                            <input type="checkbox" id="perfil_publico" name="perfil_publico" class="checkbox-input" {% if user.profile.perfil_publico %}checked{% endif %}>
+                            <input type="checkbox" id="perfil_publico" name="perfil_publico" class="checkbox-input" {% if user.perfil_publico %}checked{% endif %}>
                             <label for="perfil_publico" class="checkbox-label">Perfil Público</label>
                         </div>
                         <p class="notification-desc">Permitir que pessoas não conectadas vejam seu perfil</p>
@@ -660,7 +660,7 @@
 
                     <div class="notification-item">
                         <div class="checkbox-container">
-                            <input type="checkbox" id="mostrar_email" name="mostrar_email" class="checkbox-input" {% if user.profile.mostrar_email %}checked{% endif %}>
+                            <input type="checkbox" id="mostrar_email" name="mostrar_email" class="checkbox-input" {% if user.mostrar_email %}checked{% endif %}>
                             <label for="mostrar_email" class="checkbox-label">Mostrar Email</label>
                         </div>
                         <p class="notification-desc">Permitir que outros usuários vejam seu email</p>
@@ -668,7 +668,7 @@
 
                     <div class="notification-item">
                         <div class="checkbox-container">
-                            <input type="checkbox" id="mostrar_telefone" name="mostrar_telefone" class="checkbox-input" {% if user.profile.mostrar_telefone %}checked{% endif %}>
+                            <input type="checkbox" id="mostrar_telefone" name="mostrar_telefone" class="checkbox-input" {% if user.mostrar_telefone %}checked{% endif %}>
                             <label for="mostrar_telefone" class="checkbox-label">Mostrar Telefone</label>
                         </div>
                         <p class="notification-desc">Permitir que outros usuários vejam seu telefone</p>

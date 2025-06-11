@@ -4,3 +4,4 @@ pillow==11.2.1
 sqlparse==0.5.3
 typing_extensions==4.14.0
 tzdata==2025.2
+django-phonenumber-field[phonenumbers]>=8.1.0
