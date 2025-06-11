@@ -1,6 +1,7 @@
 """Serviços de manipulação de usuários."""
 
-from .models import Usuario
+from usuarios.models import Usuario
+
 
 
 def create_user(username, email, password, first_name="", last_name=""):
