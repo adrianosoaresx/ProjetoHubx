@@ -99,7 +99,11 @@ def termos(request):
                 )
                 if user:
                     login(request, user)
-            return redirect("registro_sucesso")
+                    return redirect("perfil")
+                else:
+                    # Username already exists; ask user to escolher outro
+                    return redirect("custom_auth:usuario")
+            return redirect("custom_auth:usuario")
 
     return render(request, "register/termos.html")
 
