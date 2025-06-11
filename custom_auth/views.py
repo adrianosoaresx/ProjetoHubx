@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-import os
-import django
-=======
 """Views de autenticação e registro de usuários."""
-
 from django.conf import settings
 
 if not settings.configured:
@@ -18,11 +13,14 @@ if not settings.configured:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
     django.setup()
 
->>>>>>> e57cf540df6d4c2db3b6680bb5c894111d86d40d
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+
 from usuarios.services import create_user
+
+
+
 
 def login_view(request):
     """Autentica o usuário utilizando credenciais de login."""
