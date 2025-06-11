@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'custom_auth.apps.CustomAuthConfig',
+    'usuarios.apps.UsuariosConfig',
     'perfil',
     'empresas',
 ]

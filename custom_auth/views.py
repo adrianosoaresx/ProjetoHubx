@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from usuarios.services import create_user
 
 def login_view(request):
     """Autentica o usuário utilizando credenciais de login."""
@@ -89,14 +90,14 @@ def termos(request):
             last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
 
             if username and password:
-                if not User.objects.filter(username=username).exists():
-                    user = User.objects.create_user(
-                        username=username,
-                        email=email,
-                        password=password,
-                        first_name=first_name,
-                        last_name=last_name,
-                    )
+                user = create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                if user:
                     login(request, user)
             return redirect("registro_sucesso")
 
