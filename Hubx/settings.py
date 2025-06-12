@@ -40,9 +40,9 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'core',
     'custom_auth.apps.CustomAuthConfig',
-    'usuarios.apps.UsuariosConfig',
-    'perfil',
     'empresas',
+    'accounts',
+    
 ]
 
 MIDDLEWARE = [
@@ -128,7 +128,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'usuarios.Usuario'
+AUTH_USER_MODEL = 'accounts.User'
 
 # URL usado pelo decorator ``login_required``. Sem esta configuracao
 # o Django redireciona para ``/accounts/login/``, que nao existe no

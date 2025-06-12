@@ -15,9 +15,11 @@ if not settings.configured:
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from usuarios.models import Usuario
+from django.contrib.auth import get_user_model
+User = get_user_model()
+# ou 'accounts.User' se você precisar da string
 
-from usuarios.services import create_user
+#from user.services import create_user
 
 
 
