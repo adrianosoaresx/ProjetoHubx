@@ -43,8 +43,27 @@ class User(AbstractUser):
         validators=[cpf_validator],
     )
 
-    # …adicione aqui outros campos que existiam em perfil.Profile
-    # ex.: avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    # Campos migrados do antigo modelo Perfil
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    bio = models.TextField(blank=True)
+    data_nascimento = models.DateField(blank=True, null=True)
+    genero = models.CharField(max_length=1, blank=True)
+    telefone = models.CharField(max_length=20, blank=True)
+    whatsapp = models.CharField(max_length=20, blank=True)
+    endereco = models.CharField(max_length=255, blank=True)
+    cidade = models.CharField(max_length=100, blank=True)
+    estado = models.CharField(max_length=2, blank=True)
+    cep = models.CharField(max_length=10, blank=True)
+    facebook = models.URLField(blank=True)
+    twitter = models.URLField(blank=True)
+    instagram = models.URLField(blank=True)
+    linkedin = models.URLField(blank=True)
+    website = models.URLField(blank=True)
+    idioma = models.CharField(max_length=10, blank=True)
+    fuso_horario = models.CharField(max_length=50, blank=True)
+    perfil_publico = models.BooleanField(default=True)
+    mostrar_email = models.BooleanField(default=True)
+    mostrar_telefone = models.BooleanField(default=False)
 
     # Configurações de metadados
     class Meta:
