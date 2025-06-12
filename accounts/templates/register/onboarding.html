@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% load static %} {% block title %}Bem-vindo ao Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
 <div class="onboarding-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -76,7 +76,7 @@
         </div>
 
         <div class="onboarding-actions">
-            <a href="{% url 'custom_auth:token' %}" class="btn-start">
+            <a href="{% url 'accounts:token' %}" class="btn-start">
                 Começar Agora
                 <span>→</span>
             </a>
@@ -84,6 +84,6 @@
     </div>
 </div>
 {% endblock %} {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
+<script src="{% static 'accounts/js/register.js' %}"></script>
 
 {% endblock %}

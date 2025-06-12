@@ -2,7 +2,7 @@
 {% load static %}
 {% block title %}Cadastro Concluído | HubX{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}">
+<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
 {% endblock %}
 {% block content %}
 <div class="registro-container">
@@ -30,11 +30,11 @@
             <p class="registro-subtitle">Seu cadastro foi concluído com sucesso.</p>
         </div>
         <div class="form-actions" style="text-align:center;">
-            <a href="{% url 'custom_auth:login' %}" class="btn-primary">Fazer login</a>
+            <a href="{% url 'accounts:login' %}" class="btn-primary">Fazer login</a>
         </div>
     </div>
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
+<script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

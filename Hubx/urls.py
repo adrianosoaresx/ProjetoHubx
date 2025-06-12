@@ -17,16 +17,16 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from custom_auth import views as auth_views
+from accounts import views as accounts_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Página inicial
-    path('custom_auth/', include('custom_auth.urls')),
+    path('accounts/', include('accounts.urls')),
     # A rota abaixo garante compatibilidade com o valor padrao de
     # ``LOGIN_URL`` caso nao seja definido nas configuracoes.
-    path('accounts/login/', auth_views.login_view, name='accounts_login'),
-    path('perfil/', include('accounts.urls')),
+    path('accounts/login/', accounts_views.login_view, name='accounts_login'),
+    path('perfil/', accounts_views.perfil_view, name='perfil'),
     path('empresas/', include('empresas.urls')),
-    path('registro/sucesso/', auth_views.registro_sucesso, name='registro_sucesso'),
+    path('registro/sucesso/', accounts_views.registro_sucesso, name='registro_sucesso'),
 ]

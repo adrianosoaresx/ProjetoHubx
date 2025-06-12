@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% load static %} {% block title %}Registro - Token | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
 <div class="registro-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Digite seu token de convite para começar</p>
         </div>
 
-        <form id="tokenForm" class="registro-form" method="post" action="{% url 'custom_auth:token' %}" data-next-step="{% url 'custom_auth:usuario' %}">
+        <form id="tokenForm" class="registro-form" method="post" action="{% url 'accounts:token' %}" data-next-step="{% url 'accounts:usuario' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="token" class="form-label">Token de Convite</label>
@@ -40,7 +40,7 @@
             </div>
 
             <div class="form-actions">
-                <a href="{% url 'custom_auth:login' %}" class="cta-button">Voltar</a>
+                <a href="{% url 'accounts:login' %}" class="cta-button">Voltar</a>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -49,11 +49,11 @@
         </form>
 
         <div class="registro-footer">
-            <p>Já tem uma conta? <a href="{% url 'custom_auth:login' %}" class="cta-button">Entrar</a></p>
+            <p>Já tem uma conta? <a href="{% url 'accounts:login' %}" class="cta-button">Entrar</a></p>
         </div>
     </div>
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
+<script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

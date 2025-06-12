@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% load static %} {% block title %}Login - Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/styles.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/styles.css' %}"> {% endblock %} {% block content %}
 <div class="login-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -20,7 +20,7 @@
         <div class="error-message">{{ form.non_field_errors }}</div>
         {% endif %}
 
-        <form method="post" action="{% url 'custom_auth:login' %}">
+        <form method="post" action="{% url 'accounts:login' %}">
 
 
             {% csrf_token %}
@@ -48,7 +48,7 @@
 
             <div class="login-footer">
                 <p>
-                    <a href="{% url 'custom_auth:password_reset' %}" class="login-link">Esqueceu sua senha?</a>
+                    <a href="{% url 'accounts:password_reset' %}" class="login-link">Esqueceu sua senha?</a>
                 </p>
             </div>
         </form>
@@ -64,7 +64,7 @@
 
         <div class="login-footer">
             <p>Não tem uma conta?
-                <a href="{% url 'custom_auth:register' %}" class="login-link">Cadastre-se</a>
+                <a href="{% url 'accounts:register' %}" class="login-link">Cadastre-se</a>
             </p>
         </div>
     </div>
