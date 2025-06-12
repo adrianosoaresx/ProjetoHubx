@@ -16,6 +16,9 @@ if not settings.configured:
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
+from accounts.forms import CustomUserCreationForm
+
 User = get_user_model()
 # ou 'accounts.User' se você precisar da string
 
@@ -25,24 +28,33 @@ User = get_user_model()
 
 
 def login_view(request):
-    """Autentica o usuário utilizando credenciais de login."""
+    """Autentica o usuário utilizando ``AuthenticationForm`` do Django."""
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
             return redirect("perfil")
-        return render(
-            request,
-            "login/login.html",
-            {"error": "Nome de usuário ou senha inválidos."},
-        )
+    else:
+        form = AuthenticationForm(request)
 
-    return render(request, "login/login.html")
+    return render(request, "login/login.html", {"form": form})
 
 def password_reset(request):
     return render(request, 'login/login.html')
+
+
+def register_view(request):
+    """Registra um novo usuário usando ``CustomUserCreationForm``."""
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("perfil")
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, "register/register_form.html", {"form": form})
 
 def onboarding(request):
     return render(request, 'register/onboarding.html')

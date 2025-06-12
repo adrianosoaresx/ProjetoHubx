@@ -16,8 +16,8 @@
             <h1 class="login-title">Entrar</h1>
             <p class="login-subtitle">Entre para conectar-se à sua rede de comunidades</p>
         </div>
-        {% if error %}
-        <div class="error-message">{{ error }}</div>
+        {% if form.non_field_errors %}
+        <div class="error-message">{{ form.non_field_errors }}</div>
         {% endif %}
 
         <form method="post" action="{% url 'custom_auth:login' %}">
@@ -26,14 +26,16 @@
             {% csrf_token %}
 
             <div class="form-group">
-                <label for="username" class="form-label">Nome de usuário</label>
-                <input type="text" id="username" name="username" class="form-input" placeholder="Digite seu nome de usuário" required>
+                <label for="id_username" class="form-label">Nome de usuário</label>
+                <input type="text" id="id_username" name="username" class="form-input" placeholder="Digite seu nome de usuário" required value="{{ form.username.value }}">
+                {{ form.username.errors }}
                 <span class="input-icon">👤</span>
             </div>
 
             <div class="form-group">
-                <label for="password" class="form-label">Senha</label>
-                <input type="password" id="password" name="password" class="form-input" placeholder="Digite sua senha" required>
+                <label for="id_password" class="form-label">Senha</label>
+                <input type="password" id="id_password" name="password" class="form-input" placeholder="Digite sua senha" required>
+                {{ form.password.errors }}
                 <span class="input-icon">🔒</span>
             </div>
 
@@ -62,7 +64,7 @@
 
         <div class="login-footer">
             <p>Não tem uma conta?
-                <a href="{% url 'custom_auth:onboarding' %}" class="login-link">Cadastre-se</a>
+                <a href="{% url 'custom_auth:register' %}" class="login-link">Cadastre-se</a>
             </p>
         </div>
     </div>

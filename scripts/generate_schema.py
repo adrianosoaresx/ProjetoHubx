@@ -15,7 +15,7 @@ def main(out_file="schema.sql"):
     django.setup()
 
     apps_and_migrations = {
-        "usuarios": "0001",
+        "accounts": "0001",
         "empresas": "0001",
         "perfil": "0002",
     }

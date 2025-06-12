@@ -6,6 +6,7 @@ app_name = 'custom_auth'  # Permite uso de namespace em templates: {% url 'custo
 urlpatterns = [
     path('', views.login_view, name='root_login'),
     path('login/', views.login_view, name='login'),  # rota base
+    path('register/', views.register_view, name='register'),
     path('password_reset/', views.password_reset, name='password_reset'),
     path('onboarding/', views.onboarding, name='onboarding'),
     path('nome/', views.nome, name='nome'),
