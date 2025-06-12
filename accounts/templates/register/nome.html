@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% load static %} {% block title %}Registro - Nome | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
 <div class="registro-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Digite seu nome completo</p>
         </div>
 
-        <form id="nomeForm" class="registro-form" data-next-step="{% url 'custom_auth:email' %}">
+        <form id="nomeForm" class="registro-form" data-next-step="{% url 'accounts:email' %}">
             <div class="form-group">
                 <label for="nome" class="form-label">Nome Completo</label>
                 <input type="text" id="nome" name="nome" class="form-input" placeholder="Digite seu nome completo" required autofocus>
@@ -38,7 +38,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:token' %}'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:token' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -49,5 +49,5 @@
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
+<script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

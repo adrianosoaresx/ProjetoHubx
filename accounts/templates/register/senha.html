@@ -1,5 +1,5 @@
 {% extends "base.html" %} {% load static %} {% block title %}Registro - Senha | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'custom_auth/css/register.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
 <div class="registro-container">
     <!-- Matrix Code Rain Effect -->
     <div class="matrix-code" id="matrixCode"></div>
@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Proteja sua conta com uma senha forte</p>
         </div>
 
-        <form id="senhaForm" class="registro-form" data-next-step="{% url 'custom_auth:foto' %}">
+        <form id="senhaForm" class="registro-form" data-next-step="{% url 'accounts:foto' %}">
             <div class="form-group">
                 <label for="senha" class="form-label">Senha</label>
                 <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>
@@ -53,7 +53,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'custom_auth:email' %}'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:email' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
@@ -64,5 +64,5 @@
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'custom_auth/js/register.js' %}"></script>
+<script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

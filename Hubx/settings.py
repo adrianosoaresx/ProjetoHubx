@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'phonenumber_field',
     'core',
-    'custom_auth.apps.CustomAuthConfig',
     'empresas',
     'accounts',
     
@@ -133,7 +132,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # URL usado pelo decorator ``login_required``. Sem esta configuracao
 # o Django redireciona para ``/accounts/login/``, que nao existe no
 # projeto e resultava em erro 404.
-LOGIN_URL = '/custom_auth/login/'
+LOGIN_URL = '/accounts/login/'
 
 # Redireciona o usuario autenticado para seu perfil apos o login.
 LOGIN_REDIRECT_URL = '/perfil/'
