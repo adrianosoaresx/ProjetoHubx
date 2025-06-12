@@ -7,4 +7,4 @@ tabelas.
 Após concluir o cadastro de um novo usuário, ele é autenticado automaticamente e
 redirecionado para sua página de perfil.
 
-O fluxo de autenticação utiliza agora os formulários padrões do Django. Para registrar-se, acesse `/accounts/register/`.
+O fluxo de autenticação utiliza agora os formulários padrões do Django. Para registrar-se, acesse `/accounts/onboarding/`.
