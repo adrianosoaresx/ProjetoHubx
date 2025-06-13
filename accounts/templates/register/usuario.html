@@ -30,7 +30,8 @@
             <p class="registro-subtitle">Como você será identificado na plataforma</p>
         </div>
 
-        <form id="usuarioForm" class="registro-form" data-next-step="{% url 'accounts:nome' %}">
+        <form id="usuarioForm" class="registro-form" method="post" action="{% url 'accounts:usuario' %}" data-next-step="{% url 'accounts:nome' %}">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="usuario" class="form-label">Nome de Usuário</label>
                 <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Digite seu nome de usuário" required autofocus>

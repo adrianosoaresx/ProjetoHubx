@@ -12,8 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Form Validation
     initFormValidation()
 
-    // Initialize Form Submission
-    initFormSubmission()
+    // Forms now submit directly to the server
 
     // Initialize Photo Upload if on photo page
     if (document.getElementById("fotoForm")) {
@@ -25,8 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         initPasswordStrength()
     }
 
-    // Store form data in session storage
-    loadFormData()
+    // Session persistence handled server-side
 })
 
 // Matrix Code Rain Effect
