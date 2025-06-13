@@ -1,6 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
+
+from .models import NotificationSettings
 
 
 class RegistrationSessionTests(TestCase):
@@ -66,3 +69,28 @@ class RegistrationSessionTests(TestCase):
         )
         self.assertIn("termos", self.client.session)
         self.assertEqual(response.url, reverse("perfil"))
+
+        user = get_user_model().objects.get(username="newuser")
+        self.assertTrue(NotificationSettings.objects.filter(user=user).exists())
+
+
+class RegisterViewTests(TestCase):
+    """Verifica a criacao de NotificationSettings no fluxo simples."""
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_signal_creates_notification_settings(self):
+        response = self.client.post(
+            reverse("accounts:register"),
+            {
+                "username": "janedoe",
+                "email": "jane@example.com",
+                "password1": "Complexpass123",
+                "password2": "Complexpass123",
+            },
+            follow=False,
+        )
+        self.assertEqual(response.status_code, 302)
+        user = get_user_model().objects.get(username="janedoe")
+        self.assertTrue(NotificationSettings.objects.filter(user=user).exists())

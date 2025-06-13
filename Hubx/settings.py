@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'phonenumber_field',
     'core',
     'empresas',
-    'accounts',
+    'accounts.apps.AccountsConfig',
     
 ]
 
