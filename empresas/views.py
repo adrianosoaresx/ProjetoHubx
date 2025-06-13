@@ -37,7 +37,11 @@ def editar_empresa(request, pk):
             return redirect("empresas:lista")
     else:
         form = EmpresaForm(instance=empresa)
-    return render(request, "empresas/form.html", {"form": form, "empresa": empresa})
+    return render(
+        request,
+        "empresas/form.html",
+        {"form": form, "empresa": empresa},
+    )
 
 
 def buscar_empresas(request):
@@ -51,4 +55,8 @@ def buscar_empresas(request):
                 | Q(palavras_chave__icontains=palavra)
             )
     empresas = empresas.distinct()
-    return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
+    return render(
+        request,
+        "empresas/busca.html",
+        {"empresas": empresas, "q": query},
+    )

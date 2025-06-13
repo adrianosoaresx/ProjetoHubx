@@ -1,3 +1,4 @@
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib.auth.forms import AuthenticationForm
@@ -29,7 +30,10 @@ def perfil_view(request):
         perfil.linkedin = request.POST.get("linkedin", perfil.linkedin)
         perfil.website = request.POST.get("website", perfil.website)
         perfil.idioma = request.POST.get("idioma", perfil.idioma)
-        perfil.fuso_horario = request.POST.get("fuso_horario", perfil.fuso_horario)
+        perfil.fuso_horario = request.POST.get(
+            "fuso_horario",
+            perfil.fuso_horario,
+        )
         perfil.perfil_publico = bool(request.POST.get("perfil_publico"))
         perfil.mostrar_email = bool(request.POST.get("mostrar_email"))
         perfil.mostrar_telefone = bool(request.POST.get("mostrar_telefone"))
@@ -37,14 +41,30 @@ def perfil_view(request):
             perfil.avatar = request.FILES["avatar"]
         perfil.save()
 
-        notificacoes.email_conexoes = bool(request.POST.get("email_conexoes"))
-        notificacoes.email_mensagens = bool(request.POST.get("email_mensagens"))
-        notificacoes.email_eventos = bool(request.POST.get("email_eventos"))
-        notificacoes.email_newsletter = bool(request.POST.get("email_newsletter"))
-        notificacoes.sistema_conexoes = bool(request.POST.get("sistema_conexoes"))
-        notificacoes.sistema_mensagens = bool(request.POST.get("sistema_mensagens"))
-        notificacoes.sistema_eventos = bool(request.POST.get("sistema_eventos"))
-        notificacoes.sistema_comentarios = bool(request.POST.get("sistema_comentarios"))
+        notificacoes.email_conexoes = bool(
+            request.POST.get("email_conexoes")
+        )
+        notificacoes.email_mensagens = bool(
+            request.POST.get("email_mensagens")
+        )
+        notificacoes.email_eventos = bool(
+            request.POST.get("email_eventos")
+        )
+        notificacoes.email_newsletter = bool(
+            request.POST.get("email_newsletter")
+        )
+        notificacoes.sistema_conexoes = bool(
+            request.POST.get("sistema_conexoes")
+        )
+        notificacoes.sistema_mensagens = bool(
+            request.POST.get("sistema_mensagens")
+        )
+        notificacoes.sistema_eventos = bool(
+            request.POST.get("sistema_eventos")
+        )
+        notificacoes.sistema_comentarios = bool(
+            request.POST.get("sistema_comentarios")
+        )
         notificacoes.save()
 
     empresas = Empresa.objects.filter(usuario=request.user)
@@ -158,7 +178,14 @@ def termos(request):
             nome = request.session.get("nome", "").split()
             first_name = nome[0] if nome else ""
             last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
-            print("DEBUG:", username, email, password, first_name, last_name)  # <-- exibe no console
+            print(
+                "DEBUG:",
+                username,
+                email,
+                password,
+                first_name,
+                last_name,
+            )  # exibe no console
             # ...
 
             if username and password:
@@ -182,6 +209,3 @@ def termos(request):
 
 def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
-
-
-

@@ -26,21 +26,32 @@ class RegistrationSessionTests(TestCase):
             reverse("accounts:usuario"), {"usuario": "newuser"}, follow=True
         )
         self.assertIn("usuario", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:nome"))
+        self.assertEqual(
+            response.redirect_chain[-1][0],
+            reverse("accounts:nome"),
+        )
 
         # Step 3: nome
         response = self.client.post(
             reverse("accounts:nome"), {"nome": "Test User"}, follow=True
         )
         self.assertIn("nome", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:email"))
+        self.assertEqual(
+            response.redirect_chain[-1][0],
+            reverse("accounts:email"),
+        )
 
         # Step 4: email
         response = self.client.post(
-            reverse("accounts:email"), {"email": "test@example.com"}, follow=True
+            reverse("accounts:email"),
+            {"email": "test@example.com"},
+            follow=True,
         )
         self.assertIn("email", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:senha"))
+        self.assertEqual(
+            response.redirect_chain[-1][0],
+            reverse("accounts:senha"),
+        )
 
         # Step 5: senha
         response = self.client.post(
@@ -49,15 +60,25 @@ class RegistrationSessionTests(TestCase):
             follow=True,
         )
         self.assertIn("senha", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:foto"))
+        self.assertEqual(
+            response.redirect_chain[-1][0],
+            reverse("accounts:foto"),
+        )
 
         # Step 6: foto
-        image = SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg")
+        image = SimpleUploadedFile(
+            "test.jpg",
+            b"filecontent",
+            content_type="image/jpeg",
+        )
         response = self.client.post(
             reverse("accounts:foto"), {"foto": image}, follow=True
         )
         self.assertIn("foto", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:termos"))
+        self.assertEqual(
+            response.redirect_chain[-1][0],
+            reverse("accounts:termos"),
+        )
 
         # Step 7: termos
         response = self.client.post(

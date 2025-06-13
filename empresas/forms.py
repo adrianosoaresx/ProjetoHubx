@@ -36,7 +36,9 @@ class EmpresaForm(forms.ModelForm):
         if commit:
             instance.save()
         tags_names = [
-            tag.strip() for tag in self.cleaned_data.get("tags_field", "").split(",") if tag.strip()
+            tag.strip()
+            for tag in self.cleaned_data.get("tags_field", "").split(",")
+            if tag.strip()
         ]
         tags = []
         for name in tags_names:
