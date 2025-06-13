@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
@@ -132,7 +133,7 @@ def senha(request):
         senha1 = request.POST.get("senha")
         senha2 = request.POST.get("confirmar_senha")
         if senha1 and senha1 == senha2:
-            request.session["senha"] = senha1
+            request.session["senha_hash"] = make_password(senha1)
             return redirect("accounts:foto")
     return render(request, "register/senha.html")
 
@@ -154,20 +155,21 @@ def termos(request):
             # Cria o usuario usando os dados armazenados na sessao
             username = request.session.get("usuario")
             email = request.session.get("email")
-            password = request.session.get("senha")
+            password_hash = request.session.get("senha_hash")
             nome = request.session.get("nome", "").split()
             first_name = nome[0] if nome else ""
             last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
             # ...
 
-            if username and password:
-                user = User.objects.create_user(
+            if username and password_hash:
+                user = User(
                     username=username,
                     email=email,
-                    password=password,
                     first_name=first_name,
                     last_name=last_name,
+                    password=password_hash,
                 )
+                user.save()
                 if user:
                     login(request, user)
                     return redirect("perfil")

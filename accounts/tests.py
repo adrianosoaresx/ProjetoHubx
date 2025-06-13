@@ -45,10 +45,11 @@ class RegistrationSessionTests(TestCase):
         # Step 5: senha
         response = self.client.post(
             reverse("accounts:senha"),
-            {"senha1": "abc12345", "senha2": "abc12345"},
+            {"senha": "abc12345", "confirmar_senha": "abc12345"},
             follow=True,
         )
-        self.assertIn("senha", self.client.session)
+        self.assertNotIn("senha", self.client.session)
+        self.assertIn("senha_hash", self.client.session)
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:foto"))
 
         # Step 6: foto
