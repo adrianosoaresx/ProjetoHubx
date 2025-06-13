@@ -30,7 +30,8 @@
             <p class="registro-subtitle">Usaremos para comunicação e recuperação de conta</p>
         </div>
 
-        <form id="emailForm" class="registro-form" data-next-step="{% url 'accounts:senha' %}">
+        <form id="emailForm" class="registro-form" method="post" action="{% url 'accounts:email' %}" data-next-step="{% url 'accounts:senha' %}">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" id="email" name="email" class="form-input" placeholder="Digite seu email" required autofocus>
