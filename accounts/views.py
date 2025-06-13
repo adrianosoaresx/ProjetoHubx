@@ -129,8 +129,8 @@ def usuario(request):
 
 def senha(request):
     if request.method == "POST":
-        senha1 = request.POST.get("senha1")
-        senha2 = request.POST.get("senha2")
+        senha1 = request.POST.get("senha")
+        senha2 = request.POST.get("confirmar_senha")
         if senha1 and senha1 == senha2:
             request.session["senha"] = senha1
             return redirect("accounts:foto")
