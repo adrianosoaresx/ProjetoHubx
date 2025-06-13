@@ -30,7 +30,8 @@
             <p class="registro-subtitle">Proteja sua conta com uma senha forte</p>
         </div>
 
-        <form id="senhaForm" class="registro-form" data-next-step="{% url 'accounts:foto' %}">
+        <form id="senhaForm" class="registro-form" method="post" action="{% url 'accounts:senha' %}" data-next-step="{% url 'accounts:foto' %}">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="senha" class="form-label">Senha</label>
                 <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>

@@ -30,7 +30,8 @@
             <p class="registro-subtitle">Personalize sua presença na comunidade</p>
         </div>
 
-        <form id="fotoForm" class="registro-form" data-next-step="{% url 'accounts:termos' %}">
+        <form id="fotoForm" class="registro-form" method="post" action="{% url 'accounts:foto' %}" data-next-step="{% url 'accounts:termos' %}">
+            {% csrf_token %}
             <div class="foto-upload-container">
                 <div class="foto-preview" id="fotoPreview">
                     <div class="foto-placeholder">
