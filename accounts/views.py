@@ -158,7 +158,6 @@ def termos(request):
             nome = request.session.get("nome", "").split()
             first_name = nome[0] if nome else ""
             last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
-            print("DEBUG:", username, email, password, first_name, last_name)  # <-- exibe no console
             # ...
 
             if username and password:
