@@ -5,6 +5,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile, File
+import os
+import uuid
 
 from .forms import CustomUserCreationForm
 from empresas.models import Empresa
@@ -19,13 +23,27 @@ def perfil_view(request):
     notificacoes = request.user.notification_settings
 
     if request.method == "POST":
+        # Dados basicos
+        nome_completo = request.POST.get("nome")
+        if nome_completo:
+            partes = nome_completo.split()
+            perfil.first_name = partes[0]
+            perfil.last_name = " ".join(partes[1:]) if len(partes) > 1 else ""
+        perfil.username = request.POST.get("username", perfil.username)
+        perfil.email = request.POST.get("email", perfil.email)
         perfil.bio = request.POST.get("bio", perfil.bio)
+        perfil.data_nascimento = request.POST.get("data_nascimento", perfil.data_nascimento)
+        perfil.genero = request.POST.get("genero", perfil.genero)
+
+        # Contato e endereco
         perfil.telefone = request.POST.get("telefone", perfil.telefone)
         perfil.whatsapp = request.POST.get("whatsapp", perfil.whatsapp)
         perfil.endereco = request.POST.get("endereco", perfil.endereco)
         perfil.cidade = request.POST.get("cidade", perfil.cidade)
         perfil.estado = request.POST.get("estado", perfil.estado)
         perfil.cep = request.POST.get("cep", perfil.cep)
+
+        # Redes sociais e preferencias
         perfil.facebook = request.POST.get("facebook", perfil.facebook)
         perfil.twitter = request.POST.get("twitter", perfil.twitter)
         perfil.instagram = request.POST.get("instagram", perfil.instagram)
@@ -33,21 +51,38 @@ def perfil_view(request):
         perfil.website = request.POST.get("website", perfil.website)
         perfil.idioma = request.POST.get("idioma", perfil.idioma)
         perfil.fuso_horario = request.POST.get("fuso_horario", perfil.fuso_horario)
-        perfil.perfil_publico = bool(request.POST.get("perfil_publico"))
-        perfil.mostrar_email = bool(request.POST.get("mostrar_email"))
-        perfil.mostrar_telefone = bool(request.POST.get("mostrar_telefone"))
+
+        if "perfil_publico" in request.POST:
+            perfil.perfil_publico = bool(request.POST.get("perfil_publico"))
+        if "mostrar_email" in request.POST:
+            perfil.mostrar_email = bool(request.POST.get("mostrar_email"))
+        if "mostrar_telefone" in request.POST:
+            perfil.mostrar_telefone = bool(request.POST.get("mostrar_telefone"))
+
         if "avatar" in request.FILES:
             perfil.avatar = request.FILES["avatar"]
+        if "remover_avatar" in request.POST:
+            perfil.avatar.delete(save=False)
+            perfil.avatar = None
+
         perfil.save()
 
-        notificacoes.email_conexoes = bool(request.POST.get("email_conexoes"))
-        notificacoes.email_mensagens = bool(request.POST.get("email_mensagens"))
-        notificacoes.email_eventos = bool(request.POST.get("email_eventos"))
-        notificacoes.email_newsletter = bool(request.POST.get("email_newsletter"))
-        notificacoes.sistema_conexoes = bool(request.POST.get("sistema_conexoes"))
-        notificacoes.sistema_mensagens = bool(request.POST.get("sistema_mensagens"))
-        notificacoes.sistema_eventos = bool(request.POST.get("sistema_eventos"))
-        notificacoes.sistema_comentarios = bool(request.POST.get("sistema_comentarios"))
+        if "email_conexoes" in request.POST:
+            notificacoes.email_conexoes = bool(request.POST.get("email_conexoes"))
+        if "email_mensagens" in request.POST:
+            notificacoes.email_mensagens = bool(request.POST.get("email_mensagens"))
+        if "email_eventos" in request.POST:
+            notificacoes.email_eventos = bool(request.POST.get("email_eventos"))
+        if "email_newsletter" in request.POST:
+            notificacoes.email_newsletter = bool(request.POST.get("email_newsletter"))
+        if "sistema_conexoes" in request.POST:
+            notificacoes.sistema_conexoes = bool(request.POST.get("sistema_conexoes"))
+        if "sistema_mensagens" in request.POST:
+            notificacoes.sistema_mensagens = bool(request.POST.get("sistema_mensagens"))
+        if "sistema_eventos" in request.POST:
+            notificacoes.sistema_eventos = bool(request.POST.get("sistema_eventos"))
+        if "sistema_comentarios" in request.POST:
+            notificacoes.sistema_comentarios = bool(request.POST.get("sistema_comentarios"))
         notificacoes.save()
 
     empresas = Empresa.objects.filter(usuario=request.user)
@@ -158,7 +193,9 @@ def foto(request):
     if request.method == "POST":
         foto_file = request.FILES.get("foto")
         if foto_file:
-            request.session["foto"] = foto_file.name
+            temp_name = f"temp/{uuid.uuid4()}_{foto_file.name}"
+            path = default_storage.save(temp_name, ContentFile(foto_file.read()))
+            request.session["foto"] = path
         return redirect("accounts:termos")
     return render(request, "register/foto.html")
 
@@ -188,6 +225,12 @@ def termos(request):
                     cpf=cpf,
                 )
                 user.save()
+                foto_path = request.session.get("foto")
+                if foto_path:
+                    with default_storage.open(foto_path, "rb") as f:
+                        user.avatar.save(os.path.basename(foto_path), File(f))
+                    default_storage.delete(foto_path)
+                    del request.session["foto"]
                 if user:
                     login(request, user)
                     return redirect("perfil")
