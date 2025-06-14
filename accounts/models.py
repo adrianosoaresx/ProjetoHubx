@@ -40,6 +40,7 @@ class User(AbstractUser):
         "CPF",
         max_length=14,               # 000.000.000-00
         blank=True,
+        null=True,
         unique=True,
         validators=[cpf_validator],
     )
