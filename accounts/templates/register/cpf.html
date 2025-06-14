@@ -35,7 +35,7 @@
             <p class="registro-subtitle">Precisamos para validar sua identidade e segurança</p>
         </div>
 
-        <form id="cpfForm" class="registro-form" method="post" action="{% url 'accounts:cpf' %}" data-next-step="{% url 'accounts:telefone' %}">
+        <form id="cpfForm" class="registro-form" method="post" action="{% url 'accounts:cpf' %}" data-next-step="{% url 'accounts:email' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="cpf" class="form-label">CPF</label>
@@ -44,7 +44,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:email' %}'">Voltar</button>
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:nome' %}'">Voltar</button>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>

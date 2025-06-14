@@ -4,9 +4,11 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError
 
 from .forms import CustomUserCreationForm
 from empresas.models import Empresa
+from .models import cpf_validator
 
 User = get_user_model()
 
@@ -96,8 +98,22 @@ def nome(request):
         nome_value = request.POST.get("nome")
         if nome_value:
             request.session["nome"] = nome_value
-            return redirect("accounts:email")
+            return redirect("accounts:cpf")
     return render(request, "register/nome.html")
+
+
+def cpf(request):
+    """Solicita o CPF logo apos o nome completo."""
+    if request.method == "POST":
+        cpf_value = request.POST.get("cpf")
+        if cpf_value:
+            try:
+                cpf_validator(cpf_value)
+                request.session["cpf"] = cpf_value
+                return redirect("accounts:email")
+            except ValidationError:
+                pass
+    return render(request, "register/cpf.html")
 
 
 def email(request):
@@ -156,6 +172,7 @@ def termos(request):
             username = request.session.get("usuario")
             email = request.session.get("email")
             password_hash = request.session.get("senha_hash")
+            cpf = request.session.get("cpf")
             nome = request.session.get("nome", "").split()
             first_name = nome[0] if nome else ""
             last_name = " ".join(nome[1:]) if len(nome) > 1 else ""
@@ -168,6 +185,7 @@ def termos(request):
                     first_name=first_name,
                     last_name=last_name,
                     password=password_hash,
+                    cpf=cpf,
                 )
                 user.save()
                 if user:

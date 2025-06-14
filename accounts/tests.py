@@ -36,16 +36,22 @@ class RegistrationSessionTests(TestCase):
             reverse("accounts:nome"), {"nome": "Test User"}, follow=True
         )
         self.assertIn("nome", self.client.session)
-        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:email"))
+        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:cpf"))
 
-        # Step 4: email
+        # Step 4: cpf
+        response = self.client.post(
+            reverse("accounts:cpf"), {"cpf": "123.456.789-09"}, follow=True
+        )
+        self.assertIn("cpf", self.client.session)
+        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:email"))
+        # Step 5: email
         response = self.client.post(
             reverse("accounts:email"), {"email": "test@example.com"}, follow=True
         )
         self.assertIn("email", self.client.session)
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:senha"))
 
-        # Step 5: senha
+        # Step 6: senha
         response = self.client.post(
             reverse("accounts:senha"),
             {"senha": "abc12345", "confirmar_senha": "abc12345"},
@@ -55,7 +61,7 @@ class RegistrationSessionTests(TestCase):
         self.assertIn("senha_hash", self.client.session)
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:foto"))
 
-        # Step 6: foto
+        # Step 7: foto
         image = SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg")
         response = self.client.post(
             reverse("accounts:foto"), {"foto": image}, follow=True
@@ -63,7 +69,7 @@ class RegistrationSessionTests(TestCase):
         self.assertIn("foto", self.client.session)
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:termos"))
 
-        # Step 7: termos
+        # Step 8: termos
         response = self.client.post(
             reverse("accounts:termos"), {"aceitar_termos": "on"}, follow=False
         )
