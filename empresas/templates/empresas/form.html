@@ -1,10 +1,23 @@
 {% extends 'base.html' %}
+{% load static %} {# Adicione esta linha para carregar arquivos estáticos #}
+
 {% block title %}{% if empresa %}Editar{% else %}Nova{% endif %} Empresa{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'empresas/css/empresas.css' %}">
+{% endblock %}
+
 {% block content %}
-<h1>{% if empresa %}Editar{% else %}Nova{% endif %} Empresa</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Salvar</button>
-</form>
+<div class="empresa-form-container">
+    <h1 class="form-title">{% if empresa %}Editar{% else %}Nova{% endif %} Empresa</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'empresas/js/empresas.js' %}"></script>
 {% endblock %}
