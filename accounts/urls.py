@@ -10,6 +10,7 @@ urlpatterns = [
     path("password_reset/", views.password_reset, name="password_reset"),
     path("onboarding/", views.onboarding, name="onboarding"),
     path("nome/", views.nome, name="nome"),
+    path("cpf/", views.cpf, name="cpf"),
     path("email/", views.email, name="email"),
     path("token/", views.token, name="token"),
     path("usuario/", views.usuario, name="usuario"),
