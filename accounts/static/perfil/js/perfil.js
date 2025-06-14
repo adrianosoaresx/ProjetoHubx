@@ -87,40 +87,7 @@ function initNavigation() {
 
 // Forms
 function initForms() {
-    const forms = document.querySelectorAll(".perfil-form")
-
-    forms.forEach((form) => {
-        form.addEventListener("submit", handleFormSubmission)
-    })
-
-    // Initialize form validation
     initFormValidation()
-}
-
-function handleFormSubmission(event) {
-    event.preventDefault()
-
-    const form = event.target
-    const submitButton = form.querySelector('button[type="submit"]')
-    const buttonText = submitButton.querySelector(".button-text")
-    const buttonLoader = submitButton.querySelector(".button-loader")
-
-    // Show loading state
-    submitButton.classList.add("loading")
-    submitButton.disabled = true
-
-    // Simulate form submission
-    setTimeout(() => {
-        // Hide loading state
-        submitButton.classList.remove("loading")
-        submitButton.disabled = false
-
-        // Show success message
-        showNotification("Informações atualizadas com sucesso!", "success")
-
-        // Here you would normally submit the form data to the server
-        console.log("Form data:", new FormData(form))
-    }, 2000)
 }
 
 function initFormValidation() {
@@ -382,53 +349,9 @@ function handleAvatarSelection(event) {
 }
 
 function saveAvatar() {
-    const avatarInput = document.getElementById("avatarInput")
-    const file = avatarInput.files[0]
-
-    if (file) {
-        // Simulate avatar upload
-        const formData = new FormData()
-        formData.append("avatar", file)
-
-        // Show loading state
-        const saveBtn = document.getElementById("saveAvatar")
-        saveBtn.textContent = "Salvando..."
-        saveBtn.disabled = true
-
-        setTimeout(() => {
-            // Update main avatar
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                const mainAvatar = document.querySelector(".user-avatar")
-                if (mainAvatar) {
-                    mainAvatar.src = e.target.result
-                } else {
-                    // Replace placeholder with image
-                    const avatarWrapper = document.querySelector(".avatar-wrapper")
-                    avatarWrapper.innerHTML = `
-            <img src="${e.target.result}" alt="Avatar" class="user-avatar">
-            <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
-              <span>📷</span>
-            </button>
-          `
-                        // Re-initialize avatar edit button
-                    document.getElementById("avatarEditBtn").addEventListener("click", () => {
-                        openModal("avatarModal")
-                    })
-                }
-            }
-            reader.readAsDataURL(file)
-
-            // Reset button
-            saveBtn.textContent = "Salvar"
-            saveBtn.disabled = false
-
-            // Close modal
-            closeModal(document.getElementById("avatarModal"))
-
-            // Show success message
-            showNotification("Avatar atualizado com sucesso!", "success")
-        }, 2000)
+    const form = document.getElementById("avatarForm")
+    if (form) {
+        form.submit()
     }
 }
 

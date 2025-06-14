@@ -84,7 +84,7 @@
                 <p>Atualize suas informações básicas</p>
             </div>
 
-            <form id="formInfoPessoal" class="perfil-form">
+            <form id="formInfoPessoal" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="form-row">
@@ -137,7 +137,7 @@
                 <p>Atualize seus dados de contato</p>
             </div>
 
-            <form id="formContato" class="perfil-form">
+            <form id="formContato" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="form-group">
@@ -202,7 +202,7 @@
                 <p>Conecte suas redes sociais</p>
             </div>
 
-            <form id="formRedesSociais" class="perfil-form">
+            <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="social-links">
@@ -263,7 +263,7 @@
                 <p>Gerencie sua senha e segurança da conta</p>
             </div>
 
-            <form id="formAlterarSenha" class="perfil-form">
+            <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="form-group">
@@ -327,7 +327,7 @@
                 <p>Gerencie como você recebe notificações</p>
             </div>
 
-            <form id="formNotificacoes" class="perfil-form">
+            <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 <div class="notification-group">
@@ -708,31 +708,34 @@
     <!-- Modal de Upload de Avatar -->
     <div class="modal" id="avatarModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Alterar Foto de Perfil</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="avatar-upload">
-                    <div class="avatar-preview" id="avatarPreview">
-                        <div class="avatar-placeholder">
-                            <span>{{ user.username|make_list|first|upper }}</span>
+            <form id="avatarForm" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h3>Alterar Foto de Perfil</h3>
+                    <button class="modal-close" type="button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="avatar-upload">
+                        <div class="avatar-preview" id="avatarPreview">
+                            <div class="avatar-placeholder">
+                                <span>{{ user.username|make_list|first|upper }}</span>
+                            </div>
+                        </div>
+
+                        <div class="avatar-actions">
+                            <label for="avatarInput" class="btn-upload">
+                                Escolher Foto
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+                            </label>
+                            <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
                         </div>
                     </div>
-
-                    <div class="avatar-actions">
-                        <label for="avatarInput" class="btn-upload">
-                            Escolher Foto
-                            <input type="file" id="avatarInput" accept="image/*" hidden>
-                        </label>
-                        <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
-                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
-                <button type="button" class="btn-primary" id="saveAvatar">Salvar</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
+                </div>
+            </form>
         </div>
     </div>
 
