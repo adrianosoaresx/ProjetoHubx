@@ -1300,3 +1300,87 @@
     }
 }
 
+/* Estilos existentes mantidos - adicionando apenas estilos específicos para CPF */
+
+/* CPF Input Styling */
+.form-input[name="cpf"] {
+  font-family: "Courier New", monospace;
+  letter-spacing: 1px;
+  font-weight: 500;
+}
+
+.form-input[name="cpf"]:focus {
+  border-color: var(--primary-color, #00ff88);
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.1);
+}
+
+/* CPF Validation States */
+.cpf-valid {
+  border-color: #00ff88 !important;
+  background-color: rgba(0, 255, 136, 0.05);
+}
+
+.cpf-invalid {
+  border-color: #ff4757 !important;
+  background-color: rgba(255, 71, 87, 0.05);
+}
+
+/* CPF Validation Messages */
+.field-validation.cpf-success {
+  color: #00ff88;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-validation.cpf-success::before {
+  content: "✓";
+  font-weight: bold;
+}
+
+.field-validation.cpf-error {
+  color: #ff4757;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-validation.cpf-error::before {
+  content: "✗";
+  font-weight: bold;
+}
+
+/* Loading state for CPF validation */
+.cpf-validating {
+  border-color: #ffa502 !important;
+  background-color: rgba(255, 165, 2, 0.05);
+}
+
+.cpf-validating + .field-validation::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ffa502;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-left: 5px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments for CPF input */
+@media (max-width: 480px) {
+  .form-input[name="cpf"] {
+    font-size: 16px; /* Prevents zoom on iOS */
+    letter-spacing: 0.5px;
+  }
+}

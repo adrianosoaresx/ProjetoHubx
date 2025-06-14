@@ -780,3 +780,169 @@ document.addEventListener("keydown", (event) => {
         }
     }
 })
+
+
+// Código JavaScript existente mantido - adicionando apenas funcionalidades para CPF
+
+// CPF Mask and Validation Functions
+function applyCpfMask(value) {
+  // Remove all non-numeric characters
+  value = value.replace(/\D/g, "")
+
+  // Apply CPF mask: 000.000.000-00
+  if (value.length <= 11) {
+    value = value.replace(/(\d{3})(\d)/, "$1.$2")
+    value = value.replace(/(\d{3})(\d)/, "$1.$2")
+    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+  }
+
+  return value
+}
+
+function validateCpf(cpf) {
+  // Remove mask
+  cpf = cpf.replace(/[^\d]/g, "")
+
+  // Check if CPF has 11 digits
+  if (cpf.length !== 11) {
+    return false
+  }
+
+  // Check if all digits are the same
+  if (/^(\d)\1{10}$/.test(cpf)) {
+    return false
+  }
+
+  // Validate CPF algorithm
+  let sum = 0
+  let remainder
+
+  // Validate first digit
+  for (let i = 1; i <= 9; i++) {
+    sum += Number.parseInt(cpf.substring(i - 1, i)) * (11 - i)
+  }
+  remainder = (sum * 10) % 11
+  if (remainder === 10 || remainder === 11) remainder = 0
+  if (remainder !== Number.parseInt(cpf.substring(9, 10))) return false
+
+  // Validate second digit
+  sum = 0
+  for (let i = 1; i <= 10; i++) {
+    sum += Number.parseInt(cpf.substring(i - 1, i)) * (12 - i)
+  }
+  remainder = (sum * 10) % 11
+  if (remainder === 10 || remainder === 11) remainder = 0
+  if (remainder !== Number.parseInt(cpf.substring(10, 11))) return false
+
+  return true
+}
+
+function showCpfValidation(input, isValid, message) {
+  const validation = document.getElementById("cpf_validation")
+  const submitButton = document.getElementById("submitButton")
+
+  // Remove previous classes
+  input.classList.remove("cpf-valid", "cpf-invalid", "cpf-validating")
+  validation.classList.remove("cpf-success", "cpf-error")
+
+  if (isValid === null) {
+    // Validating state
+    input.classList.add("cpf-validating")
+    validation.textContent = "Validando CPF..."
+    submitButton.disabled = true
+  } else if (isValid) {
+    // Valid state
+    input.classList.add("cpf-valid")
+    validation.classList.add("cpf-success")
+    validation.textContent = message || "CPF válido"
+    submitButton.disabled = false
+  } else {
+    // Invalid state
+    input.classList.add("cpf-invalid")
+    validation.classList.add("cpf-error")
+    validation.textContent = message || "CPF inválido"
+    submitButton.disabled = true
+  }
+}
+
+// Initialize CPF form when DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+  const cpfForm = document.getElementById("cpfForm")
+  const cpfInput = document.getElementById("cpf")
+
+  if (cpfForm && cpfInput) {
+    let validationTimeout
+
+    // Apply mask on input
+    cpfInput.addEventListener("input", (e) => {
+      const cursorPosition = e.target.selectionStart
+      const oldValue = e.target.value
+      const newValue = applyCpfMask(e.target.value)
+
+      e.target.value = newValue
+
+      // Maintain cursor position
+      const newCursorPosition = cursorPosition + (newValue.length - oldValue.length)
+      e.target.setSelectionRange(newCursorPosition, newCursorPosition)
+
+      // Clear previous validation timeout
+      clearTimeout(validationTimeout)
+
+      // Show validating state
+      if (newValue.length > 0) {
+        showCpfValidation(cpfInput, null)
+
+        // Validate after user stops typing (500ms delay)
+        validationTimeout = setTimeout(() => {
+          const isValid = validateCpf(newValue)
+          if (newValue.replace(/\D/g, "").length === 11) {
+            showCpfValidation(cpfInput, isValid, isValid ? "CPF válido" : "CPF inválido")
+          } else {
+            showCpfValidation(cpfInput, false, "CPF deve ter 11 dígitos")
+          }
+        }, 500)
+      } else {
+        // Clear validation when input is empty
+        document.getElementById("cpf_validation").textContent = ""
+        cpfInput.classList.remove("cpf-valid", "cpf-invalid", "cpf-validating")
+        document.getElementById("submitButton").disabled = false
+      }
+    })
+
+    // Validate on form submit
+    cpfForm.addEventListener("submit", (e) => {
+      const cpfValue = cpfInput.value
+
+      if (!cpfValue || !validateCpf(cpfValue)) {
+        e.preventDefault()
+        showCpfValidation(cpfInput, false, "Por favor, insira um CPF válido")
+        cpfInput.focus()
+        return false
+      }
+
+      // Show loading state
+      const submitButton = document.getElementById("submitButton")
+      const buttonText = submitButton.querySelector(".button-text")
+      const buttonLoader = document.getElementById("buttonLoader")
+
+      submitButton.disabled = true
+      buttonText.style.opacity = "0"
+      buttonLoader.style.display = "inline-block"
+    })
+
+    // Allow only numbers and formatting characters
+    cpfInput.addEventListener("keypress", (e) => {
+      const char = String.fromCharCode(e.which)
+      if (!/[\d.-]/.test(char) && !e.ctrlKey && !e.metaKey && e.which !== 8 && e.which !== 9) {
+        e.preventDefault()
+      }
+    })
+
+    // Prevent paste of invalid characters
+    cpfInput.addEventListener("paste", (e) => {
+      setTimeout(() => {
+        e.target.value = applyCpfMask(e.target.value)
+      }, 0)
+    })
+  }
+})
