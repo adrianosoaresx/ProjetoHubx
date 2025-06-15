@@ -27,6 +27,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize Account Settings
     initAccountSettings()
+
+    // Initialize Company Form toggle
+    initEmpresaFormToggle()
 })
 
 // Matrix Code Rain Effect
@@ -620,6 +623,21 @@ function initAccountSettings() {
                 button.disabled = false
                 showNotification("Configurações salvas com sucesso!", "success")
             }, 2000)
+        })
+    }
+}
+
+// Toggle company form on profile page
+function initEmpresaFormToggle() {
+    const toggleBtn = document.getElementById("toggleEmpresaForm")
+    const formContainer = document.getElementById("empresaFormContainer")
+
+    if (toggleBtn && formContainer) {
+        toggleBtn.addEventListener("click", () => {
+            if (formContainer.style.display === "none" || formContainer.style.display === "") {
+                formContainer.style.display = "block"
+                toggleBtn.style.display = "none"
+            }
         })
     }
 }

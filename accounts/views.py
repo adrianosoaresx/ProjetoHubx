@@ -12,6 +12,7 @@ import uuid
 
 from .forms import CustomUserCreationForm
 from empresas.models import Empresa
+from empresas.forms import EmpresaForm
 from .models import cpf_validator
 
 User = get_user_model()
@@ -86,10 +87,16 @@ def perfil_view(request):
         notificacoes.save()
 
     empresas = Empresa.objects.filter(usuario=request.user)
+    empresa_form = EmpresaForm()
     return render(
         request,
         "perfil/perfil.html",
-        {"empresas": empresas, "perfil": perfil, "notificacoes": notificacoes},
+        {
+            "empresas": empresas,
+            "empresa_form": empresa_form,
+            "perfil": perfil,
+            "notificacoes": notificacoes,
+        },
     )
 
 

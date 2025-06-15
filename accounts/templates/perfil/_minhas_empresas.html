@@ -6,10 +6,24 @@
   </div>
 
   <div class="empresas-actions">
-      <a href="{% url 'empresas:nova' %}" class="btn-primary">
+      <button id="toggleEmpresaForm" type="button" class="btn-primary">
           <span>+</span>
           <span>Cadastrar Nova Empresa</span>
-      </a>
+      </button>
+  </div>
+
+  <div id="empresaFormContainer" class="empresa-form-container" style="display: none;">
+      <h1 class="form-title">Cadastrar Nova Empresa</h1>
+      <form method="post" enctype="multipart/form-data" action="{% url 'empresas:nova' %}">
+          {% csrf_token %}
+          {{ empresa_form.as_p }}
+          <div class="form-actions" style="justify-content: flex-end;">
+              <button type="submit" class="btn-primary">
+                  <span class="button-text">Salvar Empresa</span>
+                  <span class="button-loader"></span>
+              </button>
+          </div>
+      </form>
   </div>
 
   <div class="empresas-grid">

@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 
 from .forms import EmpresaForm
 from .models import Empresa
@@ -25,10 +26,23 @@ def nova_empresa(request):
             empresa.save()
             form.save_m2m()
             # Redirect back to the profile's companies section
-            return redirect("perfil") + "#empresas"
-    else:
-        form = EmpresaForm()
-    return render(request, "empresas/form.html", {"form": form})
+            return redirect(reverse("perfil") + "#empresas")
+        else:
+            perfil = request.user
+            notificacoes = request.user.notification_settings
+            empresas = Empresa.objects.filter(usuario=request.user)
+            return render(
+                request,
+                "perfil/perfil.html",
+                {
+                    "empresas": empresas,
+                    "empresa_form": form,
+                    "perfil": perfil,
+                    "notificacoes": notificacoes,
+                },
+            )
+    # For GET requests, redirect to the profile companies section
+    return redirect(reverse("perfil") + "#empresas")
 
 
 @login_required
@@ -39,7 +53,7 @@ def editar_empresa(request, pk):
         if form.is_valid():
             form.save()
             # Redirect back to the profile's companies section
-            return redirect("perfil") + "#empresas"
+            return redirect(reverse("perfil") + "#empresas")
     else:
         form = EmpresaForm(instance=empresa)
     return render(request, "empresas/form.html", {"form": form, "empresa": empresa})
