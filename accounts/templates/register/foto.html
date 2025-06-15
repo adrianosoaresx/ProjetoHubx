@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Personalize sua presença na comunidade</p>
         </div>
 
-        <form id="fotoForm" class="registro-form" method="post" action="{% url 'accounts:foto' %}" data-next-step="{% url 'accounts:termos' %}" enctype="multipart/form-data">
+        <form id="fotoForm" class="registro-form" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="foto-upload-container">
                 <div class="foto-preview" id="fotoPreview">
@@ -52,7 +52,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:senha' %}'">Voltar</button>
+                <a href="{% url 'accounts:senha' %}" class="btn-secondary">Voltar</a>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>
