@@ -576,16 +576,8 @@ async function handleFormSubmission(event) {
             // Store form data
             storeCurrentFormData(form)
 
-            // Navigate to next step
-            const nextStep = form.dataset.nextStep
-            if (nextStep) {
-                if (formId === "termosForm") {
-                    // Final step - submit all data
-                    await submitRegistration()
-                } else {
-                    window.location.href = nextStep
-                }
-            }
+            // Submit form normally to let Django handle the redirect
+            form.submit()
         } else {
             // Show error message
             if (formId === "tokenForm") {
@@ -647,38 +639,6 @@ function loadFormData() {
     }
 }
 
-// Final Registration Submission
-async function submitRegistration() {
-    try {
-        const registroData = JSON.parse(sessionStorage.getItem("registroData") || "{}")
-
-        // Here you would send the data to your backend
-        console.log("Dados do registro:", registroData)
-
-        // Simulate API call
-        const response = await fetch("/api/registro/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCsrfToken(),
-            },
-            body: JSON.stringify(registroData),
-        })
-
-        if (response.ok) {
-            // Clear stored data
-            sessionStorage.removeItem("registroData")
-
-            // Redirect to success page
-            window.location.href = "/registro/sucesso/"
-        } else {
-            throw new Error("Erro no servidor")
-        }
-    } catch (error) {
-        console.error("Erro ao finalizar registro:", error)
-        alert("Erro ao finalizar o cadastro. Tente novamente.")
-    }
-}
 
 // Success Page Animations
 function initSuccessPage() {

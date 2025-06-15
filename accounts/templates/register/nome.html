@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Digite seu nome completo</p>
         </div>
 
-        <form id="nomeForm" class="registro-form" method="post" action="{% url 'accounts:nome' %}" data-next-step="{% url 'accounts:email' %}">
+        <form id="nomeForm" class="registro-form" method="post" action="{% url 'accounts:nome' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="nome" class="form-label">Nome Completo</label>
@@ -39,7 +39,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:token' %}'">Voltar</button>
+                <a href="{% url 'accounts:token' %}" class="btn-secondary">Voltar</a>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>

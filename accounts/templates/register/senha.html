@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Proteja sua conta com uma senha forte</p>
         </div>
 
-        <form id="senhaForm" class="registro-form" method="post" action="{% url 'accounts:senha' %}" data-next-step="{% url 'accounts:foto' %}">
+        <form id="senhaForm" class="registro-form" method="post" action="{% url 'accounts:senha' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="senha" class="form-label">Senha</label>
@@ -54,7 +54,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'accounts:email' %}'">Voltar</button>
+                <a href="{% url 'accounts:email' %}" class="btn-secondary">Voltar</a>
                 <button type="submit" class="btn-primary" id="submitButton">
                     <span class="button-text">Continuar</span>
                     <span class="button-loader" id="buttonLoader"></span>

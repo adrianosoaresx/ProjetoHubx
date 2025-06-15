@@ -30,7 +30,7 @@
             <p class="registro-subtitle">Digite seu token de convite para começar</p>
         </div>
 
-        <form id="tokenForm" class="registro-form" method="post" action="{% url 'accounts:token' %}" data-next-step="{% url 'accounts:usuario' %}">
+        <form id="tokenForm" class="registro-form" method="post" action="{% url 'accounts:token' %}">
             {% csrf_token %}
             <div class="form-group">
                 <label for="token" class="form-label">Token de Convite</label>
