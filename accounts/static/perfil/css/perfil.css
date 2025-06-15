@@ -160,18 +160,33 @@
   flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
-.nav-item.active {
+.perfil-container:has(#informacoes-pessoais:target) .sidebar-nav a[href$="#informacoes-pessoais"],
+.perfil-container:has(#contato:target) .sidebar-nav a[href$="#contato"],
+.perfil-container:has(#redes-sociais:target) .sidebar-nav a[href$="#redes-sociais"],
+.perfil-container:has(#seguranca:target) .sidebar-nav a[href$="#seguranca"],
+.perfil-container:has(#notificacoes:target) .sidebar-nav a[href$="#notificacoes"],
+.perfil-container:has(#conexoes:target) .sidebar-nav a[href$="#conexoes"],
+.perfil-container:has(#empresas:target) .sidebar-nav a[href$="#empresas"],
+.perfil-container:has(#conta:target) .sidebar-nav a[href$="#conta"],
+.perfil-container:not(:has(.perfil-section:target)) .sidebar-nav a[href$="#informacoes-pessoais"] {
   background: rgba(0, 255, 65, 0.15);
-  border: 1px solid var(--glass-border); /* Keep border for active state */
+  border: 1px solid var(--glass-border);
   color: var(--matrix-green);
   position: relative;
 }
 
-/* Add the green dot as a pseudo-element for active state */
-.nav-item.active::before {
+.perfil-container:has(#informacoes-pessoais:target) .sidebar-nav a[href$="#informacoes-pessoais"]::before,
+.perfil-container:has(#contato:target) .sidebar-nav a[href$="#contato"]::before,
+.perfil-container:has(#redes-sociais:target) .sidebar-nav a[href$="#redes-sociais"]::before,
+.perfil-container:has(#seguranca:target) .sidebar-nav a[href$="#seguranca"]::before,
+.perfil-container:has(#notificacoes:target) .sidebar-nav a[href$="#notificacoes"]::before,
+.perfil-container:has(#conexoes:target) .sidebar-nav a[href$="#conexoes"]::before,
+.perfil-container:has(#empresas:target) .sidebar-nav a[href$="#empresas"]::before,
+.perfil-container:has(#conta:target) .sidebar-nav a[href$="#conta"]::before,
+.perfil-container:not(:has(.perfil-section:target)) .sidebar-nav a[href$="#informacoes-pessoais"]::before {
   content: "";
   position: absolute;
-  left: 0.5rem; /* Position the dot slightly outside the padding */
+  left: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
   width: 6px;
@@ -221,9 +236,17 @@
   display: none;
 }
 
-.perfil-section.active {
+#informacoes-pessoais {
+  display: block;
+}
+
+.perfil-section:target {
   display: block;
   animation: fadeIn 0.5s ease;
+}
+
+.perfil-section:target ~ #informacoes-pessoais {
+  display: none;
 }
 
 @keyframes fadeIn {
