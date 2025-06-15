@@ -43,7 +43,7 @@
           </div>
 
           <nav class="sidebar-nav">
-              <a href="{% url 'perfil' %}#informacoes-pessoais" class="nav-item active" data-section="informacoes-pessoais" data-level="main">
+              <a href="{% url 'perfil' %}#informacoes-pessoais" class="nav-item" data-section="informacoes-pessoais" data-level="main">
                   <span class="nav-icon">👤</span>
                   <span class="nav-text">Informações Pessoais</span>
               </a>
@@ -87,7 +87,6 @@
   </div>
 
   <div class="perfil-content">
-      {% include 'perfil/_informacoes_pessoais.html' %}
       {% include 'perfil/_contato.html' %}
       {% include 'perfil/_redes_sociais.html' %}
       {% include 'perfil/_seguranca.html' %}
@@ -95,6 +94,7 @@
       {% include 'perfil/_conexoes.html' %}
       {% include 'perfil/_minhas_empresas.html' %}
       {% include 'perfil/_conta.html' %}
+      {% include 'perfil/_informacoes_pessoais.html' %}
   </div>
 
   <!-- Modal de Upload de Avatar -->
