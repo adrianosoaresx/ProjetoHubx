@@ -17,7 +17,7 @@
 
 .perfil-container {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 320px 1fr; /* Increased sidebar width for more space */
   gap: 2rem;
   max-width: 1200px;
   margin: 2rem auto;
@@ -137,28 +137,48 @@
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  padding: 0.8rem 1rem;
+  padding: 0.8rem 1rem; /* Base padding */
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--white);
+.nav-item[data-level="main"] {
+  padding-left: 1rem; /* Base indentation for main items */
 }
 
-.nav-item.active {
-  background: rgba(0, 255, 65, 0.15);
-  border: 1px solid var(--glass-border);
-  color: var(--matrix-green);
+.nav-item[data-level="sub"] {
+  padding-left: 2.5rem; /* Increased indentation for sub-items */
 }
 
 .nav-icon {
   font-size: 1.2rem;
-  width: 24px;
+  width: 24px; /* Fixed width for consistent icon alignment */
   text-align: center;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.nav-item.active {
+  background: rgba(0, 255, 65, 0.15);
+  border: 1px solid var(--glass-border); /* Keep border for active state */
+  color: var(--matrix-green);
+  position: relative;
+}
+
+/* Add the green dot as a pseudo-element for active state */
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem; /* Position the dot slightly outside the padding */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  background: var(--matrix-green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--matrix-green);
 }
 
 .sidebar-footer {
@@ -1381,7 +1401,7 @@
 
 @media (max-width: 1024px) {
   .perfil-container {
-    grid-template-columns: 250px 1fr;
+    grid-template-columns: 280px 1fr; /* Adjusted for medium screens */
     gap: 1.5rem;
   }
 }
