@@ -26,9 +26,22 @@ def nova_empresa(request):
             form.save_m2m()
             # Redirect back to the profile's companies section
             return redirect("perfil") + "#empresas"
-    else:
-        form = EmpresaForm()
-    return render(request, "empresas/form.html", {"form": form})
+        else:
+            perfil = request.user
+            notificacoes = request.user.notification_settings
+            empresas = Empresa.objects.filter(usuario=request.user)
+            return render(
+                request,
+                "perfil/perfil.html",
+                {
+                    "empresas": empresas,
+                    "empresa_form": form,
+                    "perfil": perfil,
+                    "notificacoes": notificacoes,
+                },
+            )
+    # For GET requests, redirect to the profile companies section
+    return redirect("perfil") + "#empresas"
 
 
 @login_required
