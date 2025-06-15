@@ -6,24 +6,10 @@
   </div>
 
   <div class="empresas-actions">
-      <button id="toggleEmpresaForm" type="button" class="btn-primary">
+      <a href="{% url 'empresas:nova' %}" class="btn-primary">
           <span>+</span>
           <span>Cadastrar Nova Empresa</span>
-      </button>
-  </div>
-
-  <div id="empresaFormContainer" class="empresa-form-container" style="display: none;">
-      <h1 class="form-title">Cadastrar Nova Empresa</h1>
-      <form method="post" enctype="multipart/form-data" action="{% url 'empresas:nova' %}">
-          {% csrf_token %}
-          {{ empresa_form.as_p }}
-          <div class="form-actions" style="justify-content: flex-end;">
-              <button type="submit" class="btn-primary">
-                  <span class="button-text">Salvar Empresa</span>
-                  <span class="button-loader"></span>
-              </button>
-          </div>
-      </form>
+      </a>
   </div>
 
   <div class="empresas-grid">
@@ -31,7 +17,8 @@
       <div class="empresa-card">
           <div class="empresa-logo">
               {% if empresa.logo %}
-              <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}"> {% else %}
+              <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}">
+              {% else %}
               <div class="logo-placeholder">
                   <span>{{ empresa.nome|make_list|first|upper }}</span>
               </div>
@@ -44,8 +31,11 @@
           </div>
           <div class="empresa-tags">
               {% for tag in empresa.tags.all|slice:":3" %}
-              <span class="tag">{{ tag.nome }}</span> {% endfor %} {% if empresa.tags.count > 3 %}
-              <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span> {% endif %}
+              <span class="tag">{{ tag.nome }}</span>
+              {% endfor %}
+              {% if empresa.tags.count > 3 %}
+              <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span>
+              {% endif %}
           </div>
           <div class="empresa-actions">
               <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
