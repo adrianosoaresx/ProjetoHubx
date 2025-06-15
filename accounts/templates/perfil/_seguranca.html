@@ -1,0 +1,62 @@
+<section id="seguranca" class="perfil-section">
+  <div class="section-header">
+      <h2>Segurança</h2>
+      <p>Gerencie sua senha e segurança da conta</p>
+  </div>
+
+  <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+          <label for="senha_atual" class="form-label">Senha Atual</label>
+          <input type="password" id="senha_atual" name="senha_atual" class="form-input" required>
+      </div>
+
+      <div class="form-row">
+          <div class="form-group">
+              <label for="nova_senha" class="form-label">Nova Senha</label>
+              <input type="password" id="nova_senha" name="nova_senha" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+              <label for="confirmar_senha" class="form-label">Confirmar Nova Senha</label>
+              <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-input" required>
+          </div>
+      </div>
+
+      <!-- Password Strength Indicator -->
+      <div class="password-strength">
+          <div class="strength-label">Força da senha:</div>
+          <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-text" id="strengthText">Digite uma senha</div>
+      </div>
+
+      <div class="form-actions">
+          <button type="submit" class="btn-save">
+              <span class="button-text">Alterar Senha</span>
+              <span class="button-loader"></span>
+          </button>
+      </div>
+  </form>
+
+  <div class="section-divider"></div>
+
+  <div class="section-header">
+      <h3>Verificação em Duas Etapas</h3>
+      <p>Adicione uma camada extra de segurança à sua conta</p>
+  </div>
+
+  <div class="two-factor-auth">
+      <div class="two-factor-info">
+          <p>A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.</p>
+      </div>
+
+      <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btn2FA">
+              Ativar Verificação em Duas Etapas
+          </button>
+      </div>
+  </div>
+</section>

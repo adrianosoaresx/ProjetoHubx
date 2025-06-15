@@ -1,761 +1,154 @@
-{% extends "base.html" %} {% load static %} {% block title %}Meu Perfil | Hubx{% endblock %} {% block extra_css %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Meu Perfil | Hubx{% endblock %}
+
+{% block extra_css %}
 <link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
-<link rel="stylesheet" href="{% static 'perfil/css/perfil.css' %}"> {% endblock %} {% block content %}
+<link rel="stylesheet" href="{% static 'perfil/css/perfil.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="perfil-container">
-    <!-- Matrix Code Rain Effect -->
-    <div class="matrix-code" id="matrixCode"></div>
-
-    <!-- Molecular Network Background -->
-    <div class="molecular-network">
-        <div class="perfil-node" style="top: 15%; left: 8%;"></div>
-        <div class="perfil-node" style="top: 25%; right: 12%;"></div>
-        <div class="perfil-node" style="top: 45%; left: 5%;"></div>
-        <div class="perfil-node" style="top: 65%; right: 8%;"></div>
-        <div class="perfil-node" style="top: 80%; left: 15%;"></div>
-    </div>
-
-    <div class="perfil-sidebar">
-        <div class="user-profile">
-            <div class="avatar-container">
-                <div class="avatar-wrapper">
-                    {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar"> {% else %}
-                    <div class="avatar-placeholder">
-                        <span>{{ user.username|make_list|first|upper }}</span>
-                    </div>
-                    {% endif %}
-                    <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
-                        <span>📷</span>
-                    </button>
-                </div>
-                <h2 class="user-name">{{ user.get_full_name }}</h2>
-                <p class="user-username">@{{ user.username }}</p>
-            </div>
-
-            <nav class="sidebar-nav">
-                <a href="#informacoes-pessoais" class="nav-item active" data-section="informacoes-pessoais">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-text">Informações Pessoais</span>
-                </a>
-                <a href="#contato" class="nav-item" data-section="contato">
-                    <span class="nav-icon">📞</span>
-                    <span class="nav-text">Contato</span>
-                </a>
-                <a href="#redes-sociais" class="nav-item" data-section="redes-sociais">
-                    <span class="nav-icon">🌐</span>
-                    <span class="nav-text">Redes Sociais</span>
-                </a>
-                <a href="#seguranca" class="nav-item" data-section="seguranca">
-                    <span class="nav-icon">🔒</span>
-                    <span class="nav-text">Segurança</span>
-                </a>
-                <a href="#notificacoes" class="nav-item" data-section="notificacoes">
-                    <span class="nav-icon">🔔</span>
-                    <span class="nav-text">Notificações</span>
-                </a>
-                <a href="#conexoes" class="nav-item" data-section="conexoes">
-                    <span class="nav-icon">🤝</span>
-                    <span class="nav-text">Conexões</span>
-                </a>
-                <a href="#empresas" class="nav-item" data-section="empresas">
-                    <span class="nav-icon">🏢</span>
-                    <span class="nav-text">Minhas Empresas</span>
-                </a>
-                <a href="#conta" class="nav-item" data-section="conta">
-                    <span class="nav-icon">⚙️</span>
-                    <span class="nav-text">Configurações da Conta</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <a href="{% url 'home' %}" class="btn-dashboard">
-                    <span>🏠</span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="perfil-content">
-        <!-- Informações Pessoais -->
-        <section id="informacoes-pessoais" class="perfil-section active">
-            <div class="section-header">
-                <h2>Informações Pessoais</h2>
-                <p>Atualize suas informações básicas</p>
-            </div>
-
-            <form id="formInfoPessoal" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nome" class="form-label">Nome Completo</label>
-                        <input type="text" id="nome" name="nome" class="form-input" value="{{ user.get_full_name }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="username" class="form-label">Nome de Usuário</label>
-                        <input type="text" id="username" name="username" class="form-input" value="{{ user.username }}" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="bio" class="form-label">Biografia</label>
-                    <textarea id="bio" name="bio" class="form-textarea" rows="4" placeholder="Conte um pouco sobre você...">{{ user.bio }}</textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-                        <input type="date" id="data_nascimento" name="data_nascimento" class="form-input" value="{{ user.data_nascimento|date:'Y-m-d' }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="genero" class="form-label">Gênero</label>
-                        <select id="genero" name="genero" class="form-select">
-                            <option value="">Prefiro não informar</option>
-                            <option value="M" {% if user.genero == 'M' %}selected{% endif %}>Masculino</option>
-                            <option value="F" {% if user.genero == 'F' %}selected{% endif %}>Feminino</option>
-                            <option value="O" {% if user.genero == 'O' %}selected{% endif %}>Outro</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-save">
-                        <span class="button-text">Salvar Alterações</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Contato -->
-        <section id="contato" class="perfil-section">
-            <div class="section-header">
-                <h2>Informações de Contato</h2>
-                <p>Atualize seus dados de contato</p>
-            </div>
-
-            <form id="formContato" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="telefone" class="form-label">Telefone</label>
-                        <input type="tel" id="telefone" name="telefone" class="form-input" value="{{ user.telefone }}" placeholder="(00) 00000-0000">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whatsapp" class="form-label">WhatsApp</label>
-                        <input type="tel" id="whatsapp" name="whatsapp" class="form-input" value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="endereco" class="form-label">Endereço</label>
-                    <input type="text" id="endereco" name="endereco" class="form-input" value="{{ user.endereco }}" placeholder="Rua, número, complemento">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="cidade" class="form-label">Cidade</label>
-                        <input type="text" id="cidade" name="cidade" class="form-input" value="{{ user.cidade }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="estado" class="form-label">Estado</label>
-                        <select id="estado" name="estado" class="form-select">
-                            <option value="">Selecione...</option>
-                            <option value="AC" {% if user.estado == 'AC' %}selected{% endif %}>Acre</option>
-                            <option value="AL" {% if user.estado == 'AL' %}selected{% endif %}>Alagoas</option>
-                            <!-- Outros estados... -->
-                            <option value="SP" {% if user.estado == 'SP' %}selected{% endif %}>São Paulo</option>
-                            <option value="TO" {% if user.estado == 'TO' %}selected{% endif %}>Tocantins</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cep" class="form-label">CEP</label>
-                        <input type="text" id="cep" name="cep" class="form-input" value="{{ user.cep }}" placeholder="00000-000">
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-save">
-                        <span class="button-text">Salvar Alterações</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Redes Sociais -->
-        <section id="redes-sociais" class="perfil-section">
-            <div class="section-header">
-                <h2>Redes Sociais</h2>
-                <p>Conecte suas redes sociais</p>
-            </div>
-
-            <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="social-links">
-                    <div class="social-link-item">
-                        <div class="social-icon facebook">f</div>
-                        <div class="form-group">
-                            <label for="facebook" class="form-label">Facebook</label>
-                            <input type="url" id="facebook" name="facebook" class="form-input" value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
-                        </div>
-                    </div>
-
-                    <div class="social-link-item">
-                        <div class="social-icon twitter">𝕏</div>
-                        <div class="form-group">
-                            <label for="twitter" class="form-label">Twitter / X</label>
-                            <input type="url" id="twitter" name="twitter" class="form-input" value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
-                        </div>
-                    </div>
-
-                    <div class="social-link-item">
-                        <div class="social-icon instagram">📷</div>
-                        <div class="form-group">
-                            <label for="instagram" class="form-label">Instagram</label>
-                            <input type="url" id="instagram" name="instagram" class="form-input" value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
-                        </div>
-                    </div>
-
-                    <div class="social-link-item">
-                        <div class="social-icon linkedin">in</div>
-                        <div class="form-group">
-                            <label for="linkedin" class="form-label">LinkedIn</label>
-                            <input type="url" id="linkedin" name="linkedin" class="form-input" value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
-                        </div>
-                    </div>
-
-                    <div class="social-link-item">
-                        <div class="social-icon website">🌐</div>
-                        <div class="form-group">
-                            <label for="website" class="form-label">Website</label>
-                            <input type="url" id="website" name="website" class="form-input" value="{{ user.website }}" placeholder="https://seusite.com">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-save">
-                        <span class="button-text">Salvar Alterações</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Segurança -->
-        <section id="seguranca" class="perfil-section">
-            <div class="section-header">
-                <h2>Segurança</h2>
-                <p>Gerencie sua senha e segurança da conta</p>
-            </div>
-
-            <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label for="senha_atual" class="form-label">Senha Atual</label>
-                    <input type="password" id="senha_atual" name="senha_atual" class="form-input" required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="nova_senha" class="form-label">Nova Senha</label>
-                        <input type="password" id="nova_senha" name="nova_senha" class="form-input" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirmar_senha" class="form-label">Confirmar Nova Senha</label>
-                        <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-input" required>
-                    </div>
-                </div>
-
-                <!-- Password Strength Indicator -->
-                <div class="password-strength">
-                    <div class="strength-label">Força da senha:</div>
-                    <div class="strength-bar">
-                        <div class="strength-fill" id="strengthFill"></div>
-                    </div>
-                    <div class="strength-text" id="strengthText">Digite uma senha</div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-save">
-                        <span class="button-text">Alterar Senha</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </form>
-
-            <div class="section-divider"></div>
-
-            <div class="section-header">
-                <h3>Verificação em Duas Etapas</h3>
-                <p>Adicione uma camada extra de segurança à sua conta</p>
-            </div>
-
-            <div class="two-factor-auth">
-                <div class="two-factor-info">
-                    <p>A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.</p>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" id="btn2FA">
-                        Ativar Verificação em Duas Etapas
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Notificações -->
-        <section id="notificacoes" class="perfil-section">
-            <div class="section-header">
-                <h2>Preferências de Notificação</h2>
-                <p>Gerencie como você recebe notificações</p>
-            </div>
-
-            <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="notification-group">
-                    <h3>Notificações por Email</h3>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="email_conexoes" name="email_conexoes" class="checkbox-input" {% if user.notification_settings.email_conexoes %}checked{% endif %}>
-                            <label for="email_conexoes" class="checkbox-label">Solicitações de conexão</label>
-                        </div>
-                        <p class="notification-desc">Receba emails quando alguém solicitar conexão com você</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="email_mensagens" name="email_mensagens" class="checkbox-input" {% if user.notification_settings.email_mensagens %}checked{% endif %}>
-                            <label for="email_mensagens" class="checkbox-label">Mensagens</label>
-                        </div>
-                        <p class="notification-desc">Receba emails quando alguém enviar uma mensagem para você</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="email_eventos" name="email_eventos" class="checkbox-input" {% if user.notification_settings.email_eventos %}checked{% endif %}>
-                            <label for="email_eventos" class="checkbox-label">Eventos</label>
-                        </div>
-                        <p class="notification-desc">Receba emails sobre eventos relacionados aos seus interesses</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="email_newsletter" name="email_newsletter" class="checkbox-input" {% if user.notification_settings.email_newsletter %}checked{% endif %}>
-                            <label for="email_newsletter" class="checkbox-label">Newsletter</label>
-                        </div>
-                        <p class="notification-desc">Receba nossa newsletter com novidades e atualizações</p>
-                    </div>
-                </div>
-
-                <div class="notification-group">
-                    <h3>Notificações no Sistema</h3>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="sistema_conexoes" name="sistema_conexoes" class="checkbox-input" {% if user.notification_settings.sistema_conexoes %}checked{% endif %}>
-                            <label for="sistema_conexoes" class="checkbox-label">Solicitações de conexão</label>
-                        </div>
-                        <p class="notification-desc">Receba notificações quando alguém solicitar conexão com você</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="sistema_mensagens" name="sistema_mensagens" class="checkbox-input" {% if user.notification_settings.sistema_mensagens %}checked{% endif %}>
-                            <label for="sistema_mensagens" class="checkbox-label">Mensagens</label>
-                        </div>
-                        <p class="notification-desc">Receba notificações quando alguém enviar uma mensagem para você</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="sistema_eventos" name="sistema_eventos" class="checkbox-input" {% if user.notification_settings.sistema_eventos %}checked{% endif %}>
-                            <label for="sistema_eventos" class="checkbox-label">Eventos</label>
-                        </div>
-                        <p class="notification-desc">Receba notificações sobre eventos relacionados aos seus interesses</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="sistema_comentarios" name="sistema_comentarios" class="checkbox-input" {% if user.notification_settings.sistema_comentarios %}checked{% endif %}>
-                            <label for="sistema_comentarios" class="checkbox-label">Comentários</label>
-                        </div>
-                        <p class="notification-desc">Receba notificações quando alguém comentar em suas publicações</p>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-save">
-                        <span class="button-text">Salvar Preferências</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Conexões -->
-        <section id="conexoes" class="perfil-section">
-            <div class="section-header">
-                <h2>Conexões e Seguidores</h2>
-                <p>Gerencie sua rede de contatos</p>
-            </div>
-
-            <div class="tabs-container">
-                <div class="tabs-header">
-                    <button class="tab-btn active" data-tab="minhas-conexoes">Minhas Conexões</button>
-                    <button class="tab-btn" data-tab="solicitacoes">Solicitações</button>
-                    <button class="tab-btn" data-tab="seguidores">Seguidores</button>
-                    <button class="tab-btn" data-tab="seguindo">Seguindo</button>
-                </div>
-
-                <div class="tabs-content">
-                    <!-- Minhas Conexões -->
-                    <div class="tab-pane active" id="minhas-conexoes">
-                        <div class="search-bar">
-                            <input type="text" placeholder="Buscar conexões..." class="search-input">
-                            <button class="search-btn">🔍</button>
-                        </div>
-
-                        <div class="connections-grid">
-                            {% for connection in connections %}
-                            <div class="connection-card">
-                                <div class="connection-avatar">
-                                    {% if connection.avatar %}
-                                    <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}"> {% else %}
-                                    <div class="avatar-placeholder">
-                                        <span>{{ connection.username|make_list|first|upper }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="connection-info">
-                                    <h4>{{ connection.get_full_name }}</h4>
-                                    <p>@{{ connection.username }}</p>
-                                </div>
-                                <div class="connection-actions">
-                                    <button class="btn-icon" title="Enviar mensagem">💬</button>
-                                    <button class="btn-icon" title="Remover conexão">❌</button>
-                                </div>
-                            </div>
-                            {% empty %}
-                            <div class="empty-state">
-                                <p>Você ainda não tem conexões.</p>
-                                <button class="btn-secondary">Encontrar Pessoas</button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Solicitações -->
-                    <div class="tab-pane" id="solicitacoes">
-                        <div class="requests-list">
-                            {% for request in connection_requests %}
-                            <div class="request-card">
-                                <div class="request-avatar">
-                                    {% if request.avatar %}
-                                    <img src="{{ request.avatar.url }}" alt="{{ request.username }}"> {% else %}
-                                    <div class="avatar-placeholder">
-                                        <span>{{ request.username|make_list|first|upper }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="request-info">
-                                    <h4>{{ request.get_full_name }}</h4>
-                                    <p>@{{ request.username }}</p>
-                                    <p class="request-message">{{ request.message }}</p>
-                                </div>
-                                <div class="request-actions">
-                                    <button class="btn-accept" data-id="{{ request.id }}">Aceitar</button>
-                                    <button class="btn-reject" data-id="{{ request.id }}">Recusar</button>
-                                </div>
-                            </div>
-                            {% empty %}
-                            <div class="empty-state">
-                                <p>Você não tem solicitações de conexão pendentes.</p>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Seguidores -->
-                    <div class="tab-pane" id="seguidores">
-                        <div class="search-bar">
-                            <input type="text" placeholder="Buscar seguidores..." class="search-input">
-                            <button class="search-btn">🔍</button>
-                        </div>
-
-                        <div class="followers-grid">
-                            {% for follower in followers %}
-                            <div class="follower-card">
-                                <div class="follower-avatar">
-                                    {% if follower.avatar %}
-                                    <img src="{{ follower.avatar.url }}" alt="{{ follower.username }}"> {% else %}
-                                    <div class="avatar-placeholder">
-                                        <span>{{ follower.username|make_list|first|upper }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="follower-info">
-                                    <h4>{{ follower.get_full_name }}</h4>
-                                    <p>@{{ follower.username }}</p>
-                                </div>
-                                <div class="follower-actions">
-                                    {% if follower.is_connection %}
-                                    <span class="connection-badge">Conectado</span> {% else %}
-                                    <button class="btn-connect" data-id="{{ follower.id }}">Conectar</button> {% endif %}
-                                </div>
-                            </div>
-                            {% empty %}
-                            <div class="empty-state">
-                                <p>Você ainda não tem seguidores.</p>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Seguindo -->
-                    <div class="tab-pane" id="seguindo">
-                        <div class="search-bar">
-                            <input type="text" placeholder="Buscar pessoas que você segue..." class="search-input">
-                            <button class="search-btn">🔍</button>
-                        </div>
-
-                        <div class="following-grid">
-                            {% for following in followings %}
-                            <div class="following-card">
-                                <div class="following-avatar">
-                                    {% if following.avatar %}
-                                    <img src="{{ following.avatar.url }}" alt="{{ following.username }}"> {% else %}
-                                    <div class="avatar-placeholder">
-                                        <span>{{ following.username|make_list|first|upper }}</span>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                <div class="following-info">
-                                    <h4>{{ following.get_full_name }}</h4>
-                                    <p>@{{ following.username }}</p>
-                                </div>
-                                <div class="following-actions">
-                                    <button class="btn-unfollow" data-id="{{ following.id }}">Deixar de Seguir</button>
-                                </div>
-                            </div>
-                            {% empty %}
-                            <div class="empty-state">
-                                <p>Você ainda não está seguindo ninguém.</p>
-                                <button class="btn-secondary">Encontrar Pessoas</button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Empresas -->
-        <section id="empresas" class="perfil-section">
-            <div class="section-header">
-                <h2>Minhas Empresas</h2>
-                <p>Gerencie suas empresas cadastradas</p>
-            </div>
-
-            <div class="empresas-actions">
-                <a href="{% url 'empresas:nova' %}" class="btn-primary">
-                    <span>+</span>
-                    <span>Cadastrar Nova Empresa</span>
-                </a>
-            </div>
-
-            <div class="empresas-grid">
-                {% for empresa in empresas %}
-                <div class="empresa-card">
-                    <div class="empresa-logo">
-                        {% if empresa.logo %}
-                        <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}"> {% else %}
-                        <div class="logo-placeholder">
-                            <span>{{ empresa.nome|make_list|first|upper }}</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="empresa-info">
-                        <h3>{{ empresa.nome }}</h3>
-                        <p class="empresa-tipo">{{ empresa.get_tipo_display }}</p>
-                        <p class="empresa-local">{{ empresa.municipio }}, {{ empresa.estado }}</p>
-                    </div>
-                    <div class="empresa-tags">
-                        {% for tag in empresa.tags.all|slice:":3" %}
-                        <span class="tag">{{ tag.nome }}</span> {% endfor %} {% if empresa.tags.count > 3 %}
-                        <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span> {% endif %}
-                    </div>
-                    <div class="empresa-actions">
-                        <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="empty-state">
-                    <p>Você ainda não cadastrou nenhuma empresa.</p>
-                    <a href="{% url 'empresas:nova' %}" class="btn-secondary">Cadastrar Empresa</a>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-
-        <!-- Configurações da Conta -->
-        <section id="conta" class="perfil-section">
-            <div class="section-header">
-                <h2>Configurações da Conta</h2>
-                <p>Gerencie as configurações da sua conta</p>
-            </div>
-
-            <div class="account-settings">
-                <div class="setting-group">
-                    <h3>Idioma e Região</h3>
-
-                    <div class="form-group">
-                        <label for="idioma" class="form-label">Idioma</label>
-                        <select id="idioma" name="idioma" class="form-select">
-                            <option value="pt-br" {% if user.idioma == 'pt-br' %}selected{% endif %}>Português (Brasil)</option>
-                            <option value="en" {% if user.idioma == 'en' %}selected{% endif %}>English</option>
-                            <option value="es" {% if user.idioma == 'es' %}selected{% endif %}>Español</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuso_horario" class="form-label">Fuso Horário</label>
-                        <select id="fuso_horario" name="fuso_horario" class="form-select">
-                            <option value="America/Sao_Paulo" {% if user.fuso_horario == 'America/Sao_Paulo' %}selected{% endif %}>Brasília (GMT-3)</option>
-                            <option value="America/Manaus" {% if user.fuso_horario == 'America/Manaus' %}selected{% endif %}>Manaus (GMT-4)</option>
-                            <option value="America/New_York" {% if user.fuso_horario == 'America/New_York' %}selected{% endif %}>New York (GMT-5)</option>
-                            <option value="Europe/London" {% if user.fuso_horario == 'Europe/London' %}selected{% endif %}>London (GMT+0)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-group">
-                    <h3>Privacidade</h3>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="perfil_publico" name="perfil_publico" class="checkbox-input" {% if user.perfil_publico %}checked{% endif %}>
-                            <label for="perfil_publico" class="checkbox-label">Perfil Público</label>
-                        </div>
-                        <p class="notification-desc">Permitir que pessoas não conectadas vejam seu perfil</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="mostrar_email" name="mostrar_email" class="checkbox-input" {% if user.mostrar_email %}checked{% endif %}>
-                            <label for="mostrar_email" class="checkbox-label">Mostrar Email</label>
-                        </div>
-                        <p class="notification-desc">Permitir que outros usuários vejam seu email</p>
-                    </div>
-
-                    <div class="notification-item">
-                        <div class="checkbox-container">
-                            <input type="checkbox" id="mostrar_telefone" name="mostrar_telefone" class="checkbox-input" {% if user.mostrar_telefone %}checked{% endif %}>
-                            <label for="mostrar_telefone" class="checkbox-label">Mostrar Telefone</label>
-                        </div>
-                        <p class="notification-desc">Permitir que outros usuários vejam seu telefone</p>
-                    </div>
-                </div>
-
-                <div class="setting-group danger-zone">
-                    <h3>Zona de Perigo</h3>
-
-                    <div class="danger-action">
-                        <div class="danger-info">
-                            <h4>Desativar Conta</h4>
-                            <p>Sua conta será desativada temporariamente. Você poderá reativá-la a qualquer momento fazendo login novamente.</p>
-                        </div>
-                        <button type="button" class="btn-danger" id="btnDesativarConta">Desativar Conta</button>
-                    </div>
-
-                    <div class="danger-action">
-                        <div class="danger-info">
-                            <h4>Excluir Conta</h4>
-                            <p>Todos os seus dados serão permanentemente excluídos. Esta ação não pode ser desfeita.</p>
-                        </div>
-                        <button type="button" class="btn-danger" id="btnExcluirConta">Excluir Conta</button>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-save" id="btnSalvarConfiguracoes">
-                        <span class="button-text">Salvar Configurações</span>
-                        <span class="button-loader"></span>
-                    </button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Modal de Upload de Avatar -->
-    <div class="modal" id="avatarModal">
-        <div class="modal-content">
-            <form id="avatarForm" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h3>Alterar Foto de Perfil</h3>
-                    <button class="modal-close" type="button">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="avatar-upload">
-                        <div class="avatar-preview" id="avatarPreview">
-                            <div class="avatar-placeholder">
-                                <span>{{ user.username|make_list|first|upper }}</span>
-                            </div>
-                        </div>
-
-                        <div class="avatar-actions">
-                            <label for="avatarInput" class="btn-upload">
-                                Escolher Foto
-                                <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
-                            </label>
-                            <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
-                    <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de Confirmação -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="confirmTitle">Confirmação</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelAction">Cancelar</button>
-                <button type="button" class="btn-danger" id="confirmAction">Confirmar</button>
-            </div>
-        </div>
-    </div>
+  <!-- Matrix Code Rain Effect -->
+  <div class="matrix-code" id="matrixCode"></div>
+
+  <!-- Molecular Network Background -->
+  <div class="molecular-network">
+      <div class="perfil-node" style="top: 15%; left: 8%;"></div>
+      <div class="perfil-node" style="top: 25%; right: 12%;"></div>
+      <div class="perfil-node" style="top: 45%; left: 5%;"></div>
+      <div class="perfil-node" style="top: 65%; right: 8%;"></div>
+      <div class="perfil-node" style="top: 80%; left: 15%;"></div>
+  </div>
+
+  <div class="perfil-sidebar">
+      <div class="user-profile">
+          <div class="avatar-container">
+              <div class="avatar-wrapper">
+                  {% if user.avatar %}
+                  <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
+                  {% else %}
+                  <div class="avatar-placeholder">
+                      <span>{{ user.username|make_list|first|upper }}</span>
+                  </div>
+                  {% endif %}
+                  <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
+                      <span>📷</span>
+                  </button>
+              </div>
+              <h2 class="user-name">{{ user.get_full_name }}</h2>
+              <p class="user-username">@{{ user.username }}</p>
+          </div>
+
+          <nav class="sidebar-nav">
+              <a href="#informacoes-pessoais" class="nav-item active" data-section="informacoes-pessoais">
+                  <span class="nav-icon">👤</span>
+                  <span class="nav-text">Informações Pessoais</span>
+              </a>
+              <a href="#contato" class="nav-item" data-section="contato">
+                  <span class="nav-icon">📞</span>
+                  <span class="nav-text">Contato</span>
+              </a>
+              <a href="#redes-sociais" class="nav-item" data-section="redes-sociais">
+                  <span class="nav-icon">🌐</span>
+                  <span class="nav-text">Redes Sociais</span>
+              </a>
+              <a href="#seguranca" class="nav-item" data-section="seguranca">
+                  <span class="nav-icon">🔒</span>
+                  <span class="nav-text">Segurança</span>
+              </a>
+              <a href="#notificacoes" class="nav-item" data-section="notificacoes">
+                  <span class="nav-icon">🔔</span>
+                  <span class="nav-text">Notificações</span>
+              </a>
+              <a href="#conexoes" class="nav-item" data-section="conexoes">
+                  <span class="nav-icon">🤝</span>
+                  <span class="nav-text">Conexões</span>
+              </a>
+              <a href="#empresas" class="nav-item" data-section="empresas">
+                  <span class="nav-icon">🏢</span>
+                  <span class="nav-text">Minhas Empresas</span>
+              </a>
+              <a href="#conta" class="nav-item" data-section="conta">
+                  <span class="nav-icon">⚙️</span>
+                  <span class="nav-text">Configurações da Conta</span>
+              </a>
+          </nav>
+
+          <div class="sidebar-footer">
+              <a href="{% url 'home' %}" class="btn-dashboard">
+                  <span>🏠</span>
+                  <span>Dashboard</span>
+              </a>
+          </div>
+      </div>
+  </div>
+
+  <div class="perfil-content">
+      {% include 'perfil/_informacoes_pessoais.html' %}
+      {% include 'perfil/_contato.html' %}
+      {% include 'perfil/_redes_sociais.html' %}
+      {% include 'perfil/_seguranca.html' %}
+      {% include 'perfil/_notificacoes.html' %}
+      {% include 'perfil/_conexoes.html' %}
+      {% include 'perfil/_minhas_empresas.html' %}
+      {% include 'perfil/_conta.html' %}
+  </div>
+
+  <!-- Modal de Upload de Avatar -->
+  <div class="modal" id="avatarModal">
+      <div class="modal-content">
+          <form id="avatarForm" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="modal-header">
+                  <h3>Alterar Foto de Perfil</h3>
+                  <button class="modal-close" type="button">&times;</button>
+              </div>
+              <div class="modal-body">
+                  <div class="avatar-upload">
+                      <div class="avatar-preview" id="avatarPreview">
+                          <div class="avatar-placeholder">
+                              <span>{{ user.username|make_list|first|upper }}</span>
+                          </div>
+                      </div>
+
+                      <div class="avatar-actions">
+                          <label for="avatarInput" class="btn-upload">
+                              Escolher Foto
+                              <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+                          </label>
+                          <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
+                  <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
+              </div>
+          </form>
+      </div>
+  </div>
+
+  <!-- Modal de Confirmação -->
+  <div class="modal" id="confirmModal">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h3 id="confirmTitle">Confirmação</h3>
+              <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+              <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn-secondary" id="cancelAction">Cancelar</button>
+              <button type="button" class="btn-danger" id="confirmAction">Confirmar</button>
+          </div>
+      </div>
+  </div>
 </div>
-{% endblock %} {% block extra_js %}
+{% endblock %}
+
+{% block extra_js %}
 <script src="{% static 'perfil/js/perfil.js' %}"></script>
 {% endblock %}

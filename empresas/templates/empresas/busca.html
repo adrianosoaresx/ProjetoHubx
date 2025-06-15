@@ -1,16 +1,59 @@
-{% extends 'base.html' %}
-{% block title %}Buscar Empresas{% endblock %}
-{% block content %}
-<h1>Buscar Empresas</h1>
-<form method="get">
-    <input type="text" name="q" value="{{ q }}" placeholder="Buscar...">
-    <button type="submit">Buscar</button>
-</form>
-<ul>
-    {% for empresa in empresas %}
-    <li>{{ empresa.nome }} - {{ empresa.palavras_chave }}</li>
-    {% empty %}
-    <li>Nenhuma empresa encontrada.</li>
-    {% endfor %}
-</ul>
+{% extends 'accounts/templates/perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Buscar Empresas | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="busca-empresas" class="perfil-section active">
+    <div class="section-header">
+        <h2>Buscar Empresas</h2>
+        <p>Encontre empresas na plataforma HubX</p>
+    </div>
+
+    <form method="get" class="search-bar">
+        <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, tags ou palavras-chave..." class="search-input">
+        <button type="submit" class="search-btn">🔍</button>
+    </form>
+
+    <div class="empresas-grid">
+        {% for empresa in empresas %}
+        <div class="empresa-card">
+            <div class="empresa-logo">
+                {% if empresa.logo %}
+                <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}">
+                {% else %}
+                <div class="logo-placeholder">
+                    <span>{{ empresa.nome|make_list|first|upper }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="empresa-info">
+                <h3>{{ empresa.nome }}</h3>
+                <p class="empresa-tipo">{{ empresa.get_tipo_display }}</p>
+                <p class="empresa-local">{{ empresa.municipio }}, {{ empresa.estado }}</p>
+            </div>
+            <div class="empresa-tags">
+                {% for tag in empresa.tags.all|slice:":3" %}
+                <span class="tag">{{ tag.nome }}</span>
+                {% endfor %}
+                {% if empresa.tags.count > 3 %}
+                <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span>
+                {% endif %}
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Ver Detalhes</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Nenhuma empresa encontrada para "{{ q }}".</p>
+            <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar para Minhas Empresas</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions" style="justify-content: center; margin-top: 3rem;">
+        <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar para Minhas Empresas</a>
+    </div>
+</section>
 {% endblock %}

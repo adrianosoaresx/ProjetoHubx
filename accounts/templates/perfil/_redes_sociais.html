@@ -1,0 +1,59 @@
+<section id="redes-sociais" class="perfil-section">
+  <div class="section-header">
+      <h2>Redes Sociais</h2>
+      <p>Conecte suas redes sociais</p>
+  </div>
+
+  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="social-links">
+          <div class="social-link-item">
+              <div class="social-icon facebook">f</div>
+              <div class="form-group">
+                  <label for="facebook" class="form-label">Facebook</label>
+                  <input type="url" id="facebook" name="facebook" class="form-input" value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
+              </div>
+          </div>
+
+          <div class="social-link-item">
+              <div class="social-icon twitter">𝕏</div>
+              <div class="form-group">
+                  <label for="twitter" class="form-label">Twitter / X</label>
+                  <input type="url" id="twitter" name="twitter" class="form-input" value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
+              </div>
+          </div>
+
+          <div class="social-link-item">
+              <div class="social-icon instagram">📷</div>
+              <div class="form-group">
+                  <label for="instagram" class="form-label">Instagram</label>
+                  <input type="url" id="instagram" name="instagram" class="form-input" value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
+              </div>
+          </div>
+
+          <div class="social-link-item">
+              <div class="social-icon linkedin">in</div>
+              <div class="form-group">
+                  <label for="linkedin" class="form-label">LinkedIn</label>
+                  <input type="url" id="linkedin" name="linkedin" class="form-input" value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
+              </div>
+          </div>
+
+          <div class="social-link-item">
+              <div class="social-icon website">🌐</div>
+              <div class="form-group">
+                  <label for="website" class="form-label">Website</label>
+                  <input type="url" id="website" name="website" class="form-input" value="{{ user.website }}" placeholder="https://seusite.com">
+              </div>
+          </div>
+      </div>
+
+      <div class="form-actions">
+          <button type="submit" class="btn-save">
+              <span class="button-text">Salvar Alterações</span>
+              <span class="button-loader"></span>
+          </button>
+      </div>
+  </form>
+</section>

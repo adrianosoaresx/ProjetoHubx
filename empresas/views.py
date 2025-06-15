@@ -8,6 +8,9 @@ from .models import Empresa
 
 @login_required
 def lista_empresas(request):
+    # This view is now effectively replaced by the _minhas_empresas.html partial
+    # and the logic within perfil_view if it were to handle all company display.
+    # However, for now, it remains as a fallback or for direct access.
     empresas = Empresa.objects.filter(usuario=request.user)
     return render(request, "empresas/lista.html", {"empresas": empresas})
 
@@ -21,7 +24,8 @@ def nova_empresa(request):
             empresa.usuario = request.user
             empresa.save()
             form.save_m2m()
-            return redirect("empresas:lista")
+            # Redirect back to the profile's companies section
+            return redirect("perfil") + "#empresas"
     else:
         form = EmpresaForm()
     return render(request, "empresas/form.html", {"form": form})
@@ -34,7 +38,8 @@ def editar_empresa(request, pk):
         form = EmpresaForm(request.POST, request.FILES, instance=empresa)
         if form.is_valid():
             form.save()
-            return redirect("empresas:lista")
+            # Redirect back to the profile's companies section
+            return redirect("perfil") + "#empresas"
     else:
         form = EmpresaForm(instance=empresa)
     return render(request, "empresas/form.html", {"form": form, "empresa": empresa})
@@ -45,10 +50,13 @@ def buscar_empresas(request):
     empresas = Empresa.objects.all()
     if query:
         palavras = [p.strip() for p in query.split() if p.strip()]
+        # Filter by tags or keywords
+        q_objects = Q()
         for palavra in palavras:
-            empresas = empresas.filter(
-                Q(tags__nome__icontains=palavra)
-                | Q(palavras_chave__icontains=palavra)
-            )
+            q_objects |= Q(tags__nome__icontains=palavra)
+            q_objects |= Q(palavras_chave__icontains=palavra)
+            q_objects |= Q(nome__icontains=palavra) # Also search by company name
+            q_objects |= Q(descricao__icontains=palavra) # Search in description
+        empresas = empresas.filter(q_objects)
     empresas = empresas.distinct()
     return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
