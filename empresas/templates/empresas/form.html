@@ -1,12 +1,8 @@
-{% extends 'perfil/perfil_subpage_base.html' %}
 {% load static %}
-
-{% block title %}{% if empresa %}Editar{% else %}Nova{% endif %} Empresa | Hubx{% endblock %}
-
-{% block perfil_subpage_content %}
+<section id="nova-empresa" class="perfil-section">
 <div class="empresa-form-container">
     <h1 class="form-title">{% if empresa %}Editar{% else %}Cadastrar Nova{% endif %} Empresa</h1>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" action="{% url 'empresas:nova' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {% for field in form %}
             <div class="form-group">
@@ -36,4 +32,4 @@
         </div>
     </form>
 </div>
-{% endblock %}
+</section>

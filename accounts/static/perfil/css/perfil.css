@@ -167,6 +167,7 @@
 .perfil-container:has(#notificacoes:target) .sidebar-nav a[href$="#notificacoes"],
 .perfil-container:has(#conexoes:target) .sidebar-nav a[href$="#conexoes"],
 .perfil-container:has(#empresas:target) .sidebar-nav a[href$="#empresas"],
+.perfil-container:has(#nova-empresa:target) .sidebar-nav a[href$="#nova-empresa"],
 .perfil-container:has(#conta:target) .sidebar-nav a[href$="#conta"],
 .perfil-container:not(:has(.perfil-section:target)) .sidebar-nav a[href$="#informacoes-pessoais"] {
   background: rgba(0, 255, 65, 0.15);
@@ -182,6 +183,7 @@
 .perfil-container:has(#notificacoes:target) .sidebar-nav a[href$="#notificacoes"]::before,
 .perfil-container:has(#conexoes:target) .sidebar-nav a[href$="#conexoes"]::before,
 .perfil-container:has(#empresas:target) .sidebar-nav a[href$="#empresas"]::before,
+.perfil-container:has(#nova-empresa:target) .sidebar-nav a[href$="#nova-empresa"]::before,
 .perfil-container:has(#conta:target) .sidebar-nav a[href$="#conta"]::before,
 .perfil-container:not(:has(.perfil-section:target)) .sidebar-nav a[href$="#informacoes-pessoais"]::before {
   content: "";
