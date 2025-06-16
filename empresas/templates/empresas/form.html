@@ -1,35 +1,12 @@
+{% extends 'base.html' %}
 {% load static %}
-<section id="nova-empresa" class="perfil-section">
-<div class="empresa-form-container">
-    <h1 class="form-title">{% if empresa %}Editar{% else %}Cadastrar Nova{% endif %} Empresa</h1>
-    <form method="post" action="{% url 'empresas:nova' %}" enctype="multipart/form-data">
-        {% csrf_token %}
-        {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                {{ field }}
-                {% if field.help_text %}
-                    <small class="field-help">{{ field.help_text }}</small>
-                {% endif %}
-                {% for error in field.errors %}
-                    <div class="field-validation invalid">{{ error }}</div>
-                {% endfor %}
-            </div>
-        {% endfor %}
-        {% if form.non_field_errors %}
-            <div class="field-validation invalid">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
-            </div>
-        {% endif %}
-        <div class="form-actions" style="justify-content: space-between;">
-            <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar</a>
-            <button type="submit" class="btn-primary">
-                <span class="button-text">Salvar Empresa</span>
-                <span class="button-loader"></span>
-            </button>
-        </div>
-    </form>
-</div>
-</section>
+
+{% block title %}{% if empresa %}Editar{% else %}Cadastrar Nova{% endif %} Empresa | Hubx{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'empresas/css/empresas.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include 'perfil/_nova_empresa.html' %}
+{% endblock %}
