@@ -27,14 +27,14 @@
 
             <div class="form-group">
                 <label for="id_username" class="form-label">Nome de usuário</label>
-                <input type="text" id="id_username" name="username" class="form-input" placeholder="Digite seu nome de usuário" required value="{{ form.username.value }}">
+                <input type="text" id="id_username" name="username" class="form-input" placeholder="Digite seu nome de usuário" required value="{{ form.username.value|default:'adrianosoares' }}">
                 {{ form.username.errors }}
                 <span class="input-icon">👤</span>
             </div>
 
             <div class="form-group">
                 <label for="id_password" class="form-label">Senha</label>
-                <input type="password" id="id_password" name="password" class="form-input" placeholder="Digite sua senha" required>
+                <input type="password" id="id_password" name="password" class="form-input" placeholder="Digite sua senha" required value="{{ form.password.value|default:'M82s#899eE' }}">
                 {{ form.password.errors }}
                 <span class="input-icon">🔒</span>
             </div>
