@@ -43,8 +43,8 @@ def nova_empresa(request):
                 },
             )
 
-    # GET request → redireciona para a seção de empresas
-    return HttpResponseRedirect(reverse("perfil") + "#empresas")
+    # GET request → redireciona para a seção de cadastro de empresa
+    return HttpResponseRedirect(reverse("perfil") + "#nova-empresa")
 
 @login_required
 def editar_empresa(request, pk):
@@ -54,7 +54,7 @@ def editar_empresa(request, pk):
         if form.is_valid():
             form.save()
             # Redirect back to the profile's companies section
-            return redirect("perfil") + "#empresas"
+            return HttpResponseRedirect(reverse("perfil") + "#empresas")
     else:
         form = EmpresaForm(instance=empresa)
     return render(request, "empresas/form.html", {"form": form, "empresa": empresa})
