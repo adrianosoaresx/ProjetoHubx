@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
@@ -111,6 +111,12 @@ def login_view(request):
         form = AuthenticationForm(request)
 
     return render(request, "login/login.html", {"form": form})
+
+
+def logout_view(request):
+    """Encerra a sessão do usuário e redireciona para a tela de login."""
+    logout(request)
+    return redirect("accounts:login")
 
 
 def password_reset(request):
