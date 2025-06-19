@@ -44,27 +44,27 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="{% url 'perfil:informacoes_pessoais' %}" class="nav-item">
+                <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
                     <span class="nav-icon">👤</span>
                     <span class="nav-text">Informações Pessoais</span>
                 </a>
-                <a href="{% url 'perfil:contato' %}" class="nav-item">
+                <a href="{% url 'accounts:contato' %}" class="nav-item">
                     <span class="nav-icon">📞</span>
                     <span class="nav-text">Contato</span>
                 </a>
-                <a href="{% url 'perfil:redes_sociais' %}" class="nav-item">
+                <a href="{% url 'accounts:redes_sociais' %}" class="nav-item">
                     <span class="nav-icon">🌐</span>
                     <span class="nav-text">Redes Sociais</span>
                 </a>
-                <a href="{% url 'perfil:seguranca' %}" class="nav-item">
+                <a href="{% url 'accounts:seguranca' %}" class="nav-item">
                     <span class="nav-icon">🔒</span>
                     <span class="nav-text">Segurança</span>
                 </a>
-                <a href="{% url 'perfil:notificacoes' %}" class="nav-item">
+                <a href="{% url 'accounts:notificacoes' %}" class="nav-item">
                     <span class="nav-icon">🔔</span>
                     <span class="nav-text">Notificações</span>
                 </a>
-                <a href="{% url 'perfil:conexoes' %}" class="nav-item">
+                <a href="{% url 'accounts:conexoes' %}" class="nav-item">
                     <span class="nav-icon">🤝</span>
                     <span class="nav-text">Conexões</span>
                 </a>
@@ -96,7 +96,7 @@
     <!-- Modal: Upload Avatar -->
     <div class="modal" id="avatarModal">
         <div class="modal-content">
-            <form id="avatarForm" method="post" action="{% url 'perfil:home' %}" enctype="multipart/form-data">
+            <form id="avatarForm" method="post" action="{% url 'accounts:perfil' %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-header">
                     <h3>Alterar Foto de Perfil</h3>

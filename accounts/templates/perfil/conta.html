@@ -10,7 +10,7 @@
       <p>Atualize seus dados de contato</p>
   </div>
 
-  <form id="formContato" class="perfil-form" method="post" action="{% url 'perfil:contato' %}" enctype="multipart/form-data">
+  <form id="formContato" class="perfil-form" method="post" action="{% url 'accounts:contato' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="form-group">

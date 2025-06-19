@@ -26,7 +26,7 @@ urlpatterns = [
     path('', include('core.urls')),  # Página inicial
     path('accounts/', include('accounts.urls')),
     path('accounts/login/', accounts_views.login_view, name='accounts_login'),
-    path('perfil/', accounts_views.perfil_view, name='perfil'),
+    # Perfil e apps relacionados já definidos em ``accounts.urls``
     path('empresas/', include(('empresas.urls', 'empresas'), namespace='empresas')),
     path('registro/sucesso/', accounts_views.registro_sucesso, name='registro_sucesso'),
 ]

@@ -10,7 +10,7 @@
       <p>Gerencie como você recebe notificações</p>
   </div>
 
-  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'perfil:notificacoes' %}" enctype="multipart/form-data">
+  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'accounts:notificacoes' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="notification-group">
