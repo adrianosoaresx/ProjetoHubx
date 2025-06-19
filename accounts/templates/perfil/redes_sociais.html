@@ -10,7 +10,7 @@
       <p>Conecte suas redes sociais</p>
   </div>
 
-  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil:redes_sociais' %}" enctype="multipart/form-data">
+  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'accounts:redes_sociais' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="social-links">
