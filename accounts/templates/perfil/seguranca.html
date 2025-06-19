@@ -10,7 +10,7 @@
       <p>Gerencie sua senha e a proteção da conta</p>
   </div>
 
-  <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil:seguranca' %}">
+  <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'accounts:seguranca' %}">
       {% csrf_token %}
 
       <div class="form-group">
