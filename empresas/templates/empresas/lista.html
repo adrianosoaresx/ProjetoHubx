@@ -1,6 +1,6 @@
+
 {% extends 'perfil/perfil_subpage_base.html' %}
 {% load static %}
-
 {% block title %}Minhas Empresas | Hubx{% endblock %}
 
 {% block perfil_subpage_content %}
@@ -52,10 +52,6 @@
             <a href="{% url 'empresas:nova' %}" class="btn-secondary">Cadastrar Empresa</a>
         </div>
         {% endfor %}
-    </div>
-
-    <div class="form-actions" style="justify-content: center; margin-top: 3rem;">
-        <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar para o Perfil</a>
     </div>
 </section>
 {% endblock %}

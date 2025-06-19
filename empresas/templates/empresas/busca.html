@@ -1,3 +1,4 @@
+
 {% extends 'perfil/perfil_subpage_base.html' %}
 {% load static %}
 
@@ -47,13 +48,12 @@
         {% empty %}
         <div class="empty-state">
             <p>Nenhuma empresa encontrada para "{{ q }}".</p>
-            <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar para Minhas Empresas</a>
         </div>
         {% endfor %}
     </div>
 
     <div class="form-actions" style="justify-content: center; margin-top: 3rem;">
-        <a href="{% url 'perfil' %}#empresas" class="btn-secondary">Voltar para Minhas Empresas</a>
+        <a href="{% url 'empresas:lista' %}" class="btn-secondary">Voltar para Minhas Empresas</a>
     </div>
 </section>
 {% endblock %}

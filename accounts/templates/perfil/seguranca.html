@@ -1,10 +1,16 @@
-<section id="seguranca" class="perfil-section">
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Segurança da Conta | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="seguranca" class="perfil-section active">
   <div class="section-header">
       <h2>Segurança</h2>
-      <p>Gerencie sua senha e segurança da conta</p>
+      <p>Gerencie sua senha e a proteção da conta</p>
   </div>
 
-  <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+  <form id="formAlterarSenha" class="perfil-form" method="post" action="{% url 'perfil:seguranca' %}">
       {% csrf_token %}
 
       <div class="form-group">
@@ -49,9 +55,7 @@
   </div>
 
   <div class="two-factor-auth">
-      <div class="two-factor-info">
-          <p>A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.</p>
-      </div>
+      <p>A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.</p>
 
       <div class="form-actions">
           <button type="button" class="btn-secondary" id="btn2FA">
@@ -60,3 +64,4 @@
       </div>
   </div>
 </section>
+{% endblock %}

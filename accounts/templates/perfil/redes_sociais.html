@@ -1,10 +1,16 @@
-<section id="redes-sociais" class="perfil-section">
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Redes Sociais | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="redes-sociais" class="perfil-section active">
   <div class="section-header">
       <h2>Redes Sociais</h2>
       <p>Conecte suas redes sociais</p>
   </div>
 
-  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'perfil:redes_sociais' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="social-links">
@@ -57,3 +63,4 @@
       </div>
   </form>
 </section>
+{% endblock %}

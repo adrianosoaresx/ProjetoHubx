@@ -1,4 +1,10 @@
-<section id="conexoes" class="perfil-section">
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Conexões e Seguidores | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="conexoes" class="perfil-section active">
   <div class="section-header">
       <h2>Conexões e Seguidores</h2>
       <p>Gerencie sua rede de contatos</p>
@@ -25,7 +31,8 @@
                   <div class="connection-card">
                       <div class="connection-avatar">
                           {% if connection.avatar %}
-                          <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}"> {% else %}
+                          <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}">
+                          {% else %}
                           <div class="avatar-placeholder">
                               <span>{{ connection.username|make_list|first|upper }}</span>
                           </div>
@@ -56,7 +63,8 @@
                   <div class="request-card">
                       <div class="request-avatar">
                           {% if request.avatar %}
-                          <img src="{{ request.avatar.url }}" alt="{{ request.username }}"> {% else %}
+                          <img src="{{ request.avatar.url }}" alt="{{ request.username }}">
+                          {% else %}
                           <div class="avatar-placeholder">
                               <span>{{ request.username|make_list|first|upper }}</span>
                           </div>
@@ -92,7 +100,8 @@
                   <div class="follower-card">
                       <div class="follower-avatar">
                           {% if follower.avatar %}
-                          <img src="{{ follower.avatar.url }}" alt="{{ follower.username }}"> {% else %}
+                          <img src="{{ follower.avatar.url }}" alt="{{ follower.username }}">
+                          {% else %}
                           <div class="avatar-placeholder">
                               <span>{{ follower.username|make_list|first|upper }}</span>
                           </div>
@@ -104,8 +113,10 @@
                       </div>
                       <div class="follower-actions">
                           {% if follower.is_connection %}
-                          <span class="connection-badge">Conectado</span> {% else %}
-                          <button class="btn-connect" data-id="{{ follower.id }}">Conectar</button> {% endif %}
+                          <span class="connection-badge">Conectado</span>
+                          {% else %}
+                          <button class="btn-connect" data-id="{{ follower.id }}">Conectar</button>
+                          {% endif %}
                       </div>
                   </div>
                   {% empty %}
@@ -128,7 +139,8 @@
                   <div class="following-card">
                       <div class="following-avatar">
                           {% if following.avatar %}
-                          <img src="{{ following.avatar.url }}" alt="{{ following.username }}"> {% else %}
+                          <img src="{{ following.avatar.url }}" alt="{{ following.username }}">
+                          {% else %}
                           <div class="avatar-placeholder">
                               <span>{{ following.username|make_list|first|upper }}</span>
                           </div>
@@ -153,3 +165,4 @@
       </div>
   </div>
 </section>
+{% endblock %}

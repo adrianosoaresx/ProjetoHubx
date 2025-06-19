@@ -1,0 +1,68 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Informações de Contato | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="contato" class="perfil-section active">
+  <div class="section-header">
+      <h2>Informações de Contato</h2>
+      <p>Atualize seus dados de contato</p>
+  </div>
+
+  <form id="formContato" class="perfil-form" method="post" action="{% url 'perfil:contato' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" required>
+      </div>
+
+      <div class="form-row">
+          <div class="form-group">
+              <label for="telefone" class="form-label">Telefone</label>
+              <input type="tel" id="telefone" name="telefone" class="form-input" value="{{ user.telefone }}" placeholder="(00) 00000-0000">
+          </div>
+
+          <div class="form-group">
+              <label for="whatsapp" class="form-label">WhatsApp</label>
+              <input type="tel" id="whatsapp" name="whatsapp" class="form-input" value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
+          </div>
+      </div>
+
+      <div class="form-group">
+          <label for="endereco" class="form-label">Endereço</label>
+          <input type="text" id="endereco" name="endereco" class="form-input" value="{{ user.endereco }}" placeholder="Rua, número, complemento">
+      </div>
+
+      <div class="form-row">
+          <div class="form-group">
+              <label for="cidade" class="form-label">Cidade</label>
+              <input type="text" id="cidade" name="cidade" class="form-input" value="{{ user.cidade }}">
+          </div>
+
+          <div class="form-group">
+              <label for="estado" class="form-label">Estado</label>
+              <select id="estado" name="estado" class="form-select">
+                  <option value="">Selecione...</option>
+                  {% for sigla,nome in estados %}
+                  <option value="{{ sigla }}" {% if user.estado == sigla %}selected{% endif %}>{{ nome }}</option>
+                  {% endfor %}
+              </select>
+          </div>
+
+          <div class="form-group">
+              <label for="cep" class="form-label">CEP</label>
+              <input type="text" id="cep" name="cep" class="form-input" value="{{ user.cep }}" placeholder="00000-000">
+          </div>
+      </div>
+
+      <div class="form-actions">
+          <button type="submit" class="btn-save">
+              <span class="button-text">Salvar Alterações</span>
+              <span class="button-loader"></span>
+          </button>
+      </div>
+  </form>
+</section>
+{% endblock %}

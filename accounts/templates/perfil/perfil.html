@@ -11,147 +11,142 @@
 
 {% block content %}
 <div class="perfil-container">
-  <!-- Matrix Code Rain Effect -->
-  <div class="matrix-code" id="matrixCode"></div>
+    <!-- Matrix Code Rain Effect -->
+    <div class="matrix-code" id="matrixCode"></div>
 
-  <!-- Molecular Network Background -->
-  <div class="molecular-network">
-      <div class="perfil-node" style="top: 15%; left: 8%;"></div>
-      <div class="perfil-node" style="top: 25%; right: 12%;"></div>
-      <div class="perfil-node" style="top: 45%; left: 5%;"></div>
-      <div class="perfil-node" style="top: 65%; right: 8%;"></div>
-      <div class="perfil-node" style="top: 80%; left: 15%;"></div>
-  </div>
+    <!-- Molecular Network Background -->
+    <div class="molecular-network">
+        <div class="perfil-node" style="top: 15%; left: 8%;"></div>
+        <div class="perfil-node" style="top: 25%; right: 12%;"></div>
+        <div class="perfil-node" style="top: 45%; left: 5%;"></div>
+        <div class="perfil-node" style="top: 65%; right: 8%;"></div>
+        <div class="perfil-node" style="top: 80%; left: 15%;"></div>
+    </div>
 
-  <div class="perfil-sidebar">
-      <div class="user-profile">
-          <div class="avatar-container">
-              <div class="avatar-wrapper">
-                  {% if user.avatar %}
-                  <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
-                  {% else %}
-                  <div class="avatar-placeholder">
-                      <span>{{ user.username|make_list|first|upper }}</span>
-                  </div>
-                  {% endif %}
-                  <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
-                      <span>📷</span>
-                  </button>
-              </div>
-              <h2 class="user-name">{{ user.get_full_name }}</h2>
-              <p class="user-username">@{{ user.username }}</p>
-          </div>
+    <!-- Sidebar -->
+    <div class="perfil-sidebar">
+        <div class="user-profile">
+            <div class="avatar-container">
+                <div class="avatar-wrapper">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <span>{{ user.username|make_list|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
+                        <span>📷</span>
+                    </button>
+                </div>
+                <h2 class="user-name">{{ user.get_full_name }}</h2>
+                <p class="user-username">@{{ user.username }}</p>
+            </div>
 
-          <nav class="sidebar-nav">
-              <a href="{% url 'perfil' %}#informacoes-pessoais" class="nav-item" data-section="informacoes-pessoais" data-level="main">
-                  <span class="nav-icon">👤</span>
-                  <span class="nav-text">Informações Pessoais</span>
-              </a>
-              <a href="{% url 'perfil' %}#contato" class="nav-item" data-section="contato" data-level="sub">
-                  <span class="nav-icon">📞</span>
-                  <span class="nav-text">Contato</span>
-              </a>
-              <a href="{% url 'perfil' %}#redes-sociais" class="nav-item" data-section="redes-sociais" data-level="sub">
-                  <span class="nav-icon">🌐</span>
-                  <span class="nav-text">Redes Sociais</span>
-              </a>
-              <a href="{% url 'perfil' %}#seguranca" class="nav-item" data-section="seguranca" data-level="sub">
-                  <span class="nav-icon">🔒</span>
-                  <span class="nav-text">Segurança</span>
-              </a>
-              <a href="{% url 'perfil' %}#notificacoes" class="nav-item" data-section="notificacoes" data-level="sub">
-                  <span class="nav-icon">🔔</span>
-                  <span class="nav-text">Notificações</span>
-              </a>
-              <a href="{% url 'perfil' %}#conexoes" class="nav-item" data-section="conexoes" data-level="sub">
-                  <span class="nav-icon">🤝</span>
-                  <span class="nav-text">Conexões</span>
-              </a>
-              <a href="{% url 'perfil' %}#empresas" class="nav-item" data-section="empresas" data-level="main">
-                  <span class="nav-icon">🏢</span>
-                  <span class="nav-text">Minhas Empresas</span>
-              </a>
-              <a href="{% url 'perfil' %}#nova-empresa" class="nav-item" data-section="nova-empresa" data-level="sub">
-                  <span class="nav-icon">➕</span>
-                  <span class="nav-text">Cadastrar Empresa</span>
-              </a>
-              <a href="{% url 'perfil' %}#conta" class="nav-item" data-section="conta" data-level="main">
-                  <span class="nav-icon">⚙️</span>
-                  <span class="nav-text">Configurações da Conta</span>
-              </a>
-          </nav>
+            <nav class="sidebar-nav">
+                <a href="{% url 'perfil:informacoes_pessoais' %}" class="nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span class="nav-text">Informações Pessoais</span>
+                </a>
+                <a href="{% url 'perfil:contato' %}" class="nav-item">
+                    <span class="nav-icon">📞</span>
+                    <span class="nav-text">Contato</span>
+                </a>
+                <a href="{% url 'perfil:redes_sociais' %}" class="nav-item">
+                    <span class="nav-icon">🌐</span>
+                    <span class="nav-text">Redes Sociais</span>
+                </a>
+                <a href="{% url 'perfil:seguranca' %}" class="nav-item">
+                    <span class="nav-icon">🔒</span>
+                    <span class="nav-text">Segurança</span>
+                </a>
+                <a href="{% url 'perfil:notificacoes' %}" class="nav-item">
+                    <span class="nav-icon">🔔</span>
+                    <span class="nav-text">Notificações</span>
+                </a>
+                <a href="{% url 'perfil:conexoes' %}" class="nav-item">
+                    <span class="nav-icon">🤝</span>
+                    <span class="nav-text">Conexões</span>
+                </a>
+                <a href="{% url 'empresas:lista' %}" class="nav-item">
+                    <span class="nav-icon">🏢</span>
+                    <span class="nav-text">Minhas Empresas</span>
+                </a>
+                <a href="{% url 'empresas:nova' %}" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-text">Cadastrar Empresa</span>
+                </a>
+            </nav>
 
-          <div class="sidebar-footer">
-              <a href="{% url 'home' %}" class="btn-dashboard">
-                  <span>🏠</span>
-                  <span>Dashboard</span>
-              </a>
-          </div>
-      </div>
-  </div>
+            <div class="sidebar-footer">
+                <a href="{% url 'home' %}" class="btn-dashboard">
+                    <span>🏠</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
 
-  <div class="perfil-content">
-      {% include 'perfil/_contato.html' %}
-      {% include 'perfil/_redes_sociais.html' %}
-      {% include 'perfil/_seguranca.html' %}
-      {% include 'perfil/_notificacoes.html' %}
-      {% include 'perfil/_conexoes.html' %}
-      {% include 'perfil/_minhas_empresas.html' %}
-      {% include 'empresas/nova.html' %}
-      {% include 'perfil/_conta.html' %}
-      {% include 'perfil/_informacoes_pessoais.html' %}
-  </div>
+    <!-- Content area -->
+    <div class="perfil-content">
+        {# Cada subpágina injeta aqui o seu HTML #}
+        {% block perfil_subpage_content %}{% endblock %}
+    </div>
 
-  <!-- Modal de Upload de Avatar -->
-  <div class="modal" id="avatarModal">
-      <div class="modal-content">
-          <form id="avatarForm" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
-              {% csrf_token %}
-              <div class="modal-header">
-                  <h3>Alterar Foto de Perfil</h3>
-                  <button class="modal-close" type="button">&times;</button>
-              </div>
-              <div class="modal-body">
-                  <div class="avatar-upload">
-                      <div class="avatar-preview" id="avatarPreview">
-                          <div class="avatar-placeholder">
-                              <span>{{ user.username|make_list|first|upper }}</span>
-                          </div>
-                      </div>
+    <!-- Modal: Upload Avatar -->
+    <div class="modal" id="avatarModal">
+        <div class="modal-content">
+            <form id="avatarForm" method="post" action="{% url 'perfil:home' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h3>Alterar Foto de Perfil</h3>
+                    <button class="modal-close" type="button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="avatar-upload">
+                        <div class="avatar-preview" id="avatarPreview">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
+                            {% else %}
+                                <div class="avatar-placeholder">
+                                    <span>{{ user.username|make_list|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
 
-                      <div class="avatar-actions">
-                          <label for="avatarInput" class="btn-upload">
-                              Escolher Foto
-                              <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
-                          </label>
-                          <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
-                      </div>
-                  </div>
-              </div>
-              <div class="modal-footer">
-                  <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
-                  <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
-              </div>
-          </form>
-      </div>
-  </div>
+                        <div class="avatar-actions">
+                            <label for="avatarInput" class="btn-upload">
+                                Escolher Foto
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+                            </label>
+                            <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-  <!-- Modal de Confirmação -->
-  <div class="modal" id="confirmModal">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h3 id="confirmTitle">Confirmação</h3>
-              <button class="modal-close">&times;</button>
-          </div>
-          <div class="modal-body">
-              <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn-secondary" id="cancelAction">Cancelar</button>
-              <button type="button" class="btn-danger" id="confirmAction">Confirmar</button>
-          </div>
-      </div>
-  </div>
+    <!-- Modal: Confirmação genérica -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirmação</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelAction">Cancelar</button>
+                <button type="button" class="btn-danger" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

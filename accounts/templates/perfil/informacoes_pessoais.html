@@ -1,10 +1,16 @@
-<section id="notificacoes" class="perfil-section">
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Preferências de Notificação | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="notificacoes" class="perfil-section active">
   <div class="section-header">
       <h2>Preferências de Notificação</h2>
       <p>Gerencie como você recebe notificações</p>
   </div>
 
-  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'perfil' %}" enctype="multipart/form-data">
+  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'perfil:notificacoes' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="notification-group">
@@ -87,3 +93,4 @@
       </div>
   </form>
 </section>
+{% endblock %}
