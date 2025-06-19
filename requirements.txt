@@ -1,6 +1,9 @@
 asgiref==3.8.1
 Django==5.2.2
+django-appconf==1.1.0
+django-formtools==2.5.1
 django-phonenumber-field==8.1.0
+django-select2==8.4.1
 phonenumbers==9.0.7
 pillow==11.2.1
 sqlparse==0.5.3

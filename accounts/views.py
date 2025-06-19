@@ -16,38 +16,33 @@ import os
 import uuid
 
 # ────────────────────────────────────────────────────────────────
-# Forms
+# Forms usados nas abas do perfil
 # ────────────────────────────────────────────────────────────────
 from .forms import (
-    CustomUserCreationForm,      # mantém se já existir
     InformacoesPessoaisForm,
     ContatoForm,
     RedesSociaisForm,
     ContaForm,
     NotificacoesForm,
 )
-from .models import cpf_validator, NotificationSettings  # ajuste o nome se for diferente
+from .models import cpf_validator, NotificationSettings  # ajuste se necessário
 
 User = get_user_model()
 
-
 # =====================================================================
-# PERFIL  ───────────────  cada aba usa um ModelForm dedicado
+# PERFIL – cada aba usa um ModelForm dedicado
 # =====================================================================
 
 @login_required
 def perfil_home(request):
-    """Entry-point do perfil → redireciona para Informações Pessoais."""
+    """Entrada do perfil → redireciona para Informações Pessoais."""
     return redirect("accounts:informacoes_pessoais")
-
 
 # 1 • Informações Pessoais
 @login_required
 def perfil_informacoes(request):
     if request.method == "POST":
-        form = InformacoesPessoaisForm(
-            request.POST, request.FILES, instance=request.user
-        )
+        form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Informações pessoais atualizadas.")
@@ -56,7 +51,6 @@ def perfil_informacoes(request):
         form = InformacoesPessoaisForm(instance=request.user)
 
     return render(request, "perfil/informacoes_pessoais.html", {"form": form})
-
 
 # 2 • Contato
 @login_required
@@ -72,7 +66,6 @@ def perfil_contato(request):
 
     return render(request, "perfil/contato.html", {"form": form})
 
-
 # 3 • Redes Sociais
 @login_required
 def perfil_redes_sociais(request):
@@ -87,7 +80,6 @@ def perfil_redes_sociais(request):
 
     return render(request, "perfil/redes_sociais.html", {"form": form})
 
-
 # 4 • Segurança (troca de senha)
 @login_required
 def perfil_seguranca(request):
@@ -95,14 +87,13 @@ def perfil_seguranca(request):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # mantém usuário logado
+            update_session_auth_hash(request, user)  # mantém login
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
     else:
         form = PasswordChangeForm(request.user)
 
     return render(request, "perfil/seguranca.html", {"form": form})
-
 
 # 5 • Notificações
 @login_required
@@ -120,19 +111,20 @@ def perfil_notificacoes(request):
 
     return render(request, "perfil/notificacoes.html", {"form": form})
 
-
 # 6 • Conexões (somente leitura)
 @login_required
 def perfil_conexoes(request):
     conexoes = getattr(request.user, "connections", None)
     seguidores = getattr(request.user, "followers", None)
 
-    context = {
-        "conexoes": conexoes.all() if conexoes else [],
-        "seguidores": seguidores.all() if seguidores else [],
-    }
-    return render(request, "perfil/conexoes.html", context)
-
+    return render(
+        request,
+        "perfil/conexoes.html",
+        {
+            "conexoes": conexoes.all() if conexoes else [],
+            "seguidores": seguidores.all() if seguidores else [],
+        },
+    )
 
 # 7 • Configurações da Conta
 @login_required
@@ -148,13 +140,12 @@ def perfil_conta(request):
 
     return render(request, "perfil/conta.html", {"form": form})
 
-
 # =====================================================================
-# AUTENTICAÇÃO / REGISTRO (fluxo original preservado)
+# AUTENTICAÇÃO
 # =====================================================================
 
 def login_view(request):
-    """Autentica o usuário utilizando ``AuthenticationForm`` do Django."""
+    """Autentica o usuário usando o AuthenticationForm do Django."""
     if request.user.is_authenticated:
         return redirect("accounts:perfil")
 
@@ -165,38 +156,21 @@ def login_view(request):
 
     return render(request, "login/login.html", {"form": form})
 
-
 def logout_view(request):
-    """Encerra a sessão do usuário e redireciona para a tela de login."""
+    """Encerra a sessão do usuário e volta para o login."""
     logout(request)
     return redirect("accounts:login")
 
-
 def password_reset(request):
-    # implemente sua lógica / template real aqui
+    # TODO: implementar fluxo real de reset de senha
     return render(request, "login/login.html")
-
-
-def register_view(request):
-    """Registra um novo usuário usando ``CustomUserCreationForm``."""
-    form = CustomUserCreationForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        user = form.save()
-        login(request, user)
-        return redirect("accounts:perfil")
-
-    return render(request, "register/register_form.html", {"form": form})
-
 
 def onboarding(request):
     return render(request, "register/onboarding.html")
 
-
 # ------------------------------------------------------------------
 # FLUXO DE REGISTRO EM VÁRIAS ETAPAS (nome → cpf → …)
 # ------------------------------------------------------------------
-# Mantido praticamente igual, mas você pode transformar cada passo
-# em um Form também, seguindo o mesmo padrão dos ModelForms acima.
 
 def nome(request):
     if request.method == "POST":
@@ -206,9 +180,8 @@ def nome(request):
             return redirect("accounts:cpf")
     return render(request, "register/nome.html")
 
-
 def cpf(request):
-    """Solicita o CPF logo após o nome completo."""
+    """Solicita o CPF logo após o nome."""
     if request.method == "POST":
         valor = request.POST.get("cpf")
         if valor:
@@ -220,7 +193,6 @@ def cpf(request):
                 messages.error(request, "CPF inválido.")
     return render(request, "register/cpf.html")
 
-
 def email(request):
     if request.method == "POST":
         val = request.POST.get("email")
@@ -228,7 +200,6 @@ def email(request):
             request.session["email"] = val
             return redirect("accounts:senha")
     return render(request, "register/email.html")
-
 
 def token(request):
     if request.method == "POST":
@@ -238,7 +209,6 @@ def token(request):
             return redirect("accounts:usuario")
     return render(request, "register/token.html")
 
-
 def usuario(request):
     if request.method == "POST":
         usr = request.POST.get("usuario")
@@ -246,7 +216,6 @@ def usuario(request):
             request.session["usuario"] = usr
             return redirect("accounts:nome")
     return render(request, "register/usuario.html")
-
 
 def senha(request):
     if request.method == "POST":
@@ -256,7 +225,6 @@ def senha(request):
             request.session["senha_hash"] = make_password(s1)
             return redirect("accounts:foto")
     return render(request, "register/senha.html")
-
 
 def foto(request):
     if request.method == "POST":
@@ -268,10 +236,9 @@ def foto(request):
         return redirect("accounts:termos")
     return render(request, "register/foto.html")
 
-
 def termos(request):
     if request.method == "POST" and request.POST.get("aceitar_termos"):
-        # ── cria usuário com dados da sessão ───────────────────────────
+        # cria usuário com dados armazenados na sessão
         username = request.session.get("usuario")
         email_val = request.session.get("email")
         pwd_hash = request.session.get("senha_hash")
@@ -289,7 +256,7 @@ def termos(request):
                 password=pwd_hash,
                 cpf=cpf_val,
             )
-            # salva foto
+            # salva foto, se houver
             foto_path = request.session.get("foto")
             if foto_path:
                 with default_storage.open(foto_path, "rb") as f:
@@ -304,7 +271,6 @@ def termos(request):
         return redirect("accounts:usuario")
 
     return render(request, "register/termos.html")
-
 
 def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
