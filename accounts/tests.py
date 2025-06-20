@@ -74,7 +74,7 @@ class RegistrationSessionTests(TestCase):
             reverse("accounts:termos"), {"aceitar_termos": "on"}, follow=False
         )
         self.assertIn("termos", self.client.session)
-        self.assertEqual(response.url, reverse("perfil"))
+        self.assertEqual(response.url, reverse("accounts:perfil"))
 
         user = get_user_model().objects.get(username="newuser")
         self.assertTrue(NotificationSettings.objects.filter(user=user).exists())
