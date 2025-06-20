@@ -237,6 +237,9 @@
 .perfil-section {
   display: none;
 }
+.perfil-section.active {
+  display: block;
+}
 
 #informacoes-pessoais {
   display: block;
