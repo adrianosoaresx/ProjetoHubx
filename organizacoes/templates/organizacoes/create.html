@@ -1,0 +1,18 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}{% block page_title %}Nova Organização | Hubx{% endblock %}{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="empresa-form-container">
+        <h1 class="form-title">{% block form_title %}Cadastrar Organização{% endblock %}</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions" style="justify-content:flex-end;">
+                <a href="{% url 'organizacoes:list' %}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

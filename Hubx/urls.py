@@ -23,6 +23,18 @@ urlpatterns = [
         "empresas/",
         include(("empresas.urls", "empresas"), namespace="empresas"),
     ),
+    path(
+        "organizacoes/",
+        include(("organizacoes.urls", "organizacoes"), namespace="organizacoes"),
+    ),
+    path(
+        "nucleos/",
+        include(("nucleos.urls", "nucleos"), namespace="nucleos"),
+    ),
+    path(
+        "eventos/",
+        include(("eventos.urls", "eventos"), namespace="eventos"),
+    ),
 ]
 
 # Arquivos de mídia em desenvolvimento

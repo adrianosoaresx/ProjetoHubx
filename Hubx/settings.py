@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     'core',
     'empresas',
     'accounts.apps.AccountsConfig',
+    'organizacoes',
+    'nucleos',
+    'eventos',
     
 ]
 
