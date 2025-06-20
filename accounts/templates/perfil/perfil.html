@@ -23,7 +23,7 @@
         <div class="perfil-node" style="top: 80%; left: 15%;"></div>
     </div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar (now horizontal header) -->
     <div class="perfil-sidebar">
         <div class="user-profile">
             <div class="avatar-container">
@@ -39,14 +39,16 @@
                         <span>📷</span>
                     </button>
                 </div>
-                <h2 class="user-name">{{ user.get_full_name }}</h2>
-                <p class="user-username">@{{ user.username }}</p>
+                <div class="user-info"> {# New wrapper for name and username #}
+                    <h2 class="user-name">{{ user.get_full_name }}</h2>
+                    <p class="user-username">@{{ user.username }}</p>
+                </div>
             </div>
 
             <nav class="sidebar-nav">
                 <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
                     <span class="nav-icon">👤</span>
-                    <span class="nav-text">Informações Pessoais</span>
+                    <span class="nav-text">Informações</span>
                 </a>
                 <a href="{% url 'accounts:contato' %}" class="nav-item">
                     <span class="nav-icon">📞</span>
@@ -72,18 +74,15 @@
                     <span class="nav-icon">🏢</span>
                     <span class="nav-text">Minhas Empresas</span>
                 </a>
-                <a href="{% url 'empresas:nova' %}" class="nav-item">
-                    <span class="nav-icon">➕</span>
-                    <span class="nav-text">Cadastrar Empresa</span>
-                </a>
+                
             </nav>
+        </div>
 
-            <div class="sidebar-footer">
-                <a href="{% url 'home' %}" class="btn-dashboard">
-                    <span>🏠</span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
+        <div class="sidebar-footer">
+            <a href="{% url 'home' %}" class="btn-dashboard">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </a>
         </div>
     </div>
 
