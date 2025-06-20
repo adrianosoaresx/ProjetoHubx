@@ -1,93 +1,65 @@
 {% extends 'perfil/perfil_subpage_base.html' %}
 {% load static %}
 
-{% block title %}Preferências de Notificação | Hubx{% endblock %}
+{% block title %}Informações Pessoais | Hubx{% endblock %}
 
 {% block perfil_subpage_content %}
-<section id="notificacoes" class="perfil-section active">
+<section id="informacoes-pessoais" class="perfil-section active">
   <div class="section-header">
-      <h2>Preferências de Notificação</h2>
-      <p>Gerencie como você recebe notificações</p>
+      <h2>Informações Pessoais</h2>
+      <p>Atualize seus dados básicos</p>
   </div>
 
-  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'accounts:notificacoes' %}" enctype="multipart/form-data">
+  <form id="formInformacoes" class="perfil-form" method="post" action="{% url 'accounts:informacoes_pessoais' %}" enctype="multipart/form-data">
       {% csrf_token %}
 
-      <div class="notification-group">
-          <h3>Notificações por Email</h3>
+      <div class="form-group">
+          <label for="nome" class="form-label">Nome Completo</label>
+          <input type="text" id="nome" name="nome" class="form-input" value="{{ user.get_full_name }}" required>
+      </div>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_conexoes" name="email_conexoes" class="checkbox-input" {% if user.notification_settings.email_conexoes %}checked{% endif %}>
-                  <label for="email_conexoes" class="checkbox-label">Solicitações de conexão</label>
-              </div>
-              <p class="notification-desc">Receba emails quando alguém solicitar conexão com você</p>
+      <div class="form-row">
+          <div class="form-group">
+              <label for="username" class="form-label">Usuário</label>
+              <input type="text" id="username" name="username" class="form-input" value="{{ user.username }}" required>
           </div>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_mensagens" name="email_mensagens" class="checkbox-input" {% if user.notification_settings.email_mensagens %}checked{% endif %}>
-                  <label for="email_mensagens" class="checkbox-label">Mensagens</label>
-              </div>
-              <p class="notification-desc">Receba emails quando alguém enviar uma mensagem para você</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_eventos" name="email_eventos" class="checkbox-input" {% if user.notification_settings.email_eventos %}checked{% endif %}>
-                  <label for="email_eventos" class="checkbox-label">Eventos</label>
-              </div>
-              <p class="notification-desc">Receba emails sobre eventos relacionados aos seus interesses</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_newsletter" name="email_newsletter" class="checkbox-input" {% if user.notification_settings.email_newsletter %}checked{% endif %}>
-                  <label for="email_newsletter" class="checkbox-label">Newsletter</label>
-              </div>
-              <p class="notification-desc">Receba nossa newsletter com novidades e atualizações</p>
+          <div class="form-group">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" required>
           </div>
       </div>
 
-      <div class="notification-group">
-          <h3>Notificações no Sistema</h3>
+      <div class="form-group">
+          <label for="bio" class="form-label">Bio</label>
+          <textarea id="bio" name="bio" class="form-input" rows="4">{{ user.bio }}</textarea>
+      </div>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_conexoes" name="sistema_conexoes" class="checkbox-input" {% if user.notification_settings.sistema_conexoes %}checked{% endif %}>
-                  <label for="sistema_conexoes" class="checkbox-label">Solicitações de conexão</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém solicitar conexão com você</p>
+      <div class="form-row">
+          <div class="form-group">
+              <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+              <input type="date" id="data_nascimento" name="data_nascimento" class="form-input" value="{{ user.data_nascimento|date:'Y-m-d' }}">
           </div>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_mensagens" name="sistema_mensagens" class="checkbox-input" {% if user.notification_settings.sistema_mensagens %}checked{% endif %}>
-                  <label for="sistema_mensagens" class="checkbox-label">Mensagens</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém enviar uma mensagem para você</p>
+          <div class="form-group">
+              <label for="genero" class="form-label">Gênero</label>
+              <select id="genero" name="genero" class="form-select">
+                  <option value="">Selecione...</option>
+                  <option value="M" {% if user.genero == 'M' %}selected{% endif %}>Masculino</option>
+                  <option value="F" {% if user.genero == 'F' %}selected{% endif %}>Feminino</option>
+                  <option value="O" {% if user.genero == 'O' %}selected{% endif %}>Outro</option>
+              </select>
           </div>
+      </div>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_eventos" name="sistema_eventos" class="checkbox-input" {% if user.notification_settings.sistema_eventos %}checked{% endif %}>
-                  <label for="sistema_eventos" class="checkbox-label">Eventos</label>
-              </div>
-              <p class="notification-desc">Receba notificações sobre eventos relacionados aos seus interesses</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_comentarios" name="sistema_comentarios" class="checkbox-input" {% if user.notification_settings.sistema_comentarios %}checked{% endif %}>
-                  <label for="sistema_comentarios" class="checkbox-label">Comentários</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém comentar em suas publicações</p>
-          </div>
+      <div class="form-group">
+          <label for="avatar" class="form-label">Foto de Perfil</label>
+          <input type="file" id="avatar" name="avatar" class="form-input">
       </div>
 
       <div class="form-actions">
           <button type="submit" class="btn-save">
-              <span class="button-text">Salvar Preferências</span>
+              <span class="button-text">Salvar Alterações</span>
               <span class="button-loader"></span>
           </button>
       </div>
