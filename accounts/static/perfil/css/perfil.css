@@ -16,8 +16,8 @@
 /* Container and Layout */
 
 .perfil-container {
-  display: grid;
-  grid-template-columns: 320px 1fr; /* Increased sidebar width for more space */
+  display: flex;
+  flex-direction: column;
   gap: 2rem;
   max-width: 1200px;
   margin: 2rem auto;
@@ -29,9 +29,9 @@
 /* Sidebar */
 
 .perfil-sidebar {
-  position: sticky;
-  top: 100px;
-  height: calc(100vh - 120px);
+  position: static;
+  width: 100%;
+  height: auto;
 }
 
 .user-profile {
@@ -39,27 +39,31 @@
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
-  padding: 1.5rem;
+  padding: 1rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
 }
 
 .avatar-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--glass-border);
-  margin-bottom: 1.5rem;
+  padding-bottom: 0;
+  border-bottom: none;
+  border-right: 1px solid var(--glass-border);
+  padding-right: 1rem;
+  margin-right: 1rem;
+  margin-bottom: 0;
 }
 
 .avatar-wrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin-bottom: 1rem;
+  width: 80px;
+  height: 80px;
+  margin-right: 1rem;
 }
 
 .user-avatar {
@@ -113,24 +117,24 @@
   font-weight: 600;
   margin-bottom: 0.3rem;
   color: var(--white);
-  text-align: center;
+  text-align: left;
 }
 
 .user-username {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.7);
   margin-bottom: 0.5rem;
-  text-align: center;
+  text-align: left;
 }
 
 /* Sidebar Navigation */
 
 .sidebar-nav {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-x: auto;
 }
 
 .nav-item {
@@ -199,9 +203,11 @@
 }
 
 .sidebar-footer {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--glass-border);
+  margin-left: auto;
+  padding-top: 0;
+  border-top: none;
+  border-left: 1px solid var(--glass-border);
+  padding-left: 1rem;
 }
 
 .btn-dashboard {
@@ -1429,62 +1435,16 @@
 
 @media (max-width: 1024px) {
   .perfil-container {
-    grid-template-columns: 280px 1fr; /* Adjusted for medium screens */
     gap: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .perfil-container {
-    grid-template-columns: 1fr;
     gap: 1rem;
-  }
-  .perfil-sidebar {
-    position: static;
-    height: auto;
-  }
-  .user-profile {
-    flex-direction: row;
-    align-items: center;
-    padding: 1rem;
-  }
-  .avatar-container {
-    flex-direction: row;
-    align-items: center;
-    border-bottom: none;
-    border-right: 1px solid var(--glass-border);
-    padding-right: 1rem;
-    margin-right: 1rem;
-    margin-bottom: 0;
-  }
-  .avatar-wrapper {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 0;
-    margin-right: 1rem;
-  }
-  .user-name,
-  .user-username {
-    text-align: left;
-  }
-  .sidebar-nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 0.3rem;
-  }
-  .nav-item {
-    flex-shrink: 0;
-    padding: 0.6rem 0.8rem;
   }
   .nav-text {
     display: none;
-  }
-  .sidebar-footer {
-    margin-left: auto;
-    padding-top: 0;
-    border-top: none;
-    border-left: 1px solid var(--glass-border);
-    padding-left: 1rem;
   }
   .form-row {
     grid-template-columns: 1fr;
