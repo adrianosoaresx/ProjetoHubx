@@ -85,6 +85,7 @@ class EventoCalendarView(LoginRequiredMixin, ListView):
             "ano": ano,
             "dias": dias,
             "eventos_por_dia": eventos_por_dia,
+            "weekdays": "Seg Ter Qua Qui Sex Sab Dom".split(),
         })
         return context
 
