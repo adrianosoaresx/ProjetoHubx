@@ -1,0 +1,46 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}Núcleos | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Núcleos</h2>
+    </div>
+
+    <div class="empresas-actions">
+        <a href="{% url 'nucleos:create' %}" class="btn-primary">
+            <span>+</span>
+            <span>Novo Núcleo</span>
+        </a>
+    </div>
+
+    <div class="empresas-grid">
+        {% for nucleo in object_list %}
+        <div class="empresa-card">
+            <div class="empresa-logo">
+                {% if nucleo.avatar %}
+                <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}">
+                {% else %}
+                <div class="logo-placeholder">
+                    <span>{{ nucleo.nome|make_list|first|upper }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="empresa-info">
+                <h3>{{ nucleo.nome }}</h3>
+                <p class="empresa-tipo">{{ nucleo.organizacao.nome }}</p>
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'nucleos:update' nucleo.id %}" class="btn-edit">Editar</a>
+                <a href="{% url 'nucleos:delete' nucleo.id %}" class="btn-danger">Remover</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Nenhum núcleo cadastrado.</p>
+            <a href="{% url 'nucleos:create' %}" class="btn-secondary">Cadastrar</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

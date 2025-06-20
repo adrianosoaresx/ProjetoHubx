@@ -1,0 +1,29 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}Eventos | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Lista de Eventos</h2>
+    </div>
+    <div class="empresas-actions">
+        <a href="{% url 'eventos:create' %}" class="btn-primary">Novo Evento</a>
+    </div>
+    <div class="empresas-grid">
+        {% for evento in object_list %}
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3>{{ evento.titulo }}</h3>
+                <p class="empresa-tipo">{{ evento.data_hora }}</p>
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'eventos:update' evento.id %}" class="btn-edit">Editar</a>
+                <a href="{% url 'eventos:delete' evento.id %}" class="btn-danger">Remover</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">Nenhum evento.</div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

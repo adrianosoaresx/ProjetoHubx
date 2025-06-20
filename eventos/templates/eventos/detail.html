@@ -1,0 +1,16 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}{{ object.titulo }} | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="empresa-form-container">
+        <h1 class="form-title">{{ object.titulo }}</h1>
+        <p>{{ object.descricao }}</p>
+        <p><strong>Quando:</strong> {{ object.data_hora }}</p>
+        <p><strong>Duração:</strong> {{ object.duracao }}</p>
+        {% if object.link_inscricao %}
+        <p><a href="{{ object.link_inscricao }}" class="btn-primary">Inscrição</a></p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
