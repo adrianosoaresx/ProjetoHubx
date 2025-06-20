@@ -140,7 +140,7 @@
   text-align: left;
 }
 
-/* Sidebar Navigation */
+/* Sidebar Navigation (Top) */
 
 .sidebar-nav {
   display: flex;
@@ -1038,12 +1038,6 @@
   border: none;
 }
 
-.btn-view {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--white);
-  border: 1px solid var(--glass-border);
-}
-
 .btn-view:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
@@ -1535,4 +1529,40 @@
 .sidebar-nav::-webkit-scrollbar-thumb:hover,
 .modal-content::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 255, 65, 0.5);
+}
+
+/* New Profile Bottom Navigation */
+.perfil-bottom-nav {
+  position: static;
+  width: 100%;
+  height: auto;
+  background: rgba(13, 27, 13, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: row; /* Keep horizontal */
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  margin-top: 2rem; /* Space from the content area above */
+}
+
+.perfil-bottom-nav .sidebar-nav {
+  flex-grow: 1;
+  justify-content: center; /* Center items in the bottom nav */
+}
+
+@media (max-width: 768px) {
+  .perfil-bottom-nav {
+    flex-direction: column; /* Stack vertically on smaller screens */
+    align-items: center;
+  }
+  .perfil-bottom-nav .sidebar-nav {
+    flex-direction: column; /* Stack nav items vertically on smaller screens */
+    align-items: center;
+    width: 100%;
+  }
 }

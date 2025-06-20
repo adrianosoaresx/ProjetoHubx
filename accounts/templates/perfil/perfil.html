@@ -48,33 +48,16 @@
             <nav class="sidebar-nav">
                 <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
                     <span class="nav-icon">👤</span>
-                    <span class="nav-text">Informações</span>
+                    <span class="nav-text">Informações Pessoais</span>
                 </a>
                 <a href="{% url 'accounts:contato' %}" class="nav-item">
                     <span class="nav-icon">📞</span>
                     <span class="nav-text">Contato</span>
                 </a>
-                <a href="{% url 'accounts:redes_sociais' %}" class="nav-item">
-                    <span class="nav-icon">🌐</span>
-                    <span class="nav-text">Redes Sociais</span>
+                <a href="{% url 'empresas:nova' %}" class="nav-item">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-text">Cadastrar Empresa</span>
                 </a>
-                <a href="{% url 'accounts:seguranca' %}" class="nav-item">
-                    <span class="nav-icon">🔒</span>
-                    <span class="nav-text">Segurança</span>
-                </a>
-                <a href="{% url 'accounts:notificacoes' %}" class="nav-item">
-                    <span class="nav-icon">🔔</span>
-                    <span class="nav-text">Notificações</span>
-                </a>
-                <a href="{% url 'accounts:conexoes' %}" class="nav-item">
-                    <span class="nav-icon">🤝</span>
-                    <span class="nav-text">Conexões</span>
-                </a>
-                <a href="{% url 'empresas:lista' %}" class="nav-item">
-                    <span class="nav-icon">🏢</span>
-                    <span class="nav-text">Minhas Empresas</span>
-                </a>
-                
             </nav>
         </div>
 
@@ -90,6 +73,32 @@
     <div class="perfil-content">
         {# Cada subpágina injeta aqui o seu HTML #}
         {% block perfil_subpage_content %}{% endblock %}
+    </div>
+
+    <!-- New Profile Footer Navigation -->
+    <div class="perfil-bottom-nav">
+        <nav class="sidebar-nav">
+            <a href="{% url 'accounts:redes_sociais' %}" class="nav-item">
+                <span class="nav-icon">🌐</span>
+                <span class="nav-text">Redes Sociais</span>
+            </a>
+            <a href="{% url 'accounts:notificacoes' %}" class="nav-item">
+                <span class="nav-icon">🔔</span>
+                <span class="nav-text">Notificações</span>
+            </a>
+            <a href="{% url 'accounts:conexoes' %}" class="nav-item">
+                <span class="nav-icon">🤝</span>
+                <span class="nav-text">Conexões</span>
+            </a>
+            <a href="{% url 'empresas:lista' %}" class="nav-item">
+                <span class="nav-icon">🏢</span>
+                <span class="nav-text">Minhas Empresas</span>
+            </a>
+            <a href="{% url 'accounts:seguranca' %}" class="nav-item">
+                <span class="nav-icon">🔒</span>
+                <span class="nav-text">Segurança</span>
+            </a>
+        </nav>
     </div>
 
     <!-- Modal: Upload Avatar -->
