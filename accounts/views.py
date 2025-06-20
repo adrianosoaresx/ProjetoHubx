@@ -24,6 +24,7 @@ from .forms import (
     RedesSociaisForm,
     ContaForm,
     NotificacoesForm,
+    CustomUserCreationForm,
 )
 from .models import cpf_validator, NotificationSettings  # ajuste se necessário
 
@@ -161,6 +162,19 @@ def logout_view(request):
     logout(request)
     return redirect("accounts:login")
 
+def register_view(request):
+    """Registro simples usando ``CustomUserCreationForm``."""
+    if request.method == "POST":
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("accounts:perfil")
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, "register/onboarding.html", {"form": form})
+
 def password_reset(request):
     # TODO: implementar fluxo real de reset de senha
     return render(request, "login/login.html")
@@ -265,6 +279,7 @@ def termos(request):
                 del request.session["foto"]
 
             login(request, user)
+            request.session["termos"] = True
             return redirect("accounts:perfil")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")

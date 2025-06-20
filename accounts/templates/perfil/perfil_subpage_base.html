@@ -3,11 +3,3 @@
 
 {# Título da subpágina — pode ser sobrescrito no template filho #}
 {% block title %}{% block subpage_title %}Subpágina • HubX{% endblock %}{% endblock %}
-
-{# Conteúdo principal: reutiliza tudo do perfil e injeta o miolo da subpágina #}
-{% block content %}
-    {{ block.super }}
-
-    {# Bloco para o conteúdo específico de cada subpágina (busca, lista, nova etc.) #}
-    {% block perfil_subpage_content %}{% endblock %}
-{% endblock %}
