@@ -15,7 +15,9 @@ import io
 
 
 class Command(BaseCommand):
-    help = "Generate sample organizations, nuclei and users"
+    help = (
+        "Generate sample organizations, nuclei, users, tags, companies and events"
+    )
 
     NUCLEO_NOMES = ["CDL Mulher", "CDL Jovem"]
 
