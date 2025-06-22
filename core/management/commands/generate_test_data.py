@@ -77,7 +77,7 @@ class Command(BaseCommand):
                     "first_name": primeiro,
                     "last_name": ultimo,
                     "email": faker.unique.email(),
-                    "cpf": faker.cpf(),
+                    "cpf": faker.unique.cpf(),
                     "genero": genero,
                     "tipo": UserType.objects.get(descricao=tipo_desc),
                     "organizacao": random.choice(orgs),
@@ -122,7 +122,7 @@ class Command(BaseCommand):
             usuario = random.choice(clientes)
             empresa = Empresa.objects.create(
                 usuario=usuario,
-                cnpj=faker.cnpj(),
+                cnpj=faker.unique.cnpj(),
                 nome=faker.company(),
                 tipo=faker.bs().title(),
                 municipio=faker.city(),
