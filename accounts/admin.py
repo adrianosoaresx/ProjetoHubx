@@ -5,7 +5,8 @@ from .models import User, NotificationSettings
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ["username", "email", "is_staff"]
+    list_display = ["username", "email", "tipo", "organizacao", "is_staff"]
+    list_filter = ["tipo", "organizacao"]
 
 
 @admin.register(NotificationSettings)

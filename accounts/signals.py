@@ -12,3 +12,6 @@ def create_notification_settings(sender, instance, created, **kwargs):
     """Cria as configuracoes de notificacao padrao para novos usuarios."""
     if created:
         NotificationSettings.objects.create(user=instance)
+        if instance.tipo in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}:
+            instance.is_staff = True
+            instance.save(update_fields=["is_staff"])
