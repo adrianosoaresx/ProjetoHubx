@@ -148,7 +148,9 @@ class Command(BaseCommand):
                     link_inscricao=faker.url(),
                     briefing=faker.text(),
                 )
-                inscritos = random.sample(clientes, k=5)
+                # Inscreve apenas clientes da mesma organização
+                clientes_org = [c for c in clientes if c.organizacao == org]
+                inscritos = random.sample(clientes_org, k=5)
                 evento.inscritos.add(*inscritos)
 
         output_format = options["format"]
