@@ -18,9 +18,9 @@ class NucleoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo == User.Tipo.ADMIN:
+        if user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
-        elif user.tipo == User.Tipo.GERENTE:
+        elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs
 
@@ -32,7 +32,7 @@ class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("nucleos:list")
 
     def form_valid(self, form):
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, "Núcleo criado com sucesso.")
         return super().form_valid(form)
@@ -47,9 +47,9 @@ class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo == User.Tipo.ADMIN:
+        if user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
-        elif user.tipo == User.Tipo.GERENTE:
+        elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs
 
@@ -66,7 +66,7 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo == User.Tipo.ADMIN:
+        if user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         return qs
 
