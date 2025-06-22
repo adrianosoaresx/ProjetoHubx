@@ -4,6 +4,7 @@ from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 
 # ───────────────────────────────────────────────────────────────
 #  Validador de CPF simples (###.###.###-## ou ###########)
@@ -66,6 +67,26 @@ class User(AbstractUser):
     perfil_publico = models.BooleanField(default=True)
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
+
+    class Tipo(models.TextChoices):
+        SUPERADMIN = "superadmin", _("Superadmin")
+        ADMIN = "admin", _("Admin")
+        GERENTE = "gerente", _("Gerente")
+        CLIENTE = "cliente", _("Cliente")
+
+    tipo = models.CharField(
+        max_length=20,
+        choices=Tipo.choices,
+        default=Tipo.CLIENTE,
+    )
+
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.SET_NULL,
+        related_name="usuarios",
+        null=True,
+        blank=True,
+    )
 
     # Configurações de metadados
     class Meta:
