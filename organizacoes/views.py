@@ -17,7 +17,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(pk=self.request.user.organizacao_id)
         return qs
 
@@ -41,7 +41,7 @@ class OrganizacaoUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(pk=self.request.user.organizacao_id)
         return qs
 
@@ -57,7 +57,7 @@ class OrganizacaoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(pk=self.request.user.organizacao_id)
         return qs
 

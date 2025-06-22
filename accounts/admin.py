@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, NotificationSettings
+from .models import User, NotificationSettings, UserType
 
 
 @admin.register(User)
@@ -12,3 +12,8 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(NotificationSettings)
 class NotificationSettingsAdmin(admin.ModelAdmin):
     list_display = ["user", "email_conexoes", "sistema_conexoes"]
+
+
+@admin.register(UserType)
+class UserTypeAdmin(admin.ModelAdmin):
+    list_display = ["id", "descricao"]
