@@ -12,7 +12,9 @@ from django.views.generic import (
     DeleteView,
     DetailView,
 )
-from core.permissions import AdminRequiredMixin
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
+from django.views import View
 
 from .models import Evento
 from .forms import EventoForm
@@ -20,14 +22,14 @@ from .forms import EventoForm
 User = get_user_model()
 
 
-class EventoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+class EventoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/list.html"
 
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        if user.tipo == User.Tipo.ADMIN:
+        if user.tipo in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
             queryset = queryset.filter(organizacao=user.organizacao)
         mes = self.request.GET.get("mes")
         ano = self.request.GET.get("ano")
@@ -82,7 +84,7 @@ class EventoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class EventoCalendarView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/calendar.html"
 
@@ -98,7 +100,11 @@ class EventoCalendarView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         cal = calendar.Calendar()
         dias = cal.itermonthdates(ano, mes)
         eventos_por_dia = {}
-        for event in Evento.objects.filter(data_hora__year=ano, data_hora__month=mes):
+        eventos = Evento.objects.filter(data_hora__year=ano, data_hora__month=mes)
+        user = self.request.user
+        if user.tipo in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
+            eventos = eventos.filter(organizacao=user.organizacao)
+        for event in eventos:
             dia = event.data_hora.date()
             eventos_por_dia.setdefault(dia, []).append(event)
         context.update({
@@ -111,6 +117,20 @@ class EventoCalendarView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
 
-class EventoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
+class EventoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
+
+
+class EventoSubscribeView(GerenteRequiredMixin, LoginRequiredMixin, View):
+    """Inscreve ou remove o usuário do evento."""
+
+    def post(self, request, pk):
+        evento = get_object_or_404(Evento, pk=pk)
+        if request.user in evento.inscritos.all():
+            evento.inscritos.remove(request.user)
+            messages.success(request, "Inscrição cancelada.")
+        else:
+            evento.inscritos.add(request.user)
+            messages.success(request, "Inscrição realizada.")
+        return redirect("eventos:detail", pk=pk)

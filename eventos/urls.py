@@ -9,5 +9,6 @@ urlpatterns = [
     path("novo/", views.EventoCreateView.as_view(), name="create"),
     path("<int:pk>/editar/", views.EventoUpdateView.as_view(), name="update"),
     path("<int:pk>/remover/", views.EventoDeleteView.as_view(), name="delete"),
+    path("<int:pk>/inscrever/", views.EventoSubscribeView.as_view(), name="subscribe"),
     path("<int:pk>/", views.EventoDetailView.as_view(), name="detail"),
 ]
