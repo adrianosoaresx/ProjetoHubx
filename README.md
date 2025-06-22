@@ -19,3 +19,5 @@ usuários, organizações, núcleos, empresas e eventos de exemplo.
 python manage.py generate_test_data --format json > seed.json
 ```
 
+Todos os usuários gerados utilizam a senha padrão ``J0529*4351``.
+

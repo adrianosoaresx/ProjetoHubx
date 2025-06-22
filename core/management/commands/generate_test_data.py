@@ -83,6 +83,8 @@ class Command(BaseCommand):
                     "organizacao": random.choice(orgs),
                 },
             )
+            user.set_password("J0529*4351")
+            user.save(update_fields=["password"])
             return user
 
         clientes = [criar_usuario("client") for _ in range(100)]
