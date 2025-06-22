@@ -9,6 +9,16 @@ redirecionado para sua página de perfil.
 
 O fluxo de autenticação utiliza agora os formulários padrões do Django. Para registrar-se, acesse `/accounts/onboarding/`.
 
+Configuração inicial
+--------------------
+Antes de executar ``generate_test_data``, instale as dependências e aplique
+as migrações do banco de dados:
+
+```
+pip install -r requirements.txt
+python manage.py migrate
+```
+
 Gerar dados de teste
 --------------------
 Utilize o comando ``generate_test_data`` para popular o banco com
