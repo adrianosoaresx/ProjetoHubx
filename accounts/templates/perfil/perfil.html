@@ -25,46 +25,61 @@
 
     <!-- Sidebar (now horizontal header) -->
     <div class="perfil-sidebar">
-        <div class="user-profile">
-            <div class="avatar-container">
-                <div class="avatar-wrapper">
-                    {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
-                    {% else %}
-                        <div class="avatar-placeholder">
-                            <span>{{ user.username|make_list|first|upper }}</span>
-                        </div>
-                    {% endif %}
-                    <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
-                        <span>📷</span>
-                    </button>
+        <div class="perfil-header-top-section"> {# Contains avatar/info and dashboard button #}
+            <div class="avatar-info-group"> {# Groups avatar, user info, and the separator line #}
+                <div class="avatar-container">
+                    <div class="avatar-wrapper">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
+                        {% else %}
+                            <div class="avatar-placeholder">
+                                <span>{{ user.username|make_list|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                        <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
+                            <span>📷</span>
+                        </button>
+                    </div>
+                    <div class="user-info">
+                        <h2 class="user-name">{{ user.get_full_name }}</h2>
+                        <p class="user-username">@{{ user.username }}</p>
+                    </div>
                 </div>
-                <div class="user-info"> {# New wrapper for name and username #}
-                    <h2 class="user-name">{{ user.get_full_name }}</h2>
-                    <p class="user-username">@{{ user.username }}</p>
-                </div>
+                <div class="perfil-separator-inline"></div> {# The horizontal line, visually aligned #}
             </div>
-
-            <nav class="sidebar-nav">
-                <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
-                    <span class="nav-icon">👤</span>
-                    <span class="nav-text">Informações Pessoais</span>
-                </a>
-                <a href="{% url 'accounts:contato' %}" class="nav-item">
-                    <span class="nav-icon">📞</span>
-                    <span class="nav-text">Contato</span>
-                </a>
-                <a href="{% url 'empresas:nova' %}" class="nav-item">
-                    <span class="nav-icon">➕</span>
-                    <span class="nav-text">Cadastrar Empresa</span>
-                </a>
-            </nav>
+            <div class="top-right-buttons"> {# This div is now empty #}
+            </div>
         </div>
-
-        <div class="sidebar-footer">
-            <a href="{% url 'home' %}" class="btn-dashboard">
+        <nav class="sidebar-nav"> {# Main horizontal navigation #}
+            <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Informações Pessoais</span>
+            </a>
+            <a href="{% url 'accounts:contato' %}" class="nav-item">
+                <span class="nav-icon">📞</span>
+                <span class="nav-text">Contato</span>
+            </a>
+            <a href="{% url 'accounts:conexoes' %}" class="nav-item">
+                <span class="nav-icon">🤝</span>
+                <span class="nav-text">Conexões</span>
+            </a>
+        </nav>
+        <div class="perfil-secondary-nav"> {# New section for Dashboard, Empresas, Nucleos, Eventos #}
+            <a href="{% url 'home' %}" class="btn-secondary-nav">
                 <span>🏠</span>
                 <span>Dashboard</span>
+            </a>
+            <a href="{% url 'empresas:lista' %}" class="btn-secondary-nav">
+                <span>🏢</span>
+                <span>Empresas</span>
+            </a>
+            <a href="{% url 'nucleos:list' %}" class="btn-secondary-nav">
+                <span>⚛️</span>
+                <span>Núcleos</span>
+            </a>
+            <a href="{% url 'eventos:list' %}" class="btn-secondary-nav">
+                <span>🗓️</span>
+                <span>Eventos</span>
             </a>
         </div>
     </div>
@@ -86,14 +101,8 @@
                 <span class="nav-icon">🔔</span>
                 <span class="nav-text">Notificações</span>
             </a>
-            <a href="{% url 'accounts:conexoes' %}" class="nav-item">
-                <span class="nav-icon">🤝</span>
-                <span class="nav-text">Conexões</span>
-            </a>
-            <a href="{% url 'empresas:lista' %}" class="nav-item">
-                <span class="nav-icon">🏢</span>
-                <span class="nav-text">Minhas Empresas</span>
-            </a>
+
+            {# Removed "Minhas Empresas" from here #}
             <a href="{% url 'accounts:seguranca' %}" class="nav-item">
                 <span class="nav-icon">🔒</span>
                 <span class="nav-text">Segurança</span>

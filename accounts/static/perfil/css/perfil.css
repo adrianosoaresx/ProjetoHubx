@@ -38,31 +38,35 @@
   border-radius: 20px;
   padding: 1rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  display: flex; /* Keep as flex row for overall horizontal layout */
-  flex-direction: row;
-  align-items: center; /* Align items vertically in the center */
-  gap: 1rem;
+  display: flex;
+  flex-direction: column; /* Stack top section, nav, and secondary nav vertically */
+  gap: 1rem; /* Space between sections */
   flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
-.user-profile {
+.perfil-header-top-section {
   display: flex;
-  flex-direction: row; /* Default to row for smaller screens */
-  align-items: center;
-  gap: 1rem;
-  padding-bottom: 0;
-  border-bottom: none;
-  border-right: 1px solid var(--glass-border); /* Keep border for separation */
-  padding-right: 1rem;
-  margin-right: 1rem;
-  margin-bottom: 0;
+  flex-direction: column; /* Stack avatar/info and dashboard button vertically on mobile */
+  justify-content: space-between;
+  align-items: flex-start; /* Align items to the top */
+  width: 100%;
+  gap: 1rem; /* Space between avatar/info and dashboard button area on mobile */
+}
+
+.avatar-info-group {
+  display: flex;
+  flex-direction: column; /* Stack avatar/info and separator vertically */
+  gap: 1rem; /* Space between avatar/info and separator */
+  flex-grow: 1; /* Allow this group to take available space */
+  width: 100%; /* Take full width on mobile */
 }
 
 .avatar-container {
   display: flex;
-  flex-direction: row; /* Keep avatar and info side-by-side initially */
+  flex-direction: row; /* Avatar and user-info side-by-side */
   align-items: center;
-  gap: 1rem; /* Space between avatar and text */
+  gap: 1rem;
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .avatar-wrapper {
@@ -119,7 +123,6 @@
 }
 
 .user-info {
-  /* New wrapper for name and username */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -140,6 +143,20 @@
   text-align: left;
 }
 
+.perfil-separator-inline {
+  width: 100%; /* Spans the width of avatar-info-group */
+  height: 1px;
+  background: var(--glass-border);
+  margin-top: 0.5rem; /* Space between user info and line */
+}
+
+.top-right-buttons {
+  /* This div is now empty, so we can hide it or make it not take space */
+  display: none; /* Hide it completely */
+  /* Alternatively, if you need it for layout but empty: */
+  /* width: 0; height: 0; overflow: hidden; */
+}
+
 /* Sidebar Navigation (Top) */
 
 .sidebar-nav {
@@ -149,6 +166,7 @@
   flex-grow: 1;
   overflow-x: auto; /* Allow horizontal scrolling */
   padding-bottom: 0.5rem; /* Add some padding for scrollbar */
+  width: 100%; /* Take full width */
 }
 
 .nav-item {
@@ -209,31 +227,37 @@
   box-shadow: 0 0 8px var(--matrix-green);
 }
 
-.sidebar-footer {
-  margin-left: auto;
-  padding-top: 0;
-  border-top: none;
-  border-left: 1px solid var(--glass-border);
-  padding-left: 1rem;
+/* Secondary Navigation (New) */
+.perfil-secondary-nav {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically on mobile */
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center; /* Center buttons on mobile */
+  width: 100%;
+  margin-top: 1rem; /* Space from the main navigation above */
 }
 
-.btn-dashboard {
+.btn-secondary-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   padding: 0.8rem;
   border-radius: 10px;
-  background: var(--matrix-green);
-  color: var(--primary-dark);
+  background: rgba(0, 255, 65, 0.1); /* More subtle background */
+  color: var(--matrix-green);
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  width: 100%; /* Make button full width on mobile */
 }
 
-.btn-dashboard:hover {
+.btn-secondary-nav:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 255, 65, 0.15);
+  background: rgba(0, 255, 65, 0.2);
 }
 
 /* Main Content */
@@ -441,7 +465,6 @@
 .btn-danger:hover {
   background: var(--error-color);
   color: var(--white);
-  transform: translateY(-2px);
 }
 
 /* Social Links */
@@ -1365,41 +1388,51 @@
 /* Responsive Design */
 
 @media (min-width: 769px) {
-  /* Apply column layout for user-profile on larger screens */
-  .user-profile {
-    flex-direction: column; /* Stack avatar and nav vertically */
+  .perfil-sidebar {
+    flex-direction: column; /* Stack top section, nav, and secondary nav vertically */
     align-items: flex-start; /* Align content to the start */
-    border-right: 1px solid var(--glass-border); /* Keep border for separation */
-    padding-right: 1rem;
-    margin-right: 1rem;
+  }
+
+  .perfil-header-top-section {
+    flex-direction: row; /* Avatar/info group and dashboard button side-by-side */
+    align-items: flex-start; /* Align items to the top */
+    justify-content: space-between; /* Push dashboard button to the right */
+    width: 100%;
+    gap: 0; /* Remove gap on desktop */
+  }
+
+  .avatar-info-group {
+    flex-direction: column; /* Stack avatar/info and separator vertically */
+    align-items: flex-start; /* Align content to the start */
+    gap: 1rem; /* Space between avatar/info and separator */
+    width: auto; /* Auto width on desktop */
   }
 
   .avatar-container {
-    flex-direction: column; /* Stack avatar and user-info vertically */
-    align-items: center; /* Center avatar and info */
-    padding-bottom: 1rem; /* Add space below avatar section */
-    border-bottom: 1px solid var(--glass-border); /* Separator below avatar section */
-    margin-bottom: 1rem; /* Space between avatar section and nav */
-    width: 100%; /* Take full width of its parent column */
+    flex-direction: row; /* Avatar and user-info side-by-side */
+    align-items: center;
+    gap: 1rem;
   }
 
-  .avatar-wrapper {
-    margin-bottom: 0.5rem; /* Space between avatar and name */
-  }
-
-  .user-info {
-    align-items: center; /* Center name and username below avatar */
-  }
-
-  .user-name,
-  .user-username {
-    text-align: center; /* Center text below avatar */
+  .top-right-buttons {
+    /* This div is now empty, so we can hide it completely on desktop too */
+    display: none;
   }
 
   .sidebar-nav {
     flex-direction: row; /* Keep nav items horizontal */
-    justify-content: center; /* Center nav items */
-    width: 100%; /* Take full width of its parent column */
+    justify-content: flex-start; /* Align menu items to the start */
+    width: 100%;
+  }
+
+  .perfil-secondary-nav {
+    flex-direction: row; /* Keep buttons horizontal on desktop */
+    justify-content: flex-start; /* Align buttons to the start */
+    width: 100%;
+  }
+
+  .btn-secondary-nav {
+    width: auto; /* Auto width on desktop */
   }
 }
 
@@ -1408,32 +1441,35 @@
     gap: 1rem;
   }
   .perfil-sidebar {
-    flex-direction: column; /* Stack user-profile and sidebar-footer vertically */
+    flex-direction: column; /* Stack all elements vertically */
     align-items: center;
   }
-  .user-profile {
-    flex-direction: column; /* Stack avatar and nav vertically */
-    align-items: center;
-    border-right: none; /* Remove vertical border */
-    padding-right: 0;
-    margin-right: 0;
-    border-bottom: 1px solid var(--glass-border); /* Add horizontal border */
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-    width: 100%; /* Take full width */
+  .perfil-header-top-section {
+    flex-direction: column; /* Stack avatar/info group and dashboard button vertically */
+    align-items: center; /* Center them */
+    gap: 1rem;
+    width: 100%;
+  }
+  .avatar-info-group {
+    flex-direction: column; /* Stack avatar/info and separator vertically */
+    align-items: center; /* Center them */
+    gap: 0.5rem;
+    width: 100%;
   }
   .avatar-container {
     flex-direction: column; /* Stack avatar and user-info vertically */
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 1rem; /* Space below avatar section */
   }
   .user-info {
     align-items: center; /* Center name and username */
   }
-  .user-name,
-  .user-username {
-    text-align: center;
+  .perfil-separator-inline {
+    width: 100%; /* Ensure line spans full width of its parent */
+    margin-top: 1rem; /* Add space below user info */
+  }
+  .top-right-buttons {
+    display: none; /* Hide it completely on mobile too */
   }
   .sidebar-nav {
     flex-direction: row; /* Keep nav items horizontal */
@@ -1448,15 +1484,6 @@
   .nav-text {
     /* display: none; */
     /* Uncomment if you want to hide text on small screens */
-  }
-  .sidebar-footer {
-    margin-left: 0;
-    border-left: none;
-    border-top: 1px solid var(--glass-border);
-    padding-left: 0;
-    padding-top: 1rem;
-    width: 100%; /* Take full width */
-    justify-content: center; /* Center dashboard button */
   }
   .form-row {
     grid-template-columns: 1fr;
