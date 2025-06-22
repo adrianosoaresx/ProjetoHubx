@@ -11,6 +11,16 @@
         {% if object.link_inscricao %}
         <p><a href="{{ object.link_inscricao }}" class="btn-primary">Inscrição</a></p>
         {% endif %}
+        {% if user.is_authenticated %}
+        <form action="{% url 'eventos:subscribe' object.pk %}" method="post">
+            {% csrf_token %}
+            {% if user in object.inscritos.all %}
+            <button type="submit" class="btn-secondary">Cancelar inscrição</button>
+            {% else %}
+            <button type="submit" class="btn-primary">Inscrever-se</button>
+            {% endif %}
+        </form>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
