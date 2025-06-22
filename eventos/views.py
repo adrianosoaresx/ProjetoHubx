@@ -3,6 +3,7 @@ from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.views.generic import (
     ListView,
@@ -11,17 +12,23 @@ from django.views.generic import (
     DeleteView,
     DetailView,
 )
+from core.permissions import AdminRequiredMixin
 
 from .models import Evento
 from .forms import EventoForm
 
+User = get_user_model()
 
-class EventoListView(LoginRequiredMixin, ListView):
+
+class EventoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/list.html"
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        user = self.request.user
+        if user.tipo == User.Tipo.ADMIN:
+            queryset = queryset.filter(organizacao=user.organizacao)
         mes = self.request.GET.get("mes")
         ano = self.request.GET.get("ano")
         if mes and ano:
@@ -29,39 +36,53 @@ class EventoListView(LoginRequiredMixin, ListView):
         return queryset
 
 
-class EventoCreateView(LoginRequiredMixin, CreateView):
+class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/create.html"
     success_url = reverse_lazy("eventos:list")
 
     def form_valid(self, form):
+        if self.request.user.tipo == User.Tipo.ADMIN:
+            form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, "Evento criado com sucesso.")
         return super().form_valid(form)
 
 
-class EventoUpdateView(LoginRequiredMixin, UpdateView):
+class EventoUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/update.html"
     success_url = reverse_lazy("eventos:list")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.tipo == User.Tipo.ADMIN:
+            qs = qs.filter(organizacao=self.request.user.organizacao)
+        return qs
 
     def form_valid(self, form):
         messages.success(self.request, "Evento atualizado com sucesso.")
         return super().form_valid(form)
 
 
-class EventoDeleteView(LoginRequiredMixin, DeleteView):
+class EventoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:list")
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.tipo == User.Tipo.ADMIN:
+            qs = qs.filter(organizacao=self.request.user.organizacao)
+        return qs
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Evento removido.")
         return super().delete(request, *args, **kwargs)
 
 
-class EventoCalendarView(LoginRequiredMixin, ListView):
+class EventoCalendarView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/calendar.html"
 
@@ -90,6 +111,6 @@ class EventoCalendarView(LoginRequiredMixin, ListView):
         return context
 
 
-class EventoDetailView(LoginRequiredMixin, DetailView):
+class EventoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
