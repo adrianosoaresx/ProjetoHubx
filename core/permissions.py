@@ -7,19 +7,19 @@ class SuperadminRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a superadministradores."""
 
     def test_func(self):
-        return self.request.user.tipo == User.Tipo.SUPERADMIN
+        return self.request.user.tipo_id == User.Tipo.SUPERADMIN
 
 class AdminRequiredMixin(UserPassesTestMixin):
     """Permite acesso a superadministradores e administradores."""
 
     def test_func(self):
-        return self.request.user.tipo in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}
+        return self.request.user.tipo_id in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}
 
 class GerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a gerentes, administradores e superadmins."""
 
     def test_func(self):
-        return self.request.user.tipo in {
+        return self.request.user.tipo_id in {
             User.Tipo.SUPERADMIN,
             User.Tipo.ADMIN,
             User.Tipo.GERENTE,

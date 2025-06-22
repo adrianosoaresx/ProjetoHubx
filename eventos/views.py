@@ -29,7 +29,7 @@ class EventoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        if user.tipo in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
+        if user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
             queryset = queryset.filter(organizacao=user.organizacao)
         mes = self.request.GET.get("mes")
         ano = self.request.GET.get("ano")
@@ -45,7 +45,7 @@ class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("eventos:list")
 
     def form_valid(self, form):
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, "Evento criado com sucesso.")
         return super().form_valid(form)
@@ -59,7 +59,7 @@ class EventoUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(organizacao=self.request.user.organizacao)
         return qs
 
@@ -75,7 +75,7 @@ class EventoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if self.request.user.tipo == User.Tipo.ADMIN:
+        if self.request.user.tipo_id == User.Tipo.ADMIN:
             qs = qs.filter(organizacao=self.request.user.organizacao)
         return qs
 
@@ -102,7 +102,7 @@ class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         eventos_por_dia = {}
         eventos = Evento.objects.filter(data_hora__year=ano, data_hora__month=mes)
         user = self.request.user
-        if user.tipo in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
+        if user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
             eventos = eventos.filter(organizacao=user.organizacao)
         for event in eventos:
             dia = event.data_hora.date()

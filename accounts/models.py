@@ -6,6 +6,19 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
+
+class UserType(models.Model):
+    """Tipos de usuário cadastrados no sistema."""
+
+    descricao = models.CharField("Descrição", max_length=20)
+
+    class Meta:
+        verbose_name = "Tipo de Usuário"
+        verbose_name_plural = "Tipos de Usuário"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.descricao
+
 # ───────────────────────────────────────────────────────────────
 #  Validador de CPF simples (###.###.###-## ou ###########)
 cpf_validator = RegexValidator(
@@ -68,16 +81,19 @@ class User(AbstractUser):
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
 
-    class Tipo(models.TextChoices):
-        SUPERADMIN = "superadmin", _("Superadmin")
-        ADMIN = "admin", _("Admin")
-        GERENTE = "gerente", _("Gerente")
-        CLIENTE = "cliente", _("Cliente")
+    class Tipo(models.IntegerChoices):
+        SUPERADMIN = 4, _("Root")
+        ADMIN = 1, _("Admin")
+        GERENTE = 2, _("Manager")
+        CLIENTE = 3, _("Client")
 
-    tipo = models.CharField(
-        max_length=20,
-        choices=Tipo.choices,
+    tipo = models.ForeignKey(
+        UserType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         default=Tipo.CLIENTE,
+        related_name="users",
     )
 
     organizacao = models.ForeignKey(
