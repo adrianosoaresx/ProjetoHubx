@@ -35,6 +35,7 @@ urlpatterns = [
         "eventos/",
         include(("eventos.urls", "eventos"), namespace="eventos"),
     ),
+    path("select2/", include("django_select2.urls")),
 ]
 
 # Arquivos de mídia em desenvolvimento

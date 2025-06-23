@@ -6,7 +6,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
 
 from .models import Nucleo
-from .forms import NucleoForm
+from .forms import NucleoForm, NucleoSearchForm
 
 User = get_user_model()
 
@@ -22,7 +22,16 @@ class NucleoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
             qs = qs.filter(organizacao=user.organizacao)
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
+        form = NucleoSearchForm(self.request.GET)
+        if form.is_valid() and form.cleaned_data["nucleo"]:
+            qs = qs.filter(pk=form.cleaned_data["nucleo"].pk)
+        self.form = form
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = getattr(self, "form", NucleoSearchForm())
+        return context
 
 
 class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -73,3 +82,5 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Núcleo removido.")
         return super().delete(request, *args, **kwargs)
+
+

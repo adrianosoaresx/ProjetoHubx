@@ -10,12 +10,14 @@
     </div>
 
     <form method="get" class="search-bar" style="margin-bottom:2rem;">
+        {{ form.media }}
         <select name="categoria" onchange="this.form.submit()">
             <option value="" {% if not request.GET.categoria %}selected{% endif %}>Todas</option>
             <option value="prod" {% if request.GET.categoria == 'prod' %}selected{% endif %}>Produtos</option>
             <option value="serv" {% if request.GET.categoria == 'serv' %}selected{% endif %}>Serviços</option>
         </select>
-        <noscript><button type="submit" class="btn-secondary">Filtrar</button></noscript>
+        {{ form.tag }}
+        <noscript><button type="submit" class="btn-secondary" style="margin-left:1rem;">Filtrar</button></noscript>
     </form>
 
     <div class="empresas-actions">
@@ -45,4 +47,8 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
 {% endblock %}

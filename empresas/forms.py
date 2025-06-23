@@ -1,4 +1,5 @@
 from django import forms
+from django_select2 import forms as s2forms
 from .models import Empresa, Tag
 
 
@@ -55,4 +56,45 @@ class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
         fields = ["nome", "categoria"]
+
+
+class EmpresaWidget(s2forms.ModelSelect2Widget):
+    search_fields = [
+        "nome__icontains",
+        "descricao__icontains",
+        "tags__nome__icontains",
+        "palavras_chave__icontains",
+    ]
+
+
+class EmpresaSearchForm(forms.Form):
+    empresa = forms.ModelChoiceField(
+        queryset=Empresa.objects.all(),
+        required=False,
+        label="",
+        widget=EmpresaWidget(
+            attrs={
+                "data-placeholder": "Buscar empresas...",
+                "data-minimum-input-length": 2,
+            }
+        ),
+    )
+
+
+class TagWidget(s2forms.ModelSelect2Widget):
+    search_fields = ["nome__icontains"]
+
+
+class TagSearchForm(forms.Form):
+    tag = forms.ModelChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+        label="",
+        widget=TagWidget(
+            attrs={
+                "data-placeholder": "Buscar itens...",
+                "data-minimum-input-length": 2,
+            }
+        ),
+    )
 

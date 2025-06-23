@@ -14,6 +14,12 @@
         </a>
     </div>
 
+    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+        {{ form.media }}
+        {{ form.nucleo }}
+        <noscript><button type="submit" class="btn-secondary">Buscar</button></noscript>
+    </form>
+
     <div class="empresas-grid">
         {% for nucleo in object_list %}
         <div class="empresa-card">
@@ -43,4 +49,8 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
 {% endblock %}
