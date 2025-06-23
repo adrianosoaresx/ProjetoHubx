@@ -1,5 +1,12 @@
 {% extends "perfil/perfil_subpage_base.html" %}
+{% load static %}
+
 {% block title %}Dashboard Root | Hubx{% endblock %}
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'dashboard/dashboard.css' %}">
+{% endblock %}
+
 {% block perfil_subpage_content %}
 <h1>Dashboard Root</h1>
 <ul>
