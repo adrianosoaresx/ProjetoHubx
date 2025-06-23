@@ -85,13 +85,13 @@ class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
     model = Tag
     template_name = "empresas/tags_list.html"
 
+
     def get_queryset(self):
         qs = super().get_queryset()
         categoria = self.request.GET.get("categoria")
         if categoria in {Tag.Categoria.PRODUTO, Tag.Categoria.SERVICO}:
             qs = qs.filter(categoria=categoria)
         return qs
-
 
 class TagCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Tag
