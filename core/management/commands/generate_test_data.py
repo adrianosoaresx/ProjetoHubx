@@ -114,14 +114,37 @@ class Command(BaseCommand):
             nucleo = random.choice(nucleos_by_org[admin.organizacao])
             nucleo.membros.add(admin)
 
-        # Cria algumas tags e empresas vinculadas a clientes
-        tags = []
+        # Cria tags de produtos e serviços
+        tags_prod = []
         for _ in range(5):
-            tag, _ = Tag.objects.get_or_create(nome=faker.unique.word())
-            tags.append(tag)
+            tag, _ = Tag.objects.get_or_create(
+                nome=faker.unique.word(),
+                defaults={"categoria": Tag.Categoria.PRODUTO},
+            )
+            tags_prod.append(tag)
 
-        for _ in range(20):
-            usuario = random.choice(clientes)
+        tags_serv = []
+        for _ in range(5):
+            tag, _ = Tag.objects.get_or_create(
+                nome=faker.unique.word(),
+                defaults={"categoria": Tag.Categoria.SERVICO},
+            )
+            tags_serv.append(tag)
+
+        # Distribui usuários em grupos de empresa (1 ou 2)
+        random.shuffle(clientes)
+        metade = len(clientes) // 2
+        usuarios_uma_empresa = clientes[:metade]
+        usuarios_duas_empresas = clientes[metade:]
+
+        # Distribui usuários em grupos de serviço/produto
+        usuarios_servico = set(random.sample(clientes, metade))
+        restantes = [c for c in clientes if c not in usuarios_servico]
+        metade_restante = len(restantes) // 2
+        usuarios_um_produto = restantes[:metade_restante]
+        usuarios_dois_produtos = restantes[metade_restante:]
+
+        def criar_empresa(usuario):
             empresa = Empresa.objects.create(
                 usuario=usuario,
                 cnpj=faker.unique.cnpj(),
@@ -133,7 +156,22 @@ class Command(BaseCommand):
                 contato=faker.phone_number(),
                 palavras_chave=";".join(faker.words(nb=3)),
             )
-            empresa.tags.add(*random.sample(tags, k=2))
+
+            if usuario in usuarios_servico:
+                empresa.tags.add(random.choice(tags_serv))
+            elif usuario in usuarios_um_produto:
+                empresa.tags.add(random.choice(tags_prod))
+            else:
+                empresa.tags.add(*random.sample(tags_prod, k=2))
+
+            return empresa
+
+        for usuario in usuarios_uma_empresa:
+            criar_empresa(usuario)
+
+        for usuario in usuarios_duas_empresas:
+            criar_empresa(usuario)
+            criar_empresa(usuario)
 
         # Cria eventos para cada organização
         for org in orgs:
