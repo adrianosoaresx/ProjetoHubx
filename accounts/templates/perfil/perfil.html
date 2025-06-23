@@ -65,7 +65,10 @@
             </a>
         </nav>
         <div class="perfil-secondary-nav"> {# New section for Dashboard, Empresas, Nucleos, Eventos #}
-            <a href="{% url 'home' %}" class="btn-secondary-nav">
+            <a
+                href="{% if user.tipo_id == 4 %}{% url 'dashboard:root' %}{% elif user.tipo_id == 1 %}{% url 'dashboard:admin' %}{% elif user.tipo_id == 2 %}{% url 'dashboard:gerente' %}{% else %}{% url 'dashboard:cliente' %}{% endif %}"
+                class="btn-secondary-nav"
+            >
                 <span>🏠</span>
                 <span>Dashboard</span>
             </a>

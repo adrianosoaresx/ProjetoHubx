@@ -24,3 +24,10 @@ class GerenteRequiredMixin(UserPassesTestMixin):
             User.Tipo.ADMIN,
             User.Tipo.GERENTE,
         }
+
+
+class ClienteRequiredMixin(UserPassesTestMixin):
+    """Permite acesso apenas a clientes."""
+
+    def test_func(self):
+        return self.request.user.tipo_id == User.Tipo.CLIENTE

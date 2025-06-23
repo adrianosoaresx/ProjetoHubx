@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django_select2',
     'phonenumber_field',
     'core',
+    'dashboard',
     'empresas',
     'accounts.apps.AccountsConfig',
     'organizacoes',
