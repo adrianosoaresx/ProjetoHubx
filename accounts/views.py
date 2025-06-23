@@ -117,6 +117,7 @@ def perfil_notificacoes(request):
 def perfil_conexoes(request):
     conexoes = getattr(request.user, "connections", None)
     seguidores = getattr(request.user, "followers", None)
+    seguindo = getattr(request.user, "following", None)
 
     return render(
         request,
@@ -124,6 +125,7 @@ def perfil_conexoes(request):
         {
             "conexoes": conexoes.all() if conexoes else [],
             "seguidores": seguidores.all() if seguidores else [],
+            "followings": seguindo.all() if seguindo else [],
         },
     )
 

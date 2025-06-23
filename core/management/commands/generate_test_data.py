@@ -173,6 +173,24 @@ class Command(BaseCommand):
             criar_empresa(usuario)
             criar_empresa(usuario)
 
+        # Relacionamentos de conexão e seguidores dentro da mesma organização
+        todos_usuarios = clientes + gerentes + admins
+        usuarios_por_org = {}
+        for u in todos_usuarios:
+            usuarios_por_org.setdefault(u.organizacao_id, []).append(u)
+
+        for usuarios_org in usuarios_por_org.values():
+            for usuario in usuarios_org:
+                possiveis = [u for u in usuarios_org if u != usuario]
+                if not possiveis:
+                    continue
+
+                num_conexoes = random.randint(0, min(5, len(possiveis)))
+                usuario.connections.add(*random.sample(possiveis, num_conexoes))
+
+                num_seguidos = random.randint(0, min(10, len(possiveis)))
+                usuario.following.add(*random.sample(possiveis, num_seguidos))
+
         # Cria eventos para cada organização
         for org in orgs:
             for _ in range(5):

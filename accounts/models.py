@@ -104,6 +104,15 @@ class User(AbstractUser):
         blank=True,
     )
 
+    # Relacionamentos sociais
+    connections = models.ManyToManyField("self", blank=True)
+    followers = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        related_name="following",
+        blank=True,
+    )
+
     # Configurações de metadados
     class Meta:
         verbose_name = "Usuário"
