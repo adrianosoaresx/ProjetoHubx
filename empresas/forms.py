@@ -54,4 +54,6 @@ class EmpresaForm(forms.ModelForm):
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
-        fields = ["nome"]
+        codex/adicionar-tabela-de-produtos-e-serviços
+        fields = ["nome", "categoria"]
+

@@ -3,9 +3,18 @@ from django.contrib.auth import get_user_model
 
 
 class Tag(models.Model):
-    """Tags para produtos e servi\u00e7os."""
+    """Tags para produtos e serviços."""
+
+    class Categoria(models.TextChoices):
+        PRODUTO = "prod", "Produto"
+        SERVICO = "serv", "Serviço"
 
     nome = models.CharField(max_length=50, unique=True)
+    categoria = models.CharField(
+        max_length=4,
+        choices=Categoria.choices,
+        default=Categoria.PRODUTO,
+    )
 
     class Meta:
         verbose_name = "Tag"

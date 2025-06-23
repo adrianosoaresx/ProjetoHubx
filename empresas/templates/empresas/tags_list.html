@@ -9,6 +9,15 @@
         <p>Gerencie a lista de produtos e serviços</p>
     </div>
 
+    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+        <select name="categoria" onchange="this.form.submit()">
+            <option value="" {% if not request.GET.categoria %}selected{% endif %}>Todas</option>
+            <option value="prod" {% if request.GET.categoria == 'prod' %}selected{% endif %}>Produtos</option>
+            <option value="serv" {% if request.GET.categoria == 'serv' %}selected{% endif %}>Serviços</option>
+        </select>
+        <noscript><button type="submit" class="btn-secondary">Filtrar</button></noscript>
+    </form>
+
     <div class="empresas-actions">
         <a href="{% url 'empresas:tags_create' %}" class="btn-primary">
             <span>+</span>
@@ -21,6 +30,7 @@
         <div class="empresa-card">
             <div class="empresa-info">
                 <h3>{{ tag.nome }}</h3>
+                <p class="empresa-tipo">{{ tag.get_categoria_display }}</p>
             </div>
             <div class="empresa-actions">
                 <a href="{% url 'empresas:tags_update' tag.id %}" class="btn-edit">Editar</a>
