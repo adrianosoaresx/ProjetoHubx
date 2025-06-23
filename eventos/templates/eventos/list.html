@@ -11,6 +11,12 @@
         <a href="{% url 'eventos:create' %}" class="btn-primary">Novo Evento</a>
     </div>
     {% endif %}
+
+    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+        {{ form.media }}
+        {{ form.evento }}
+        <noscript><button type="submit" class="btn-secondary">Buscar</button></noscript>
+    </form>
     <div class="empresas-grid">
         {% for evento in object_list %}
         <div class="empresa-card">
@@ -31,4 +37,8 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
 {% endblock %}

@@ -11,7 +11,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from core.permissions import SuperadminRequiredMixin
 
 from .models import Empresa, Tag
-from .forms import EmpresaForm, TagForm
+from .forms import (
+    EmpresaForm,
+    TagForm,
+    EmpresaSearchForm,
+    TagSearchForm,
+)
 
 
 # ------------------------------------------------------------------
@@ -25,7 +30,16 @@ def lista_empresas(request):
         empresas = Empresa.objects.filter(
             usuario__organizacao=request.user.organizacao
         )
-    return render(request, "empresas/lista.html", {"empresas": empresas})
+
+    form = EmpresaSearchForm(request.GET or None)
+    if form.is_valid() and form.cleaned_data["empresa"]:
+        empresas = empresas.filter(pk=form.cleaned_data["empresa"].pk)
+
+    return render(
+        request,
+        "empresas/lista.html",
+        {"empresas": empresas, "form": form},
+    )
 
 
 # ------------------------------------------------------------------
@@ -91,6 +105,8 @@ def buscar_empresas(request):
     return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
 
 
+
+
 class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
     model = Tag
     template_name = "empresas/tags_list.html"
@@ -101,7 +117,16 @@ class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
         categoria = self.request.GET.get("categoria")
         if categoria in {Tag.Categoria.PRODUTO, Tag.Categoria.SERVICO}:
             qs = qs.filter(categoria=categoria)
+        form = TagSearchForm(self.request.GET)
+        if form.is_valid() and form.cleaned_data["tag"]:
+            qs = qs.filter(pk=form.cleaned_data["tag"].pk)
+        self.form = form
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = getattr(self, "form", TagSearchForm())
+        return context
 
 class TagCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Tag
@@ -133,3 +158,5 @@ class TagDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Item removido.")
         return super().delete(request, *args, **kwargs)
+
+

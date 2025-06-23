@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 
 from .models import Evento
-from .forms import EventoForm
+from .forms import EventoForm, EventoSearchForm
 
 User = get_user_model()
 
@@ -35,7 +35,16 @@ class EventoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         ano = self.request.GET.get("ano")
         if mes and ano:
             queryset = queryset.filter(data_hora__month=mes, data_hora__year=ano)
+        form = EventoSearchForm(self.request.GET)
+        if form.is_valid() and form.cleaned_data["evento"]:
+            queryset = queryset.filter(pk=form.cleaned_data["evento"].pk)
+        self.form = form
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = getattr(self, "form", EventoSearchForm())
+        return context
 
 
 class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -134,3 +143,5 @@ class EventoSubscribeView(GerenteRequiredMixin, LoginRequiredMixin, View):
             evento.inscritos.add(request.user)
             messages.success(request, "Inscrição realizada.")
         return redirect("eventos:detail", pk=pk)
+
+
