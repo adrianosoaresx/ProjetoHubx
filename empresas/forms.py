@@ -49,3 +49,9 @@ class EmpresaForm(forms.ModelForm):
             # if not commit we set relation after
             self._save_m2m = lambda: instance.tags.set(tags)
         return instance
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ["nome"]
