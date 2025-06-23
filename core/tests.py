@@ -19,7 +19,7 @@ class GenerateTestDataCommandTests(TestCase):
         # 115 new users + 1 root superuser from migrations
         self.assertEqual(User.objects.count(), 116)
         self.assertEqual(Nucleo.objects.count(), 20)
-        self.assertEqual(Empresa.objects.count(), 20)
+        self.assertEqual(Empresa.objects.count(), 150)
         self.assertEqual(Evento.objects.count(), 10)
 
         # All generated users (non superusers) should have an empty password
