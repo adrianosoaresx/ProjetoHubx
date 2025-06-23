@@ -1,26 +1,32 @@
-
 /* === Tema Matrix === */
 :root {
-  --background: #0a0a0a;
-  --foreground: #00ff41;
+  --background: #0a0a0a; /* Darker black for background */
+  --foreground: #00ff41; /* Bright green for foreground */
 
-  --card: #111111;
-  --card-foreground: #00ff41;
+  --card: #111111; /* Slightly lighter black for cards */
+  --card-foreground: #00ff41; /* Bright green for card text */
 
-  --border: #006611;
-  --ring: #00ff41;
+  --border: #006611; /* Darker green for borders */
+  --ring: #00ff41; /* Bright green for focus rings (for interactive elements if added later) */
 
-  --radius: 0.5rem;
+  --radius: 0.5rem; /* Standard border radius */
 }
 
 /* Tipografia e base */
 body {
-  /* Tipografia Tailwind */
-  @apply font-mono;
-
-  /* Cores via CSS variables */
+  font-family: "Roboto Mono", monospace; /* Fonte monoespaçada para o tema Matrix */
   background-color: var(--background);
   color: var(--foreground);
+  padding: 1rem; /* Padding padrão para telas pequenas */
+  min-height: 100vh;
+}
+
+/* Padding responsivo para telas maiores */
+@media (min-width: 768px) {
+  /* md breakpoint */
+  body {
+    padding: 2.5rem; /* p-10 equivalent */
+  }
 }
 
 /* Grade sutil de fundo */
@@ -34,4 +40,85 @@ body::before {
   pointer-events: none;
   z-index: -1;
   opacity: 0.3;
+}
+
+/* Efeito de brilho sutil para o título H1 */
+.dashboard-title {
+  font-size: 2.25rem; /* text-4xl equivalent */
+  font-weight: 700; /* font-bold equivalent */
+  margin-bottom: 2rem; /* mb-8 equivalent */
+  text-align: center;
+  color: var(--foreground);
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.7), 0 0 15px rgba(0, 255, 65, 0.3);
+}
+
+/* Contêiner dos cards do dashboard */
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem; /* gap-6 equivalent */
+  max-width: 80rem; /* max-w-7xl equivalent */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Layout responsivo da grade */
+@media (min-width: 768px) {
+  /* md breakpoint */
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)); /* md:grid-cols-2 equivalent */
+  }
+}
+
+@media (min-width: 1024px) {
+  /* lg breakpoint */
+  .dashboard-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* lg:grid-cols-3 equivalent */
+  }
+}
+
+@media (min-width: 1280px) {
+  /* xl breakpoint */
+  .dashboard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* xl:grid-cols-4 equivalent */
+  }
+}
+
+/* Estilos para os cards individuais do dashboard */
+.dashboard-card {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem; /* p-4 equivalent */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Simple shadow equivalent to shadow-lg */
+  transition: border-color 0.3s ease-in-out; /* transition-colors duration-300 equivalent */
+}
+
+.dashboard-card:hover {
+  border-color: var(--foreground); /* hover:border-foreground equivalent */
+}
+
+.dashboard-card-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.5rem; /* pb-2 equivalent */
+  margin-bottom: 0; /* space-y-0 equivalent */
+}
+
+.dashboard-card-title {
+  font-size: 0.875rem; /* text-sm equivalent */
+  font-weight: 500; /* font-medium equivalent */
+}
+
+.dashboard-card-icon {
+  height: 1rem; /* h-4 equivalent */
+  width: 1rem; /* w-4 equivalent */
+  color: var(--foreground);
+}
+
+.dashboard-card-content {
+  font-size: 1.5rem; /* text-2xl equivalent */
+  font-weight: 700; /* font-bold equivalent */
 }
