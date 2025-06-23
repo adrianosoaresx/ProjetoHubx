@@ -1,0 +1,14 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}Remover Item | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <h2>Remover Item</h2>
+    <p>Tem certeza que deseja remover "{{ object.nome }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <a href="{% url 'empresas:tags_list' %}" class="btn-secondary">Cancelar</a>
+        <button type="submit" class="btn-danger">Remover</button>
+    </form>
+</section>
+{% endblock %}

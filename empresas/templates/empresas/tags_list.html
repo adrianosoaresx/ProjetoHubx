@@ -1,0 +1,48 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+{% block title %}Produtos e Serviços | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Produtos e Serviços</h2>
+        <p>Gerencie a lista de produtos e serviços</p>
+    </div>
+
+    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+        <select name="categoria" onchange="this.form.submit()">
+            <option value="" {% if not request.GET.categoria %}selected{% endif %}>Todas</option>
+            <option value="prod" {% if request.GET.categoria == 'prod' %}selected{% endif %}>Produtos</option>
+            <option value="serv" {% if request.GET.categoria == 'serv' %}selected{% endif %}>Serviços</option>
+        </select>
+        <noscript><button type="submit" class="btn-secondary">Filtrar</button></noscript>
+    </form>
+
+    <div class="empresas-actions">
+        <a href="{% url 'empresas:tags_create' %}" class="btn-primary">
+            <span>+</span>
+            <span>Novo Item</span>
+        </a>
+    </div>
+
+    <div class="empresas-grid">
+        {% for tag in object_list %}
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3>{{ tag.nome }}</h3>
+                <p class="empresa-tipo">{{ tag.get_categoria_display }}</p>
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'empresas:tags_update' tag.id %}" class="btn-edit">Editar</a>
+                <a href="{% url 'empresas:tags_delete' tag.id %}" class="btn-danger">Remover</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Nenhum item cadastrado.</p>
+            <a href="{% url 'empresas:tags_create' %}" class="btn-secondary">Cadastrar</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
