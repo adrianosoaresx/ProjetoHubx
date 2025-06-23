@@ -6,7 +6,7 @@
     <div class="section-header">
         <h2>Lista de Eventos</h2>
     </div>
-    {% if user.tipo_id in [4,1] %}
+    {% if user.tipo_id == 4 or user.tipo_id == 1 %}
     <div class="empresas-actions">
         <a href="{% url 'eventos:create' %}" class="btn-primary">Novo Evento</a>
     </div>
@@ -20,7 +20,7 @@
             </div>
             <div class="empresa-actions">
                 <a href="{% url 'eventos:detail' evento.id %}" class="btn-primary">Ver</a>
-                {% if user.tipo_id in [4,1] %}
+                {% if user.tipo_id == 4 or user.tipo_id == 1 %}
                 <a href="{% url 'eventos:update' evento.id %}" class="btn-edit">Editar</a>
                 <a href="{% url 'eventos:delete' evento.id %}" class="btn-danger">Remover</a>
                 {% endif %}
