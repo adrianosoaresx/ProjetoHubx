@@ -19,7 +19,12 @@ from .forms import EmpresaForm, TagForm
 # ------------------------------------------------------------------
 @login_required
 def lista_empresas(request):
-    empresas = Empresa.objects.filter(usuario=request.user)
+    if request.user.is_superuser:
+        empresas = Empresa.objects.all()
+    else:
+        empresas = Empresa.objects.filter(
+            usuario__organizacao=request.user.organizacao
+        )
     return render(request, "empresas/lista.html", {"empresas": empresas})
 
 
@@ -67,7 +72,12 @@ def editar_empresa(request, pk):
 @login_required
 def buscar_empresas(request):
     query = request.GET.get("q", "")
-    empresas = Empresa.objects.filter(usuario=request.user)
+    if request.user.is_superuser:
+        empresas = Empresa.objects.all()
+    else:
+        empresas = Empresa.objects.filter(
+            usuario__organizacao=request.user.organizacao
+        )
     if query:
         palavras = [p.strip() for p in query.split() if p.strip()]
         q_objects = Q()
