@@ -81,6 +81,12 @@
                 <span>🗓️</span>
                 <span>Eventos</span>
             </a>
+            {% if user.tipo_id == 4 %}
+            <a href="{% url 'empresas:tags_list' %}" class="btn-secondary-nav">
+                <span>🛒</span>
+                <span>Produtos/Serviços</span>
+            </a>
+            {% endif %}
         </div>
     </div>
 

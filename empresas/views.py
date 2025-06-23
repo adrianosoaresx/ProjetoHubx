@@ -5,8 +5,13 @@ from django.urls import reverse
 from django.db.models import Q
 from django.contrib import messages
 
-from .models import Empresa
-from .forms import EmpresaForm
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from core.permissions import SuperadminRequiredMixin
+
+from .models import Empresa, Tag
+from .forms import EmpresaForm, TagForm
 
 
 # ------------------------------------------------------------------
@@ -74,3 +79,40 @@ def buscar_empresas(request):
         empresas = empresas.filter(q_objects)
     empresas = empresas.distinct()
     return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
+
+
+class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
+    model = Tag
+    template_name = "empresas/tags_list.html"
+
+
+class TagCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Tag
+    form_class = TagForm
+    template_name = "empresas/tag_form.html"
+    success_url = reverse_lazy("empresas:tags_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Item criado com sucesso.")
+        return super().form_valid(form)
+
+
+class TagUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Tag
+    form_class = TagForm
+    template_name = "empresas/tag_form.html"
+    success_url = reverse_lazy("empresas:tags_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Item atualizado com sucesso.")
+        return super().form_valid(form)
+
+
+class TagDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Tag
+    template_name = "empresas/tag_confirm_delete.html"
+    success_url = reverse_lazy("empresas:tags_list")
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Item removido.")
+        return super().delete(request, *args, **kwargs)
