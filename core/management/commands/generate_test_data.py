@@ -15,7 +15,9 @@ import io
 
 
 class Command(BaseCommand):
-    help = "Generate sample organizations, nuclei and users"
+    help = (
+        "Generate sample organizations, nuclei, users, tags, companies and events"
+    )
 
     NUCLEO_NOMES = ["CDL Mulher", "CDL Jovem"]
 
@@ -77,7 +79,7 @@ class Command(BaseCommand):
                     "first_name": primeiro,
                     "last_name": ultimo,
                     "email": faker.unique.email(),
-                    "cpf": faker.cpf(),
+                    "cpf": faker.unique.cpf(),
                     "genero": genero,
                     "tipo": UserType.objects.get(descricao=tipo_desc),
                     "organizacao": random.choice(orgs),
@@ -122,7 +124,7 @@ class Command(BaseCommand):
             usuario = random.choice(clientes)
             empresa = Empresa.objects.create(
                 usuario=usuario,
-                cnpj=faker.cnpj(),
+                cnpj=faker.unique.cnpj(),
                 nome=faker.company(),
                 tipo=faker.bs().title(),
                 municipio=faker.city(),
@@ -146,7 +148,9 @@ class Command(BaseCommand):
                     link_inscricao=faker.url(),
                     briefing=faker.text(),
                 )
-                inscritos = random.sample(clientes, k=5)
+                # Inscreve apenas clientes da mesma organização
+                clientes_org = [c for c in clientes if c.organizacao == org]
+                inscritos = random.sample(clientes_org, k=5)
                 evento.inscritos.add(*inscritos)
 
         output_format = options["format"]
