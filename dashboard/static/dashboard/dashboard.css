@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Tema Matrix === */
+:root {
+  --background: #0a0a0a;
+  --foreground: #00ff41;
+
+  --card: #111111;
+  --card-foreground: #00ff41;
+
+  --border: #006611;
+  --ring: #00ff41;
+
+  --radius: 0.5rem;
+}
+
+/* Tipografia e base */
+body {
+  /* Tipografia Tailwind */
+  @apply font-mono;
+
+  /* Cores via CSS variables */
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+/* Grade sutil de fundo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(to right, rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.3;
+}
