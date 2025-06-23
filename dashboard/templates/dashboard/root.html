@@ -1,0 +1,12 @@
+{% extends "perfil/perfil_subpage_base.html" %}
+{% block title %}Dashboard Root | Hubx{% endblock %}
+{% block perfil_subpage_content %}
+<h1>Dashboard Root</h1>
+<ul>
+  <li>Usuários: {{ num_users }}</li>
+  <li>Organizações: {{ num_organizacoes }}</li>
+  <li>Núcleos: {{ num_nucleos }}</li>
+  <li>Empresas: {{ num_empresas }}</li>
+  <li>Eventos: {{ num_eventos }}</li>
+</ul>
+{% endblock %}

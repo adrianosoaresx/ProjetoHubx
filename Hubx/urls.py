@@ -12,6 +12,11 @@ urlpatterns = [
     # Página inicial (app core)
     path("", include("core.urls")),
 
+    path(
+        "dashboard/",
+        include(("dashboard.urls", "dashboard"), namespace="dashboard"),
+    ),
+
     # Apps de autenticação/usuário
     path(
         "accounts/",
