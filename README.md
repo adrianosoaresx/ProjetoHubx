@@ -37,3 +37,5 @@ usuários, organizações, núcleos, empresas e eventos de exemplo.
 python manage.py generate_test_data --format json > seed.json
 ```
 
+### Fórum
+O módulo `forum` permite a criação de tópicos e respostas por usuários autenticados. Acesse `/forum/` para visualizar as categorias.

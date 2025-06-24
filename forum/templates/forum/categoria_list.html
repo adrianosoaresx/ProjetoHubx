@@ -1,0 +1,18 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+
+{% block title %}Categorias | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Categorias do Fórum</h2>
+    </div>
+    <ul>
+        {% for categoria in object_list %}
+        <li><a href="{% url 'forum:topicos' categoria.pk %}">{{ categoria.nome }}</a></li>
+        {% empty %}
+        <li>Nenhuma categoria cadastrada.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}
