@@ -1,0 +1,22 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+
+{% block title %}Tópicos | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>{{ categoria.nome }}</h2>
+        <a href="{% url 'forum:topico_create' %}" class="btn-primary">Novo Tópico</a>
+    </div>
+    <ul>
+        {% for topico in object_list %}
+        <li>
+            <a href="{% url 'forum:topico_detail' topico.pk %}">{{ topico.titulo }}</a>
+            <small>por {{ topico.autor.username }} em {{ topico.criado_em|date:'SHORT_DATE_FORMAT' }}</small>
+        </li>
+        {% empty %}
+        <li>Nenhum tópico encontrado.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

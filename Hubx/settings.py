@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'eventos',
     'channels',
     'chat',
+    'forum',
 
 ]
 

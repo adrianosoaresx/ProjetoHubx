@@ -41,6 +41,7 @@ urlpatterns = [
         include(("eventos.urls", "eventos"), namespace="eventos"),
     ),
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
+    path("forum/", include(("forum.urls", "forum"), namespace="forum")),
     path("select2/", include("django_select2.urls")),
 ]
 
