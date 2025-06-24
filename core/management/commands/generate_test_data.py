@@ -15,23 +15,28 @@ import io
 
 
 class Command(BaseCommand):
-    help = (
-        "Generate sample organizations, nuclei, users, tags, companies and events"
-    )
+    help = "Generate sample organizations, nuclei, users, tags, companies and events"
 
     NUCLEO_NOMES = ["CDL Mulher", "CDL Jovem"]
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--format",
-            choices=["json", "csv"],
-            default="json",
-            help="Output format"
+            "--format", choices=["json", "csv"], default="json", help="Output format"
         )
 
     def handle(self, *args, **options):
         faker = Faker("pt_BR")
         User = get_user_model()
+
+        root_user, _ = User.objects.get_or_create(
+            username="root",
+            defaults={
+                "first_name": "root",
+                "is_superuser": True,
+                "is_staff": True,
+                "tipo": UserType.objects.get(descricao="root"),
+            },
+        )
 
         # Limpa dados previamente gerados (exceto tipos e superusuários)
         User.objects.filter(is_superuser=False).delete()
@@ -53,7 +58,9 @@ class Command(BaseCommand):
         ]
         orgs = []
         for nome, cnpj in org_data:
-            org, _ = Organizacao.objects.get_or_create(nome=nome, defaults={"cnpj": cnpj})
+            org, _ = Organizacao.objects.get_or_create(
+                nome=nome, defaults={"cnpj": cnpj}
+            )
             orgs.append(org)
 
         nucleos_by_org = {}
@@ -191,6 +198,32 @@ class Command(BaseCommand):
                 num_seguidos = random.randint(0, min(10, len(possiveis)))
                 usuario.following.add(*random.sample(possiveis, num_seguidos))
 
+        # Conecta todos os usuários ao superusuário "root"
+        if root_user:
+            root_user.connections.add(*todos_usuarios)
+            for user in todos_usuarios:
+                user.connections.add(root_user)
+
+        # Conecta cada gerente a um admin da mesma organização
+        admins_por_org = {}
+        for admin in admins:
+            admins_por_org.setdefault(admin.organizacao_id, []).append(admin)
+
+        for gerente in gerentes:
+            admins_org = admins_por_org.get(gerente.organizacao_id)
+            if admins_org:
+                gerente.connections.add(random.choice(admins_org))
+
+        # Conecta cada cliente a um gerente da mesma organização
+        gerentes_por_org = {}
+        for gerente in gerentes:
+            gerentes_por_org.setdefault(gerente.organizacao_id, []).append(gerente)
+
+        for cliente in clientes:
+            gerentes_org = gerentes_por_org.get(cliente.organizacao_id)
+            if gerentes_org:
+                cliente.connections.add(random.choice(gerentes_org))
+
         # Cria eventos para cada organização
         for org in orgs:
             for _ in range(5):
@@ -199,7 +232,9 @@ class Command(BaseCommand):
                     titulo=faker.catch_phrase(),
                     descricao=faker.text(),
                     data_hora=timezone.now()
-                    + timedelta(days=random.randint(1, 30), hours=random.randint(0, 23)),
+                    + timedelta(
+                        days=random.randint(1, 30), hours=random.randint(0, 23)
+                    ),
                     duracao=timedelta(hours=random.randint(1, 3)),
                     link_inscricao=faker.url(),
                     briefing=faker.text(),
@@ -218,10 +253,11 @@ class Command(BaseCommand):
             writer = csv.writer(self.stdout)
             writer.writerow(["username", "email", "tipo", "organizacao"])
             for user in clientes + gerentes + admins:
-                writer.writerow([
-                    user.username,
-                    user.email,
-                    user.tipo.descricao,
-                    user.organizacao.nome,
-                ])
-
+                writer.writerow(
+                    [
+                        user.username,
+                        user.email,
+                        user.tipo.descricao,
+                        user.organizacao.nome,
+                    ]
+                )
