@@ -2,10 +2,12 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from nucleos.models import Nucleo
 
+from core.models import TimeStampedModel
+
 User = get_user_model()
 
 
-class Mensagem(models.Model):
+class Mensagem(TimeStampedModel):
     nucleo = models.ForeignKey(Nucleo, on_delete=models.CASCADE)
     remetente = models.ForeignKey(User, on_delete=models.CASCADE)
     tipo = models.CharField(

@@ -6,8 +6,10 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
+from core.models import TimeStampedModel
 
-class UserType(models.Model):
+
+class UserType(TimeStampedModel):
     """Tipos de usuário cadastrados no sistema."""
 
     descricao = models.CharField("Descrição", max_length=20)
@@ -26,7 +28,7 @@ cpf_validator = RegexValidator(
     message="Digite um CPF válido no formato 000.000.000-00.",
 )
 
-class User(AbstractUser):
+class User(AbstractUser, TimeStampedModel):
     """
     Modelo de usuário customizado.
     Herdamos de AbstractUser para manter toda a infraestrutura
@@ -131,7 +133,7 @@ class User(AbstractUser):
         return self.get_full_name() or self.username
 
 
-class NotificationSettings(models.Model):
+class NotificationSettings(TimeStampedModel):
     """Preferências de notificação do usuário."""
 
     user = models.OneToOneField(
@@ -156,7 +158,7 @@ class NotificationSettings(models.Model):
         return f"Notificações de {self.user}"
 
 
-class UserMedia(models.Model):
+class UserMedia(TimeStampedModel):
     """Arquivos de mídia (imagens, vídeos, PDFs) enviados pelo usuário."""
 
     user = models.ForeignKey(
