@@ -50,7 +50,9 @@ INSTALLED_APPS = [
     'organizacoes',
     'nucleos',
     'eventos',
-    
+    'channels',
+    'chat',
+
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Hubx.wsgi.application'
+ASGI_APPLICATION = 'Hubx.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    }
+}
 
 
 # Database
