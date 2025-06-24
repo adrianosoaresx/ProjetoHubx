@@ -41,3 +41,9 @@ class GenerateTestDataCommandTests(TestCase):
             set(User.objects.exclude(is_superuser=True).values_list("id", flat=True)),
         )
 
+        root_user = User.objects.get(username="root")
+        self.assertEqual(
+            root_user.connections.count(),
+            User.objects.filter(is_superuser=False).count(),
+        )
+
