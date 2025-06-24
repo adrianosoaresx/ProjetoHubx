@@ -16,7 +16,7 @@ as migrações do banco de dados. A execução de ``python manage.py migrate``
 cria o usuário padrão ``root`` necessário para o comando:
 
 ```
-pip install -r requirements.txt
+pip install -r requirements.txt  # inclui o pacote Channels para WebSockets
 python manage.py migrate
 ```
 
