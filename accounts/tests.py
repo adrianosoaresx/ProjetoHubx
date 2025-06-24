@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 
-from .models import NotificationSettings
+from .models import NotificationSettings, UserMedia
 
 
 class RegistrationSessionTests(TestCase):
@@ -100,3 +100,24 @@ class RegisterViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         user = get_user_model().objects.get(username="janedoe")
         self.assertTrue(NotificationSettings.objects.filter(user=user).exists())
+
+
+class MediaUploadTests(TestCase):
+    """Testa o upload e listagem de mídias do usuário."""
+
+    def setUp(self):
+        self.client = Client()
+        self.user = get_user_model().objects.create_user(
+            username="midiauser", password="pass"
+        )
+        self.client.force_login(self.user)
+
+    def test_media_is_listed_after_upload(self):
+        file = SimpleUploadedFile("doc.txt", b"content")
+        response = self.client.post(reverse("accounts:midias"), {"file": file})
+        self.assertEqual(response.status_code, 302)
+        media = UserMedia.objects.get(user=self.user)
+
+        response = self.client.get(reverse("accounts:midias"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(media.file.name, response.content.decode())
