@@ -191,6 +191,31 @@ class Command(BaseCommand):
                 num_seguidos = random.randint(0, min(10, len(possiveis)))
                 usuario.following.add(*random.sample(possiveis, num_seguidos))
 
+        # Conecta todos os usuários ao superusuário "root"
+        root_user = User.objects.filter(username="root").first()
+        if root_user:
+            root_user.connections.add(*todos_usuarios)
+
+        # Conecta cada gerente a um admin da mesma organização
+        admins_por_org = {}
+        for admin in admins:
+            admins_por_org.setdefault(admin.organizacao_id, []).append(admin)
+
+        for gerente in gerentes:
+            admins_org = admins_por_org.get(gerente.organizacao_id)
+            if admins_org:
+                gerente.connections.add(random.choice(admins_org))
+
+        # Conecta cada cliente a um gerente da mesma organização
+        gerentes_por_org = {}
+        for gerente in gerentes:
+            gerentes_por_org.setdefault(gerente.organizacao_id, []).append(gerente)
+
+        for cliente in clientes:
+            gerentes_org = gerentes_por_org.get(cliente.organizacao_id)
+            if gerentes_org:
+                cliente.connections.add(random.choice(gerentes_org))
+
         # Cria eventos para cada organização
         for org in orgs:
             for _ in range(5):
