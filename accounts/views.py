@@ -24,6 +24,7 @@ from .forms import (
     RedesSociaisForm,
     ContaForm,
     NotificacoesForm,
+    MediaForm,
     CustomUserCreationForm,
 )
 from .models import cpf_validator, NotificationSettings  # ajuste se necessário
@@ -131,7 +132,25 @@ def perfil_conexoes(request):
 
     return render(request, "perfil/conexoes.html", context)
 
-# 7 • Configurações da Conta
+# 7 • Mídias
+@login_required
+def perfil_midias(request):
+    medias = request.user.medias.all()
+    if request.method == "POST":
+        form = MediaForm(request.POST, request.FILES)
+        if form.is_valid():
+            media = form.save(commit=False)
+            media.user = request.user
+            media.save()
+            messages.success(request, "Arquivo enviado com sucesso.")
+            return redirect("accounts:midias")
+    else:
+        form = MediaForm()
+
+    context = {"form": form, "medias": medias}
+    return render(request, "perfil/midias.html", context)
+
+# 8 • Configurações da Conta
 @login_required
 def perfil_conta(request):
     if request.method == "POST":

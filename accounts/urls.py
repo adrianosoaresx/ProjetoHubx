@@ -31,5 +31,6 @@ urlpatterns = [
     path("perfil/seguranca/",         views.perfil_seguranca,    name="seguranca"),
     path("perfil/notificacoes/",      views.perfil_notificacoes, name="notificacoes"),
     path("perfil/conexoes/",          views.perfil_conexoes,     name="conexoes"),
+    path("perfil/midias/",            views.perfil_midias,       name="midias"),
     path("perfil/conta/",             views.perfil_conta,        name="conta"),
 ]

@@ -1,0 +1,38 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
+
+{% block title %}Mídias | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section id="midias" class="perfil-section active">
+  <div class="section-header">
+      <h2>Mídias</h2>
+      <p>Gerencie suas imagens, vídeos e documentos</p>
+  </div>
+
+  <form id="formMidias" class="perfil-form" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+          <label for="id_file" class="form-label">Enviar arquivo</label>
+          <input type="file" id="id_file" name="file" class="form-input" required>
+      </div>
+      <div class="form-actions">
+          <button type="submit" class="btn-save">
+              <span class="button-text">Enviar</span>
+              <span class="button-loader"></span>
+          </button>
+      </div>
+  </form>
+
+  <div class="media-list">
+      {% for media in medias %}
+      <div class="media-item">
+          <a href="{{ media.file.url }}" target="_blank">{{ media.file.name }}</a>
+          <span class="media-date">{{ media.uploaded_at|date:"d/m/Y H:i" }}</span>
+      </div>
+      {% empty %}
+      <p>Nenhum arquivo enviado.</p>
+      {% endfor %}
+  </div>
+</section>
+{% endblock %}
