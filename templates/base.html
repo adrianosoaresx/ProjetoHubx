@@ -30,7 +30,6 @@
         <div class="header-container">
             <div class="logo">HubX</div>
             <nav>
-                <a href="{% url 'organizacoes:list' %}">Organizações</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'accounts:logout' %}" class="cta-button">Sair</a>
                 {% else %}
