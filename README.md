@@ -12,7 +12,8 @@ O fluxo de autenticação utiliza agora os formulários padrões do Django. Para
 Configuração inicial
 --------------------
 Antes de executar ``generate_test_data``, instale as dependências e aplique
-as migrações do banco de dados:
+as migrações do banco de dados. A execução de ``python manage.py migrate``
+cria o usuário padrão ``root`` necessário para o comando:
 
 ```
 pip install -r requirements.txt
