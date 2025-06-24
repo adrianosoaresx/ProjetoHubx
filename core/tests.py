@@ -30,3 +30,8 @@ class GenerateTestDataCommandTests(TestCase):
         )
         self.assertEqual(list(passwords), [""])
 
+        root_user = User.objects.get(username="root")
+        self.assertEqual(
+            root_user.connections.count(),
+            User.objects.filter(is_superuser=False).count(),
+        )
