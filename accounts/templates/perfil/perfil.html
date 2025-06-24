@@ -72,6 +72,12 @@
                 <span>🏠</span>
                 <span>Dashboard</span>
             </a>
+            {% if user.tipo_id == 4 %}
+            <a href="{% url 'organizacoes:list' %}" class="btn-secondary-nav">
+                <span>🏛️</span>
+                <span>Organizações</span>
+            </a>
+            {% endif %}
             <a href="{% url 'empresas:lista' %}" class="btn-secondary-nav">
                 <span>🏢</span>
                 <span>Empresas</span>
