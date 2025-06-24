@@ -115,19 +115,21 @@ def perfil_notificacoes(request):
 # 6 • Conexões (somente leitura)
 @login_required
 def perfil_conexoes(request):
-    conexoes = getattr(request.user, "connections", None)
-    seguidores = getattr(request.user, "followers", None)
-    seguindo = getattr(request.user, "following", None)
+    """Exibe conexões e seguidores do usuário."""
 
-    return render(
-        request,
-        "perfil/conexoes.html",
-        {
-            "conexoes": conexoes.all() if conexoes else [],
-            "seguidores": seguidores.all() if seguidores else [],
-            "followings": seguindo.all() if seguindo else [],
-        },
-    )
+    connections = getattr(request.user, "connections", None)
+    followers = getattr(request.user, "followers", None)
+    followings = getattr(request.user, "following", None)
+
+    context = {
+        "connections": connections.all() if connections else [],
+        # solicitações de conexão ainda não implementadas
+        "connection_requests": [],
+        "followers": followers.all() if followers else [],
+        "followings": followings.all() if followings else [],
+    }
+
+    return render(request, "perfil/conexoes.html", context)
 
 # 7 • Configurações da Conta
 @login_required
