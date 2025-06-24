@@ -30,3 +30,20 @@ class GenerateTestDataCommandTests(TestCase):
         )
         self.assertEqual(list(passwords), [""])
 
+    def test_root_has_connections(self):
+        """Root user should be connected to all generated users."""
+        call_command("generate_test_data")
+
+        User = get_user_model()
+        root_user = User.objects.get(username="root")
+        self.assertEqual(
+            set(root_user.connections.values_list("id", flat=True)),
+            set(User.objects.exclude(is_superuser=True).values_list("id", flat=True)),
+        )
+
+        root_user = User.objects.get(username="root")
+        self.assertEqual(
+            root_user.connections.count(),
+            User.objects.filter(is_superuser=False).count(),
+        )
+
