@@ -2,10 +2,12 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from organizacoes.models import Organizacao
 
+from core.models import TimeStampedModel
+
 User = get_user_model()
 
 
-class Nucleo(models.Model):
+class Nucleo(TimeStampedModel):
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE, related_name="nucleos")
     nome = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)

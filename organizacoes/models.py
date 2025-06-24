@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from core.models import TimeStampedModel
 
-class Organizacao(models.Model):
+
+class Organizacao(TimeStampedModel):
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)

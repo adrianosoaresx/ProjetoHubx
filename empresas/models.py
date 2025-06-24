@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from core.models import TimeStampedModel
 
-class Tag(models.Model):
+
+class Tag(TimeStampedModel):
     """Tags para produtos e serviços."""
 
     class Categoria(models.TextChoices):
@@ -24,7 +26,7 @@ class Tag(models.Model):
         return self.nome
 
 
-class Empresa(models.Model):
+class Empresa(TimeStampedModel):
     usuario = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name="empresas"
     )
