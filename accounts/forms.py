@@ -2,7 +2,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
-from .models import NotificationSettings
+from .models import NotificationSettings, UserMedia
 
 User = get_user_model()
 
@@ -64,3 +64,9 @@ class NotificacoesForm(forms.ModelForm):
     class Meta:
         model = NotificationSettings
         exclude = ('user', )
+
+
+class MediaForm(forms.ModelForm):
+    class Meta:
+        model = UserMedia
+        fields = ("file",)

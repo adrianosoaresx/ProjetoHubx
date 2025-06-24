@@ -146,3 +146,22 @@ class NotificationSettings(models.Model):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"Notificações de {self.user}"
+
+
+class UserMedia(models.Model):
+    """Arquivos de mídia (imagens, vídeos, PDFs) enviados pelo usuário."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="medias",
+    )
+    file = models.FileField(upload_to="user_media/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Mídia do Usuário"
+        verbose_name_plural = "Mídias do Usuário"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.user.username} - {self.file.name}"
