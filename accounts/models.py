@@ -104,6 +104,14 @@ class User(AbstractUser):
         blank=True,
     )
 
+    nucleo = models.ForeignKey(
+        "nucleos.Nucleo",
+        on_delete=models.SET_NULL,
+        related_name="usuarios_principais",
+        null=True,
+        blank=True,
+    )
+
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)
     followers = models.ManyToManyField(

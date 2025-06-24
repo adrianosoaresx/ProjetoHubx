@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<div id="chat-messages"></div>
+<form id="chat-form">
+    <input type="text" id="chat-input" autocomplete="off"/>
+    <button type="submit">Enviar</button>
+</form>
+<input type="file" id="file-input" style="display:none" />
+<button id="upload-btn">Upload</button>
+<script>
+const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+const messages = document.getElementById('chat-messages');
+const input = document.getElementById('chat-input');
+const form = document.getElementById('chat-form');
+const fileInput = document.getElementById('file-input');
+const uploadBtn = document.getElementById('upload-btn');
+
+socket.onmessage = function(e){
+  const data = JSON.parse(e.data);
+  const div = document.createElement('div');
+  div.textContent = data.remetente + ': ' + data.conteudo;
+  messages.appendChild(div);
+};
+form.onsubmit = function(e){
+  e.preventDefault();
+  const message = input.value;
+  socket.send(JSON.stringify({tipo: 'text', conteudo: message}));
+  input.value = '';
+};
+uploadBtn.onclick = () => fileInput.click();
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if(!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  fetch('', {method:'POST', body: formData, headers:{'X-CSRFToken': '{{ csrf_token }}'}})
+    .then(r=>r.json())
+    .then(data=>{
+      socket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
+    });
+};
+</script>
+{% endblock %}
