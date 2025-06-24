@@ -1,0 +1,16 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+
+{% block title %}Novo Tópico | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Novo Tópico</h2>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-primary">Criar</button>
+    </form>
+</section>
+{% endblock %}

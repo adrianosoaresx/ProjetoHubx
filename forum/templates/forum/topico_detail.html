@@ -1,0 +1,34 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+
+{% block title %}{{ object.titulo }} | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>{{ object.titulo }}</h2>
+        <p>por {{ object.autor.username }} em {{ object.criado_em|date:'SHORT_DATETIME_FORMAT' }}</p>
+    </div>
+    <div>
+        {{ object.conteudo|linebreaks }}
+    </div>
+
+    <h3>Respostas</h3>
+    <ul>
+        {% for resposta in object.respostas.all %}
+        <li>
+            <p>{{ resposta.conteudo|linebreaks }}</p>
+            <small>{{ resposta.autor.username }} - {{ resposta.criado_em|date:'SHORT_DATETIME_FORMAT' }}</small>
+        </li>
+        {% empty %}
+        <li>Sem respostas.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Responder</h3>
+    <form method="post" action="{% url 'forum:responder' object.pk %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn-primary">Enviar</button>
+    </form>
+</section>
+{% endblock %}
