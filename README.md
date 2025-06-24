@@ -20,6 +20,13 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+### Erro "No module named 'channels'"
+
+Se ao executar ``python manage.py check`` for exibido o erro acima, verifique se
+as dependências foram instaladas corretamente com ``pip install -r
+requirements.txt``. O pacote ``channels`` faz parte dos requisitos do projeto e
+deve estar presente no ambiente virtual.
+
 Gerar dados de teste
 --------------------
 Utilize o comando ``generate_test_data`` para popular o banco com
