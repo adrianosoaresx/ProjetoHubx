@@ -135,7 +135,8 @@ def perfil_conexoes(request):
 # 7 • Mídias
 @login_required
 def perfil_midias(request):
-    medias = request.user.medias.all()
+    """Exibe e processa o envio de mídias do usuário."""
+
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -147,6 +148,7 @@ def perfil_midias(request):
     else:
         form = MediaForm()
 
+    medias = request.user.medias.order_by("-uploaded_at")
     context = {"form": form, "medias": medias}
     return render(request, "perfil/midias.html", context)
 
