@@ -94,6 +94,10 @@
                 <span>🗓️</span>
                 <span>Eventos</span>
             </a>
+            <a href="{% url 'forum:categorias' %}" class="btn-secondary-nav">
+                <span>💬</span>
+                <span>Fórum</span>
+            </a>
             {% if user.tipo_id == 4 %}
             <a href="{% url 'empresas:tags_list' %}" class="btn-secondary-nav">
                 <span>🛒</span>
@@ -125,6 +129,10 @@
             <a href="{% url 'accounts:seguranca' %}" class="nav-item">
                 <span class="nav-icon">🔒</span>
                 <span class="nav-text">Segurança</span>
+            </a>
+            <a href="{% url 'chat:room' %}" class="nav-item">
+                <span class="nav-icon">💬</span>
+                <span class="nav-text">Chat</span>
             </a>
         </nav>
     </div>
