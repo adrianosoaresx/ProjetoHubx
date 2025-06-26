@@ -37,5 +37,15 @@ urlpatterns = [
         views.perfil_midia_detail,
         name="midia_detail",
     ),
+    path(
+        "perfil/midias/<int:pk>/editar/",
+        views.perfil_midia_edit,
+        name="midia_edit",
+    ),
+    path(
+        "perfil/midias/<int:pk>/excluir/",
+        views.perfil_midia_delete,
+        name="midia_delete",
+    ),
     path("perfil/conta/",             views.perfil_conta,        name="conta"),
 ]

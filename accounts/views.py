@@ -168,6 +168,36 @@ def perfil_midia_detail(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     return render(request, "perfil/midia_detail.html", {"media": media})
 
+
+@login_required
+def perfil_midia_edit(request, pk):
+    """Permite editar uma mídia do usuário."""
+
+    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
+    if request.method == "POST":
+        form = MediaForm(request.POST, request.FILES, instance=media)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Mídia atualizada com sucesso.")
+            return redirect("accounts:midias")
+    else:
+        form = MediaForm(instance=media)
+
+    return render(request, "perfil/midia_form.html", {"form": form})
+
+
+@login_required
+def perfil_midia_delete(request, pk):
+    """Confirma e processa a exclusão de uma mídia."""
+
+    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
+    if request.method == "POST":
+        media.delete()
+        messages.success(request, "Mídia removida.")
+        return redirect("accounts:midias")
+
+    return render(request, "perfil/midia_confirm_delete.html", {"media": media})
+
 # 8 • Configurações da Conta
 @login_required
 def perfil_conta(request):
