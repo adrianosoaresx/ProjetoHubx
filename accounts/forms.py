@@ -67,6 +67,36 @@ class NotificacoesForm(forms.ModelForm):
 
 
 class MediaForm(forms.ModelForm):
+    tags_field = forms.CharField(
+        required=False,
+        help_text="Separe as tags por vírgula",
+        label="Tags",
+    )
+
     class Meta:
         model = UserMedia
-        fields = ("file", "descricao")
+        fields = ("file", "descricao", "tags_field")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["tags_field"].initial = ", ".join(
+                self.instance.tags.values_list("nome", flat=True)
+            )
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        tags_names = [t.strip() for t in self.cleaned_data.get("tags_field", "").split(",") if t.strip()]
+        from .models import MediaTag
+        tags = []
+        for name in tags_names:
+            tag, _ = MediaTag.objects.get_or_create(nome=name)
+            tags.append(tag)
+        if commit:
+            instance.tags.set(tags)
+            self.save_m2m()
+        else:
+            self._save_m2m = lambda: instance.tags.set(tags)
+        return instance

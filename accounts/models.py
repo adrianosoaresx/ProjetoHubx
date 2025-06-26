@@ -158,6 +158,19 @@ class NotificationSettings(TimeStampedModel):
         return f"Notificações de {self.user}"
 
 
+class MediaTag(TimeStampedModel):
+    """Tags para categorizar mídias dos usuários."""
+
+    nome = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = "Tag de Mídia"
+        verbose_name_plural = "Tags de Mídia"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.nome
+
+
 class UserMedia(TimeStampedModel):
     """Arquivos de mídia (imagens, vídeos, PDFs) enviados pelo usuário."""
 
@@ -168,6 +181,7 @@ class UserMedia(TimeStampedModel):
     )
     file = models.FileField(upload_to="user_media/")
     descricao = models.CharField("Descrição", max_length=255, blank=True)
+    tags = models.ManyToManyField(MediaTag, related_name="medias", blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
