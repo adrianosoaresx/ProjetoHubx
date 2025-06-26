@@ -4,6 +4,7 @@
 {% block title %}{{ object.titulo }} | Matrix Forum{% endblock %}
 
 {% block extra_css %}
+{{ block.super }}
 <link rel="stylesheet" href="{% static 'css/forum.css' %}">
 {% endblock %}
 
