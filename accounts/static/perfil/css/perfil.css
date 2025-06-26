@@ -1598,7 +1598,7 @@
 
 .media-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-top: 2rem;
 }
@@ -1638,4 +1638,17 @@
 .media-date {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Individual media view */
+.media-view {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.media-view img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  margin-bottom: 1rem;
 }

@@ -8,7 +8,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile, File
@@ -27,7 +27,7 @@ from .forms import (
     MediaForm,
     CustomUserCreationForm,
 )
-from .models import cpf_validator, NotificationSettings  # ajuste se necessário
+from .models import cpf_validator, NotificationSettings, UserMedia  # ajuste se necessário
 
 User = get_user_model()
 
@@ -137,6 +137,8 @@ def perfil_conexoes(request):
 def perfil_midias(request):
     """Exibe e processa o envio de mídias do usuário."""
 
+    show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
+
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -149,8 +151,16 @@ def perfil_midias(request):
         form = MediaForm()
 
     medias = request.user.medias.order_by("-uploaded_at")
-    context = {"form": form, "medias": medias}
+    context = {"form": form, "medias": medias, "show_form": show_form}
     return render(request, "perfil/midias.html", context)
+
+
+@login_required
+def perfil_midia_detail(request, pk):
+    """Exibe uma mídia individual em tamanho ampliado."""
+
+    media = get_object_or_404(UserMedia, pk=pk, user=request.user)
+    return render(request, "perfil/midia_detail.html", {"media": media})
 
 # 8 • Configurações da Conta
 @login_required

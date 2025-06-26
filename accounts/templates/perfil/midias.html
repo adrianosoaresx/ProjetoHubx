@@ -10,6 +10,7 @@
       <p>Gerencie suas imagens, vídeos e documentos</p>
   </div>
 
+  {% if show_form %}
   <form id="formMidias" class="perfil-form" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="form-group">
@@ -27,11 +28,14 @@
           </button>
       </div>
   </form>
+  {% else %}
+  <a href="{% url 'accounts:midias' %}?adicionar=1" class="btn-primary">Adicionar Mídias</a>
+  {% endif %}
 
   <div class="media-grid">
       {% for media in medias %}
       <div class="media-card">
-          <a href="{{ media.file.url }}" target="_blank">
+          <a href="{% url 'accounts:midia_detail' media.pk %}">
               <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="media-thumb">
           </a>
           <div class="media-info">

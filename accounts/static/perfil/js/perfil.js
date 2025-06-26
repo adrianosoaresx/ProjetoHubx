@@ -87,6 +87,7 @@ function initSearch() {
 
 document.addEventListener("DOMContentLoaded", initSearch)
 
+
 function getCsrfToken() {
     const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]")
     return csrfToken ? csrfToken.value : ""
