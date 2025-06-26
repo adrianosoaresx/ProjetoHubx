@@ -8,15 +8,17 @@
         <h2>{{ categoria.nome }}</h2>
         <a href="{% url 'forum:topico_create' %}" class="btn-primary">Novo Tópico</a>
     </div>
-    <ul>
+    <div class="empresas-grid">
         {% for topico in object_list %}
-        <li>
-            <a href="{% url 'forum:topico_detail' topico.pk %}">{{ topico.titulo }}</a>
-            <small>por {{ topico.autor.username }} em {{ topico.criado_em|date:'SHORT_DATE_FORMAT' }}</small>
-        </li>
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3><a href="{% url 'forum:topico_detail' topico.pk %}">{{ topico.titulo }}</a></h3>
+                <p class="empresa-tipo">por {{ topico.autor.username }} em {{ topico.criado_em|date:'SHORT_DATE_FORMAT' }}</p>
+            </div>
+        </div>
         {% empty %}
-        <li>Nenhum tópico encontrado.</li>
+        <div class="empty-state">Nenhum tópico encontrado.</div>
         {% endfor %}
-    </ul>
+    </div>
 </section>
 {% endblock %}
