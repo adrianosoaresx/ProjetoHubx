@@ -10,12 +10,27 @@
         <a href="{% url 'forum:categoria_manage_list' %}" class="btn-secondary">Gerenciar</a>
         {% endif %}
     </div>
-    <ul>
+    <div class="empresas-grid">
         {% for categoria in object_list %}
-        <li><a href="{% url 'forum:topicos' categoria.pk %}">{{ categoria.nome }}</a></li>
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3>{{ categoria.nome }}</h3>
+                {% if categoria.descricao %}
+                <p class="empresa-tipo">{{ categoria.descricao }}</p>
+                {% endif %}
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'forum:topicos' categoria.pk %}" class="btn-primary">Acessar</a>
+            </div>
+        </div>
         {% empty %}
-        <li>Nenhuma categoria cadastrada.</li>
+        <div class="empty-state">
+            <p>Nenhuma categoria cadastrada.</p>
+            {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
+            <a href="{% url 'forum:categoria_manage_list' %}" class="btn-secondary">Gerenciar</a>
+            {% endif %}
+        </div>
         {% endfor %}
-    </ul>
+    </div>
 </section>
 {% endblock %}
