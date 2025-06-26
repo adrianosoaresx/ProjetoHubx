@@ -121,3 +121,28 @@ class MediaUploadTests(TestCase):
         response = self.client.get(reverse("accounts:midias"))
         self.assertEqual(response.status_code, 200)
         self.assertIn(media.file.name, response.content.decode())
+
+    def test_media_edit(self):
+        media = UserMedia.objects.create(
+            user=self.user,
+            file=SimpleUploadedFile("doc.txt", b"content"),
+            descricao="old",
+        )
+        response = self.client.post(
+            reverse("accounts:midia_edit", args=[media.pk]),
+            {"descricao": "new"},
+        )
+        self.assertEqual(response.status_code, 302)
+        media.refresh_from_db()
+        self.assertEqual(media.descricao, "new")
+
+    def test_media_delete(self):
+        media = UserMedia.objects.create(
+            user=self.user,
+            file=SimpleUploadedFile("doc.txt", b"content"),
+        )
+        response = self.client.post(
+            reverse("accounts:midia_delete", args=[media.pk])
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(UserMedia.objects.filter(pk=media.pk).exists())

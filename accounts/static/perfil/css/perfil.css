@@ -1613,12 +1613,27 @@
   aspect-ratio: 1 / 1;
   display: flex;
   flex-direction: column;
+  position: relative; /* allows action buttons overlay */
 }
 
 .media-card:hover {
   transform: translateY(-2px);
   border-color: var(--matrix-green);
   box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2);
+}
+
+.media-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 0.3rem;
+}
+
+.media-actions .btn-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 0.9rem;
 }
 
 .media-thumb {
