@@ -1,0 +1,36 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}Categorias do Fórum | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="section-header">
+        <h2>Categorias do Fórum</h2>
+    </div>
+
+    <div class="empresas-actions">
+        <a href="{% url 'forum:categoria_create' %}" class="btn-primary">
+            <span>+</span>
+            <span>Nova Categoria</span>
+        </a>
+    </div>
+
+    <div class="empresas-grid">
+        {% for categoria in object_list %}
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3>{{ categoria.nome }}</h3>
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'forum:categoria_update' categoria.id %}" class="btn-edit">Editar</a>
+                <a href="{% url 'forum:categoria_delete' categoria.id %}" class="btn-danger">Remover</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Nenhuma categoria cadastrada.</p>
+            <a href="{% url 'forum:categoria_create' %}" class="btn-secondary">Cadastrar</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

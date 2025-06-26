@@ -1,5 +1,5 @@
 from django import forms
-from .models import Topico, Resposta
+from .models import Categoria, Topico, Resposta
 
 
 class TopicoForm(forms.ModelForm):
@@ -13,3 +13,9 @@ class RespostaForm(forms.ModelForm):
         model = Resposta
         fields = ["conteudo"]
         widgets = {"conteudo": forms.Textarea(attrs={"rows": 4})}
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ["nome", "descricao"]

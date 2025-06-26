@@ -6,6 +6,9 @@
 <section class="perfil-section active">
     <div class="section-header">
         <h2>Categorias do Fórum</h2>
+        {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
+        <a href="{% url 'forum:categoria_manage_list' %}" class="btn-secondary">Gerenciar</a>
+        {% endif %}
     </div>
     <ul>
         {% for categoria in object_list %}
