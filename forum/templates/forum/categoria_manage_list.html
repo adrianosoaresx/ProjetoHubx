@@ -1,34 +1,199 @@
 {% extends 'perfil/perfil_subpage_base.html' %}
-{% block title %}Categorias do Fórum | Hubx{% endblock %}
+{% load static %}
+
+{% block title %}Gerenciar Categorias | Matrix Forum{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/matrix-theme.css' %}">
+{% endblock %}
 
 {% block perfil_subpage_content %}
-<section class="perfil-section active">
-    <div class="section-header">
-        <h2>Categorias do Fórum</h2>
+<style>
+    .matrix-manage-section {
+        background: linear-gradient(135deg, #000000 0%, #001100 50%, #000000 100%);
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        position: relative;
+    }
+    
+    .matrix-manage-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #00ff00;
+        padding-bottom: 1rem;
+    }
+    
+    .matrix-manage-title {
+        font-family: 'Courier New', monospace;
+        color: #00ff00;
+        font-size: 1.8rem;
+        text-shadow: 0 0 10px #00ff00;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .matrix-actions-bar {
+        margin-bottom: 2rem;
+    }
+    
+    .matrix-add-btn {
+        background: linear-gradient(45deg, #003300, #00ff00);
+        color: #000000;
+        border: 1px solid #00ff00;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .matrix-add-btn:hover {
+        background: #00ff00;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        transform: translateY(-2px);
+    }
+    
+    .matrix-manage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .matrix-manage-card {
+        background: linear-gradient(135deg, #001100 0%, #000000 100%);
+        border: 1px solid #00ff00;
+        border-radius: 6px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .matrix-manage-card::before {
+        content: 'ADMIN> ';
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        font-size: 0.7rem;
+        opacity: 0.7;
+    }
+    
+    .matrix-manage-card:hover {
+        border-color: #00ff00;
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        transform: translateY(-3px);
+    }
+    
+    .matrix-manage-info h3 {
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        text-shadow: 0 0 5px #00ff00;
+        padding-top: 1rem;
+    }
+    
+    .matrix-manage-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        justify-content: flex-end;
+    }
+    
+    .matrix-edit-btn {
+        background: transparent;
+        color: #00ff00;
+        border: 1px solid #00ff00;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+    
+    .matrix-edit-btn:hover {
+        background: rgba(0, 255, 0, 0.1);
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+    
+    .matrix-delete-btn {
+        background: transparent;
+        color: #ff0000;
+        border: 1px solid #ff0000;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+    }
+    
+    .matrix-delete-btn:hover {
+        background: rgba(255, 0, 0, 0.1);
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+    }
+    
+    .matrix-empty-manage {
+        text-align: center;
+        padding: 3rem;
+        color: #666666;
+        font-family: 'Courier New', monospace;
+        border: 1px dashed #333333;
+        border-radius: 6px;
+        background: rgba(0, 17, 0, 0.3);
+    }
+    
+    .matrix-empty-manage p {
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+</style>
+
+<section class="matrix-manage-section">
+    <div class="matrix-manage-header">
+        <h2 class="matrix-manage-title">// Sistema de Categorias</h2>
     </div>
 
-    <div class="empresas-actions">
-        <a href="{% url 'forum:categoria_create' %}" class="btn-primary">
+    <div class="matrix-actions-bar">
+        <a href="{% url 'forum:categoria_create' %}" class="matrix-add-btn">
             <span>+</span>
             <span>Nova Categoria</span>
         </a>
     </div>
 
-    <div class="empresas-grid">
+    <div class="matrix-manage-grid">
         {% for categoria in object_list %}
-        <div class="empresa-card">
-            <div class="empresa-info">
+        <div class="matrix-manage-card">
+            <div class="matrix-manage-info">
                 <h3>{{ categoria.nome }}</h3>
             </div>
-            <div class="empresa-actions">
-                <a href="{% url 'forum:categoria_update' categoria.id %}" class="btn-edit">Editar</a>
-                <a href="{% url 'forum:categoria_delete' categoria.id %}" class="btn-danger">Remover</a>
+            <div class="matrix-manage-actions">
+                <a href="{% url 'forum:categoria_update' categoria.id %}" class="matrix-edit-btn">Editar</a>
+                <a href="{% url 'forum:categoria_delete' categoria.id %}" class="matrix-delete-btn">Remover</a>
             </div>
         </div>
         {% empty %}
-        <div class="empty-state">
-            <p>Nenhuma categoria cadastrada.</p>
-            <a href="{% url 'forum:categoria_create' %}" class="btn-secondary">Cadastrar</a>
+        <div class="matrix-empty-manage">
+            <p>// Sistema não inicializado</p>
+            <a href="{% url 'forum:categoria_create' %}" class="matrix-add-btn">Inicializar</a>
         </div>
         {% endfor %}
     </div>

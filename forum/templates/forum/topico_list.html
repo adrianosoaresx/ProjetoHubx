@@ -1,23 +1,156 @@
 {% extends 'perfil/perfil_subpage_base.html' %}
+{% load static %}
 
-{% block title %}Tópicos | Hubx{% endblock %}
+{% block title %}Tópicos | Matrix Forum{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/matrix-theme.css' %}">
+{% endblock %}
 
 {% block perfil_subpage_content %}
-<section class="perfil-section active">
-    <div class="section-header">
-        <h2>{{ categoria.nome }}</h2>
-        <a href="{% url 'forum:topico_create' %}" class="btn-primary">Novo Tópico</a>
+<style>
+    .matrix-topics-section {
+        background: linear-gradient(135deg, #000000 0%, #001100 50%, #000000 100%);
+        border: 2px solid #00ff00;
+        border-radius: 8px;
+        padding: 2rem;
+        margin: 1rem 0;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        position: relative;
+    }
+    
+    .matrix-topics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #00ff00;
+        padding-bottom: 1rem;
+    }
+    
+    .matrix-topics-title {
+        font-family: 'Courier New', monospace;
+        color: #00ff00;
+        font-size: 1.8rem;
+        text-shadow: 0 0 10px #00ff00;
+        margin: 0;
+        letter-spacing: 2px;
+    }
+    
+    .matrix-new-topic-btn {
+        background: linear-gradient(45deg, #003300, #00ff00);
+        color: #000000;
+        border: 1px solid #00ff00;
+        padding: 0.75rem 1.5rem;
+        text-decoration: none;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    }
+    
+    .matrix-new-topic-btn:hover {
+        background: #00ff00;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+        transform: translateY(-2px);
+    }
+    
+    .matrix-topics-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .matrix-topic-card {
+        background: linear-gradient(135deg, #001100 0%, #000000 100%);
+        border: 1px solid #00ff00;
+        border-radius: 6px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .matrix-topic-card::before {
+        content: '> ';
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8rem;
+        opacity: 0.7;
+    }
+    
+    .matrix-topic-card:hover {
+        border-color: #00ff00;
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .matrix-topic-info {
+        padding-left: 1.5rem;
+    }
+    
+    .matrix-topic-info h3 {
+        margin: 0 0 0.5rem 0;
+    }
+    
+    .matrix-topic-info h3 a {
+        color: #00ff00;
+        font-family: 'Courier New', monospace;
+        text-decoration: none;
+        font-size: 1.2rem;
+        text-shadow: 0 0 5px #00ff00;
+        transition: all 0.3s ease;
+    }
+    
+    .matrix-topic-info h3 a:hover {
+        text-shadow: 0 0 10px #00ff00;
+        color: #ffffff;
+    }
+    
+    .matrix-topic-meta {
+        color: #cccccc;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .matrix-topic-meta strong {
+        color: #00ff00;
+    }
+    
+    .matrix-no-topics {
+        text-align: center;
+        padding: 3rem;
+        color: #666666;
+        font-family: 'Courier New', monospace;
+        border: 1px dashed #333333;
+        border-radius: 6px;
+        background: rgba(0, 17, 0, 0.3);
+        font-size: 1.1rem;
+    }
+</style>
+
+<section class="matrix-topics-section">
+    <div class="matrix-topics-header">
+        <h2 class="matrix-topics-title">// {{ categoria.nome }}</h2>
+        <a href="{% url 'forum:topico_create' %}" class="matrix-new-topic-btn">Novo Tópico</a>
     </div>
-    <div class="empresas-grid">
+    <div class="matrix-topics-grid">
         {% for topico in object_list %}
-        <div class="empresa-card">
-            <div class="empresa-info">
+        <div class="matrix-topic-card">
+            <div class="matrix-topic-info">
                 <h3><a href="{% url 'forum:topico_detail' topico.pk %}">{{ topico.titulo }}</a></h3>
-                <p class="empresa-tipo">por {{ topico.autor.username }} em {{ topico.criado_em|date:'SHORT_DATE_FORMAT' }}</p>
+                <p class="matrix-topic-meta">por <strong>{{ topico.autor.username }}</strong> em {{ topico.criado_em|date:'SHORT_DATE_FORMAT' }}</p>
             </div>
         </div>
         {% empty %}
-        <div class="empty-state">Nenhum tópico encontrado.</div>
+        <div class="matrix-no-topics">// Nenhum tópico encontrado no sistema</div>
         {% endfor %}
     </div>
 </section>
