@@ -1,10 +1,18 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 
+from core.permissions import GerenteRequiredMixin
 from .models import Categoria, Topico, Resposta
-from .forms import TopicoForm, RespostaForm
+from .forms import TopicoForm, RespostaForm, CategoriaForm
 
 
 class CategoriaListView(LoginRequiredMixin, ListView):
@@ -59,3 +67,40 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         form.instance.autor = self.request.user
         self.object = form.save()
         return redirect("forum:topico_detail", pk=self.topico.pk)
+
+
+class CategoriaManageListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
+    model = Categoria
+    template_name = "forum/categoria_manage_list.html"
+
+
+class CategoriaCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = "forum/categoria_form.html"
+    success_url = reverse_lazy("forum:categoria_manage_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Categoria criada com sucesso.")
+        return super().form_valid(form)
+
+
+class CategoriaUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = "forum/categoria_form.html"
+    success_url = reverse_lazy("forum:categoria_manage_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Categoria atualizada com sucesso.")
+        return super().form_valid(form)
+
+
+class CategoriaDeleteView(GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Categoria
+    template_name = "forum/categoria_confirm_delete.html"
+    success_url = reverse_lazy("forum:categoria_manage_list")
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Categoria removida.")
+        return super().delete(request, *args, **kwargs)

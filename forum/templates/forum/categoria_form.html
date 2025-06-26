@@ -1,0 +1,18 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}{% if form.instance.pk %}Editar Categoria | Hubx{% else %}Nova Categoria | Hubx{% endif %}{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="empresa-form-container">
+        <h1 class="form-title">{% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions" style="justify-content:flex-end;">
+                <a href="{% url 'forum:categoria_manage_list' %}" class="btn-secondary">Cancelar</a>
+                <button type="submit" class="btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
