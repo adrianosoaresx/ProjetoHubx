@@ -16,6 +16,10 @@
           <label for="id_file" class="form-label">Enviar arquivo</label>
           <input type="file" id="id_file" name="file" class="form-input" required>
       </div>
+      <div class="form-group">
+          <label for="id_descricao" class="form-label">Descrição</label>
+          <input type="text" id="id_descricao" name="descricao" class="form-input">
+      </div>
       <div class="form-actions">
           <button type="submit" class="btn-save">
               <span class="button-text">Enviar</span>
@@ -24,11 +28,16 @@
       </div>
   </form>
 
-  <div class="media-list">
+  <div class="media-grid">
       {% for media in medias %}
-      <div class="media-item">
-          <a href="{{ media.file.url }}" target="_blank">{{ media.file.name }}</a>
-          <span class="media-date">{{ media.uploaded_at|date:"d/m/Y H:i" }}</span>
+      <div class="media-card">
+          <a href="{{ media.file.url }}" target="_blank">
+              <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="media-thumb">
+          </a>
+          <div class="media-info">
+              <p class="media-desc">{{ media.descricao }}</p>
+              <span class="media-date">{{ media.uploaded_at|date:"d/m/Y H:i" }}</span>
+          </div>
       </div>
       {% empty %}
       <p>Nenhum arquivo enviado.</p>

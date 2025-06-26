@@ -69,4 +69,4 @@ class NotificacoesForm(forms.ModelForm):
 class MediaForm(forms.ModelForm):
     class Meta:
         model = UserMedia
-        fields = ("file",)
+        fields = ("file", "descricao")

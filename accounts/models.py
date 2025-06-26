@@ -167,6 +167,7 @@ class UserMedia(TimeStampedModel):
         related_name="medias",
     )
     file = models.FileField(upload_to="user_media/")
+    descricao = models.CharField("Descrição", max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
