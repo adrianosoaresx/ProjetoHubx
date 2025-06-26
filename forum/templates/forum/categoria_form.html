@@ -4,6 +4,7 @@
 {% block title %}{% if form.instance.pk %}Editar Categoria | Matrix Forum{% else %}Nova Categoria | Matrix Forum{% endif %}{% endblock %}
 
 {% block extra_css %}
+{{ block.super }}
 <link rel="stylesheet" href="{% static 'css/forum.css' %}">
 {% endblock %}
 
