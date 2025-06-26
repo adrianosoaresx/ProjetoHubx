@@ -45,8 +45,15 @@
       {% for media in medias %}
       <div class="media-card">
           <div class="media-actions">
-              <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn-square" title="Editar">✏</a>
-              <a href="{% url 'accounts:midia_delete' media.pk %}" class="btn-square" title="Excluir">X</a>
+              <!-- Botão Adicionar -->
+              <button class="btn btn-add">
+                <span class="icon">+</span>
+              </button>
+
+              <!-- Botão Excluir -->
+              <button class="btn btn-delete">
+                <span class="icon">&#128465;</span>
+              </button>
           </div>
           <a href="{% url 'accounts:midia_detail' media.pk %}">
               <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="media-thumb">
