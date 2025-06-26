@@ -866,12 +866,12 @@
   transition: all 0.3s ease;
 }
 
-.btn-add {
+.btn-edit-icon {
   background: var(--matrix-green);
   color: var(--primary-dark);
 }
 
-.btn-add:hover {
+.btn-edit-icon:hover {
   transform: scale(1.05);
 }
 
