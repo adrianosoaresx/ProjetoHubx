@@ -4,7 +4,8 @@ from . import views
 app_name = "forum"
 
 urlpatterns = [
-    path("", views.CategoriaListView.as_view(), name="categorias"),
+    path("", views.CategoriaListView.as_view(), name="index"),
+    path("categorias/", views.CategoriaListView.as_view(), name="categorias"),
     path(
         "categorias/gerenciar/",
         views.CategoriaManageListView.as_view(),
