@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import User, NotificationSettings, UserType, UserMedia
+from .models import (
+    User,
+    NotificationSettings,
+    UserType,
+    UserMedia,
+    MediaTag,
+)
 
 
 @admin.register(User)
@@ -22,3 +28,8 @@ class UserTypeAdmin(admin.ModelAdmin):
 @admin.register(UserMedia)
 class UserMediaAdmin(admin.ModelAdmin):
     list_display = ["user", "file", "uploaded_at"]
+
+
+@admin.register(MediaTag)
+class MediaTagAdmin(admin.ModelAdmin):
+    list_display = ["nome"]

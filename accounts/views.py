@@ -9,6 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile, File
@@ -138,6 +139,7 @@ def perfil_midias(request):
     """Exibe e processa o envio de mídias do usuário."""
 
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
+    q = request.GET.get("q", "").strip()
 
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES)
@@ -145,13 +147,17 @@ def perfil_midias(request):
             media = form.save(commit=False)
             media.user = request.user
             media.save()
+            form.save_m2m()
             messages.success(request, "Arquivo enviado com sucesso.")
             return redirect("accounts:midias")
     else:
         form = MediaForm()
 
     medias = request.user.medias.order_by("-uploaded_at")
-    context = {"form": form, "medias": medias, "show_form": show_form}
+    if q:
+        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+
+    context = {"form": form, "medias": medias, "show_form": show_form, "q": q}
     return render(request, "perfil/midias.html", context)
 
 

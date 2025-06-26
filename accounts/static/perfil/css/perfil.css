@@ -1610,7 +1610,7 @@
   overflow: hidden;
   text-align: center;
   transition: all 0.3s ease;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 1 / 1;
   display: flex;
   flex-direction: column;
 }
