@@ -45,15 +45,12 @@
       {% for media in medias %}
       <div class="media-card">
           <div class="media-actions">
-              <!-- Botão Adicionar -->
-              <button class="btn btn-add">
-                <span class="icon">+</span>
-              </button>
-
-              <!-- Botão Excluir -->
-              <button class="btn btn-delete">
-                <span class="icon">&#128465;</span>
-              </button>
+              <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn btn-edit-icon" title="Editar">
+                <i class="fas fa-pencil-alt"></i>
+              </a>
+              <a href="{% url 'accounts:midia_delete' media.pk %}" class="btn btn-delete" title="Excluir">
+                <i class="fas fa-times"></i>
+              </a>
           </div>
           <a href="{% url 'accounts:midia_detail' media.pk %}">
               <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="media-thumb">
