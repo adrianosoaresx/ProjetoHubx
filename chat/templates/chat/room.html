@@ -9,7 +9,8 @@
 <input type="file" id="file-input" style="display:none" />
 <button id="upload-btn">Upload</button>
 <script>
-const socket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
 const messages = document.getElementById('chat-messages');
 const input = document.getElementById('chat-input');
 const form = document.getElementById('chat-form');
