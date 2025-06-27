@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 import json
 
-from .models import Mensagem
+from .models import Mensagem, Notificacao
+from asgiref.sync import sync_to_async
 
 User = get_user_model()
 
@@ -29,12 +30,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
-        msg = Mensagem.objects.create(
+        msg = await sync_to_async(Mensagem.objects.create)(
             nucleo=user.nucleo,
             remetente=user,
             tipo=message_type,
             conteudo=content,
         )
+        recipient_ids = await sync_to_async(list)(
+            User.objects.filter(nucleo_id=self.nucleo_id)
+            .exclude(id=user.id)
+            .values_list("id", flat=True)
+        )
+        for uid in recipient_ids:
+            await sync_to_async(Notificacao.objects.create)(
+                usuario_id=uid,
+                remetente=user,
+                mensagem=msg,
+            )
         await self.channel_layer.group_send(
             self.group_name,
             {
