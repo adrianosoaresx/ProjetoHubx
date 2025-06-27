@@ -39,13 +39,25 @@ class Mensagem(TimeStampedModel):
 
 
 class Notificacao(TimeStampedModel):
+
+    """Registra notificações de novas mensagens."""
+
     usuario = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notificacoes"
+        User,
+        on_delete=models.CASCADE,
+        related_name="notificacoes",
     )
     remetente = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="notificacoes_enviadas"
+        User,
+        on_delete=models.CASCADE,
+        related_name="notificacoes_enviadas",
     )
-    mensagem = models.CharField(max_length=255)
+    mensagem = models.ForeignKey(
+        Mensagem,
+        on_delete=models.CASCADE,
+        related_name="notificacoes",
+    )
+
     lida = models.BooleanField(default=False)
 
     class Meta:
@@ -53,4 +65,6 @@ class Notificacao(TimeStampedModel):
         verbose_name_plural = "Notificações"
 
     def __str__(self) -> str:  # pragma: no cover - simples
-        return self.mensagem
+
+        return f"Para {self.usuario} de {self.remetente}"
+

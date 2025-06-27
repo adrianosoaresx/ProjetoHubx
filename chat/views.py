@@ -1,12 +1,16 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
-from django.contrib.auth import get_user_model
-from django.core.files.storage import default_storage
-from django.conf import settings
-import uuid
 
-from .models import Mensagem, Notificacao
+from django.contrib.auth import get_user_model
+
+
+
+from django.contrib.auth import get_user_model
+from .models import Mensagem
+
+User = get_user_model()
+
 
 
 @login_required
@@ -35,20 +39,21 @@ def chat_room(request, user_id):
         url = settings.MEDIA_URL + path
         return JsonResponse({"url": url, "tipo": tipo})
 
-    messages = (
-        Mensagem.objects.filter(
-            remetente__in=[request.user, dest],
-            destinatario__in=[request.user, dest],
-        )
-        .order_by("criado_em")
-        .reverse()[:50]
-    )
-    if not messages:
-        Notificacao.objects.create(
-            usuario=dest,
-            remetente=request.user,
-            mensagem="Novo chat iniciado",
-        )
+    return render(request, "chat/room.html")
+
+
+@login_required
+def conversation(request, user_id):
+    """Exibe mensagens entre ``request.user`` e o usuário especificado."""
+
+    other = get_object_or_404(User, pk=user_id, nucleo=request.user.nucleo)
+    messages_qs = Mensagem.objects.filter(
+        nucleo=request.user.nucleo,
+        remetente__in=[request.user, other],
+    ).order_by("criado_em")
     return render(
-        request, "chat/room.html", {"dest": dest, "messages": reversed(list(messages))}
+        request,
+        "chat/conversation.html",
+        {"messages": messages_qs, "other": other},
+
     )
