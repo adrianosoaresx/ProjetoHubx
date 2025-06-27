@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<h3>Escolha um usuário para conversar</h3>
+<ul>
+    {% for u in users %}
+        <li>{{ u.get_full_name|default:u.username }} <button onclick="openChat({{ u.id }})">Chat</button></li>
+    {% empty %}
+        <li>Nenhum outro membro encontrado.</li>
+    {% endfor %}
+</ul>
+<script>
+function openChat(id){
+    window.open('/chat/' + id + '/', 'chat_'+id, 'width=400,height=600');
+}
+</script>
+{% endblock %}
