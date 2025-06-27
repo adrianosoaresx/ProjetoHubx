@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Chat{% endblock %}
+{% block content %}
+<ul id="messages">
+  {% for m in messages %}
+    <li>{{ m.remetente.username }}: {{ m.conteudo }}</li>
+  {% empty %}
+    <li>Nenhuma mensagem</li>
+  {% endfor %}
+</ul>
+{% endblock %}
