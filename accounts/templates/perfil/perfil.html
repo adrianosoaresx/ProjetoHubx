@@ -130,7 +130,7 @@
                 <span class="nav-icon">🔒</span>
                 <span class="nav-text">Segurança</span>
             </a>
-            <a href="{% url 'chat:room' %}" class="nav-item">
+            <a href="#" id="perfil-chat" class="nav-item">
                 <span class="nav-icon">💬</span>
                 <span class="nav-text">Chat</span>
             </a>
@@ -196,4 +196,13 @@
 
 {% block extra_js %}
 <script src="{% static 'perfil/js/perfil.js' %}"></script>
+<script>
+const perfilChat = document.getElementById('perfil-chat');
+if(perfilChat){
+    perfilChat.addEventListener('click', function(e){
+        e.preventDefault();
+        window.open('/chat/', 'chat_select', 'width=400,height=600');
+    });
+}
+</script>
 {% endblock %}

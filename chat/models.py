@@ -9,7 +9,16 @@ User = get_user_model()
 
 class Mensagem(TimeStampedModel):
     nucleo = models.ForeignKey(Nucleo, on_delete=models.CASCADE)
-    remetente = models.ForeignKey(User, on_delete=models.CASCADE)
+    remetente = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="mensagens_enviadas"
+    )
+    destinatario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="mensagens_recebidas",
+        null=True,
+        blank=True,
+    )
     tipo = models.CharField(
         choices=[
             ("text", "Texto"),
@@ -27,3 +36,21 @@ class Mensagem(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.remetente}: {self.tipo}"
+
+
+class Notificacao(TimeStampedModel):
+    usuario = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notificacoes"
+    )
+    remetente = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notificacoes_enviadas"
+    )
+    mensagem = models.CharField(max_length=255)
+    lida = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Notificação"
+        verbose_name_plural = "Notificações"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.mensagem
