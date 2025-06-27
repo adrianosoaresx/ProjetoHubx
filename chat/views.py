@@ -1,9 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+
 from django.core.files.storage import default_storage
 from django.conf import settings
 import uuid
+
 
 from django.contrib.auth import get_user_model
 from .models import Mensagem
@@ -12,7 +14,18 @@ User = get_user_model()
 
 
 @login_required
-def chat_room(request):
+def chat_index(request):
+    users = (
+        get_user_model()
+        .objects.filter(nucleo=request.user.nucleo)
+        .exclude(id=request.user.id)
+    )
+    return render(request, "chat/index.html", {"users": users})
+
+
+@login_required
+def chat_room(request, user_id):
+    dest = get_object_or_404(get_user_model(), pk=user_id, nucleo=request.user.nucleo)
     if request.method == "POST" and request.FILES.get("file"):
         file = request.FILES["file"]
         ext = file.name.split(".")[-1].lower()
@@ -25,6 +38,7 @@ def chat_room(request):
         path = default_storage.save(filename, file)
         url = settings.MEDIA_URL + path
         return JsonResponse({"url": url, "tipo": tipo})
+
     return render(request, "chat/room.html")
 
 
@@ -41,4 +55,5 @@ def conversation(request, user_id):
         request,
         "chat/conversation.html",
         {"messages": messages_qs, "other": other},
+
     )
