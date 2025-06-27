@@ -1,7 +1,6 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 import json
 
 from .models import Mensagem
@@ -46,13 +45,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
-        msg = Mensagem.objects.create(
-            nucleo=user.nucleo,
-            remetente=user,
-            destinatario=self.dest,
-            tipo=message_type,
-            conteudo=content,
-        )
+
+        msg = await self._create_message(user, message_type, content)
+
         await self.channel_layer.group_send(
             self.group_name,
             {
@@ -62,6 +57,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "conteudo": content,
                 "timestamp": msg.criado_em.isoformat(),
             },
+        )
+
+    @database_sync_to_async
+    def _create_message(self, user, message_type, content):
+        return Mensagem.objects.create(
+            nucleo=user.nucleo,
+            remetente=user,
+            tipo=message_type,
+            conteudo=content,
         )
 
     async def chat_message(self, event):
