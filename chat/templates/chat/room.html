@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'chat/base_chat.html' %}
 {% load static %}
 {% block title %}Chat{% endblock %}
 {% block extra_css %}
@@ -14,9 +14,11 @@
     </div>
     <form id="chat-form">
         <input type="text" id="chat-input" autocomplete="off"/>
-        <button type="submit">Enviar</button>
-        <input type="file" id="file-input" style="display:none" />
-        <button id="upload-btn" type="button">Upload</button>
+        <div class="chat-actions">
+            <button type="submit">Enviar</button>
+            <input type="file" id="file-input" style="display:none" />
+            <button id="upload-btn" type="button">Upload</button>
+        </div>
     </form>
 </div>
 <script>
