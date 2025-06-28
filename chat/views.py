@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404
 
 from django.core.files.storage import default_storage
 from django.conf import settings
+from django.db.models import Q
 import uuid
 
 
@@ -40,9 +41,11 @@ def chat_room(request, user_id):
         return JsonResponse({"url": url, "tipo": tipo})
 
     messages_qs = (
-        Mensagem.objects.filter(
-            nucleo=request.user.nucleo,
-            remetente__in=[request.user, dest],
+        Mensagem.objects.filter(nucleo=request.user.nucleo)
+        .filter(
+            Q(remetente=request.user, destinatario=dest)
+            | Q(remetente=dest, destinatario=request.user)
+            | Q(destinatario__isnull=True, remetente__in=[request.user, dest])
         )
         .order_by("criado_em")
     )
@@ -60,10 +63,15 @@ def conversation(request, user_id):
     """Exibe mensagens entre ``request.user`` e o usuário especificado."""
 
     other = get_object_or_404(User, pk=user_id, nucleo=request.user.nucleo)
-    messages_qs = Mensagem.objects.filter(
-        nucleo=request.user.nucleo,
-        remetente__in=[request.user, other],
-    ).order_by("criado_em")
+    messages_qs = (
+        Mensagem.objects.filter(nucleo=request.user.nucleo)
+        .filter(
+            Q(remetente=request.user, destinatario=other)
+            | Q(remetente=other, destinatario=request.user)
+            | Q(destinatario__isnull=True, remetente__in=[request.user, other])
+        )
+        .order_by("criado_em")
+    )
     return render(
         request,
         "chat/conversation.html",
@@ -86,9 +94,11 @@ def modal_user_list(request):
 def modal_room(request, user_id):
     dest = get_object_or_404(get_user_model(), pk=user_id, nucleo=request.user.nucleo)
     messages_qs = (
-        Mensagem.objects.filter(
-            nucleo=request.user.nucleo,
-            remetente__in=[request.user, dest],
+        Mensagem.objects.filter(nucleo=request.user.nucleo)
+        .filter(
+            Q(remetente=request.user, destinatario=dest)
+            | Q(remetente=dest, destinatario=request.user)
+            | Q(destinatario__isnull=True, remetente__in=[request.user, dest])
         )
         .order_by("criado_em")
     )

@@ -5,7 +5,7 @@
     </div>
     <div id="chat-messages">
         {% for m in messages %}
-            <div><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
+            <div class="message{% if m.remetente == user %} self{% endif %}"><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
         {% endfor %}
     </div>
     <form id="chat-form">
@@ -20,6 +20,7 @@
 <script>
 const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
+const currentUser = "{{ request.user.username }}";
 const messages = document.getElementById('chat-messages');
 const input = document.getElementById('chat-input');
 const form = document.getElementById('chat-form');
@@ -29,7 +30,11 @@ const uploadBtn = document.getElementById('upload-btn');
 socket.onmessage = function(e){
   const data = JSON.parse(e.data);
   const div = document.createElement('div');
-  div.textContent = data.remetente + ': ' + data.conteudo;
+  div.classList.add('message');
+  if(data.remetente === currentUser){
+    div.classList.add('self');
+  }
+  div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + data.conteudo;
   messages.appendChild(div);
 };
 form.onsubmit = function(e){
