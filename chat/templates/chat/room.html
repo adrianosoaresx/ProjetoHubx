@@ -27,7 +27,11 @@
 <script>
 
 const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
+if (window.chatSocket) {
+  window.chatSocket.close();
+}
+window.chatSocket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
+const socket = window.chatSocket;
 
 const currentUser = "{{ request.user.username }}";
 
@@ -36,6 +40,7 @@ const input = document.getElementById('chat-input');
 const form = document.getElementById('chat-form');
 const fileInput = document.getElementById('file-input');
 const uploadBtn = document.getElementById('upload-btn');
+messages.scrollTop = messages.scrollHeight;
 
 socket.onmessage = function(e){
   const data = JSON.parse(e.data);
@@ -46,6 +51,7 @@ socket.onmessage = function(e){
   }
   div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + data.conteudo;
   messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
 };
 form.onsubmit = function(e){
   e.preventDefault();

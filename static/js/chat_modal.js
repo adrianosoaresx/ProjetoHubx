@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalBody = document.getElementById('chatModalBody');
     const modalTitle = document.getElementById('chatModalTitle');
     const closeBtn = document.getElementById('closeChatModal');
+    let currentSocket = null;
 
     if (chatLink) {
         chatLink.addEventListener('click', (e) => {
@@ -25,6 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeModal() {
         modal.classList.remove('active');
         modalBody.innerHTML = '';
+        if (currentSocket) {
+            currentSocket.close();
+            currentSocket = null;
+        }
     }
 
     function executeScripts(container) {
@@ -64,7 +69,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function bindOpenChatButtons() {
+        document.querySelectorAll('.open-chat').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openChatRoom(btn.dataset.id);
+            });
+        });
+    }
+
     function openChatRoom(userId) {
+        if (currentSocket) {
+            currentSocket.close();
+            currentSocket = null;
+        }
         fetch(`/chat/modal/room/${userId}/`)
             .then((r) => r.text())
             .then((html) => {
@@ -75,4 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 bindBackButton();
             });
     }
+
+    bindOpenChatButtons();
 });

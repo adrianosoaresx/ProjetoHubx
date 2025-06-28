@@ -43,7 +43,7 @@
                           <p>@{{ connection.username }}</p>
                       </div>
                       <div class="connection-actions">
-                          <a href="{% url 'chat:room' connection.id %}" class="btn-icon" title="Chat">💬</a>
+                          <a href="{% url 'chat:room' connection.id %}" class="btn-icon open-chat" data-id="{{ connection.id }}" title="Chat">💬</a>
                           <button class="btn-icon" title="Remover conexão">❌</button>
                       </div>
                   </div>
