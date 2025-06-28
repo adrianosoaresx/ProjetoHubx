@@ -70,3 +70,30 @@ def conversation(request, user_id):
         {"messages": messages_qs, "other": other},
 
     )
+
+
+@login_required
+def modal_user_list(request):
+    users = (
+        get_user_model()
+        .objects.filter(nucleo=request.user.nucleo)
+        .exclude(id=request.user.id)
+    )
+    return render(request, "chat/modal_user_list.html", {"users": users})
+
+
+@login_required
+def modal_room(request, user_id):
+    dest = get_object_or_404(get_user_model(), pk=user_id, nucleo=request.user.nucleo)
+    messages_qs = (
+        Mensagem.objects.filter(
+            nucleo=request.user.nucleo,
+            remetente__in=[request.user, dest],
+        )
+        .order_by("criado_em")
+    )
+    context = {
+        "dest": dest,
+        "messages": messages_qs,
+    }
+    return render(request, "chat/modal_room.html", context)

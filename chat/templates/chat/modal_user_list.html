@@ -1,0 +1,27 @@
+<div id="chat-container">
+    <h3>Escolha um usuário para conversar</h3>
+    <div class="user-list">
+        {% for u in users %}
+            <div class="user-card" data-id="{{ u.id }}">
+                <div class="user-avatar">
+                    {% if u.avatar %}
+                        <img src="{{ u.avatar.url }}" alt="{{ u.username }}">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <span>{{ u.username|make_list|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <h4>{{ u.get_full_name|default:u.username }}</h4>
+                    <p>@{{ u.username }}</p>
+                </div>
+                <div class="user-actions">
+                    <span class="btn-icon" title="Chat">💬</span>
+                </div>
+            </div>
+        {% empty %}
+            <p>Nenhum outro membro encontrado.</p>
+        {% endfor %}
+    </div>
+</div>
