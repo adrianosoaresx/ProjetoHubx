@@ -4,8 +4,10 @@ from . import views
 app_name = "chat"
 
 urlpatterns = [
-
-    path("", views.chat_room, name="room"),
-    path("<int:user_id>/", views.conversation, name="conversation"),
-
+    # Lista de usuários do núcleo para iniciar conversa
+    path("", views.chat_index, name="index"),
+    # Janela de chat em tempo real com o usuário selecionado
+    path("room/<int:user_id>/", views.chat_room, name="room"),
+    # Histórico simplificado de mensagens (usado em testes)
+    path("conversation/<int:user_id>/", views.conversation, name="conversation"),
 ]
