@@ -11,6 +11,18 @@
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
 }
+
+.message {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.message.self {
+    background: rgba(0, 255, 65, 0.15);
+    align-self: flex-end;
+}
 #chat-form {
     display: flex;
     flex-direction: column;
