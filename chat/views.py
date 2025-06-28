@@ -39,7 +39,20 @@ def chat_room(request, user_id):
         url = settings.MEDIA_URL + path
         return JsonResponse({"url": url, "tipo": tipo})
 
-    return render(request, "chat/room.html")
+    messages_qs = (
+        Mensagem.objects.filter(
+            nucleo=request.user.nucleo,
+            remetente__in=[request.user, dest],
+        )
+        .order_by("criado_em")
+    )
+
+    context = {
+        "dest": dest,
+        "messages": messages_qs,
+    }
+
+    return render(request, "chat/room.html", context)
 
 
 @login_required
