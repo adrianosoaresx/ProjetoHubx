@@ -2,6 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const chatLink = document.getElementById('chat-link');
+    const chatButtons = document.querySelectorAll('.chat-open');
     const modal = document.getElementById('chatModal');
     const modalBody = document.getElementById('chatModalBody');
     const modalTitle = document.getElementById('chatModalTitle');
@@ -13,6 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
             openUserList();
         });
     }
+    chatButtons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const uid = btn.dataset.id;
+            if (uid) openChatRoom(uid);
+        });
+    });
 
     if (closeBtn) {
         closeBtn.addEventListener('click', closeModal);
@@ -75,4 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 bindBackButton();
             });
     }
+
+    window.HubXChat = { openUserList, openChatRoom };
 });

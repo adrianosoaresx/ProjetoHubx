@@ -23,7 +23,7 @@ class ChatViewTests(TestCase):
         self.client.force_login(self.user1)
 
     def test_conversation_shows_previous_messages(self):
-        url = reverse("chat:conversation", args=[self.user2.id])
+        url = reverse("chat:modal_room", args=[self.user2.id])
         response = self.client.get(url)
         self.assertContains(response, "hello")
         self.assertContains(response, "hi")
