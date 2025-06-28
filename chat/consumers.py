@@ -13,18 +13,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
         dest_id = self.scope["url_route"]["kwargs"].get("dest_id")
-        if not user.is_authenticated or not dest_id:
+        if not user.is_authenticated:
             await self.close()
             return
 
-        dest = await self.get_user(dest_id)
-        if not dest or dest.nucleo_id != getattr(user, "nucleo_id", None):
-            await self.close()
-            return
+        self.nucleo_id = getattr(user, "nucleo_id", None)
 
-        self.dest = dest
-        sorted_ids = sorted([user.id, dest.id])
-        self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
+        if dest_id:
+            dest = await self.get_user(dest_id)
+            if not dest or dest.nucleo_id != self.nucleo_id:
+                await self.close()
+                return
+            self.dest = dest
+            sorted_ids = sorted([user.id, dest.id])
+            self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
+        else:
+            self.dest = None
+            self.group_name = f"chat_nucleo_{self.nucleo_id}"
+
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
@@ -50,6 +56,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         msg = await sync_to_async(Mensagem.objects.create)(
             nucleo=user.nucleo,
             remetente=user,
+            destinatario=self.dest,
             tipo=message_type,
             conteudo=content,
         )

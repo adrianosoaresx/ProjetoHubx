@@ -7,21 +7,21 @@
 {% block content %}
 <div id="chat-container">
     <h3>Escolha um usuário para conversar</h3>
-    <select id="user-select">
+    <div class="user-list">
         {% for u in users %}
-            <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+            <div class="user-card" onclick="openChat({{ u.id }})">
+                {{ u.get_full_name|default:u.username }}
+            </div>
         {% empty %}
-            <option disabled>Nenhum outro membro encontrado.</option>
+            <p>Nenhum outro membro encontrado.</p>
         {% endfor %}
-    </select>
-    <button onclick="openChat()">Chat</button>
+    </div>
 </div>
 
 <script>
-function openChat(){
-    var select = document.getElementById('user-select');
-    if(!select.value) return;
-window.open('/chat/room/' + select.value + '/', 'chat_'+select.value, 'width=400,height=600');
+function openChat(userId){
+    if(!userId) return;
+    window.open('/chat/room/' + userId + '/', 'chat_'+userId, 'width=400,height=600');
 }
 </script>
 {% endblock %}

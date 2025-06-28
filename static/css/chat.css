@@ -32,3 +32,24 @@
     color: rgba(255,255,255,0.6);
 }
 
+.user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.user-card {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-card:hover {
+    background: rgba(0, 255, 65, 0.2);
+}
+
