@@ -98,9 +98,16 @@
     </footer>
     {% endblock %}
 
-    <script>
-    // Nenhuma janela extra de chat
-    </script>
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="chatModalTitle">Chat</h3>
+                <button class="modal-close" id="closeChatModal">&times;</button>
+            </div>
+            <div class="modal-body" id="chatModalBody"></div>
+        </div>
+    </div>
+    <script src="{% static 'js/chat_modal.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 

@@ -1,0 +1,53 @@
+<div id="chat-container">
+    <div class="chat-room-header">
+        <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
+        <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
+    </div>
+    <div id="chat-messages">
+        {% for m in messages %}
+            <div><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
+        {% endfor %}
+    </div>
+    <form id="chat-form">
+        <input type="text" id="chat-input" autocomplete="off" />
+        <div class="chat-actions">
+            <button type="submit">Enviar</button>
+            <input type="file" id="file-input" style="display:none" />
+            <button id="upload-btn" type="button">Upload</button>
+        </div>
+    </form>
+</div>
+<script>
+const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
+const messages = document.getElementById('chat-messages');
+const input = document.getElementById('chat-input');
+const form = document.getElementById('chat-form');
+const fileInput = document.getElementById('file-input');
+const uploadBtn = document.getElementById('upload-btn');
+
+socket.onmessage = function(e){
+  const data = JSON.parse(e.data);
+  const div = document.createElement('div');
+  div.textContent = data.remetente + ': ' + data.conteudo;
+  messages.appendChild(div);
+};
+form.onsubmit = function(e){
+  e.preventDefault();
+  const message = input.value;
+  socket.send(JSON.stringify({tipo: 'text', conteudo: message}));
+  input.value = '';
+};
+uploadBtn.onclick = () => fileInput.click();
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if(!file) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  fetch('', {method:'POST', body: formData, headers:{'X-CSRFToken': '{{ csrf_token }}'}})
+    .then(r=>r.json())
+    .then(data=>{
+      socket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
+    });
+};
+</script>
