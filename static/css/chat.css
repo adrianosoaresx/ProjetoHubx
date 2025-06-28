@@ -13,6 +13,12 @@
 }
 #chat-form {
     display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.chat-actions {
+    display: flex;
     gap: 0.5rem;
 }
 #chat-input {
@@ -31,6 +37,7 @@
     font-size: 0.9rem;
     color: rgba(255,255,255,0.6);
 }
+
 
 .user-list {
     display: flex;
@@ -51,5 +58,6 @@
 
 .user-card:hover {
     background: rgba(0, 255, 65, 0.2);
+
 }
 

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hubx - Conectando Comunidades{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}"> {% block extra_css %}{% endblock %}
+
+</head>
+
+<body>
+    <!-- Molecular Nodes -->
+    <div class="molecular-node"></div>
+    <div class="molecular-node"></div>
+    <div class="molecular-node"></div>
+    <div class="molecular-node"></div>
+    <div class="molecular-node"></div>
+
+    <!-- Organic Connection Lines -->
+    <div class="organic-connection" style="--rotation: 15deg;"></div>
+    <div class="organic-connection" style="--rotation: -10deg;"></div>
+    <div class="organic-connection" style="--rotation: 25deg;"></div>
+
+    <header class="chat-header">
+        <div class="header-container">
+            <div class="logo">HubX</div>
+        </div>
+        <h2 class="chat-title">Chat</h2>
+    </header>
+
+    <main>
+        <div class="container">
+            {% block content %}
+            <div class="content-card text-center">
+                <h1 class="text-gradient">Bem-vindo ao HubX</h1>
+                <p>Conectando comunidades, fortalecendo laços.</p>
+            </div>
+            {% endblock %}
+        </div>
+    </main>
+
+    {% block footer %}
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <div class="footer-logo">HubX</div>
+                <p>Conectando comunidades através de redes orgânicas de colaboração. Fortalecendo laços entre entidades e associações.</p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Navegação</h3>
+                <ul class="footer-links">
+                    <li><a href="/">Início</a></li>
+                    <li><a href="/comunidades/">Comunidades</a></li>
+                    <li><a href="/sobre/">Sobre Nós</a></li>
+                    <li><a href="/contato/">Contato</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Recursos</h3>
+                <ul class="footer-links">
+                    <li><a href="/ajuda/">Central de Ajuda</a></li>
+                    <li><a href="/documentacao/">Documentação</a></li>
+                    <li><a href="/api/">API</a></li>
+                    <li><a href="/blog/">Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Conecte-se</h3>
+                <p>Siga-nos nas redes sociais e mantenha-se conectado com a comunidade HubX.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" title="LinkedIn">in</a>
+                    <a href="#" class="social-link" title="Twitter">tw</a>
+                    <a href="#" class="social-link" title="GitHub">gh</a>
+                    <a href="#" class="social-link" title="Discord">dc</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2024 HubX. Todos os direitos reservados. | <a href="/privacidade/">Política de Privacidade</a> | <a href="/termos/">Termos de Uso</a></p>
+        </div>
+    </footer>
+    {% endblock %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
