@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Chat{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
 {% block content %}
-<h3>Escolha um usuário para conversar</h3>
-<select id="user-select">
-    {% for u in users %}
-        <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
-    {% empty %}
-        <option disabled>Nenhum outro membro encontrado.</option>
-    {% endfor %}
-</select>
-<button onclick="openChat()">Chat</button>
+<div id="chat-container">
+    <h3>Escolha um usuário para conversar</h3>
+    <select id="user-select">
+        {% for u in users %}
+            <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+        {% empty %}
+            <option disabled>Nenhum outro membro encontrado.</option>
+        {% endfor %}
+    </select>
+    <button onclick="openChat()">Chat</button>
+</div>
 
 <script>
 function openChat(){
     var select = document.getElementById('user-select');
     if(!select.value) return;
-    window.open('/chat/room/' + select.value + '/', 'chat_'+select.value, 'width=400,height=600');
+window.open('/chat/room/' + select.value + '/', 'chat_'+select.value, 'width=400,height=600');
 }
 </script>
 {% endblock %}
+{% block footer %}<div class="chat-footer">HubX Chat</div>{% endblock %}

@@ -1,18 +1,24 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Chat{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
 {% block content %}
-<h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
-<div id="chat-messages">
-    {% for m in messages %}
-        <div><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
-    {% endfor %}
+<div id="chat-container">
+    <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
+    <div id="chat-messages">
+        {% for m in messages %}
+            <div><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
+        {% endfor %}
+    </div>
+    <form id="chat-form">
+        <input type="text" id="chat-input" autocomplete="off"/>
+        <button type="submit">Enviar</button>
+        <input type="file" id="file-input" style="display:none" />
+        <button id="upload-btn" type="button">Upload</button>
+    </form>
 </div>
-<form id="chat-form">
-    <input type="text" id="chat-input" autocomplete="off"/>
-    <button type="submit">Enviar</button>
-</form>
-<input type="file" id="file-input" style="display:none" />
-<button id="upload-btn">Upload</button>
 <script>
 
 const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -49,4 +55,7 @@ fileInput.onchange = () => {
     });
 };
 </script>
+{% endblock %}
+{% block footer %}
+<div class="chat-footer">HubX Chat</div>
 {% endblock %}
