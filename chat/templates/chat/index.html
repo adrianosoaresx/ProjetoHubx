@@ -2,16 +2,20 @@
 {% block title %}Chat{% endblock %}
 {% block content %}
 <h3>Escolha um usuário para conversar</h3>
-<ul>
+<select id="user-select">
     {% for u in users %}
-        <li>{{ u.get_full_name|default:u.username }} <button onclick="openChat({{ u.id }})">Chat</button></li>
+        <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
     {% empty %}
-        <li>Nenhum outro membro encontrado.</li>
+        <option disabled>Nenhum outro membro encontrado.</option>
     {% endfor %}
-</ul>
+</select>
+<button onclick="openChat()">Chat</button>
+
 <script>
-function openChat(id){
-    window.open('/chat/room/' + id + '/', 'chat_'+id, 'width=400,height=600');
+function openChat(){
+    var select = document.getElementById('user-select');
+    if(!select.value) return;
+    window.open('/chat/room/' + select.value + '/', 'chat_'+select.value, 'width=400,height=600');
 }
 </script>
 {% endblock %}
