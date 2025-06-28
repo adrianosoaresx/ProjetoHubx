@@ -32,7 +32,7 @@
             <div class="logo">HubX</div>
             <nav>
                 {% if user.is_authenticated %}
-                    <a href="#" id="chat-link">Chat</a>
+                    <a href="{% url 'chat:index' %}" id="chat-link">Chat</a>
                     <a href="{% url 'accounts:logout' %}" class="cta-button">Sair</a>
                 {% else %}
                     <a href="{% url 'accounts:login' %}" class="cta-button">Entrar</a>
@@ -99,13 +99,7 @@
     {% endblock %}
 
     <script>
-    const chatLink = document.getElementById('chat-link');
-    if (chatLink) {
-        chatLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.open('/chat/', 'chat_select', 'width=400,height=600');
-        });
-    }
+    // Nenhuma janela extra de chat
     </script>
     {% block extra_js %}{% endblock %}
 </body>

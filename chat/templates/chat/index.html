@@ -10,7 +10,22 @@
     <div class="user-list">
         {% for u in users %}
             <div class="user-card" onclick="openChat({{ u.id }})">
-                {{ u.get_full_name|default:u.username }}
+                <div class="user-avatar">
+                    {% if u.avatar %}
+                        <img src="{{ u.avatar.url }}" alt="{{ u.username }}">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            <span>{{ u.username|make_list|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <h4>{{ u.get_full_name|default:u.username }}</h4>
+                    <p>@{{ u.username }}</p>
+                </div>
+                <div class="user-actions">
+                    <span class="btn-icon" title="Chat">💬</span>
+                </div>
             </div>
         {% empty %}
             <p>Nenhum outro membro encontrado.</p>
@@ -21,7 +36,7 @@
 <script>
 function openChat(userId){
     if(!userId) return;
-    window.open('/chat/room/' + userId + '/', 'chat_'+userId, 'width=400,height=600');
+    window.location.href = '/chat/room/' + userId + '/';
 }
 </script>
 {% endblock %}
