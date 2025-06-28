@@ -131,7 +131,7 @@
                 <span class="nav-text">Segurança</span>
             </a>
 
-            <a href="{% url 'chat:index' %}" class="nav-item" target="_blank" id="perfil-chat">
+            <a href="{% url 'chat:index' %}" class="nav-item" id="perfil-chat">
 
 
                 <span class="nav-icon">💬</span>
@@ -204,7 +204,7 @@ const perfilChat = document.getElementById('perfil-chat');
 if(perfilChat){
     perfilChat.addEventListener('click', function(e){
         e.preventDefault();
-        window.open('/chat/', 'chat_select', 'width=400,height=600');
+        window.location.href = '/chat/';
     });
 }
 </script>

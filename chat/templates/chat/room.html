@@ -4,6 +4,9 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/chat.css' %}">
 {% endblock %}
+{% block header_button %}
+<a href="{% url 'chat:index' %}" class="btn-secondary-nav">&larr; Voltar</a>
+{% endblock %}
 {% block content %}
 <div id="chat-container">
     <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
