@@ -1,9 +1,9 @@
 <div id="chat-container">
     <h3>Escolha um usuário para conversar</h3>
-    <div class="user-list">
+    <div class="connections-grid">
         {% for u in users %}
-            <div class="user-card" data-id="{{ u.id }}">
-                <div class="user-avatar">
+            <div class="connection-card" data-id="{{ u.id }}">
+                <div class="connection-avatar">
                     {% if u.avatar %}
                         <img src="{{ u.avatar.url }}" alt="{{ u.username }}">
                     {% else %}
@@ -12,12 +12,12 @@
                         </div>
                     {% endif %}
                 </div>
-                <div class="user-info">
+                <div class="connection-info">
                     <h4>{{ u.get_full_name|default:u.username }}</h4>
                     <p>@{{ u.username }}</p>
                 </div>
-                <div class="user-actions">
-                    <span class="btn-icon" title="Chat">💬</span>
+                <div class="connection-actions">
+                    <span class="btn-icon chat-open" data-id="{{ u.id }}" title="Chat">💬</span>
                 </div>
             </div>
         {% empty %}
