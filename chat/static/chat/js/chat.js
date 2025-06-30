@@ -43,6 +43,7 @@
             if(message){
                 socket.send(JSON.stringify({tipo:'text', conteudo: message}));
                 input.value = '';
+                scrollToBottom();
             }
         });
 

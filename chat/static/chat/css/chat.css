@@ -1,15 +1,21 @@
 #chat-container {
     display: flex;
     flex-direction: column;
-    max-height: 60vh;
+    max-height: 70vh;
 }
 #chat-messages {
     flex: 1;
     overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
     padding: 1rem;
     margin-bottom: 1rem;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
+}
+
+#chat-messages::-webkit-scrollbar {
+    display: none; /* Chrome, Safari */
 }
 
 .message {
