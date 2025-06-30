@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function bindUserCards() {
-        modalBody.querySelectorAll('.user-card').forEach((card) => {
+        modalBody.querySelectorAll('.connection-card').forEach((card) => {
             card.addEventListener('click', () => openChatRoom(card.dataset.id));
         });
     }

@@ -53,8 +53,8 @@
     color: rgba(255,255,255,0.6);
 }
 
-
-.user-list {
+/* User list styled like connection cards */
+.connections-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
@@ -62,25 +62,25 @@
     margin-bottom: 1rem;
 }
 
-.user-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+.connection-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 1rem;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     transition: all 0.3s ease;
+    cursor: pointer;
 }
 
-.user-card:hover {
+.connection-card:hover {
     transform: translateY(-2px);
     border-color: var(--matrix-green);
     box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2);
 }
 
-.user-avatar {
+.connection-avatar {
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -88,32 +88,34 @@
     flex-shrink: 0;
 }
 
-.user-avatar img {
+.connection-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.user-info {
+.connection-info {
     flex: 1;
 }
 
-.user-info h4 {
+.connection-info h4 {
     font-size: 1rem;
     font-weight: 600;
     color: var(--white);
     margin-bottom: 0.2rem;
 }
 
-.user-info p {
+.connection-info p {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
 }
 
-.user-actions {
+.connection-actions {
     display: flex;
     gap: 0.5rem;
 }
+
+
 
 .chat-room-header {
     display: flex;
