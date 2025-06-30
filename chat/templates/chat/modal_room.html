@@ -5,15 +5,26 @@
     </div>
     <div id="chat-messages">
         {% for m in messages %}
-            <div class="message{% if m.remetente == user %} self{% endif %}"><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</div>
+            <div class="message{% if m.remetente == user %} self{% endif %}">
+                <strong>{{ m.remetente.username }}</strong>:
+                {% if m.tipo == 'image' %}
+                    <img src="{{ m.conteudo }}" alt="imagem" class="chat-media" />
+                {% elif m.tipo == 'video' %}
+                    <video src="{{ m.conteudo }}" controls class="chat-media"></video>
+                {% elif m.tipo == 'file' %}
+                    <a href="{{ m.conteudo }}" target="_blank">Baixar arquivo</a>
+                {% else %}
+                    {{ m.conteudo }}
+                {% endif %}
+            </div>
         {% endfor %}
     </div>
     <form id="chat-form">
         <input type="text" id="chat-input" autocomplete="off" />
         <div class="chat-actions">
-            <button type="submit">Enviar</button>
+            <button type="submit" class="btn-upload">Enviar</button>
             <input type="file" id="file-input" />
-            <button id="upload-btn" type="button">Upload</button>
+            <button id="upload-btn" type="button" class="btn-upload">Upload</button>
         </div>
     </form>
 </div>
