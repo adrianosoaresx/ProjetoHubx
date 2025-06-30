@@ -24,7 +24,15 @@
             if(data.remetente === currentUser){
                 div.classList.add('self');
             }
-            div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + data.conteudo;
+            let content = data.conteudo;
+            if(data.tipo === 'image'){
+                content = `<img src="${data.conteudo}" alt="imagem" class="chat-media">`;
+            } else if(data.tipo === 'video'){
+                content = `<video src="${data.conteudo}" controls class="chat-media"></video>`;
+            } else if(data.tipo === 'file'){
+                content = `<a href="${data.conteudo}" target="_blank">Baixar arquivo</a>`;
+            }
+            div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + content;
             messages.appendChild(div);
             scrollToBottom();
         };

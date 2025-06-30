@@ -1,7 +1,7 @@
 #chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 160px);
+    max-height: 60vh;
 }
 #chat-messages {
     flex: 1;
@@ -23,6 +23,12 @@
     background: rgba(0, 255, 65, 0.15);
     align-self: flex-end;
 }
+.chat-media {
+    max-width: 100%;
+    height: auto;
+    margin-top: 0.25rem;
+    display: block;
+}
 #chat-form {
     display: flex;
     flex-direction: column;
@@ -40,8 +46,19 @@
     background: transparent;
     color: var(--white);
 }
-#chat-form button {
-    padding: 0.5rem 1rem;
+.btn-upload {
+    background: var(--matrix-green);
+    color: var(--primary-dark);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 65, 0.3);
 }
 #file-input {
     display: none;

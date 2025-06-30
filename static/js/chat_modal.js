@@ -85,7 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 openModal();
                 bindBackButton();
                 if (window.HubXChatRoom) {
-                    HubXChatRoom.init(modalBody);
+                    const chatContainer = modalBody.querySelector('#chat-container');
+                    HubXChatRoom.init(chatContainer);
                 }
             });
     }
