@@ -43,7 +43,7 @@
                           <p>@{{ connection.username }}</p>
                       </div>
                       <div class="connection-actions">
-                          <a href="#" class="btn-icon chat-open" data-id="{{ connection.id }}" title="Chat">💬</a>
+                          <a href="#" class="btn-icon chat-open" data-url="{% url 'chat:modal_room' connection.id %}" title="Chat">💬</a>
                           <button class="btn-icon" title="Remover conexão">❌</button>
                       </div>
                   </div>

@@ -2,7 +2,7 @@
     <h3>Escolha um usuário para conversar</h3>
     <div class="connections-grid">
         {% for u in users %}
-            <div class="connection-card" data-id="{{ u.id }}">
+            <div class="connection-card" data-url="{% url 'chat:modal_room' u.id %}">
                 <div class="connection-avatar">
                     {% if u.avatar %}
                         <img src="{{ u.avatar.url }}" alt="{{ u.username }}">
@@ -17,7 +17,7 @@
                     <p>@{{ u.username }}</p>
                 </div>
                 <div class="connection-actions">
-                    <span class="btn-icon chat-open" data-id="{{ u.id }}" title="Chat">💬</span>
+                    <span class="btn-icon chat-open" data-url="{% url 'chat:modal_room' u.id %}" title="Chat">💬</span>
                 </div>
             </div>
         {% empty %}
