@@ -100,7 +100,8 @@
     </footer>
     {% endblock %}
 
-    <div class="modal" id="chatModal">
+    {% url 'chat:modal_room' 0 as chat_room_base %}
+    <div class="modal" id="chatModal" data-users-url="{% url 'chat:modal_users' %}" data-room-url-base="{{ chat_room_base|slice:':-2' }}">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="chatModalTitle">Chat</h3>

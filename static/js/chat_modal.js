@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('chatModalTitle');
     const closeBtn = document.getElementById('closeChatModal');
 
+    const usersUrl = modal.dataset.usersUrl;
+    const roomUrlBase = modal.dataset.roomUrlBase;
+
     if (chatLink) {
         chatLink.addEventListener('click', (e) => {
             e.preventDefault();
@@ -17,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     chatButtons.forEach((btn) => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const uid = btn.dataset.id;
-            if (uid) openChatRoom(uid);
+            const url = btn.dataset.url || btn.dataset.id;
+            if (url) openChatRoom(url);
         });
     });
 
@@ -46,12 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function bindUserCards() {
         modalBody.querySelectorAll('.connection-card').forEach((card) => {
-            card.addEventListener('click', () => openChatRoom(card.dataset.id));
+            card.addEventListener('click', () => openChatRoom(card.dataset.url || card.dataset.id));
         });
     }
 
     function openUserList() {
-        fetch('/chat/modal/users/')
+        fetch(usersUrl)
             .then((r) => r.text())
             .then((html) => {
                 modalBody.innerHTML = html;
@@ -72,8 +75,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function openChatRoom(userId) {
-        fetch(`/chat/modal/room/${userId}/`)
+    function openChatRoom(param) {
+        const url = String(param).includes('/') ? param : `${roomUrlBase}${param}/`;
+        fetch(url)
             .then((r) => r.text())
             .then((html) => {
                 modalBody.innerHTML = html;
