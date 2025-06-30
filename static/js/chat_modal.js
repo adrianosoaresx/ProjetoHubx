@@ -79,8 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalBody.innerHTML = html;
                 modalTitle.textContent = 'Bate-papo';
                 openModal();
-                executeScripts(modalBody);
                 bindBackButton();
+                if (window.HubXChatRoom) {
+                    HubXChatRoom.init(modalBody);
+                }
             });
     }
 

@@ -43,6 +43,9 @@
 #chat-form button {
     padding: 0.5rem 1rem;
 }
+#file-input {
+    display: none;
+}
 .chat-footer {
     margin-top: 1rem;
     text-align: center;
