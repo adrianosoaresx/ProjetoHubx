@@ -1,4 +1,4 @@
-<div id="chat-container">
+<div id="chat-container" data-dest-id="{{ dest.id }}" data-current-user="{{ request.user.username }}" data-csrf-token="{{ csrf_token }}">
     <div class="chat-room-header">
         <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
         <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
@@ -12,53 +12,8 @@
         <input type="text" id="chat-input" autocomplete="off" />
         <div class="chat-actions">
             <button type="submit">Enviar</button>
-            <input type="file" id="file-input" style="display:none" />
+            <input type="file" id="file-input" />
             <button id="upload-btn" type="button">Upload</button>
         </div>
     </form>
 </div>
-<script>
-const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/{{ dest.id }}/`);
-const currentUser = "{{ request.user.username }}";
-const messages = document.getElementById('chat-messages');
-const input = document.getElementById('chat-input');
-const form = document.getElementById('chat-form');
-const fileInput = document.getElementById('file-input');
-const uploadBtn = document.getElementById('upload-btn');
-
-function scrollToBottom(){
-  messages.scrollTop = messages.scrollHeight;
-}
-
-socket.onmessage = function(e){
-  const data = JSON.parse(e.data);
-  const div = document.createElement('div');
-  div.classList.add('message');
-  if(data.remetente === currentUser){
-    div.classList.add('self');
-  }
-  div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + data.conteudo;
-  messages.appendChild(div);
-  scrollToBottom();
-};
-form.onsubmit = function(e){
-  e.preventDefault();
-  const message = input.value;
-  socket.send(JSON.stringify({tipo: 'text', conteudo: message}));
-  input.value = '';
-};
-uploadBtn.onclick = () => fileInput.click();
-fileInput.onchange = () => {
-  const file = fileInput.files[0];
-  if(!file) return;
-  const formData = new FormData();
-  formData.append('file', file);
-  fetch('', {method:'POST', body: formData, headers:{'X-CSRFToken': '{{ csrf_token }}'}})
-    .then(r=>r.json())
-    .then(data=>{
-      socket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
-    });
-};
-scrollToBottom();
-</script>
