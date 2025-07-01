@@ -38,7 +38,10 @@ def modal_room(request, user_id):
             tipo = "video"
         filename = f"chat/{uuid.uuid4().hex}.{ext}"
         path = default_storage.save(filename, file)
-        url = settings.MEDIA_URL + path
+        # Build an absolute URL so the client can access the file regardless of
+        # the current location. This also ensures previously saved attachments
+        # render correctly in the chat history.
+        url = request.build_absolute_uri(settings.MEDIA_URL + path)
         return JsonResponse({"url": url, "tipo": tipo})
     messages_qs = (
         Mensagem.objects.filter(nucleo=request.user.nucleo)
