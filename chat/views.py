@@ -50,10 +50,13 @@ def modal_room(request, user_id):
             | Q(remetente=dest, destinatario=request.user)
             | Q(destinatario__isnull=True, remetente__in=[request.user, dest])
         )
-        .order_by("criado_em")
+        .select_related("remetente", "destinatario")
+        .order_by("-criado_em")[:20]
     )
+    # Reverse the list so messages display oldest first in the template
+    messages = list(messages_qs)[::-1]
     context = {
         "dest": dest,
-        "messages": messages_qs,
+        "messages": messages,
     }
     return render(request, "chat/modal_room.html", context)
