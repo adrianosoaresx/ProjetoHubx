@@ -2,6 +2,7 @@
     <div class="chat-room-header">
         <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
         <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
+        <button type="button" class="btn-secondary-nav" onclick="fecharChat()">&times;</button>
     </div>
     <div id="chat-messages">
         {% for m in messages %}
