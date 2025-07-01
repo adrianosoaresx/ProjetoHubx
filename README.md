@@ -39,3 +39,8 @@ python manage.py generate_test_data --format json > seed.json
 
 ### Fórum
 O módulo `forum` permite a criação de tópicos e respostas por usuários autenticados. Acesse `/forum/` para visualizar as categorias.
+
+### Chat
+O módulo de chat registra cada mensagem enviada entre usuários no banco de dados
+(`Mensagem`). Ao abrir uma conversa, as últimas 20 mensagens trocadas são
+carregadas para que o histórico fique disponível mesmo após fechar a janela.
