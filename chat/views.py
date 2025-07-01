@@ -54,7 +54,8 @@ def modal_room(request, user_id):
         .order_by("-criado_em")[:20]
     )
     # Reverse the list so messages display oldest first in the template
-    messages = list(messages_qs)[::-1]
+    messages = list(messages_qs)
+    messages.reverse()
     context = {
         "dest": dest,
         "messages": messages,
