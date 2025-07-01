@@ -31,6 +31,8 @@
     margin-bottom: 1rem;
     border: 1px solid var(--glass-border);
     background: var(--glass-bg);
+    max-height: 60vh;
+    min-height: 40vh;
 }
 
 #chat-messages::-webkit-scrollbar {
