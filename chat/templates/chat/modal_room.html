@@ -9,11 +9,13 @@
             <div class="message{% if m.remetente == user %} self{% endif %}">
                 <strong>{{ m.remetente.username }}</strong>:
                 {% if m.tipo == 'image' %}
-                    <img src="{{ m.conteudo }}" alt="imagem" class="chat-media" />
+                    <img src="{{ m.conteudo }}" alt="imagem" class="chat-media-thumb" />
                 {% elif m.tipo == 'video' %}
-                    <video src="{{ m.conteudo }}" controls class="chat-media"></video>
+                    <video src="{{ m.conteudo }}" controls class="chat-media-thumb"></video>
                 {% elif m.tipo == 'file' %}
-                    <a href="{{ m.conteudo }}" target="_blank">Baixar arquivo</a>
+                    <div class="chat-file">
+                        <a href="{{ m.conteudo }}" target="_blank">📎 Baixar arquivo</a>
+                    </div>
                 {% else %}
                     {{ m.conteudo }}
                 {% endif %}

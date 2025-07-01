@@ -31,11 +31,13 @@
             }
             let content = conteudo;
             if(tipo === 'image'){
-                content = `<img src="${conteudo}" alt="imagem" class="chat-media">`;
+                content = `<img src="${conteudo}" alt="imagem" class="chat-media-thumb">`;
             } else if(tipo === 'video'){
-                content = `<video src="${conteudo}" controls class="chat-media"></video>`;
+                content = `<video src="${conteudo}" controls class="chat-media-thumb"></video>`;
             } else if(tipo === 'file'){
-                content = `<a href="${conteudo}" target="_blank">Baixar arquivo</a>`;
+                content = `<div class="chat-file">
+        <a href="${conteudo}" target="_blank">📎 Baixar arquivo</a>
+    </div>`;
             }
             div.innerHTML = '<strong>' + remetente + '</strong>: ' + content;
             return div;
