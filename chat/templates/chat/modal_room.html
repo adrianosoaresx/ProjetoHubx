@@ -1,5 +1,5 @@
 {% load chat_extras %}
-<div id="chat-container" data-dest-id="{{ dest.id }}" data-current-user="{{ request.user.username }}" data-csrf-token="{{ csrf_token }}">
+<div id="chat-container" data-dest-id="{{ dest.id }}" data-current-user="{{ request.user.username }}" data-csrf-token="{{ csrf_token }}" data-upload-url="{{ request.path }}">
     <div class="chat-room-header">
         <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
         <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
