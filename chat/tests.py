@@ -37,12 +37,16 @@ class ChatConsumerTests(TransactionTestCase):
         self.receiver = User.objects.create_user("receiver", password="pass", nucleo=self.nucleo)
 
     async def _communicate(self):
-        comm_sender = WebsocketCommunicator(application, "/ws/chat/")
+        comm_sender = WebsocketCommunicator(
+            application, f"/ws/chat/{self.receiver.id}/"
+        )
         comm_sender.scope["user"] = self.sender
         connected, _ = await comm_sender.connect()
         assert connected
 
-        comm_receiver = WebsocketCommunicator(application, "/ws/chat/")
+        comm_receiver = WebsocketCommunicator(
+            application, f"/ws/chat/{self.sender.id}/"
+        )
         comm_receiver.scope["user"] = self.receiver
         connected, _ = await comm_receiver.connect()
         assert connected

@@ -19,17 +19,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.nucleo_id = getattr(user, "nucleo_id", None)
 
-        if dest_id:
-            dest = await self.get_user(dest_id)
-            if not dest or dest.nucleo_id != self.nucleo_id:
-                await self.close()
-                return
-            self.dest = dest
-            sorted_ids = sorted([user.id, dest.id])
-            self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
-        else:
-            self.dest = None
-            self.group_name = f"chat_nucleo_{self.nucleo_id}"
+        if not dest_id:
+            await self.close()
+            return
+
+        dest = await self.get_user(dest_id)
+        if not dest or dest.nucleo_id != self.nucleo_id:
+            await self.close()
+            return
+
+        self.dest = dest
+        sorted_ids = sorted([user.id, dest.id])
+        self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
@@ -45,11 +46,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
-    async def receive(self, text_data=None, bytes_data=None):
+    async def receive_json(self, data, **kwargs):
         user = self.scope["user"]
-        if not text_data:
-            return
-        data = json.loads(text_data)
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
 
