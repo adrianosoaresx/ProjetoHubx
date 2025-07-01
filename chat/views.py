@@ -46,9 +46,8 @@ def modal_room(request, user_id):
     messages_qs = (
         Mensagem.objects.filter(nucleo=request.user.nucleo)
         .filter(
-            Q(remetente=request.user, destinatario=dest)
-            | Q(remetente=dest, destinatario=request.user)
-            | Q(destinatario__isnull=True, remetente__in=[request.user, dest])
+            remetente__in=[request.user, dest],
+            destinatario__in=[request.user, dest],
         )
         .select_related("remetente", "destinatario")
         .order_by("-criado_em")[:20]
