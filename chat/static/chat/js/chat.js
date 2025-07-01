@@ -4,6 +4,7 @@
         const destId = container.dataset.destId;
         const currentUser = container.dataset.currentUser;
         const csrfToken = container.dataset.csrfToken;
+        const uploadUrl = container.dataset.uploadUrl || '';
         if(container._chatSocket){
             try { container._chatSocket.close(); } catch(err){}
         }
@@ -82,7 +83,7 @@
             if(!file) return;
             const formData = new FormData();
             formData.append('file', file);
-            fetch('', {method:'POST', body: formData, headers:{'X-CSRFToken': csrfToken}})
+            fetch(uploadUrl, {method:'POST', body: formData, headers:{'X-CSRFToken': csrfToken}})
                 .then(r => r.json())
                 .then(data => {
                     const div = renderMessage(currentUser, data.tipo, data.url);
