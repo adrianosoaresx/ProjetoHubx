@@ -10,7 +10,8 @@ def absolute_media(path, request=None):
         return ""
     if path.startswith("http://") or path.startswith("https://"):
         return path
+
+    url = settings.MEDIA_URL.rstrip("/") + "/" + path.lstrip("/")
     if request is None:
-        # Without request we just prepend MEDIA_URL
-        return settings.MEDIA_URL.rstrip('/') + '/' + path.lstrip('/')
-    return request.build_absolute_uri(path)
+        return url
+    return request.build_absolute_uri(url)
