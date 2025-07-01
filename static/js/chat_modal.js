@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const chatContainer = container.querySelector('#chat-container');
                     HubXChatRoom.init(chatContainer);
                 }
+                const chatMessages = container.querySelector('#chat-messages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
             });
     }
 
