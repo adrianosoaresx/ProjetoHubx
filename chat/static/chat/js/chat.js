@@ -4,8 +4,12 @@
         const destId = container.dataset.destId;
         const currentUser = container.dataset.currentUser;
         const csrfToken = container.dataset.csrfToken;
+        if(container._chatSocket){
+            try { container._chatSocket.close(); } catch(err){}
+        }
         const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
         const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/${destId}/`);
+        container._chatSocket = socket;
 
         const messages = container.querySelector('#chat-messages');
         const input = container.querySelector('#chat-input');
@@ -17,22 +21,41 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        socket.onmessage = function(e){
-            const data = JSON.parse(e.data);
-            const div = document.createElement('div');
+        const pending = [];
+
+        function renderMessage(remetente, tipo, conteudo, elem){
+            const div = elem || document.createElement('div');
             div.classList.add('message');
-            if(data.remetente === currentUser){
+            if(remetente === currentUser){
                 div.classList.add('self');
             }
-            let content = data.conteudo;
-            if(data.tipo === 'image'){
-                content = `<img src="${data.conteudo}" alt="imagem" class="chat-media">`;
-            } else if(data.tipo === 'video'){
-                content = `<video src="${data.conteudo}" controls class="chat-media"></video>`;
-            } else if(data.tipo === 'file'){
-                content = `<a href="${data.conteudo}" target="_blank">Baixar arquivo</a>`;
+            let content = conteudo;
+            if(tipo === 'image'){
+                content = `<img src="${conteudo}" alt="imagem" class="chat-media">`;
+            } else if(tipo === 'video'){
+                content = `<video src="${conteudo}" controls class="chat-media"></video>`;
+            } else if(tipo === 'file'){
+                content = `<a href="${conteudo}" target="_blank">Baixar arquivo</a>`;
             }
-            div.innerHTML = '<strong>' + data.remetente + '</strong>: ' + content;
+            div.innerHTML = '<strong>' + remetente + '</strong>: ' + content;
+            return div;
+        }
+
+        socket.onmessage = function(e){
+            const data = JSON.parse(e.data);
+            // Remove pending placeholder if it matches the incoming data
+            if(data.remetente === currentUser){
+                const idx = pending.findIndex(p => p.tipo === data.tipo && p.conteudo === data.conteudo);
+                if(idx !== -1){
+                    const placeholder = pending[idx];
+                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem);
+                    placeholder.elem.classList.remove('pending');
+                    pending.splice(idx,1);
+                    scrollToBottom();
+                    return;
+                }
+            }
+            const div = renderMessage(data.remetente, data.tipo, data.conteudo);
             messages.appendChild(div);
             scrollToBottom();
         };
@@ -41,9 +64,13 @@
             e.preventDefault();
             const message = input.value.trim();
             if(message){
+                const div = renderMessage(currentUser, 'text', message);
+                div.classList.add('pending');
+                messages.appendChild(div);
+                pending.push({tipo: 'text', conteudo: message, elem: div});
+                scrollToBottom();
                 socket.send(JSON.stringify({tipo:'text', conteudo: message}));
                 input.value = '';
-                scrollToBottom();
             }
         });
 
@@ -56,6 +83,11 @@
             fetch('', {method:'POST', body: formData, headers:{'X-CSRFToken': csrfToken}})
                 .then(r => r.json())
                 .then(data => {
+                    const div = renderMessage(currentUser, data.tipo, data.url);
+                    div.classList.add('pending');
+                    messages.appendChild(div);
+                    pending.push({tipo: data.tipo, conteudo: data.url, elem: div});
+                    scrollToBottom();
                     socket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
                 });
         });

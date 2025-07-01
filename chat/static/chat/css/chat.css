@@ -50,6 +50,11 @@
     background: rgba(0, 255, 65, 0.15);
     align-self: flex-end;
 }
+
+.message.pending {
+    opacity: 0.6;
+    font-style: italic;
+}
 .chat-media {
     max-width: 100%;
     height: auto;
