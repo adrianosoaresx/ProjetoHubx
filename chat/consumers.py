@@ -51,20 +51,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
 
-        msg = await sync_to_async(Mensagem.objects.create)(
+        msg = await database_sync_to_async(Mensagem.objects.create)(
             nucleo=user.nucleo,
             remetente=user,
             destinatario=self.dest,
             tipo=message_type,
             conteudo=content,
         )
-        recipient_ids = await sync_to_async(list)(
+        recipient_ids = await database_sync_to_async(list)(
             User.objects.filter(nucleo_id=self.nucleo_id)
             .exclude(id=user.id)
             .values_list("id", flat=True)
         )
         for uid in recipient_ids:
-            await sync_to_async(Notificacao.objects.create)(
+            await database_sync_to_async(Notificacao.objects.create)(
                 usuario_id=uid,
                 remetente=user,
                 mensagem=msg,
