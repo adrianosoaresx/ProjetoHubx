@@ -15,7 +15,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function closeCurrentSocket() {
+        const chatEl = container.querySelector('#chat-container');
+        if (chatEl && chatEl._chatSocket) {
+            try { chatEl._chatSocket.close(); } catch (e) {}
+        }
+    }
+
     function openUserList() {
+        closeCurrentSocket();
         fetch(usersUrl)
             .then(r => r.text())
             .then(html => {
@@ -37,6 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function abrirChat(userId) {
         const url = `${roomUrlBase}${userId}/`;
+        closeCurrentSocket();
         fetch(url)
             .then(r => r.text())
             .then(html => {
@@ -52,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fecharChat() {
+        closeCurrentSocket();
         container.classList.add('hidden');
         container.innerHTML = '';
     }
