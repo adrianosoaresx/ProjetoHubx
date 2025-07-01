@@ -1,3 +1,4 @@
+{% load chat_extras %}
 <div id="chat-container" data-dest-id="{{ dest.id }}" data-current-user="{{ request.user.username }}" data-csrf-token="{{ csrf_token }}">
     <div class="chat-room-header">
         <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
@@ -9,12 +10,12 @@
             <div class="message{% if m.remetente == user %} self{% endif %}">
                 <strong>{{ m.remetente.username }}</strong>:
                 {% if m.tipo == 'image' %}
-                    <img src="{{ m.conteudo }}" alt="imagem" class="chat-media-thumb" />
+                    <img src="{{ m.conteudo|absolute_media:request }}" alt="imagem" class="chat-media-thumb" />
                 {% elif m.tipo == 'video' %}
-                    <video src="{{ m.conteudo }}" controls class="chat-media-thumb"></video>
+                    <video src="{{ m.conteudo|absolute_media:request }}" controls class="chat-media-thumb"></video>
                 {% elif m.tipo == 'file' %}
                     <div class="chat-file">
-                        <a href="{{ m.conteudo }}" target="_blank">📎 Baixar arquivo</a>
+                        <a href="{{ m.conteudo|absolute_media:request }}" target="_blank">📎 Baixar arquivo</a>
                     </div>
                 {% else %}
                     {{ m.conteudo }}
