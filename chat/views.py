@@ -46,15 +46,15 @@ def modal_room(request, user_id):
     messages_qs = (
         Mensagem.objects.filter(nucleo=request.user.nucleo)
         .filter(
-            remetente__in=[request.user, dest],
-            destinatario__in=[request.user, dest],
+            Q(remetente=request.user, destinatario=dest)
+            | Q(remetente=dest, destinatario=request.user)
         )
         .select_related("remetente", "destinatario")
         .order_by("-criado_em")[:20]
     )
-    # Reverse the list so messages display oldest first in the template
-    messages = list(messages_qs)
-    messages.reverse()
+
+    # List of messages in chronological order from oldest to newest
+    messages = list(messages_qs)[::-1]
     context = {
         "dest": dest,
         "messages": messages,
