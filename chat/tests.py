@@ -40,6 +40,14 @@ class ChatViewTests(TestCase):
         self.assertContains(response, "hello")
         self.assertContains(response, "hi")
 
+    def test_messages_history_endpoint_returns_json(self):
+        url = reverse("chat:messages_history", args=[self.user2.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("messages", data)
+        self.assertEqual(len(data["messages"]), 2)
+
 
 from unittest import skip
 

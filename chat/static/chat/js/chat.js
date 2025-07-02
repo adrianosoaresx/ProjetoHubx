@@ -5,6 +5,7 @@
         const currentUser = container.dataset.currentUser;
         const csrfToken = container.dataset.csrfToken;
         const uploadUrl = container.dataset.uploadUrl || '';
+        const historyUrl = container.dataset.historyUrl || '';
         if(container._chatSocket){
             try { container._chatSocket.close(); } catch(err){}
         }
@@ -26,6 +27,19 @@
         }
 
         const pending = [];
+
+        // Load persisted messages via AJAX
+        if(historyUrl){
+            fetch(historyUrl)
+                .then(r => r.json())
+                .then(data => {
+                    data.messages.forEach(m => {
+                        const div = renderMessage(m.remetente, m.tipo, m.conteudo);
+                        messages.appendChild(div);
+                    });
+                    scrollToBottom();
+                });
+        }
 
         function renderMessage(remetente, tipo, conteudo, elem){
             const div = elem || document.createElement('div');
