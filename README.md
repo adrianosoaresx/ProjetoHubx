@@ -46,5 +46,10 @@ O módulo de chat registra cada mensagem enviada entre usuários no banco de dad
 carregadas para que o histórico fique disponível mesmo após fechar a janela.
 Para que o WebSocket do chat funcione corretamente, instale também a
 dependência `daphne` indicada em `requirements.txt`.
-Ao executar o projeto localmente use `daphne Hubx.asgi:application` em vez do
-`runserver` padrão para habilitar conexões WebSocket.
+Ao executar o projeto localmente, inicie o servidor com:
+
+```
+daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
+```
+
+O comando `runserver` do Django **não** habilita conexões WebSocket.
