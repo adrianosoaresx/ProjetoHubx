@@ -58,6 +58,7 @@ def modal_room(request, user_id):
     context = {
         "dest": dest,
         "messages": messages,
+        "user": request.user,
     }
     return render(request, "chat/modal_room.html", context)
 

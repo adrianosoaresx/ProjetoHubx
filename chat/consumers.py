@@ -3,8 +3,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth import get_user_model
 import json
 
-from .models import Mensagem, Notificacao
-from asgiref.sync import sync_to_async
+from .api import create_message, get_user, notify_users
 
 User = get_user_model()
 
@@ -28,7 +27,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.nucleo_id = getattr(user, "nucleo_id", None)
 
-        dest = await self.get_user(dest_id)
+        dest = await database_sync_to_async(get_user)(dest_id)
         if not dest or dest.nucleo_id != self.nucleo_id:
             await self.close()
             return
@@ -42,12 +41,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
-    @database_sync_to_async
-    def get_user(self, pk):
-        try:
-            return User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return None
 
     async def disconnect(self, close_code):
         if hasattr(self, "group_name"):
@@ -62,7 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
 
-        msg = await database_sync_to_async(Mensagem.objects.create)(
+        msg = await database_sync_to_async(create_message)(
             nucleo_id=self.nucleo_id,
             remetente_id=user.id,
             destinatario_id=self.dest.id,
@@ -82,12 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             .exclude(id=user.id)
             .values_list("id", flat=True)
         )
-        for uid in recipient_ids:
-            await database_sync_to_async(Notificacao.objects.create)(
-                usuario_id=uid,
-                remetente_id=user.id,
-                mensagem=msg,
-            )
+        await database_sync_to_async(notify_users)(recipient_ids, user.id, msg)
 
         await self.channel_layer.group_send(
             self.group_name,
