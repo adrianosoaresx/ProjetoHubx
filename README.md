@@ -47,10 +47,16 @@ carregadas para que o histórico fique disponível mesmo após fechar a janela.
 Para que o WebSocket do chat funcione corretamente, instale também a
 dependência `daphne` indicada em `requirements.txt`.
 
-O comando `runserver` do Django **não** habilita conexões WebSocket.
-Se a URL `ws://localhost:8000/ws/chat/<id>/` retornar `404`,
-verifique se a aplicação está rodando através de um servidor ASGI.
-Execute o projeto com:
+Com o pacote `channels` instalado, o próprio comando `runserver` já utiliza o
+servidor ASGI do Django (via `daphne`). Portanto, para desenvolver e depurar o
+chat basta executar:
+
+```
+python manage.py runserver
+```
+
+Se preferir iniciar manualmente o servidor ASGI, por exemplo em produção, use
+o comando:
 
 ```
 daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
