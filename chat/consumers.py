@@ -16,8 +16,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        dest_id = self.scope["url_route"]["kwargs"].get("dest_id")
-        if not dest_id:
+        dest_id = self.scope["url_route"].get("kwargs", {}).get("dest_id")
+        if dest_id is None:
+            await self.close()
+            return
+        try:
+            dest_id = int(dest_id)
+        except (TypeError, ValueError):
             await self.close()
             return
 
@@ -64,6 +69,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             tipo=message_type,
             conteudo=content,
         )
+        print(
+            "Mensagem salva:",
+            msg.id,
+            msg.remetente_id,
+            "->",
+            msg.destinatario_id,
+            msg.conteudo,
+        )
         recipient_ids = await database_sync_to_async(list)(
             User.objects.filter(nucleo_id=self.nucleo_id)
             .exclude(id=user.id)
@@ -86,6 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "timestamp": msg.criado_em.isoformat(),
             },
         )
+        print("Enviada ao grupo", self.group_name)
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event))
