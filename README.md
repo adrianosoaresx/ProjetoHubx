@@ -44,3 +44,5 @@ O módulo `forum` permite a criação de tópicos e respostas por usuários aute
 O módulo de chat registra cada mensagem enviada entre usuários no banco de dados
 (`Mensagem`). Ao abrir uma conversa, as últimas 20 mensagens trocadas são
 carregadas para que o histórico fique disponível mesmo após fechar a janela.
+Para que o WebSocket do chat funcione corretamente, instale também a
+dependência `daphne` indicada em `requirements.txt`.
