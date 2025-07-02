@@ -28,6 +28,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
+        print("WebSocket conectado por:", user.username, "->", dest_id)
+
         self.dest = dest
         sorted_ids = sorted([user.id, dest.id])
         self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
@@ -50,6 +52,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user = self.scope["user"]
         message_type = data.get("tipo", "text")
         content = data.get("conteudo", "")
+
+        if not hasattr(self, "dest"):
+            await self.send(text_data=json.dumps({"erro": "destinatário inválido"}))
+            return
 
         msg = await database_sync_to_async(Mensagem.objects.create)(
             nucleo_id=self.nucleo_id,
