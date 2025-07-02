@@ -60,3 +60,33 @@ def modal_room(request, user_id):
         "messages": messages,
     }
     return render(request, "chat/modal_room.html", context)
+
+
+@login_required
+def messages_history(request, user_id):
+    """Return the last 50 messages in JSON format."""
+    dest = get_object_or_404(User, pk=user_id, nucleo=request.user.nucleo)
+    messages_qs = (
+        Mensagem.objects.filter(nucleo=request.user.nucleo)
+        .filter(
+            Q(remetente=request.user, destinatario=dest)
+            | Q(remetente=dest, destinatario=request.user)
+        )
+        .select_related("remetente")
+        .order_by("-criado_em")[:50]
+    )
+    def _abs(url: str) -> str:
+        if url.startswith("http://") or url.startswith("https://"):
+            return url
+        return request.build_absolute_uri(settings.MEDIA_URL.rstrip("/") + "/" + url.lstrip("/"))
+
+    messages = [
+        {
+            "remetente": m.remetente.username,
+            "tipo": m.tipo,
+            "conteudo": _abs(m.conteudo) if m.tipo in {"image", "video", "file"} else m.conteudo,
+            "timestamp": m.criado_em.isoformat(),
+        }
+        for m in reversed(list(messages_qs))
+    ]
+    return JsonResponse({"messages": messages})
