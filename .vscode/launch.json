@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": ["runserver"],
+            "django": true
+        },
+        {
+            "name": "Daphne ASGI",
+            "type": "python",
+            "request": "launch",
+            "module": "daphne",
+            "args": ["Hubx.asgi:application"],
+            "console": "integratedTerminal",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "Hubx.settings"
+            }
+        }
+    ]
+}
