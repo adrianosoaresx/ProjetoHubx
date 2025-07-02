@@ -84,6 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Hubx.wsgi.application'
+# Caminho da aplicação ASGI utilizado por servidores como o Daphne
 ASGI_APPLICATION = 'Hubx.asgi.application'
 
 CHANNEL_LAYERS = {
