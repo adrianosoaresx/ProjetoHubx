@@ -53,8 +53,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         msg = await database_sync_to_async(Mensagem.objects.create)(
             nucleo_id=self.nucleo_id,
-            remetente=user,
-            destinatario=self.dest,
+            remetente_id=user.id,
+            destinatario_id=self.dest.id,
             tipo=message_type,
             conteudo=content,
         )
@@ -66,7 +66,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         for uid in recipient_ids:
             await database_sync_to_async(Notificacao.objects.create)(
                 usuario_id=uid,
-                remetente=user,
+                remetente_id=user.id,
                 mensagem=msg,
             )
 
@@ -79,15 +79,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "conteudo": content,
                 "timestamp": msg.criado_em.isoformat(),
             },
-        )
-
-    @database_sync_to_async
-    def _create_message(self, user, message_type, content):
-        return Mensagem.objects.create(
-            nucleo=user.nucleo,
-            remetente=user,
-            tipo=message_type,
-            conteudo=content,
         )
 
     async def chat_message(self, event):
