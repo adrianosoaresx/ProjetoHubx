@@ -12,16 +12,16 @@ User = get_user_model()
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
+        if not user or not user.is_authenticated:
+            await self.close()
+            return
+
         dest_id = self.scope["url_route"]["kwargs"].get("dest_id")
-        if not user.is_authenticated:
+        if not dest_id:
             await self.close()
             return
 
         self.nucleo_id = getattr(user, "nucleo_id", None)
-
-        if not dest_id:
-            await self.close()
-            return
 
         dest = await self.get_user(dest_id)
         if not dest or dest.nucleo_id != self.nucleo_id:
@@ -50,12 +50,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive_json(self, data, **kwargs):
         user = self.scope["user"]
-        message_type = data.get("tipo", "text")
-        content = data.get("conteudo", "")
-
-        if not hasattr(self, "dest"):
+        if not user or not user.is_authenticated or not hasattr(self, "dest"):
             await self.send(text_data=json.dumps({"erro": "destinatário inválido"}))
             return
+
+        message_type = data.get("tipo", "text")
+        content = data.get("conteudo", "")
 
         msg = await database_sync_to_async(Mensagem.objects.create)(
             nucleo_id=self.nucleo_id,

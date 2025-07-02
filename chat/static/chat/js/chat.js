@@ -1,16 +1,19 @@
 (function(){
     function init(container){
         if(!container) return;
-        const destId = container.dataset.destId;
+        const destinatarioId = container.dataset.destId;
         const currentUser = container.dataset.currentUser;
         const csrfToken = container.dataset.csrfToken;
         const uploadUrl = container.dataset.uploadUrl || '';
         if(container._chatSocket){
             try { container._chatSocket.close(); } catch(err){}
         }
-        const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        const socket = new WebSocket(`${scheme}://${window.location.host}/ws/chat/${destId}/`);
-        container._chatSocket = socket;
+        const chatSocket = new WebSocket(
+            (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+            window.location.host +
+            '/ws/chat/' + destinatarioId + '/'
+        );
+        container._chatSocket = chatSocket;
 
         const messages = container.querySelector('#chat-messages');
         const input = container.querySelector('#chat-input');
@@ -44,7 +47,7 @@
             return div;
         }
 
-        socket.onmessage = function(e){
+        chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
             // Remove pending placeholder if it matches the incoming data
             if(data.remetente === currentUser){
@@ -72,7 +75,7 @@
                 messages.appendChild(div);
                 pending.push({tipo: 'text', conteudo: message, elem: div});
                 scrollToBottom();
-                socket.send(JSON.stringify({tipo:'text', conteudo: message}));
+                chatSocket.send(JSON.stringify({tipo:'text', conteudo: message}));
                 input.value = '';
             }
         });
@@ -91,7 +94,7 @@
                     messages.appendChild(div);
                     pending.push({tipo: data.tipo, conteudo: data.url, elem: div});
                     scrollToBottom();
-                    socket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
+                    chatSocket.send(JSON.stringify({tipo: data.tipo, conteudo: data.url}));
                 });
         });
 
