@@ -33,3 +33,5 @@ txaio==25.6.1
 typing_extensions==4.14.0
 tzdata==2025.2
 zope.interface==7.2
+channels==4.1.0
+daphne==4.2.1
