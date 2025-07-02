@@ -52,7 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         content = data.get("conteudo", "")
 
         msg = await database_sync_to_async(Mensagem.objects.create)(
-            nucleo=user.nucleo,
+            nucleo_id=self.nucleo_id,
             remetente=user,
             destinatario=self.dest,
             tipo=message_type,
