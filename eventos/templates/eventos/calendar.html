@@ -49,9 +49,9 @@
             </div>
             <div class="empresa-actions">
                 <a href="{% url 'eventos:detail' evento.pk %}" class="btn-primary">Ver</a>
-                {% if user.tipo_id in [4,1,2] %}
-                <a href="{% url 'eventos:update' evento.pk %}" class="btn-edit">Editar</a>
-                <a href="{% url 'eventos:delete' evento.pk %}" class="btn-danger">Remover</a>
+                {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
+                    <a href="{% url 'eventos:update' evento.pk %}" class="btn-edit">Editar</a>
+                    <a href="{% url 'eventos:delete' evento.pk %}" class="btn-danger">Remover</a>
                 {% endif %}
             </div>
         </div>

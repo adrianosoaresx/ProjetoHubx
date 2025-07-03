@@ -26,7 +26,7 @@
                     <h3>{{ inscrito.get_full_name|default:inscrito.username }}</h3>
                     <p class="empresa-tipo">{{ inscrito.email }}</p>
                 </div>
-                {% if user.tipo_id in [4,1,2] %}
+                {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
                 <div class="empresa-actions">
                     <form method="post" action="{% url 'eventos:remove_inscrito' object.pk inscrito.pk %}">
                         {% csrf_token %}
