@@ -30,7 +30,7 @@
             {% if dia in eventos_por_dia %}
                 <ul>
                 {% for e in eventos_por_dia|dict_get:dia %}
-                    <li><a href="{% url 'eventos:detail' e.pk %}" id="d{{ dia.day }}">{{ e.titulo }}</a></li>
+                    <li id="d{{ dia.day }}">{{ e.titulo }}</li>
                 {% endfor %}
                 </ul>
             {% endif %}
