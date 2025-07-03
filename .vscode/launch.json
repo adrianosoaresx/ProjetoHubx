@@ -23,6 +23,22 @@
       "env": {
         "DJANGO_SETTINGS_MODULE": "Hubx.settings"
       }
+    },
+    {
+      "name": "ASGI com Uvicorn (Hot Reload)",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "Hubx.asgi:application",
+        "--host", "127.0.0.1",
+        "--port", "8000",
+        "--reload"
+      ],
+      "console": "integratedTerminal",
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "Hubx.settings"
+      }
     }
   ]
 }
