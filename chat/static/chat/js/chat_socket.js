@@ -21,8 +21,9 @@
         const csrfToken = container.dataset.csrfToken;
         const uploadUrl = container.dataset.uploadUrl || '';
         const historyUrl = container.dataset.historyUrl || '';
-        const url = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
-                     window.location.host + '/ws/chat/' + destinatarioId + '/';
+        const scheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const hostname = window.location.hostname;
+        const url = scheme + hostname + ':8001/ws/chat/' + destinatarioId + '/';
 
         if(container._chatCleanup){ container._chatCleanup(); }
         const closeSocket = createSocket(container, url);
