@@ -1,6 +1,11 @@
 {% extends 'perfil/perfil_subpage_base.html' %}
-{% load eventos_extras %}
+{% load eventos_extras static %}
 {% block title %}Calendário | Hubx{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'eventos/css/eventos.css' %}">
+{% endblock %}
 
 {% block perfil_subpage_content %}
 <section class="perfil-section active">
@@ -20,8 +25,8 @@
         </tr>
         {% for dia in dias %}
         {% if forloop.first or dia.weekday == 0 %}<tr>{% endif %}
-        <td class="{% if dia.month != mes %}other-month{% endif %} {% if dia in eventos_por_dia %}has-event{% endif %}">
-            <a href="?mes={{ dia.month }}&ano={{ dia.year }}#d{{ dia.day }}">{{ dia.day }}</a>
+        <td class="{% if dia.month != mes %}other-month{% endif %} {% if dia in eventos_por_dia %}has-event{% endif %} {% if selected_date == dia %}selected{% endif %}">
+            <a href="?mes={{ dia.month }}&ano={{ dia.year }}&dia={{ dia|date:'Y-m-d' }}#d{{ dia.day }}">{{ dia.day }}</a>
             {% if dia in eventos_por_dia %}
                 <ul>
                 {% for e in eventos_por_dia|dict_get:dia %}
@@ -33,5 +38,27 @@
         {% if dia.weekday == 6 %}</tr>{% endif %}
         {% endfor %}
     </table>
+    {% if selected_date %}
+    <h3>Eventos em {{ selected_date|date:'d/m/Y' }}</h3>
+    <div class="empresas-grid">
+        {% for evento in eventos_dia %}
+        <div class="empresa-card">
+            <div class="empresa-info">
+                <h3>{{ evento.titulo }}</h3>
+                <p class="empresa-tipo">{{ evento.data_hora|time:'H:i' }}</p>
+            </div>
+            <div class="empresa-actions">
+                <a href="{% url 'eventos:detail' evento.pk %}" class="btn-primary">Ver</a>
+                {% if user.tipo_id in [4,1,2] %}
+                <a href="{% url 'eventos:update' evento.pk %}" class="btn-edit">Editar</a>
+                <a href="{% url 'eventos:delete' evento.pk %}" class="btn-danger">Remover</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">Nenhum evento.</div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
