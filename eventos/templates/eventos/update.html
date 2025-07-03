@@ -7,7 +7,11 @@
         <h1 class="form-title">Editar Evento</h1>
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            {% for field in form %}
+            {% if field.name != 'inscritos' %}
+            {{ field.as_p }}
+            {% endif %}
+            {% endfor %}
             <div class="form-actions" style="justify-content:flex-end;">
                 <a href="{% url 'eventos:list' %}" class="btn-secondary">Cancelar</a>
                 <button type="submit" class="btn-primary">Salvar</button>

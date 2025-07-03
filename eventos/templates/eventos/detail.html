@@ -8,9 +8,6 @@
         <p>{{ object.descricao }}</p>
         <p><strong>Quando:</strong> {{ object.data_hora }}</p>
         <p><strong>Duração:</strong> {{ object.duracao }}</p>
-        {% if object.link_inscricao %}
-        <p><a href="{{ object.link_inscricao }}" class="btn-primary">Inscrição</a></p>
-        {% endif %}
         {% if user.is_authenticated %}
         <form action="{% url 'eventos:subscribe' object.pk %}" method="post">
             {% csrf_token %}
@@ -21,6 +18,22 @@
             {% endif %}
         </form>
         {% endif %}
+        <h2 style="margin-top:2rem;">Inscritos</h2>
+        <div class="empresas-grid">
+            {% for inscrito in object.inscritos.all %}
+            <div class="empresa-card">
+                <div class="empresa-info">
+                    <h3>{{ inscrito.get_full_name|default:inscrito.username }}</h3>
+                    <p class="empresa-tipo">{{ inscrito.email }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">Nenhum inscrito.</div>
+            {% endfor %}
+        </div>
+        <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
+            <a href="{% url 'eventos:list' %}" class="btn-secondary">Voltar</a>
+        </div>
     </div>
 </section>
 {% endblock %}
