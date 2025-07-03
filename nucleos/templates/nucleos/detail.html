@@ -1,23 +1,18 @@
 {% extends 'perfil/perfil_subpage_base.html' %}
-{% block title %}Editar Núcleo | Hubx{% endblock %}
+{% block title %}{{ object.nome }} | Hubx{% endblock %}
 
 {% block perfil_subpage_content %}
 <section class="perfil-section active">
     <div class="empresa-form-container">
-        <h1 class="form-title">Editar Núcleo</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'nucleos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
-            </div>
-        </form>
+        <h1 class="form-title">{{ object.nome }}</h1>
+        {% if object.descricao %}
+        <p>{{ object.descricao }}</p>
+        {% endif %}
     </div>
 
     <h2 style="margin-top:2rem;">Membros</h2>
     <div class="connections-grid">
-        {% for membro in membros %}
+        {% for membro in object.membros.all %}
         <div class="connection-card">
             <div class="connection-avatar">
                 {% if membro.avatar %}
@@ -31,12 +26,6 @@
             <div class="connection-info">
                 <h4>{{ membro.get_full_name|default:membro.username }}</h4>
                 <p>@{{ membro.username }}</p>
-            </div>
-            <div class="connection-actions">
-                <form method="post" action="{% url 'nucleos:remove_member' object.id membro.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-icon" title="Excluir membro">❌</button>
-                </form>
             </div>
         </div>
         {% empty %}

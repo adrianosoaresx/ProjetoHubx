@@ -33,7 +33,7 @@
                 {% endif %}
             </div>
             <div class="empresa-info">
-                <h3>{{ nucleo.nome }}</h3>
+                <h3><a href="{% url 'nucleos:detail' nucleo.id %}">{{ nucleo.nome }}</a></h3>
                 <p class="empresa-tipo">{{ nucleo.organizacao.nome }}</p>
             </div>
             <div class="empresa-actions">
