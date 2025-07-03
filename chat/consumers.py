@@ -47,7 +47,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive_json(self, data, **kwargs):
-        print("Mensagem recebida:", data)
+        print("📥 Mensagem recebida via WebSocket:", data)
         user = self.scope["user"]
         if not user or not user.is_authenticated or not hasattr(self, "dest"):
             await self.send(text_data=json.dumps({"erro": "destinatário inválido"}))

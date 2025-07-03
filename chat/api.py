@@ -12,6 +12,9 @@ def get_user(pk: int):
 
 
 def create_message(**kwargs):
+    print("✅ Entrou em create_message com dados:")
+    for k, v in kwargs.items():
+        print(f"   {k}: {v}")
     """Create a chat message and return it."""
     return Mensagem.objects.create(**kwargs)
 
