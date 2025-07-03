@@ -1,0 +1,38 @@
+:root {
+  --primary-dark: #0d1b0d;
+  --matrix-green: #00ff41;
+  --matrix-light: #39ff14;
+  --glass-border: rgba(0, 255, 65, 0.2);
+}
+
+.calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+}
+
+.calendar-table th,
+.calendar-table td {
+  border: 1px solid var(--glass-border);
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.calendar-table td.other-month {
+  opacity: 0.4;
+}
+
+.calendar-table td.has-event {
+  background: rgba(0, 255, 65, 0.1);
+}
+
+.calendar-table td.selected {
+  background: rgba(0, 255, 65, 0.25);
+}

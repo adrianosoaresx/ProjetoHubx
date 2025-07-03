@@ -60,7 +60,7 @@ class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class EventoUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
+class EventoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/update.html"
@@ -77,7 +77,7 @@ class EventoUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EventoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+class EventoDeleteView(GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:list")
@@ -103,9 +103,19 @@ class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         ano = int(self.request.GET.get("ano", today.year))
         return mes, ano
 
+    def get_selected_date(self, mes, ano):
+        dia_param = self.request.GET.get("dia")
+        if dia_param:
+            try:
+                return date.fromisoformat(dia_param)
+            except ValueError:
+                pass
+        return None
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         mes, ano = self.get_month_year()
+        selected_date = self.get_selected_date(mes, ano)
         cal = calendar.Calendar()
         dias = cal.itermonthdates(ano, mes)
         eventos_por_dia = {}
@@ -116,12 +126,17 @@ class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         for event in eventos:
             dia = event.data_hora.date()
             eventos_por_dia.setdefault(dia, []).append(event)
+        eventos_dia = []
+        if selected_date:
+            eventos_dia = eventos_por_dia.get(selected_date, [])
         context.update({
             "mes": mes,
             "ano": ano,
             "dias": dias,
             "eventos_por_dia": eventos_por_dia,
             "weekdays": "Seg Ter Qua Qui Sex Sab Dom".split(),
+            "selected_date": selected_date,
+            "eventos_dia": eventos_dia,
         })
         return context
 
@@ -143,5 +158,20 @@ class EventoSubscribeView(GerenteRequiredMixin, LoginRequiredMixin, View):
             evento.inscritos.add(request.user)
             messages.success(request, "Inscrição realizada.")
         return redirect("eventos:detail", pk=pk)
+
+
+class EventoRemoveInscritoView(GerenteRequiredMixin, LoginRequiredMixin, View):
+    """Remove um inscrito do evento."""
+
+    def post(self, request, pk, user_id):
+        evento = get_object_or_404(Evento, pk=pk)
+        if request.user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE} and evento.organizacao != request.user.organizacao:
+            messages.error(request, "Acesso negado.")
+            return redirect("eventos:list")
+        inscrito = get_object_or_404(User, pk=user_id)
+        if inscrito in evento.inscritos.all():
+            evento.inscritos.remove(inscrito)
+            messages.success(request, "Inscrito removido.")
+        return redirect("eventos:update", pk=pk)
 
 
