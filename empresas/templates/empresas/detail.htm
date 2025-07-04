@@ -30,6 +30,35 @@
             {% endfor %}
         </p>
         {% endif %}
+        {% if empresa.tags.filter(categoria='prod').exists %}
+        <h2 style="margin-top:2rem;">Produtos</h2>
+        <div class="empresas-grid">
+            {% for tag in empresa.tags.filter(categoria='prod') %}
+            <div class="empresa-card">
+                <div class="empresa-info">
+                    <h3>{{ tag.nome }}</h3>
+                </div>
+            </div>
+            {% empty %}
+            <p>Nenhum produto cadastrado.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if empresa.tags.filter(categoria='serv').exists %}
+        <h2 style="margin-top:2rem;">Serviços</h2>
+        <div class="empresas-grid">
+            {% for tag in empresa.tags.filter(categoria='serv') %}
+            <div class="empresa-card">
+                <div class="empresa-info">
+                    <h3>{{ tag.nome }}</h3>
+                </div>
+            </div>
+            {% empty %}
+            <p>Nenhum serviço cadastrado.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
     <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
         <a href="{% url 'empresas:lista' %}" class="btn-secondary">Voltar</a>
