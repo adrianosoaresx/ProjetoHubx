@@ -169,6 +169,14 @@ def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if not request.user.is_superuser and empresa.usuario.organizacao != request.user.organizacao:
         return HttpResponseForbidden()
-    return render(request, "empresas/detail.htm", {"empresa": empresa})
+    prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)
+    serv_tags = empresa.tags.filter(categoria=Tag.Categoria.SERVICO)
+    context = {
+        "empresa": empresa,
+        "empresa_tags": empresa.tags.all(),
+        "prod_tags": prod_tags,
+        "serv_tags": serv_tags,
+    }
+    return render(request, "empresas/detail.htm", context)
 
 
