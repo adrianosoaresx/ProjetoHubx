@@ -4,9 +4,16 @@
 {% block perfil_subpage_content %}
 <section class="perfil-section active">
     <div class="empresa-form-container">
+        <div class="empresa-logo" style="margin: 0 auto 1.5rem;">
+            <div class="logo-placeholder">
+                <span>{{ object.titulo|make_list|first|upper }}</span>
+            </div>
+        </div>
         <h1 class="form-title">{{ object.titulo }}</h1>
+        {% if object.descricao %}
         <p>{{ object.descricao }}</p>
-        <p><strong>Quando:</strong> {{ object.data_hora }}</p>
+        {% endif %}
+        <p><strong>Quando:</strong> {{ object.data_hora|date:"d/m/Y H:i" }}</p>
         <p><strong>Duração:</strong> {{ object.duracao }}</p>
         {% if user.is_authenticated %}
         <form action="{% url 'eventos:subscribe' object.pk %}" method="post">
@@ -18,22 +25,32 @@
             {% endif %}
         </form>
         {% endif %}
-        <h2 style="margin-top:2rem;">Inscritos</h2>
-        <div class="empresas-grid">
-            {% for inscrito in object.inscritos.all %}
-            <div class="empresa-card">
-                <div class="empresa-info">
-                    <h3>{{ inscrito.get_full_name|default:inscrito.username }}</h3>
-                    <p class="empresa-tipo">{{ inscrito.email }}</p>
+    </div>
+
+    <h2 style="margin-top:2rem;">Inscritos</h2>
+    <div class="connections-grid">
+        {% for inscrito in object.inscritos.all %}
+        <div class="connection-card">
+            <div class="connection-avatar">
+                {% if inscrito.avatar %}
+                <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}">
+                {% else %}
+                <div class="avatar-placeholder">
+                    <span>{{ inscrito.username|make_list|first|upper }}</span>
                 </div>
+                {% endif %}
             </div>
-            {% empty %}
-            <div class="empty-state">Nenhum inscrito.</div>
-            {% endfor %}
+            <div class="connection-info">
+                <h4>{{ inscrito.get_full_name|default:inscrito.username }}</h4>
+                <p>@{{ inscrito.username }}</p>
+            </div>
         </div>
-        <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
-            <a href="{% url 'eventos:list' %}" class="btn-secondary">Voltar</a>
-        </div>
+        {% empty %}
+        <p>Nenhum inscrito.</p>
+        {% endfor %}
+    </div>
+    <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
+        <a href="{% url 'eventos:list' %}" class="btn-secondary">Voltar</a>
     </div>
 </section>
 {% endblock %}
