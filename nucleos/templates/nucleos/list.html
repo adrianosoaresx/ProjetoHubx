@@ -37,6 +37,7 @@
                 <p class="empresa-tipo">{{ nucleo.organizacao.nome }}</p>
             </div>
             <div class="empresa-actions">
+                <a href="{% url 'nucleos:detail' nucleo.id %}" class="btn-view">Ver</a>
                 <a href="{% url 'nucleos:update' nucleo.id %}" class="btn-edit">Editar</a>
                 <a href="{% url 'nucleos:delete' nucleo.id %}" class="btn-danger">Remover</a>
             </div>
