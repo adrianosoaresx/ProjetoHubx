@@ -22,18 +22,18 @@
         {% if empresa.contato %}
         <p><strong>Contato:</strong> {{ empresa.contato }}</p>
         {% endif %}
-        {% if empresa.tags.exists %}
+        {% if empresa_tags %}
         <p>
             <strong>Tags:</strong>
-            {% for tag in empresa.tags.all %}
+            {% for tag in empresa_tags %}
             <span class="tag">{{ tag.nome }}</span>
             {% endfor %}
         </p>
         {% endif %}
-        {% if empresa.tags.filter(categoria='prod').exists %}
+        {% if prod_tags %}
         <h2 style="margin-top:2rem;">Produtos</h2>
         <div class="empresas-grid">
-            {% for tag in empresa.tags.filter(categoria='prod') %}
+            {% for tag in prod_tags %}
             <div class="empresa-card">
                 <div class="empresa-info">
                     <h3>{{ tag.nome }}</h3>
@@ -45,10 +45,10 @@
         </div>
         {% endif %}
 
-        {% if empresa.tags.filter(categoria='serv').exists %}
+        {% if serv_tags %}
         <h2 style="margin-top:2rem;">Serviços</h2>
         <div class="empresas-grid">
-            {% for tag in empresa.tags.filter(categoria='serv') %}
+            {% for tag in serv_tags %}
             <div class="empresa-card">
                 <div class="empresa-info">
                     <h3>{{ tag.nome }}</h3>
