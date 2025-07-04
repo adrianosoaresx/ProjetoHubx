@@ -37,10 +37,19 @@
                 <h4>{{ membro.get_full_name|default:membro.username }}</h4>
                 <p>@{{ membro.username }}</p>
             </div>
+            <div class="connection-actions">
+                <form method="post" action="{% url 'nucleos:remove_member' object.id membro.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon" title="Excluir membro">❌</button>
+                </form>
+            </div>
         </div>
         {% empty %}
         <p>Nenhum membro neste núcleo.</p>
         {% endfor %}
+    </div>
+    <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
+        <a href="{% url 'nucleos:list' %}" class="btn-secondary">Voltar</a>
     </div>
 </section>
 {% endblock %}
