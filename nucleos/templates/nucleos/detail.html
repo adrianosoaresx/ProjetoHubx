@@ -4,10 +4,20 @@
 {% block perfil_subpage_content %}
 <section class="perfil-section active">
     <div class="empresa-form-container">
+        <div class="empresa-logo" style="margin: 0 auto 1.5rem;">
+            {% if object.avatar %}
+            <img src="{{ object.avatar.url }}" alt="{{ object.nome }}">
+            {% else %}
+            <div class="logo-placeholder">
+                <span>{{ object.nome|make_list|first|upper }}</span>
+            </div>
+            {% endif %}
+        </div>
         <h1 class="form-title">{{ object.nome }}</h1>
         {% if object.descricao %}
         <p>{{ object.descricao }}</p>
         {% endif %}
+        <p><strong>Criado em:</strong> {{ object.data_criacao|date:"d/m/Y" }}</p>
     </div>
 
     <h2 style="margin-top:2rem;">Membros</h2>
