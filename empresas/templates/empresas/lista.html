@@ -49,7 +49,10 @@
                 {% endif %}
             </div>
             <div class="empresa-actions">
+                <a href="{% url 'empresas:detail' empresa.id %}" class="btn-primary">Ver</a>
+                {% if user == empresa.usuario %}
                 <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
+                {% endif %}
             </div>
         </div>
         {% empty %}

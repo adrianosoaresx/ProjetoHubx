@@ -9,6 +9,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from core.permissions import SuperadminRequiredMixin
+from django.http import HttpResponseForbidden
 
 from .models import Empresa, Tag
 from .forms import (
@@ -158,5 +159,16 @@ class TagDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Item removido.")
         return super().delete(request, *args, **kwargs)
+
+
+# ------------------------------------------------------------------
+# DETALHAR
+# ------------------------------------------------------------------
+@login_required
+def detalhes_empresa(request, pk):
+    empresa = get_object_or_404(Empresa, pk=pk)
+    if not request.user.is_superuser and empresa.usuario.organizacao != request.user.organizacao:
+        return HttpResponseForbidden()
+    return render(request, "empresas/detail.htm", {"empresa": empresa})
 
 
