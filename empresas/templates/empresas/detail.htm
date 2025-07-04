@@ -1,0 +1,41 @@
+{% extends 'perfil/perfil_subpage_base.html' %}
+{% block title %}{{ empresa.nome }} | Hubx{% endblock %}
+
+{% block perfil_subpage_content %}
+<section class="perfil-section active">
+    <div class="empresa-form-container">
+        <div class="empresa-logo" style="margin: 0 auto 1.5rem;">
+            {% if empresa.logo %}
+            <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}">
+            {% else %}
+            <div class="logo-placeholder">
+                <span>{{ empresa.nome|make_list|first|upper }}</span>
+            </div>
+            {% endif %}
+        </div>
+        <h1 class="form-title">{{ empresa.nome }}</h1>
+        {% if empresa.descricao %}
+        <p>{{ empresa.descricao }}</p>
+        {% endif %}
+        <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+        <p><strong>Localização:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
+        {% if empresa.contato %}
+        <p><strong>Contato:</strong> {{ empresa.contato }}</p>
+        {% endif %}
+        {% if empresa.tags.exists %}
+        <p>
+            <strong>Tags:</strong>
+            {% for tag in empresa.tags.all %}
+            <span class="tag">{{ tag.nome }}</span>
+            {% endfor %}
+        </p>
+        {% endif %}
+    </div>
+    <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
+        <a href="{% url 'empresas:lista' %}" class="btn-secondary">Voltar</a>
+        {% if request.user == empresa.usuario %}
+        <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
