@@ -7,11 +7,7 @@
         <h1 class="form-title">Editar Núcleo</h1>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {% for field in form %}
-            {% if field.name != 'membros' %}
-            {{ field.as_p }}
-            {% endif %}
-            {% endfor %}
+            {{ form.as_p }}
             <div class="form-actions" style="justify-content:flex-end;">
                 <a href="{% url 'nucleos:list' %}" class="btn-secondary">Cancelar</a>
                 <button type="submit" class="btn-primary">Salvar</button>
