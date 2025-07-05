@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Feed{% endblock %}
 {% block extra_css %}
+{{ block.super }}
 <link rel="stylesheet" href="{% static 'feed/css/feed.css' %}">
 {% endblock %}
 {% block perfil_subpage_content %}
