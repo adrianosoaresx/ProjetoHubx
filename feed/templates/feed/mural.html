@@ -1,17 +1,57 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Meu Mural{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/feed.css' %}">
+{% endblock %}
 {% block content %}
-<h1>Meu Mural</h1>
-<a href="{% url 'feed:nova_postagem' %}">Nova Postagem</a>
-<ul>
-    {% for post in posts %}
-    <li>
-        <strong>{{ post.autor.username }}</strong> - {{ post.criado_em|date:"SHORT_DATE_FORMAT" }}<br>
-        {{ post.conteudo|linebreaks }}
-        {% if post.imagem %}<br><img src="{{ post.imagem.url }}" style="max-width:300px;">{% endif %}
-    </li>
-    {% empty %}
-    <li>Nenhuma postagem.</li>
-    {% endfor %}
-</ul>
+<div class="feed-container">
+    <div class="feed-header">
+        <h1 class="feed-title">Meu Mural</h1>
+        <div class="header-actions">
+            <a href="{% url 'feed:feed_global' %}" class="btn btn-secondary">Ver Feed Global</a>
+            <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">
+                <span class="btn-icon">+</span>
+                Nova Postagem
+            </a>
+        </div>
+    </div>
+    
+    <div class="posts-container">
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="post-header">
+                <div class="post-author">
+                    <div class="author-avatar">
+                        {{ post.autor.username|first|upper }}
+                    </div>
+                    <div class="author-info">
+                        <strong class="author-name">{{ post.autor.username }}</strong>
+                        <time class="post-date">{{ post.criado_em|date:"SHORT_DATE_FORMAT" }}</time>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="post-content">
+                <p class="post-text">{{ post.conteudo|linebreaks }}</p>
+                {% if post.imagem %}
+                <div class="post-image">
+                    <img src="{{ post.imagem.url }}" alt="Imagem da postagem">
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>Seu mural está vazio</h3>
+            <p>Comece compartilhando seus pensamentos!</p>
+            <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">Criar postagem</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/feed.js' %}"></script>
 {% endblock %}
