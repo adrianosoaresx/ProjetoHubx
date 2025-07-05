@@ -53,6 +53,20 @@
                 </div>
             {% endif %}
         </div>
+
+        <div class="form-group">
+            <label for="{{ form.visibilidade.id_for_label }}" class="form-label">
+                Visibilidade da postagem
+            </label>
+            {{ form.visibilidade }}
+            {% if form.visibilidade.errors %}
+                <div class="form-errors">
+                    {% for error in form.visibilidade.errors %}
+                        <span class="error-message">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
         
         <div class="form-actions">
             <a href="{% url 'feed:feed_global' %}" class="btn btn-secondary">Cancelar</a>
