@@ -61,3 +61,29 @@ o comando:
 ```
 daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
 ```
+
+### Correção de tokens e usuários
+Para normalizar dados legados execute o comando:
+```
+python manage.py corrigir_base_token
+```
+Ele garante que todos os usuários possuam um `UserType` e cria tokens de exemplo. Isso evita falhas no registro com CSRF ativo.
+
+
+Exemplo de formulário seguro:
+```html
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+</form>
+```
+
+
+Exemplo de view usando `render`:
+```python
+from django.shortcuts import render
+
+def exemplo_view(request):
+    return render(request, "pagina.html")
+```
+
