@@ -15,38 +15,6 @@
         </a>
     </div>
     
-    <div class="posts-container">
-        {% for post in posts %}
-        <article class="post-card">
-            <div class="post-header">
-                <div class="post-author">
-                    <div class="author-avatar">
-                        {{ post.autor.username|first|upper }}
-                    </div>
-                    <div class="author-info">
-                        <strong class="author-name">{{ post.autor.username }}</strong>
-                        <time class="post-date">{{ post.criado_em|date:"SHORT_DATE_FORMAT" }}</time>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="post-content">
-                <p class="post-text">{{ post.conteudo|linebreaks }}</p>
-                {% if post.imagem %}
-                <div class="post-image">
-                    <img src="{{ post.imagem.url }}" alt="Imagem da postagem">
-                </div>
-                {% endif %}
-            </div>
-        </article>
-        {% empty %}
-        <div class="empty-state">
-            <div class="empty-icon">📝</div>
-            <h3>Nenhuma postagem ainda</h3>
-            <p>Seja o primeiro a compartilhar algo!</p>
-            <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">Criar primeira postagem</a>
-        </div>
-        {% endfor %}
-    </div>
+    {% include "feed/_post_list.html" with posts=posts empty_icon="📝" empty_title="Nenhuma postagem ainda" empty_message="Seja o primeiro a compartilhar algo!" empty_button="Criar primeira postagem" %}
 </div>
 {% endblock %}
