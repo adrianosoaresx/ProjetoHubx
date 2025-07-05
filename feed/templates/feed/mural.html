@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Meu Mural{% endblock %}
+{% block content %}
+<h1>Meu Mural</h1>
+<a href="{% url 'feed:nova_postagem' %}">Nova Postagem</a>
+<ul>
+    {% for post in posts %}
+    <li>
+        <strong>{{ post.autor.username }}</strong> - {{ post.criado_em|date:"SHORT_DATE_FORMAT" }}<br>
+        {{ post.conteudo|linebreaks }}
+        {% if post.imagem %}<br><img src="{{ post.imagem.url }}" style="max-width:300px;">{% endif %}
+    </li>
+    {% empty %}
+    <li>Nenhuma postagem.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
