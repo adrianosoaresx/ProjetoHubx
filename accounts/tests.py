@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 
-from .models import NotificationSettings, UserMedia
+from .models import NotificationSettings, UserMedia, TokenAcesso
 
 
 class RegistrationSessionTests(TestCase):
@@ -11,18 +11,23 @@ class RegistrationSessionTests(TestCase):
 
     def setUp(self):
         self.client = Client()
+        self.creator = get_user_model().objects.create_user(
+            username="creator", password="pass"
+        )
+        self.token = TokenAcesso.objects.create(
+            gerado_por=self.creator,
+            tipo_destino=TokenAcesso.Tipo.CLIENTE,
+        )
 
     def test_registration_flow_populates_session(self):
         """Percorre o fluxo de registro verificando a sessao a cada passo."""
 
         # Step 1: token
         response = self.client.post(
-            reverse("accounts:token"), {"token": "abc"}, follow=True
+            reverse("accounts:token"), {"token": self.token.codigo}, follow=True
         )
         self.assertIn("invite_token", self.client.session)
-        self.assertEqual(
-            response.redirect_chain[-1][0], reverse("accounts:usuario")
-        )
+        self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:usuario"))
 
         # Step 2: usuario
         response = self.client.post(
@@ -62,7 +67,9 @@ class RegistrationSessionTests(TestCase):
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:foto"))
 
         # Step 7: foto
-        image = SimpleUploadedFile("test.jpg", b"filecontent", content_type="image/jpeg")
+        image = SimpleUploadedFile(
+            "test.jpg", b"filecontent", content_type="image/jpeg"
+        )
         response = self.client.post(
             reverse("accounts:foto"), {"foto": image}, follow=True
         )
@@ -141,8 +148,6 @@ class MediaUploadTests(TestCase):
             user=self.user,
             file=SimpleUploadedFile("doc.txt", b"content"),
         )
-        response = self.client.post(
-            reverse("accounts:midia_delete", args=[media.pk])
-        )
+        response = self.client.post(reverse("accounts:midia_delete", args=[media.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(UserMedia.objects.filter(pk=media.pk).exists())

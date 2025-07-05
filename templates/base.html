@@ -35,6 +35,9 @@
             <nav>
                 {% if user.is_authenticated %}
                     <a href="#" id="chat-link">Chat</a>
+                    {% if user.tipo.descricao in 'root,admin' %}
+                        <a href="{% url 'accounts:criar_token' %}">Gerar Token de Acesso</a>
+                    {% endif %}
                     <a href="{% url 'accounts:logout' %}" class="cta-button">Sair</a>
                 {% else %}
                     <a href="{% url 'accounts:login' %}" class="cta-button">Entrar</a>

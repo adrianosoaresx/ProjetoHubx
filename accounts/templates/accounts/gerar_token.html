@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Gerar Token de Acesso | HubX{% endblock %}
+
+{% block content %}
+<h1>Gerar Token de Acesso</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn-primary">Gerar Token</button>
+</form>
+{% if token %}
+<p>Código gerado: <strong>{{ token.codigo }}</strong></p>
+{% endif %}
+{% endblock %}

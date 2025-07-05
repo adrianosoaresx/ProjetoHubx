@@ -7,6 +7,9 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
+from datetime import timedelta
+from django.utils import timezone
+import uuid
 
 
 class UserType(TimeStampedModel):
@@ -21,12 +24,14 @@ class UserType(TimeStampedModel):
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.descricao
 
+
 # ───────────────────────────────────────────────────────────────
 #  Validador de CPF simples (###.###.###-## ou ###########)
 cpf_validator = RegexValidator(
     regex=r"^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$",
     message="Digite um CPF válido no formato 000.000.000-00.",
 )
+
 
 class User(AbstractUser, TimeStampedModel):
     """
@@ -49,12 +54,10 @@ class User(AbstractUser, TimeStampedModel):
         blank=True,
         help_text="Rua, número, complemento, cidade/UF",
     )
-    birth_date = models.DateField(
-        "Data de nascimento", blank=True, null=True
-    )
+    birth_date = models.DateField("Data de nascimento", blank=True, null=True)
     cpf = models.CharField(
         "CPF",
-        max_length=14,               # 000.000.000-00
+        max_length=14,  # 000.000.000-00
         blank=True,
         null=True,
         unique=True,
@@ -190,3 +193,51 @@ class UserMedia(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
+
+
+class TokenAcesso(TimeStampedModel):
+    """Token de convite para cadastro de usuários."""
+
+    class Tipo(models.TextChoices):
+        ADMIN = "admin", "admin"
+        GERENTE = "gerente", "gerente"
+        CLIENTE = "cliente", "cliente"
+
+    class Estado(models.TextChoices):
+        NAO_USADO = "novo", "não usado"
+        USADO = "usado", "usado"
+        EXPIRADO = "expirado", "expirado"
+
+    codigo = models.CharField(max_length=64, unique=True, editable=False)
+    tipo_destino = models.CharField(max_length=10, choices=Tipo.choices)
+    estado = models.CharField(
+        max_length=10, choices=Estado.choices, default=Estado.NAO_USADO
+    )
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_expiracao = models.DateTimeField()
+    gerado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tokens_gerados",
+    )
+    nucleo_destino = models.ForeignKey(
+        "nucleos.Nucleo",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tokens",
+    )
+
+    class Meta:
+        verbose_name = "Token de Acesso"
+        verbose_name_plural = "Tokens de Acesso"
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            self.codigo = uuid.uuid4().hex
+        if not self.data_expiracao:
+            self.data_expiracao = timezone.now() + timedelta(days=30)
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.codigo

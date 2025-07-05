@@ -15,6 +15,7 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile, File
 import os
 import uuid
+from django.utils import timezone
 
 # ────────────────────────────────────────────────────────────────
 # Forms usados nas abas do perfil
@@ -27,8 +28,14 @@ from .forms import (
     NotificacoesForm,
     MediaForm,
     CustomUserCreationForm,
+    TokenAcessoForm,
 )
-from .models import cpf_validator, NotificationSettings, UserMedia  # ajuste se necessário
+from .models import (
+    cpf_validator,
+    NotificationSettings,
+    UserMedia,
+    TokenAcesso,
+)
 
 User = get_user_model()
 
@@ -36,16 +43,20 @@ User = get_user_model()
 # PERFIL – cada aba usa um ModelForm dedicado
 # =====================================================================
 
+
 @login_required
 def perfil_home(request):
     """Entrada do perfil → redireciona para Informações Pessoais."""
     return redirect("accounts:informacoes_pessoais")
 
+
 # 1 • Informações Pessoais
 @login_required
 def perfil_informacoes(request):
     if request.method == "POST":
-        form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
+        form = InformacoesPessoaisForm(
+            request.POST, request.FILES, instance=request.user
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Informações pessoais atualizadas.")
@@ -54,6 +65,7 @@ def perfil_informacoes(request):
         form = InformacoesPessoaisForm(instance=request.user)
 
     return render(request, "perfil/informacoes_pessoais.html", {"form": form})
+
 
 # 2 • Contato
 @login_required
@@ -69,6 +81,7 @@ def perfil_contato(request):
 
     return render(request, "perfil/contato.html", {"form": form})
 
+
 # 3 • Redes Sociais
 @login_required
 def perfil_redes_sociais(request):
@@ -82,6 +95,7 @@ def perfil_redes_sociais(request):
         form = RedesSociaisForm(instance=request.user)
 
     return render(request, "perfil/redes_sociais.html", {"form": form})
+
 
 # 4 • Segurança (troca de senha)
 @login_required
@@ -98,6 +112,7 @@ def perfil_seguranca(request):
 
     return render(request, "perfil/seguranca.html", {"form": form})
 
+
 # 5 • Notificações
 @login_required
 def perfil_notificacoes(request):
@@ -113,6 +128,7 @@ def perfil_notificacoes(request):
         form = NotificacoesForm(instance=settings_obj)
 
     return render(request, "perfil/notificacoes.html", {"form": form})
+
 
 # 6 • Conexões (somente leitura)
 @login_required
@@ -132,6 +148,7 @@ def perfil_conexoes(request):
     }
 
     return render(request, "perfil/conexoes.html", context)
+
 
 # 7 • Mídias
 @login_required
@@ -155,7 +172,9 @@ def perfil_midias(request):
 
     medias = request.user.medias.order_by("-uploaded_at")
     if q:
-        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+        medias = medias.filter(
+            Q(descricao__icontains=q) | Q(tags__nome__icontains=q)
+        ).distinct()
 
     context = {"form": form, "medias": medias, "show_form": show_form, "q": q}
     return render(request, "perfil/midias.html", context)
@@ -198,6 +217,7 @@ def perfil_midia_delete(request, pk):
 
     return render(request, "perfil/midia_confirm_delete.html", {"media": media})
 
+
 # 8 • Configurações da Conta
 @login_required
 def perfil_conta(request):
@@ -212,9 +232,11 @@ def perfil_conta(request):
 
     return render(request, "perfil/conta.html", {"form": form})
 
+
 # =====================================================================
 # AUTENTICAÇÃO
 # =====================================================================
+
 
 def login_view(request):
     """Autentica o usuário usando o AuthenticationForm do Django."""
@@ -228,10 +250,12 @@ def login_view(request):
 
     return render(request, "login/login.html", {"form": form})
 
+
 def logout_view(request):
     """Encerra a sessão do usuário e volta para o login."""
     logout(request)
     return redirect("accounts:login")
+
 
 def register_view(request):
     """Registro simples usando ``CustomUserCreationForm``."""
@@ -246,16 +270,20 @@ def register_view(request):
 
     return render(request, "register/onboarding.html", {"form": form})
 
+
 def password_reset(request):
     # TODO: implementar fluxo real de reset de senha
     return render(request, "login/login.html")
 
+
 def onboarding(request):
     return render(request, "register/onboarding.html")
+
 
 # ------------------------------------------------------------------
 # FLUXO DE REGISTRO EM VÁRIAS ETAPAS (nome → cpf → …)
 # ------------------------------------------------------------------
+
 
 def nome(request):
     if request.method == "POST":
@@ -264,6 +292,7 @@ def nome(request):
             request.session["nome"] = nome_val
             return redirect("accounts:cpf")
     return render(request, "register/nome.html")
+
 
 def cpf(request):
     """Solicita o CPF logo após o nome."""
@@ -278,6 +307,7 @@ def cpf(request):
                 messages.error(request, "CPF inválido.")
     return render(request, "register/cpf.html")
 
+
 def email(request):
     if request.method == "POST":
         val = request.POST.get("email")
@@ -285,6 +315,7 @@ def email(request):
             request.session["email"] = val
             return redirect("accounts:senha")
     return render(request, "register/email.html")
+
 
 def token(request):
     if request.method == "POST":
@@ -294,6 +325,7 @@ def token(request):
             return redirect("accounts:usuario")
     return render(request, "register/token.html")
 
+
 def usuario(request):
     if request.method == "POST":
         usr = request.POST.get("usuario")
@@ -301,6 +333,7 @@ def usuario(request):
             request.session["usuario"] = usr
             return redirect("accounts:nome")
     return render(request, "register/usuario.html")
+
 
 def senha(request):
     if request.method == "POST":
@@ -310,6 +343,7 @@ def senha(request):
             request.session["senha_hash"] = make_password(s1)
             return redirect("accounts:foto")
     return render(request, "register/senha.html")
+
 
 def foto(request):
     if request.method == "POST":
@@ -321,9 +355,24 @@ def foto(request):
         return redirect("accounts:termos")
     return render(request, "register/foto.html")
 
+
 def termos(request):
     if request.method == "POST" and request.POST.get("aceitar_termos"):
         # cria usuário com dados armazenados na sessão
+        token_code = request.session.get("invite_token")
+        try:
+            token_obj = TokenAcesso.objects.get(
+                codigo=token_code, estado=TokenAcesso.Estado.NAO_USADO
+            )
+        except TokenAcesso.DoesNotExist:
+            messages.error(request, "Token inválido.")
+            return redirect("accounts:token")
+        if token_obj.data_expiracao < timezone.now():
+            token_obj.estado = TokenAcesso.Estado.EXPIRADO
+            token_obj.save(update_fields=["estado"])
+            messages.error(request, "Token expirado.")
+            return redirect("accounts:token")
+
         username = request.session.get("usuario")
         email_val = request.session.get("email")
         pwd_hash = request.session.get("senha_hash")
@@ -333,6 +382,11 @@ def termos(request):
         last_name = " ".join(nome_parts[1:]) if len(nome_parts) > 1 else ""
 
         if username and pwd_hash:
+            tipo_mapping = {
+                TokenAcesso.Tipo.ADMIN: User.Tipo.ADMIN,
+                TokenAcesso.Tipo.GERENTE: User.Tipo.GERENTE,
+                TokenAcesso.Tipo.CLIENTE: User.Tipo.CLIENTE,
+            }
             user = User.objects.create(
                 username=username,
                 email=email_val,
@@ -340,7 +394,11 @@ def termos(request):
                 last_name=last_name,
                 password=pwd_hash,
                 cpf=cpf_val,
+                tipo_id=tipo_mapping[token_obj.tipo_destino],
             )
+            if token_obj.nucleo_destino:
+                user.nucleo = token_obj.nucleo_destino
+                user.save(update_fields=["nucleo"])
             # salva foto, se houver
             foto_path = request.session.get("foto")
             if foto_path:
@@ -348,6 +406,9 @@ def termos(request):
                     user.avatar.save(os.path.basename(foto_path), File(f))
                 default_storage.delete(foto_path)
                 del request.session["foto"]
+
+            token_obj.estado = TokenAcesso.Estado.USADO
+            token_obj.save(update_fields=["estado"])
 
             login(request, user)
             request.session["termos"] = True
@@ -358,5 +419,28 @@ def termos(request):
 
     return render(request, "register/termos.html")
 
+
 def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
+
+
+@login_required
+def criar_token(request):
+    if request.user.tipo_id not in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}:
+        return redirect("accounts:perfil")
+
+    token = None
+    if request.method == "POST":
+        form = TokenAcessoForm(request.POST, user=request.user)
+        if form.is_valid():
+            token = form.save(commit=False)
+            token.gerado_por = request.user
+            token.save()
+    else:
+        form = TokenAcessoForm(user=request.user)
+
+    return render(
+        request,
+        "accounts/gerar_token.html",
+        {"form": form, "token": token},
+    )
