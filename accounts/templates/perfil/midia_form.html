@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'perfil/perfil_subpage_base.html' %}
 {% block title %}{% if form.instance.pk %}Editar Mídia | Hubx{% else %}Nova Mídia | Hubx{% endif %}{% endblock %}
 
-{% block content %}
+{% block perfil_subpage_content %}
 <section class="perfil-section active">
     <div class="empresa-form-container">
         <h1 class="form-title">{% if form.instance.pk %}Editar Mídia{% else %}Cadastrar Mídia{% endif %}</h1>
