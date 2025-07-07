@@ -54,43 +54,6 @@
                 <span class="nav-text">Mídias</span>
             </a>
         </nav>
-        <div class="perfil-secondary-nav"> {# New section for Dashboard, Empresas, Nucleos, Eventos #}
-            <a
-                href="{% if user.tipo_id == 4 %}{% url 'dashboard:root' %}{% elif user.tipo_id == 1 %}{% url 'dashboard:admin' %}{% elif user.tipo_id == 2 %}{% url 'dashboard:gerente' %}{% else %}{% url 'dashboard:cliente' %}{% endif %}"
-                class="btn-secondary-nav"
-            >
-                <span>🏠</span>
-                <span>Dashboard</span>
-            </a>
-            {% if user.tipo_id == 4 %}
-            <a href="{% url 'organizacoes:list' %}" class="btn-secondary-nav">
-                <span>🏛️</span>
-                <span>Organizações</span>
-            </a>
-            {% endif %}
-            <a href="{% url 'empresas:lista' %}" class="btn-secondary-nav">
-                <span>🏢</span>
-                <span>Empresas</span>
-            </a>
-            <a href="{% url 'nucleos:list' %}" class="btn-secondary-nav">
-                <span>⚛️</span>
-                <span>Núcleos</span>
-            </a>
-            <a href="{% url 'eventos:list' %}" class="btn-secondary-nav">
-                <span>🗓️</span>
-                <span>Eventos</span>
-            </a>
-            <a href="{% url 'forum:index' %}" class="btn-secondary-nav">
-                <span>💬</span>
-                <span>Fórum</span>
-            </a>
-            {% if user.tipo_id == 4 %}
-            <a href="{% url 'empresas:tags_list' %}" class="btn-secondary-nav">
-                <span>🛒</span>
-                <span>Produtos/Serviços</span>
-            </a>
-            {% endif %}
-        </div>
     </div>
 
     <!-- Content area -->
