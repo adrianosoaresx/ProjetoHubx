@@ -1,24 +1,15 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Remover Categoria | Matrix Forum{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}Remover Categoria | Hubx{% endblock %}
 
 {% block content %}
-<section class="matrix-delete-section">
-    <h2 class="matrix-delete-title">// Operação de Remoção</h2>
-    <div class="matrix-delete-warning">
-        <p>Confirmar remoção da categoria <strong>"{{ object.nome }}"</strong>?</p>
-        <p>Esta operação não pode ser desfeita.</p>
-    </div>
-    <form method="post" class="matrix-delete-form">
+<div class="container mt-8">
+    <h2 class="text-2xl font-bold text-neutral-900 mb-6">Confirmar remoção</h2>
+    <p class="mb-4">Deseja remover a categoria <strong>{{ object.nome }}</strong>? Esta operação não pode ser desfeita.</p>
+    <form method="post" class="flex gap-4 justify-end">
         {% csrf_token %}
-        <a href="{% url 'forum:categoria_manage_list' %}" class="matrix-cancel-btn">Cancelar</a>
-        <button type="submit" class="matrix-confirm-delete-btn">Executar Remoção</button>
+        <a href="{% url 'forum:categoria_manage_list' %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Remover</button>
     </form>
-</section>
+</div>
 {% endblock %}

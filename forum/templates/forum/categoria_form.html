@@ -1,23 +1,17 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}{% if form.instance.pk %}Editar Categoria | Matrix Forum{% else %}Nova Categoria | Matrix Forum{% endif %}{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}{% if form.instance.pk %}Editar Categoria | Hubx{% else %}Nova Categoria | Hubx{% endif %}{% endblock %}
 
 {% block content %}
-<section class="matrix-form-container">
-    <h1 class="matrix-form-title">// {% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria</h1>
-    <form method="post" class="matrix-form">
+<div class="container mt-8">
+    <h1 class="text-2xl font-bold text-neutral-900 mb-6">{% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria</h1>
+    <form method="post" class="space-y-6">
         {% csrf_token %}
         {{ form.as_p }}
-        <div class="matrix-form-actions">
-            <a href="{% url 'forum:categoria_manage_list' %}" class="matrix-btn-secondary">Cancelar</a>
-            <button type="submit" class="matrix-btn-primary">Salvar</button>
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'forum:categoria_manage_list' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar</button>
         </div>
     </form>
-</section>
+</div>
 {% endblock %}

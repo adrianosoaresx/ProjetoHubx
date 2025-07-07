@@ -1,20 +1,14 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Novo Tópico | Matrix Forum{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}Novo Tópico | Hubx{% endblock %}
 
 {% block content %}
-<section class="matrix-form-section">
-    <h2 class="matrix-form-title">// Novo Tópico</h2>
-    <form method="post" class="matrix-form">
+<div class="container mt-8">
+    <h2 class="text-2xl font-bold text-neutral-900 mb-6">Novo Tópico</h2>
+    <form method="post" class="space-y-6">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="matrix-submit-btn">Executar</button>
+        <button type="submit" class="btn btn-primary">Executar</button>
     </form>
-</section>
+</div>
 {% endblock %}

@@ -1,45 +1,41 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}{{ object.titulo }} | Matrix Forum{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}{{ object.titulo }} | Hubx{% endblock %}
 
 {% block content %}
-<section class="matrix-detail-section">
-    <div class="matrix-topic-header">
-        <h2 class="matrix-topic-title">{{ object.titulo }}</h2>
-        <p class="matrix-topic-meta">por <strong>{{ object.autor.username }}</strong> em {{ object.criado_em|date:'SHORT_DATETIME_FORMAT' }}</p>
+<div class="container mt-8 space-y-8">
+    <div>
+        <h2 class="text-2xl font-bold text-neutral-900 mb-1">{{ object.titulo }}</h2>
+        <p class="text-sm text-neutral-500">por <strong>{{ object.autor.username }}</strong> em {{ object.criado_em|date:'SHORT_DATETIME_FORMAT' }}</p>
     </div>
-    
-    <div class="matrix-content">
+
+    <div class="prose max-w-none">
         {{ object.conteudo|linebreaks }}
     </div>
 
-    <h3 class="matrix-responses-title">// Respostas</h3>
-    <ul class="matrix-responses-list">
+    <h3 class="text-xl font-semibold text-neutral-900">Respostas</h3>
+    <ul class="space-y-4">
         {% for resposta in object.respostas.all %}
-        <li class="matrix-response-item">
-            <div class="matrix-response-content">{{ resposta.conteudo|linebreaks }}</div>
-            <div class="matrix-response-meta">
-                <strong>{{ resposta.autor.username }}</strong> - {{ resposta.criado_em|date:'SHORT_DATETIME_FORMAT' }}
+        <li class="card">
+            <div class="card-body">
+                <div class="mb-2">{{ resposta.conteudo|linebreaks }}</div>
+                <p class="text-sm text-neutral-500">
+                    <strong>{{ resposta.autor.username }}</strong> - {{ resposta.criado_em|date:'SHORT_DATETIME_FORMAT' }}
+                </p>
             </div>
         </li>
         {% empty %}
-        <li class="matrix-no-responses">// Nenhuma resposta encontrada</li>
+        <li class="text-neutral-600">Nenhuma resposta encontrada</li>
         {% endfor %}
     </ul>
 
-    <div class="matrix-reply-form">
-        <h3 class="matrix-reply-title">// Responder</h3>
-        <form method="post" action="{% url 'forum:responder' object.pk %}">
+    <div>
+        <h3 class="text-xl font-semibold text-neutral-900 mb-4">Responder</h3>
+        <form method="post" action="{% url 'forum:responder' object.pk %}" class="space-y-4">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="matrix-reply-btn">Transmitir</button>
+            <button type="submit" class="btn btn-primary">Enviar</button>
         </form>
     </div>
-</section>
+</div>
 {% endblock %}
