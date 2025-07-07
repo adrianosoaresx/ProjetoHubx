@@ -1,9 +1,10 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% block title %}Produtos e Serviços | Hubx{% endblock %}
 
-{% block perfil_subpage_content %}
-<section class="perfil-section active">
+{% block content %}
+<div class="container" style="margin-top: var(--space-8);">
+<section>
     <div class="section-header">
         <h2>Produtos e Serviços</h2>
         <p>Gerencie a lista de produtos e serviços</p>
@@ -47,6 +48,7 @@
         {% endfor %}
     </div>
 </section>
+</div>
 {% endblock %}
 
 {% block extra_js %}
