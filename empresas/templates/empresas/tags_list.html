@@ -3,14 +3,14 @@
 {% block title %}Produtos e Serviços | Hubx{% endblock %}
 
 {% block content %}
-<div class="container" style="margin-top: var(--space-8);">
+<div class="container mt-8">
 <section>
     <div class="section-header">
         <h2>Produtos e Serviços</h2>
         <p>Gerencie a lista de produtos e serviços</p>
     </div>
 
-    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+    <form method="get" class="search-bar mb-8">
         {{ form.media }}
         <select name="categoria" onchange="this.form.submit()">
             <option value="" {% if not request.GET.categoria %}selected{% endif %}>Todas</option>
@@ -28,14 +28,14 @@
         </a>
     </div>
 
-    <div class="empresas-grid">
+    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
         {% for tag in object_list %}
-        <div class="empresa-card">
-            <div class="empresa-info">
-                <h3>{{ tag.nome }}</h3>
-                <p class="empresa-tipo">{{ tag.get_categoria_display }}</p>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-xl font-semibold">{{ tag.nome }}</h3>
+                <p class="text-sm text-neutral-600">{{ tag.get_categoria_display }}</p>
             </div>
-            <div class="empresa-actions">
+            <div class="card-footer flex justify-end gap-2">
                 <a href="{% url 'empresas:tags_update' tag.id %}" class="btn-edit">Editar</a>
                 <a href="{% url 'empresas:tags_delete' tag.id %}" class="btn-danger">Remover</a>
             </div>

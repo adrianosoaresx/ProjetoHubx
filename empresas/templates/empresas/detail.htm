@@ -31,12 +31,12 @@
         </p>
         {% endif %}
         {% if prod_tags %}
-        <h2 style="margin-top:2rem;">Produtos</h2>
-        <div class="empresas-grid">
+        <h2 class="mt-8">Produtos</h2>
+        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {% for tag in prod_tags %}
-            <div class="empresa-card">
-                <div class="empresa-info">
-                    <h3>{{ tag.nome }}</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-xl font-semibold">{{ tag.nome }}</h3>
                 </div>
             </div>
             {% empty %}
@@ -46,12 +46,12 @@
         {% endif %}
 
         {% if serv_tags %}
-        <h2 style="margin-top:2rem;">Serviços</h2>
-        <div class="empresas-grid">
+        <h2 class="mt-8">Serviços</h2>
+        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {% for tag in serv_tags %}
-            <div class="empresa-card">
-                <div class="empresa-info">
-                    <h3>{{ tag.nome }}</h3>
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="text-xl font-semibold">{{ tag.nome }}</h3>
                 </div>
             </div>
             {% empty %}

@@ -15,9 +15,9 @@
         <button type="submit" class="search-btn">🔍</button>
     </form>
 
-    <div class="empresas-grid">
+    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
         {% for empresa in empresas %}
-        <div class="empresa-card">
+        <div class="card">
             <div class="empresa-logo">
                 {% if empresa.logo %}
                 <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}">
@@ -27,10 +27,10 @@
                 </div>
                 {% endif %}
             </div>
-            <div class="empresa-info">
-                <h3>{{ empresa.nome }}</h3>
-                <p class="empresa-tipo">{{ empresa.tipo }}</p>
-                <p class="empresa-local">{{ empresa.municipio }}, {{ empresa.estado }}</p>
+            <div class="card-body text-center">
+                <h3 class="text-xl font-semibold">{{ empresa.nome }}</h3>
+                <p class="text-sm text-neutral-600">{{ empresa.tipo }}</p>
+                <p class="text-sm text-neutral-600">{{ empresa.municipio }}, {{ empresa.estado }}</p>
             </div>
             <div class="empresa-tags">
                 {% for tag in empresa.tags.all|slice:":3" %}
@@ -40,7 +40,7 @@
                 <span class="tag more">+{{ empresa.tags.count|add:"-3" }}</span>
                 {% endif %}
             </div>
-            <div class="empresa-actions">
+            <div class="card-footer flex justify-end gap-2">
                 <a href="{% url 'empresas:detail' empresa.id %}" class="btn-primary">Ver</a>
                 {% if user == empresa.usuario %}
                 <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
