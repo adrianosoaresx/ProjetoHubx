@@ -1,4 +1,4 @@
-{% extends 'perfil/perfil_subpage_base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Tópicos | Matrix Forum{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/forum.css' %}">
 {% endblock %}
 
-{% block perfil_subpage_content %}
+{% block content %}
 <section class="matrix-topics-section">
     <div class="matrix-topics-header">
         <h2 class="matrix-topics-title">// {{ categoria.nome }}</h2>

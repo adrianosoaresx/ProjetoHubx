@@ -1,4 +1,4 @@
-{% extends 'perfil/perfil_subpage_base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{% if form.instance.pk %}Editar Categoria | Matrix Forum{% else %}Nova Categoria | Matrix Forum{% endif %}{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/forum.css' %}">
 {% endblock %}
 
-{% block perfil_subpage_content %}
+{% block content %}
 <section class="matrix-form-container">
     <h1 class="matrix-form-title">// {% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria</h1>
     <form method="post" class="matrix-form">
