@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from core.permissions import (
@@ -63,3 +64,18 @@ class GerenteDashboardView(GerenteRequiredMixin, DashboardBaseView):
 
 class ClienteDashboardView(ClienteRequiredMixin, DashboardBaseView):
     template_name = "dashboard/cliente.html"
+
+
+def dashboard_redirect(request):
+    """Redirect user to the appropriate dashboard based on their role."""
+    user = request.user
+    if not user.is_authenticated:
+        return redirect("accounts:login")
+
+    if user.tipo_id == User.Tipo.SUPERADMIN:
+        return redirect("dashboard:root")
+    if user.tipo_id == User.Tipo.ADMIN:
+        return redirect("dashboard:admin")
+    if user.tipo_id == User.Tipo.GERENTE:
+        return redirect("dashboard:gerente")
+    return redirect("dashboard:cliente")
