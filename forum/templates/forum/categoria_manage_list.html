@@ -1,43 +1,38 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Gerenciar Categorias | Matrix Forum{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}Gerenciar Categorias | Hubx{% endblock %}
 
 {% block content %}
-<section class="matrix-manage-section">
-    <div class="matrix-manage-header">
-        <h2 class="matrix-manage-title">// Sistema de Categorias</h2>
-    </div>
-
-    <div class="matrix-actions-bar">
-        <a href="{% url 'forum:categoria_create' %}" class="matrix-add-btn">
+<div class="container mt-8">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-neutral-900">Sistema de Categorias</h2>
+        <a href="{% url 'forum:categoria_create' %}" class="btn btn-primary">
             <span>+</span>
             <span>Nova Categoria</span>
         </a>
     </div>
 
-    <div class="matrix-manage-grid">
+    {% if object_list %}
+    <div class="space-y-4">
         {% for categoria in object_list %}
-        <div class="matrix-manage-card">
-            <div class="matrix-manage-info">
-                <h3>{{ categoria.nome }}</h3>
+        <div class="card">
+            <div class="card-body flex items-center justify-between">
+                <h3 class="text-lg font-semibold">{{ categoria.nome }}</h3>
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'forum:categoria_update' categoria.id %}" class="btn btn-secondary btn-sm">Editar</a>
+                    <a href="{% url 'forum:categoria_delete' categoria.id %}" class="btn btn-danger btn-sm">Remover</a>
+                </div>
             </div>
-            <div class="matrix-manage-actions">
-                <a href="{% url 'forum:categoria_update' categoria.id %}" class="matrix-edit-btn">Editar</a>
-                <a href="{% url 'forum:categoria_delete' categoria.id %}" class="matrix-delete-btn">Remover</a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="matrix-empty-manage">
-            <p>// Sistema não inicializado</p>
-            <a href="{% url 'forum:categoria_create' %}" class="matrix-add-btn">Inicializar</a>
         </div>
         {% endfor %}
     </div>
-</section>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p>Sistema não inicializado</p>
+            <a href="{% url 'forum:categoria_create' %}" class="btn btn-primary mt-4">Inicializar</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

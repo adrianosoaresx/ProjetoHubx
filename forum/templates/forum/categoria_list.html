@@ -1,42 +1,39 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Categorias | Matrix Forum{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'css/forum.css' %}">
-{% endblock %}
+{% block title %}Categorias | Hubx{% endblock %}
 
 {% block content %}
-<section class="matrix-section">
-    <div class="matrix-header">
-        <h2 class="matrix-title">// Categorias do Fórum</h2>
+<div class="container mt-8">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold text-neutral-900">Categorias do Fórum</h2>
         {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
-        <a href="{% url 'forum:categoria_manage_list' %}" class="matrix-btn">Gerenciar</a>
+        <a href="{% url 'forum:categoria_manage_list' %}" class="btn btn-primary">Gerenciar</a>
         {% endif %}
     </div>
-    <div class="matrix-grid">
+
+    {% if object_list %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for categoria in object_list %}
-        <div class="matrix-card">
-            <div class="matrix-info">
-                <h3>{{ categoria.nome }}</h3>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="text-lg font-semibold text-neutral-900">{{ categoria.nome }}</h3>
                 {% if categoria.descricao %}
-                <p>{{ categoria.descricao }}</p>
+                <p class="text-neutral-600">{{ categoria.descricao }}</p>
                 {% endif %}
+                <a href="{% url 'forum:topicos' categoria.pk %}" class="btn btn-secondary mt-4">Acessar</a>
             </div>
-            <div class="matrix-actions">
-                <a href="{% url 'forum:topicos' categoria.pk %}" class="matrix-btn-small">ACESSAR</a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="matrix-empty">
-            <p>// Nenhuma categoria encontrada no sistema</p>
-            {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
-            <a href="{% url 'forum:categoria_manage_list' %}" class="matrix-btn">Inicializar Sistema</a>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
-</section>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p>Nenhuma categoria encontrada</p>
+            {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
+            <a href="{% url 'forum:categoria_manage_list' %}" class="btn btn-primary mt-4">Inicializar Sistema</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
