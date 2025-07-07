@@ -173,5 +173,3 @@ class EventoRemoveInscritoView(GerenteRequiredMixin, LoginRequiredMixin, View):
             evento.inscritos.remove(inscrito)
             messages.success(request, "Inscrito removido.")
         return redirect("eventos:update", pk=pk)
-
-

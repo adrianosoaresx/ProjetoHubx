@@ -1,89 +1,97 @@
-{% extends "base.html" %} {% load static %} {% block title %}Bem-vindo ao Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
-<div class="onboarding-container">
-    <!-- Matrix Code Rain Effect -->
-    <div class="matrix-code" id="matrixCode"></div>
+{% extends "base.html" %}
+{% load static %}
 
-    <!-- Connection Animation -->
-    <div class="connection-animation">
-        <div class="floating-node"></div>
-        <div class="floating-node"></div>
-        <div class="floating-node"></div>
-        <div class="floating-node"></div>
-        <div class="floating-node"></div>
-        <div class="floating-node"></div>
-        <div class="connection-line-animated"></div>
-        <div class="connection-line-animated"></div>
-        <div class="connection-line-animated"></div>
-    </div>
+{% block title %}Cadastre-se - HubX{% endblock %}
 
-    <div class="onboarding-card">
-        <div class="onboarding-logo">HubX</div>
-
-        <h1 class="onboarding-title">Conecte-se ao Futuro</h1>
-        <p class="onboarding-subtitle">
-            Uma plataforma revolucionária que conecta comunidades, entidades e associações através de redes orgânicas de colaboração e crescimento mútuo.
-        </p>
-
-        <div class="features-grid">
-            <div class="feature-item">
-                <span class="feature-icon">🌐</span>
-                <h3 class="feature-title">Rede Global</h3>
-                <p class="feature-description">
-                    Conecte-se com comunidades ao redor do mundo e expanda sua rede de contatos
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-8);">
+        <div class="card-body text-center">
+            <div class="mb-8">
+                <div style="width: 80px; height: 80px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <h1 class="text-4xl font-bold text-neutral-900 mb-4">
+                    Junte-se ao HubX
+                </h1>
+                <p class="text-lg text-neutral-600 mb-8">
+                    Conecte-se com comunidades, empresas e organizações em uma única plataforma
                 </p>
             </div>
 
-            <div class="feature-item">
-                <span class="feature-icon">🤝</span>
-                <h3 class="feature-title">Colaboração</h3>
-                <p class="feature-description">
-                    Trabalhe em projetos conjuntos e fortaleça laços entre organizações
-                </p>
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="text-center">
+                    <div style="width: 60px; height: 60px; background: var(--success-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success-600)" stroke-width="2">
+                            <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/>
+                            <polyline points="9,11 12,14 15,11"/>
+                            <line x1="12" y1="14" x2="12" y2="3"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-neutral-900 mb-2">Compartilhe</h3>
+                    <p class="text-sm text-neutral-600">
+                        Publique conteúdo e mantenha sua comunidade informada
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div style="width: 60px; height: 60px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-neutral-900 mb-2">Conecte</h3>
+                    <p class="text-sm text-neutral-600">
+                        Encontre e conecte-se com pessoas e organizações
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div style="width: 60px; height: 60px; background: var(--warning-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-3);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warning-600)" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-neutral-900 mb-2">Organize</h3>
+                    <p class="text-sm text-neutral-600">
+                        Crie e participe de eventos da sua comunidade
+                    </p>
+                </div>
             </div>
 
-            <div class="feature-item">
-                <span class="feature-icon">📊</span>
-                <h3 class="feature-title">Gestão Inteligente</h3>
-                <p class="feature-description">
-                    Ferramentas avançadas para gerenciar sua comunidade de forma eficiente
-                </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'accounts:token' %}" class="btn btn-primary btn-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <line x1="19" y1="8" x2="19" y2="14"/>
+                        <line x1="22" y1="11" x2="16" y2="11"/>
+                    </svg>
+                    Começar Cadastro
+                </a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-lg">
+                    Já tenho conta
+                </a>
             </div>
 
-            <div class="feature-item">
-                <span class="feature-icon">🔒</span>
-                <h3 class="feature-title">Segurança</h3>
-                <p class="feature-description">
-                    Ambiente seguro e confiável para suas interações e dados
+            <div class="mt-8 pt-6 border-t border-neutral-200">
+                <p class="text-xs text-neutral-500">
+                    Ao se cadastrar, você concorda com nossos
+                    <a href="#" class="text-primary-600 hover:text-primary-700">Termos de Uso</a>
+                    e
+                    <a href="#" class="text-primary-600 hover:text-primary-700">Política de Privacidade</a>
                 </p>
             </div>
-
-            <div class="feature-item">
-                <span class="feature-icon">💡</span>
-                <h3 class="feature-title">Inovação</h3>
-                <p class="feature-description">
-                    Tecnologia de ponta para impulsionar o crescimento da sua organização
-                </p>
-            </div>
-
-            <div class="feature-item">
-                <span class="feature-icon">🚀</span>
-                <h3 class="feature-title">Crescimento</h3>
-                <p class="feature-description">
-                    Acelere o desenvolvimento da sua comunidade com nossas ferramentas
-                </p>
-            </div>
-        </div>
-
-        <div class="onboarding-actions">
-            <a href="{% url 'accounts:token' %}" class="btn-start">
-                Começar Agora
-                <span>→</span>
-            </a>
         </div>
     </div>
 </div>
-{% endblock %} {% block extra_js %}
-<script src="{% static 'accounts/js/register.js' %}"></script>
-
 {% endblock %}

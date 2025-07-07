@@ -1,20 +1,209 @@
-{% extends "perfil/perfil_subpage_base.html" %}
+{% extends "base.html" %}
 {% load static %}
-{% block title %}Feed{% endblock %}
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'feed/css/feed.css' %}">
-{% endblock %}
-{% block perfil_subpage_content %}
-<div class="feed-container">
-    <div class="feed-header">
-        <h1 class="feed-title">Feed Global</h1>
+
+{% block title %}Feed - HubX{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header do Feed -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
+        <div>
+            <h1 class="text-3xl font-bold text-neutral-900 mb-2">Feed</h1>
+            <p class="text-neutral-600">Acompanhe as últimas atualizações da sua rede</p>
+        </div>
         <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">
-            <span class="btn-icon">+</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
             Nova Postagem
         </a>
     </div>
-    
-    {% include "feed/_post_list.html" with posts=posts empty_icon="📝" empty_title="Nenhuma postagem ainda" empty_message="Seja o primeiro a compartilhar algo!" empty_button="Criar primeira postagem" %}
+
+    <div class="grid lg:grid-cols-4 gap-8">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="card mb-6">
+                <div class="card-body">
+                    <h3 class="font-semibold text-neutral-900 mb-4">Filtros</h3>
+                    <div class="space-y-3">
+                        <div class="form-check">
+                            <input type="checkbox" id="filter-all" class="form-check-input" checked>
+                            <label for="filter-all" class="form-check-label">Todas as postagens</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="filter-following" class="form-check-input">
+                            <label for="filter-following" class="form-check-label">Seguindo</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="filter-companies" class="form-check-input">
+                            <label for="filter-companies" class="form-check-label">Empresas</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" id="filter-events" class="form-check-input">
+                            <label for="filter-events" class="form-check-label">Eventos</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="font-semibold text-neutral-900 mb-4">Sugestões</h3>
+                    <div class="space-y-4">
+                        <div style="display: flex; align-items: center; gap: var(--space-3);">
+                            <div style="width: 40px; height: 40px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span class="text-sm font-medium text-primary-700">JD</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <p class="font-medium text-neutral-900 text-sm">João Silva</p>
+                                <p class="text-xs text-neutral-500">Desenvolvedor</p>
+                            </div>
+                            <button class="btn btn-outline btn-sm">Seguir</button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--space-3);">
+                            <div style="width: 40px; height: 40px; background: var(--success-100); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <span class="text-sm font-medium text-success-700">MS</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <p class="font-medium text-neutral-900 text-sm">Maria Santos</p>
+                                <p class="text-xs text-neutral-500">Designer</p>
+                            </div>
+                            <button class="btn btn-outline btn-sm">Seguir</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feed Principal -->
+        <div class="lg:col-span-3">
+            {% if posts %}
+                <div class="space-y-6">
+                    {% for post in posts %}
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Header do Post -->
+                            <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+                                <div style="width: 48px; height: 48px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    {% if post.autor.foto %}
+                                        <img src="{{ post.autor.foto.url }}" alt="{{ post.autor.nome }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    {% else %}
+                                        <span class="font-medium text-primary-700">
+                                            {{ post.autor.nome|first|upper }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div style="flex: 1;">
+                                    <p class="font-medium text-neutral-900">{{ post.autor.nome }}</p>
+                                    <p class="text-sm text-neutral-500">{{ post.data_criacao|date:"d/m/Y H:i" }}</p>
+                                </div>
+                                <div class="relative">
+                                    <button class="btn btn-secondary btn-sm">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="19" cy="12" r="1"/>
+                                            <circle cx="5" cy="12" r="1"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Conteúdo do Post -->
+                            <div class="mb-4">
+                                <p class="text-neutral-700 leading-relaxed">{{ post.conteudo|linebreaks }}</p>
+                                {% if post.imagem %}
+                                    <div class="mt-4">
+                                        <img src="{{ post.imagem.url }}" alt="Imagem do post" style="width: 100%; border-radius: var(--radius-lg); max-height: 400px; object-fit: cover;">
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Ações do Post -->
+                            <div style="display: flex; align-items: center; gap: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--neutral-200);">
+                                <button class="btn btn-secondary btn-sm">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                                    </svg>
+                                    Curtir
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    Comentar
+                                </button>
+                                <button class="btn btn-secondary btn-sm">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                                    </svg>
+                                    Compartilhar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Paginação -->
+                {% if is_paginated %}
+                <div class="text-center mt-8">
+                    <div style="display: inline-flex; gap: var(--space-2);">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="15,18 9,12 15,6"/>
+                                </svg>
+                                Anterior
+                            </a>
+                        {% endif %}
+                        
+                        <span class="btn btn-secondary" style="cursor: default;">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                        
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">
+                                Próxima
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9,18 15,12 9,6"/>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <!-- Estado Vazio -->
+                <div class="card">
+                    <div class="card-body text-center" style="padding: var(--space-12);">
+                        <div style="width: 80px; height: 80px; background: var(--neutral-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--neutral-400)" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-neutral-900 mb-2">
+                            Nenhuma postagem ainda
+                        </h3>
+                        <p class="text-neutral-600 mb-6">
+                            Seja o primeiro a compartilhar algo com sua comunidade
+                        </p>
+                        <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            Criar Primeira Postagem
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,113 +1,124 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-{% load static %}
-
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Hubx - Conectando Comunidades{% endblock %}</title>
+    <title>{% block title %}HubX - Conectando Comunidades{% endblock %}</title>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
+    
+    <!-- Styles -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/friendly-clean.css' %}">
     {% block extra_css %}{% endblock %}
-
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
 </head>
-
 <body>
-    <!-- Molecular Nodes -->
-    <div class="molecular-node"></div>
-    <div class="molecular-node"></div>
-    <div class="molecular-node"></div>
-    <div class="molecular-node"></div>
-    <div class="molecular-node"></div>
-
-    <!-- Organic Connection Lines -->
-    <div class="organic-connection" style="--rotation: 15deg;"></div>
-    <div class="organic-connection" style="--rotation: -10deg;"></div>
-    <div class="organic-connection" style="--rotation: 25deg;"></div>
-
-    <header>
-        <div class="header-container">
-            <div class="logo">HubX</div>
-            <nav>
-                {% if user.is_authenticated %}
-                    <a href="#" id="chat-link">Chat</a>
-                    <a href="{% url 'feed:feed_global' %}">Feed</a>
-                    {% if user.tipo.descricao in 'root,admin' %}
-                        <a href="{% url 'accounts:criar_token' %}">Gerar Token de Acesso</a>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="{% url 'core:home' %}" class="logo">
+                    HubX
+                </a>
+                
+                <nav class="nav">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard:dashboard' %}" class="nav-link">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'feed:feed' %}" class="nav-link">
+                            Feed
+                        </a>
+                        <a href="{% url 'empresas:lista' %}" class="nav-link">
+                            Empresas
+                        </a>
+                        <a href="{% url 'forum:categoria_list' %}" class="nav-link">
+                            Fórum
+                        </a>
+                        <a href="{% url 'eventos:list' %}" class="nav-link">
+                            Eventos
+                        </a>
+                        <a href="{% url 'accounts:perfil' %}" class="nav-link">
+                            Perfil
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline btn-sm">
+                            Sair
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="nav-link">
+                            Entrar
+                        </a>
+                        <a href="{% url 'accounts:onboarding' %}" class="btn btn-primary btn-sm">
+                            Cadastrar
+                        </a>
                     {% endif %}
-                    <a href="{% url 'accounts:logout' %}" class="cta-button">Sair</a>
-                {% else %}
-                    <a href="{% url 'accounts:login' %}" class="cta-button">Entrar</a>
-                {% endif %}
-            </nav>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <main>
-        <div class="container">
-            {% block content %}
-            <div class="content-card text-center">
-                <h1 class="text-gradient">Bem-vindo ao HubX</h1>
-                <p>Conectando comunidades, fortalecendo laços.</p>
-            </div>
-            {% endblock %}
-        </div>
+    <!-- Main Content -->
+    <main class="main">
+        {% block content %}{% endblock %}
     </main>
 
-    {% block footer %}
-    <footer>
-        <div class="footer-container">
-            <div class="footer-section">
-                <div class="footer-logo">HubX</div>
-                <p>Conectando comunidades através de redes orgânicas de colaboração. Fortalecendo laços entre entidades e associações.</p>
-            </div>
-
-            <div class="footer-section">
-                <h3>Navegação</h3>
-                <ul class="footer-links">
-                    <li><a href="/">Início</a></li>
-                    <li><a href="/comunidades/">Comunidades</a></li>
-                    <li><a href="/sobre/">Sobre Nós</a></li>
-                    <li><a href="/contato/">Contato</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Recursos</h3>
-                <ul class="footer-links">
-                    <li><a href="/ajuda/">Central de Ajuda</a></li>
-                    <li><a href="/documentacao/">Documentação</a></li>
-                    <li><a href="/api/">API</a></li>
-                    <li><a href="/blog/">Blog</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section">
-                <h3>Conecte-se</h3>
-                <p>Siga-nos nas redes sociais e mantenha-se conectado com a comunidade HubX.</p>
-                <div class="footer-social">
-                    <a href="#" class="social-link" title="LinkedIn">in</a>
-                    <a href="#" class="social-link" title="Twitter">tw</a>
-                    <a href="#" class="social-link" title="GitHub">gh</a>
-                    <a href="#" class="social-link" title="Discord">dc</a>
+    <!-- Footer -->
+    <footer style="background: white; border-top: 1px solid var(--neutral-200); padding: var(--space-8) 0; margin-top: var(--space-16);">
+        <div class="container">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="font-semibold text-neutral-900 mb-4">HubX</h3>
+                    <p class="text-sm text-neutral-600">
+                        Conectando comunidades, empresas e organizações em uma única plataforma.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-neutral-900 mb-4">Plataforma</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Feed</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Empresas</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Fórum</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Eventos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium text-neutral-900 mb-4">Suporte</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Central de Ajuda</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Contato</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Status</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-medium text-neutral-900 mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Privacidade</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Termos</a></li>
+                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Cookies</a></li>
+                    </ul>
                 </div>
             </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2024 HubX. Todos os direitos reservados. | <a href="/privacidade/">Política de Privacidade</a> | <a href="/termos/">Termos de Uso</a></p>
+            <div style="border-top: 1px solid var(--neutral-200); margin-top: var(--space-8); padding-top: var(--space-6); text-align: center;">
+                <p class="text-sm text-neutral-500">
+                    © 2024 HubX. Todos os direitos reservados.
+                </p>
+            </div>
         </div>
     </footer>
-    {% endblock %}
 
-    <div id="chat-float-container" class="chat-float hidden"></div>
-    <script src="{% static 'chat/js/chat_socket.js' %}"></script>
-    <script src="{% static 'js/chat_modal.js' %}"></script>
+    <!-- Scripts -->
     {% block extra_js %}{% endblock %}
+    
+    <!-- Chat Modal (if authenticated) -->
+    {% if user.is_authenticated %}
+        {% include 'chat/modal_user_list.html' %}
+        <script src="{% static 'js/chat_modal.js' %}"></script>
+    {% endif %}
 </body>
-
 </html>

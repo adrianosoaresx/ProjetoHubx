@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendly Clean Design System - Demo</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/design-system.css">
+    
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">Friendly Clean</a>
+                
+                <nav class="nav">
+                    <a href="#components" class="nav-link">Componentes</a>
+                    <a href="#forms" class="nav-link">Formulários</a>
+                    <a href="#cards" class="nav-link">Cards</a>
+                    <a href="#alerts" class="nav-link">Alertas</a>
+                    
+                    <!-- Theme Toggle -->
+                    <div class="theme-toggle" id="themeToggle">
+                        <div class="theme-toggle-slider">
+                            <i data-lucide="sun" class="theme-icon-light"></i>
+                            <i data-lucide="moon" class="theme-icon-dark" style="display: none;"></i>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section class="section">
+            <div class="container text-center">
+                <h1>Friendly Clean Design System</h1>
+                <p class="text-lg text-secondary mb-8">
+                    Um sistema de design moderno, acessível e responsivo com suporte a temas claro e escuro.
+                </p>
+                <div class="flex gap-4 justify-center">
+                    <button class="btn btn-primary btn-lg">
+                        <i data-lucide="download"></i>
+                        Download
+                    </button>
+                    <button class="btn btn-outline btn-lg">
+                        <i data-lucide="github"></i>
+                        GitHub
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alerts Demo -->
+        <section class="section-sm" id="alerts">
+            <div class="container">
+                <h2>Alertas e Feedback</h2>
+                
+                <div class="alert alert-success">
+                    <i data-lucide="check-circle" class="alert-icon"></i>
+                    <div class="alert-content">
+                        <div class="alert-title">Sucesso!</div>
+                        <p class="alert-message">Sua operação foi concluída com sucesso.</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-error">
+                    <i data-lucide="alert-circle" class="alert-icon"></i>
+                    <div class="alert-content">
+                        <div class="alert-title">Erro</div>
+                        <p class="alert-message">Ocorreu um erro ao processar sua solicitação. Tente novamente.</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <i data-lucide="alert-triangle" class="alert-icon"></i>
+                    <div class="alert-content">
+                        <div class="alert-title">Atenção</div>
+                        <p class="alert-message">Esta ação não pode ser desfeita. Tem certeza que deseja continuar?</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i data-lucide="info" class="alert-icon"></i>
+                    <div class="alert-content">
+                        <div class="alert-title">Informação</div>
+                        <p class="alert-message">Novos recursos foram adicionados à plataforma. Confira as novidades!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form Demo -->
+        <section class="section-sm" id="forms">
+            <div class="container">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h2>Formulário de Exemplo</h2>
+                        
+                        <form class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Criar Conta</h3>
+                                <p class="card-subtitle">Preencha os dados abaixo para criar sua conta</p>
+                            </div>
+                            
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label for="name" class="form-label required">Nome Completo</label>
+                                    <input type="text" id="name" class="form-input" placeholder="Digite seu nome completo">
+                                    <div class="form-help">Este será o nome exibido em seu perfil</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email" class="form-label required">E-mail</label>
+                                    <input type="email" id="email" class="form-input is-valid" placeholder="seu@email.com" value="usuario@exemplo.com">
+                                    <div class="form-feedback valid">E-mail válido</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="password" class="form-label required">Senha</label>
+                                    <input type="password" id="password" class="form-input is-invalid" placeholder="Digite sua senha">
+                                    <div class="form-feedback invalid">A senha deve ter pelo menos 8 caracteres</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bio" class="form-label">Biografia</label>
+                                    <textarea id="bio" class="form-textarea" placeholder="Conte um pouco sobre você..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="country" class="form-label">País</label>
+                                    <select id="country" class="form-select">
+                                        <option value="">Selecione um país</option>
+                                        <option value="br">Brasil</option>
+                                        <option value="us">Estados Unidos</option>
+                                        <option value="pt">Portugal</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" id="terms" class="form-check-input">
+                                    <label for="terms" class="form-check-label">
+                                        Eu aceito os <a href="#">termos de uso</a> e <a href="#">política de privacidade</a>
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="checkbox" id="newsletter" class="form-check-input">
+                                    <label for="newsletter" class="form-check-label">
+                                        Quero receber novidades por e-mail
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <div class="flex gap-4 justify-end">
+                                    <button type="button" class="btn btn-secondary">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i data-lucide="user-plus"></i>
+                                        Criar Conta
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div>
+                        <h2>Componentes de Interface</h2>
+                        
+                        <!-- Buttons -->
+                        <div class="card mb-6">
+                            <div class="card-header">
+                                <h4 class="card-title">Botões</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="flex gap-4 mb-4 flex-wrap">
+                                    <button class="btn btn-primary">Primário</button>
+                                    <button class="btn btn-secondary">Secundário</button>
+                                    <button class="btn btn-success">Sucesso</button>
+                                    <button class="btn btn-danger">Perigo</button>
+                                </div>
+                                <div class="flex gap-4 mb-4 flex-wrap">
+                                    <button class="btn btn-outline">Outline</button>
+                                    <button class="btn btn-ghost">Ghost</button>
+                                    <button class="btn btn-primary" disabled>Desabilitado</button>
+                                </div>
+                                <div class="flex gap-4 flex-wrap">
+                                    <button class="btn btn-primary btn-sm">Pequeno</button>
+                                    <button class="btn btn-primary">Normal</button>
+                                    <button class="btn btn-primary btn-lg">Grande</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="card mb-6">
+                            <div class="card-header">
+                                <h4 class="card-title">Badges</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="badge badge-primary">Primário</span>
+                                    <span class="badge badge-success">Sucesso</span>
+                                    <span class="badge badge-warning">Aviso</span>
+                                    <span class="badge badge-error">Erro</span>
+                                    <span class="badge badge-neutral">Neutro</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Avatars -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Avatares</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="flex gap-4 items-center">
+                                    <div class="avatar avatar-sm">JS</div>
+                                    <div class="avatar avatar-md">MR</div>
+                                    <div class="avatar avatar-lg">AB</div>
+                                    <div class="avatar avatar-xl">CD</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards Demo -->
+        <section class="section-sm" id="cards">
+            <div class="container">
+                <h2 class="text-center mb-8">Grid de Cards</h2>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar avatar-md">
+                                    <i data-lucide="zap"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title">Performance</h4>
+                                    <p class="card-subtitle">Otimizado para velocidade</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Sistema otimizado com carregamento rápido e transições suaves para uma experiência fluida.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-primary btn-full">
+                                <i data-lucide="arrow-right"></i>
+                                Saiba Mais
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar avatar-md">
+                                    <i data-lucide="shield"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title">Acessibilidade</h4>
+                                    <p class="card-subtitle">Inclusivo por design</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Desenvolvido seguindo as melhores práticas de acessibilidade e padrões WCAG.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-success btn-full">
+                                <i data-lucide="check"></i>
+                                Verificar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar avatar-md">
+                                    <i data-lucide="smartphone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="card-title">Responsivo</h4>
+                                    <p class="card-subtitle">Mobile-first</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                Design responsivo que se adapta perfeitamente a qualquer tamanho de tela.
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-outline btn-full">
+                                <i data-lucide="external-link"></i>
+                                Testar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Components Demo -->
+        <section class="section-sm" id="components">
+            <div class="container">
+                <h2>Tipografia e Elementos</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Hierarquia Tipográfica</h3>
+                        </div>
+                        <div class="card-body">
+                            <h1>Heading 1</h1>
+                            <h2>Heading 2</h2>
+                            <h3>Heading 3</h3>
+                            <h4>Heading 4</h4>
+                            <h5>Heading 5</h5>
+                            <h6>Heading 6</h6>
+                            
+                            <p>
+                                Este é um parágrafo normal com texto corrido. 
+                                <a href="#">Este é um link</a> dentro do parágrafo.
+                                <strong>Este texto está em negrito</strong> e 
+                                <em>este está em itálico</em>.
+                            </p>
+                            
+                            <p class="text-sm text-muted">
+                                Este é um texto menor e mais sutil, usado para informações secundárias.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Estados e Interações</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h5>Loading States</h5>
+                                <div class="flex items-center gap-4">
+                                    <div class="spinner"></div>
+                                    <button class="btn btn-primary" disabled>
+                                        <div class="spinner"></div>
+                                        Carregando...
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Links e Navegação</h5>
+                                <nav class="nav">
+                                    <a href="#" class="nav-link active">Ativo</a>
+                                    <a href="#" class="nav-link">Normal</a>
+                                    <a href="#" class="nav-link">Hover</a>
+                                </nav>
+                            </div>
+                            
+                            <div>
+                                <h5>Cores de Texto</h5>
+                                <p class="text-primary">Texto primário</p>
+                                <p class="text-success">Texto de sucesso</p>
+                                <p class="text-warning">Texto de aviso</p>
+                                <p class="text-error">Texto de erro</p>
+                                <p class="text-muted">Texto sutil</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-secondary); border-top: 1px solid var(--border-primary); padding: var(--space-8) 0; margin-top: var(--space-16);">
+        <div class="container">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="font-semibold text-primary mb-4">Friendly Clean</h4>
+                    <p class="text-sm text-secondary">
+                        Sistema de design moderno, acessível e responsivo para aplicações web.
+                    </p>
+                </div>
+                <div>
+                    <h5 class="font-medium mb-4">Recursos</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-secondary hover:text-primary">Componentes</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Documentação</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Exemplos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-medium mb-4">Suporte</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-secondary hover:text-primary">GitHub</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Issues</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Discussões</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-medium mb-4">Legal</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-secondary hover:text-primary">Licença</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Privacidade</a></li>
+                        <li><a href="#" class="text-secondary hover:text-primary">Termos</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top: 1px solid var(--border-primary); margin-top: var(--space-8); padding-top: var(--space-6); text-align: center;">
+                <p class="text-sm text-muted">
+                    © 2024 Friendly Clean Design System. Código aberto sob licença MIT.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="scripts/theme-toggle.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

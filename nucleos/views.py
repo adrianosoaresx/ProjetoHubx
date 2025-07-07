@@ -122,5 +122,3 @@ class NucleoMemberRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
         nucleo.membros.remove(membro)
         messages.success(request, "Membro removido do núcleo.")
         return redirect("nucleos:update", pk=pk)
-
-

@@ -1,59 +1,83 @@
-{% extends "base.html" %} {% load static %} {% block title %}Registro - Token | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
-<div class="registro-container">
-    <!-- Matrix Code Rain Effect -->
-    <div class="matrix-code" id="matrixCode"></div>
+{% extends "base.html" %}
+{% load static %}
 
-    <!-- Molecular Network Background -->
-    <div class="molecular-network">
-        <div class="registro-node" style="top: 15%; left: 8%;"></div>
-        <div class="registro-node" style="top: 25%; right: 12%;"></div>
-        <div class="registro-node" style="top: 45%; left: 5%;"></div>
-        <div class="registro-node" style="top: 65%; right: 8%;"></div>
-        <div class="registro-node" style="top: 80%; left: 15%;"></div>
-    </div>
+{% block title %}Token de Convite - HubX{% endblock %}
 
-    <div class="registro-card">
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: 14%"></div>
-            <div class="progress-step active" data-step="1">1</div>
-            <div class="progress-step" data-step="2">2</div>
-            <div class="progress-step" data-step="3">3</div>
-            <div class="progress-step" data-step="4">4</div>
-            <div class="progress-step" data-step="5">5</div>
-            <div class="progress-step" data-step="6">6</div>
-            <div class="progress-step" data-step="7">7</div>
-        </div>
-
-        <div class="registro-header">
-            <h1 class="registro-title">Bem-vindo ao HubX</h1>
-            <p class="registro-subtitle">Digite seu token de convite para começar</p>
-        </div>
-
-        <form id="tokenForm" class="registro-form" method="post" action="{% url 'accounts:token' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="token" class="form-label">Token de Convite</label>
-                <input type="text" id="token" name="token" class="form-input" placeholder="Digite seu token de convite" required autofocus>
-                <div class="field-validation" id="token_validation"></div>
-                <small class="field-help">O token é necessário para continuar o cadastro</small>
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12);">
+        <div class="card-body">
+            <!-- Progress Bar -->
+            <div style="margin-bottom: var(--space-8);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                    <span class="text-sm font-medium text-primary-600">Passo 1 de 7</span>
+                    <span class="text-sm text-neutral-500">14%</span>
+                </div>
+                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
+                    <div style="width: 14%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
+                </div>
             </div>
 
-            <div class="form-actions">
-                <a href="{% url 'accounts:login' %}" class="cta-button">Voltar</a>
-                <button type="submit" class="btn-primary" id="submitButton">
-                    <span class="button-text">Continuar</span>
-                    <span class="button-loader" id="buttonLoader"></span>
-                </button>
+            <div class="text-center mb-8">
+                <div style="width: 64px; height: 64px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-neutral-900 mb-2">
+                    Token de Convite
+                </h1>
+                <p class="text-neutral-600">
+                    Digite seu token de convite para começar o cadastro
+                </p>
             </div>
-        </form>
 
-        <div class="registro-footer">
-            <p>Já tem uma conta? <a href="{% url 'accounts:login' %}" class="cta-button">Entrar</a></p>
+            <form method="post" action="{% url 'accounts:token' %}">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="token" class="form-label required">
+                        Token de Convite
+                    </label>
+                    <input 
+                        type="text" 
+                        id="token" 
+                        name="token" 
+                        class="form-input" 
+                        placeholder="Digite seu token de convite"
+                        required 
+                        autofocus
+                        style="text-align: center; font-family: var(--font-family-mono); letter-spacing: 2px;"
+                    >
+                    <div class="form-help">
+                        O token é necessário para continuar o cadastro na plataforma
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: var(--space-4); margin-top: var(--space-8);">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary" style="flex: 1;">
+                        Voltar
+                    </a>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Continuar
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9,18 15,12 9,6"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center mt-8">
+                <p class="text-sm text-neutral-600">
+                    Já tem uma conta?
+                    <a href="{% url 'accounts:login' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+                        Entrar
+                    </a>
+                </p>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
-{% block extra_js %}
-<script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

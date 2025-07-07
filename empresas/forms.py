@@ -97,4 +97,3 @@ class TagSearchForm(forms.Form):
             }
         ),
     )
-

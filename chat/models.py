@@ -67,4 +67,3 @@ class Notificacao(TimeStampedModel):
     def __str__(self) -> str:  # pragma: no cover - simples
 
         return f"Para {self.usuario} de {self.remetente}"
-

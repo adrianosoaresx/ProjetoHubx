@@ -1,30 +1,176 @@
-
-{% extends 'perfil/perfil_subpage_base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}{% if empresa %}Editar Empresa | Hubx{% else %}Cadastrar Empresa | Hubx{% endif %}{% endblock %}
+{% block title %}Nova Empresa - HubX{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="nova-empresa" class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">{% if empresa %}Editar{% else %}Cadastrar Nova{% endif %} Empresa</h1>
-        <form method="post" action="{% if empresa %}{% url 'empresas:editar' empresa.id %}{% else %}{% url 'empresas:nova' %}{% endif %}" enctype="multipart/form-data">
-            {% csrf_token %}
-            {% for field in form %}
-                <div class="form-group">
-                    {{ field.label_tag }} {{ field }}
-                    {% if field.help_text %}
-                        <small class="field-help">{{ field.help_text }}</small>
-                    {% endif %}
-                    {{ field.errors }}
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-8);">
+        <div class="card-header">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="{% url 'empresas:lista' %}" class="btn btn-secondary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    Voltar
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-neutral-900 mb-1">Nova Empresa</h1>
+                    <p class="text-sm text-neutral-600">Cadastre sua empresa na plataforma</p>
                 </div>
-            {% endfor %}
-            {{ form.non_field_errors }}
-            <div class="form-actions" style="justify-content: flex-end;">
-                <a href="{% url 'empresas:lista' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
             </div>
-        </form>
+        </div>
+
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}" class="form-label required">
+                            {{ form.nome.label }}
+                        </label>
+                        {{ form.nome|add_class:"form-input" }}
+                        {% if form.nome.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.nome.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.tipo.id_for_label }}" class="form-label required">
+                            {{ form.tipo.label }}
+                        </label>
+                        {{ form.tipo|add_class:"form-select" }}
+                        {% if form.tipo.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.tipo.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.descricao.id_for_label }}" class="form-label">
+                        {{ form.descricao.label }}
+                    </label>
+                    {{ form.descricao|add_class:"form-textarea" }}
+                    {% if form.descricao.errors %}
+                        <div class="form-feedback invalid">
+                            {{ form.descricao.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="form-help">
+                        Descreva brevemente o que sua empresa faz e seus principais objetivos
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.cidade.id_for_label }}" class="form-label">
+                            {{ form.cidade.label }}
+                        </label>
+                        {{ form.cidade|add_class:"form-input" }}
+                        {% if form.cidade.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.cidade.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.estado.id_for_label }}" class="form-label">
+                            {{ form.estado.label }}
+                        </label>
+                        {{ form.estado|add_class:"form-select" }}
+                        {% if form.estado.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.estado.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            {{ form.email.label }}
+                        </label>
+                        {{ form.email|add_class:"form-input" }}
+                        {% if form.email.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.email.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.telefone.id_for_label }}" class="form-label">
+                            {{ form.telefone.label }}
+                        </label>
+                        {{ form.telefone|add_class:"form-input" }}
+                        {% if form.telefone.errors %}
+                            <div class="form-feedback invalid">
+                                {{ form.telefone.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.website.id_for_label }}" class="form-label">
+                        {{ form.website.label }}
+                    </label>
+                    {{ form.website|add_class:"form-input" }}
+                    {% if form.website.errors %}
+                        <div class="form-feedback invalid">
+                            {{ form.website.errors }}
+                        </div>
+                    {% endif %}
+                    <div class="form-help">
+                        Inclua http:// ou https:// no início da URL
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.logo.id_for_label }}" class="form-label">
+                        {{ form.logo.label }}
+                    </label>
+                    <div class="form-file">
+                        {{ form.logo|add_class:"form-file-input" }}
+                        <label for="{{ form.logo.id_for_label }}" class="form-file-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21,15 16,10 5,21"/>
+                            </svg>
+                            <div>
+                                <p class="font-medium">Clique para adicionar o logo</p>
+                                <p class="text-sm text-neutral-500">PNG, JPG até 2MB</p>
+                            </div>
+                        </label>
+                    </div>
+                    {% if form.logo.errors %}
+                        <div class="form-feedback invalid">
+                            {{ form.logo.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; gap: var(--space-4); justify-content: flex-end; margin-top: var(--space-8);">
+                    <a href="{% url 'empresas:lista' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Cadastrar Empresa
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}

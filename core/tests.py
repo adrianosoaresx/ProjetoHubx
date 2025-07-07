@@ -46,4 +46,3 @@ class GenerateTestDataCommandTests(TestCase):
             root_user.connections.count(),
             User.objects.filter(is_superuser=False).count(),
         )
-
