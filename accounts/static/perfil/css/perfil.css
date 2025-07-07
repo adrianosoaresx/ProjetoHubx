@@ -1088,16 +1088,16 @@
 .tag {
   padding: 0.4rem 1rem;
   border-radius: 20px;
-  background: rgba(0, 255, 65, 0.25);
-  color: var(--matrix-green);
+  background: var(--neutral-100);
+  color: var(--primary-700);
   font-size: 0.8rem;
   font-weight: 600;
-  border: 1px solid rgba(0, 255, 65, 0.3);
+  border: 1px solid var(--neutral-200);
 }
 
 .tag.more {
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--neutral-200);
+  color: var(--neutral-700);
 }
 
 .empresa-actions {
