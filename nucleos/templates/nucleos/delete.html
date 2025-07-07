@@ -2,17 +2,19 @@
 {% block title %}Remover Núcleo | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">Confirmar remoção do núcleo</h1>
-        <form method="post">
-            {% csrf_token %}
-            <p>Deseja remover "{{ object.nome }}"?</p>
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'nucleos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-danger">Remover</button>
-            </div>
-        </form>
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12);">
+        <div class="card-body">
+            <h1 class="text-2xl font-bold text-neutral-900 mb-6">Confirmar remoção do núcleo</h1>
+            <form method="post">
+                {% csrf_token %}
+                <p class="mb-6">Deseja remover "{{ object.nome }}"?</p>
+                <div style="display: flex; gap: var(--space-4); justify-content: flex-end;">
+                    <a href="{% url 'nucleos:list' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-danger">Remover</button>
+                </div>
+            </form>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}

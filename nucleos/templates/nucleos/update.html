@@ -2,46 +2,105 @@
 {% block title %}Editar Núcleo | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">Editar Núcleo</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'nucleos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
-            </div>
-        </form>
-    </div>
-
-    <h2 style="margin-top:2rem;">Membros</h2>
-    <div class="connections-grid">
-        {% for membro in membros %}
-        <div class="connection-card">
-            <div class="connection-avatar">
-                {% if membro.avatar %}
-                <img src="{{ membro.avatar.url }}" alt="{{ membro.username }}">
-                {% else %}
-                <div class="avatar-placeholder">
-                    <span>{{ membro.username|make_list|first|upper }}</span>
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-8);">
+        <div class="card-header">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="{% url 'nucleos:list' %}" class="btn btn-secondary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    Voltar
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-neutral-900 mb-1">Editar Núcleo</h1>
                 </div>
-                {% endif %}
-            </div>
-            <div class="connection-info">
-                <h4>{{ membro.get_full_name|default:membro.username }}</h4>
-                <p>@{{ membro.username }}</p>
-            </div>
-            <div class="connection-actions">
-                <form method="post" action="{% url 'nucleos:remove_member' object.id membro.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn-icon" title="Excluir membro">❌</button>
-                </form>
             </div>
         </div>
-        {% empty %}
-        <p>Nenhum membro neste núcleo.</p>
-        {% endfor %}
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.organizacao.id_for_label }}" class="form-label required">{{ form.organizacao.label }}</label>
+                        {{ form.organizacao|add_class:"form-select" }}
+                        {% if form.organizacao.errors %}<div class="form-feedback invalid">{{ form.organizacao.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}" class="form-label required">{{ form.nome.label }}</label>
+                        {{ form.nome|add_class:"form-input" }}
+                        {% if form.nome.errors %}<div class="form-feedback invalid">{{ form.nome.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.descricao.id_for_label }}" class="form-label">{{ form.descricao.label }}</label>
+                    {{ form.descricao|add_class:"form-textarea" }}
+                    {% if form.descricao.errors %}<div class="form-feedback invalid">{{ form.descricao.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.avatar.id_for_label }}" class="form-label">{{ form.avatar.label }}</label>
+                    <div class="form-file">
+                        {{ form.avatar|add_class:"form-file-input" }}
+                        <label for="{{ form.avatar.id_for_label }}" class="form-file-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21,15 16,10 5,21"/>
+                            </svg>
+                            <div>
+                                <p class="font-medium">Clique para alterar o avatar</p>
+                                <p class="text-sm text-neutral-500">PNG, JPG até 2MB</p>
+                            </div>
+                        </label>
+                    </div>
+                    {% if form.avatar.errors %}<div class="form-feedback invalid">{{ form.avatar.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.membros.id_for_label }}" class="form-label">{{ form.membros.label }}</label>
+                    {{ form.membros|add_class:"form-select" }}
+                    {% if form.membros.errors %}<div class="form-feedback invalid">{{ form.membros.errors }}</div>{% endif %}
+                </div>
+                <div style="display: flex; gap: var(--space-4); justify-content: flex-end; margin-top: var(--space-8);">
+                    <a href="{% url 'nucleos:list' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</section>
+
+    <div class="card" style="margin-top: var(--space-8);">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-neutral-900">Membros</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid md:grid-cols-2 gap-6">
+                {% for membro in membros %}
+                <div class="card">
+                    <div class="card-body" style="display:flex; align-items:center; gap:var(--space-4);">
+                        <div style="width:48px; height:48px; background: var(--neutral-100); border-radius: var(--radius-full); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            {% if membro.avatar %}
+                                <img src="{{ membro.avatar.url }}" alt="{{ membro.username }}" style="width:100%; height:100%; object-fit:cover; border-radius: var(--radius-full);">
+                            {% else %}
+                                <span class="font-medium text-neutral-500">{{ membro.username|make_list|first|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div style="flex:1;">
+                            <h4 class="font-semibold text-neutral-900 mb-1">{{ membro.get_full_name|default:membro.username }}</h4>
+                            <p class="text-sm text-neutral-600">@{{ membro.username }}</p>
+                        </div>
+                        <div>
+                            <form method="post" action="{% url 'nucleos:remove_member' object.id membro.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>Nenhum membro neste núcleo.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

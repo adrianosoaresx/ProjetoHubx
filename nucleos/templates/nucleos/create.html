@@ -2,17 +2,70 @@
 {% block title %}Novo Núcleo | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">{% block form_title %}Cadastrar Núcleo{% endblock %}</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'nucleos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-8);">
+        <div class="card-header">
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <a href="{% url 'nucleos:list' %}" class="btn btn-secondary btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15,18 9,12 15,6"/>
+                    </svg>
+                    Voltar
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-neutral-900 mb-1">{% block form_title %}Cadastrar Núcleo{% endblock %}</h1>
+                </div>
             </div>
-        </form>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.organizacao.id_for_label }}" class="form-label required">{{ form.organizacao.label }}</label>
+                        {{ form.organizacao|add_class:"form-select" }}
+                        {% if form.organizacao.errors %}<div class="form-feedback invalid">{{ form.organizacao.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.nome.id_for_label }}" class="form-label required">{{ form.nome.label }}</label>
+                        {{ form.nome|add_class:"form-input" }}
+                        {% if form.nome.errors %}<div class="form-feedback invalid">{{ form.nome.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.descricao.id_for_label }}" class="form-label">{{ form.descricao.label }}</label>
+                    {{ form.descricao|add_class:"form-textarea" }}
+                    {% if form.descricao.errors %}<div class="form-feedback invalid">{{ form.descricao.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.avatar.id_for_label }}" class="form-label">{{ form.avatar.label }}</label>
+                    <div class="form-file">
+                        {{ form.avatar|add_class:"form-file-input" }}
+                        <label for="{{ form.avatar.id_for_label }}" class="form-file-label">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21,15 16,10 5,21"/>
+                            </svg>
+                            <div>
+                                <p class="font-medium">Clique para adicionar o avatar</p>
+                                <p class="text-sm text-neutral-500">PNG, JPG até 2MB</p>
+                            </div>
+                        </label>
+                    </div>
+                    {% if form.avatar.errors %}<div class="form-feedback invalid">{{ form.avatar.errors }}</div>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.membros.id_for_label }}" class="form-label">{{ form.membros.label }}</label>
+                    {{ form.membros|add_class:"form-select" }}
+                    {% if form.membros.errors %}<div class="form-feedback invalid">{{ form.membros.errors }}</div>{% endif %}
+                </div>
+                <div style="display: flex; gap: var(--space-4); justify-content: flex-end; margin-top: var(--space-8);">
+                    <a href="{% url 'nucleos:list' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}
