@@ -2,54 +2,62 @@
 {% block title %}Núcleos | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="section-header">
-        <h2>Núcleos</h2>
-    </div>
-
-    <div class="empresas-actions">
-        <a href="{% url 'nucleos:create' %}" class="btn-primary">
-            <span>+</span>
-            <span>Novo Núcleo</span>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
+        <div>
+            <h1 class="text-3xl font-bold text-neutral-900 mb-2">Núcleos</h1>
+        </div>
+        <a href="{% url 'nucleos:create' %}" class="btn btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Novo Núcleo
         </a>
     </div>
 
-    <form method="get" class="search-bar" style="margin-bottom:2rem;">
+    <form method="get" class="mb-8">
         {{ form.media }}
         {{ form.nucleo }}
-        <noscript><button type="submit" class="btn-secondary">Buscar</button></noscript>
+        <noscript><button type="submit" class="btn btn-secondary">Buscar</button></noscript>
     </form>
 
-    <div class="empresas-grid">
+    {% if object_list %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for nucleo in object_list %}
-        <div class="empresa-card">
-            <div class="empresa-logo">
-                {% if nucleo.avatar %}
-                <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}">
-                {% else %}
-                <div class="logo-placeholder">
-                    <span>{{ nucleo.nome|make_list|first|upper }}</span>
+        <div class="card">
+            <div class="card-body">
+                <div style="display: flex; align-items: center; gap: var(--space-4);">
+                    <div style="width: 64px; height: 64px; background: var(--neutral-100); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        {% if nucleo.avatar %}
+                            <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);">
+                        {% else %}
+                            <span class="text-xl font-bold text-neutral-500">{{ nucleo.nome|make_list|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="flex:1;">
+                        <h3 class="font-semibold text-neutral-900"><a href="{% url 'nucleos:detail' nucleo.id %}">{{ nucleo.nome }}</a></h3>
+                        <p class="text-sm text-neutral-600">{{ nucleo.organizacao.nome }}</p>
+                    </div>
                 </div>
-                {% endif %}
+                <div style="display: flex; gap: var(--space-3); margin-top: var(--space-4);">
+                    <a href="{% url 'nucleos:detail' nucleo.id %}" class="btn btn-primary btn-sm">Ver</a>
+                    <a href="{% url 'nucleos:update' nucleo.id %}" class="btn btn-secondary btn-sm">Editar</a>
+                    <a href="{% url 'nucleos:delete' nucleo.id %}" class="btn btn-danger btn-sm">Remover</a>
+                </div>
             </div>
-            <div class="empresa-info">
-                <h3><a href="{% url 'nucleos:detail' nucleo.id %}">{{ nucleo.nome }}</a></h3>
-                <p class="empresa-tipo">{{ nucleo.organizacao.nome }}</p>
-            </div>
-            <div class="empresa-actions">
-                <a href="{% url 'nucleos:detail' nucleo.id %}" class="btn-view">Ver</a>
-                <a href="{% url 'nucleos:update' nucleo.id %}" class="btn-edit">Editar</a>
-                <a href="{% url 'nucleos:delete' nucleo.id %}" class="btn-danger">Remover</a>
-            </div>
-        </div>
-        {% empty %}
-        <div class="empty-state">
-            <p>Nenhum núcleo cadastrado.</p>
-            <a href="{% url 'nucleos:create' %}" class="btn-secondary">Cadastrar</a>
         </div>
         {% endfor %}
     </div>
-</section>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <p class="text-neutral-600 mb-4">Nenhum núcleo cadastrado.</p>
+            <a href="{% url 'nucleos:create' %}" class="btn btn-primary">Cadastrar</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block extra_js %}
