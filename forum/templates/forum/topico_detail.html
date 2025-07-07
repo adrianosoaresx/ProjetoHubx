@@ -1,4 +1,4 @@
-{% extends 'perfil/perfil_subpage_base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}{{ object.titulo }} | Matrix Forum{% endblock %}
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{% static 'css/forum.css' %}">
 {% endblock %}
 
-{% block perfil_subpage_content %}
+{% block content %}
 <section class="matrix-detail-section">
     <div class="matrix-topic-header">
         <h2 class="matrix-topic-title">{{ object.titulo }}</h2>
