@@ -2,31 +2,28 @@
 {% load static %}
 
 {% block title %}Dashboard Gerente | Hubx{% endblock %}
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
-{% endblock %}
+
 
 {% block content %}
-<div class="dashboard-page">
-    <h1 class="dashboard-title">Dashboard Gerente</h1>
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3 class="dashboard-card-title">Usuários</h3>
-                <svg class="dashboard-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="container mt-8">
+    <h1 class="text-3xl font-bold text-neutral-900 mb-8 text-center">Dashboard Gerente</h1>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h3 class="text-sm font-medium">Usuários</h3>
+                <svg class="w-4 h-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
             </div>
-            <div class="dashboard-card-content">{{ num_users }}</div>
+            <div class="card-body text-2xl font-bold">{{ num_users }}</div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3 class="dashboard-card-title">Organizações</h3>
-                <svg class="dashboard-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h3 class="text-sm font-medium">Organizações</h3>
+                <svg class="w-4 h-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M12 22V7"></path>
                     <path d="M7 22V7"></path>
@@ -37,12 +34,12 @@
                     <path d="M17 2v5"></path>
                 </svg>
             </div>
-            <div class="dashboard-card-content">{{ num_organizacoes }}</div>
+            <div class="card-body text-2xl font-bold">{{ num_organizacoes }}</div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3 class="dashboard-card-title">Núcleos</h3>
-                <svg class="dashboard-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h3 class="text-sm font-medium">Núcleos</h3>
+                <svg class="w-4 h-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 22c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"></path>
                     <path d="M12 16v6"></path>
                     <path d="M12 16h6"></path>
@@ -51,31 +48,31 @@
                     <path d="M12 10c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"></path>
                 </svg>
             </div>
-            <div class="dashboard-card-content">{{ num_nucleos }}</div>
+            <div class="card-body text-2xl font-bold">{{ num_nucleos }}</div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3 class="dashboard-card-title">Empresas</h3>
-                <svg class="dashboard-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h3 class="text-sm font-medium">Empresas</h3>
+                <svg class="w-4 h-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                     <circle cx="9" cy="7" r="4"></circle>
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
             </div>
-            <div class="dashboard-card-content">{{ num_empresas }}</div>
+            <div class="card-body text-2xl font-bold">{{ num_empresas }}</div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3 class="dashboard-card-title">Eventos</h3>
-                <svg class="dashboard-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <h3 class="text-sm font-medium">Eventos</h3>
+                <svg class="w-4 h-4 text-primary-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="16" y1="2" x2="16" y2="6"></line>
                     <line x1="8" y1="2" x2="8" y2="6"></line>
                     <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
             </div>
-            <div class="dashboard-card-content">{{ num_eventos }}</div>
+            <div class="card-body text-2xl font-bold">{{ num_eventos }}</div>
         </div>
     </div>
 </div>
