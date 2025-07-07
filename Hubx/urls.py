@@ -10,7 +10,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Página inicial (app core)
-    path("", include("core.urls")),
+    path("", include(("core.urls", "core"), namespace="core")),
 
     path(
         "dashboard/",
