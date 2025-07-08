@@ -13,8 +13,8 @@
             {% endif %}
             {% endfor %}
             <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'eventos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
+                <a href="{% url 'eventos:list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
         </form>
         <hr>
@@ -30,7 +30,7 @@
                 <div class="empresa-actions">
                     <form method="post" action="{% url 'eventos:remove_inscrito' object.pk inscrito.pk %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn-danger">Remover</button>
+                        <button type="submit" class="btn btn-danger">Remover</button>
                     </form>
                 </div>
                 {% endif %}

@@ -13,9 +13,9 @@
         <h2>Calendário de Eventos</h2>
     </div>
     <div class="calendar-nav">
-        <a href="?mes={{ mes|add:'-1' }}&ano={{ ano }}" class="btn-secondary">&lt;</a>
+        <a href="?mes={{ mes|add:'-1' }}&ano={{ ano }}" class="btn btn-secondary">&lt;</a>
         <span>{{ mes }}/{{ ano }}</span>
-        <a href="?mes={{ mes|add:'1' }}&ano={{ ano }}" class="btn-secondary">&gt;</a>
+        <a href="?mes={{ mes|add:'1' }}&ano={{ ano }}" class="btn btn-secondary">&gt;</a>
     </div>
     <table class="calendar-table">
         <tr>
@@ -48,10 +48,10 @@
                 <p class="empresa-tipo">{{ evento.data_hora|time:'H:i' }}</p>
             </div>
             <div class="empresa-actions">
-                <a href="{% url 'eventos:detail' evento.pk %}" class="btn-primary">Ver</a>
+                <a href="{% url 'eventos:detail' evento.pk %}" class="btn btn-outline btn-sm">Ver</a>
                 {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
-                    <a href="{% url 'eventos:update' evento.pk %}" class="btn-edit">Editar</a>
-                    <a href="{% url 'eventos:delete' evento.pk %}" class="btn-danger">Remover</a>
+                    <a href="{% url 'eventos:update' evento.pk %}" class="btn btn-secondary btn-sm">Editar</a>
+                    <a href="{% url 'eventos:delete' evento.pk %}" class="btn btn-danger btn-sm">Remover</a>
                 {% endif %}
             </div>
         </div>
