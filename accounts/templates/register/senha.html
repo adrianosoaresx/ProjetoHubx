@@ -1,69 +1,62 @@
-{% extends "base.html" %} {% load static %} {% block title %}Registro - Senha | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
-<div class="registro-container">
-    <!-- Matrix Code Rain Effect -->
-    <div class="matrix-code" id="matrixCode"></div>
+{% extends "base.html" %}
+{% load static %}
 
-    <!-- Molecular Network Background -->
-    <div class="molecular-network">
-        <div class="registro-node" style="top: 15%; left: 8%;"></div>
-        <div class="registro-node" style="top: 25%; right: 12%;"></div>
-        <div class="registro-node" style="top: 45%; left: 5%;"></div>
-        <div class="registro-node" style="top: 65%; right: 8%;"></div>
-        <div class="registro-node" style="top: 80%; left: 15%;"></div>
-    </div>
+{% block title %}Registro - Senha | Hubx{% endblock %}
 
-    <div class="registro-card">
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: 70%"></div>
-            <div class="progress-step completed" data-step="1">✓</div>
-            <div class="progress-step completed" data-step="2">✓</div>
-            <div class="progress-step completed" data-step="3">✓</div>
-            <div class="progress-step completed" data-step="4">✓</div>
-            <div class="progress-step active" data-step="5">5</div>
-            <div class="progress-step" data-step="6">6</div>
-            <div class="progress-step" data-step="7">7</div>
-        </div>
-
-        <div class="registro-header">
-            <h1 class="registro-title">Crie uma senha segura</h1>
-            <p class="registro-subtitle">Proteja sua conta com uma senha forte</p>
-        </div>
-
-        <form id="senhaForm" class="registro-form" method="post" action="{% url 'accounts:senha' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="senha" class="form-label">Senha</label>
-                <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>
-                <div class="field-validation" id="senha_validation"></div>
-            </div>
-
-            <!-- Password Strength Indicator -->
-            <div class="password-strength">
-                <div class="strength-label">Força da senha:</div>
-                <div class="strength-bar">
-                    <div class="strength-fill" id="strengthFill"></div>
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12);">
+        <div class="card-body">
+            <div style="margin-bottom: var(--space-8);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                    <span class="text-sm font-medium text-primary-600">Passo 5 de 7</span>
+                    <span class="text-sm text-neutral-500">70%</span>
                 </div>
-                <div class="strength-text" id="strengthText">Digite uma senha</div>
+                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
+                    <div style="width: 70%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
-                <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-input" placeholder="Confirme sua senha" required>
-                <div class="field-validation" id="confirmar_senha_validation"></div>
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-neutral-900 mb-2">Crie uma senha segura</h1>
+                <p class="text-neutral-600">Proteja sua conta com uma senha forte</p>
             </div>
 
-            <div class="form-actions">
-                <a href="{% url 'accounts:email' %}" class="btn-secondary">Voltar</a>
-                <button type="submit" class="btn-primary" id="submitButton">
-                    <span class="button-text">Continuar</span>
-                    <span class="button-loader" id="buttonLoader"></span>
-                </button>
-            </div>
-        </form>
+            <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6 registro-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="senha" class="form-label">Senha</label>
+                    <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>
+                    <div class="field-validation" id="senha_validation"></div>
+                </div>
+
+                <div class="password-strength">
+                    <div class="strength-label">Força da senha:</div>
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <div class="strength-text" id="strengthText">Digite uma senha</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-input" placeholder="Confirme sua senha" required>
+                    <div class="field-validation" id="confirmar_senha_validation"></div>
+                </div>
+
+                <div class="form-actions" style="display:flex; gap: var(--space-4);">
+                    <a href="{% url 'accounts:email' %}" class="btn btn-secondary" style="flex:1;">Voltar</a>
+                    <button type="submit" class="btn btn-primary" id="submitButton" style="flex:1;">
+                        <span class="button-text">Continuar</span>
+                        <span class="button-loader" id="buttonLoader" style="display:none"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

@@ -536,8 +536,9 @@ async function handleFormSubmission(event) {
     const buttonLoader = document.getElementById("buttonLoader")
 
     // Show loading state
-    submitButton.classList.add("loading")
     submitButton.disabled = true
+    buttonText.style.opacity = "0"
+    buttonLoader.style.display = "inline-block"
 
     let isValid = false
 
@@ -589,8 +590,9 @@ async function handleFormSubmission(event) {
         console.error("Erro na validação:", error)
     } finally {
         // Hide loading state
-        submitButton.classList.remove("loading")
         submitButton.disabled = false
+        buttonText.style.opacity = "1"
+        buttonLoader.style.display = "none"
     }
 }
 
@@ -691,33 +693,33 @@ function showValidation(field, validationElement, message, isValid) {
         validationElement.textContent = message
 
         // Remove previous classes
-        validationElement.classList.remove("valid", "invalid")
+        validationElement.classList.remove("is-valid", "is-invalid")
 
         if (isValid === true) {
-            validationElement.classList.add("valid")
-            if (field) field.classList.add("valid")
+            validationElement.classList.add("is-valid")
+            if (field) field.classList.add("is-valid")
         } else if (isValid === false) {
-            validationElement.classList.add("invalid")
-            if (field) field.classList.add("invalid")
+            validationElement.classList.add("is-invalid")
+            if (field) field.classList.add("is-invalid")
         }
     }
 
     if (field) {
-        field.classList.remove("valid", "invalid")
+        field.classList.remove("is-valid", "is-invalid")
         if (isValid === true) {
-            field.classList.add("valid")
+            field.classList.add("is-valid")
         } else if (isValid === false) {
-            field.classList.add("invalid")
+            field.classList.add("is-invalid")
         }
     }
 }
 
 function clearFieldValidation(field, validationElement) {
     if (field) {
-        field.classList.remove("valid", "invalid")
+        field.classList.remove("is-valid", "is-invalid")
     }
     if (validationElement) {
-        validationElement.classList.remove("valid", "invalid")
+        validationElement.classList.remove("is-valid", "is-invalid")
         validationElement.textContent = ""
     }
 }

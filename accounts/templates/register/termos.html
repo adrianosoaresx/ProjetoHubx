@@ -1,82 +1,76 @@
-{% extends "base.html" %} {% load static %} {% block title %}Registro - Termos | Hubx{% endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}"> {% endblock %} {% block content %}
-<div class="registro-container">
-    <!-- Matrix Code Rain Effect -->
-    <div class="matrix-code" id="matrixCode"></div>
+{% extends "base.html" %}
+{% load static %}
 
-    <!-- Molecular Network Background -->
-    <div class="molecular-network">
-        <div class="registro-node" style="top: 15%; left: 8%;"></div>
-        <div class="registro-node" style="top: 25%; right: 12%;"></div>
-        <div class="registro-node" style="top: 45%; left: 5%;"></div>
-        <div class="registro-node" style="top: 65%; right: 8%;"></div>
-        <div class="registro-node" style="top: 80%; left: 15%;"></div>
-    </div>
+{% block title %}Registro - Termos | Hubx{% endblock %}
 
-    <div class="registro-card">
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: 100%"></div>
-            <div class="progress-step completed" data-step="1">✓</div>
-            <div class="progress-step completed" data-step="2">✓</div>
-            <div class="progress-step completed" data-step="3">✓</div>
-            <div class="progress-step completed" data-step="4">✓</div>
-            <div class="progress-step completed" data-step="5">✓</div>
-            <div class="progress-step completed" data-step="6">✓</div>
-            <div class="progress-step active" data-step="7">7</div>
-        </div>
-
-        <div class="registro-header">
-            <h1 class="registro-title">Quase lá!</h1>
-            <p class="registro-subtitle">Revise e aceite os termos para finalizar</p>
-        </div>
-
-        <form id="termosForm" class="registro-form" method="post" action="{% url 'accounts:termos' %}">
-            {% csrf_token %}
-            <div class="termos-container">
-                <div class="termos-content">
-                    <h3>Termos de Uso e Política de Privacidade</h3>
-                    <p>Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:</p>
-
-                    <h4>1. Uso da Plataforma</h4>
-                    <p>O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários.</p>
-
-                    <h4>2. Privacidade</h4>
-                    <p>Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade.</p>
-
-                    <h4>3. Conteúdo</h4>
-                    <p>Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros.</p>
-
-                    <h4>4. Segurança</h4>
-                    <p>Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado.</p>
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12);">
+        <div class="card-body">
+            <div style="margin-bottom: var(--space-8);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                    <span class="text-sm font-medium text-primary-600">Passo 7 de 7</span>
+                    <span class="text-sm text-neutral-500">100%</span>
+                </div>
+                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
+                    <div style="width: 100%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%;"></div>
                 </div>
             </div>
 
-            <div class="checkbox-container">
-                <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="checkbox-input" required>
-                <label for="aceitar_termos" class="checkbox-label">
-                    Eu li e concordo com os <a href="/termos/" class="registro-link" target="_blank">Termos de Uso</a> 
-                    e <a href="/privacidade/" class="registro-link" target="_blank">Política de Privacidade</a>
-                </label>
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-neutral-900 mb-2">Quase lá!</h1>
+                <p class="text-neutral-600">Revise e aceite os termos para finalizar</p>
             </div>
 
-            <div class="checkbox-container">
-                <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
-                <label for="newsletter" class="checkbox-label">
-                    Quero receber atualizações e novidades do HubX
-                </label>
-            </div>
+            <form id="termosForm" method="post" action="{% url 'accounts:termos' %}" class="space-y-6 registro-form">
+                {% csrf_token %}
+                <div class="termos-container">
+                    <div class="termos-content">
+                        <h3>Termos de Uso e Política de Privacidade</h3>
+                        <p>Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:</p>
 
-            <div class="form-actions">
-                <a href="{% url 'accounts:foto' %}" class="btn-secondary">Voltar</a>
-                <button type="submit" class="btn-primary" id="submitButton">
-                    <span class="button-text">Finalizar Cadastro</span>
-                    <span class="button-loader" id="buttonLoader"></span>
-                </button>
-            </div>
-        </form>
+                        <h4>1. Uso da Plataforma</h4>
+                        <p>O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários.</p>
+
+                        <h4>2. Privacidade</h4>
+                        <p>Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade.</p>
+
+                        <h4>3. Conteúdo</h4>
+                        <p>Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros.</p>
+
+                        <h4>4. Segurança</h4>
+                        <p>Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado.</p>
+                    </div>
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="checkbox-input" required>
+                    <label for="aceitar_termos" class="checkbox-label">
+                        Eu li e concordo com os <a href="/termos/" class="registro-link" target="_blank">Termos de Uso</a>
+                        e <a href="/privacidade/" class="registro-link" target="_blank">Política de Privacidade</a>
+                    </label>
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
+                    <label for="newsletter" class="checkbox-label">
+                        Quero receber atualizações e novidades do HubX
+                    </label>
+                </div>
+
+                <div class="form-actions" style="display:flex; gap: var(--space-4);">
+                    <a href="{% url 'accounts:foto' %}" class="btn btn-secondary" style="flex:1;">Voltar</a>
+                    <button type="submit" class="btn btn-primary" id="submitButton" style="flex:1;">
+                        <span class="button-text">Finalizar Cadastro</span>
+                        <span class="button-loader" id="buttonLoader" style="display:none"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}

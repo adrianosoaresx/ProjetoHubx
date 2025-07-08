@@ -1,40 +1,19 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Cadastro Concluído | HubX{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
-{% endblock %}
+
 {% block content %}
-<div class="registro-container">
-    <div class="matrix-code" id="matrixCode"></div>
-    <div class="molecular-network">
-        <div class="registro-node" style="top: 15%; left: 8%;"></div>
-        <div class="registro-node" style="top: 25%; right: 12%;"></div>
-        <div class="registro-node" style="top: 45%; left: 5%;"></div>
-        <div class="registro-node" style="top: 65%; right: 8%;"></div>
-        <div class="registro-node" style="top: 80%; left: 15%;"></div>
-    </div>
-    <div class="registro-card">
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: 100%"></div>
-            <div class="progress-step completed" data-step="1">✓</div>
-            <div class="progress-step completed" data-step="2">✓</div>
-            <div class="progress-step completed" data-step="3">✓</div>
-            <div class="progress-step completed" data-step="4">✓</div>
-            <div class="progress-step completed" data-step="5">✓</div>
-            <div class="progress-step completed" data-step="6">✓</div>
-            <div class="progress-step completed" data-step="7">✓</div>
-        </div>
-        <div class="registro-header">
-            <h1 class="registro-title">Parabéns!</h1>
-            <p class="registro-subtitle">Seu cadastro foi concluído com sucesso.</p>
-        </div>
-        <div class="form-actions" style="text-align:center;">
-            <a href="{% url 'accounts:login' %}" class="btn-primary">Fazer login</a>
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12);">
+        <div class="card-body text-center">
+            <h1 class="text-3xl font-bold text-neutral-900 mb-4">Parabéns!</h1>
+            <p class="text-neutral-600 mb-6">Seu cadastro foi concluído com sucesso.</p>
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary">Fazer login</a>
         </div>
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script src="{% static 'accounts/js/register.js' %}"></script>
 {% endblock %}
