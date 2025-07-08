@@ -1,23 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Registro Concluído | Hubx{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'accounts/css/register.css' %}">
-{% endblock %}
-{% block content %}
-<div class="success-container">
-    <div class="matrix-code" id="matrixCode"></div>
-    <div id="confettiContainer"></div>
-    <div class="success-card">
-        <div class="success-icon">✓</div>
-        <h1 class="success-title">Bem-vindo ao HubX!</h1>
-        <p class="success-message">
-            Seu cadastro foi concluído com sucesso. Estamos muito felizes em ter você na nossa comunidade!
-        </p>
 
-        <a href="{% url 'accounts:perfil' %}" class="btn-profile">
-            Ir para meu Perfil <span>→</span>
-        </a>
+{% block content %}
+<div class="container-sm">
+    <div class="card" style="margin-top: var(--space-12); text-align:center;">
+        <div class="card-body">
+            <h1 class="text-3xl font-bold text-neutral-900 mb-4">Bem-vindo ao HubX!</h1>
+            <p class="text-neutral-600 mb-6">Seu cadastro foi concluído com sucesso.</p>
+            <a href="{% url 'accounts:perfil' %}" class="btn btn-primary">Ir para meu Perfil →</a>
+        </div>
     </div>
 </div>
 {% endblock %}
