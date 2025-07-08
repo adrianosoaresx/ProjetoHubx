@@ -23,13 +23,29 @@
       <p>{{ user.cep }}</p>
     </div>
     <div>
-      <h4 class="font-medium mb-1">Redes Sociais</h4>
-      {% if user.website %}<p><a href="{{ user.website }}" class="text-primary hover:underline">🌐 Website</a></p>{% endif %}
-      {% if user.linkedin %}<p><a href="{{ user.linkedin }}" class="text-primary hover:underline">🔗 LinkedIn</a></p>{% endif %}
-      {% if user.instagram %}<p><a href="{{ user.instagram }}" class="text-primary hover:underline">📸 Instagram</a></p>{% endif %}
-      {% if user.twitter %}<p><a href="{{ user.twitter }}" class="text-primary hover:underline">🐦 Twitter</a></p>{% endif %}
-      {% if user.facebook %}<p><a href="{{ user.facebook }}" class="text-primary hover:underline">📘 Facebook</a></p>{% endif %}
-    </div>
+    <h4 class="font-medium mb-1">Redes Sociais</h4>
+    {% if user.website %}
+      <p><a href="{{ user.website }}" class="text-primary hover:underline" target="_blank">
+        <i class="fa-solid fa-globe"></i> Website</a></p>
+    {% endif %}
+    {% if user.linkedin %}
+      <p><a href="{{ user.linkedin }}" class="text-primary hover:underline" target="_blank">
+        <i class="fab fa-linkedin"></i> LinkedIn</a></p>
+    {% endif %}
+    {% if user.twitter %}
+      <p><a href="{{ user.twitter }}" class="text-primary hover:underline" target="_blank">
+        <i class="fab fa-twitter"></i> Twitter</a></p>
+    {% endif %}
+    {% if user.instagram %}
+      <p><a href="{{ user.instagram }}" class="text-primary hover:underline" target="_blank">
+        <i class="fab fa-instagram"></i> Instagram</a></p>
+    {% endif %}
+    {% if user.facebook %}
+      <p><a href="{{ user.facebook }}" class="text-primary hover:underline" target="_blank">
+        <i class="fab fa-facebook"></i> Facebook</a></p>
+    {% endif %}
+  </div>
+
   </div>
 
   <div class="mt-6 text-right">

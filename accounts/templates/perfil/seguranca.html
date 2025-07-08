@@ -1,7 +1,11 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Segurança da Conta | HubX{% endblock %}
+{% block title %}Segurança da Conta | HubX
+<div class="mt-6 text-center">
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+</div>
+{% endblock %}
 
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
@@ -91,4 +95,8 @@
     }
   });
 </script>
+
+<div class="mt-6 text-center">
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+</div>
 {% endblock %}

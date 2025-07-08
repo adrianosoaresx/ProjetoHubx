@@ -1,7 +1,11 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Minhas Conexões | HubX{% endblock %}
+{% block title %}Minhas Conexões | HubX
+<div class="mt-6 text-center">
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+</div>
+{% endblock %}
 
 {% block perfil_content %}
 <section id="conexoes" class="space-y-6">
@@ -111,4 +115,8 @@
     });
   });
 </script>
+
+<div class="mt-6 text-center">
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+</div>
 {% endblock %}
