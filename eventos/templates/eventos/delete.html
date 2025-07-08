@@ -9,8 +9,8 @@
             {% csrf_token %}
             <p>Deseja remover "{{ object.titulo }}"?</p>
             <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'eventos:list' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-danger">Remover</button>
+                <a href="{% url 'eventos:list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Remover</button>
             </div>
         </form>
     </div>

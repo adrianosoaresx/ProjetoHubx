@@ -19,9 +19,9 @@
         <form action="{% url 'eventos:subscribe' object.pk %}" method="post">
             {% csrf_token %}
             {% if user in object.inscritos.all %}
-            <button type="submit" class="btn-secondary">Cancelar inscrição</button>
+            <button type="submit" class="btn btn-secondary">Cancelar inscrição</button>
             {% else %}
-            <button type="submit" class="btn-primary">Inscrever-se</button>
+            <button type="submit" class="btn btn-primary">Inscrever-se</button>
             {% endif %}
         </form>
         {% endif %}
@@ -50,7 +50,7 @@
         {% endfor %}
     </div>
     <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
-        <a href="{% url 'eventos:list' %}" class="btn-secondary">Voltar</a>
+        <a href="{% url 'eventos:list' %}" class="btn btn-secondary">Voltar</a>
     </div>
 </section>
 {% endblock %}
