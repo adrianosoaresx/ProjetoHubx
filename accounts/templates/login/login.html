@@ -21,7 +21,12 @@
                 <label for="{{ form.username.id_for_label }}" class="block mb-1 font-medium">
                     {{ form.username.label }}
                 </label>
-                {{ form.username|add_class:"w-full p-3 border rounded-md focus:ring-2 focus:ring-primary" }}
+                <input type="text"
+                       name="{{ form.username.html_name }}"
+                       id="{{ form.username.id_for_label }}"
+                       value="{{ form.username.value|default_if_none:'' }}"
+                       class="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary"
+                       required />
                 {% if form.username.errors %}
                     <div class="text-red-600 text-sm">{{ form.username.errors }}</div>
                 {% endif %}
@@ -30,7 +35,11 @@
                 <label for="{{ form.password.id_for_label }}" class="block mb-1 font-medium">
                     {{ form.password.label }}
                 </label>
-                {{ form.password|add_class:"w-full p-3 border rounded-md focus:ring-2 focus:ring-primary" }}
+                <input type="password"
+                       name="{{ form.password.html_name }}"
+                       id="{{ form.password.id_for_label }}"
+                       class="w-full p-3 border rounded-md focus:ring-2 focus:ring-primary"
+                       required />
                 {% if form.password.errors %}
                     <div class="text-red-600 text-sm">{{ form.password.errors }}</div>
                 {% endif %}
