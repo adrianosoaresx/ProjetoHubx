@@ -17,14 +17,9 @@ import os
 import uuid
 from django.utils import timezone
 
-# ────────────────────────────────────────────────────────────────
-# Forms usados nas abas do perfil
-# ────────────────────────────────────────────────────────────────
 from .forms import (
     InformacoesPessoaisForm,
-    ContatoForm,
     RedesSociaisForm,
-    ContaForm,
     NotificacoesForm,
     MediaForm,
     CustomUserCreationForm,
@@ -39,18 +34,14 @@ from .models import (
 
 User = get_user_model()
 
-# =====================================================================
-# PERFIL – cada aba usa um ModelForm dedicado
-# =====================================================================
 
+# ====================== PERFIL ======================
 
 @login_required
 def perfil_home(request):
-    """Entrada do perfil → redireciona para Informações Pessoais."""
     return redirect("accounts:informacoes_pessoais")
 
 
-# 1 • Informações Pessoais
 @login_required
 def perfil_informacoes(request):
     if request.method == "POST":
@@ -67,22 +58,6 @@ def perfil_informacoes(request):
     return render(request, "perfil/informacoes_pessoais.html", {"form": form})
 
 
-# 2 • Contato
-@login_required
-def perfil_contato(request):
-    if request.method == "POST":
-        form = ContatoForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Informações de contato salvas.")
-            return redirect("accounts:contato")
-    else:
-        form = ContatoForm(instance=request.user)
-
-    return render(request, "perfil/contato.html", {"form": form})
-
-
-# 3 • Redes Sociais
 @login_required
 def perfil_redes_sociais(request):
     if request.method == "POST":
@@ -97,14 +72,13 @@ def perfil_redes_sociais(request):
     return render(request, "perfil/redes_sociais.html", {"form": form})
 
 
-# 4 • Segurança (troca de senha)
 @login_required
 def perfil_seguranca(request):
     if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)  # mantém login
+            update_session_auth_hash(request, user)
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
     else:
@@ -113,7 +87,6 @@ def perfil_seguranca(request):
     return render(request, "perfil/seguranca.html", {"form": form})
 
 
-# 5 • Notificações
 @login_required
 def perfil_notificacoes(request):
     settings_obj, _ = NotificationSettings.objects.get_or_create(user=request.user)
@@ -130,31 +103,32 @@ def perfil_notificacoes(request):
     return render(request, "perfil/notificacoes.html", {"form": form})
 
 
-# 6 • Conexões (somente leitura)
 @login_required
 def perfil_conexoes(request):
-    """Exibe conexões e seguidores do usuário."""
-
-    connections = getattr(request.user, "connections", None)
-    followers = getattr(request.user, "followers", None)
-    followings = getattr(request.user, "following", None)
+    connections = request.user.connections.all() if hasattr(request.user, "connections") else []
+    connection_requests = []  # pode ser implementado futuramente
 
     context = {
-        "connections": connections.all() if connections else [],
-        # solicitações de conexão ainda não implementadas
-        "connection_requests": [],
-        "followers": followers.all() if followers else [],
-        "followings": followings.all() if followings else [],
+        "connections": connections,
+        "connection_requests": connection_requests,
     }
 
     return render(request, "perfil/conexoes.html", context)
 
 
-# 7 • Mídias
+@login_required
+def remover_conexao(request, id):
+    try:
+        other_user = User.objects.get(id=id)
+        request.user.connections.remove(other_user)
+        messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
+    except User.DoesNotExist:
+        messages.error(request, "Usuário não encontrado.")
+    return redirect("accounts:conexoes")
+
+
 @login_required
 def perfil_midias(request):
-    """Exibe e processa o envio de mídias do usuário."""
-
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
     q = request.GET.get("q", "").strip()
 
@@ -172,26 +146,24 @@ def perfil_midias(request):
 
     medias = request.user.medias.order_by("-uploaded_at")
     if q:
-        medias = medias.filter(
-            Q(descricao__icontains=q) | Q(tags__nome__icontains=q)
-        ).distinct()
+        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
 
-    context = {"form": form, "medias": medias, "show_form": show_form, "q": q}
-    return render(request, "perfil/midias.html", context)
+    return render(request, "perfil/midias.html", {
+        "form": form,
+        "medias": medias,
+        "show_form": show_form,
+        "q": q,
+    })
 
 
 @login_required
 def perfil_midia_detail(request, pk):
-    """Exibe uma mídia individual em tamanho ampliado."""
-
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     return render(request, "perfil/midia_detail.html", {"media": media})
 
 
 @login_required
 def perfil_midia_edit(request, pk):
-    """Permite editar uma mídia do usuário."""
-
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES, instance=media)
@@ -207,39 +179,17 @@ def perfil_midia_edit(request, pk):
 
 @login_required
 def perfil_midia_delete(request, pk):
-    """Confirma e processa a exclusão de uma mídia."""
-
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         media.delete()
         messages.success(request, "Mídia removida.")
         return redirect("accounts:midias")
-
     return render(request, "perfil/midia_confirm_delete.html", {"media": media})
 
 
-# 8 • Configurações da Conta
-@login_required
-def perfil_conta(request):
-    if request.method == "POST":
-        form = ContaForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Configurações da conta atualizadas.")
-            return redirect("accounts:conta")
-    else:
-        form = ContaForm(instance=request.user)
-
-    return render(request, "perfil/conta.html", {"form": form})
-
-
-# =====================================================================
-# AUTENTICAÇÃO
-# =====================================================================
-
+# ====================== AUTENTICAÇÃO ======================
 
 def login_view(request):
-    """Autentica o usuário usando o AuthenticationForm do Django."""
     if request.user.is_authenticated:
         return redirect("accounts:perfil")
 
@@ -252,13 +202,11 @@ def login_view(request):
 
 
 def logout_view(request):
-    """Encerra a sessão do usuário e volta para o login."""
     logout(request)
     return redirect("accounts:login")
 
 
 def register_view(request):
-    """Registro simples usando ``CustomUserCreationForm``."""
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -272,7 +220,6 @@ def register_view(request):
 
 
 def password_reset(request):
-    # TODO: implementar fluxo real de reset de senha
     return render(request, "login/login.html")
 
 
@@ -280,10 +227,7 @@ def onboarding(request):
     return render(request, "register/onboarding.html")
 
 
-# ------------------------------------------------------------------
-# FLUXO DE REGISTRO EM VÁRIAS ETAPAS (nome → cpf → …)
-# ------------------------------------------------------------------
-
+# ====================== REGISTRO MULTIETAPAS ======================
 
 def nome(request):
     if request.method == "POST":
@@ -295,7 +239,6 @@ def nome(request):
 
 
 def cpf(request):
-    """Solicita o CPF logo após o nome."""
     if request.method == "POST":
         valor = request.POST.get("cpf")
         if valor:
@@ -358,7 +301,6 @@ def foto(request):
 
 def termos(request):
     if request.method == "POST" and request.POST.get("aceitar_termos"):
-        # cria usuário com dados armazenados na sessão
         token_code = request.session.get("invite_token")
         try:
             token_obj = TokenAcesso.objects.get(
@@ -399,7 +341,6 @@ def termos(request):
             if token_obj.nucleo_destino:
                 user.nucleo = token_obj.nucleo_destino
                 user.save(update_fields=["nucleo"])
-            # salva foto, se houver
             foto_path = request.session.get("foto")
             if foto_path:
                 with default_storage.open(foto_path, "rb") as f:
@@ -444,12 +385,3 @@ def criar_token(request):
         "accounts/gerar_token.html",
         {"form": form, "token": token},
     )
-@login_required
-def remover_conexao(request, id):
-    try:
-        other_user = User.objects.get(id=id)
-        request.user.connections.remove(other_user)
-        messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
-    except User.DoesNotExist:
-        messages.error(request, "Usuário não encontrado.")
-    return redirect("accounts:perfil_conexoes")

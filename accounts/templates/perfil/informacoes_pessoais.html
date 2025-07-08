@@ -6,7 +6,7 @@
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
   <h3 class="text-xl font-semibold mb-1">Informações Pessoais</h3>
-  <p class="text-sm text-gray-500 mb-6">Atualize seus dados básicos</p>
+  <p class="text-sm text-gray-500 mb-6">Atualize seus dados básicos e de contato</p>
 
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
@@ -64,6 +64,57 @@
       <label for="avatar" class="block text-sm font-medium text-gray-700">Foto de Perfil</label>
       <input type="file" id="avatar" name="avatar"
              class="mt-1 block w-full border rounded-lg p-2 text-sm">
+    </div>
+
+    <hr class="my-6">
+
+    <h4 class="text-lg font-semibold">Informações de Contato</h4>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label for="telefone" class="block text-sm font-medium text-gray-700">Telefone</label>
+        <input type="tel" id="telefone" name="telefone"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.telefone }}" placeholder="(00) 00000-0000">
+      </div>
+      <div>
+        <label for="whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>
+        <input type="tel" id="whatsapp" name="whatsapp"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
+      </div>
+    </div>
+
+    <div>
+      <label for="endereco" class="block text-sm font-medium text-gray-700">Endereço</label>
+      <input type="text" id="endereco" name="endereco"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.endereco }}" placeholder="Rua, número, complemento">
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div>
+        <label for="cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+        <input type="text" id="cidade" name="cidade"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.cidade }}">
+      </div>
+      <div>
+        <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+        <select id="estado" name="estado"
+                class="mt-1 block w-full border rounded-lg p-2 text-sm">
+          <option value="">Selecione...</option>
+          {% for uf, sigla in estados %}
+            <option value="{{ sigla }}" {% if user.estado == sigla %}selected{% endif %}>{{ uf }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="cep" class="block text-sm font-medium text-gray-700">CEP</label>
+        <input type="text" id="cep" name="cep"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.cep }}" placeholder="00000-000">
+      </div>
     </div>
 
     <div class="pt-4">

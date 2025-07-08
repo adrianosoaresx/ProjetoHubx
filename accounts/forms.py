@@ -28,6 +28,17 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "data_nascimento",
             "genero",
             "avatar",
+            "telefone",
+            "whatsapp",
+            "endereco",
+            "cidade",
+            "estado",
+            "cep",
+            "idioma",
+            "fuso_horario",
+            "perfil_publico",
+            "mostrar_email",
+            "mostrar_telefone",
         )
         widgets = {
             "data_nascimento": forms.DateInput(attrs={"type": "date"}),
@@ -50,36 +61,10 @@ class InformacoesPessoaisForm(forms.ModelForm):
         return user
 
 
-class ContatoForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = (
-            "email",
-            "telefone",
-            "whatsapp",
-            "endereco",
-            "cidade",
-            "estado",
-            "cep",
-        )
-
-
 class RedesSociaisForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("facebook", "twitter", "instagram", "linkedin", "website")
-
-
-class ContaForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = (
-            "idioma",
-            "fuso_horario",
-            "perfil_publico",
-            "mostrar_email",
-            "mostrar_telefone",
-        )
 
 
 class NotificacoesForm(forms.ModelForm):
