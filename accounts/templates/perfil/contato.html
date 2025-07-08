@@ -1,68 +1,72 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Informações de Contato | Hubx{% endblock %}
+{% block title %}Informações de Contato | HubX{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="contato" class="perfil-section active">
-  <div class="section-header">
-      <h2>Informações de Contato</h2>
-      <p>Atualize seus dados de contato</p>
-  </div>
+{% block perfil_content %}
+<div class="max-w-3xl mx-auto">
+  <h3 class="text-xl font-semibold mb-1">Informações de Contato</h3>
+  <p class="text-sm text-gray-500 mb-6">Atualize seus dados de contato</p>
 
-  <form id="formContato" class="perfil-form" method="post" action="{% url 'accounts:contato' %}" enctype="multipart/form-data">
-      {% csrf_token %}
+  <form method="post" action="{% url 'accounts:contato' %}" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
 
-      <div class="form-group">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" id="email" name="email" class="form-input" value="{{ user.email }}" required>
+    <div>
+      <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+      <input type="email" id="email" name="email"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.email }}" required>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="telefone" class="block text-sm font-medium text-gray-700">Telefone</label>
+        <input type="tel" id="telefone" name="telefone"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.telefone }}" placeholder="(00) 00000-0000">
       </div>
-
-      <div class="form-row">
-          <div class="form-group">
-              <label for="telefone" class="form-label">Telefone</label>
-              <input type="tel" id="telefone" name="telefone" class="form-input" value="{{ user.telefone }}" placeholder="(00) 00000-0000">
-          </div>
-
-          <div class="form-group">
-              <label for="whatsapp" class="form-label">WhatsApp</label>
-              <input type="tel" id="whatsapp" name="whatsapp" class="form-input" value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
-          </div>
+      <div>
+        <label for="whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>
+        <input type="tel" id="whatsapp" name="whatsapp"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
       </div>
+    </div>
 
-      <div class="form-group">
-          <label for="endereco" class="form-label">Endereço</label>
-          <input type="text" id="endereco" name="endereco" class="form-input" value="{{ user.endereco }}" placeholder="Rua, número, complemento">
+    <div>
+      <label for="endereco" class="block text-sm font-medium text-gray-700">Endereço</label>
+      <input type="text" id="endereco" name="endereco"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.endereco }}" placeholder="Rua, número, complemento">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label for="cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+        <input type="text" id="cidade" name="cidade"
+               class="mt-1 block w-full border rounded-lg p-2 text-sm"
+               value="{{ user.cidade }}">
       </div>
-
-      <div class="form-row">
-          <div class="form-group">
-              <label for="cidade" class="form-label">Cidade</label>
-              <input type="text" id="cidade" name="cidade" class="form-input" value="{{ user.cidade }}">
-          </div>
-
-          <div class="form-group">
-              <label for="estado" class="form-label">Estado</label>
-              <select id="estado" name="estado" class="form-select">
-                  <option value="">Selecione...</option>
-                  {% for sigla,nome in estados %}
-                  <option value="{{ sigla }}" {% if user.estado == sigla %}selected{% endif %}>{{ nome }}</option>
-                  {% endfor %}
-              </select>
-          </div>
-
-          <div class="form-group">
-              <label for="cep" class="form-label">CEP</label>
-              <input type="text" id="cep" name="cep" class="form-input" value="{{ user.cep }}" placeholder="00000-000">
-          </div>
+      <div>
+        <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+        <select id="estado" name="estado"
+                class="mt-1 block w-full border rounded-lg p-2 text-sm">
+          <option value="">Selecione...</option>
+          {% for uf in estados %}
+            <option value="{{ uf.sigla }}" {% if user.estado == uf.sigla %}selected{% endif %}>
+              {{ uf.nome }}
+            </option>
+          {% endfor %}
+        </select>
       </div>
+    </div>
 
-      <div class="form-actions">
-          <button type="submit" class="btn-save">
-              <span class="button-text">Salvar Alterações</span>
-              <span class="button-loader"></span>
-          </button>
-      </div>
+    <div class="pt-4">
+      <button type="submit"
+              class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+        Salvar Alterações
+      </button>
+    </div>
   </form>
-</section>
+</div>
 {% endblock %}

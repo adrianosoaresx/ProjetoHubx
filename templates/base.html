@@ -1,136 +1,62 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}HubX - Conectando Comunidades{% endblock %}</title>
-    
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Styles -->
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/layout.css' %}">
-    {% block extra_css %}{% endblock %}
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>{% block title %}HubX{% endblock %}</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#00b894',
+            muted: '#f9fafb',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        },
+      },
+    };
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <a href="{% url 'core:home' %}" class="logo">
-                    HubX
-                </a>
-                
-                <nav class="nav">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard:dashboard' %}" class="nav-link">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'feed:feed' %}" class="nav-link">
-                            Feed
-                        </a>
-                        <a href="{% url 'empresas:lista' %}" class="nav-link">
-                            Empresas
-                        </a>
-                        <a href="{% url 'organizacoes:list' %}" class="nav-link">
-                            Organizações
-                        </a>
-                        <a href="{% url 'nucleos:list' %}" class="nav-link">
-                            Núcleos
-                        </a>
-                        <a href="{% url 'empresas:tags_list' %}" class="nav-link">
-                            Produtos/Serviços
-                        </a>
-                        <a href="{% url 'forum:categorias' %}" class="nav-link">
-                            Fórum
-                        </a>
-                        <a href="{% url 'eventos:list' %}" class="nav-link">
-                            Eventos
-                        </a>
-                        <a href="{% url 'accounts:perfil' %}" class="nav-link">
-                            Perfil
-                        </a>
-                        <a href="{% url 'accounts:logout' %}" class="btn btn-outline btn-sm">
-                            Sair
-                        </a>
-                    {% else %}
-                        <a href="{% url 'accounts:login' %}" class="nav-link">
-                            Entrar
-                        </a>
-                        <a href="{% url 'accounts:onboarding' %}" class="btn btn-primary btn-sm">
-                            Cadastrar
-                        </a>
-                    {% endif %}
-                </nav>
-            </div>
-        </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main">
-        {% block content %}{% endblock %}
-    </main>
+<body class="bg-muted text-gray-800 font-sans min-h-screen flex flex-col">
 
-    <!-- Footer -->
-    <footer style="background: white; border-top: 1px solid var(--neutral-200); padding: var(--space-8) 0; margin-top: var(--space-16);">
-        <div class="container">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="font-semibold text-neutral-900 mb-4">HubX</h3>
-                    <p class="text-sm text-neutral-600">
-                        Conectando comunidades, empresas e organizações em uma única plataforma.
-                    </p>
-                </div>
-                <div>
-                    <h4 class="font-medium text-neutral-900 mb-4">Plataforma</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Feed</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Empresas</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Fórum</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Eventos</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-neutral-900 mb-4">Suporte</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Central de Ajuda</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Contato</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Status</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-medium text-neutral-900 mb-4">Legal</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Privacidade</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Termos</a></li>
-                        <li><a href="#" class="text-neutral-600 hover:text-primary-600">Cookies</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div style="border-top: 1px solid var(--neutral-200); margin-top: var(--space-8); padding-top: var(--space-6); text-align: center;">
-                <p class="text-sm text-neutral-500">
-                    © 2024 HubX. Todos os direitos reservados.
-                </p>
-            </div>
-        </div>
-    </footer>
+  <!-- Navbar -->
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="text-2xl font-bold text-primary">HubX</a>
+      <nav class="space-x-4 text-sm">
+        {% if user.is_authenticated %}
+          <span class="text-gray-600">Olá, {{ user.username }}</span>
+          <a href="{% url 'accounts:logout' %}" class="text-primary hover:underline">Sair</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-gray-600 hover:underline">Entrar</a>
+          <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white py-2 px-4 rounded-xl text-sm hover:bg-primary/90 transition">
+            Cadastrar
+          </a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
 
-    <!-- Scripts -->
-    {% block extra_js %}{% endblock %}
-    
-    <!-- Chat Modal (if authenticated) -->
-    {% if user.is_authenticated %}
-        {% include 'chat/modal_user_list.html' %}
-        <script src="{% static 'js/chat_modal.js' %}"></script>
-    {% endif %}
+  <!-- Conteúdo principal -->
+  <main class="flex-grow">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Rodapé -->
+  <footer class="bg-white border-t mt-10">
+    <div class="container mx-auto px-4 py-6 text-sm text-gray-500 text-center">
+      © {{ now|date:"Y" }} HubX. Todos os direitos reservados.
+    </div>
+  </footer>
+
 </body>
 </html>

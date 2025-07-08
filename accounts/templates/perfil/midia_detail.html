@@ -2,12 +2,12 @@
 
 {% block title %}Mídia | Hubx{% endblock %}
 
-{% block perfil_subpage_content %}
-<section class="perfil-section active">
-  <div class="media-view">
-      <img src="{{ media.file.url }}" alt="{{ media.descricao }}">
-      <p class="media-desc">{{ media.descricao }}</p>
-      <a href="{% url 'accounts:midias' %}" class="btn-primary">Voltar</a>
+{% block perfil_content %}
+<section class="space-y-4">
+  <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded shadow max-w-full mx-auto" />
+  <p class="text-center text-gray-700">{{ media.descricao }}</p>
+  <div class="text-center">
+    <a href="{% url 'accounts:midias' %}" class="text-sm text-primary hover:underline">← Voltar para mídias</a>
   </div>
 </section>
 {% endblock %}

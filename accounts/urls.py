@@ -47,4 +47,6 @@ urlpatterns = [
         name="midia_delete",
     ),
     path("perfil/conta/", views.perfil_conta, name="conta"),
+    path("perfil/conexoes/<int:id>/remover/", views.remover_conexao, name="remover_conexao"),
+
 ]

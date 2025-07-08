@@ -1,168 +1,114 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Conexões e Seguidores | Hubx{% endblock %}
+{% block title %}Minhas Conexões | HubX{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="conexoes" class="perfil-section active">
-  <div class="section-header">
-      <h2>Conexões e Seguidores</h2>
-      <p>Gerencie sua rede de contatos</p>
+{% block perfil_content %}
+<section id="conexoes" class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold">Minhas Conexões</h2>
+    <p class="text-sm text-gray-500">Gerencie sua rede de contatos</p>
   </div>
 
-  <div class="tabs-container">
-      <div class="tabs-header">
-          <button class="tab-btn active" data-tab="minhas-conexoes">Minhas Conexões</button>
-          <button class="tab-btn" data-tab="solicitacoes">Solicitações</button>
-          <button class="tab-btn" data-tab="seguidores">Seguidores</button>
-          <button class="tab-btn" data-tab="seguindo">Seguindo</button>
+  <!-- Abas -->
+  <div class="flex gap-4 border-b">
+    <button class="tab-btn py-2 px-4 text-sm border-b-2 border-primary text-primary font-medium" data-tab="minhas-conexoes">Minhas Conexões</button>
+    <button class="tab-btn py-2 px-4 text-sm text-gray-600 hover:text-primary" data-tab="solicitacoes">Solicitações</button>
+  </div>
+
+  <!-- Conteúdo das abas -->
+  <div class="tabs-content mt-6">
+
+    <!-- MINHAS CONEXÕES -->
+    <div class="tab-pane" id="minhas-conexoes">
+      <div class="flex gap-2 mb-4">
+        <input type="text" placeholder="Buscar conexões..." class="flex-grow border rounded-lg p-2 text-sm" />
+        <button class="text-gray-600 text-sm">🔍</button>
       </div>
 
-      <div class="tabs-content">
-          <!-- Minhas Conexões -->
-          <div class="tab-pane active" id="minhas-conexoes">
-              <div class="search-bar">
-                  <input type="text" placeholder="Buscar conexões..." class="search-input">
-                  <button class="search-btn">🔍</button>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for connection in connections %}
+        <div class="flex items-center justify-between p-4 border rounded-xl bg-white shadow-sm">
+          <div class="flex items-center gap-3">
+            {% if connection.avatar %}
+              <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
+            {% else %}
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600">
+                {{ connection.username|first|upper }}
               </div>
-
-              <div class="connections-grid">
-                  {% for connection in connections %}
-                  <div class="connection-card">
-                      <div class="connection-avatar">
-                          {% if connection.avatar %}
-                          <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}">
-                          {% else %}
-                          <div class="avatar-placeholder">
-                              <span>{{ connection.username|make_list|first|upper }}</span>
-                          </div>
-                          {% endif %}
-                      </div>
-                      <div class="connection-info">
-                          <h4>{{ connection.get_full_name }}</h4>
-                          <p>@{{ connection.username }}</p>
-                      </div>
-                      <div class="connection-actions">
-                          <a href="#" class="btn-icon" onclick="abrirChat({{ connection.id }})" title="Chat">💬</a>
-                          <button class="btn-icon" title="Remover conexão">❌</button>
-                      </div>
-                  </div>
-                  {% empty %}
-                  <div class="empty-state">
-                      <p>Você ainda não tem conexões.</p>
-                      <button class="btn-secondary">Encontrar Pessoas</button>
-                  </div>
-                  {% endfor %}
-              </div>
+            {% endif %}
+            <div>
+              <p class="font-medium">{{ connection.get_full_name }}</p>
+              <p class="text-sm text-gray-500">@{{ connection.username }}</p>
+            </div>
           </div>
-
-          <!-- Solicitações -->
-          <div class="tab-pane" id="solicitacoes">
-              <div class="requests-list">
-                  {% for request in connection_requests %}
-                  <div class="request-card">
-                      <div class="request-avatar">
-                          {% if request.avatar %}
-                          <img src="{{ request.avatar.url }}" alt="{{ request.username }}">
-                          {% else %}
-                          <div class="avatar-placeholder">
-                              <span>{{ request.username|make_list|first|upper }}</span>
-                          </div>
-                          {% endif %}
-                      </div>
-                      <div class="request-info">
-                          <h4>{{ request.get_full_name }}</h4>
-                          <p>@{{ request.username }}</p>
-                          <p class="request-message">{{ request.message }}</p>
-                      </div>
-                      <div class="request-actions">
-                          <button class="btn-accept" data-id="{{ request.id }}">Aceitar</button>
-                          <button class="btn-reject" data-id="{{ request.id }}">Recusar</button>
-                      </div>
-                  </div>
-                  {% empty %}
-                  <div class="empty-state">
-                      <p>Você não tem solicitações de conexão pendentes.</p>
-                  </div>
-                  {% endfor %}
-              </div>
+          <div class="flex gap-2">
+            <a href="#" onclick="abrirChat({{ connection.id }})" title="Chat" class="text-green-500 hover:text-green-600">💬</a>
+            <form method="post" action="{% url 'accounts:remover_conexao' connection.id %}" onsubmit="return confirm('Tem certeza que deseja remover esta conexão?');">
+              {% csrf_token %}
+              <button title="Remover conexão" class="text-red-500 hover:text-red-600">❌</button>
+            </form>
           </div>
-
-          <!-- Seguidores -->
-          <div class="tab-pane" id="seguidores">
-              <div class="search-bar">
-                  <input type="text" placeholder="Buscar seguidores..." class="search-input">
-                  <button class="search-btn">🔍</button>
-              </div>
-
-              <div class="followers-grid">
-                  {% for follower in followers %}
-                  <div class="follower-card">
-                      <div class="follower-avatar">
-                          {% if follower.avatar %}
-                          <img src="{{ follower.avatar.url }}" alt="{{ follower.username }}">
-                          {% else %}
-                          <div class="avatar-placeholder">
-                              <span>{{ follower.username|make_list|first|upper }}</span>
-                          </div>
-                          {% endif %}
-                      </div>
-                      <div class="follower-info">
-                          <h4>{{ follower.get_full_name }}</h4>
-                          <p>@{{ follower.username }}</p>
-                      </div>
-                      <div class="follower-actions">
-                          {% if follower.is_connection %}
-                          <span class="connection-badge">Conectado</span>
-                          {% else %}
-                          <button class="btn-connect" data-id="{{ follower.id }}">Conectar</button>
-                          {% endif %}
-                      </div>
-                  </div>
-                  {% empty %}
-                  <div class="empty-state">
-                      <p>Você ainda não tem seguidores.</p>
-                  </div>
-                  {% endfor %}
-              </div>
-          </div>
-
-          <!-- Seguindo -->
-          <div class="tab-pane" id="seguindo">
-              <div class="search-bar">
-                  <input type="text" placeholder="Buscar pessoas que você segue..." class="search-input">
-                  <button class="search-btn">🔍</button>
-              </div>
-
-              <div class="following-grid">
-                  {% for following in followings %}
-                  <div class="following-card">
-                      <div class="following-avatar">
-                          {% if following.avatar %}
-                          <img src="{{ following.avatar.url }}" alt="{{ following.username }}">
-                          {% else %}
-                          <div class="avatar-placeholder">
-                              <span>{{ following.username|make_list|first|upper }}</span>
-                          </div>
-                          {% endif %}
-                      </div>
-                      <div class="following-info">
-                          <h4>{{ following.get_full_name }}</h4>
-                          <p>@{{ following.username }}</p>
-                      </div>
-                      <div class="following-actions">
-                          <button class="btn-unfollow" data-id="{{ following.id }}">Deixar de Seguir</button>
-                      </div>
-                  </div>
-                  {% empty %}
-                  <div class="empty-state">
-                      <p>Você ainda não está seguindo ninguém.</p>
-                      <button class="btn-secondary">Encontrar Pessoas</button>
-                  </div>
-                  {% endfor %}
-              </div>
-          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-sm text-gray-500 col-span-full">
+          <p>Você ainda não tem conexões.</p>
+          <a href="#" class="mt-2 inline-block bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 text-sm">Encontrar Pessoas</a>
+        </div>
+        {% endfor %}
       </div>
+    </div>
+
+    <!-- SOLICITAÇÕES -->
+    <div class="tab-pane hidden" id="solicitacoes">
+      <div class="space-y-4">
+        {% for request in connection_requests %}
+        <div class="flex items-start justify-between p-4 border rounded-xl bg-white shadow-sm">
+          <div class="flex items-center gap-3">
+            {% if request.avatar %}
+              <img src="{{ request.avatar.url }}" alt="{{ request.username }}" class="w-10 h-10 rounded-full object-cover" />
+            {% else %}
+              <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600">
+                {{ request.username|first|upper }}
+              </div>
+            {% endif %}
+            <div>
+              <p class="font-medium">{{ request.get_full_name }}</p>
+              <p class="text-sm text-gray-500">@{{ request.username }}</p>
+              <p class="text-sm text-gray-400 mt-1">{{ request.message }}</p>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <form method="post" action="{% url 'accounts:aceitar_conexao' request.id %}">
+              {% csrf_token %}
+              <button class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded">Aceitar</button>
+            </form>
+            <form method="post" action="{% url 'accounts:recusar_conexao' request.id %}">
+              {% csrf_token %}
+              <button class="text-sm bg-red-100 text-red-600 px-3 py-1 rounded">Recusar</button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-sm text-gray-500">
+          <p>Você não tem solicitações de conexão pendentes.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </section>
+
+<!-- Script de troca de abas -->
+<script>
+  document.querySelectorAll(".tab-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const targetId = button.dataset.tab;
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("hidden"));
+      document.getElementById(targetId).classList.remove("hidden");
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("text-primary", "border-b-2", "border-primary"));
+      button.classList.add("text-primary", "border-b-2", "border-primary");
+    });
+  });
+</script>
 {% endblock %}

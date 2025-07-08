@@ -1,96 +1,112 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Preferências de Notificação | Hubx{% endblock %}
+{% block title %}Preferências de Notificação | HubX{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="notificacoes" class="perfil-section active">
-  <div class="section-header">
-      <h2>Preferências de Notificação</h2>
-      <p>Gerencie como você recebe notificações</p>
-  </div>
+{% block perfil_content %}
+<div class="max-w-3xl mx-auto">
+  <h3 class="text-xl font-semibold mb-1">Preferências de Notificação</h3>
+  <p class="text-sm text-gray-500 mb-6">Gerencie como você recebe notificações</p>
 
-  <form id="formNotificacoes" class="perfil-form" method="post" action="{% url 'accounts:notificacoes' %}" enctype="multipart/form-data">
-      {% csrf_token %}
+  <form method="post" action="{% url 'accounts:notificacoes' %}" class="space-y-10">
+    {% csrf_token %}
 
-      <div class="notification-group">
-          <h3>Notificações por Email</h3>
+    <!-- Notificações por Email -->
+    <div>
+      <h4 class="text-lg font-semibold mb-4">Notificações por Email</h4>
 
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_conexoes" name="email_conexoes" class="checkbox-input" {% if user.notification_settings.email_conexoes %}checked{% endif %}>
-                  <label for="email_conexoes" class="checkbox-label">Solicitações de conexão</label>
-              </div>
-              <p class="notification-desc">Receba emails quando alguém solicitar conexão com você</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_mensagens" name="email_mensagens" class="checkbox-input" {% if user.notification_settings.email_mensagens %}checked{% endif %}>
-                  <label for="email_mensagens" class="checkbox-label">Mensagens</label>
-              </div>
-              <p class="notification-desc">Receba emails quando alguém enviar uma mensagem para você</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_eventos" name="email_eventos" class="checkbox-input" {% if user.notification_settings.email_eventos %}checked{% endif %}>
-                  <label for="email_eventos" class="checkbox-label">Eventos</label>
-              </div>
-              <p class="notification-desc">Receba emails sobre eventos relacionados aos seus interesses</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="email_newsletter" name="email_newsletter" class="checkbox-input" {% if user.notification_settings.email_newsletter %}checked{% endif %}>
-                  <label for="email_newsletter" class="checkbox-label">Newsletter</label>
-              </div>
-              <p class="notification-desc">Receba nossa newsletter com novidades e atualizações</p>
-          </div>
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="email_conexoes" name="email_conexoes"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.email_conexoes %}checked{% endif %}>
+        <div>
+          <label for="email_conexoes" class="font-medium text-sm text-gray-700">Solicitações de conexão</label>
+          <p class="text-sm text-gray-500">Receba emails quando alguém solicitar conexão com você</p>
+        </div>
       </div>
 
-      <div class="notification-group">
-          <h3>Notificações no Sistema</h3>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_conexoes" name="sistema_conexoes" class="checkbox-input" {% if user.notification_settings.sistema_conexoes %}checked{% endif %}>
-                  <label for="sistema_conexoes" class="checkbox-label">Solicitações de conexão</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém solicitar conexão com você</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_mensagens" name="sistema_mensagens" class="checkbox-input" {% if user.notification_settings.sistema_mensagens %}checked{% endif %}>
-                  <label for="sistema_mensagens" class="checkbox-label">Mensagens</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém enviar uma mensagem para você</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_eventos" name="sistema_eventos" class="checkbox-input" {% if user.notification_settings.sistema_eventos %}checked{% endif %}>
-                  <label for="sistema_eventos" class="checkbox-label">Eventos</label>
-              </div>
-              <p class="notification-desc">Receba notificações sobre eventos relacionados aos seus interesses</p>
-          </div>
-
-          <div class="notification-item">
-              <div class="checkbox-container">
-                  <input type="checkbox" id="sistema_comentarios" name="sistema_comentarios" class="checkbox-input" {% if user.notification_settings.sistema_comentarios %}checked{% endif %}>
-                  <label for="sistema_comentarios" class="checkbox-label">Comentários</label>
-              </div>
-              <p class="notification-desc">Receba notificações quando alguém comentar em suas publicações</p>
-          </div>
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="email_mensagens" name="email_mensagens"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.email_mensagens %}checked{% endif %}>
+        <div>
+          <label for="email_mensagens" class="font-medium text-sm text-gray-700">Mensagens</label>
+          <p class="text-sm text-gray-500">Receba emails quando alguém enviar uma mensagem para você</p>
+        </div>
       </div>
 
-      <div class="form-actions">
-          <button type="submit" class="btn-save">
-              <span class="button-text">Salvar Preferências</span>
-              <span class="button-loader"></span>
-          </button>
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="email_eventos" name="email_eventos"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.email_eventos %}checked{% endif %}>
+        <div>
+          <label for="email_eventos" class="font-medium text-sm text-gray-700">Eventos</label>
+          <p class="text-sm text-gray-500">Receba emails sobre eventos relacionados aos seus interesses</p>
+        </div>
       </div>
+
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="email_newsletter" name="email_newsletter"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.email_newsletter %}checked{% endif %}>
+        <div>
+          <label for="email_newsletter" class="font-medium text-sm text-gray-700">Newsletter</label>
+          <p class="text-sm text-gray-500">Receba nossa newsletter com novidades e atualizações</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notificações no Sistema -->
+    <div>
+      <h4 class="text-lg font-semibold mb-4">Notificações no Sistema</h4>
+
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="sistema_conexoes" name="sistema_conexoes"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.sistema_conexoes %}checked{% endif %}>
+        <div>
+          <label for="sistema_conexoes" class="font-medium text-sm text-gray-700">Solicitações de conexão</label>
+          <p class="text-sm text-gray-500">Receba notificações quando alguém solicitar conexão com você</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="sistema_mensagens" name="sistema_mensagens"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.sistema_mensagens %}checked{% endif %}>
+        <div>
+          <label for="sistema_mensagens" class="font-medium text-sm text-gray-700">Mensagens</label>
+          <p class="text-sm text-gray-500">Receba notificações quando alguém enviar uma mensagem para você</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="sistema_eventos" name="sistema_eventos"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.sistema_eventos %}checked{% endif %}>
+        <div>
+          <label for="sistema_eventos" class="font-medium text-sm text-gray-700">Eventos</label>
+          <p class="text-sm text-gray-500">Receba notificações sobre eventos relacionados aos seus interesses</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mb-3">
+        <input type="checkbox" id="sistema_comentarios" name="sistema_comentarios"
+               class="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+               {% if user.notification_settings.sistema_comentarios %}checked{% endif %}>
+        <div>
+          <label for="sistema_comentarios" class="font-medium text-sm text-gray-700">Comentários</label>
+          <p class="text-sm text-gray-500">Receba notificações quando alguém comentar em suas publicações</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pt-6">
+      <button type="submit"
+              class="bg-primary text-white px-6 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+        Salvar Preferências
+      </button>
+    </div>
   </form>
-</section>
+</div>
 {% endblock %}

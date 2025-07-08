@@ -444,3 +444,12 @@ def criar_token(request):
         "accounts/gerar_token.html",
         {"form": form, "token": token},
     )
+@login_required
+def remover_conexao(request, id):
+    try:
+        other_user = User.objects.get(id=id)
+        request.user.connections.remove(other_user)
+        messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
+    except User.DoesNotExist:
+        messages.error(request, "Usuário não encontrado.")
+    return redirect("accounts:perfil_conexoes")

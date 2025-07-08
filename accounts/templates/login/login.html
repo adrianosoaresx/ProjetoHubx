@@ -5,58 +5,61 @@
 
 {% block content %}
 <div class="bg-muted min-h-screen flex items-center justify-center px-4">
-    <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto">
-        <h1 class="text-2xl font-bold mb-6 text-center">Bem-vindo de volta</h1>
-        <p class="text-center text-neutral-600 mb-6">
-            Entre para acessar sua conta e conectar-se à sua rede
-        </p>
+  <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto">
+    <h1 class="text-2xl font-bold text-center text-gray-900 mb-1">Bem-vindo de volta</h1>
+    <p class="text-center text-sm text-gray-600 mb-6">
+      Entre para acessar sua conta e conectar-se à sua rede
+    </p>
 
-        {% if form.non_field_errors %}
-            <div class="text-red-600 mb-4">{{ form.non_field_errors }}</div>
+    {% if form.non_field_errors %}
+      <div class="text-red-600 text-sm mb-4">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
+      {% csrf_token %}
+      <div>
+        <label for="id_username" class="block mb-1 text-sm font-medium text-gray-700">Usuário</label>
+        <input type="text" id="id_username" name="username"
+               value="{{ form.username.value|default_if_none:'' }}"
+               placeholder="Digite seu e-mail"
+               class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+               required>
+        {% if form.username.errors %}
+          <div class="text-red-600 text-xs mt-1">{{ form.username.errors }}</div>
         {% endif %}
+      </div>
+      <div>
+        <label for="id_password" class="block mb-1 text-sm font-medium text-gray-700">Senha</label>
+        <input type="password" id="id_password" name="password"
+               placeholder="Digite sua senha"
+               class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+               required>
+        {% if form.password.errors %}
+          <div class="text-red-600 text-xs mt-1">{{ form.password.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <input type="checkbox" id="remember" name="remember" class="accent-primary">
+        <label for="remember">Lembrar-me neste dispositivo</label>
+      </div>
+      <button type="submit"
+              class="w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold text-sm shadow hover:bg-primary/90 transition">
+        Entrar
+      </button>
+    </form>
 
-        <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
-            {% csrf_token %}
-            <div>
-                <label for="id_username" class="block mb-2 font-medium">Usuário</label>
-                <input type="text" id="id_username" name="username"
-                       value="{{ form.username.value|default_if_none:'' }}"
-                       placeholder="Digite seu e-mail"
-                       class="border border-gray-300 bg-white text-sm placeholder:text-gray-400 rounded-md p-3 w-full focus:ring-2 focus:ring-primary" required>
-                {% if form.username.errors %}
-                    <div class="text-red-600 text-sm">{{ form.username.errors }}</div>
-                {% endif %}
-            </div>
-            <div>
-                <label for="id_password" class="block mb-2 font-medium">Senha</label>
-                <input type="password" id="id_password" name="password"
-                       placeholder="Digite sua senha"
-                       class="border border-gray-300 bg-white text-sm placeholder:text-gray-400 rounded-md p-3 w-full focus:ring-2 focus:ring-primary" required>
-                {% if form.password.errors %}
-                    <div class="text-red-600 text-sm">{{ form.password.errors }}</div>
-                {% endif %}
-            </div>
-            <div class="flex items-center gap-2 text-sm mt-2">
-                <input type="checkbox" id="remember" name="remember">
-                <label for="remember">Lembrar-me neste dispositivo</label>
-            </div>
-            <button type="submit" class="bg-primary text-white py-3 rounded-xl text-base font-semibold hover:bg-primary/90 transition w-full">Entrar</button>
-        </form>
-
-        <div class="text-center mt-6">
-            <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary hover:underline">
-                Esqueceu sua senha?
-            </a>
-        </div>
-
-        <div class="text-center mt-6">
-            <p class="text-sm text-neutral-600">
-                Não tem uma conta?
-                <a href="{% url 'accounts:onboarding' %}" class="text-sm text-primary hover:underline">
-                    Cadastre-se gratuitamente
-                </a>
-            </p>
-        </div>
+    <div class="text-center mt-6">
+      <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary hover:underline">
+        Esqueceu sua senha?
+      </a>
     </div>
+
+    <div class="text-center mt-4 text-sm text-gray-600">
+      Não tem uma conta?
+      <a href="{% url 'accounts:onboarding' %}" class="text-primary hover:underline">
+        Cadastre-se gratuitamente
+      </a>
+    </div>
+  </div>
 </div>
 {% endblock %}

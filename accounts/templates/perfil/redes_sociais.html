@@ -1,66 +1,57 @@
 {% extends 'perfil/perfil.html' %}
 {% load static %}
 
-{% block title %}Redes Sociais | Hubx{% endblock %}
+{% block title %}Redes Sociais | HubX{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="redes-sociais" class="perfil-section active">
-  <div class="section-header">
-      <h2>Redes Sociais</h2>
-      <p>Conecte suas redes sociais</p>
-  </div>
+{% block perfil_content %}
+<div class="max-w-3xl mx-auto">
+  <h3 class="text-xl font-semibold mb-1">Redes Sociais</h3>
+  <p class="text-sm text-gray-500 mb-6">Conecte suas redes sociais com seu perfil</p>
 
-  <form id="formRedesSociais" class="perfil-form" method="post" action="{% url 'accounts:redes_sociais' %}" enctype="multipart/form-data">
-      {% csrf_token %}
+  <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
+    {% csrf_token %}
 
-      <div class="social-links">
-          <div class="social-link-item">
-              <div class="social-icon facebook">f</div>
-              <div class="form-group">
-                  <label for="facebook" class="form-label">Facebook</label>
-                  <input type="url" id="facebook" name="facebook" class="form-input" value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
-              </div>
-          </div>
+    <div>
+      <label for="facebook" class="block text-sm font-medium text-gray-700">Facebook</label>
+      <input type="url" id="facebook" name="facebook"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
+    </div>
 
-          <div class="social-link-item">
-              <div class="social-icon twitter">𝕏</div>
-              <div class="form-group">
-                  <label for="twitter" class="form-label">Twitter / X</label>
-                  <input type="url" id="twitter" name="twitter" class="form-input" value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
-              </div>
-          </div>
+    <div>
+      <label for="twitter" class="block text-sm font-medium text-gray-700">Twitter / X</label>
+      <input type="url" id="twitter" name="twitter"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
+    </div>
 
-          <div class="social-link-item">
-              <div class="social-icon instagram">📷</div>
-              <div class="form-group">
-                  <label for="instagram" class="form-label">Instagram</label>
-                  <input type="url" id="instagram" name="instagram" class="form-input" value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
-              </div>
-          </div>
+    <div>
+      <label for="instagram" class="block text-sm font-medium text-gray-700">Instagram</label>
+      <input type="url" id="instagram" name="instagram"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
+    </div>
 
-          <div class="social-link-item">
-              <div class="social-icon linkedin">in</div>
-              <div class="form-group">
-                  <label for="linkedin" class="form-label">LinkedIn</label>
-                  <input type="url" id="linkedin" name="linkedin" class="form-input" value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
-              </div>
-          </div>
+    <div>
+      <label for="linkedin" class="block text-sm font-medium text-gray-700">LinkedIn</label>
+      <input type="url" id="linkedin" name="linkedin"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
+    </div>
 
-          <div class="social-link-item">
-              <div class="social-icon website">🌐</div>
-              <div class="form-group">
-                  <label for="website" class="form-label">Website</label>
-                  <input type="url" id="website" name="website" class="form-input" value="{{ user.website }}" placeholder="https://seusite.com">
-              </div>
-          </div>
-      </div>
+    <div>
+      <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
+      <input type="url" id="website" name="website"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm"
+             value="{{ user.website }}" placeholder="https://seusite.com">
+    </div>
 
-      <div class="form-actions">
-          <button type="submit" class="btn-save">
-              <span class="button-text">Salvar Alterações</span>
-              <span class="button-loader"></span>
-          </button>
-      </div>
+    <div class="pt-4">
+      <button type="submit"
+              class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+        Salvar Alterações
+      </button>
+    </div>
   </form>
-</section>
+</div>
 {% endblock %}

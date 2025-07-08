@@ -1,160 +1,45 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Meu Perfil | Hubx{% endblock %}
-
-{% block extra_css %}{% endblock %}
+{% block title %}Perfil | HubX{% endblock %}
 
 {% block content %}
-<div class="perfil-container">
-
-
-    <!-- Sidebar (now horizontal header) -->
-    <div class="perfil-sidebar">
-        <div class="perfil-header-top-section"> {# Contains avatar/info and dashboard button #}
-            <div class="avatar-info-group"> {# Groups avatar, user info, and the separator line #}
-                <div class="avatar-container">
-                    <div class="avatar-wrapper">
-                        {% if user.avatar %}
-                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="user-avatar">
-                        {% else %}
-                            <div class="avatar-placeholder">
-                                <span>{{ user.username|make_list|first|upper }}</span>
-                            </div>
-                        {% endif %}
-                        <button class="avatar-edit-btn" id="avatarEditBtn" title="Alterar foto">
-                            <span>📷</span>
-                        </button>
-                    </div>
-                    <div class="user-info">
-                        <h2 class="user-name">{{ user.get_full_name }}</h2>
-                        <p class="user-username">@{{ user.username }}</p>
-                    </div>
-                </div>
-                <div class="perfil-separator-inline"></div> {# The horizontal line, visually aligned #}
-            </div>
-            <div class="top-right-buttons"> {# This div is now empty #}
-            </div>
+<div class="max-w-5xl mx-auto mt-8 px-4">
+  <div class="bg-white rounded-2xl shadow p-6">
+    
+    <!-- Avatar + Nome -->
+    <div class="flex flex-col items-center">
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="{{ user.username }}"
+             class="w-28 h-28 rounded-full object-cover shadow mb-3">
+      {% else %}
+        <div class="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary shadow mb-3">
+          {{ user.username|first|upper }}
         </div>
-        <nav class="sidebar-nav"> {# Main horizontal navigation #}
-            <a href="{% url 'accounts:informacoes_pessoais' %}" class="nav-item">
-                <span class="nav-icon">👤</span>
-                <span class="nav-text">Informações Pessoais</span>
-            </a>
-            <a href="{% url 'accounts:contato' %}" class="nav-item">
-                <span class="nav-icon">📞</span>
-                <span class="nav-text">Contato</span>
-            </a>
-            <a href="{% url 'accounts:conexoes' %}" class="nav-item">
-                <span class="nav-icon">🤝</span>
-                <span class="nav-text">Conexões</span>
-            </a>
-            <a href="{% url 'accounts:midias' %}" class="nav-item">
-                <span class="nav-icon">🖼️</span>
-                <span class="nav-text">Mídias</span>
-            </a>
-        </nav>
+      {% endif %}
+
+      <h2 class="text-lg font-bold">{{ user.get_full_name }}</h2>
+      <p class="text-sm text-gray-500 mb-2">@{{ user.username }}</p>
+      <button class="text-sm text-primary hover:underline">Alterar foto</button>
     </div>
 
-    <!-- Content area -->
-    <div class="perfil-content">
-        {# Cada subpágina injeta aqui o seu HTML #}
-        {% block perfil_subpage_content %}{% endblock %}
+    <!-- Navegação horizontal -->
+    <nav class="flex justify-center flex-wrap gap-4 mt-6 border-t pt-4 text-sm font-medium text-gray-600">
+      <a href="{% url 'accounts:informacoes_pessoais' %}" class="hover:text-primary transition">👤 Informações Pessoais</a>
+      <a href="{% url 'accounts:contato' %}" class="hover:text-primary transition">📞 Contato</a>
+      <a href="{% url 'accounts:redes_sociais' %}" class="hover:text-primary transition">🌐 Redes Sociais</a>
+      <a href="{% url 'accounts:seguranca' %}" class="hover:text-primary transition">🔒 Segurança</a>
+      <a href="{% url 'accounts:notificacoes' %}" class="hover:text-primary transition">🔔 Notificações</a>
+      <a href="{% url 'accounts:conexoes' %}" class="hover:text-primary transition">👥 Conexões</a>
+    </nav>
+
+    <!-- Bloco dinâmico para subpáginas -->
+    <div class="mt-8">
+      {% block perfil_content %}
+      <!-- Conteúdo específico de cada aba será inserido aqui -->
+      {% endblock %}
     </div>
 
-    <!-- New Profile Footer Navigation -->
-    <div class="perfil-bottom-nav">
-        <nav class="sidebar-nav">
-            <a href="{% url 'accounts:redes_sociais' %}" class="nav-item">
-                <span class="nav-icon">🌐</span>
-                <span class="nav-text">Redes Sociais</span>
-            </a>
-            <a href="{% url 'accounts:notificacoes' %}" class="nav-item">
-                <span class="nav-icon">🔔</span>
-                <span class="nav-text">Notificações</span>
-            </a>
-
-            {# Removed "Minhas Empresas" from here #}
-            <a href="{% url 'accounts:seguranca' %}" class="nav-item">
-                <span class="nav-icon">🔒</span>
-                <span class="nav-text">Segurança</span>
-            </a>
-
-            <a href="#" class="nav-item" id="perfil-chat">
-
-
-                <span class="nav-icon">💬</span>
-                <span class="nav-text">Chat</span>
-            </a>
-        </nav>
-    </div>
-
-    <!-- Modal: Upload Avatar -->
-    <div class="modal" id="avatarModal">
-        <div class="modal-content">
-            <form id="avatarForm" method="post" action="{% url 'accounts:perfil' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="modal-header">
-                    <h3>Alterar Foto de Perfil</h3>
-                    <button class="modal-close" type="button">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="avatar-upload">
-                        <div class="avatar-preview" id="avatarPreview">
-                            {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}">
-                            {% else %}
-                                <div class="avatar-placeholder">
-                                    <span>{{ user.username|make_list|first|upper }}</span>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="avatar-actions">
-                            <label for="avatarInput" class="btn-upload">
-                                Escolher Foto
-                                <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
-                            </label>
-                            <button type="button" class="btn-remove" id="removeAvatar">Remover Foto</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-secondary" id="cancelAvatar">Cancelar</button>
-                    <button type="submit" class="btn-primary" id="saveAvatar">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal: Confirmação genérica -->
-    <div class="modal" id="confirmModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="confirmTitle">Confirmação</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-secondary" id="cancelAction">Cancelar</button>
-                <button type="button" class="btn-danger" id="confirmAction">Confirmar</button>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'perfil/js/perfil.js' %}"></script>
-<script>
-const perfilChat = document.getElementById('perfil-chat');
-if(perfilChat){
-    perfilChat.addEventListener('click', function(e){
-        e.preventDefault();
-        window.location.href = '/chat/';
-    });
-}
-</script>
 {% endblock %}

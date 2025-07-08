@@ -1,18 +1,20 @@
 {% extends 'perfil/perfil.html' %}
-{% block title %}{% if form.instance.pk %}Editar Mídia | Hubx{% else %}Nova Mídia | Hubx{% endif %}{% endblock %}
 
-{% block perfil_subpage_content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">{% if form.instance.pk %}Editar Mídia{% else %}Cadastrar Mídia{% endif %}</h1>
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'accounts:midias' %}" class="btn-secondary">Cancelar</a>
-                <button type="submit" class="btn-primary">Salvar</button>
-            </div>
-        </form>
+{% block title %}{% if form.instance.pk %}Editar Mídia{% else %}Nova Mídia{% endif %} | Hubx{% endblock %}
+
+{% block perfil_content %}
+<section class="space-y-6">
+  <h2 class="text-xl font-semibold">
+    {% if form.instance.pk %}Editar Mídia{% else %}Cadastrar Mídia{% endif %}
+  </h2>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="flex justify-end gap-2">
+      <a href="{% url 'accounts:midias' %}" class="text-sm px-4 py-2 border rounded hover:bg-gray-100">Cancelar</a>
+      <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">Salvar</button>
     </div>
+  </form>
 </section>
 {% endblock %}

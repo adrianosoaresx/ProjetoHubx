@@ -3,71 +3,60 @@
 
 {% block title %}Mídias | Hubx{% endblock %}
 
-{% block perfil_subpage_content %}
-<section id="midias" class="perfil-section active">
-  <div class="section-header">
-      <h2>Mídias</h2>
-      <p>Gerencie suas imagens, vídeos e documentos</p>
+{% block perfil_content %}
+<section class="space-y-6">
+  <div>
+    <h2 class="text-xl font-semibold">Mídias</h2>
+    <p class="text-sm text-gray-500">Gerencie suas imagens, vídeos e documentos</p>
   </div>
 
   {% if show_form %}
-  <form id="formMidias" class="perfil-form" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
-      {% csrf_token %}
-      <div class="form-group">
-          <label for="id_file" class="form-label">Enviar arquivo</label>
-          <input type="file" id="id_file" name="file" class="form-input" required>
-      </div>
-      <div class="form-group">
-          <label for="id_descricao" class="form-label">Descrição</label>
-          <input type="text" id="id_descricao" name="descricao" class="form-input">
-      </div>
-      <div class="form-group">
-          <label for="id_tags_field" class="form-label">Tags</label>
-          <input type="text" id="id_tags_field" name="tags_field" class="form-input" placeholder="paisagem, viagem">
-      </div>
-      <div class="form-actions">
-          <button type="submit" class="btn-save">
-              <span class="button-text">Enviar</span>
-              <span class="button-loader"></span>
-          </button>
-      </div>
+  <form method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label for="id_file" class="block mb-1 font-medium">Arquivo</label>
+      <input type="file" name="file" id="id_file" required class="w-full border rounded p-2 text-sm">
+    </div>
+    <div>
+      <label for="id_descricao" class="block mb-1 font-medium">Descrição</label>
+      <input type="text" name="descricao" id="id_descricao" class="w-full border rounded p-2 text-sm">
+    </div>
+    <div>
+      <label for="id_tags_field" class="block mb-1 font-medium">Tags</label>
+      <input type="text" name="tags_field" id="id_tags_field" class="w-full border rounded p-2 text-sm" placeholder="paisagem, viagem...">
+    </div>
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">Enviar</button>
   </form>
   {% else %}
-  <a href="{% url 'accounts:midias' %}?adicionar=1" class="btn-primary">Adicionar Mídias</a>
+  <a href="?adicionar=1" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">Adicionar Mídias</a>
   {% endif %}
 
-  <form method="get" class="search-bar" style="margin-top:1rem;">
-      <input type="text" name="q" value="{{ q }}" placeholder="Buscar por descrição ou tags..." class="search-input">
-      <button type="submit" class="search-btn">🔍</button>
+  <form method="get" class="flex gap-2 mt-6">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por descrição ou tags..." class="flex-grow border p-2 rounded text-sm">
+    <button type="submit" class="text-sm px-4 py-2 border rounded hover:bg-gray-100">🔍</button>
   </form>
 
-  <div class="media-grid">
-      {% for media in medias %}
-      <div class="media-card">
-          <div class="media-actions">
-              <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn btn-edit-icon" title="Editar">
-                <i class="fas fa-pencil-alt"></i>
-              </a>
-              <a href="{% url 'accounts:midia_delete' media.pk %}" class="btn btn-delete" title="Excluir">
-                <i class="fas fa-times"></i>
-              </a>
-          </div>
-          <a href="{% url 'accounts:midia_detail' media.pk %}">
-              <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="media-thumb">
-          </a>
-          <div class="media-info">
-              <p class="media-desc">{{ media.descricao }}</p>
-              <span class="media-date">{{ media.uploaded_at|date:"d/m/Y H:i" }}</span>
-              <div class="empresa-tags">
-                  {% for tag in media.tags.all %}
-                  <span class="tag">{{ tag.nome }}</span>
-                  {% endfor %}
-              </div>
-          </div>
+  <div class="grid md:grid-cols-3 gap-4 mt-6">
+    {% for media in medias %}
+    <div class="border rounded-lg p-4 shadow bg-white">
+      <div class="flex justify-end gap-2 mb-2">
+        <a href="{% url 'accounts:midia_edit' media.pk %}" title="Editar" class="text-blue-500 hover:text-blue-700">✏️</a>
+        <a href="{% url 'accounts:midia_delete' media.pk %}" title="Excluir" class="text-red-500 hover:text-red-700">🗑️</a>
       </div>
-      {% empty %}
-      <p>Nenhum arquivo enviado.</p>
-      {% endfor %}
+      <a href="{% url 'accounts:midia_detail' media.pk %}">
+        <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full rounded mb-2" />
+      </a>
+      <p class="text-sm text-gray-700">{{ media.descricao }}</p>
+      <p class="text-xs text-gray-400">{{ media.uploaded_at|date:"d/m/Y H:i" }}</p>
+      <div class="flex flex-wrap gap-1 mt-2">
+        {% for tag in media.tags.all %}
+        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{{ tag.nome }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% empty %}
+    <p class="text-sm text-gray-500 col-span-full">Nenhum arquivo enviado.</p>
+    {% endfor %}
   </div>
 </section>
 {% endblock %}
