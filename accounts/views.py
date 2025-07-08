@@ -385,3 +385,13 @@ def criar_token(request):
         "accounts/gerar_token.html",
         {"form": form, "token": token},
     )
+@login_required
+def perfil_home(request):
+    user = request.user
+    context = {
+        "user": user,
+        "connections": getattr(user, "connections", []).all(),
+        "medias": user.medias.all(),
+        "notifications": NotificationSettings.objects.filter(user=user).first(),
+    }
+    return render(request, "perfil/detail.html", context)

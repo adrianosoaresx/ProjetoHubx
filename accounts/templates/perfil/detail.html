@@ -1,0 +1,41 @@
+{% extends 'perfil/perfil.html' %}
+{% block title %}Meu Perfil | Hubx{% endblock %}
+{% block perfil_content %}
+<section class="max-w-4xl mx-auto px-4 py-6 bg-white rounded-xl shadow">
+
+  {% if user.bio %}
+    <div class="mb-6">
+      <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.bio }}</p>
+    </div>
+  {% endif %}
+
+  <div class="grid sm:grid-cols-2 gap-6 text-sm text-gray-700">
+    <div>
+      <h4 class="font-medium mb-1">Contato</h4>
+      <p>Email: {{ user.email }}</p>
+      <p>Telefone: {{ user.telefone }}</p>
+      <p>WhatsApp: {{ user.whatsapp }}</p>
+    </div>
+    <div>
+      <h4 class="font-medium mb-1">Localização</h4>
+      <p>{{ user.endereco }}</p>
+      <p>{{ user.cidade }} - {{ user.estado }}</p>
+      <p>{{ user.cep }}</p>
+    </div>
+    <div>
+      <h4 class="font-medium mb-1">Redes Sociais</h4>
+      {% if user.website %}<p><a href="{{ user.website }}" class="text-primary hover:underline">🌐 Website</a></p>{% endif %}
+      {% if user.linkedin %}<p><a href="{{ user.linkedin }}" class="text-primary hover:underline">🔗 LinkedIn</a></p>{% endif %}
+      {% if user.instagram %}<p><a href="{{ user.instagram }}" class="text-primary hover:underline">📸 Instagram</a></p>{% endif %}
+      {% if user.twitter %}<p><a href="{{ user.twitter }}" class="text-primary hover:underline">🐦 Twitter</a></p>{% endif %}
+      {% if user.facebook %}<p><a href="{{ user.facebook }}" class="text-primary hover:underline">📘 Facebook</a></p>{% endif %}
+    </div>
+  </div>
+
+  <div class="mt-6 text-right">
+    <a href="{% url 'accounts:informacoes_pessoais' %}" class="text-primary font-medium hover:underline">Editar perfil</a>
+  </div>
+
+</section>
+
+{% endblock %}
