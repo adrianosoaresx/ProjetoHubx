@@ -2,13 +2,39 @@
 {% block title %}Gerar Token de Acesso | HubX{% endblock %}
 
 {% block content %}
-<h1>Gerar Token de Acesso</h1>
-<form method="post">
+<section class="max-w-xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Gerar Token de Acesso</h1>
+
+  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn-primary">Gerar Token</button>
-</form>
-{% if token %}
-<p>Código gerado: <strong>{{ token.codigo }}</strong></p>
-{% endif %}
+
+    <div class="space-y-4">
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
+          {% if field.field.widget.input_type == 'select' %}
+            {{ field|add_class:"form-select" }}
+          {% else %}
+            {{ field|add_class:"form-input" }}
+          {% endif %}
+          {% if field.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        Gerar Token
+      </button>
+    </div>
+  </form>
+
+  {% if token %}
+    <div class="mt-6 alert alert-success">
+      Código gerado: <strong>{{ token.codigo }}</strong>
+    </div>
+  {% endif %}
+</section>
 {% endblock %}
