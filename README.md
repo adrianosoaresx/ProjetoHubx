@@ -27,6 +27,12 @@ as dependências foram instaladas corretamente com ``pip install -r
 requirements.txt``. O pacote ``channels`` faz parte dos requisitos do projeto e
 deve estar presente no ambiente virtual.
 
+### Erro "No module named 'widget_tweaks'"
+
+Caso o ``runserver`` apresente esta mensagem, instale novamente as dependências
+com ``pip install -r requirements.txt``. O pacote ``django-widget-tweaks`` é
+responsável pelos filtros de formulário utilizados nos templates.
+
 Gerar dados de teste
 --------------------
 Utilize o comando ``generate_test_data`` para popular o banco com
