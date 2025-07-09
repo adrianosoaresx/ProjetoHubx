@@ -34,7 +34,7 @@
                 </p>
             </div>
 
-            <form method="post" action="{% url 'accounts:token' %}">
+            <form method="post" action="{% url 'tokens:token' %}">
                 {% csrf_token %}
                 
                 <div class="form-group">

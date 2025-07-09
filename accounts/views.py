@@ -7,6 +7,7 @@ from django.contrib.auth import (
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
@@ -23,17 +24,14 @@ from .forms import (
     NotificacoesForm,
     MediaForm,
     CustomUserCreationForm,
-    TokenAcessoForm,
 )
 from .models import (
     cpf_validator,
     NotificationSettings,
     UserMedia,
-    TokenAcesso,
 )
-
-User = get_user_model()
-
+from tokens.forms import TokenAcessoForm
+from tokens.models import TokenAcesso
 
 # ====================== PERFIL ======================
 
@@ -260,15 +258,6 @@ def email(request):
     return render(request, "register/email.html")
 
 
-def token(request):
-    if request.method == "POST":
-        tkn = request.POST.get("token")
-        if tkn:
-            request.session["invite_token"] = tkn
-            return redirect("accounts:usuario")
-    return render(request, "register/token.html")
-
-
 def usuario(request):
     if request.method == "POST":
         usr = request.POST.get("usuario")
@@ -308,12 +297,12 @@ def termos(request):
             )
         except TokenAcesso.DoesNotExist:
             messages.error(request, "Token inválido.")
-            return redirect("accounts:token")
+            return redirect("tokens:token")
         if token_obj.data_expiracao < timezone.now():
             token_obj.estado = TokenAcesso.Estado.EXPIRADO
             token_obj.save(update_fields=["estado"])
             messages.error(request, "Token expirado.")
-            return redirect("accounts:token")
+            return redirect("tokens:token")
 
         username = request.session.get("usuario")
         email_val = request.session.get("email")
@@ -365,26 +354,6 @@ def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
 
 
-@login_required
-def criar_token(request):
-    if request.user.tipo_id not in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}:
-        return redirect("accounts:perfil")
-
-    token = None
-    if request.method == "POST":
-        form = TokenAcessoForm(request.POST, user=request.user)
-        if form.is_valid():
-            token = form.save(commit=False)
-            token.gerado_por = request.user
-            token.save()
-    else:
-        form = TokenAcessoForm(user=request.user)
-
-    return render(
-        request,
-        "accounts/gerar_token.html",
-        {"form": form, "token": token},
-    )
 @login_required
 def perfil_home(request):
     user = request.user

@@ -3,7 +3,8 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
 
-from .models import NotificationSettings, UserMedia, TokenAcesso
+from .models import NotificationSettings, UserMedia
+from tokens.models import TokenAcesso
 
 
 class RegistrationSessionTests(TestCase):
@@ -24,7 +25,7 @@ class RegistrationSessionTests(TestCase):
 
         # Step 1: token
         response = self.client.post(
-            reverse("accounts:token"), {"token": self.token.codigo}, follow=True
+            reverse("tokens:token"), {"token": self.token.codigo}, follow=True
         )
         self.assertIn("invite_token", self.client.session)
         self.assertEqual(response.redirect_chain[-1][0], reverse("accounts:usuario"))

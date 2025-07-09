@@ -59,7 +59,7 @@
         <a href="{% url 'organizacoes:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-sitemap"></i> Organizações
         </a>
-        <a href="{% url 'accounts:criar_token' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+        <a href="{% url 'tokens:criar_token' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-key"></i> Token
         </a>
         {% if user.is_authenticated %}
