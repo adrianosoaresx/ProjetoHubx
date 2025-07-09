@@ -22,6 +22,7 @@ urlpatterns = [
         "accounts/",
         include(("accounts.urls", "accounts"), namespace="accounts"),
     ),
+    path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
 
     # CRUD de Empresas
     path(

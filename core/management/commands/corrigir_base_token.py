@@ -4,7 +4,8 @@ from django.utils import timezone
 from datetime import timedelta
 import uuid
 
-from accounts.models import UserType, TokenAcesso
+from accounts.models import UserType
+from tokens.models import TokenAcesso
 
 
 class Command(BaseCommand):

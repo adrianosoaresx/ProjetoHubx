@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'empresas',
     'accounts.apps.AccountsConfig',
     'organizacoes',
+    'tokens.apps.TokensConfig',
     'nucleos',
     'eventos',
     'channels',
