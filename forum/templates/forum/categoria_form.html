@@ -3,15 +3,36 @@
 {% block title %}{% if form.instance.pk %}Editar Categoria | Hubx{% else %}Nova Categoria | Hubx{% endif %}{% endblock %}
 
 {% block content %}
-<div class="container mt-8">
-    <h1 class="text-2xl font-bold text-neutral-900 mb-6">{% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria</h1>
-    <form method="post" class="space-y-6">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <div class="flex justify-end gap-4">
-            <a href="{% url 'forum:categoria_manage_list' %}" class="btn btn-secondary">Cancelar</a>
-            <button type="submit" class="btn btn-primary">Salvar</button>
+<section class="max-w-xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">
+    {% if form.instance.pk %}Editar{% else %}Cadastrar{% endif %} Categoria
+  </h1>
+
+  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+    {% csrf_token %}
+    
+    <div class="space-y-4">
+      {% for field in form %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
+          {% endif %}
         </div>
-    </form>
-</div>
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+      <a href="{% url 'forum:categoria_manage_list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+        Cancelar
+      </a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        Salvar
+      </button>
+    </div>
+  </form>
+</section>
 {% endblock %}

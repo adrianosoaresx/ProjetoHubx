@@ -1,70 +1,74 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% block title %}{{ empresa.nome }} | Hubx{% endblock %}
 
-{% block perfil_subpage_content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <div class="empresa-logo" style="margin: 0 auto 1.5rem;">
-            {% if empresa.logo %}
-            <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}">
-            {% else %}
-            <div class="logo-placeholder">
-                <span>{{ empresa.nome|make_list|first|upper }}</span>
-            </div>
-            {% endif %}
-        </div>
-        <h1 class="form-title">{{ empresa.nome }}</h1>
-        {% if empresa.descricao %}
-        <p>{{ empresa.descricao }}</p>
-        {% endif %}
-        <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
-        <p><strong>Localização:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
-        {% if empresa.contato %}
-        <p><strong>Contato:</strong> {{ empresa.contato }}</p>
-        {% endif %}
-        {% if empresa_tags %}
-        <p>
-            <strong>Tags:</strong>
-            {% for tag in empresa_tags %}
-            <span class="tag">{{ tag.nome }}</span>
-            {% endfor %}
-        </p>
-        {% endif %}
-        {% if prod_tags %}
-        <h2 class="mt-8">Produtos</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {% for tag in prod_tags %}
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="text-xl font-semibold">{{ tag.nome }}</h3>
-                </div>
-            </div>
-            {% empty %}
-            <p>Nenhum produto cadastrado.</p>
-            {% endfor %}
-        </div>
-        {% endif %}
+{% block content %}
+<section class="py-10 px-4 max-w-4xl mx-auto">
+  <div class="text-center mb-6">
+    {% if empresa.logo %}
+      <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" class="h-20 w-20 mx-auto rounded-xl object-cover" />
+    {% else %}
+      <div class="h-20 w-20 mx-auto rounded-xl bg-neutral-100 flex items-center justify-center text-xl font-bold text-neutral-700">
+        {{ empresa.nome|make_list|first|upper }}
+      </div>
+    {% endif %}
+  </div>
 
-        {% if serv_tags %}
-        <h2 class="mt-8">Serviços</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {% for tag in serv_tags %}
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="text-xl font-semibold">{{ tag.nome }}</h3>
-                </div>
-            </div>
-            {% empty %}
-            <p>Nenhum serviço cadastrado.</p>
-            {% endfor %}
+  <h1 class="text-2xl font-semibold text-neutral-900 text-center">{{ empresa.nome }}</h1>
+
+  {% if empresa.descricao %}
+    <p class="text-center text-sm text-neutral-600 mt-2">{{ empresa.descricao }}</p>
+  {% endif %}
+
+  <div class="mt-6 space-y-1 text-sm text-neutral-800">
+    <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
+    <p><strong>Localização:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
+    {% if empresa.contato %}
+      <p><strong>Contato:</strong> {{ empresa.contato }}</p>
+    {% endif %}
+  </div>
+
+  {% if empresa_tags %}
+    <div class="mt-4">
+      <strong>Tags:</strong>
+      <div class="flex flex-wrap gap-2 mt-1">
+        {% for tag in empresa_tags %}
+          <span class="text-xs bg-primary-100 text-primary-800 rounded-full px-2 py-0.5">{{ tag.nome }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if prod_tags %}
+    <h2 class="mt-8 text-lg font-semibold text-neutral-900">Produtos</h2>
+    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+      {% for tag in prod_tags %}
+        <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
+          <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
         </div>
-        {% endif %}
+      {% empty %}
+        <p class="text-sm text-neutral-500">Nenhum produto cadastrado.</p>
+      {% endfor %}
     </div>
-    <div class="form-actions" style="justify-content:flex-end; margin-top:1rem;">
-        <a href="{% url 'empresas:lista' %}" class="btn-secondary">Voltar</a>
-        {% if request.user == empresa.usuario %}
-        <a href="{% url 'empresas:editar' empresa.id %}" class="btn-edit">Editar</a>
-        {% endif %}
+  {% endif %}
+
+  {% if serv_tags %}
+    <h2 class="mt-8 text-lg font-semibold text-neutral-900">Serviços</h2>
+    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+      {% for tag in serv_tags %}
+        <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
+          <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
+        </div>
+      {% empty %}
+        <p class="text-sm text-neutral-500">Nenhum serviço cadastrado.</p>
+      {% endfor %}
     </div>
+  {% endif %}
+
+  <div class="flex justify-end gap-3 mt-8">
+    <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+    {% if request.user == empresa.usuario %}
+      <a href="{% url 'empresas:editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Editar</a>
+    {% endif %}
+  </div>
 </section>
 {% endblock %}

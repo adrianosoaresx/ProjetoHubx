@@ -2,17 +2,22 @@
 {% block title %}Novo Evento | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">{% block form_title %}Cadastrar Evento{% endblock %}</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'eventos:list' %}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Salvar</button>
-            </div>
-        </form>
+<section class="max-w-xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Cadastrar Evento</h1>
+
+  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+      <a href="{% url 'eventos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+        Cancelar
+      </a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        Salvar
+      </button>
     </div>
+  </form>
 </section>
 {% endblock %}

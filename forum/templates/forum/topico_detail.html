@@ -3,39 +3,49 @@
 {% block title %}{{ object.titulo }} | Hubx{% endblock %}
 
 {% block content %}
-<div class="container mt-8 space-y-8">
-    <div>
-        <h2 class="text-2xl font-bold text-neutral-900 mb-1">{{ object.titulo }}</h2>
-        <p class="text-sm text-neutral-500">por <strong>{{ object.autor.username }}</strong> em {{ object.criado_em|date:'SHORT_DATETIME_FORMAT' }}</p>
-    </div>
+<section class="max-w-3xl mx-auto px-4 py-10 space-y-10">
 
-    <div class="prose max-w-none">
-        {{ object.conteudo|linebreaks }}
-    </div>
+  <!-- Tópico -->
+  <div>
+    <h2 class="text-2xl font-bold text-neutral-900 mb-1">{{ object.titulo }}</h2>
+    <p class="text-sm text-neutral-500">
+      por <strong>{{ object.autor.username }}</strong> em {{ object.criado_em|date:'SHORT_DATETIME_FORMAT' }}
+    </p>
+  </div>
 
-    <h3 class="text-xl font-semibold text-neutral-900">Respostas</h3>
+  <!-- Conteúdo -->
+  <div class="prose max-w-none text-neutral-800">
+    {{ object.conteudo|linebreaks }}
+  </div>
+
+  <!-- Respostas -->
+  <div>
+    <h3 class="text-xl font-semibold text-neutral-900 mb-4">Respostas</h3>
     <ul class="space-y-4">
-        {% for resposta in object.respostas.all %}
-        <li class="card">
-            <div class="card-body">
-                <div class="mb-2">{{ resposta.conteudo|linebreaks }}</div>
-                <p class="text-sm text-neutral-500">
-                    <strong>{{ resposta.autor.username }}</strong> - {{ resposta.criado_em|date:'SHORT_DATETIME_FORMAT' }}
-                </p>
-            </div>
+      {% for resposta in object.respostas.all %}
+        <li class="border border-neutral-200 rounded-2xl p-4 bg-white shadow-sm">
+          <div class="text-neutral-800 mb-2">{{ resposta.conteudo|linebreaks }}</div>
+          <p class="text-sm text-neutral-500">
+            <strong>{{ resposta.autor.username }}</strong> – {{ resposta.criado_em|date:'SHORT_DATETIME_FORMAT' }}
+          </p>
         </li>
-        {% empty %}
-        <li class="text-neutral-600">Nenhuma resposta encontrada</li>
-        {% endfor %}
+      {% empty %}
+        <li class="text-neutral-500">Nenhuma resposta encontrada</li>
+      {% endfor %}
     </ul>
+  </div>
 
-    <div>
-        <h3 class="text-xl font-semibold text-neutral-900 mb-4">Responder</h3>
-        <form method="post" action="{% url 'forum:responder' object.pk %}" class="space-y-4">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Enviar</button>
-        </form>
-    </div>
-</div>
+  <!-- Formulário de resposta -->
+  <div>
+    <h3 class="text-xl font-semibold text-neutral-900 mb-4">Responder</h3>
+    <form method="post" action="{% url 'forum:responder' object.pk %}" class="space-y-4 bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        Enviar
+      </button>
+    </form>
+  </div>
+
+</section>
 {% endblock %}

@@ -4,199 +4,129 @@
 {% block title %}Empresas - HubX{% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
-        <div>
-            <h1 class="text-3xl font-bold text-neutral-900 mb-2">Empresas</h1>
-            <p class="text-neutral-600">Descubra e conecte-se com empresas da sua região</p>
+<div class="max-w-7xl mx-auto px-4 py-10">
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-neutral-900 mb-1">Empresas</h1>
+      <p class="text-neutral-600 text-sm">Descubra e conecte-se com empresas da sua região</p>
+    </div>
+    <a href="{% url 'empresas:nova' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700 transition">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nova Empresa
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <form method="get" class="grid md:grid-cols-4 gap-4 bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm mb-10">
+    <div>
+      <label for="busca" class="block text-sm font-medium text-neutral-700 mb-1">Buscar</label>
+      <input type="text" id="busca" name="busca" placeholder="Nome da empresa..." value="{{ request.GET.busca }}"
+        class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+    </div>
+    <div>
+      <label for="tipo" class="block text-sm font-medium text-neutral-700 mb-1">Tipo</label>
+      <select id="tipo" name="tipo"
+        class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <option value="">Todos os tipos</option>
+        <option value="startup" {% if request.GET.tipo == 'startup' %}selected{% endif %}>Startup</option>
+        <option value="corporacao" {% if request.GET.tipo == 'corporacao' %}selected{% endif %}>Corporação</option>
+        <option value="ong" {% if request.GET.tipo == 'ong' %}selected{% endif %}>ONG</option>
+        <option value="cooperativa" {% if request.GET.tipo == 'cooperativa' %}selected{% endif %}>Cooperativa</option>
+      </select>
+    </div>
+    <div>
+      <label for="cidade" class="block text-sm font-medium text-neutral-700 mb-1">Cidade</label>
+      <input type="text" id="cidade" name="cidade" placeholder="Cidade..." value="{{ request.GET.cidade }}"
+        class="w-full rounded-xl border border-neutral-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+    </div>
+    <div class="flex items-end">
+      <button type="submit" class="w-full bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700 transition">
+        Buscar
+      </button>
+    </div>
+  </form>
+
+  <!-- Lista de Empresas -->
+  {% if empresas %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for empresa in empresas %}
+        <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 flex flex-col h-full">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 flex items-center justify-center bg-neutral-100 rounded-xl overflow-hidden">
+              {% if empresa.logo %}
+                <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" class="w-full h-full object-cover rounded-xl">
+              {% else %}
+                <span class="text-xl font-bold text-neutral-600">{{ empresa.nome|first|upper }}</span>
+              {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-base font-semibold text-neutral-900 truncate">{{ empresa.nome }}</h3>
+              <p class="text-xs text-primary-700 mt-1">{{ empresa.get_tipo_display }}</p>
+              {% if empresa.cidade %}
+                <p class="text-sm text-neutral-500 mt-1">{{ empresa.cidade }}, {{ empresa.estado }}</p>
+              {% endif %}
+            </div>
+          </div>
+          {% if empresa.descricao %}
+            <p class="text-sm text-neutral-600 mb-4 line-clamp-3">{{ empresa.descricao|truncatewords:20 }}</p>
+          {% endif %}
+          {% if empresa.tags.all %}
+            <div class="flex flex-wrap gap-2 mb-4">
+              {% for tag in empresa.tags.all|slice:":3" %}
+                <span class="text-xs bg-primary-100 text-primary-800 px-2 py-0.5 rounded-full">{{ tag.nome }}</span>
+              {% endfor %}
+              {% if empresa.tags.count > 3 %}
+                <span class="text-xs text-neutral-500">+{{ empresa.tags.count|add:"-3" }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+          <div class="mt-auto flex gap-2">
+            <a href="{% url 'empresas:detail' empresa.pk %}" class="text-sm text-blue-600 hover:underline">Ver</a>
+            {% if empresa.criador == user %}
+              <a href="{% url 'empresas:editar' empresa.pk %}" class="text-sm text-yellow-600 hover:underline">Editar</a>
+            {% endif %}
+          </div>
         </div>
-        <a href="{% url 'empresas:nova' %}" class="btn btn-primary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Nova Empresa
-        </a>
+      {% endfor %}
     </div>
 
-    <!-- Filtros -->
-    <div class="card mb-8">
-        <div class="card-body">
-            <form method="get" class="grid md:grid-cols-4 gap-4">
-                <div class="form-group mb-0">
-                    <label for="busca" class="form-label">Buscar</label>
-                    <input 
-                        type="text" 
-                        id="busca" 
-                        name="busca" 
-                        class="form-input" 
-                        placeholder="Nome da empresa..."
-                        value="{{ request.GET.busca }}"
-                    >
-                </div>
-                <div class="form-group mb-0">
-                    <label for="tipo" class="form-label">Tipo</label>
-                    <select id="tipo" name="tipo" class="form-select">
-                        <option value="">Todos os tipos</option>
-                        <option value="startup" {% if request.GET.tipo == 'startup' %}selected{% endif %}>Startup</option>
-                        <option value="corporacao" {% if request.GET.tipo == 'corporacao' %}selected{% endif %}>Corporação</option>
-                        <option value="ong" {% if request.GET.tipo == 'ong' %}selected{% endif %}>ONG</option>
-                        <option value="cooperativa" {% if request.GET.tipo == 'cooperativa' %}selected{% endif %}>Cooperativa</option>
-                    </select>
-                </div>
-                <div class="form-group mb-0">
-                    <label for="cidade" class="form-label">Cidade</label>
-                    <input 
-                        type="text" 
-                        id="cidade" 
-                        name="cidade" 
-                        class="form-input" 
-                        placeholder="Cidade..."
-                        value="{{ request.GET.cidade }}"
-                    >
-                </div>
-                <div style="display: flex; align-items: end;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="M21 21l-4.35-4.35"/>
-                        </svg>
-                        Buscar
-                    </button>
-                </div>
-            </form>
+    <!-- Paginação -->
+    {% if is_paginated %}
+      <div class="text-center mt-10">
+        <div class="inline-flex gap-2 items-center text-sm">
+          {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Anterior</a>
+          {% endif %}
+          <span class="px-4 py-2 text-neutral-500">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Próxima</a>
+          {% endif %}
         </div>
-    </div>
-
-    <!-- Lista de Empresas -->
-    {% if empresas %}
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {% for empresa in empresas %}
-            <div class="card">
-                <div class="card-body">
-                    <!-- Logo da Empresa -->
-                    <div style="display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4);">
-                        <div style="width: 64px; height: 64px; background: var(--neutral-100); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            {% if empresa.logo %}
-                                <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" style="width: 100%; height: 100%; border-radius: var(--radius-lg); object-fit: cover;">
-                            {% else %}
-                                <span class="text-xl font-bold text-neutral-600">
-                                    {{ empresa.nome|first|upper }}
-                                </span>
-                            {% endif %}
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <h3 class="font-semibold text-neutral-900 mb-1 truncate">{{ empresa.nome }}</h3>
-                            <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
-                                <span class="badge badge-primary">{{ empresa.get_tipo_display }}</span>
-                            </div>
-                            {% if empresa.cidade %}
-                                <p class="text-sm text-neutral-500">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: var(--space-1);">
-                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                        <circle cx="12" cy="10" r="3"/>
-                                    </svg>
-                                    {{ empresa.cidade }}, {{ empresa.estado }}
-                                </p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Descrição -->
-                    {% if empresa.descricao %}
-                        <p class="text-sm text-neutral-600 mb-4 line-clamp-3">
-                            {{ empresa.descricao|truncatewords:20 }}
-                        </p>
-                    {% endif %}
-
-                    <!-- Tags -->
-                    {% if empresa.tags.all %}
-                        <div style="display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4);">
-                            {% for tag in empresa.tags.all|slice:":3" %}
-                                <span class="badge badge-success">{{ tag.nome }}</span>
-                            {% endfor %}
-                            {% if empresa.tags.count > 3 %}
-                                <span class="badge" style="background: var(--neutral-100); color: var(--neutral-600);">
-                                    +{{ empresa.tags.count|add:"-3" }}
-                                </span>
-                            {% endif %}
-                        </div>
-                    {% endif %}
-
-                    <!-- Ações -->
-                    <div style="display: flex; gap: var(--space-2); margin-top: auto;">
-                        <a href="{% url 'empresas:detail' empresa.pk %}" class="btn btn-outline btn-sm" style="flex: 1;">
-                            Ver Detalhes
-                        </a>
-                        {% if empresa.criador == user %}
-                            <a href="{% url 'empresas:editar' empresa.pk %}" class="btn btn-secondary btn-sm">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                </svg>
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Paginação -->
-        {% if is_paginated %}
-        <div class="text-center mt-8">
-            <div style="display: inline-flex; gap: var(--space-2);">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="15,18 9,12 15,6"/>
-                        </svg>
-                        Anterior
-                    </a>
-                {% endif %}
-                
-                <span class="btn btn-secondary" style="cursor: default;">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                </span>
-                
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">
-                        Próxima
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9,18 15,12 9,6"/>
-                        </svg>
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-    {% else %}
-        <!-- Estado Vazio -->
-        <div class="card">
-            <div class="card-body text-center" style="padding: var(--space-12);">
-                <div style="width: 80px; height: 80px; background: var(--neutral-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--neutral-400)" stroke-width="2">
-                        <path d="M3 21h18"/>
-                        <path d="M5 21V7l8-4v18"/>
-                        <path d="M19 21V11l-6-4"/>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-semibold text-neutral-900 mb-2">
-                    Nenhuma empresa encontrada
-                </h3>
-                <p class="text-neutral-600 mb-6">
-                    Seja o primeiro a cadastrar uma empresa na plataforma
-                </p>
-                <a href="{% url 'empresas:nova' %}" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"/>
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                    Cadastrar Primeira Empresa
-                </a>
-            </div>
-        </div>
+      </div>
     {% endif %}
+
+  {% else %}
+    <!-- Estado vazio -->
+    <div class="bg-white border border-neutral-200 rounded-2xl p-10 text-center shadow-sm mt-10">
+      <div class="mx-auto mb-6 w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-neutral-900 mb-2">Nenhuma empresa encontrada</h3>
+      <p class="text-neutral-600 mb-6">Seja o primeiro a cadastrar uma empresa na plataforma</p>
+      <a href="{% url 'empresas:nova' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Cadastrar Primeira Empresa
+      </a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -1,39 +1,14 @@
-{% load chat_extras %}
-<div id="chat-container"
-     data-dest-id="{{ dest.id }}"
-     data-current-user="{{ request.user.username }}"
-     data-csrf-token="{{ csrf_token }}"
-     data-upload-url="{{ request.path }}"
-     data-history-url="{% url 'chat:messages_history' dest.id %}">
-    <div class="chat-room-header">
-        <button id="backToUsers" class="btn-secondary-nav">&larr; Voltar</button>
-        <h3>Conversando com {{ dest.get_full_name|default:dest.username }}</h3>
-        <button type="button" class="btn-secondary-nav" onclick="fecharChat()">&times;</button>
-    </div>
-    <div id="chat-messages">
-        {% for m in messages %}
-            <div class="message{% if m.remetente == user %} self{% endif %}">
-                <strong>{{ m.remetente.username }}</strong>:
-                {% if m.tipo == 'image' %}
-                    <img src="{{ m.conteudo|absolute_media:request }}" alt="imagem" class="chat-media-thumb" />
-                {% elif m.tipo == 'video' %}
-                    <video src="{{ m.conteudo|absolute_media:request }}" controls class="chat-media-thumb"></video>
-                {% elif m.tipo == 'file' %}
-                    <div class="chat-file">
-                        <a href="{{ m.conteudo|absolute_media:request }}" target="_blank">📎 Baixar arquivo</a>
-                    </div>
-                {% else %}
-                    {{ m.conteudo }}
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div>
-    <form id="chat-form">
-        <input type="text" id="chat-input" autocomplete="off" />
-        <div class="chat-actions">
-            <button type="submit" class="btn-upload">Enviar</button>
-            <input type="file" id="file-input" />
-            <button id="upload-btn" type="button" class="btn-upload">Upload</button>
-        </div>
-    </form>
-</div>
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Chat | HubX{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto px-4 py-10">
+  {% block chat_content %}{% endblock %}
+</section>
+{% endblock %}

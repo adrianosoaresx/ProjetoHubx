@@ -1,33 +1,41 @@
-{% comment %}Lista de postagens reutilizada{% endcomment %}
-<div class="posts-container">
-    {% for post in posts %}
-    <article class="post-card">
-        <div class="post-header">
-            <div class="post-author">
-                <div class="author-avatar">
-                    {{ post.autor.username|first|upper }}
-                </div>
-                <div class="author-info">
-                    <strong class="author-name">{{ post.autor.username }}</strong>
-                    <time class="post-date">{{ post.criado_em|date:"SHORT_DATE_FORMAT" }}</time>
-                </div>
-            </div>
+{% comment %}Lista de postagens reutilizável com Tailwind{% endcomment %}
+
+<div class="space-y-6">
+  {% for post in posts %}
+    <article class="border border-neutral-200 bg-white rounded-2xl shadow-sm p-6 space-y-4">
+
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
+          {{ post.autor.username|first|upper }}
         </div>
-        <div class="post-content">
-            <p class="post-text">{{ post.conteudo|linebreaks }}</p>
-            {% if post.imagem %}
-            <div class="post-image">
-                <img src="{{ post.imagem.url }}" alt="Imagem da postagem">
-            </div>
-            {% endif %}
+        <div>
+          <p class="text-sm font-medium text-neutral-800">
+            {{ post.autor.get_full_name|default:post.autor.username }}
+          </p>
+          <p class="text-xs text-neutral-500">
+            {{ post.criado_em|date:"d/m/Y H:i" }}
+          </p>
         </div>
+      </div>
+
+      <div class="text-sm text-neutral-800">
+        {{ post.conteudo|linebreaks }}
+      </div>
+
+      {% if post.imagem %}
+        <div class="mt-2">
+          <img src="{{ post.imagem.url }}" alt="Imagem da postagem" class="rounded-xl shadow-sm max-w-full">
+        </div>
+      {% endif %}
     </article>
-    {% empty %}
-    <div class="empty-state">
-        <div class="empty-icon">{{ empty_icon|default:"📝" }}</div>
-        <h3>{{ empty_title|default:"Nenhuma postagem ainda" }}</h3>
-        <p>{{ empty_message|default:"Seja o primeiro a compartilhar algo!" }}</p>
-        <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary">{{ empty_button|default:"Criar postagem" }}</a>
+  {% empty %}
+    <div class="text-center border border-neutral-200 rounded-2xl shadow-sm bg-white p-10">
+      <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
+      <h3 class="text-lg font-semibold text-neutral-900 mb-1">{{ empty_title|default:"Nenhuma postagem ainda" }}</h3>
+      <p class="text-neutral-500 text-sm mb-4">{{ empty_message|default:"Seja o primeiro a compartilhar algo!" }}</p>
+      <a href="{% url 'feed:nova_postagem' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        {{ empty_button|default:"Criar postagem" }}
+      </a>
     </div>
-    {% endfor %}
+  {% endfor %}
 </div>

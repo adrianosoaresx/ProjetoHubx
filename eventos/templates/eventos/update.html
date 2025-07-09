@@ -2,43 +2,56 @@
 {% block title %}Editar Evento | Hubx{% endblock %}
 
 {% block content %}
-<section class="perfil-section active">
-    <div class="empresa-form-container">
-        <h1 class="form-title">Editar Evento</h1>
-        <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-            {% if field.name != 'inscritos' %}
-            {{ field.as_p }}
-            {% endif %}
-            {% endfor %}
-            <div class="form-actions" style="justify-content:flex-end;">
-                <a href="{% url 'eventos:list' %}" class="btn btn-secondary">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Salvar</button>
-            </div>
-        </form>
-        <hr>
-        <h2>Inscritos</h2>
-        <div class="empresas-grid">
-            {% for inscrito in object.inscritos.all %}
-            <div class="empresa-card">
-                <div class="empresa-info">
-                    <h3>{{ inscrito.get_full_name|default:inscrito.username }}</h3>
-                    <p class="empresa-tipo">{{ inscrito.email }}</p>
-                </div>
-                {% if user.tipo_id == 4 or user.tipo_id == 1 or user.tipo_id == 2 %}
-                <div class="empresa-actions">
-                    <form method="post" action="{% url 'eventos:remove_inscrito' object.pk inscrito.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger">Remover</button>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
-            {% empty %}
-            <div class="empty-state">Nenhum inscrito.</div>
-            {% endfor %}
+<section class="max-w-3xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Editar Evento</h1>
+
+  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+    {% csrf_token %}
+    {% for field in form %}
+      {% if field.name != 'inscritos' %}
+        <div>
+          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">
+            {{ field.label }}
+          </label>
+          {{ field }}
+          {% if field.errors %}
+            <p class="text-sm text-red-600 mt-1">{{ field.errors }}</p>
+          {% endif %}
         </div>
+      {% endif %}
+    {% endfor %}
+
+    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+      <a href="{% url 'eventos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+        Cancelar
+      </a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
+        Salvar
+      </button>
     </div>
+  </form>
+
+  <!-- Inscritos -->
+  <h2 class="text-lg font-semibold text-neutral-900 mt-10 mb-4">Inscritos</h2>
+  {% if object.inscritos.all %}
+    <div class="grid gap-4 sm:grid-cols-2">
+      {% for inscrito in object.inscritos.all %}
+        <div class="flex items-center justify-between border border-neutral-200 rounded-xl p-4 bg-white shadow-sm">
+          <div>
+            <h3 class="text-sm font-medium text-neutral-800">{{ inscrito.get_full_name|default:inscrito.username }}</h3>
+            <p class="text-xs text-neutral-500">{{ inscrito.email }}</p>
+          </div>
+          {% if user.tipo_id in "1,2,4"|split:"," %}
+          <form method="post" action="{% url 'eventos:remove_inscrito' object.pk inscrito.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="text-sm text-red-600 hover:underline">Remover</button>
+          </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-sm text-neutral-500">Nenhum inscrito.</p>
+  {% endif %}
 </section>
 {% endblock %}
