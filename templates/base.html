@@ -34,13 +34,37 @@
   <header class="bg-white shadow">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-primary">HubX</a>
-      <nav class="space-x-4 text-sm">
+      <nav class="flex items-center gap-x-4 text-sm">
+        <a href="{% url 'dashboard:dashboard' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-building"></i> Empresas
+        </a>
+        <a href="{% url 'eventos:calendar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-calendar-alt"></i> Eventos
+        </a>
+        <a href="{% url 'forum:index' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-comments"></i> Fórum
+        </a>
+        <a href="{% url 'feed:feed' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-rss"></i> Feed
+        </a>
+        <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-users"></i> Núcleos
+        </a>
+        <a href="{% url 'organizacoes:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-sitemap"></i> Organizações
+        </a>
+        <a href="{% url 'accounts:criar_token' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-key"></i> Token
+        </a>
         {% if user.is_authenticated %}
           <span class="text-gray-600">Olá, {{ user.username }}</span>
-          <a href="{% url 'accounts:logout' %}" class="text-primary hover:underline">Sair</a>
+          <a href="{% url 'accounts:logout' %}" class="hover:text-primary transition">Sair</a>
         {% else %}
-          <a href="{% url 'accounts:login' %}" class="text-gray-600 hover:underline">Entrar</a>
-          <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white py-2 px-4 rounded-xl text-sm hover:bg-primary/90 transition">
+          <a href="{% url 'accounts:login' %}" class="hover:text-primary transition">Entrar</a>
+          <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition">
             Cadastrar
           </a>
         {% endif %}
