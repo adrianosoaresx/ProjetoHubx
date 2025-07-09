@@ -43,7 +43,6 @@ class TokenAcesso(TimeStampedModel):
     class Meta:
         verbose_name = "Token de Acesso"
         verbose_name_plural = "Tokens de Acesso"
-        managed = False
         db_table = "accounts_tokenacesso"
 
     def save(self, *args, **kwargs):
