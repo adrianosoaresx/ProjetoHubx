@@ -1,0 +1,35 @@
+<section id="feed-grid" class="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+  {% for post in posts %}
+    <article class="rounded-lg bg-white shadow p-6 space-y-4">
+      <div class="flex items-center gap-4">
+        <a href="{% url 'accounts:perfil' %}">
+          {% if post.autor.avatar %}
+            <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
+          {% else %}
+            <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
+              {{ post.autor.username|first|upper }}
+            </div>
+          {% endif %}
+        </a>
+        <div>
+          <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
+          <p class="text-xs text-neutral-500">{{ post.criado_em|date:"d/m/Y H:i" }}</p>
+        </div>
+      </div>
+      <div class="text-sm text-neutral-800 whitespace-pre-line">
+        {{ post.conteudo|linebreaksbr }}
+      </div>
+      {% if post.media %}
+        <div>
+          {% if post.media.url|lower|slice:'-4:' == '.mp4' %}
+            <video controls src="{{ post.media.url }}" class="w-full rounded"></video>
+          {% else %}
+            <img src="{{ post.media.url }}" class="w-full rounded" alt="">
+          {% endif %}
+        </div>
+      {% endif %}
+    </article>
+  {% empty %}
+    <p class="col-span-full text-center text-neutral-500">Nenhuma postagem encontrada.</p>
+  {% endfor %}
+</section>

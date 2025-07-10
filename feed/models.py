@@ -21,6 +21,7 @@ class Post(models.Model):
         null=True,
         verbose_name="Mídia",
     )
+    publico = models.BooleanField(default=True)
     tipo_feed = models.CharField(
         max_length=10,
         choices=TIPO_FEED_CHOICES,

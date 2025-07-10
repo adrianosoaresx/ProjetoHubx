@@ -43,6 +43,16 @@
       <p class="text-sm text-neutral-500 mt-1">Compartilhe ideias, atualizações ou conteúdos com sua rede.</p>
     </div>
 
+    <div class="mb-4">
+      <label for="destino" class="font-semibold mb-1 block">Visibilidade</label>
+      <select name="destino" id="destino" class="w-full rounded border-gray-300">
+        <option value="publico">Público</option>
+        {% for n in nucleos_do_usuario %}
+          <option value="{{ n.id }}">Núcleo: {{ n.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
     <!-- Mídia -->
     <div>
       <label for="{{ form.media.id_for_label }}" class="block text-sm font-medium text-neutral-700">
