@@ -7,7 +7,11 @@ from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
-from core.permissions import SuperadminRequiredMixin
+from core.permissions import (
+    GerenteRequiredMixin,
+    no_superadmin_required,
+    NoSuperadminMixin,
+)
 from django.http import HttpResponseForbidden
 
 from .models import Empresa, Tag
@@ -23,6 +27,7 @@ from .forms import (
 # LISTA
 # ------------------------------------------------------------------
 @login_required
+@no_superadmin_required
 def lista_empresas(request):
     if request.user.is_superuser:
         empresas = Empresa.objects.all()
@@ -46,6 +51,7 @@ def lista_empresas(request):
 # CADASTRAR
 # ------------------------------------------------------------------
 @login_required
+@no_superadmin_required
 def nova_empresa(request):
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES)
@@ -66,6 +72,7 @@ def nova_empresa(request):
 # EDITAR
 # ------------------------------------------------------------------
 @login_required
+@no_superadmin_required
 def editar_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk, usuario=request.user)
     if request.method == "POST":
@@ -84,6 +91,7 @@ def editar_empresa(request, pk):
 # BUSCAR
 # ------------------------------------------------------------------
 @login_required
+@no_superadmin_required
 def buscar_empresas(request):
     query = request.GET.get("q", "")
     if request.user.is_superuser:
@@ -107,7 +115,7 @@ def buscar_empresas(request):
 
 
 
-class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
+class TagListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Tag
     template_name = "empresas/tags_list.html"
 
@@ -128,7 +136,7 @@ class TagListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
         context["form"] = getattr(self, "form", TagSearchForm())
         return context
 
-class TagCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
+class TagCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -139,7 +147,7 @@ class TagCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class TagUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
+class TagUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -150,7 +158,7 @@ class TagUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class TagDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
+class TagDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tag
     template_name = "empresas/tag_confirm_delete.html"
     success_url = reverse_lazy("empresas:tags_list")
@@ -164,6 +172,7 @@ class TagDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
 # DETALHAR
 # ------------------------------------------------------------------
 @login_required
+@no_superadmin_required
 def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if not request.user.is_superuser and empresa.usuario.organizacao != request.user.organizacao:

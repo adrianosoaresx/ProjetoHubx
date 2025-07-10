@@ -10,7 +10,7 @@ from django.views.generic import (
     DetailView,
     View,
 )
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 from django.shortcuts import get_object_or_404, redirect
 
 from .models import Nucleo
@@ -19,7 +19,7 @@ from .forms import NucleoForm, NucleoSearchForm
 User = get_user_model()
 
 
-class NucleoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class NucleoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Nucleo
     template_name = "nucleos/list.html"
 
@@ -42,7 +42,7 @@ class NucleoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
 
-class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/create.html"
@@ -55,7 +55,7 @@ class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/update.html"
@@ -80,7 +80,7 @@ class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
         return context
 
 
-class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Nucleo
     template_name = "nucleos/delete.html"
     success_url = reverse_lazy("nucleos:list")
@@ -97,7 +97,7 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -111,7 +111,7 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         return qs
 
 
-class NucleoMemberRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class NucleoMemberRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, user_id):
         nucleo = get_object_or_404(Nucleo, pk=pk)
         if request.user.tipo_id == User.Tipo.ADMIN and nucleo.organizacao != request.user.organizacao:

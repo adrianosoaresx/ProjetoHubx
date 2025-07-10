@@ -12,7 +12,11 @@ from django.views.generic import (
     DeleteView,
     DetailView,
 )
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
+from core.permissions import (
+    AdminRequiredMixin,
+    GerenteRequiredMixin,
+    NoSuperadminMixin,
+)
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 
@@ -22,7 +26,7 @@ from .forms import EventoForm, EventoSearchForm
 User = get_user_model()
 
 
-class EventoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class EventoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/list.html"
 
@@ -47,7 +51,7 @@ class EventoListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
 
-class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class EventoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/create.html"
@@ -60,7 +64,7 @@ class EventoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class EventoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class EventoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "eventos/update.html"
@@ -77,7 +81,7 @@ class EventoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class EventoDeleteView(GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+class EventoDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Evento
     template_name = "eventos/delete.html"
     success_url = reverse_lazy("eventos:list")
@@ -93,7 +97,7 @@ class EventoDeleteView(GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
         return super().delete(request, *args, **kwargs)
 
 
-class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class EventoCalendarView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Evento
     template_name = "eventos/calendar.html"
 
@@ -141,16 +145,19 @@ class EventoCalendarView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
 
-class EventoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class EventoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
 
 
-class EventoSubscribeView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class EventoSubscribeView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     """Inscreve ou remove o usuário do evento."""
 
     def post(self, request, pk):
         evento = get_object_or_404(Evento, pk=pk)
+        if request.user.tipo_id == User.Tipo.ADMIN:
+            messages.error(request, "Administradores não podem se inscrever em eventos.")
+            return redirect("eventos:detail", pk=pk)
         if request.user in evento.inscritos.all():
             evento.inscritos.remove(request.user)
             messages.success(request, "Inscrição cancelada.")
@@ -160,7 +167,7 @@ class EventoSubscribeView(GerenteRequiredMixin, LoginRequiredMixin, View):
         return redirect("eventos:detail", pk=pk)
 
 
-class EventoRemoveInscritoView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class EventoRemoveInscritoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     """Remove um inscrito do evento."""
 
     def post(self, request, pk, user_id):
