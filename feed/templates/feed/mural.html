@@ -17,16 +17,19 @@
       <a href="{% url 'feed:feed' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
         Ver Feed Global
       </a>
-      <a href="{% url 'feed:nova_postagem' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
-        <span class="text-lg leading-none">+</span> Nova Postagem
-      </a>
     </div>
   </div>
 
   <!-- Lista de Postagens -->
-  {% include "feed/_post_list.html" with posts=posts empty_icon="📋" empty_title="Seu mural está vazio" empty_message="Comece compartilhando seus pensamentos!" empty_button="Criar postagem" %}
+{% include "feed/_post_list.html" with posts=posts empty_icon="📋" empty_title="Seu mural está vazio" empty_message="Comece compartilhando seus pensamentos!" empty_button="Criar postagem" %}
 
 </section>
+
+{% if not request.user.tipo.descricao == "root" %}
+<a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary btn-lg fixed-bottom m-4 rounded-circle shadow">
+    <i class="bi bi-plus"></i>
+</a>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

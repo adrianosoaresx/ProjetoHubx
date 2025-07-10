@@ -8,9 +8,6 @@
   <!-- Cabeçalho -->
   <div class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-neutral-900">Feed de Postagens</h1>
-    <a href="{% url 'feed:nova_postagem' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
-      Nova Postagem
-    </a>
   </div>
 
   <!-- Lista de Postagens -->
@@ -33,6 +30,18 @@
       <div>
         <h2 class="text-lg font-semibold text-neutral-900">{{ post.titulo }}</h2>
         <p class="text-sm text-neutral-700 mt-1">{{ post.conteudo|truncatewords:40 }}</p>
+
+        {% if post.media %}
+          <div class="feed-media mt-2">
+            {% if post.media.url|lower|slice:'-4:' == '.jpg' or post.media.url|lower|slice:'-4:' == '.png' or post.media.url|lower|slice:'-4:' == '.gif' %}
+              <img src="{{ post.media.url }}" alt="mídia do post" class="img-fluid">
+            {% elif post.media.url|lower|slice:'-4:' == '.mp4' %}
+              <video controls src="{{ post.media.url }}" class="w-100"></video>
+            {% else %}
+              <a href="{{ post.media.url }}" download>Baixar arquivo</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="flex justify-between items-center text-sm text-neutral-500 mt-4">
@@ -52,4 +61,10 @@
   {% endfor %}
 
 </section>
+
+{% if not request.user.tipo.descricao == "root" %}
+<a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary btn-lg fixed-bottom m-4 rounded-circle shadow">
+    <i class="bi bi-plus"></i>
+</a>
+{% endif %}
 {% endblock %}

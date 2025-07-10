@@ -2,6 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.http import HttpResponseForbidden
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Post
 from .forms import PostForm
@@ -13,36 +17,39 @@ def meu_mural(request):
     return render(request, "feed/mural.html", {"posts": posts})
 
 
-@login_required
-def feed_global(request):
-    user = request.user
-    posts = Post.objects.filter(
-        Q(visibilidade=Post.Visibilidade.PUBLICO)
-        | Q(
-            visibilidade=Post.Visibilidade.CONEXOES,
-            autor__connections=user,
-        )
-        | Q(autor=user)
-    ).distinct()
-    context = {
-        "posts": posts,
-        "user_can_moderate": request.user.tipo_id in (1, 2),
-    }
-    return render(request, "feed/feed.html", context)
+class FeedListView(LoginRequiredMixin, ListView):
+    model = Post
+    template_name = "feed/feed.html"
+    context_object_name = "posts"
+
+    def get_queryset(self):
+        qs = Post.objects.select_related("autor").order_by("-criado_em")
+        filtro = self.request.GET.get("tipo", "publico")
+
+        if filtro == Post.PUBLICO:
+            return qs.filter(tipo_feed=Post.PUBLICO)
+
+        if filtro == Post.NUCLEO:
+            nucleos_ids = self.request.user.nucleos.values_list("id", flat=True)
+            return qs.filter(tipo_feed=Post.NUCLEO, nucleo_id__in=nucleos_ids)
+
+        return qs.filter(tipo_feed=Post.PUBLICO)
 
 
-@login_required
-def nova_postagem(request):
-    if request.method == "POST":
-        form = PostForm(request.POST, request.FILES)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.autor = request.user
-            post.save()
-            return redirect("feed:meu_mural")
-    else:
-        form = PostForm()
-    return render(request, "feed/nova_postagem.html", {"form": form})
+class NovaPostagemView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = "feed/nova_postagem.html"
+    success_url = reverse_lazy("feed:meu_mural")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.tipo and request.user.tipo.descricao.lower() == "root":
+            return HttpResponseForbidden("Usuário root não pode publicar no feed.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.autor = self.request.user
+        return super().form_valid(form)
 
 
 @login_required

@@ -5,15 +5,15 @@ from .models import Post
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ["conteudo", "imagem", "visibilidade"]
+        fields = ["conteudo", "media", "tipo_feed", "nucleo"]
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={"class": "form-control", "rows": 4, "placeholder": "Compartilhe algo..."}
             ),
-            "imagem": forms.ClearableFileInput(
+            "media": forms.ClearableFileInput(
                 attrs={"class": "form-control"}
             ),
-            "visibilidade": forms.Select(
+            "tipo_feed": forms.Select(
                 attrs={"class": "form-control"}
             ),
         }
@@ -21,7 +21,7 @@ class PostForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         conteudo = cleaned_data.get("conteudo")
-        imagem = cleaned_data.get("imagem")
-        if not conteudo and not imagem:
-            raise forms.ValidationError("Informe um conteúdo ou selecione uma imagem.")
+        media = cleaned_data.get("media")
+        if not conteudo and not media:
+            raise forms.ValidationError("Informe um conteúdo ou selecione uma mídia.")
         return cleaned_data
