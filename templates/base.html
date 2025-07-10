@@ -56,9 +56,11 @@
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-users"></i> Núcleos
         </a>
+        {% if user.is_authenticated and user.tipo_id == 4 %}
         <a href="{% url 'organizacoes:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-sitemap"></i> Organizações
         </a>
+        {% endif %}
         <a href="{% url 'tokens:criar_token' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-key"></i> Token
         </a>
