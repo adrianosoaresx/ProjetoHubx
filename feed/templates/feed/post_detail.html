@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Postagem | Hubx{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 py-10 space-y-6">
+  <div>
+    <a href="{% url 'feed:feed' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+  </div>
+
+  <article class="border border-neutral-200 bg-white rounded-2xl shadow-sm p-6 space-y-4">
+    <div class="flex items-center gap-4">
+      {% if post.autor.avatar %}
+        <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
+      {% else %}
+        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
+          {{ post.autor.username|first|upper }}
+        </div>
+      {% endif %}
+      <div>
+        <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
+        <p class="text-xs text-neutral-500">{{ post.criado_em|date:"d/m/Y H:i" }}</p>
+      </div>
+    </div>
+
+    <div class="text-sm text-neutral-800 whitespace-pre-line">
+      {{ post.conteudo }}
+    </div>
+
+    {% if post.imagem %}
+      <div class="mt-2">
+        <img src="{{ post.imagem.url }}" alt="Imagem da postagem" class="rounded-xl shadow-sm max-w-full">
+      </div>
+    {% endif %}
+
+    {% if post.autor == user or user_can_moderate %}
+    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100 text-sm">
+      <a href="{% url 'feed:post_update' post.pk %}" class="text-yellow-600 hover:underline">Editar</a>
+      <a href="{% url 'feed:post_delete' post.pk %}" class="text-red-600 hover:underline">Remover</a>
+    </div>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}
