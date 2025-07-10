@@ -23,7 +23,11 @@ def feed_global(request):
         )
         | Q(autor=user)
     ).distinct()
-    return render(request, "feed/feed.html", {"posts": posts})
+    context = {
+        "posts": posts,
+        "user_can_moderate": request.user.tipo_id in (1, 2),
+    }
+    return render(request, "feed/feed.html", context)
 
 
 @login_required

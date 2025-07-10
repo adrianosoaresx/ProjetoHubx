@@ -37,7 +37,7 @@
 
       <div class="flex justify-between items-center text-sm text-neutral-500 mt-4">
         <a href="{% url 'feed:post_detail' post.pk %}" class="text-blue-600 hover:underline">Ver mais</a>
-        {% if post.autor == user or user.tipo_id|stringformat:"s" in ["1", "2"] %}
+        {% if post.autor == user or user_can_moderate %}
           <div class="flex gap-3">
             <a href="{% url 'feed:post_update' post.pk %}" class="text-yellow-600 hover:underline">Editar</a>
             <a href="{% url 'feed:post_delete' post.pk %}" class="text-red-600 hover:underline">Remover</a>
