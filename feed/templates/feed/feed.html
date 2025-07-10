@@ -3,68 +3,43 @@
 {% block title %}Feed | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10 space-y-8">
+<section class="max-w-7xl mx-auto px-4 py-10">
 
   <!-- Cabeçalho -->
-  <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-neutral-900">Feed de Postagens</h1>
+    {% if not request.user.tipo.descricao == "root" %}
+      <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 focus-visible:ring">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nova postagem
+      </a>
+    {% endif %}
   </div>
 
-  <!-- Lista de Postagens -->
-  {% for post in posts %}
-    <div class="border border-neutral-200 bg-white rounded-2xl shadow-sm p-6 space-y-4">
-      <div class="flex items-center gap-4">
-        {% if post.autor.avatar %}
-          <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
-        {% else %}
-          <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
-            {{ post.autor.username|first|upper }}
-          </div>
-        {% endif %}
-        <div>
-          <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-          <p class="text-xs text-neutral-500">{{ post.created_at|date:"d/m/Y H:i" }}</p>
-        </div>
-      </div>
+  <div class="flex items-center gap-4 mb-4">
+    <label class="font-semibold">Filtrar:</label>
+    <select id="filtro-nucleo" name="nucleo"
+            hx-get="{% url 'feed:feed' %}"
+            hx-target="#feed-grid"
+            hx-include="#filtro-nucleo"
+            class="rounded border-gray-300">
+      <option value="">Público</option>
+      {% for n in nucleos_do_usuario %}
+        <option value="{{ n.id }}">{{ n.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
 
-      <div>
-        <h2 class="text-lg font-semibold text-neutral-900">{{ post.titulo }}</h2>
-        <p class="text-sm text-neutral-700 mt-1">{{ post.conteudo|truncatewords:40 }}</p>
+  <input type="search" name="q" id="feed-search"
+         placeholder="Buscar postagens…"
+         hx-get="{% url 'feed:feed' %}"
+         hx-trigger="keyup changed delay:500ms"
+         hx-target="#feed-grid"
+         class="w-full rounded border-gray-300 mb-6">
 
-        {% if post.media %}
-          <div class="feed-media mt-2">
-            {% if post.media.url|lower|slice:'-4:' == '.jpg' or post.media.url|lower|slice:'-4:' == '.png' or post.media.url|lower|slice:'-4:' == '.gif' %}
-              <img src="{{ post.media.url }}" alt="mídia do post" class="img-fluid">
-            {% elif post.media.url|lower|slice:'-4:' == '.mp4' %}
-              <video controls src="{{ post.media.url }}" class="w-100"></video>
-            {% else %}
-              <a href="{{ post.media.url }}" download>Baixar arquivo</a>
-            {% endif %}
-          </div>
-        {% endif %}
-      </div>
-
-      <div class="flex justify-between items-center text-sm text-neutral-500 mt-4">
-        <a href="{% url 'feed:post_detail' post.pk %}" class="text-blue-600 hover:underline">Ver mais</a>
-        {% if post.autor == user or user_can_moderate %}
-          <div class="flex gap-3">
-            <a href="{% url 'feed:post_update' post.pk %}" class="text-yellow-600 hover:underline">Editar</a>
-            <a href="{% url 'feed:post_delete' post.pk %}" class="text-red-600 hover:underline">Remover</a>
-          </div>
-        {% endif %}
-      </div>
-    </div>
-  {% empty %}
-    <div class="text-center text-neutral-500 border border-neutral-200 rounded-2xl p-10 bg-white">
-      Nenhuma postagem encontrada.
-    </div>
-  {% endfor %}
+  {% include "feed/_grid.html" %}
 
 </section>
-
-{% if not request.user.tipo.descricao == "root" %}
-<a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary btn-lg fixed-bottom m-4 rounded-circle shadow">
-    <i class="bi bi-plus"></i>
-</a>
-{% endif %}
 {% endblock %}

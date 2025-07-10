@@ -1,11 +1,11 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, ListView
 
 from .models import Post
 from .forms import PostForm
@@ -14,7 +14,11 @@ from .forms import PostForm
 @login_required
 def meu_mural(request):
     posts = Post.objects.filter(autor=request.user)
-    return render(request, "feed/mural.html", {"posts": posts})
+    context = {
+        "posts": posts,
+        "nucleos_do_usuario": request.user.nucleos.all(),
+    }
+    return render(request, "feed/mural.html", context)
 
 
 class FeedListView(LoginRequiredMixin, ListView):
@@ -23,17 +27,33 @@ class FeedListView(LoginRequiredMixin, ListView):
     context_object_name = "posts"
 
     def get_queryset(self):
-        qs = Post.objects.select_related("autor").order_by("-criado_em")
-        filtro = self.request.GET.get("tipo", "publico")
+        qs = (
+            Post.objects.select_related("autor")
+            .order_by("-criado_em")
+        )
 
-        if filtro == Post.PUBLICO:
-            return qs.filter(tipo_feed=Post.PUBLICO)
+        nucleo = self.request.GET.get("nucleo")
+        termo = self.request.GET.get("q")
 
-        if filtro == Post.NUCLEO:
-            nucleos_ids = self.request.user.nucleos.values_list("id", flat=True)
-            return qs.filter(tipo_feed=Post.NUCLEO, nucleo_id__in=nucleos_ids)
+        if nucleo:
+            qs = qs.filter(tipo_feed=Post.NUCLEO, nucleo_id=nucleo)
+        else:
+            qs = qs.filter(tipo_feed=Post.PUBLICO)
 
-        return qs.filter(tipo_feed=Post.PUBLICO)
+        if termo:
+            qs = qs.filter(Q(conteudo__icontains=termo))
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nucleos_do_usuario"] = self.request.user.nucleos.all()
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("HX-Request"):
+            return render(self.request, "feed/_grid.html", context)
+        return super().render_to_response(context, **response_kwargs)
 
 
 class NovaPostagemView(LoginRequiredMixin, CreateView):
@@ -47,8 +67,27 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
             return HttpResponseForbidden("Usuário root não pode publicar no feed.")
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["nucleos_do_usuario"] = self.request.user.nucleos.all()
+        return context
+
     def form_valid(self, form):
         form.instance.autor = self.request.user
+        destino = form.cleaned_data.get("destino")
+        if destino == "publico":
+            form.instance.tipo_feed = Post.PUBLICO
+            form.instance.nucleo = None
+            form.instance.publico = True
+        else:
+            form.instance.tipo_feed = Post.NUCLEO
+            form.instance.nucleo_id = destino
+            form.instance.publico = False
         return super().form_valid(form)
 
 
@@ -70,13 +109,23 @@ def post_update(request, pk):
         return redirect("feed:post_detail", pk=pk)
 
     if request.method == "POST":
-        form = PostForm(request.POST, request.FILES, instance=post)
+        form = PostForm(request.POST, request.FILES, instance=post, user=request.user)
         if form.is_valid():
+            destino = form.cleaned_data.get("destino")
+            if destino == "publico":
+                post.tipo_feed = Post.PUBLICO
+                post.nucleo = None
+                post.publico = True
+            else:
+                post.tipo_feed = Post.NUCLEO
+                post.nucleo_id = destino
+                post.publico = False
             form.save()
             messages.success(request, "Postagem atualizada com sucesso.")
             return redirect("feed:post_detail", pk=post.pk)
     else:
-        form = PostForm(instance=post)
+        initial_destino = "publico" if post.tipo_feed == Post.PUBLICO else post.nucleo_id
+        form = PostForm(instance=post, user=request.user, initial={"destino": initial_destino})
 
     return render(request, "feed/post_update.html", {"form": form, "post": post})
 
