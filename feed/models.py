@@ -29,10 +29,10 @@ class Post(models.Model):
     )
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",
-        on_delete=models.SET_NULL,
-        related_name="posts",
         null=True,
         blank=True,
+        on_delete=models.CASCADE,
+        related_name="postagens",
     )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)

@@ -27,23 +27,16 @@ class FeedListView(LoginRequiredMixin, ListView):
     context_object_name = "posts"
 
     def get_queryset(self):
-        qs = (
-            Post.objects.select_related("autor")
-            .order_by("-criado_em")
-        )
-
-        nucleo = self.request.GET.get("nucleo")
-        termo = self.request.GET.get("q")
-
-        if nucleo:
-            qs = qs.filter(tipo_feed=Post.NUCLEO, nucleo_id=nucleo)
+        q = self.request.GET.get("q", "")
+        nucleo_id = self.request.GET.get("nucleo")
+        qs = Post.objects.select_related("autor")
+        if nucleo_id:
+            qs = qs.filter(nucleo_id=nucleo_id)
         else:
-            qs = qs.filter(tipo_feed=Post.PUBLICO)
-
-        if termo:
-            qs = qs.filter(Q(conteudo__icontains=termo))
-
-        return qs
+            qs = qs.filter(publico=True, nucleo__isnull=True)
+        if q:
+            qs = qs.filter(Q(conteudo__icontains=q))
+        return qs.order_by("-criado_em")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
