@@ -43,20 +43,19 @@
       <p class="text-sm text-neutral-500 mt-1">Compartilhe ideias, atualizações ou conteúdos com sua rede.</p>
     </div>
 
-    <!-- Imagem -->
+    <!-- Mídia -->
     <div>
-      <label for="{{ form.imagem.id_for_label }}" class="block text-sm font-medium text-neutral-700">
-        {{ form.imagem.label }}
+      <label for="{{ form.media.id_for_label }}" class="block text-sm font-medium text-neutral-700">
+        {{ form.media.label }}
       </label>
       <input
         type="file"
-        id="{{ form.imagem.id_for_label }}"
-        name="{{ form.imagem.name }}"
-        accept="image/*"
+        id="{{ form.media.id_for_label }}"
+        name="{{ form.media.name }}"
         class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200"
       >
-      {% if form.imagem.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.imagem.errors }}</p>
+      {% if form.media.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.media.errors }}</p>
       {% endif %}
     </div>
 
@@ -73,17 +72,18 @@
 </section>
 
 <script>
-document.getElementById('{{ form.imagem.id_for_label }}')?.addEventListener('change', function(e) {
+document.getElementById('{{ form.media.id_for_label }}')?.addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function(evt) {
       const preview = document.createElement('div');
       preview.className = "mt-4";
-      preview.innerHTML = `
-        <img src="${evt.target.result}" class="max-w-xs rounded-xl shadow-sm mb-2"/>
-        <p class="text-sm text-neutral-500">${file.name}</p>
-      `;
+      let inner = `<p class="text-sm text-neutral-500">${file.name}</p>`;
+      if (file.type.startsWith('image/')) {
+        inner = `<img src="${evt.target.result}" class="max-w-xs rounded-xl shadow-sm mb-2"/>` + inner;
+      }
+      preview.innerHTML = inner;
       e.target.insertAdjacentElement('afterend', preview);
     };
     reader.readAsDataURL(file);

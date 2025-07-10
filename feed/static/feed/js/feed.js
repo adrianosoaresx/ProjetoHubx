@@ -38,16 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files[0]
 
       if (file) {
-        // Verificar se é uma imagem
-        if (file.type.startsWith("image/")) {
-          fileText.textContent = `Selecionado: ${file.name}`
-          fileText.style.color = "var(--success-color)"
-        } else {
-          alert("Por favor, selecione apenas arquivos de imagem.")
-          fileInput.value = ""
-          fileText.textContent = originalText
-          fileText.style.color = "var(--text-secondary)"
-        }
+        fileText.textContent = `Selecionado: ${file.name}`
+        fileText.style.color = "var(--success-color)"
       } else {
         fileText.textContent = originalText
         fileText.style.color = "var(--text-secondary)"
