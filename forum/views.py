@@ -10,17 +10,17 @@ from django.views.generic import (
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 
-from core.permissions import GerenteRequiredMixin
+from core.permissions import GerenteRequiredMixin, NoSuperadminMixin
 from .models import Categoria, Topico, Resposta
 from .forms import TopicoForm, RespostaForm, CategoriaForm
 
 
-class CategoriaListView(LoginRequiredMixin, ListView):
+class CategoriaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Categoria
     template_name = "forum/categoria_list.html"
 
 
-class TopicoListView(LoginRequiredMixin, ListView):
+class TopicoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Topico
     template_name = "forum/topico_list.html"
 
@@ -34,7 +34,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
         return context
 
 
-class TopicoDetailView(LoginRequiredMixin, DetailView):
+class TopicoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Topico
     template_name = "forum/topico_detail.html"
 
@@ -44,7 +44,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class TopicoCreateView(LoginRequiredMixin, CreateView):
+class TopicoCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = Topico
     form_class = TopicoForm
     template_name = "forum/topico_form.html"
@@ -57,7 +57,7 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("forum:topico_detail", kwargs={"pk": self.object.pk})
 
 
-class RespostaCreateView(LoginRequiredMixin, CreateView):
+class RespostaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = Resposta
     form_class = RespostaForm
 
@@ -69,12 +69,12 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         return redirect("forum:topico_detail", pk=self.topico.pk)
 
 
-class CategoriaManageListView(GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class CategoriaManageListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Categoria
     template_name = "forum/categoria_manage_list.html"
 
 
-class CategoriaCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+class CategoriaCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = "forum/categoria_form.html"
@@ -85,7 +85,7 @@ class CategoriaCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class CategoriaUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class CategoriaUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Categoria
     form_class = CategoriaForm
     template_name = "forum/categoria_form.html"
@@ -96,7 +96,7 @@ class CategoriaUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class CategoriaDeleteView(GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+class CategoriaDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Categoria
     template_name = "forum/categoria_confirm_delete.html"
     success_url = reverse_lazy("forum:categoria_manage_list")

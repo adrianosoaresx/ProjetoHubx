@@ -31,3 +31,29 @@ class ClienteRequiredMixin(UserPassesTestMixin):
 
     def test_func(self):
         return self.request.user.tipo_id == User.Tipo.CLIENTE
+
+
+class NoSuperadminMixin(UserPassesTestMixin):
+    """Bloqueia acesso ao usuário root (SUPERADMIN)."""
+
+    def test_func(self):
+        return self.request.user.tipo_id != User.Tipo.SUPERADMIN
+
+
+def no_superadmin_required(view_func=None):
+    """Decorator que nega acesso ao usuário root."""
+    from functools import wraps
+    from django.http import HttpResponseForbidden
+
+    def decorator(func):
+        @wraps(func)
+        def _wrapped(request, *args, **kwargs):
+            if request.user.tipo_id == User.Tipo.SUPERADMIN:
+                return HttpResponseForbidden()
+            return func(request, *args, **kwargs)
+
+        return _wrapped
+
+    if view_func:
+        return decorator(view_func)
+    return decorator

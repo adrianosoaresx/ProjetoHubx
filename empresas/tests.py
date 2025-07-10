@@ -12,12 +12,11 @@ class EmpresaVisibilityTests(TestCase):
         self.client = Client()
         self.User = get_user_model()
 
-    def test_root_sees_all_companies(self):
+    def test_root_is_denied(self):
         root_user = self.User.objects.get(username="root")
         self.client.force_login(root_user)
         response = self.client.get(reverse("empresas:lista"))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(set(response.context["empresas"]), set(Empresa.objects.all()))
+        self.assertEqual(response.status_code, 403)
 
     def test_org_user_sees_organization_companies(self):
         user = self.User.objects.exclude(is_superuser=True).first()
