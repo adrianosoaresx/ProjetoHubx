@@ -15,11 +15,15 @@ class Post(models.Model):
 
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     conteudo = models.TextField(blank=True)
-    media = models.FileField(
-        upload_to="feed/media/%Y/%m/",
+    image = models.ImageField(
+        upload_to="uploads/",
         blank=True,
         null=True,
-        verbose_name="Mídia",
+    )
+    pdf = models.FileField(
+        upload_to="uploads/",
+        blank=True,
+        null=True,
     )
     publico = models.BooleanField(default=True)
     tipo_feed = models.CharField(

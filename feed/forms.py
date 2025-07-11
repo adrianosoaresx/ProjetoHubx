@@ -9,12 +9,13 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["conteudo", "media"]
+        fields = ["conteudo", "image", "pdf"]
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={"class": "form-control", "rows": 4, "placeholder": "Compartilhe algo..."}
             ),
-            "media": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "pdf": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -26,8 +27,13 @@ class PostForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        img = cleaned_data.get("image")
+        pdf = cleaned_data.get("pdf")
         conteudo = cleaned_data.get("conteudo")
-        media = cleaned_data.get("media")
-        if not conteudo and not media:
+
+        if img and pdf:
+            raise forms.ValidationError("Envie apenas imagem OU PDF, não ambos.")
+        if not conteudo and not img and not pdf:
             raise forms.ValidationError("Informe um conteúdo ou selecione uma mídia.")
+
         return cleaned_data

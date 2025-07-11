@@ -30,15 +30,23 @@
     </div>
 
     <div>
-      <label for="{{ form.imagem.id_for_label }}" class="block text-sm font-medium text-neutral-700">
-        {{ form.imagem.label }}
-      </label>
-      <input type="file" id="{{ form.imagem.id_for_label }}" name="{{ form.imagem.name }}" accept="image/*" class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
-      {% if form.imagem.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.imagem.errors }}</p>
+      <label for="id_file" class="block text-sm font-medium text-neutral-700">Arquivo (imagem ou PDF)</label>
+      <input type="file" id="id_file" name="file" accept="image/*,.pdf" class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
+      {% if form.image.errors or form.pdf.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.image.errors }} {{ form.pdf.errors }}</p>
       {% endif %}
-      {% if post.imagem %}
-        <img src="{{ post.imagem.url }}" alt="" class="max-w-xs rounded-xl shadow-sm mt-2">
+      {% if post.pdf %}
+        <div class="relative mt-2">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="PDF" class="max-w-xs rounded-xl shadow-sm">
+          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+            <i class="fa-solid fa-eye"></i>
+          </a>
+          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>
+      {% elif post.image %}
+        <img src="{{ post.image.url }}" alt="" class="max-w-xs rounded-xl shadow-sm mt-2">
       {% endif %}
     </div>
 

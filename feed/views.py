@@ -67,6 +67,14 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
+        file = self.request.FILES.get("file")
+        if file:
+            files = self.request.FILES.copy()
+            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
+                files["pdf"] = file
+            else:
+                files["image"] = file
+            kwargs["files"] = files
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -106,7 +114,15 @@ def post_update(request, pk):
         return redirect("feed:post_detail", pk=pk)
 
     if request.method == "POST":
-        form = PostForm(request.POST, request.FILES, instance=post, user=request.user)
+        files = request.FILES
+        file = request.FILES.get("file")
+        if file:
+            files = request.FILES.copy()
+            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
+                files["pdf"] = file
+            else:
+                files["image"] = file
+        form = PostForm(request.POST, files, instance=post, user=request.user)
         if form.is_valid():
             destino = form.cleaned_data.get("destino")
             if destino == "publico":
