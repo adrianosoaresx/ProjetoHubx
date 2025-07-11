@@ -1,52 +1,54 @@
 {% extends "base.html" %}
-{% load static %}
 {% block content %}
 
-<div class="flex items-center justify-between mb-6">
-  <a href="{% url 'agenda:calendario_mes' prev_ano prev_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&laquo;</a>
-  <h1 class="text-2xl font-semibold">{{ data_atual|date:"F Y" }}</h1>
-  <a href="{% url 'agenda:calendario_mes' next_ano next_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&raquo;</a>
-</div>
+<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <h2 class="font-semibold text-2xl mb-4 flex items-center justify-between">
+      <a href="{% url 'agenda:calendario_mes' prev_ano prev_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&laquo;</a>
+      <span>{{ data_atual|date:"F Y" }}</span>
+      <a href="{% url 'agenda:calendario_mes' next_ano next_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&raquo;</a>
+    </h2>
+    <a href="{% url 'agenda:evento_novo' %}"
+       class="inline-flex items-center gap-2 btn btn-primary sm:ml-auto sm:order-last mt-4 sm:mt-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round"
+             stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Novo Evento
+    </a>
+  </div>
 
-<!-- GRADE DO MÊS -->
-<div class="grid grid-cols-7 gap-px bg-gray-300 rounded overflow-hidden
-            text-sm leading-tight select-none"
-     style="height: calc(100vh - 16rem);">
-
-  {% for dia in dias_mes %}
-    <div class="bg-white flex flex-col {% if not dia.mes_atual %}opacity-40{% endif %}"
-         style="min-height: calc((100vh - 16rem) / 6);"
-         hx-get="{% url 'agenda:lista_eventos' dia.data|date:'Y-m-d' %}"
-         hx-target="#eventos-dia"
-         hx-swap="innerHTML">
-      <!-- Cabeçalho do dia -->
-      <div class="px-2 pt-2 pb-1 flex items-center justify-between">
-        <span class="{% if dia.hoje %}bg-emerald-600 text-white{% endif %}
-                     inline-block w-6 h-6 leading-6 text-center rounded-full">
-          {{ dia.data.day }}
-        </span>
-        {% if dia.eventos|length > 3 %}
-          <span class="text-xs text-gray-400">+{{ dia.eventos|length|add:"-3" }}</span>
-        {% endif %}
-      </div>
-
-      <!-- Lista de eventos (máx 3  – demais são indicados no “+N”) -->
-      <div class="flex-1 overflow-hidden space-y-1 px-2 pb-2">
-        {% for ev in dia.eventos|slice:":3" %}
-          <a href="{% url 'agenda:evento_detail' ev.id %}"
-             class="block bg-emerald-50 border border-emerald-200 text-emerald-800
-                    rounded px-1.5 py-0.5 text-xs leading-tight
-                    hover:bg-emerald-100 transition
-                    line-clamp-3">
-            {{ ev.titulo }}
-          </a>
-        {% endfor %}
-      </div>
+  <section class="mt-6">
+    <div class="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden text-sm leading-tight select-none">
+      {% for dia in dias_mes %}
+        <div class="relative bg-white p-4 h-28 align-top {% if not dia.mes_atual %}text-gray-400{% else %}text-gray-900{% endif %}"
+             hx-get="{% url 'agenda:lista_eventos' dia.data|date:'Y-m-d' %}"
+             hx-target="#eventos-dia" hx-trigger="click">
+          <div class="flex items-center justify-between mb-2">
+            <span class="{% if dia.hoje %}ring-2 ring-primary-600 rounded-full{% endif %} inline-block w-6 h-6 leading-6 text-center">
+              {{ dia.data.day }}
+            </span>
+            {% if dia.eventos|length > 3 %}
+              <span class="text-xs text-gray-400">+{{ dia.eventos|length|add:"-3" }}</span>
+            {% endif %}
+          </div>
+          <ul class="space-y-1">
+            {% for ev in dia.eventos|slice:":3" %}
+              <li>
+                <a href="{% url 'agenda:evento_detail' ev.id %}"
+                   class="block bg-emerald-50 border border-emerald-200 text-emerald-800 rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-emerald-100 transition line-clamp-3"
+                   hx-get="{% url 'agenda:evento_detail' ev.id %}"
+                   hx-target="#modal" hx-trigger="click">
+                  {{ ev.titulo }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
     </div>
-  {% endfor %}
-</div>
+  </section>
 
-<!-- Container onde os eventos do dia selecionado serão injetados via HTMX -->
-<div id="eventos-dia" class="mt-8"></div>
+  <div id="eventos-dia" class="mt-8"></div>
+</section>
 
 {% endblock %}
