@@ -87,3 +87,12 @@ def exemplo_view(request):
     return render(request, "pagina.html")
 ```
 
+### Compilar o Tailwind
+
+Após instalar as dependências Python e aplicar as migrações, use o Node para gerar o CSS:
+
+```bash
+npm install
+npm run build
+```
+

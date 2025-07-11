@@ -1,4 +1,5 @@
 {% comment %}Lista de postagens reutilizável com Tailwind{% endcomment %}
+{% load static %}
 
 <div class="space-y-6">
   {% for post in posts %}
@@ -22,17 +23,19 @@
         {{ post.conteudo|linebreaks }}
       </div>
 
-      {% if post.media %}
+      {% if post.pdf %}
+        <div class="relative">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="PDF" class="rounded-xl shadow-sm max-w-full">
+          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+            <i class="fa-solid fa-eye"></i>
+          </a>
+          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>
+      {% elif post.image %}
         <div class="feed-media">
-          {% if post.media.url|lower|slice:'-4:' == '.jpg' or
-                post.media.url|lower|slice:'-4:' == '.png' or
-                post.media.url|lower|slice:'-4:' == '.gif' %}
-              <img src="{{ post.media.url }}" alt="mídia do post" class="rounded-xl shadow-sm max-w-full">
-          {% elif post.media.url|lower|slice:'-4:' == '.mp4' %}
-              <video controls src="{{ post.media.url }}" class="w-100"></video>
-          {% else %}
-              <a href="{{ post.media.url }}" download>Baixar arquivo</a>
-          {% endif %}
+          <img src="{{ post.image.url }}" alt="mídia do post" class="rounded-xl shadow-sm max-w-full">
         </div>
       {% endif %}
     </article>
