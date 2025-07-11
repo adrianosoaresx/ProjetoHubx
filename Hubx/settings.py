@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'tokens.apps.TokensConfig',
     'nucleos',
     'eventos',
+    'agenda',
     'channels',
     'chat',
     'forum',
