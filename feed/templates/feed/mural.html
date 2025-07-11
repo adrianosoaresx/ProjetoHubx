@@ -14,7 +14,7 @@
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-neutral-900">Meu Mural</h1>
     <div class="flex gap-2">
-      <a href="{% url 'feed:feed' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Ver Feed Global</a>
+      <a href="{% url 'feed:listar' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Ver Feed Global</a>
       {% if not request.user.tipo.descricao == "root" %}
       <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 focus-visible:ring">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

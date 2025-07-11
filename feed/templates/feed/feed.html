@@ -21,9 +21,10 @@
   <div class="flex items-center gap-4 mb-4">
     <label class="font-semibold">Filtrar:</label>
     <select id="filtro-nucleo" name="nucleo"
-            hx-get="{% url 'feed:feed' %}"
+            hx-get="{% url 'feed:listar' %}"
             hx-target="#feed-grid"
-            hx-include="#filtro-nucleo"
+            hx-indicator="#feed-loading"
+            hx-include="#feed-search,#filtro-nucleo"
             class="rounded border-gray-300">
       <option value="">Público</option>
       {% for n in nucleos_do_usuario %}
@@ -34,10 +35,13 @@
 
   <input type="search" name="q" id="feed-search"
          placeholder="Buscar postagens…"
-         hx-get="{% url 'feed:feed' %}"
+         hx-get="{% url 'feed:listar' %}"
          hx-trigger="keyup changed delay:500ms"
          hx-target="#feed-grid"
+         hx-include="#filtro-nucleo"
          class="w-full rounded border-gray-300 mb-6">
+
+  <div id="feed-loading" class="htmx-indicator">Carregando…</div>
 
   {% include "feed/_grid.html" %}
 

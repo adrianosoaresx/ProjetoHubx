@@ -8,7 +8,7 @@
 
   <!-- Cabeçalho -->
   <div class="mb-6 flex items-center gap-4">
-    <a href="{% url 'feed:feed' %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+    <a href="{% url 'feed:listar' %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
       <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6"/>
       </svg>
@@ -70,13 +70,18 @@
     </div>
 
     <!-- Ações -->
-    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'feed:feed' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+    <div class="flex justify-end gap-4 mt-6">
+      <button type="submit"
+              class="inline-flex items-center gap-2 rounded bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700 focus-visible:ring">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
+          <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 0 1 0 1.42l-7.5 7.5a1 1 0 0 1-1.42 0l-3.5-3.5a1 1 0 1 1 1.42-1.42l2.79 2.79 6.79-6.79a1 1 0 0 1 1.42 0Z" clip-rule="evenodd" />
+        </svg>
+        Salvar
+      </button>
+      <a href="{% url 'feed:listar' %}"
+         class="inline-flex items-center gap-2 rounded border border-neutral-300 px-5 py-2 hover:bg-neutral-100">
         Cancelar
       </a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        Publicar
-      </button>
     </div>
   </form>
 </section>

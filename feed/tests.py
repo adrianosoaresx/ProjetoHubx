@@ -40,11 +40,11 @@ class FeedViewTests(TestCase):
 
     def test_button_visibility(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse("feed:feed"))
+        response = self.client.get(reverse("feed:listar"))
         self.assertContains(response, "Nova postagem")
 
         self.client.force_login(self.root_user)
-        response = self.client.get(reverse("feed:feed"))
+        response = self.client.get(reverse("feed:listar"))
         self.assertNotContains(response, "Nova postagem")
 
     def test_common_user_can_post(self):
@@ -69,7 +69,7 @@ class FeedViewTests(TestCase):
         Post.objects.create(autor=self.user, conteudo="B", tipo_feed=Post.NUCLEO, nucleo=self.nucleo2)
 
         self.client.force_login(self.user)
-        url = reverse("feed:feed") + f"?nucleo={self.nucleo1.id}"
+        url = reverse("feed:listar") + f"?nucleo={self.nucleo1.id}"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         posts = list(response.context["posts"])
@@ -81,7 +81,27 @@ class FeedViewTests(TestCase):
         Post.objects.create(autor=self.user, conteudo="baz qux")
 
         self.client.force_login(self.user)
-        url = reverse("feed:feed") + "?q=qux"
+        url = reverse("feed:listar") + "?q=qux"
         response = self.client.get(url)
         self.assertEqual(len(response.context["posts"]), 1)
+        self.assertContains(response, "baz qux")
+
+    def test_form_has_submit_button(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("feed:nova_postagem"))
+        self.assertContains(response, 'type="submit"')
+
+    def test_feed_without_nucleo_shows_public_only(self):
+        Post.objects.create(autor=self.user, conteudo="public", publico=True)
+        Post.objects.create(
+            autor=self.user,
+            conteudo="priv",
+            publico=False,
+            nucleo=self.nucleo1,
+            tipo_feed=Post.NUCLEO,
+        )
+        self.client.force_login(self.user)
+        resp = self.client.get(reverse("feed:listar"))
+        self.assertEqual(len(resp.context["posts"]), 1)
+        self.assertIsNone(resp.context["posts"][0].nucleo)
 
