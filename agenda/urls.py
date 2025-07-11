@@ -17,6 +17,7 @@ urlpatterns = [
     path("<int:ano>/<int:mes>/", views.calendario, name="calendario_mes"),
     path("dia/<slug:dia_iso>/", views.lista_eventos, name="lista_eventos"),
     # CRUD
+    path("evento/novo/", EventoCreateView.as_view(), name="evento_novo"),
     path("novo/", EventoCreateView.as_view(), name="evento_create"),
     path("<int:pk>/", EventoDetailView.as_view(), name="evento_detail"),
     path("<int:pk>/editar/", EventoUpdateView.as_view(), name="evento_update"),

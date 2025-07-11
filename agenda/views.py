@@ -13,6 +13,7 @@ from django.views.generic import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
+from django.core.exceptions import PermissionDenied
 from django.views import View
 from core.permissions import (
     AdminRequiredMixin,
@@ -83,6 +84,11 @@ class EventoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
     form_class = EventoForm
     template_name = "agenda/create.html"
     success_url = reverse_lazy("agenda:calendario")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, "tipo_id") or request.user.tipo_id not in {User.Tipo.ADMIN, User.Tipo.SUPERADMIN}:
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         if self.request.user.tipo_id == User.Tipo.ADMIN:

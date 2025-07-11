@@ -12,6 +12,8 @@ class SuperadminRequiredMixin(UserPassesTestMixin):
 class AdminRequiredMixin(UserPassesTestMixin):
     """Permite acesso a superadministradores e administradores."""
 
+    raise_exception = True
+
     def test_func(self):
         return self.request.user.tipo_id in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}
 
@@ -37,7 +39,8 @@ class NoSuperadminMixin(UserPassesTestMixin):
     """Bloqueia acesso ao usuário root (SUPERADMIN)."""
 
     def test_func(self):
-        return self.request.user.tipo_id != User.Tipo.SUPERADMIN
+        user = self.request.user
+        return hasattr(user, "tipo_id") and user.tipo_id != User.Tipo.SUPERADMIN
 
 
 def no_superadmin_required(view_func=None):
