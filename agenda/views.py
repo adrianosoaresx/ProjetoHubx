@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 import calendar
 
 from django.contrib import messages
@@ -12,6 +12,7 @@ from django.views.generic import (
     DetailView,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404
 from django.views import View
 from core.permissions import (
     AdminRequiredMixin,
@@ -25,24 +26,40 @@ from .forms import EventoForm
 User = get_user_model()
 
 
-def calendario(request, ano=None, mes=None):
+def calendario(request, ano: int | None = None, mes: int | None = None):
     today = date.today()
-    ano = ano or today.year
-    mes = mes or today.month
+    ano = int(ano or today.year)
+    mes = int(mes or today.month)
+
+    try:
+        data_atual = date(ano, mes, 1)
+    except ValueError as exc:  # pragma: no cover - parametros invalidos
+        raise Http404("Data inválida") from exc
+
     cal = calendar.Calendar(calendar.SUNDAY)
     dias = []
 
     for dia in cal.itermonthdates(ano, mes):
         eventos = Evento.objects.filter(data_hora__date=dia)
-        dias.append({
-            "data": dia,
-            "hoje": dia == today,
-            "eventos": eventos,
-        })
+        dias.append(
+            {
+                "data": dia,
+                "hoje": dia == today,
+                "mes_atual": dia.month == mes,
+                "eventos": eventos,
+            }
+        )
+
+    prev_month = (data_atual - timedelta(days=1)).replace(day=1)
+    next_month = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
 
     context = {
         "dias_mes": dias,
-        "data_atual": date(ano, mes, 1),
+        "data_atual": data_atual,
+        "prev_ano": prev_month.year,
+        "prev_mes": prev_month.month,
+        "next_ano": next_month.year,
+        "next_mes": next_month.month,
     }
     return render(request, "agenda/calendario.html", context)
 
