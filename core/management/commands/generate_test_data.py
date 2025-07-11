@@ -5,7 +5,7 @@ from accounts.models import UserType
 from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
 from empresas.models import Empresa, Tag
-from eventos.models import Evento
+from agenda.models import Evento
 from django.utils import timezone
 from faker import Faker
 from datetime import timedelta

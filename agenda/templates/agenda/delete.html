@@ -9,7 +9,7 @@
 
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'eventos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+      <a href="{% url 'agenda:calendario' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
         Cancelar
       </a>
       <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">
