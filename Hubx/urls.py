@@ -38,6 +38,10 @@ urlpatterns = [
         include(("nucleos.urls", "nucleos"), namespace="nucleos"),
     ),
     path(
+        "agenda/",
+        include(("agenda.urls", "agenda"), namespace="agenda"),
+    ),
+    path(
         "eventos/",
         include(("eventos.urls", "eventos"), namespace="eventos"),
     ),

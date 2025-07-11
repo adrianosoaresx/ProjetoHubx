@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<h1 class="text-2xl font-semibold mb-6">{{ data_atual|date:"F Y" }}</h1>
+
+<!-- GRADE DO MÊS -->
+<div class="grid grid-cols-7 gap-px bg-gray-300 rounded overflow-hidden
+            text-sm leading-tight select-none"
+     style="height: calc(100vh - 16rem);">
+
+  {% for dia in dias_mes %}
+    <div class="bg-white flex flex-col"
+         style="min-height: calc((100vh - 16rem) / 6);"
+         hx-get="{% url 'agenda:lista_eventos' dia.data|date:'Y-m-d' %}"
+         hx-target="#eventos-dia"
+         hx-swap="innerHTML">
+      <!-- Cabeçalho do dia -->
+      <div class="px-2 pt-2 pb-1 flex items-center justify-between">
+        <span class="{% if dia.hoje %}bg-emerald-600 text-white{% endif %}
+                     inline-block w-6 h-6 leading-6 text-center rounded-full">
+          {{ dia.data.day }}
+        </span>
+        {% if dia.eventos|length > 3 %}
+          <span class="text-xs text-gray-400">+{{ dia.eventos|length|add:"-3" }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Lista de eventos (máx 3  – demais são indicados no “+N”) -->
+      <div class="flex-1 overflow-hidden space-y-1 px-2 pb-2">
+        {% for ev in dia.eventos|slice:":3" %}
+          <a href="{% url 'agenda:evento_detail' ev.id %}"
+             class="block bg-emerald-50 border border-emerald-200 text-emerald-800
+                    rounded px-1.5 py-0.5 text-xs leading-tight
+                    hover:bg-emerald-100 transition
+                    line-clamp-3">
+            {{ ev.titulo }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Container onde os eventos do dia selecionado serão injetados via HTMX -->
+<div id="eventos-dia" class="mt-8"></div>
+
+{% endblock %}
