@@ -25,18 +25,22 @@ class FeedListView(LoginRequiredMixin, ListView):
     model = Post
     template_name = "feed/feed.html"
     context_object_name = "posts"
+    paginate_by = 15
 
     def get_queryset(self):
-        q = self.request.GET.get("q", "")
+        q = self.request.GET.get("q", "").strip()
         nucleo_id = self.request.GET.get("nucleo")
-        qs = Post.objects.select_related("autor")
+        qs = (
+            Post.objects.select_related("autor", "nucleo")
+            .order_by("-criado_em")
+        )
         if nucleo_id:
             qs = qs.filter(nucleo_id=nucleo_id)
         else:
             qs = qs.filter(publico=True, nucleo__isnull=True)
         if q:
             qs = qs.filter(Q(conteudo__icontains=q))
-        return qs.order_by("-criado_em")
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -45,7 +49,7 @@ class FeedListView(LoginRequiredMixin, ListView):
 
     def render_to_response(self, context, **response_kwargs):
         if self.request.headers.get("HX-Request"):
-            return render(self.request, "feed/_grid.html", context)
+            return render(self.request, "feed/_grid.html", context, **response_kwargs)
         return super().render_to_response(context, **response_kwargs)
 
 
@@ -133,6 +137,6 @@ def post_delete(request, pk):
     if request.method == "POST":
         post.delete()
         messages.success(request, "Postagem removida.")
-        return redirect("feed:feed")
+        return redirect("feed:listar")
 
     return render(request, "feed/post_delete.html", {"post": post})

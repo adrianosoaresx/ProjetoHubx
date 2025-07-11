@@ -4,7 +4,7 @@ from . import views
 app_name = "feed"
 
 urlpatterns = [
-    path("", views.FeedListView.as_view(), name="feed"),
+    path("", views.FeedListView.as_view(), name="listar"),
     path("mural/", views.meu_mural, name="meu_mural"),
     path("novo/", views.NovaPostagemView.as_view(), name="nova_postagem"),
     path("<int:pk>/", views.post_detail, name="post_detail"),

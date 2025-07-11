@@ -27,7 +27,7 @@ class FeedPublicPrivateTests(TestCase):
             publico=True,
             tipo_feed=Post.PUBLICO,
         )
-        resp = self.client.get(reverse("feed:feed"))
+        resp = self.client.get(reverse("feed:listar"))
         self.assertContains(resp, "public")
 
     def test_private_post_hidden_on_feed(self):
@@ -37,7 +37,7 @@ class FeedPublicPrivateTests(TestCase):
             publico=False,
             tipo_feed=Post.PUBLICO,
         )
-        resp = self.client.get(reverse("feed:feed"))
+        resp = self.client.get(reverse("feed:listar"))
         self.assertNotContains(resp, "private")
 
     def test_nucleo_post_only_with_filter(self):
@@ -48,9 +48,16 @@ class FeedPublicPrivateTests(TestCase):
             publico=False,
             tipo_feed=Post.NUCLEO,
         )
-        resp = self.client.get(reverse("feed:feed"))
+        resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context["posts"]), 0)
 
-        resp = self.client.get(reverse("feed:feed") + f"?nucleo={self.nucleo.id}")
+        resp = self.client.get(reverse("feed:listar") + f"?nucleo={self.nucleo.id}")
         self.assertEqual(len(resp.context["posts"]), 1)
         self.assertEqual(resp.context["posts"][0].nucleo, self.nucleo)
+
+    def test_search_returns_matching_posts(self):
+        Post.objects.create(autor=self.user, conteudo="alpha bravo")
+        Post.objects.create(autor=self.user, conteudo="charlie delta")
+        resp = self.client.get(reverse("feed:listar") + "?q=alpha")
+        self.assertEqual(len(resp.context["posts"]), 1)
+        self.assertContains(resp, "alpha bravo")
