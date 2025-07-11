@@ -1,34 +1,125 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+###############################################################################
+# .gitignore — Projeto Hubx                                                   #
+# Stack: Django 5 + Python 3.12 • Next.js/Tailwind CSS 3 • HTMX • SQLite      #
+# Organizado por blocos para fácil manutenção                                 #
+###############################################################################
 
-# dependencies
-/node_modules
+##############################
+# Arquivos de sistema / OS   #
+##############################
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# debug
+##############################
+# Logs e relatórios          #
+##############################
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.venv*
+##############################
+# Ambiente Python            #
+##############################
+# Byte‑code / cache
+__pycache__/
+*.py[cod]
+*$py.class
 
-# vercel
-.vercel
+# Ambientes virtuais
+.venv*/
+venv*/
+env*/
+ENV*/
 
-# typescript
+# Build / distribuição Python
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+share/python-wheels/
+pip-log.txt
+pip-delete-this-directory.txt
+*.spec
+MANIFEST
+
+##############################
+# Projeto Django             #
+##############################
+# Banco de dados local
+*.sqlite3
+db.sqlite3
+
+# Variáveis de ambiente / segredos
+.env
+.env.*
+!.env.example              # mantenha apenas o exemplo
+
+# Arquivos gerados pelo collectstatic
+/staticfiles/
+/static_root/
+
+# Arquivos enviados pelo usuário (mídia local somente em dev)
+media/
+uploads/
+
+##############################
+# Testes, cobertura, linters #
+##############################
+.coverage
+coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+##############################
+# Node / Next.js / Tailwind  #
+##############################
+node_modules/
+.cache/                   # Vite/Tailwind JIT ou PostCSS
+.parcel-cache/
+.postcss-cache/
+.pnpm-store/
+# Builds
+.next/
+out/
+build/
+public/build/
+public/dist/
+dist/
 *.tsbuildinfo
 next-env.d.ts
 
-# Python cache and artifacts
-**/__pycache__/
-*.py[cod]
+##############################
+# IDE / Editor               #
+##############################
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
 
-# Uploaded media files
-media/
+##############################
+# Docker / PID files         #
+##############################
+*.pid
+
+##############################
+# Arquivos temporários       #
+##############################
+*.bak
+*.tmp
+*.temp
+*.swp
+*.orig
+*~
