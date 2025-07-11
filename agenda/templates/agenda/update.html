@@ -22,7 +22,7 @@
     {% endfor %}
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'eventos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+      <a href="{% url 'agenda:calendario' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
         Cancelar
       </a>
       <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
@@ -42,7 +42,7 @@
             <p class="text-xs text-neutral-500">{{ inscrito.email }}</p>
           </div>
           {% if user.tipo_id in "1,2,4"|split:"," %}
-          <form method="post" action="{% url 'eventos:remove_inscrito' object.pk inscrito.pk %}">
+          <form method="post" action="{% url 'agenda:evento_remove_inscrito' object.pk inscrito.pk %}">
             {% csrf_token %}
             <button type="submit" class="text-sm text-red-600 hover:underline">Remover</button>
           </form>

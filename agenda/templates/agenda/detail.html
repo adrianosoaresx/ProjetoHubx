@@ -23,7 +23,7 @@
 
   <!-- Inscrição -->
   {% if user.is_authenticated and user.tipo_id not in (1,4) %}
-    <form method="post" action="{% url 'eventos:subscribe' object.pk %}" class="mb-10">
+    <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
       {% csrf_token %}
       {% if user in object.inscritos.all %}
         <button type="submit" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
@@ -64,7 +64,7 @@
 
   <!-- Voltar -->
   <div class="flex justify-end mt-10">
-    <a href="{% url 'eventos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+    <a href="{% url 'agenda:calendario' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
       Voltar
     </a>
   </div>

@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
 from empresas.models import Empresa
-from eventos.models import Evento
+from agenda.models import Evento
 from datetime import timedelta
 from django.utils import timezone
 

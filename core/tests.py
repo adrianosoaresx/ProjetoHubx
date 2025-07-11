@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 
 from nucleos.models import Nucleo
 from empresas.models import Empresa
-from eventos.models import Evento
+from agenda.models import Evento
 
 
 class GenerateTestDataCommandTests(TestCase):

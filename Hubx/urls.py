@@ -2,6 +2,7 @@
 
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -43,7 +44,11 @@ urlpatterns = [
     ),
     path(
         "eventos/",
-        include(("eventos.urls", "eventos"), namespace="eventos"),
+        RedirectView.as_view(url="/agenda/", permanent=True),
+    ),
+    path(
+        "eventos/<path:rest>/",
+        RedirectView.as_view(url="/agenda/%(rest)s", permanent=True),
     ),
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("forum/", include(("forum.urls", "forum"), namespace="forum")),
