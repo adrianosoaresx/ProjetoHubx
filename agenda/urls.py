@@ -14,6 +14,7 @@ app_name = "agenda"
 
 urlpatterns = [
     path("", views.calendario, name="calendario"),
+    path("<int:ano>/<int:mes>/", views.calendario, name="calendario_mes"),
     path("dia/<slug:dia_iso>/", views.lista_eventos, name="lista_eventos"),
     # CRUD
     path("novo/", EventoCreateView.as_view(), name="evento_create"),
