@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView
@@ -67,7 +67,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
-        file = self.request.FILES.get("file")
+        file = self.request.FILES.get("arquivo")
         if file:
             files = self.request.FILES.copy()
             if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
@@ -93,7 +93,10 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
             form.instance.tipo_feed = Post.NUCLEO
             form.instance.nucleo_id = destino
             form.instance.publico = False
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if self.request.headers.get("HX-Request") == "true":
+            return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
+        return response
 
 
 @login_required
@@ -115,7 +118,7 @@ def post_update(request, pk):
 
     if request.method == "POST":
         files = request.FILES
-        file = request.FILES.get("file")
+        file = request.FILES.get("arquivo")
         if file:
             files = request.FILES.copy()
             if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
