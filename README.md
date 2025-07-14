@@ -96,3 +96,6 @@ npm install
 npm run build
 ```
 
+
+## Estratégia multi-tenant (por Organization)
+Todos os usuários pertencem a uma única organização. As consultas utilizam `User.objects.filter_current_org(request.user.organization)` para isolar dados e a administração filtra registros pela organização do usuário logado. Superusuários não possuem organização associada e visualizam todos os dados.

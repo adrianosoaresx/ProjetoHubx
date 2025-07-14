@@ -11,8 +11,14 @@ from .models import (
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ["username", "email", "tipo", "organizacao", "is_staff"]
-    list_filter = ["tipo", "organizacao"]
+    list_display = ["username", "email", "tipo", "organization", "is_staff"]
+    list_filter = ["tipo", "organization"]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related("organization")
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(organization=request.user.organization)
 
 
 @admin.register(NotificationSettings)
