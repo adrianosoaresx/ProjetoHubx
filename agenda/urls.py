@@ -9,7 +9,7 @@ from .views import (
     EventoSubscribeView,
     EventoRemoveInscritoView,
 )
-
+from .views import EventoFeedbackView
 app_name = "agenda"
 
 urlpatterns = [
@@ -27,4 +27,6 @@ urlpatterns = [
         EventoRemoveInscritoView.as_view(),
         name="evento_remover_inscrito",
     ),
+    path("evento/<int:pk>/feedback/", EventoFeedbackView.as_view(), name="evento_feedback"),
+
 ]
