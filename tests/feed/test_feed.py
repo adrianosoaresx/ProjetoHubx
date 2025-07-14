@@ -13,7 +13,12 @@ class FeedPublicPrivateTests(TestCase):
         User = get_user_model()
         self.root_user = User.objects.get(username="root")
         tipo_client, _ = UserType.objects.get_or_create(descricao="client")
-        self.user = User.objects.create_user("normal", password="pass", tipo=tipo_client)
+        self.user = User.objects.create_user(
+            email="normal@example.com",
+            username="normal",
+            password="pass",
+            tipo=tipo_client,
+        )
 
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         self.nucleo = Nucleo.objects.create(nome="N1", organizacao=org)

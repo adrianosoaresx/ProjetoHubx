@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from .forms import CustomUserChangeForm, CustomUserCreationForm
 
 from .models import (
     User,
@@ -10,9 +12,32 @@ from .models import (
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ["username", "email", "tipo", "organization", "is_staff"]
-    list_filter = ["tipo", "organization"]
+class UserAdmin(BaseUserAdmin):
+    add_form = CustomUserCreationForm
+    form = CustomUserChangeForm
+    list_display = ("email", "username", "organization", "is_staff")
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        (
+            "Personal info",
+            {"fields": ("username", "first_name", "last_name", "organization", "tipo")},
+        ),
+        (
+            "Permissions",
+            {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
+        ),
+        ("Important dates", {"fields": ("last_login", "date_joined")}),
+    )
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "username", "password1", "password2", "organization", "tipo"),
+            },
+        ),
+    )
+    list_filter = ("organization", "is_staff", "is_superuser")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request).select_related("organization")

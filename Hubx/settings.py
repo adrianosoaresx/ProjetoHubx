@@ -180,3 +180,8 @@ LOGIN_URL = '/accounts/login/'
 
 # Redireciona o usuario autenticado para seu perfil apos o login.
 LOGIN_REDIRECT_URL = '/perfil/'
+
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
