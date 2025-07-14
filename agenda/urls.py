@@ -30,5 +30,9 @@ urlpatterns = [
         name="evento_remover_inscrito",
     ),
     path("evento/<int:pk>/feedback/", EventoFeedbackView.as_view(), name="evento_feedback"),
+    path("eventos_por_dia/", views.eventos_por_dia, name="eventos_por_dia"),
+
+
+
 
 ]

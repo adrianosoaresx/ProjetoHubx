@@ -28,6 +28,7 @@ from .models import Evento
 from .forms import EventoForm
 from django.http import HttpResponseForbidden
 from .models import FeedbackNota
+from django.http import Http404
 
 User = get_user_model()
 
@@ -230,3 +231,10 @@ class EventoFeedbackView(LoginRequiredMixin, View):
 
         messages.success(request, "Feedback registrado com sucesso.")
         return redirect("agenda:evento_detalhe", pk=pk)
+    
+    def eventos_por_dia(request):
+        """Compatível com reverse('agenda:eventos_por_dia') via ?dia=YYYY-MM-DD"""
+        dia_iso = request.GET.get("dia")
+        if not dia_iso:
+            raise Http404("Parâmetro 'dia' ausente.")
+        return lista_eventos(request, dia_iso)

@@ -29,7 +29,7 @@ def evento(organizacao):
 @pytest.fixture
 def usuario_comum(client):
     user = User.objects.create_user(
-        username="comum", email="comum@example.com", password="12345", tipo_id=User.Tipo.PADRAO
+        username="comum", email="comum@example.com", password="12345", tipo_id=User.Tipo.CLIENTE
     )
     client.force_login(user)
     return user
@@ -48,6 +48,7 @@ def gerente(organizacao):
 
 def test_evento_detail_htmx(evento, client):
     url = reverse("agenda:evento_detalhe", args=[evento.pk])
+    client.force_login(evento.organizacao.user_set.first())
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert evento.titulo in response.content.decode()

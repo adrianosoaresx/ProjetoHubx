@@ -52,6 +52,7 @@ def test_calendar_view_get(client):
 
 def test_evento_detail_view_htmx(evento, client):
     url = reverse("agenda:evento_detalhe", args=[evento.pk])
+    client.force_login(evento.organizacao.user_set.first())
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert "evento" in response.context
@@ -65,7 +66,7 @@ def test_evento_detail_view_sem_htmx(evento, client):
 
 def test_eventos_por_dia_view_com_evento(client, evento):
     dia = evento.data_hora.date().isoformat()
-    url = reverse("agenda:eventos_por_dia")") + f"?dia={dia}"
+    url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert evento.titulo in response.content.decode()
@@ -73,7 +74,7 @@ def test_eventos_por_dia_view_com_evento(client, evento):
 
 def test_eventos_por_dia_view_sem_htmx(client, evento):
     dia = evento.data_hora.date().isoformat()
-    url = reverse("agenda:eventos_por_dia")") + f"?dia={dia}"
+    url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
     response = client.get(url)
     assert response.status_code in [302, 403, 404]
 

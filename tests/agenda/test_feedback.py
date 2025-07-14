@@ -49,4 +49,5 @@ def test_envio_feedback_pos_evento(evento_passado, usuario, client):
 
     evento_passado.refresh_from_db()
     # Aqui depende do modelo: adaptável
-    assert evento_passado.feedbacknota_set.filter(usuario=usuario, nota=5).exists()
+    assert evento_passado.feedbacks.filter(usuario=usuario, nota=5).exists()
+
