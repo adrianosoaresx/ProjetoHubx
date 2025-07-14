@@ -8,9 +8,6 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
-from datetime import timedelta
-from django.utils import timezone
-import uuid
 
 
 class UserType(TimeStampedModel):
@@ -40,7 +37,36 @@ class UserQuerySet(models.QuerySet):
 
 
 class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
-    pass
+    """User manager que utiliza o email como identificador principal."""
+
+    def _create_user(self, email: str, password: str | None, **extra_fields):
+        if not email:
+            raise ValueError("Users must have an email address")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        if password:
+            user.set_password(password)
+        else:
+            user.set_unusable_password()
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email: str, password: str | None = None, **extra_fields):
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email: str, password: str, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
+        return self._create_user(email, password, **extra_fields)
+
+    def get_by_natural_key(self, email: str):
+        return self.get(email__iexact=email)
 
 
 class User(AbstractUser, TimeStampedModel):
@@ -61,6 +87,14 @@ class User(AbstractUser, TimeStampedModel):
         ),
         validators=[username_validator],
         error_messages={"unique": _("A user with that username already exists.")},
+    )
+
+    email = models.EmailField(
+        _("email address"),
+        unique=True,
+        blank=False,
+        null=False,
+        db_index=True,
     )
 
     # Campos adicionais
@@ -141,6 +175,9 @@ class User(AbstractUser, TimeStampedModel):
     )
 
     objects = CustomUserManager()
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
     @property
     def organizacao(self):
