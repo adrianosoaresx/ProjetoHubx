@@ -1,34 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="h-full bg-gray-50">
+{% load static %}
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>{% block title %}HubX{% endblock %}</title>
 
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#00b894',
-            muted: '#f9fafb',
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-          }
-        },
-      },
-    };
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link rel="preconnect" href="https://rsms.me/">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <link rel="stylesheet" href="{% static 'tailwind.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha384-pYTNyE466+vWXTjhBMWrMOL3pvN8MPmMXxMvmP0xSg6uSPRqCMgfHdCqkfNNPJBW" crossorigin="anonymous" referrerpolicy="no-referrer">
+  {% block extra_css %}{% endblock %}
 </head>
 
-<body class="bg-muted text-gray-800 font-sans min-h-screen flex flex-col">
+<body class="min-h-full flex flex-col font-sans text-gray-800">
 
   <!-- Navbar -->
   <header class="bg-white shadow">

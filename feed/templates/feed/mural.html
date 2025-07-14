@@ -2,10 +2,7 @@
 {% load static %}
 {% block title %}Meu Mural{% endblock %}
 
-{% block extra_css %}
-{{ block.super }}
-<link rel="stylesheet" href="{% static 'feed/css/feed.css' %}">
-{% endblock %}
+
 
 {% block content %}
 <section class="max-w-6xl mx-auto px-4 py-10">
@@ -16,10 +13,8 @@
     <div class="flex gap-2">
       <a href="{% url 'feed:listar' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Ver Feed Global</a>
       {% if not request.user.tipo.descricao == "root" %}
-      <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 focus-visible:ring">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
+      <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition">
+        <i class="fa-solid fa-circle-plus"></i>
         Nova postagem
       </a>
       {% endif %}
