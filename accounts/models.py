@@ -8,6 +8,7 @@ from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
+from core.fields import URLField
 
 
 class UserType(TimeStampedModel):
@@ -132,11 +133,11 @@ class User(AbstractUser, TimeStampedModel):
     cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)
     cep = models.CharField(max_length=10, blank=True)
-    facebook = models.URLField(blank=True)
-    twitter = models.URLField(blank=True)
-    instagram = models.URLField(blank=True)
-    linkedin = models.URLField(blank=True)
-    website = models.URLField(blank=True)
+    facebook = URLField(blank=True)
+    twitter = URLField(blank=True)
+    instagram = URLField(blank=True)
+    linkedin = URLField(blank=True)
+    website = URLField(blank=True)
     idioma = models.CharField(max_length=10, blank=True)
     fuso_horario = models.CharField(max_length=50, blank=True)
     perfil_publico = models.BooleanField(default=True)

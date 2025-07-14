@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta
+from django.utils.timezone import make_aware
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -47,7 +48,7 @@ class CalendarViewTests(TestCase):
         Evento.objects.create(
             organizacao=self.org,
             titulo="Evento",
-            data_hora=datetime.combine(dia, datetime.min.time()),
+            data_hora=make_aware(datetime.combine(dia, datetime.min.time())),
             duracao=timedelta(hours=1),
         )
         resp = self.client.get(
