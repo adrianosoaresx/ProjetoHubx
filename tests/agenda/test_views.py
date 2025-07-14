@@ -22,11 +22,11 @@ def organizacao():
 @pytest.fixture
 def usuario_logado(client, organizacao):
     user = User.objects.create_user(
-        username="testuser", email="test@example.com", password="12345", organization=organizacao
+        username="testuser", email="test@example.com", password="12345", organizacao=organizacao, tipo_id=User.Tipo.ADMIN
     )
     perm = Permission.objects.get(codename="add_evento")
     user.user_permissions.add(perm)
-    client.login(username="testuser", password="12345")
+    client.force_login(user)
     return user
 
 
@@ -65,7 +65,7 @@ def test_evento_detail_view_sem_htmx(evento, client):
 
 def test_eventos_por_dia_view_com_evento(client, evento):
     dia = evento.data_hora.date().isoformat()
-    url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
+    url = reverse("agenda:eventos_por_dia")") + f"?dia={dia}"
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
     assert evento.titulo in response.content.decode()
@@ -73,7 +73,7 @@ def test_eventos_por_dia_view_com_evento(client, evento):
 
 def test_eventos_por_dia_view_sem_htmx(client, evento):
     dia = evento.data_hora.date().isoformat()
-    url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
+    url = reverse("agenda:eventos_por_dia")") + f"?dia={dia}"
     response = client.get(url)
     assert response.status_code in [302, 403, 404]
 
