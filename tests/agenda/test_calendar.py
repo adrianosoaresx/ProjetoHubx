@@ -56,3 +56,18 @@ class CalendarViewTests(TestCase):
         self.assertIn("prev_ano", resp.context)
         self.assertIn("next_ano", resp.context)
 
+    def test_root_cannot_create_event(self):
+        User = get_user_model()
+        root = User.objects.get(username="root")
+        self.client.force_login(root)
+        resp = self.client.get(reverse("agenda:evento_novo"))
+        self.assertEqual(resp.status_code, 403)
+
+    def test_calendar_displays_month_in_portuguese(self):
+        self.client.force_login(self.admin)
+        resp = self.client.get(reverse("agenda:calendario"))
+        from django.utils.formats import date_format
+
+        month_name = date_format(date.today(), "F")
+        self.assertContains(resp, month_name)
+

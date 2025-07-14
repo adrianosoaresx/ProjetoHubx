@@ -19,13 +19,13 @@ urlpatterns = [
     # CRUD
     path("evento/novo/", EventoCreateView.as_view(), name="evento_novo"),
     path("novo/", EventoCreateView.as_view(), name="evento_create"),
-    path("<int:pk>/", EventoDetailView.as_view(), name="evento_detail"),
-    path("<int:pk>/editar/", EventoUpdateView.as_view(), name="evento_update"),
-    path("<int:pk>/excluir/", EventoDeleteView.as_view(), name="evento_delete"),
+    path("<int:pk>/", EventoDetailView.as_view(), name="evento_detalhe"),
+    path("<int:pk>/editar/", EventoUpdateView.as_view(), name="evento_editar"),
+    path("<int:pk>/excluir/", EventoDeleteView.as_view(), name="evento_excluir"),
     path("<int:pk>/inscrever/", EventoSubscribeView.as_view(), name="evento_subscribe"),
     path(
         "<int:pk>/inscrito/<int:user_id>/remover/",
         EventoRemoveInscritoView.as_view(),
-        name="evento_remove_inscrito",
+        name="evento_remover_inscrito",
     ),
 ]

@@ -8,13 +8,16 @@
       <span>{{ data_atual|date:"F Y" }}</span>
       <a href="{% url 'agenda:calendario_mes' next_ano next_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&raquo;</a>
     </h2>
+    {% if request.user.username != 'root' and perms.agenda.add_evento %}
     <a href="{% url 'agenda:evento_novo' %}"
-       class="inline-flex items-center gap-2 btn btn-primary sm:ml-auto sm:order-last mt-4 sm:mt-0">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
-             stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round"
-             stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+       class="btn-primary inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-600 sm:ml-auto sm:order-last mt-4 sm:mt-0"
+       aria-label="Novo Evento">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
         Novo Evento
     </a>
+    {% endif %}
   </div>
 
   <section class="mt-6">
@@ -34,9 +37,9 @@
           <ul class="space-y-1">
             {% for ev in dia.eventos|slice:":3" %}
               <li>
-                <a href="{% url 'agenda:evento_detail' ev.id %}"
+                <a href="{% url 'agenda:evento_detalhe' ev.id %}"
                    class="block bg-emerald-50 border border-emerald-200 text-emerald-800 rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-emerald-100 transition line-clamp-3"
-                   hx-get="{% url 'agenda:evento_detail' ev.id %}"
+                   hx-get="{% url 'agenda:evento_detalhe' ev.id %}"
                    hx-target="#modal" hx-trigger="click">
                   {{ ev.titulo }}
                 </a>
