@@ -13,7 +13,11 @@ class CalendarViewTests(TestCase):
         User = get_user_model()
         self.org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         self.admin = User.objects.create_user(
-            "admin", password="pass", tipo_id=User.Tipo.ADMIN, organizacao=self.org
+            email="admin@example.com",
+            username="admin",
+            password="pass",
+            tipo_id=User.Tipo.ADMIN,
+            organizacao=self.org,
         )
 
     def test_calendar_pt_br_renders(self):
@@ -27,7 +31,12 @@ class CalendarViewTests(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)
         User = get_user_model()
-        client_user = User.objects.create_user("cliente", password="pass", tipo_id=User.Tipo.CLIENTE)
+        client_user = User.objects.create_user(
+            email="cliente@example.com",
+            username="cliente",
+            password="pass",
+            tipo_id=User.Tipo.CLIENTE,
+        )
         self.client.force_login(client_user)
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)
