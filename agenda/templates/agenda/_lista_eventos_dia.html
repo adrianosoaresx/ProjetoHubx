@@ -5,7 +5,7 @@
 <ul class="space-y-2">
   {% for ev in eventos %}
     <li>
-      <a href="{% url 'agenda:evento_detail' ev.id %}"
+      <a href="{% url 'agenda:evento_detalhe' ev.id %}"
          class="block bg-white rounded shadow p-4 hover:bg-gray-50">
         <p class="font-medium">{{ ev.titulo }}</p>
         <p class="text-xs text-gray-500">

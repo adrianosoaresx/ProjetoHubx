@@ -2,7 +2,7 @@
 {% block title %}Editar Evento | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-3xl mx-auto px-4 py-10">
+<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-neutral-900 mb-6">Editar Evento</h1>
 
   <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
@@ -22,12 +22,8 @@
     {% endfor %}
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'agenda:calendario' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-        Cancelar
-      </a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        Salvar
-      </button>
+      <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="Cancelar">Cancelar</a>
+      <button type="submit" class="btn-primary" aria-label="Salvar">Salvar</button>
     </div>
   </form>
 
@@ -42,9 +38,9 @@
             <p class="text-xs text-neutral-500">{{ inscrito.email }}</p>
           </div>
           {% if user.tipo_id in "1,2,4"|split:"," %}
-          <form method="post" action="{% url 'agenda:evento_remove_inscrito' object.pk inscrito.pk %}">
+          <form method="post" action="{% url 'agenda:evento_remover_inscrito' object.pk inscrito.pk %}">
             {% csrf_token %}
-            <button type="submit" class="text-sm text-red-600 hover:underline">Remover</button>
+            <button type="submit" class="text-sm text-red-600 hover:underline" aria-label="Remover">Remover</button>
           </form>
           {% endif %}
         </div>
