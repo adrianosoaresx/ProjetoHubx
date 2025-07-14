@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Versão do HTMX utilizada nos templates
 HTMX_VERSION = "1.9.12"
 
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
