@@ -30,7 +30,7 @@ def evento_passado(organizacao):
 @pytest.fixture
 def usuario(client):
     user = User.objects.create_user(
-        username="pessoa", email="pessoa@example.com", password="12345", tipo_id=User.Tipo.PADRAO
+        username="pessoa", email="pessoa@example.com", password="12345", tipo_id=User.Tipo.CLIENTE
     )
     client.force_login(user)
     return user

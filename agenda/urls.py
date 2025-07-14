@@ -1,4 +1,6 @@
 from django.urls import path
+from .views import EventoFeedbackView
+
 
 from . import views
 from .views import (

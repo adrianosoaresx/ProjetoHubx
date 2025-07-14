@@ -26,6 +26,8 @@ from core.permissions import (
 
 from .models import Evento
 from .forms import EventoForm
+from django.http import HttpResponseForbidden
+from .models import FeedbackNota
 
 User = get_user_model()
 
@@ -197,3 +199,34 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             evento.inscritos.remove(inscrito)
             messages.success(request, "Inscrito removido.")  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
+
+class EventoFeedbackView(LoginRequiredMixin, View):
+    """Registra feedback pós-evento."""
+
+    def post(self, request, pk):
+        evento = get_object_or_404(Evento, pk=pk)
+        usuario = request.user
+
+        if usuario not in evento.inscritos.all():
+            return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
+
+        fim_evento = evento.data_hora + evento.duracao
+        if timezone.now() < fim_evento:
+            return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
+
+        try:
+            nota = int(request.POST.get("nota"))
+        except (TypeError, ValueError):
+            return HttpResponseForbidden("Nota inválida.")
+
+        if nota not in range(1, 6):
+            return HttpResponseForbidden("Nota fora do intervalo permitido (1–5).")
+
+        FeedbackNota.objects.update_or_create(
+            evento=evento,
+            usuario=usuario,
+            defaults={"nota": nota},
+        )
+
+        messages.success(request, "Feedback registrado com sucesso.")
+        return redirect("agenda:evento_detalhe", pk=pk)

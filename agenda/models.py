@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from organizacoes.models import Organizacao
 
@@ -27,8 +28,20 @@ class Evento(TimeStampedModel):
         verbose_name_plural = "Eventos"
         ordering = ["-data_hora"]
 
-    def __str__(self) -> str:  # pragma: no cover - simples
+    def __str__(self) -> str:
         return self.titulo
 
 
-__all__ = ["Evento"]
+class FeedbackNota(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="feedbacks")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    nota = models.PositiveSmallIntegerField()
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("evento", "usuario")
+        verbose_name = "Feedback do Evento"
+        verbose_name_plural = "Feedbacks dos Eventos"
+
+    def __str__(self):
+        return f"{self.usuario} → {self.evento} [{self.nota}]"
