@@ -38,29 +38,36 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'widget_tweaks',
-    'django_select2',
-    'phonenumber_field',
-    'core',
-    'dashboard',
-    'empresas',
-    'accounts.apps.AccountsConfig',
-    'organizacoes',
-    'tokens.apps.TokensConfig',
-    'nucleos',
-    'agenda',
-    'channels',
-    'chat',
-    'forum',
-    'feed',
+    # ‑‑‑‑ Apps nativos do Django ‑‑‑‑
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
+    # ‑‑‑‑ Terceiros (third‑party) ‑‑‑‑
+    "rest_framework",               # ← necessário para core.permissions
+    "rest_framework.authtoken",     # (opcional) tokens de API
+    "widget_tweaks",
+    "django_select2",
+    "phonenumber_field",
+    "channels",
+
+    # ‑‑‑‑ Apps da sua solução ‑‑‑‑
+    "core",
+    "dashboard",
+    "empresas",
+    "accounts.apps.AccountsConfig",
+    "organizacoes",
+    "tokens.apps.TokensConfig",
+    "nucleos",
+    "agenda",
+    "chat",
+    "forum",
+    "feed",
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
