@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from organizacoes.models import Organizacao
 
 from core.models import TimeStampedModel
+from core.fields import URLField
 
 User = get_user_model()
 
@@ -15,7 +16,7 @@ class Evento(TimeStampedModel):
     descricao = models.TextField(blank=True)
     data_hora = models.DateTimeField()
     duracao = models.DurationField(help_text="Duração do evento")
-    link_inscricao = models.URLField(blank=True)
+    link_inscricao = URLField(blank=True)
     briefing = models.TextField(blank=True)
     inscritos = models.ManyToManyField(
         User, related_name="eventos_inscritos", blank=True
