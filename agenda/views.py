@@ -1,9 +1,9 @@
-from datetime import date, timedelta
 import calendar
+from datetime import date, timedelta
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -11,11 +11,13 @@ from django.views.generic import (
     DeleteView,
     DetailView,
 )
+from django.db.models import DateTimeField, ExpressionWrapper, F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
 from django.views import View
+from django.utils import timezone
 from core.permissions import (
     AdminRequiredMixin,
     GerenteRequiredMixin,
@@ -28,8 +30,15 @@ from .forms import EventoForm
 User = get_user_model()
 
 
+def _queryset_por_organizacao(request):
+    qs = Evento.objects.all()
+    if request.user.tipo_id == User.Tipo.ADMIN:
+        qs = qs.filter(organizacao=request.user.organizacao)
+    return qs
+
+
 def calendario(request, ano: int | None = None, mes: int | None = None):
-    today = date.today()
+    today = timezone.localdate()
     ano = int(ano or today.year)
     mes = int(mes or today.month)
 
@@ -71,25 +80,31 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
 
 
 def lista_eventos(request, dia_iso):
-    eventos = list(
-        Evento.objects.filter(data_hora__date=dia_iso)
+    try:
+        dia = date.fromisoformat(dia_iso)
+    except ValueError as exc:  # pragma: no cover - parametros invalidos
+        raise Http404("Data inválida") from exc
+
+    eventos = (
+        Evento.objects.filter(data_hora__date=dia)
+        .annotate(
+            fim=ExpressionWrapper(
+                F("data_hora") + F("duracao"), output_field=DateTimeField()
+            )
+        )
         .select_related("organizacao")
         .prefetch_related("inscritos")
         .order_by("data_hora")
     )
-    for ev in eventos:
-        ev.fim = ev.data_hora + ev.duracao
+
     return render(
         request,
         "agenda/_lista_eventos_dia.html",
-        {
-            "eventos": eventos,
-            "dia_iso": dia_iso,
-        },
+        {"eventos": eventos, "dia_iso": dia_iso},
     )
 
 
-class EventoCreateView(NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, LoginRequiredMixin, CreateView):
+class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Evento
     form_class = EventoForm
     template_name = "agenda/create.html"
@@ -100,8 +115,6 @@ class EventoCreateView(NoSuperadminMixin, AdminRequiredMixin, PermissionRequired
     def dispatch(self, request, *args, **kwargs):
         if request.user.username == "root":
             raise PermissionDenied("Usuário root não pode criar eventos.")
-        if not hasattr(request.user, "tipo_id") or request.user.tipo_id not in {User.Tipo.ADMIN, User.Tipo.SUPERADMIN}:
-            raise PermissionDenied()
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -111,52 +124,50 @@ class EventoCreateView(NoSuperadminMixin, AdminRequiredMixin, PermissionRequired
         return super().form_valid(form)
 
 
-class EventoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Evento
     form_class = EventoForm
     template_name = "agenda/update.html"
     success_url = reverse_lazy("agenda:calendario")
 
+    permission_required = "agenda.change_evento"
+
     def get_queryset(self):  # pragma: no cover
-        qs = super().get_queryset()  # pragma: no cover - simples
-        if self.request.user.tipo_id == User.Tipo.ADMIN:  # pragma: no cover
-            qs = qs.filter(organizacao=self.request.user.organizacao)
-        return qs  # pragma: no cover
+        return _queryset_por_organizacao(self.request)
 
     def form_valid(self, form):  # pragma: no cover
         messages.success(self.request, "Evento atualizado com sucesso.")  # pragma: no cover
         return super().form_valid(form)  # pragma: no cover
 
 
-class EventoDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Evento
     template_name = "agenda/delete.html"
     success_url = reverse_lazy("agenda:calendario")
 
+    permission_required = "agenda.delete_evento"
+
     def get_queryset(self):  # pragma: no cover
-        qs = super().get_queryset()  # pragma: no cover - simples
-        if self.request.user.tipo_id == User.Tipo.ADMIN:  # pragma: no cover
-            qs = qs.filter(organizacao=self.request.user.organizacao)
-        return qs  # pragma: no cover
+        return _queryset_por_organizacao(self.request)
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
         messages.success(self.request, "Evento removido.")  # pragma: no cover
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Evento
     template_name = "agenda/detail.html"
 
     def get_queryset(self):
         return (
-            super().get_queryset()
+            _queryset_por_organizacao(self.request)
             .select_related("organizacao")
             .prefetch_related("inscritos")
         )
 
 
-class EventoSubscribeView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     """Inscreve ou remove o usuário do evento."""
 
     def post(self, request, pk):  # pragma: no cover
@@ -173,7 +184,7 @@ class EventoSubscribeView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequired
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
-class EventoRemoveInscritoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
     """Remove um inscrito do evento."""
 
     def post(self, request, pk, user_id):  # pragma: no cover
