@@ -1,5 +1,6 @@
 # accounts/models.py
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
@@ -33,12 +34,34 @@ cpf_validator = RegexValidator(
 )
 
 
+class UserQuerySet(models.QuerySet):
+    def filter_current_org(self, org):
+        return self.filter(organization=org)
+
+
+class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
+    pass
+
+
 class User(AbstractUser, TimeStampedModel):
     """
     Modelo de usuário customizado.
     Herdamos de AbstractUser para manter toda a infraestrutura
     (senha, permissões, is_staff, etc.) e apenas adicionamos campos extras.
     """
+
+    username_validator = UnicodeUsernameValidator()
+
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=False,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+        error_messages={"unique": _("A user with that username already exists.")},
+    )
 
     # Campos adicionais
     phone_number = PhoneNumberField(
@@ -101,10 +124,10 @@ class User(AbstractUser, TimeStampedModel):
         related_name="users",
     )
 
-    organizacao = models.ForeignKey(
+    organization = models.ForeignKey(
         "organizacoes.Organizacao",
-        on_delete=models.SET_NULL,
-        related_name="usuarios",
+        on_delete=models.PROTECT,
+        related_name="users",
         null=True,
         blank=True,
     )
@@ -116,6 +139,16 @@ class User(AbstractUser, TimeStampedModel):
         null=True,
         blank=True,
     )
+
+    objects = CustomUserManager()
+
+    @property
+    def organizacao(self):
+        return self.organization
+
+    @organizacao.setter
+    def organizacao(self, value):
+        self.organization = value
 
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)
@@ -130,6 +163,12 @@ class User(AbstractUser, TimeStampedModel):
     class Meta:
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["username", "organization"],
+                name="accounts_user_username_org_uniq",
+            )
+        ]
 
     # Representação legível
     def __str__(self):

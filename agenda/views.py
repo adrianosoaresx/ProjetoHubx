@@ -12,6 +12,7 @@ from django.views.generic import (
     DetailView,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.response import TemplateResponse
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
 from django.views import View
@@ -62,7 +63,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         "next_ano": next_month.year,
         "next_mes": next_month.month,
     }
-    return render(request, "agenda/calendario.html", context)
+    return TemplateResponse(request, "agenda/calendario.html", context)
 
 
 def lista_eventos(request, dia_iso):

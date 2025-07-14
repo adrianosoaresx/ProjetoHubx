@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import UserPassesTestMixin
+from rest_framework.permissions import BasePermission
 
 User = get_user_model()
 
@@ -60,3 +61,12 @@ def no_superadmin_required(view_func=None):
     if view_func:
         return decorator(view_func)
     return decorator
+
+
+class IsSameOrganization(BasePermission):
+    """Allow access only to objects within the user's organization."""
+
+    def has_object_permission(self, request, view, obj) -> bool:
+        return getattr(obj, "organization_id", None) == getattr(
+            request.user, "organization_id", None
+        )
