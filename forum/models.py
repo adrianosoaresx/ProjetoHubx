@@ -30,6 +30,14 @@ class Topico(TimeStampedModel):
     conteudo = models.TextField()
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="topicos",
+        null=True,
+        blank=True,
+        db_column="organization",
+    )
 
     class Meta:
         verbose_name = "Tópico"

@@ -40,6 +40,14 @@ class TokenAcesso(TimeStampedModel):
         blank=True,
         related_name="tokens",
     )
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="tokens",
+        null=True,
+        blank=True,
+        db_column="organization",
+    )
 
     class Meta:
         verbose_name = "Token de Acesso"

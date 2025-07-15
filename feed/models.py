@@ -38,6 +38,14 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name="postagens",
     )
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="posts",
+        null=True,
+        blank=True,
+        db_column="organization",
+    )
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

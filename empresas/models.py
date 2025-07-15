@@ -40,6 +40,14 @@ class Empresa(TimeStampedModel):
     contato = models.CharField(max_length=255, blank=True)
     palavras_chave = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="empresas",
+        null=True,
+        blank=True,
+        db_column="organization",
+    )
 
     class Meta:
         verbose_name = "Empresa"

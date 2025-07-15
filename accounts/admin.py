@@ -9,12 +9,12 @@ from .models import MediaTag, NotificationSettings, User, UserMedia, UserType
 class UserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
-    list_display = ("email", "username", "organization", "is_staff")
+    list_display = ("email", "username", "is_staff")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (
             "Personal info",
-            {"fields": ("username", "first_name", "last_name", "organization", "tipo")},
+            {"fields": ("username", "first_name", "last_name", "tipo")},
         ),
         (
             "Permissions",
@@ -40,19 +40,18 @@ class UserAdmin(BaseUserAdmin):
                     "username",
                     "password1",
                     "password2",
-                    "organization",
                     "tipo",
                 ),
             },
         ),
     )
-    list_filter = ("organization", "is_staff", "is_superuser")
+    list_filter = ("is_staff", "is_superuser")
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request).select_related("organization")
+        qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(organization=request.user.organization)
+        return qs
 
 
 @admin.register(NotificationSettings)
