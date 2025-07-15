@@ -51,7 +51,24 @@ class Command(BaseCommand):
         # Tipos de usuario padrao
         tipos = ["admin", "manager", "client", "root"]
         for idx, desc in enumerate(tipos, start=1):
-            UserType.objects.get_or_create(id=idx, defaults={"descricao": desc})
+            user_type, created = UserType.objects.get_or_create(id=idx, defaults={"descricao": desc})
+            if created:
+                self.stdout.write(self.style.SUCCESS(f"Tipo de usuário '{desc}' criado com sucesso."))
+            else:
+                self.stdout.write(self.style.WARNING(f"Tipo de usuário '{desc}' já existia."))
+
+        # Verifica se todos os tipos foram criados corretamente
+        for desc in tipos:
+            if not UserType.objects.filter(descricao=desc).exists():
+                raise ValueError(f"Erro: Tipo de usuário '{desc}' não foi encontrado no banco de dados.")
+
+        # Validação explícita da persistência dos tipos de usuário
+        for desc in tipos:
+            try:
+                user_type = UserType.objects.get(descricao=desc)
+                self.stdout.write(self.style.SUCCESS(f"Tipo de usuário '{desc}' encontrado no banco de dados: {user_type}"))
+            except UserType.DoesNotExist:
+                raise ValueError(f"Erro crítico: Tipo de usuário '{desc}' não foi encontrado no banco de dados após a criação.")
 
         # Organizacoes padrao
         org_data = [

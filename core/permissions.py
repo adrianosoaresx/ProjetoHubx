@@ -74,3 +74,10 @@ class IsSameOrganization(BasePermission):
         return getattr(obj, "organization_id", None) == getattr(
             request.user, "organization_id", None
         )
+
+
+class ClienteGerenteRequiredMixin(UserPassesTestMixin):
+    """Permite acesso a clientes e gerentes."""
+
+    def test_func(self):
+        return self.request.user.tipo_id in {User.Tipo.CLIENTE, User.Tipo.GERENTE}

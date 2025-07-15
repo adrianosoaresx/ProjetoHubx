@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from core.permissions import (GerenteRequiredMixin, NoSuperadminMixin,
+from core.permissions import (ClienteGerenteRequiredMixin, NoSuperadminMixin,
                               no_superadmin_required)
 
 from .forms import EmpresaForm, EmpresaSearchForm, TagForm, TagSearchForm
@@ -21,9 +21,12 @@ from .models import Empresa, Tag
 @no_superadmin_required
 def lista_empresas(request):
     if request.user.is_superuser:
+        return HttpResponseForbidden("Usuário root não pode acessar esta funcionalidade.")
+
+    if request.user.tipo.descricao == "admin":
         empresas = Empresa.objects.all()
     else:
-        empresas = Empresa.objects.filter(usuario__organization=request.user.organization)
+        empresas = Empresa.objects.filter(usuario=request.user)
 
     form = EmpresaSearchForm(request.GET or None)
     if form.is_valid() and form.cleaned_data["empresa"]:
@@ -42,6 +45,9 @@ def lista_empresas(request):
 @login_required
 @no_superadmin_required
 def nova_empresa(request):
+    if request.user.tipo.descricao not in ["client", "manager"]:
+        return HttpResponseForbidden("Apenas clientes e gerentes podem criar empresas.")
+
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -63,7 +69,11 @@ def nova_empresa(request):
 @login_required
 @no_superadmin_required
 def editar_empresa(request, pk):
-    empresa = get_object_or_404(Empresa, pk=pk, usuario=request.user)
+    empresa = get_object_or_404(Empresa, pk=pk)
+
+    if request.user.tipo.descricao not in ["client", "manager", "admin"] or (request.user.tipo.descricao != "admin" and empresa.usuario != request.user):
+        return HttpResponseForbidden("Apenas clientes, gerentes ou administradores podem editar empresas.")
+
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES, instance=empresa)
         if form.is_valid():
@@ -101,7 +111,7 @@ def buscar_empresas(request):
 
 
 class TagListView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView
+    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView
 ):
     model = Tag
     template_name = "empresas/tags_list.html"
@@ -124,7 +134,7 @@ class TagListView(
 
 
 class TagCreateView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView
+    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, CreateView
 ):
     model = Tag
     form_class = TagForm
@@ -137,7 +147,7 @@ class TagCreateView(
 
 
 class TagUpdateView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView
+    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, UpdateView
 ):
     model = Tag
     form_class = TagForm
@@ -150,7 +160,7 @@ class TagUpdateView(
 
 
 class TagDeleteView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView
+    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, DeleteView
 ):
     model = Tag
     template_name = "empresas/tag_confirm_delete.html"
@@ -182,3 +192,40 @@ def detalhes_empresa(request, pk):
         "serv_tags": serv_tags,
     }
     return render(request, "empresas/detail.htm", context)
+
+
+# ------------------------------------------------------------------
+# CRIAR
+# ------------------------------------------------------------------
+@login_required
+@no_superadmin_required
+def criar_empresa(request):
+    if request.method == "POST":
+        form = EmpresaForm(request.POST, request.FILES)
+        if form.is_valid():
+            empresa = form.save(commit=False)
+            empresa.usuario = request.user
+            empresa.save()
+            form.save_m2m()
+            messages.success(request, "Empresa criada com sucesso.")
+            return redirect("empresas:lista")
+    else:
+        form = EmpresaForm()
+
+    return render(request, "empresas/nova.html", {"form": form})
+
+
+# ------------------------------------------------------------------
+# DELETAR
+# ------------------------------------------------------------------
+@login_required
+@no_superadmin_required
+def deletar_empresa(request, pk):
+    empresa = get_object_or_404(Empresa, pk=pk)
+
+    if request.user.tipo.descricao not in ["client", "manager", "admin"] or (request.user.tipo.descricao != "admin" and empresa.usuario != request.user):
+        return HttpResponseForbidden("Apenas clientes, gerentes ou administradores podem deletar empresas.")
+
+    empresa.delete()
+    messages.success(request, "Empresa deletada com sucesso.")
+    return redirect("empresas:lista")

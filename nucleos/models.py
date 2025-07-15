@@ -18,6 +18,7 @@ class Nucleo(TimeStampedModel):
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     data_criacao = models.DateField(auto_now_add=True)
+    membros = models.ManyToManyField(User, related_name="nucleos", blank=True)  # Adicionado para representar os membros
 
     class Meta:
         verbose_name = "Núcleo"
