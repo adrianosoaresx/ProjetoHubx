@@ -27,7 +27,7 @@ User = get_user_model()
 def _queryset_por_organizacao(request):
     qs = Evento.objects.all()
     if request.user.tipo_id == User.Tipo.ADMIN:
-        qs = qs.filter(organizacao=request.user.organization)  # Corrigido para usar 'organization' ao filtrar
+        qs = qs.filter(organizacao=request.user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
     return qs
 
 
@@ -118,8 +118,7 @@ class EventoCreateView(
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        if self.request.user.tipo_id == User.Tipo.ADMIN:
-            form.instance.organizacao = self.request.user.organization  # Corrigido para usar 'organization' ao criar evento
+        form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
         messages.success(self.request, "Evento criado com sucesso.")
         return super().form_valid(form)
 

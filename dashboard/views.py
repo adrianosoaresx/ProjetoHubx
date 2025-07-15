@@ -29,13 +29,13 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
         if user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
-            org = user.organization  # <- correto no User
+            org = user.organizacao  # <- correto no User
 
-            qs_users = qs_users.filter(organization=org)
+            qs_users = qs_users.filter(organizacao=org)
             qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
-            qs_nucleos = qs_nucleos.filter(organization=org)  # Corrigido para usar 'organization'
+            qs_nucleos = qs_nucleos.filter(organizacao=org)  # Corrigido para usar 'organizacao'
             qs_empresas = qs_empresas.filter(usuario__organization=org)
-            qs_eventos = qs_eventos.filter(organization=org)  # Corrigido para usar 'organization'
+            qs_eventos = qs_eventos.filter(organizacao=org)  # Corrigido para usar 'organizacao'
 
         return {
             "num_users": qs_users.count(),

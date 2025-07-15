@@ -25,7 +25,7 @@ class NucleoListView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organization)
+            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         form = NucleoSearchForm(self.request.GET)
@@ -67,7 +67,7 @@ class NucleoUpdateView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
+            qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs
@@ -93,7 +93,7 @@ class NucleoDeleteView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
+            qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
         return qs
 
     def delete(self, request, *args, **kwargs):
@@ -111,7 +111,7 @@ class NucleoDetailView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
+            qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs

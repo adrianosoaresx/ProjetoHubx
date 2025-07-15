@@ -170,7 +170,7 @@ def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if (
         not request.user.is_superuser
-        and empresa.usuario.organization != request.user.organization  # Corrigido para usar 'organization'
+        and empresa.usuario.organizacao != request.user.organizacao  # Corrigido para usar 'organizacao'
     ):
         return HttpResponseForbidden()
     prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)

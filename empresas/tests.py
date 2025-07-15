@@ -20,7 +20,7 @@ class EmpresaVisibilityTests(TestCase):
 
     def test_org_user_sees_organization_companies(self):
         user = self.User.objects.exclude(is_superuser=True).first()
-        expected = Empresa.objects.filter(usuario__organization=user.organization)  # Corrigido para usar 'organization'
+        expected = Empresa.objects.filter(usuario__organizacao=user.organizacao)  # Corrigido para usar 'organizacao'
         self.client.force_login(user)
         response = self.client.get(reverse("empresas:lista"))
         self.assertEqual(response.status_code, 200)
