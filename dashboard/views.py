@@ -33,9 +33,9 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
             qs_users = qs_users.filter(organization=org)
             qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
-            qs_nucleos = qs_nucleos.filter(organizacao=org)
+            qs_nucleos = qs_nucleos.filter(organization=org)  # Corrigido para usar 'organization'
             qs_empresas = qs_empresas.filter(usuario__organization=org)
-            qs_eventos = qs_eventos.filter(organizacao=org)
+            qs_eventos = qs_eventos.filter(organization=org)  # Corrigido para usar 'organization'
 
         return {
             "num_users": qs_users.count(),

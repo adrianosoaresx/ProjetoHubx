@@ -35,9 +35,9 @@ class DashboardPermissionsTests(TestCase):
             tipo_id=User.Tipo.CLIENTE,
         )
         org = Organizacao.objects.create(nome="Org 1", cnpj="00.000.000/0001-00")
-        self.admin_user.organizacao = org
+        self.admin_user.organization = org  # Corrigido para usar 'organization'
         self.admin_user.save()
-        self.manager_user.organizacao = org
+        self.manager_user.organization = org  # Corrigido para usar 'organization'
         self.manager_user.save()
         Nucleo.objects.create(nome="Nucleo", organizacao=org)
         Empresa.objects.create(
