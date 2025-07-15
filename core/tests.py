@@ -1,10 +1,10 @@
-from django.test import TestCase
-from django.core.management import call_command
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.test import TestCase
 
-from nucleos.models import Nucleo
-from empresas.models import Empresa
 from agenda.models import Evento
+from empresas.models import Empresa
+from nucleos.models import Nucleo
 
 
 class GenerateTestDataCommandTests(TestCase):

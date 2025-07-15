@@ -5,15 +5,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_notificationsettings'),
+        ("accounts", "0003_notificationsettings"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='user',
-            name='cpf',
-            field=models.CharField(blank=True, max_length=14, null=True, unique=True, validators=[django.core.validators.RegexValidator(message='Digite um CPF válido no formato 000.000.000-00.', regex='^\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}$')], verbose_name='CPF'),
+            model_name="user",
+            name="cpf",
+            field=models.CharField(
+                blank=True,
+                max_length=14,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message="Digite um CPF válido no formato 000.000.000-00.",
+                        regex="^\\d{3}\\.?\\d{3}\\.?\\d{3}-?\\d{2}$",
+                    )
+                ],
+                verbose_name="CPF",
+            ),
         ),
     ]

@@ -1,11 +1,13 @@
+from datetime import datetime, timedelta
+
 import pytest
 from django.urls import reverse
 from django.utils.timezone import make_aware
-from datetime import datetime, timedelta
-from agenda.models import Evento
-from accounts.models import User
-from organizacoes.models import Organizacao
 from freezegun import freeze_time
+
+from accounts.models import User
+from agenda.models import Evento
+from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
 
@@ -30,7 +32,10 @@ def evento_passado(organizacao):
 @pytest.fixture
 def usuario(client):
     user = User.objects.create_user(
-        username="pessoa", email="pessoa@example.com", password="12345", tipo_id=User.Tipo.CLIENTE
+        username="pessoa",
+        email="pessoa@example.com",
+        password="12345",
+        tipo_id=User.Tipo.CLIENTE,
     )
     client.force_login(user)
     return user
@@ -50,4 +55,3 @@ def test_envio_feedback_pos_evento(evento_passado, usuario, client):
     evento_passado.refresh_from_db()
     # Aqui depende do modelo: adaptável
     assert evento_passado.feedbacks.filter(usuario=usuario, nota=5).exists()
-

@@ -1,10 +1,11 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase
+from django.urls import reverse
+
+from tokens.models import TokenAcesso
 
 from .models import NotificationSettings, UserMedia
-from tokens.models import TokenAcesso
 
 
 class RegistrationSessionTests(TestCase):

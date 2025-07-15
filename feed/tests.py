@@ -1,11 +1,11 @@
-from django.test import TestCase, Client
-from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.test import Client, TestCase
+from django.urls import reverse
 
 from accounts.models import UserType
-from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 from .models import Post
 
@@ -29,7 +29,9 @@ class FeedViewTests(TestCase):
         User = get_user_model()
         self.root_user = User.objects.get(username="root")
         tipo_client, _ = UserType.objects.get_or_create(descricao="client")
-        self.user = User.objects.create_user("normal", password="pass", tipo=tipo_client)
+        self.user = User.objects.create_user(
+            "normal", password="pass", tipo=tipo_client
+        )
 
         self.client = Client()
 
@@ -65,8 +67,12 @@ class FeedViewTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_feed_nucleo_filter(self):
-        Post.objects.create(autor=self.user, conteudo="A", tipo_feed=Post.NUCLEO, nucleo=self.nucleo1)
-        Post.objects.create(autor=self.user, conteudo="B", tipo_feed=Post.NUCLEO, nucleo=self.nucleo2)
+        Post.objects.create(
+            autor=self.user, conteudo="A", tipo_feed=Post.NUCLEO, nucleo=self.nucleo1
+        )
+        Post.objects.create(
+            autor=self.user, conteudo="B", tipo_feed=Post.NUCLEO, nucleo=self.nucleo2
+        )
 
         self.client.force_login(self.user)
         url = reverse("feed:listar") + f"?nucleo={self.nucleo1.id}"
@@ -104,4 +110,3 @@ class FeedViewTests(TestCase):
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context["posts"]), 1)
         self.assertIsNone(resp.context["posts"][0].nucleo)
-

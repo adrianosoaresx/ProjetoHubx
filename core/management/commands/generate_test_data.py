@@ -1,17 +1,19 @@
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.contrib.auth import get_user_model
-from accounts.models import UserType
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
-from empresas.models import Empresa, Tag
-from agenda.models import Evento
-from django.utils import timezone
-from faker import Faker
-from datetime import timedelta
-import random
 import csv
 import io
+import random
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from faker import Faker
+
+from accounts.models import UserType
+from agenda.models import Evento
+from empresas.models import Empresa, Tag
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 
 class Command(BaseCommand):

@@ -3,32 +3,23 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    UpdateView,
-    DeleteView,
-    DetailView,
-)
+from django.contrib.auth.mixins import (LoginRequiredMixin,
+                                        PermissionRequiredMixin)
+from django.core.exceptions import PermissionDenied
 from django.db.models import DateTimeField, ExpressionWrapper, F
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
-from django.http import Http404
-from django.core.exceptions import PermissionDenied
-from django.views import View
+from django.urls import reverse_lazy
 from django.utils import timezone
-from core.permissions import (
-    AdminRequiredMixin,
-    GerenteRequiredMixin,
-    NoSuperadminMixin,
-)
+from django.views import View
+from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
 
-from .models import Evento
+from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
+                              NoSuperadminMixin)
+
 from .forms import EventoForm
-from django.http import HttpResponseForbidden
-from .models import FeedbackNota
-from django.http import Http404
+from .models import Evento, FeedbackNota
 
 User = get_user_model()
 
@@ -107,7 +98,13 @@ def lista_eventos(request, dia_iso):
     )
 
 
-class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin, PermissionRequiredMixin, CreateView):
+class EventoCreateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    AdminRequiredMixin,
+    PermissionRequiredMixin,
+    CreateView,
+):
     model = Evento
     form_class = EventoForm
     template_name = "agenda/create.html"
@@ -127,7 +124,13 @@ class EventoCreateView(LoginRequiredMixin, NoSuperadminMixin, AdminRequiredMixin
         return super().form_valid(form)
 
 
-class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView):
+class EventoUpdateView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    GerenteRequiredMixin,
+    PermissionRequiredMixin,
+    UpdateView,
+):
     model = Evento
     form_class = EventoForm
     template_name = "agenda/update.html"
@@ -139,11 +142,19 @@ class EventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         return _queryset_por_organizacao(self.request)
 
     def form_valid(self, form):  # pragma: no cover
-        messages.success(self.request, "Evento atualizado com sucesso.")  # pragma: no cover
+        messages.success(
+            self.request, "Evento atualizado com sucesso."
+        )  # pragma: no cover
         return super().form_valid(form)  # pragma: no cover
 
 
-class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, DeleteView):
+class EventoDeleteView(
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    GerenteRequiredMixin,
+    PermissionRequiredMixin,
+    DeleteView,
+):
     model = Evento
     template_name = "agenda/delete.html"
     success_url = reverse_lazy("agenda:calendario")
@@ -158,7 +169,9 @@ class EventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
+class EventoDetailView(
+    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView
+):
     model = Evento
     template_name = "agenda/detail.html"
 
@@ -176,7 +189,9 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
         if request.user.tipo_id == User.Tipo.ADMIN:
-            messages.error(request, "Administradores não podem se inscrever em eventos.")  # pragma: no cover
+            messages.error(
+                request, "Administradores não podem se inscrever em eventos."
+            )  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
         if request.user in evento.inscritos.all():
             evento.inscritos.remove(request.user)
@@ -187,12 +202,17 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
-class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
+class EventoRemoveInscritoView(
+    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View
+):
     """Remove um inscrito do evento."""
 
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
-        if request.user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE} and evento.organizacao != request.user.organizacao:
+        if (
+            request.user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}
+            and evento.organizacao != request.user.organizacao
+        ):
             messages.error(request, "Acesso negado.")  # pragma: no cover
             return redirect("agenda:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
@@ -200,6 +220,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             evento.inscritos.remove(inscrito)
             messages.success(request, "Inscrito removido.")  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
+
 
 class EventoFeedbackView(LoginRequiredMixin, View):
     """Registra feedback pós-evento."""
@@ -231,7 +252,7 @@ class EventoFeedbackView(LoginRequiredMixin, View):
 
         messages.success(request, "Feedback registrado com sucesso.")
         return redirect("agenda:evento_detalhe", pk=pk)
-    
+
     def eventos_por_dia(request):
         """Compatível com reverse('agenda:eventos_por_dia') via ?dia=YYYY-MM-DD"""
         dia_iso = request.GET.get("dia")

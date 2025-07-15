@@ -3,16 +3,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
-from core.permissions import (
-    SuperadminRequiredMixin,
-    AdminRequiredMixin,
-    GerenteRequiredMixin,
-    ClienteRequiredMixin,
-)
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
-from empresas.models import Empresa
 from agenda.models import Evento
+from core.permissions import (AdminRequiredMixin, ClienteRequiredMixin,
+                              GerenteRequiredMixin, SuperadminRequiredMixin)
+from empresas.models import Empresa
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 User = get_user_model()
 

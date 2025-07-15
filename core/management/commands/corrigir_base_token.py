@@ -1,8 +1,9 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-from datetime import timedelta
 import uuid
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from accounts.models import UserType
 from tokens.models import TokenAcesso
@@ -49,7 +50,9 @@ class Command(BaseCommand):
         self.stdout.write(f"Tokens corrigidos: {updated_tokens}")
 
         # Criar tokens de exemplo para testes
-        exemplo_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+        exemplo_user = (
+            User.objects.filter(is_superuser=True).first() or User.objects.first()
+        )
         for desc in ["admin", "gerente", "cliente"]:
             TokenAcesso.objects.get_or_create(
                 gerado_por=exemplo_user,
@@ -57,4 +60,3 @@ class Command(BaseCommand):
                 defaults={"data_expiracao": timezone.now() + timedelta(days=30)},
             )
         self.stdout.write("Tokens de exemplo criados para admin, gerente e cliente")
-

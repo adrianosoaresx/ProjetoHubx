@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 TAGS_PRODUTOS = [
     "Loja de roupas femininas",
     "Loja de roupas on-line",
@@ -71,11 +70,8 @@ def reverse_func(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("empresas", "0001_initial"),
     ]
 
-    operations = [
-        migrations.RunPython(create_tags, reverse_func)
-    ]
+    operations = [migrations.RunPython(create_tags, reverse_func)]

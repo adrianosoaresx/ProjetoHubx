@@ -3,6 +3,7 @@ from django.conf import settings
 
 register = template.Library()
 
+
 @register.filter
 def absolute_media(path, request=None):
     """Return absolute URL for media files."""

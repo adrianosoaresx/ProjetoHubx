@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("chat", "0002_mensagem_created_at_mensagem_updated_at"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

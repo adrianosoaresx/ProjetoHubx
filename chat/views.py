@@ -1,18 +1,16 @@
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
-
-from django.core.files.storage import default_storage
-from django.conf import settings
-from django.db.models import Q
 import uuid
 
-
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+
 from .models import Mensagem
 
 User = get_user_model()
-
 
 
 @login_required
@@ -76,16 +74,21 @@ def messages_history(request, user_id):
         .select_related("remetente")
         .order_by("-criado_em")[:50]
     )
+
     def _abs(url: str) -> str:
         if url.startswith("http://") or url.startswith("https://"):
             return url
-        return request.build_absolute_uri(settings.MEDIA_URL.rstrip("/") + "/" + url.lstrip("/"))
+        return request.build_absolute_uri(
+            settings.MEDIA_URL.rstrip("/") + "/" + url.lstrip("/")
+        )
 
     messages = [
         {
             "remetente": m.remetente.username,
             "tipo": m.tipo,
-            "conteudo": _abs(m.conteudo) if m.tipo in {"image", "video", "file"} else m.conteudo,
+            "conteudo": (
+                _abs(m.conteudo) if m.tipo in {"image", "video", "file"} else m.conteudo
+            ),
             "timestamp": m.criado_em.isoformat(),
         }
         for m in reversed(list(messages_qs))

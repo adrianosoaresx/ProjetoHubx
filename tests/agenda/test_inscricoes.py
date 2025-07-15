@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
+
 import pytest
 from django.urls import reverse
 from django.utils.timezone import make_aware
-from datetime import datetime, timedelta
-from agenda.models import Evento
+
 from accounts.models import User
+from agenda.models import Evento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -29,7 +31,10 @@ def evento(organizacao):
 @pytest.fixture
 def usuario_comum(client):
     user = User.objects.create_user(
-        username="comum", email="comum@example.com", password="12345", tipo_id=User.Tipo.CLIENTE
+        username="comum",
+        email="comum@example.com",
+        password="12345",
+        tipo_id=User.Tipo.CLIENTE,
     )
     client.force_login(user)
     return user

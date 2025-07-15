@@ -1,0 +1,8 @@
+{
+  "default": true,
+  "ignore": [
+    "**/.venv/**",
+    "**/migrations/**",
+    "**/static/**"
+  ]
+}

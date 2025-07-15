@@ -1,5 +1,6 @@
 from django import forms
 from django_select2 import forms as s2forms
+
 from .models import Empresa, Tag
 
 
@@ -37,7 +38,9 @@ class EmpresaForm(forms.ModelForm):
         if commit:
             instance.save()
         tags_names = [
-            tag.strip() for tag in self.cleaned_data.get("tags_field", "").split(",") if tag.strip()
+            tag.strip()
+            for tag in self.cleaned_data.get("tags_field", "").split(",")
+            if tag.strip()
         ]
         tags = []
         for name in tags_names:

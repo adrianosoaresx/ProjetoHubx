@@ -1,0 +1,3 @@
+[bandit]
+exclude = .venv,migrations,static
+severity = medium

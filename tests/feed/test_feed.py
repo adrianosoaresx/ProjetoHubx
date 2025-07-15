@@ -1,11 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 
 from accounts.models import UserType
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
 from feed.models import Post
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 
 class FeedPublicPrivateTests(TestCase):

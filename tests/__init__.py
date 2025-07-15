@@ -1,9 +1,11 @@
 """Test suite initialization for Django."""
+
 import os
 import sys
-import django
 from pathlib import Path
-from django.test.utils import setup_test_environment, setup_databases
+
+import django
+from django.test.utils import setup_databases, setup_test_environment
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 

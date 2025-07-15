@@ -1,18 +1,14 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic import (
-    ListView,
-    DetailView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-)
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView)
 
 from core.permissions import GerenteRequiredMixin, NoSuperadminMixin
-from .models import Categoria, Topico, Resposta
-from .forms import TopicoForm, RespostaForm, CategoriaForm
+
+from .forms import CategoriaForm, RespostaForm, TopicoForm
+from .models import Categoria, Resposta, Topico
 
 
 class CategoriaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
@@ -69,12 +65,16 @@ class RespostaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
         return redirect("forum:topico_detail", pk=self.topico.pk)
 
 
-class CategoriaManageListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class CategoriaManageListView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView
+):
     model = Categoria
     template_name = "forum/categoria_manage_list.html"
 
 
-class CategoriaCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+class CategoriaCreateView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView
+):
     model = Categoria
     form_class = CategoriaForm
     template_name = "forum/categoria_form.html"
@@ -85,7 +85,9 @@ class CategoriaCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequired
         return super().form_valid(form)
 
 
-class CategoriaUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class CategoriaUpdateView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView
+):
     model = Categoria
     form_class = CategoriaForm
     template_name = "forum/categoria_form.html"
@@ -96,7 +98,9 @@ class CategoriaUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequired
         return super().form_valid(form)
 
 
-class CategoriaDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+class CategoriaDeleteView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView
+):
     model = Categoria
     template_name = "forum/categoria_confirm_delete.html"
     success_url = reverse_lazy("forum:categoria_manage_list")

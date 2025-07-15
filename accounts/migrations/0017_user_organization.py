@@ -1,35 +1,35 @@
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
+
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0016_delete_tokenacesso'),
-        ('organizacoes', '0002_organizacao_created_at_organizacao_updated_at'),
+        ("accounts", "0016_delete_tokenacesso"),
+        ("organizacoes", "0002_organizacao_created_at_organizacao_updated_at"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='user',
-            old_name='organizacao',
-            new_name='organization',
+            model_name="user",
+            old_name="organizacao",
+            new_name="organization",
         ),
         migrations.AlterField(
-            model_name='user',
-            name='organization',
+            model_name="user",
+            name="organization",
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.PROTECT,
-                related_name='users',
-                to='organizacoes.organizacao',
+                related_name="users",
+                to="organizacoes.organizacao",
                 null=True,
                 blank=True,
             ),
         ),
         migrations.AddConstraint(
-            model_name='user',
+            model_name="user",
             constraint=models.UniqueConstraint(
-                fields=['username', 'organization'],
-                name='accounts_user_username_org_uniq',
+                fields=["username", "organization"],
+                name="accounts_user_username_org_uniq",
             ),
         ),
     ]

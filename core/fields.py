@@ -13,4 +13,3 @@ class URLField(models.URLField):
         defaults = {"assume_scheme": self.assume_scheme}
         defaults.update(kwargs)
         return super().formfield(**defaults)
-

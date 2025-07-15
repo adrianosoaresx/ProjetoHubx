@@ -1,5 +1,6 @@
 from django import forms
-from .models import Categoria, Topico, Resposta
+
+from .models import Categoria, Resposta, Topico
 
 
 class TopicoForm(forms.ModelForm):

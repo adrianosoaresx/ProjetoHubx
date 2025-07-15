@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("feed", "0002_remove_post_imagem_remove_post_visibilidade_and_more"),
     ]

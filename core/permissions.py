@@ -4,11 +4,13 @@ from rest_framework.permissions import BasePermission
 
 User = get_user_model()
 
+
 class SuperadminRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a superadministradores."""
 
     def test_func(self):
         return self.request.user.tipo_id == User.Tipo.SUPERADMIN
+
 
 class AdminRequiredMixin(UserPassesTestMixin):
     """Permite acesso a superadministradores e administradores."""
@@ -17,6 +19,7 @@ class AdminRequiredMixin(UserPassesTestMixin):
 
     def test_func(self):
         return self.request.user.tipo_id in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}
+
 
 class GerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a gerentes, administradores e superadmins."""
@@ -47,6 +50,7 @@ class NoSuperadminMixin(UserPassesTestMixin):
 def no_superadmin_required(view_func=None):
     """Decorator que nega acesso ao usuário root."""
     from functools import wraps
+
     from django.http import HttpResponseForbidden
 
     def decorator(func):

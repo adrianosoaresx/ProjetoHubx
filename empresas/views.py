@@ -1,26 +1,17 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.db.models import Q
 from django.contrib import messages
-
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from core.permissions import (
-    GerenteRequiredMixin,
-    no_superadmin_required,
-    NoSuperadminMixin,
-)
+from django.db.models import Q
 from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from core.permissions import (GerenteRequiredMixin, NoSuperadminMixin,
+                              no_superadmin_required)
+
+from .forms import EmpresaForm, EmpresaSearchForm, TagForm, TagSearchForm
 from .models import Empresa, Tag
-from .forms import (
-    EmpresaForm,
-    TagForm,
-    EmpresaSearchForm,
-    TagSearchForm,
-)
 
 
 # ------------------------------------------------------------------
@@ -32,9 +23,7 @@ def lista_empresas(request):
     if request.user.is_superuser:
         empresas = Empresa.objects.all()
     else:
-        empresas = Empresa.objects.filter(
-            usuario__organizacao=request.user.organizacao
-        )
+        empresas = Empresa.objects.filter(usuario__organizacao=request.user.organizacao)
 
     form = EmpresaSearchForm(request.GET or None)
     if form.is_valid() and form.cleaned_data["empresa"]:
@@ -97,9 +86,7 @@ def buscar_empresas(request):
     if request.user.is_superuser:
         empresas = Empresa.objects.all()
     else:
-        empresas = Empresa.objects.filter(
-            usuario__organizacao=request.user.organizacao
-        )
+        empresas = Empresa.objects.filter(usuario__organizacao=request.user.organizacao)
     if query:
         palavras = [p.strip() for p in query.split() if p.strip()]
         q_objects = Q()
@@ -113,12 +100,11 @@ def buscar_empresas(request):
     return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
 
 
-
-
-class TagListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class TagListView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView
+):
     model = Tag
     template_name = "empresas/tags_list.html"
-
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -136,7 +122,10 @@ class TagListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, L
         context["form"] = getattr(self, "form", TagSearchForm())
         return context
 
-class TagCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+
+class TagCreateView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView
+):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -147,7 +136,9 @@ class TagCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin,
         return super().form_valid(form)
 
 
-class TagUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class TagUpdateView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView
+):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -158,7 +149,9 @@ class TagUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin,
         return super().form_valid(form)
 
 
-class TagDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView):
+class TagDeleteView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DeleteView
+):
     model = Tag
     template_name = "empresas/tag_confirm_delete.html"
     success_url = reverse_lazy("empresas:tags_list")
@@ -175,7 +168,10 @@ class TagDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin,
 @no_superadmin_required
 def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
-    if not request.user.is_superuser and empresa.usuario.organizacao != request.user.organizacao:
+    if (
+        not request.user.is_superuser
+        and empresa.usuario.organizacao != request.user.organizacao
+    ):
         return HttpResponseForbidden()
     prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)
     serv_tags = empresa.tags.filter(categoria=Tag.Categoria.SERVICO)

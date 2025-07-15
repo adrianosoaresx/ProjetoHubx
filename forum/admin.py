@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Categoria, Topico, Resposta
+
+from .models import Categoria, Resposta, Topico
 
 
 @admin.register(Categoria)

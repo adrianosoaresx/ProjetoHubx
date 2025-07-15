@@ -1,14 +1,16 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from organizacoes.models import Organizacao
+from django.db import models
 
 from core.models import TimeStampedModel
+from organizacoes.models import Organizacao
 
 User = get_user_model()
 
 
 class Nucleo(TimeStampedModel):
-    organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE, related_name="nucleos")
+    organizacao = models.ForeignKey(
+        Organizacao, on_delete=models.CASCADE, related_name="nucleos"
+    )
     nome = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)

@@ -1,11 +1,13 @@
+from datetime import datetime, timedelta
+
 import pytest
+from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils.timezone import make_aware
-from datetime import datetime, timedelta
-from agenda.models import Evento
+
 from accounts.models import User
+from agenda.models import Evento
 from organizacoes.models import Organizacao
-from django.contrib.auth.models import Permission
 
 pytestmark = pytest.mark.django_db
 
@@ -22,7 +24,11 @@ def organizacao():
 @pytest.fixture
 def usuario_logado(client, organizacao):
     user = User.objects.create_user(
-        username="testuser", email="test@example.com", password="12345", organizacao=organizacao, tipo_id=User.Tipo.ADMIN
+        username="testuser",
+        email="test@example.com",
+        password="12345",
+        organizacao=organizacao,
+        tipo_id=User.Tipo.ADMIN,
     )
     perm = Permission.objects.get(codename="add_evento")
     user.user_permissions.add(perm)

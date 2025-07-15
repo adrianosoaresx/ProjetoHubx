@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("chat", "0003_mensagem_destinatario_alter_mensagem_remetente_and_more"),
         ("chat", "0003_notificacao"),

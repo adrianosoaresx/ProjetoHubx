@@ -1,14 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .forms import CustomUserChangeForm, CustomUserCreationForm
 
-from .models import (
-    User,
-    NotificationSettings,
-    UserType,
-    UserMedia,
-    MediaTag,
-)
+from .forms import CustomUserChangeForm, CustomUserCreationForm
+from .models import MediaTag, NotificationSettings, User, UserMedia, UserType
 
 
 @admin.register(User)
@@ -24,7 +18,15 @@ class UserAdmin(BaseUserAdmin):
         ),
         (
             "Permissions",
-            {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")},
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
         ),
         ("Important dates", {"fields": ("last_login", "date_joined")}),
     )
@@ -33,7 +35,14 @@ class UserAdmin(BaseUserAdmin):
             None,
             {
                 "classes": ("wide",),
-                "fields": ("email", "username", "password1", "password2", "organization", "tipo"),
+                "fields": (
+                    "email",
+                    "username",
+                    "password1",
+                    "password2",
+                    "organization",
+                    "tipo",
+                ),
             },
         ),
     )

@@ -1,5 +1,6 @@
-from django import forms
 from typing import Tuple
+
+from django import forms
 
 from .models import Post
 
@@ -12,7 +13,11 @@ class PostForm(forms.ModelForm):
         fields = ["conteudo", "image", "pdf"]
         widgets = {
             "conteudo": forms.Textarea(
-                attrs={"class": "form-control", "rows": 4, "placeholder": "Compartilhe algo..."}
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Compartilhe algo...",
+                }
             ),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "pdf": forms.ClearableFileInput(attrs={"class": "form-control"}),

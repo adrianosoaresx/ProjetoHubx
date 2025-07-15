@@ -1,5 +1,5 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
@@ -7,8 +7,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView
 
-from .models import Post
 from .forms import PostForm
+from .models import Post
 
 
 @login_required
@@ -30,10 +30,7 @@ class FeedListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         q = self.request.GET.get("q", "").strip()
         nucleo_id = self.request.GET.get("nucleo")
-        qs = (
-            Post.objects.select_related("autor", "nucleo")
-            .order_by("-criado_em")
-        )
+        qs = Post.objects.select_related("autor", "nucleo").order_by("-criado_em")
         if nucleo_id:
             qs = qs.filter(nucleo_id=nucleo_id)
         else:
@@ -70,7 +67,9 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         file = self.request.FILES.get("arquivo")
         if file:
             files = self.request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
+            if file.content_type == "application/pdf" or file.name.lower().endswith(
+                ".pdf"
+            ):
                 files["pdf"] = file
             else:
                 files["image"] = file
@@ -95,7 +94,9 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
             form.instance.publico = False
         response = super().form_valid(form)
         if self.request.headers.get("HX-Request") == "true":
-            return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
+            return HttpResponse(
+                status=204, headers={"HX-Redirect": self.get_success_url()}
+            )
         return response
 
 
@@ -121,7 +122,9 @@ def post_update(request, pk):
         file = request.FILES.get("arquivo")
         if file:
             files = request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
+            if file.content_type == "application/pdf" or file.name.lower().endswith(
+                ".pdf"
+            ):
                 files["pdf"] = file
             else:
                 files["image"] = file
@@ -140,8 +143,12 @@ def post_update(request, pk):
             messages.success(request, "Postagem atualizada com sucesso.")
             return redirect("feed:post_detail", pk=post.pk)
     else:
-        initial_destino = "publico" if post.tipo_feed == Post.PUBLICO else post.nucleo_id
-        form = PostForm(instance=post, user=request.user, initial={"destino": initial_destino})
+        initial_destino = (
+            "publico" if post.tipo_feed == Post.PUBLICO else post.nucleo_id
+        )
+        form = PostForm(
+            instance=post, user=request.user, initial={"destino": initial_destino}
+        )
 
     return render(request, "feed/post_update.html", {"form": form, "post": post})
 

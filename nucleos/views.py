@@ -1,25 +1,23 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import get_user_model
 from django.contrib import messages
-from django.urls import reverse_lazy
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-    DetailView,
-    View,
-)
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  UpdateView, View)
 
-from .models import Nucleo
+from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
+                              NoSuperadminMixin)
+
 from .forms import NucleoForm, NucleoSearchForm
+from .models import Nucleo
 
 User = get_user_model()
 
 
-class NucleoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class NucleoListView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView
+):
     model = Nucleo
     template_name = "nucleos/list.html"
 
@@ -42,7 +40,9 @@ class NucleoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin
         return context
 
 
-class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class NucleoCreateView(
+    NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView
+):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/create.html"
@@ -55,7 +55,9 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return super().form_valid(form)
 
 
-class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class NucleoUpdateView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView
+):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/update.html"
@@ -80,7 +82,9 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
         return context
 
 
-class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+class NucleoDeleteView(
+    NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, DeleteView
+):
     model = Nucleo
     template_name = "nucleos/delete.html"
     success_url = reverse_lazy("nucleos:list")
@@ -97,7 +101,9 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return super().delete(request, *args, **kwargs)
 
 
-class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView
+):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -111,12 +117,20 @@ class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
         return qs
 
 
-class NucleoMemberRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class NucleoMemberRemoveView(
+    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View
+):
     def post(self, request, pk, user_id):
         nucleo = get_object_or_404(Nucleo, pk=pk)
-        if request.user.tipo_id == User.Tipo.ADMIN and nucleo.organizacao != request.user.organizacao:
+        if (
+            request.user.tipo_id == User.Tipo.ADMIN
+            and nucleo.organizacao != request.user.organizacao
+        ):
             return redirect("nucleos:list")
-        if request.user.tipo_id == User.Tipo.GERENTE and request.user not in nucleo.membros.all():
+        if (
+            request.user.tipo_id == User.Tipo.GERENTE
+            and request.user not in nucleo.membros.all()
+        ):
             return redirect("nucleos:list")
         membro = get_object_or_404(User, pk=user_id)
         nucleo.membros.remove(membro)

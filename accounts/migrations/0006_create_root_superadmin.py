@@ -1,23 +1,23 @@
-from django.db import migrations
 from django.contrib.auth.hashers import make_password
+from django.db import migrations
 
 
 def create_root_user(apps, schema_editor):
-    User = apps.get_model('accounts', 'User')
-    if not User.objects.filter(username='root').exists():
+    User = apps.get_model("accounts", "User")
+    if not User.objects.filter(username="root").exists():
         User.objects.create(
-            username='root',
-            first_name='root',
-            tipo='superadmin',
+            username="root",
+            first_name="root",
+            tipo="superadmin",
             is_superuser=True,
             is_staff=True,
-            password=make_password('J0529*4351'),
+            password=make_password("J0529*4351"),
         )
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
-        ('accounts', '0005_user_organizacao_user_tipo'),
+        ("accounts", "0005_user_organizacao_user_tipo"),
     ]
 
     operations = [

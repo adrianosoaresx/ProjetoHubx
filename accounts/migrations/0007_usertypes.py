@@ -35,7 +35,6 @@ def migrate_user_tipos(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0006_create_root_superadmin"),
     ]

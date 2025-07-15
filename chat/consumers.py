@@ -1,7 +1,8 @@
-from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from django.contrib.auth import get_user_model
 import json
+
+from channels.db import database_sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth import get_user_model
 
 from .api import create_message, get_user, notify_users
 
@@ -40,7 +41,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
-
 
     async def disconnect(self, close_code):
         if hasattr(self, "group_name"):

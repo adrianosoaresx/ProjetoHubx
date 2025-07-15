@@ -1,8 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from nucleos.models import Nucleo
+from django.db import models
 
 from core.models import TimeStampedModel
+from nucleos.models import Nucleo
 
 User = get_user_model()
 
@@ -39,7 +39,6 @@ class Mensagem(TimeStampedModel):
 
 
 class Notificacao(TimeStampedModel):
-
     """Registra notificações de novas mensagens."""
 
     usuario = models.ForeignKey(
@@ -65,5 +64,4 @@ class Notificacao(TimeStampedModel):
         verbose_name_plural = "Notificações"
 
     def __str__(self) -> str:  # pragma: no cover - simples
-
         return f"Para {self.usuario} de {self.remetente}"

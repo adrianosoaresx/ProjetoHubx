@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0002_user_avatar_user_bio_user_cep_user_cidade_and_more"),
     ]

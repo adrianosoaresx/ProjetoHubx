@@ -1,4 +1,5 @@
 from django.urls import path
+
 from . import views
 
 app_name = "forum"
@@ -26,8 +27,14 @@ urlpatterns = [
         views.CategoriaDeleteView.as_view(),
         name="categoria_delete",
     ),
-    path("categoria/<int:categoria_pk>/", views.TopicoListView.as_view(), name="topicos"),
+    path(
+        "categoria/<int:categoria_pk>/", views.TopicoListView.as_view(), name="topicos"
+    ),
     path("topico/<int:pk>/", views.TopicoDetailView.as_view(), name="topico_detail"),
     path("topico/novo/", views.TopicoCreateView.as_view(), name="topico_create"),
-    path("topico/<int:topico_pk>/responder/", views.RespostaCreateView.as_view(), name="responder"),
+    path(
+        "topico/<int:topico_pk>/responder/",
+        views.RespostaCreateView.as_view(),
+        name="responder",
+    ),
 ]

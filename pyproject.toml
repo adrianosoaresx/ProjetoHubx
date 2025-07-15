@@ -1,0 +1,18 @@
+[tool.black]
+line-length = 120
+exclude = '''
+/(
+    \.venv
+  | migrations
+  | static
+)/
+'''
+
+[tool.isort]
+profile = "black"
+skip_glob = ["*/.venv/*", "*/migrations/*", "*/static/*"]
+
+[tool.ruff]
+line-length = 120
+extend-select = ["I"]
+extend-exclude = [".venv", "migrations", "static"]

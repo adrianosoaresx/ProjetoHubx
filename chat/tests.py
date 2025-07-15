@@ -1,12 +1,14 @@
-from django.test import TestCase, TransactionTestCase
-from django.urls import reverse
-from django.contrib.auth import get_user_model
-from channels.testing import WebsocketCommunicator
 import asyncio
 
+from channels.testing import WebsocketCommunicator
+from django.contrib.auth import get_user_model
+from django.test import TestCase, TransactionTestCase
+from django.urls import reverse
+
 from Hubx.asgi import application
-from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
+
 from .models import Mensagem, Notificacao
 
 User = get_user_model()
@@ -16,8 +18,12 @@ class ChatViewTests(TestCase):
     def setUp(self):
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         self.nucleo = Nucleo.objects.create(nome="Nuc", organizacao=org)
-        self.user1 = User.objects.create_user("user1", password="pass", nucleo=self.nucleo)
-        self.user2 = User.objects.create_user("user2", password="pass", nucleo=self.nucleo)
+        self.user1 = User.objects.create_user(
+            "user1", password="pass", nucleo=self.nucleo
+        )
+        self.user2 = User.objects.create_user(
+            "user2", password="pass", nucleo=self.nucleo
+        )
         Mensagem.objects.create(
             nucleo=self.nucleo,
             remetente=self.user1,
@@ -57,8 +63,12 @@ class ChatConsumerTests(TransactionTestCase):
     def setUp(self):
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         self.nucleo = Nucleo.objects.create(nome="Nuc", organizacao=org)
-        self.sender = User.objects.create_user("sender", password="pass", nucleo=self.nucleo)
-        self.receiver = User.objects.create_user("receiver", password="pass", nucleo=self.nucleo)
+        self.sender = User.objects.create_user(
+            "sender", password="pass", nucleo=self.nucleo
+        )
+        self.receiver = User.objects.create_user(
+            "receiver", password="pass", nucleo=self.nucleo
+        )
 
     async def _communicate(self):
         comm_sender = WebsocketCommunicator(

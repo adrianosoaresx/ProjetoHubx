@@ -1,5 +1,5 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.test import TestCase
 
 
 class OrganizationUserTests(TestCase):
@@ -36,6 +36,7 @@ class OrganizationUserTests(TestCase):
             organization=self.org1,
         )
         from django.db import IntegrityError, transaction
+
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
                 self.User.objects.create_user(

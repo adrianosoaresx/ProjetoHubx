@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0012_notificationsettings_created_at_and_more"),
     ]

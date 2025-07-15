@@ -1,13 +1,14 @@
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
-from empresas.models import Empresa
-from agenda.models import Evento
-from datetime import timedelta
 from django.utils import timezone
+
+from agenda.models import Evento
+from empresas.models import Empresa
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 
 class DashboardPermissionsTests(TestCase):

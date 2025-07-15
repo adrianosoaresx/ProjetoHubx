@@ -1,10 +1,10 @@
-from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from organizacoes.models import Organizacao
+from django.db import models
 
-from core.models import TimeStampedModel
 from core.fields import URLField
+from core.models import TimeStampedModel
+from organizacoes.models import Organizacao
 
 User = get_user_model()
 
@@ -33,7 +33,9 @@ class Evento(TimeStampedModel):
 
 
 class FeedbackNota(models.Model):
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="feedbacks")
+    evento = models.ForeignKey(
+        Evento, on_delete=models.CASCADE, related_name="feedbacks"
+    )
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nota = models.PositiveSmallIntegerField()
     criado_em = models.DateTimeField(auto_now_add=True)

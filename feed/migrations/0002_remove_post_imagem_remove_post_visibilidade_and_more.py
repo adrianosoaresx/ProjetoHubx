@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("feed", "0001_initial"),
         ("nucleos", "0002_nucleo_created_at_nucleo_updated_at"),

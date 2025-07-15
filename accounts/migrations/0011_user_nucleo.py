@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0010_usermedia"),
         ("nucleos", "0001_initial"),

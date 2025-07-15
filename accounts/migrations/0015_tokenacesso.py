@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0014_mediatag_usermedia_tags"),
         ("nucleos", "0002_nucleo_created_at_nucleo_updated_at"),

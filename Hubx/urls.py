@@ -1,30 +1,26 @@
 """Hubx URL Configuration."""
 
-from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+from django.views.generic import RedirectView
 
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
-
     # Página inicial (app core)
     path("", include(("core.urls", "core"), namespace="core")),
-
     path(
         "dashboard/",
         include(("dashboard.urls", "dashboard"), namespace="dashboard"),
     ),
-
     # Apps de autenticação/usuário
     path(
         "accounts/",
         include(("accounts.urls", "accounts"), namespace="accounts"),
     ),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
-
     # CRUD de Empresas
     path(
         "empresas/",

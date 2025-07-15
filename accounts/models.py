@@ -1,14 +1,15 @@
 # accounts/models.py
-from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db import models
 from django.conf import settings
-from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager as DjangoUserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import RegexValidator
+from django.db import models
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
 
-from core.models import TimeStampedModel
 from core.fields import URLField
+from core.models import TimeStampedModel
 
 
 class UserType(TimeStampedModel):
@@ -270,5 +271,3 @@ class UserMedia(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
-
-

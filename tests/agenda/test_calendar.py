@@ -1,12 +1,12 @@
 from datetime import date, datetime, timedelta
-from django.utils.timezone import make_aware
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.timezone import make_aware
 
-from organizacoes.models import Organizacao
 from agenda.models import Evento
+from organizacoes.models import Organizacao
 
 
 class CalendarViewTests(TestCase):
@@ -80,4 +80,3 @@ class CalendarViewTests(TestCase):
 
         month_name = date_format(date.today(), "F")
         self.assertContains(resp, month_name)
-

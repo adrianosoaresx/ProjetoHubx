@@ -23,7 +23,7 @@ HTMX_VERSION = "1.9.12"
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f_(^m#wo6a9xfpmwi)8n7bo@k@gs!sp_(9-=jhi0%2r6o@2i^8'
+SECRET_KEY = "django-insecure-f_(^m#wo6a9xfpmwi)8n7bo@k@gs!sp_(9-=jhi0%2r6o@2i^8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,15 +45,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # ‑‑‑‑ Terceiros (third‑party) ‑‑‑‑
-    "rest_framework",               # ← necessário para core.permissions
-    "rest_framework.authtoken",     # (opcional) tokens de API
+    "rest_framework",  # ← necessário para core.permissions
+    "rest_framework.authtoken",  # (opcional) tokens de API
     "widget_tweaks",
     "django_select2",
     "phonenumber_field",
     "channels",
-
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "dashboard",
@@ -70,36 +68,36 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'Hubx.urls'
+ROOT_URLCONF = "Hubx.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'core.context_processors.htmx_version',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "core.context_processors.htmx_version",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'Hubx.wsgi.application'
+WSGI_APPLICATION = "Hubx.wsgi.application"
 # Caminho da aplicação ASGI utilizado por servidores como o Daphne
-ASGI_APPLICATION = 'Hubx.asgi.application'
+ASGI_APPLICATION = "Hubx.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
@@ -113,9 +111,9 @@ CHANNEL_LAYERS = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -125,16 +123,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -142,9 +140,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'pt-br'
+LANGUAGE_CODE = "pt-br"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -154,13 +152,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files (user uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # Limite de upload para arquivos enviados via formulários (10 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
@@ -170,18 +168,18 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = 'accounts.User'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "accounts.User"
 
 # URL usado pelo decorator ``login_required``. Sem esta configuracao
 # o Django redireciona para ``/accounts/login/``, que nao existe no
 # projeto e resultava em erro 404.
-LOGIN_URL = '/accounts/login/'
+LOGIN_URL = "/accounts/login/"
 
 # Redireciona o usuario autenticado para seu perfil apos o login.
-LOGIN_REDIRECT_URL = '/perfil/'
+LOGIN_REDIRECT_URL = "/perfil/"
 
 AUTHENTICATION_BACKENDS = [
-    'accounts.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "accounts.backends.EmailBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]

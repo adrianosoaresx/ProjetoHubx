@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+
 from .models import NotificationSettings, UserMedia
 
 User = get_user_model()
@@ -117,4 +118,3 @@ class MediaForm(forms.ModelForm):
         else:
             self._save_m2m = lambda: instance.tags.set(tags)
         return instance
-

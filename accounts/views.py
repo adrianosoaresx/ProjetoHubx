@@ -1,39 +1,30 @@
+from django.contrib.auth import (get_user_model, login, logout,
+                                 update_session_auth_hash)
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import (
-    login,
-    logout,
-    update_session_auth_hash,
-)
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
+
 User = get_user_model()
-from django.contrib import messages
-from django.shortcuts import render, redirect, get_object_or_404
-from django.db.models import Q
-from django.core.exceptions import ValidationError
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile, File
 import os
 import uuid
+
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile, File
+from django.core.files.storage import default_storage
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import (
-    InformacoesPessoaisForm,
-    RedesSociaisForm,
-    NotificacoesForm,
-    MediaForm,
-    CustomUserCreationForm,
-)
-from .models import (
-    cpf_validator,
-    NotificationSettings,
-    UserMedia,
-)
 from tokens.forms import TokenAcessoForm
 from tokens.models import TokenAcesso
 
+from .forms import (CustomUserCreationForm, InformacoesPessoaisForm, MediaForm,
+                    NotificacoesForm, RedesSociaisForm)
+from .models import NotificationSettings, UserMedia, cpf_validator
+
 # ====================== PERFIL ======================
+
 
 @login_required
 def perfil_home(request):
@@ -103,7 +94,9 @@ def perfil_notificacoes(request):
 
 @login_required
 def perfil_conexoes(request):
-    connections = request.user.connections.all() if hasattr(request.user, "connections") else []
+    connections = (
+        request.user.connections.all() if hasattr(request.user, "connections") else []
+    )
     connection_requests = []  # pode ser implementado futuramente
 
     context = {
@@ -144,14 +137,20 @@ def perfil_midias(request):
 
     medias = request.user.medias.order_by("-uploaded_at")
     if q:
-        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+        medias = medias.filter(
+            Q(descricao__icontains=q) | Q(tags__nome__icontains=q)
+        ).distinct()
 
-    return render(request, "perfil/midias.html", {
-        "form": form,
-        "medias": medias,
-        "show_form": show_form,
-        "q": q,
-    })
+    return render(
+        request,
+        "perfil/midias.html",
+        {
+            "form": form,
+            "medias": medias,
+            "show_form": show_form,
+            "q": q,
+        },
+    )
 
 
 @login_required
@@ -186,6 +185,7 @@ def perfil_midia_delete(request, pk):
 
 
 # ====================== AUTENTICAÇÃO ======================
+
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -226,6 +226,7 @@ def onboarding(request):
 
 
 # ====================== REGISTRO MULTIETAPAS ======================
+
 
 def nome(request):
     if request.method == "POST":

@@ -1,8 +1,9 @@
-from django.db import models
-from django.conf import settings
-from datetime import timedelta
-from django.utils import timezone
 import uuid
+from datetime import timedelta
+
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 

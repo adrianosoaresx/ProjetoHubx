@@ -37,7 +37,8 @@ class TokenAcessoForm(forms.ModelForm):
         if (
             self.user
             and self.user.tipo_id == User.Tipo.ADMIN
-            and cleaned.get("tipo_destino") in {TokenAcesso.Tipo.GERENTE, TokenAcesso.Tipo.CLIENTE}
+            and cleaned.get("tipo_destino")
+            in {TokenAcesso.Tipo.GERENTE, TokenAcesso.Tipo.CLIENTE}
             and not cleaned.get("nucleo_destino")
         ):
             self.add_error("nucleo_destino", "Selecione um núcleo")

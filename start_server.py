@@ -1,5 +1,5 @@
-import subprocess
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -7,21 +7,22 @@ BASE_DIR = Path(__file__).resolve().parent
 manage_path = BASE_DIR / "manage.py"
 asgi_path = "Hubx.asgi:application"
 
+
 def is_venv_active():
     return (BASE_DIR / ".venv" / "Scripts" / "activate").exists()
+
 
 def runserver():
     print("🚀 Iniciando com Django runserver...")
     subprocess.run([sys.executable, str(manage_path), "runserver"])
 
+
 def uvicorn_server():
     print("🌐 Iniciando com uvicorn (WebSocket ready)...")
-    subprocess.run([
-        sys.executable, "-m", "uvicorn",
-        asgi_path,
-        "--reload",
-        "--port", "8000"
-    ])
+    subprocess.run(
+        [sys.executable, "-m", "uvicorn", asgi_path, "--reload", "--port", "8000"]
+    )
+
 
 def main():
     if not is_venv_active():
@@ -37,6 +38,7 @@ def main():
         uvicorn_server()
     else:
         runserver()
+
 
 if __name__ == "__main__":
     main()
