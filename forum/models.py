@@ -9,6 +9,14 @@ User = get_user_model()
 class Categoria(TimeStampedModel):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True)
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="categorias",
+        null=False,
+        blank=False,
+        db_column="organization",
+    )
 
     class Meta:
         verbose_name = "Categoria"
@@ -34,8 +42,8 @@ class Topico(TimeStampedModel):
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="topicos",
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         db_column="organization",
     )
 

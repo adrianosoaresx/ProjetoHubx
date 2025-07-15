@@ -182,12 +182,23 @@ class User(AbstractUser, TimeStampedModel):
     REQUIRED_FIELDS = ["username"]
 
     @property
-    def organizacao(self):
+    def organizacao_display(self):
         return self.organizacao
 
-    @organizacao.setter
-    def organizacao(self, value):
+    @organizacao_display.setter
+    def organizacao_display(self, value):
         self.organizacao = value
+
+    def save(self, *args, **kwargs):
+        if self.tipo == self.Tipo.SUPERADMIN:
+            self.nucleo = None  # Garantir que usuários root não interajam com núcleos
+            super().save(*args, **kwargs)
+            return
+        elif self.tipo == self.Tipo.ADMIN:
+            self.nucleo = None  # Usuários admin não estão associados a núcleos específicos
+        elif self.tipo in [self.Tipo.GERENTE, self.Tipo.CLIENTE] and not self.nucleo:
+            raise ValueError("Usuários gerente e cliente devem estar associados a um núcleo.")
+        super().save(*args, **kwargs)
 
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)

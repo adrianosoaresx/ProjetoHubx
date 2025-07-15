@@ -42,8 +42,8 @@ class Post(models.Model):
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="posts",
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         db_column="organization",
     )
     criado_em = models.DateTimeField(auto_now_add=True)

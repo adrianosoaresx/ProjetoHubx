@@ -44,9 +44,10 @@ class Empresa(TimeStampedModel):
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="empresas",
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
         db_column="organization",
+        default=1,  # ID de uma organização padrão
     )
 
     class Meta:

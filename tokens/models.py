@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 
 from core.models import TimeStampedModel
+from nucleos.models import Nucleo
 
 
 class TokenAcesso(TimeStampedModel):
@@ -33,19 +34,24 @@ class TokenAcesso(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="tokens_gerados",
     )
-    nucleo_destino = models.ForeignKey(
-        "nucleos.Nucleo",
-        on_delete=models.SET_NULL,
-        null=True,
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tokens_acesso",
+        null=True,  # Permitir valores nulos para evitar dependências de IDs fixos
         blank=True,
-        related_name="tokens",
+    )
+    nucleos = models.ManyToManyField(
+        Nucleo,
+        related_name="tokens_acesso",
+        blank=True,  # Permitir que o token não esteja vinculado a núcleos inicialmente
     )
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="tokens",
-        null=True,
-        blank=True,
+        null=False,  # Tornar obrigatório
+        blank=False,  # Tornar obrigatório
         db_column="organization",
     )
 
