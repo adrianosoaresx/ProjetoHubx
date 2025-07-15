@@ -4,10 +4,13 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from empresas.models import Empresa
+from accounts.models import UserType
 
 
 class EmpresaVisibilityTests(TestCase):
     def setUp(self):
+        # Garante que o registro UserType com descrição 'root' existe
+        UserType.objects.get_or_create(descricao="root")
         call_command("generate_test_data")
         self.client = Client()
         self.User = get_user_model()

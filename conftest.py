@@ -21,6 +21,7 @@ test_environment_setup = False
 # Bloqueio para evitar execuções simultâneas
 test_environment_lock = threading.Lock()
 
+# Ajuste para evitar chamadas redundantes de setup_test_environment
 @pytest.fixture(scope="session", autouse=True)
 def setup_django():
     """Configura o ambiente do Django para os testes."""
@@ -29,18 +30,24 @@ def setup_django():
         if not test_environment_setup:
             logger.debug("Iniciando configuração do ambiente de teste.")
             settings.DEBUG = False
-            setup_test_environment()
-            test_environment_setup = True
-            logger.debug("Ambiente de teste configurado com sucesso.")
+            try:
+                setup_test_environment()
+                test_environment_setup = True
+                logger.debug("Ambiente de teste configurado com sucesso.")
+            except RuntimeError as e:
+                logger.error(f"Erro ao configurar o ambiente de teste: {e}")
         else:
             logger.debug("Ambiente de teste já configurado.")
     yield
     with test_environment_lock:
         if test_environment_setup:
             logger.debug("Desmontando o ambiente de teste.")
-            teardown_test_environment()
-            test_environment_setup = False
-            logger.debug("Ambiente de teste desmontado com sucesso.")
+            try:
+                teardown_test_environment()
+                test_environment_setup = False
+                logger.debug("Ambiente de teste desmontado com sucesso.")
+            except RuntimeError as e:
+                logger.error(f"Erro ao desmontar o ambiente de teste: {e}")
 
 @pytest.fixture(scope="function", autouse=True)
 def enable_db_access_for_all_tests(db):
