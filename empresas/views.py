@@ -6,6 +6,9 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.response import Response
+from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from core.permissions import (ClienteGerenteRequiredMixin, NoSuperadminMixin,
                               no_superadmin_required)
@@ -45,9 +48,6 @@ def lista_empresas(request):
 @login_required
 @no_superadmin_required
 def nova_empresa(request):
-    if request.user.tipo.descricao not in ["client", "manager"]:
-        return HttpResponseForbidden("Apenas clientes e gerentes podem criar empresas.")
-
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES)
         if form.is_valid():
@@ -55,8 +55,7 @@ def nova_empresa(request):
             empresa.usuario = request.user
             empresa.save()
             form.save_m2m()
-            messages.success(request, "Empresa cadastrada com sucesso.")
-            return redirect("empresas:lista")
+            return Response(status=HTTP_201_CREATED)
     else:
         form = EmpresaForm()
 
@@ -218,14 +217,27 @@ def criar_empresa(request):
 # ------------------------------------------------------------------
 # DELETAR
 # ------------------------------------------------------------------
+class IsEmpresaPermission(BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        u = request.user
+        if u.is_superuser:
+            return False
+        if request.method in SAFE_METHODS:
+            return obj.organizacao == u.organizacao
+        if u.tipo.descricao == "admin":
+            return obj.organizacao == u.organizacao
+        return obj.usuario == u
+
 @login_required
 @no_superadmin_required
 def deletar_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
 
-    if request.user.tipo.descricao not in ["client", "manager", "admin"] or (request.user.tipo.descricao != "admin" and empresa.usuario != request.user):
-        return HttpResponseForbidden("Apenas clientes, gerentes ou administradores podem deletar empresas.")
+    if not IsEmpresaPermission().has_object_permission(request, None, empresa):
+        return HttpResponseForbidden("Permissão negada.")
 
     empresa.delete()
-    messages.success(request, "Empresa deletada com sucesso.")
-    return redirect("empresas:lista")
+    return Response(status=HTTP_204_NO_CONTENT)

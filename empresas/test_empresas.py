@@ -14,17 +14,17 @@ class EmpresaVisibilityTests(TestCase):
         UserType.objects.get_or_create(descricao="admin")
         UserType.objects.get_or_create(descricao="user")
         UserType.objects.get_or_create(descricao="client")
-        UserType.objects.get_or_create(descricao="manager")  # Adicionado para evitar falhas
+        UserType.objects.get_or_create(descricao="manager")
 
         # Executa o comando para gerar dados de teste
         call_command("generate_test_data")
 
         # Recria os usuários necessários para os testes
         self.User = get_user_model()
-        self.root_user = self.User.objects.create_user(username="root", email="root@example.com", password="test123", tipo=UserType.objects.get(descricao="root"))
-        self.admin_user = self.User.objects.create_user(username="admin", email="admin@example.com", password="test123", tipo=UserType.objects.get(descricao="admin"))
-        self.client_user = self.User.objects.create_user(username="client", email="client@example.com", password="test123", tipo=UserType.objects.get(descricao="client"))
-        self.manager_user = self.User.objects.create_user(username="manager", email="manager@example.com", password="test123", tipo=UserType.objects.get(descricao="manager"))
+        self.root_user, _ = self.User.objects.get_or_create(username="root", defaults={"password": "rootpass", "email": "root@example.com"})
+        self.admin_user, _ = self.User.objects.get_or_create(username="admin", defaults={"password": "adminpass", "email": "admin@example.com"})
+        self.client_user, _ = self.User.objects.get_or_create(username="client", defaults={"password": "clientpass", "email": "client@example.com"})
+        self.manager_user, _ = self.User.objects.get_or_create(username="manager", defaults={"password": "managerpass", "email": "manager@example.com"})
 
         self.client = Client()
 
