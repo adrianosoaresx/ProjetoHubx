@@ -27,7 +27,7 @@ User = get_user_model()
 def _queryset_por_organizacao(request):
     qs = Evento.objects.all()
     if request.user.tipo_id == User.Tipo.ADMIN:
-        qs = qs.filter(organizacao=request.user.organizacao)
+        qs = qs.filter(organizacao=request.user.organization)  # Corrigido para usar 'organization' ao filtrar
     return qs
 
 
@@ -119,7 +119,7 @@ class EventoCreateView(
 
     def form_valid(self, form):
         if self.request.user.tipo_id == User.Tipo.ADMIN:
-            form.instance.organizacao = self.request.user.organizacao
+            form.instance.organizacao = self.request.user.organization  # Corrigido para usar 'organization' ao criar evento
         messages.success(self.request, "Evento criado com sucesso.")
         return super().form_valid(form)
 
@@ -211,7 +211,7 @@ class EventoRemoveInscritoView(
         evento = get_object_or_404(Evento, pk=pk)
         if (
             request.user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}
-            and evento.organizacao != request.user.organizacao
+            and evento.organizacao != request.user.organization  # Corrigido para usar 'organization'
         ):
             messages.error(request, "Acesso negado.")  # pragma: no cover
             return redirect("agenda:calendario")

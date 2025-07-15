@@ -25,7 +25,7 @@ class NucleoListView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organizacao)
+            qs = qs.filter(organizacao=user.organization)
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         form = NucleoSearchForm(self.request.GET)
@@ -50,7 +50,7 @@ class NucleoCreateView(
 
     def form_valid(self, form):
         if self.request.user.tipo_id == User.Tipo.ADMIN:
-            form.instance.organizacao = self.request.user.organizacao
+            form.instance.organizacao = self.request.user.organization  # Corrigido para usar 'organization' ao criar
         messages.success(self.request, "Núcleo criado com sucesso.")
         return super().form_valid(form)
 
@@ -67,7 +67,7 @@ class NucleoUpdateView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organizacao)
+            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs
@@ -93,7 +93,7 @@ class NucleoDeleteView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organizacao)
+            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
         return qs
 
     def delete(self, request, *args, **kwargs):
@@ -111,7 +111,7 @@ class NucleoDetailView(
         qs = super().get_queryset()
         user = self.request.user
         if user.tipo_id == User.Tipo.ADMIN:
-            qs = qs.filter(organizacao=user.organizacao)
+            qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
         elif user.tipo_id == User.Tipo.GERENTE:
             qs = qs.filter(membros=user)
         return qs
@@ -124,7 +124,7 @@ class NucleoMemberRemoveView(
         nucleo = get_object_or_404(Nucleo, pk=pk)
         if (
             request.user.tipo_id == User.Tipo.ADMIN
-            and nucleo.organizacao != request.user.organizacao
+            and nucleo.organizacao != request.user.organization  # Corrigido para usar 'organization'
         ):
             return redirect("nucleos:list")
         if (

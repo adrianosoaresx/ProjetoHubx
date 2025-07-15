@@ -260,6 +260,6 @@ class Command(BaseCommand):
                         user.username,
                         user.email,
                         user.tipo.descricao,
-                        user.organizacao.nome,
+                        user.organization.nome,  # Corrigido para usar 'organization'
                     ]
                 )

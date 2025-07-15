@@ -23,7 +23,7 @@ def lista_empresas(request):
     if request.user.is_superuser:
         empresas = Empresa.objects.all()
     else:
-        empresas = Empresa.objects.filter(usuario__organizacao=request.user.organizacao)
+        empresas = Empresa.objects.filter(usuario__organization=request.user.organization)
 
     form = EmpresaSearchForm(request.GET or None)
     if form.is_valid() and form.cleaned_data["empresa"]:
@@ -86,7 +86,7 @@ def buscar_empresas(request):
     if request.user.is_superuser:
         empresas = Empresa.objects.all()
     else:
-        empresas = Empresa.objects.filter(usuario__organizacao=request.user.organizacao)
+        empresas = Empresa.objects.filter(usuario__organization=request.user.organization)
     if query:
         palavras = [p.strip() for p in query.split() if p.strip()]
         q_objects = Q()
@@ -170,7 +170,7 @@ def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if (
         not request.user.is_superuser
-        and empresa.usuario.organizacao != request.user.organizacao
+        and empresa.usuario.organization != request.user.organization  # Corrigido para usar 'organization'
     ):
         return HttpResponseForbidden()
     prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)

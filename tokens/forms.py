@@ -26,8 +26,8 @@ class TokenAcessoForm(forms.ModelForm):
                 (TokenAcesso.Tipo.CLIENTE, "cliente"),
             ]
             qs = (
-                user.organizacao.nucleos.all()
-                if user.organizacao
+                user.organization.nucleos.all()  # Corrigido para usar 'organization'
+                if user.organization
                 else Nucleo.objects.none()
             )
             self.fields["nucleo_destino"].queryset = qs

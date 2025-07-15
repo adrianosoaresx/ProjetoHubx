@@ -15,7 +15,7 @@ class OrganizacaoPermissionsTests(TestCase):
             username="adminuser", password="pass", tipo_id=User.Tipo.ADMIN
         )
         org = Organizacao.objects.create(nome="Org 1", cnpj="00.000.000/0001-00")
-        self.admin_user.organizacao = org
+        self.admin_user.organization = org  # Corrigido para usar 'organization'
         self.admin_user.save()
 
     def test_root_can_access_list(self):
