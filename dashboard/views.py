@@ -4,8 +4,12 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
 from agenda.models import Evento
-from core.permissions import (AdminRequiredMixin, ClienteRequiredMixin,
-                              GerenteRequiredMixin, SuperadminRequiredMixin)
+from core.permissions import (
+    AdminRequiredMixin,
+    ClienteRequiredMixin,
+    GerenteRequiredMixin,
+    SuperadminRequiredMixin,
+)
 from empresas.models import Empresa
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -25,11 +29,12 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
         if user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
-            org = user.organizacao
-            qs_users = qs_users.filter(organizacao=org)
+            org = user.organization  # <- correto no User
+
+            qs_users = qs_users.filter(organization=org)
             qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
             qs_nucleos = qs_nucleos.filter(organizacao=org)
-            qs_empresas = qs_empresas.filter(usuario__organizacao=org)
+            qs_empresas = qs_empresas.filter(usuario__organization=org)
             qs_eventos = qs_eventos.filter(organizacao=org)
 
         return {
@@ -63,7 +68,7 @@ class ClienteDashboardView(ClienteRequiredMixin, DashboardBaseView):
 
 
 def dashboard_redirect(request):
-    """Redirect user to the appropriate dashboard based on their role."""
+    """Redireciona usuário para o dashboard apropriado."""
     user = request.user
     if not user.is_authenticated:
         return redirect("accounts:login")
