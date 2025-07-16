@@ -22,7 +22,7 @@ class Tag(TimeStampedModel):
         verbose_name = "Tag"
         verbose_name_plural = "Tags"
 
-    def __str__(self) -> str:  # pragma: no cover - simples
+    def __str__(self) -> str:
         return self.nome
 
 
@@ -44,15 +44,12 @@ class Empresa(TimeStampedModel):
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="empresas",
-        null=False,
-        blank=False,
         db_column="organization",
-        default=1,  # ID de uma organização padrão
     )
 
     class Meta:
         verbose_name = "Empresa"
         verbose_name_plural = "Empresas"
 
-    def __str__(self) -> str:  # pragma: no cover
+    def __str__(self) -> str:
         return self.nome

@@ -27,7 +27,6 @@ class TokenAcesso(TimeStampedModel):
     estado = models.CharField(
         max_length=10, choices=Estado.choices, default=Estado.NAO_USADO
     )
-    data_criacao = models.DateTimeField(auto_now_add=True)
     data_expiracao = models.DateTimeField()
     gerado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -38,20 +37,18 @@ class TokenAcesso(TimeStampedModel):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="tokens_acesso",
-        null=True,  # Permitir valores nulos para evitar dependências de IDs fixos
+        null=True,
         blank=True,
     )
     nucleos = models.ManyToManyField(
         Nucleo,
         related_name="tokens_acesso",
-        blank=True,  # Permitir que o token não esteja vinculado a núcleos inicialmente
+        blank=True,
     )
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="tokens",
-        null=False,  # Tornar obrigatório
-        blank=False,  # Tornar obrigatório
         db_column="organization",
     )
 
@@ -67,5 +64,5 @@ class TokenAcesso(TimeStampedModel):
             self.data_expiracao = timezone.now() + timedelta(days=30)
         super().save(*args, **kwargs)
 
-    def __str__(self) -> str:  # pragma: no cover - simples
+    def __str__(self) -> str:
         return self.codigo

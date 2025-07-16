@@ -14,17 +14,14 @@ from core.fields import URLField
 from core.models import TimeStampedModel
 
 
-class UserType(TimeStampedModel):
-    """Tipos de usuário cadastrados no sistema."""
+class TimeStampedModel(models.Model):
+    """Modelo base com campos de data de criação e atualização."""
 
-    descricao = models.CharField("Descrição", max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Tipo de Usuário"
-        verbose_name_plural = "Tipos de Usuário"
-
-    def __str__(self) -> str:  # pragma: no cover - simples
-        return self.descricao
+        abstract = True
 
 
 # ───────────────────────────────────────────────────────────────
@@ -144,7 +141,6 @@ class User(AbstractUser, TimeStampedModel):
 
     # Campos migrados do antigo modelo Perfil
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    python manage.py seed_dados
     endereco = models.CharField(max_length=255, blank=True)
     cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)
@@ -161,7 +157,7 @@ class User(AbstractUser, TimeStampedModel):
     mostrar_telefone = models.BooleanField(default=False)
 
     tipo = models.ForeignKey(
-        UserType,
+        "UserType",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -173,8 +169,9 @@ class User(AbstractUser, TimeStampedModel):
         "organizacoes.Organizacao",
         on_delete=PROTECT,
         related_name="users",
-        null=False,
-        default=1,  # Substitua pelo ID de uma organização padrão válida
+        null=True,  # Alterado de False para True
+        blank=True,  # Permitir valores nulos
+        default=None,  # Removido o valor padrão inválido
         verbose_name=_("Organização"),
     )
     is_associado = models.BooleanField(
@@ -222,7 +219,7 @@ class User(AbstractUser, TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.tipo:
             self.tipo = UserType.objects.filter(descricao="client").first()
-        if self.tipo == self.Tipo.SUPERADMIN:
+        if self.tipo and self.tipo.descricao == "SUPERADMIN":
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
 
@@ -250,6 +247,19 @@ class User(AbstractUser, TimeStampedModel):
     # Representação legível
     def __str__(self):
         return self.get_full_name() or self.username
+
+
+class UserType(TimeStampedModel):
+    """Tipos de usuário cadastrados no sistema."""
+
+    descricao = models.CharField("Descrição", max_length=20, unique=True)
+
+    class Meta:
+        verbose_name = "Tipo de Usuário"
+        verbose_name_plural = "Tipos de Usuário"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.descricao
 
 
 class NotificationSettings(TimeStampedModel):
@@ -301,7 +311,6 @@ class UserMedia(TimeStampedModel):
     file = models.FileField(upload_to="user_media/")
     descricao = models.CharField("Descrição", max_length=255, blank=True)
     tags = models.ManyToManyField(MediaTag, related_name="medias", blank=True)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Mídia do Usuário"

@@ -13,8 +13,6 @@ class Categoria(TimeStampedModel):
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="categorias",
-        null=False,
-        blank=False,
         db_column="organization",
     )
 
@@ -36,21 +34,17 @@ class Topico(TimeStampedModel):
     )
     titulo = models.CharField(max_length=200)
     conteudo = models.TextField()
-    criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
         related_name="topicos",
-        null=False,
-        blank=False,
         db_column="organization",
     )
 
     class Meta:
         verbose_name = "Tópico"
         verbose_name_plural = "Tópicos"
-        ordering = ["-criado_em"]
+        ordering = ["-created_at"]
 
     def __str__(self):
         return self.titulo
@@ -64,13 +58,11 @@ class Resposta(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name="respostas_criadas"
     )
     conteudo = models.TextField()
-    criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name = "Resposta"
         verbose_name_plural = "Respostas"
-        ordering = ["criado_em"]
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"Resposta por {self.autor.username} em {self.topico.titulo}"

@@ -29,12 +29,11 @@ class Mensagem(TimeStampedModel):
         max_length=10,
     )
     conteudo = models.TextField(blank=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-criado_em"]
+        ordering = ["-created_at"]
 
-    def __str__(self) -> str:  # pragma: no cover - simples
+    def __str__(self) -> str:
         return f"{self.remetente}: {self.tipo}"
 
 
@@ -63,5 +62,5 @@ class Notificacao(TimeStampedModel):
         verbose_name = "Notificação"
         verbose_name_plural = "Notificações"
 
-    def __str__(self) -> str:  # pragma: no cover - simples
+    def __str__(self) -> str:
         return f"Para {self.usuario} de {self.remetente}"
