@@ -81,3 +81,16 @@ class ClienteGerenteRequiredMixin(UserPassesTestMixin):
 
     def test_func(self):
         return self.request.user.tipo_id in {User.Tipo.CLIENTE, User.Tipo.GERENTE}
+
+
+def pode_crud_empresa(user, empresa=None) -> bool:
+    """
+    Retorna True se o usuário puder criar/editar/excluir a empresa,
+    conforme matriz de permissões (Root/Admin = read‑only).
+    """
+    if not user.is_authenticated or not user.organizacao:
+        return False
+    if user.is_superuser or user.tipo.descricao == "admin":
+        return False
+    # client ou manager:
+    return empresa is None or empresa.usuario_id == user.id

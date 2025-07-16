@@ -15,5 +15,6 @@ urlpatterns = [
     path("tags/<int:pk>/editar/", views.TagUpdateView.as_view(), name="tags_update"),
     path("tags/<int:pk>/remover/", views.TagDeleteView.as_view(), name="tags_delete"),
     path("criar/", views.criar_empresa, name="criar"),
-    path("<int:pk>/deletar/", views.deletar_empresa, name="deletar"),
+    path("<int:pk>/deletar/", views.remover_empresa, name="deletar"),
+    path("<int:pk>/remover/", views.remover_empresa, name="remover"),
 ]

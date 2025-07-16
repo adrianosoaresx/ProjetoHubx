@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from core.permissions import (ClienteGerenteRequiredMixin, NoSuperadminMixin,
-                              no_superadmin_required)
+                              no_superadmin_required, pode_crud_empresa)
 
 from .forms import EmpresaForm, EmpresaSearchForm, TagForm, TagSearchForm
 from .models import Empresa, Tag
@@ -23,13 +23,15 @@ from .models import Empresa, Tag
 @login_required
 @no_superadmin_required
 def lista_empresas(request):
+    qs = Empresa.objects.select_related("organizacao", "usuario")
     if request.user.is_superuser:
-        return HttpResponseForbidden("Usuário root não pode acessar esta funcionalidade.")
-
-    if request.user.tipo.descricao == "admin":
-        empresas = Empresa.objects.all()
+        empresas = qs
+    elif request.user.tipo.descricao == "admin":
+        empresas = qs.filter(organizacao=request.user.organizacao)
+    elif request.user.tipo.descricao in ["client", "manager"]:
+        empresas = qs.filter(usuario=request.user)
     else:
-        empresas = Empresa.objects.filter(usuario=request.user)
+        return HttpResponseForbidden("Usuário não autorizado.")
 
     form = EmpresaSearchForm(request.GET or None)
     if form.is_valid() and form.cleaned_data["empresa"]:
@@ -48,14 +50,19 @@ def lista_empresas(request):
 @login_required
 @no_superadmin_required
 def nova_empresa(request):
+    if not request.user.is_authenticated or request.user.is_superuser or request.user.tipo.descricao == "admin":
+        return HttpResponseForbidden("Usuário não autorizado a criar empresas.")
+
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES)
         if form.is_valid():
             empresa = form.save(commit=False)
+            empresa.organizacao = request.user.organizacao
             empresa.usuario = request.user
             empresa.save()
             form.save_m2m()
-            return Response(status=HTTP_201_CREATED)
+            status_code = 201 if request.headers.get("HX-Request") else 302
+            return JsonResponse({"message": "Empresa criada com sucesso."}, status=status_code)
     else:
         form = EmpresaForm()
 
@@ -70,14 +77,15 @@ def nova_empresa(request):
 def editar_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
 
-    if request.user.tipo.descricao not in ["client", "manager", "admin"] or (request.user.tipo.descricao != "admin" and empresa.usuario != request.user):
-        return HttpResponseForbidden("Apenas clientes, gerentes ou administradores podem editar empresas.")
+    if not pode_crud_empresa(request.user, empresa):
+        return HttpResponseForbidden("Usuário não autorizado a editar esta empresa.")
 
     if request.method == "POST":
         form = EmpresaForm(request.POST, request.FILES, instance=empresa)
         if form.is_valid():
             form.save()
-            messages.success(request, "Empresa atualizada com sucesso.")
+            if request.headers.get("HX-Request"):
+                return JsonResponse({"message": "Empresa atualizada com sucesso."}, status=200)
             return redirect("empresas:lista")
     else:
         form = EmpresaForm(instance=empresa)
@@ -217,27 +225,18 @@ def criar_empresa(request):
 # ------------------------------------------------------------------
 # DELETAR
 # ------------------------------------------------------------------
-class IsEmpresaPermission(BasePermission):
-    def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated)
-
-    def has_object_permission(self, request, view, obj):
-        u = request.user
-        if u.is_superuser:
-            return False
-        if request.method in SAFE_METHODS:
-            return obj.organizacao == u.organizacao
-        if u.tipo.descricao == "admin":
-            return obj.organizacao == u.organizacao
-        return obj.usuario == u
-
 @login_required
 @no_superadmin_required
-def deletar_empresa(request, pk):
+def remover_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
 
-    if not IsEmpresaPermission().has_object_permission(request, None, empresa):
-        return HttpResponseForbidden("Permissão negada.")
+    if not pode_crud_empresa(request.user, empresa):
+        return HttpResponseForbidden("Usuário não autorizado a remover esta empresa.")
 
-    empresa.delete()
-    return Response(status=HTTP_204_NO_CONTENT)
+    if request.method == "POST":
+        empresa.delete()
+        if request.headers.get("HX-Request"):
+            return JsonResponse({"message": "Empresa removida com sucesso."}, status=204)
+        return redirect("empresas:lista")
+
+    return render(request, "empresas/confirmar_remocao.html", {"empresa": empresa})

@@ -35,6 +35,9 @@ class EmpresaForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
+        if not instance.pk:  # Novo objeto
+            instance.usuario = self.initial.get('usuario')
+            instance.organizacao = self.initial.get('organizacao')
         if commit:
             instance.save()
         tags_names = [

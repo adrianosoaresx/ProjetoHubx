@@ -199,6 +199,20 @@ class Command(BaseCommand):
             criar_empresa(usuario)
             criar_empresa(usuario)
 
+        # Criar empresas para admins e gerentes
+        for user in User.objects.filter(tipo__descricao__in=["admin", "manager"]):
+            Empresa.objects.create(
+                cnpj=faker.cnpj(),
+                nome=faker.company(),
+                tipo=random.choice(["MEI", "LTDA", "EIRELI"]),
+                municipio=faker.city(),
+                estado=faker.state_abbr(),
+                descricao=faker.text(),
+                contato=faker.phone_number(),
+                usuario=user,
+                organizacao=user.organizacao,
+            )
+
         # Relacionamentos de conexão e seguidores dentro da mesma organização
         todos_usuarios = clientes + gerentes + admins
         usuarios_por_org = {}
@@ -277,6 +291,22 @@ class Command(BaseCommand):
                         user.username,
                         user.email,
                         user.tipo.descricao,
-                        user.organization.nome,  # Corrigido para usar 'organization'
+                        user.organizacao.nome,  # Corrigido para usar 'organization'
                     ]
                 )
+
+        # Ajustar CSV writer para incluir organizacao
+        if options["format"] == "csv":
+            with io.StringIO() as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["cnpj", "nome", "tipo", "municipio", "estado", "organizacao"])
+                for empresa in Empresa.objects.all():
+                    writer.writerow([
+                        empresa.cnpj,
+                        empresa.nome,
+                        empresa.tipo,
+                        empresa.municipio,
+                        empresa.estado,
+                        empresa.organizacao.nome,
+                    ])
+                self.stdout.write(csvfile.getvalue())

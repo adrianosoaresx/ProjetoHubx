@@ -160,7 +160,7 @@ class User(AbstractUser, TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        default=Tipo.CLIENTE,
+        default=None,  # Alterado de Tipo.CLIENTE para None
         related_name="users",
     )
 
@@ -194,14 +194,10 @@ class User(AbstractUser, TimeStampedModel):
         self.organizacao = value
 
     def save(self, *args, **kwargs):
+        if not self.tipo:
+            self.tipo = UserType.objects.filter(descricao="client").first()
         if self.tipo == self.Tipo.SUPERADMIN:
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
-            super().save(*args, **kwargs)
-            return
-        elif self.tipo == self.Tipo.ADMIN:
-            self.nucleo = None  # Usuários admin não estão associados a núcleos específicos
-        elif self.tipo in [self.Tipo.GERENTE, self.Tipo.CLIENTE] and not self.nucleo:
-            raise ValueError("Usuários gerente e cliente devem estar associados a um núcleo.")
         super().save(*args, **kwargs)
 
     # Relacionamentos sociais
