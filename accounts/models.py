@@ -144,11 +144,7 @@ class User(AbstractUser, TimeStampedModel):
 
     # Campos migrados do antigo modelo Perfil
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    bio = models.TextField(blank=True)
-    data_nascimento = models.DateField(blank=True, null=True)
-    genero = models.CharField(max_length=1, blank=True)
-    telefone = models.CharField(max_length=20, blank=True)
-    whatsapp = models.CharField(max_length=20, blank=True)
+    python manage.py seed_dados
     endereco = models.CharField(max_length=255, blank=True)
     cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)

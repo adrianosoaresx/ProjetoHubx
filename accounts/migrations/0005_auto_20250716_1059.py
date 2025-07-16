@@ -12,7 +12,7 @@ def atribuir_organizacao_padrao(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("accounts", "0004_alter_user_organizacao"),
+        ("accounts", "0003_user_is_associado_user_is_coordenador_and_more"),
     ]
 
     operations = [
