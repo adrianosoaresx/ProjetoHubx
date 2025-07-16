@@ -6,6 +6,9 @@ from django.urls import reverse
 from tokens.models import TokenAcesso
 
 from .models import NotificationSettings, UserMedia
+from accounts.models import TipoUsuario
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 
 class RegistrationSessionTests(TestCase):
@@ -153,3 +156,33 @@ class MediaUploadTests(TestCase):
         response = self.client.post(reverse("accounts:midia_delete", args=[media.pk]))
         self.assertEqual(response.status_code, 302)
         self.assertFalse(UserMedia.objects.filter(pk=media.pk).exists())
+
+
+class UserModelTests(TestCase):
+    def setUp(self):
+        self.organizacao = Organizacao.objects.create(nome="Org Teste")
+        self.nucleo = Nucleo.objects.create(nome="Núcleo Teste", organizacao=self.organizacao)
+        self.user_root = get_user_model().objects.create_user(username="root", is_superuser=True)
+        self.user_admin = get_user_model().objects.create_user(username="admin", is_staff=True, organizacao=self.organizacao)
+        self.user_coordenador = get_user_model().objects.create_user(
+            username="coordenador",
+            is_associado=True,
+            is_coordenador=True,
+            nucleo=self.nucleo,
+            organizacao=self.organizacao
+        )
+
+    def test_get_tipo_usuario(self):
+        self.assertEqual(self.user_root.get_tipo_usuario, TipoUsuario.ROOT.value)
+        self.assertEqual(self.user_admin.get_tipo_usuario, TipoUsuario.ADMIN.value)
+        self.assertEqual(self.user_coordenador.get_tipo_usuario, TipoUsuario.COORDENADOR.value)
+
+    def test_criacao_usuario_validacoes(self):
+        with self.assertRaises(PermissionError):
+            get_user_model().objects.create_user(username="invalid", organizacao=None)
+
+    def test_escopo_organizacao(self):
+        users = get_user_model().objects.filter(organizacao=self.organizacao)
+        self.assertIn(self.user_admin, users)
+        self.assertIn(self.user_coordenador, users)
+        self.assertNotIn(self.user_root, users)

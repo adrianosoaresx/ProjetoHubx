@@ -3,6 +3,11 @@ from django.contrib.auth import (get_user_model, login, logout,
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.hashers import make_password
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from core.permissions import IsAdmin, IsCoordenador
+from accounts.serializers import UserSerializer
 
 User = get_user_model()
 import os
@@ -365,3 +370,26 @@ def perfil_home(request):
         "notifications": NotificationSettings.objects.filter(user=user).first(),
     }
     return render(request, "perfil/detail.html", context)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            if self.request.user.get_tipo_usuario == 'admin':
+                self.permission_classes.append(IsAdmin)
+            elif self.request.user.get_tipo_usuario == 'coordenador':
+                self.permission_classes.append(IsCoordenador)
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        organizacao = self.request.user.organizacao
+        if self.request.user.get_tipo_usuario == 'admin':
+            serializer.save(organizacao=organizacao)
+        elif self.request.user.get_tipo_usuario == 'coordenador':
+            serializer.save(organizacao=organizacao, is_associado=False, is_staff=False)
+        else:
+            raise PermissionError("Você não tem permissão para criar usuários.")

@@ -5,7 +5,9 @@ from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
+from enum import Enum
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import URLField
@@ -73,6 +75,19 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
 
     def get_by_natural_key(self, email: str):
         return self.get(email__iexact=email)
+
+
+class TipoUsuario(Enum):
+    ROOT = "root"
+    ADMIN = "admin"
+    COORDENADOR = "coordenador"
+    NUCLEADO = "nucleado"
+    ASSOCIADO = "associado"
+    CONVIDADO = "convidado"
+
+    @classmethod
+    def choices(cls):
+        return [(key.value, key.name) for key in cls]
 
 
 class User(AbstractUser, TimeStampedModel):
@@ -149,12 +164,6 @@ class User(AbstractUser, TimeStampedModel):
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
 
-    class Tipo(models.IntegerChoices):
-        SUPERADMIN = 4, _("Root")
-        ADMIN = 1, _("Admin")
-        GERENTE = 2, _("Manager")
-        CLIENTE = 3, _("Client")
-
     tipo = models.ForeignKey(
         UserType,
         on_delete=models.SET_NULL,
@@ -166,18 +175,25 @@ class User(AbstractUser, TimeStampedModel):
 
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
-        on_delete=models.PROTECT,
+        on_delete=PROTECT,
         related_name="users",
-        null=True,
-        blank=True,
+        null=False,
+        default=1,  # Substitua pelo ID de uma organização padrão válida
+        verbose_name=_("Organização"),
     )
-
+    is_associado = models.BooleanField(
+        default=False, verbose_name=_("É associado")
+    )
+    is_coordenador = models.BooleanField(
+        default=False, verbose_name=_("É coordenador")
+    )
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",
-        on_delete=models.SET_NULL,
+        on_delete=SET_NULL,
         related_name="usuarios_principais",
         null=True,
         blank=True,
+        verbose_name=_("Núcleo"),
     )
 
     objects = CustomUserManager()
@@ -192,6 +208,20 @@ class User(AbstractUser, TimeStampedModel):
     @organizacao_display.setter
     def organizacao_display(self, value):
         self.organizacao = value
+
+    @property
+    def get_tipo_usuario(self):
+        if self.is_superuser:
+            return TipoUsuario.ROOT.value
+        if self.is_staff and not self.is_associado:
+            return TipoUsuario.ADMIN.value
+        if self.is_associado and self.nucleo and self.is_coordenador:
+            return TipoUsuario.COORDENADOR.value
+        if self.is_associado and self.nucleo and not self.is_coordenador:
+            return TipoUsuario.NUCLEADO.value
+        if self.is_associado and not self.nucleo:
+            return TipoUsuario.ASSOCIADO.value
+        return TipoUsuario.CONVIDADO.value
 
     def save(self, *args, **kwargs):
         if not self.tipo:

@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import UserPassesTestMixin
 from rest_framework.permissions import BasePermission
 
+from accounts.models import TipoUsuario
+
 User = get_user_model()
 
 
@@ -94,3 +96,30 @@ def pode_crud_empresa(user, empresa=None) -> bool:
         return False
     # client ou manager:
     return empresa is None or empresa.usuario_id == user.id
+
+
+class IsRoot(BasePermission):
+    """Permite acesso apenas a usuários root."""
+
+    def has_permission(self, request, view):
+        return request.user.get_tipo_usuario == TipoUsuario.ROOT.value
+
+
+class IsAdmin(BasePermission):
+    """Permite acesso a administradores da mesma organização."""
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.get_tipo_usuario == TipoUsuario.ADMIN.value
+            and request.user.organizacao == obj.organizacao
+        )
+
+
+class IsCoordenador(BasePermission):
+    """Permite acesso a coordenadores da mesma organização."""
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.get_tipo_usuario == TipoUsuario.COORDENADOR.value
+            and request.user.organizacao == obj.organizacao
+        )
