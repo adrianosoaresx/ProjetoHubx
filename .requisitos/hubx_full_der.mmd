@@ -1,0 +1,218 @@
+
+erDiagram
+    accounts_user {
+        UUID id PK
+        varchar email UNIQUE
+        varchar password
+        varchar first_name
+        varchar last_name
+        bool is_active
+        bool is_staff
+        timestamp last_login
+        timestamp date_joined
+    }
+    accounts_preference {
+        UUID id PK
+        varchar language
+        varchar timezone
+        varchar theme
+        bool email_notifications
+        bool push_notifications
+        timestamp updated_at
+        UUID user_id FK
+    }
+    tokens_token {
+        UUID id PK
+        uuid jti UNIQUE
+        varchar type
+        timestamp expires_at
+        inet ip_address
+        text user_agent
+        UUID user_id FK
+    }
+    accounts_two_factor_totp {
+        UUID id PK
+        varchar secret
+        bool confirmed
+        timestamp created_at
+        UUID user_id FK
+    }
+    organizacoes_organizacao {
+        UUID id PK
+        varchar nome
+        varchar slug UNIQUE
+        text descricao
+        char cnpj(14) UNIQUE
+        varchar email_contato
+        varchar telefone
+        UUID owner_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+    organizacoes_membro {
+        UUID id PK
+        varchar role
+        timestamp joined_at
+        UUID user_id FK
+        UUID organizacao_id FK
+    }
+    nucleos_nucleo {
+        UUID id PK
+        varchar nome
+        text descricao
+        UUID organizacao_id FK
+        timestamp created_at
+    }
+    empresas_empresa {
+        UUID id PK
+        varchar razao_social
+        varchar nome_fantasia
+        char cnpj(14) UNIQUE
+        text endereco
+        varchar site
+        UUID responsavel_id FK
+        timestamp created_at
+    }
+    eventos_evento {
+        UUID id PK
+        varchar titulo
+        text descricao
+        date data_inicio
+        date data_fim
+        varchar local
+        int vagas_totais
+        varchar status
+        UUID organizacao_id FK
+        UUID criador_id FK
+        timestamp created_at
+    }
+    eventos_inscricao {
+        UUID id PK
+        timestamp inscrito_em
+        varchar situacao
+        UUID evento_id FK
+        UUID participante_id FK
+    }
+    eventos_briefing {
+        UUID id PK
+        text objetivos
+        text publico_alvo
+        text requisitos_tecnicos
+        UUID evento_id FK
+    }
+    eventos_parceria {
+        UUID id PK
+        varchar parceiro_nome
+        text contrapartidas
+        text observacoes
+        UUID evento_id FK
+    }
+    eventos_material_divulgacao {
+        UUID id PK
+        varchar tipo
+        varchar url
+        UUID evento_id FK
+    }
+    feed_post {
+        UUID id PK
+        text conteudo
+        varchar media_url
+        timestamp publicado_em
+        UUID autor_id FK
+    }
+    feed_like {
+        UUID id PK
+        timestamp criado_em
+        UUID post_id FK
+        UUID user_id FK
+    }
+    feed_comment {
+        UUID id PK
+        text texto
+        timestamp criado_em
+        UUID post_id FK
+        UUID user_id FK
+        UUID reply_to_id FK
+    }
+    forum_topic {
+        UUID id PK
+        varchar titulo
+        text corpo
+        UUID autor_id FK
+        UUID nucleo_id FK
+        timestamp criado_em
+        timestamp atualizado_em
+    }
+    forum_post {
+        UUID id PK
+        text corpo
+        UUID topic_id FK
+        UUID autor_id FK
+        timestamp criado_em
+    }
+    chat_room {
+        UUID id PK
+        varchar nome
+        bool is_group
+        UUID organizacao_id FK
+        timestamp criado_em
+    }
+    chat_participante {
+        UUID id PK
+        UUID room_id FK
+        UUID user_id FK
+        timestamp entrou_em
+    }
+    chat_mensagem {
+        UUID id PK
+        text corpo
+        varchar tipo
+        timestamp enviado_em
+        UUID room_id FK
+        UUID autor_id FK
+    }
+    dashboard_widget {
+        UUID id PK
+        varchar tipo
+        jsonb configuracao
+        UUID owner_id FK
+    }
+    dashboard_layout {
+        UUID id PK
+        jsonb grid_positions
+        UUID owner_id FK
+    }
+
+    %% Relationships
+    accounts_user ||--o{ accounts_preference : has
+    accounts_user ||--o{ tokens_token : owns
+    accounts_user ||--o{ accounts_two_factor_totp : has
+    accounts_user ||--o{ organizacoes_membro : membro_de
+    accounts_user ||--o{ feed_post : publica
+    accounts_user ||--o{ feed_comment : comenta
+    accounts_user ||--o{ feed_like : curte
+    accounts_user ||--o{ eventos_inscricao : participa
+    accounts_user ||--o{ forum_topic : cria
+    accounts_user ||--o{ forum_post : posta
+    accounts_user ||--o{ chat_participante : entra
+    accounts_user ||--o{ chat_mensagem : envia
+    accounts_user ||--o{ empresas_empresa : responsavel
+    accounts_user ||--o{ dashboard_widget : possui
+    accounts_user ||--o{ dashboard_layout : possui
+
+    organizacoes_organizacao ||--|{ organizacoes_membro : contem
+    organizacoes_organizacao ||--|{ nucleos_nucleo : possui
+    organizacoes_organizacao ||--|{ eventos_evento : organiza
+    organizacoes_organizacao ||--|{ chat_room : possui
+
+    nucleos_nucleo ||--|{ forum_topic : contem
+    eventos_evento ||--|{ eventos_inscricao : possui
+    eventos_evento ||--|{ eventos_briefing : possui
+    eventos_evento ||--|{ eventos_parceria : possui
+    eventos_evento ||--|{ eventos_material_divulgacao : possui
+
+    feed_post ||--o{ feed_comment : recebe
+    feed_post ||--o{ feed_like : recebe
+    forum_topic ||--|{ forum_post : possui
+    chat_room ||--|{ chat_participante : possui
+    chat_room ||--|{ chat_mensagem : possui
