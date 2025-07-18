@@ -5,8 +5,8 @@ from django.urls import reverse
 from django.utils.timezone import make_aware
 from freezegun import freeze_time
 
-from accounts.models import User
-from agenda.models import Evento, FeedbackNota
+from accounts.models import User, UserType
+from agenda.models import Evento, FeedbackNota, InscricaoEvento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -18,24 +18,30 @@ def organizacao():
 
 
 @pytest.fixture
-def evento_passado(organizacao):
+def evento_passado(organizacao, usuario):
     return Evento.objects.create(
         organizacao=organizacao,
         titulo="Evento Antigo",
         descricao="Já aconteceu",
-        data_hora=make_aware(datetime(2024, 6, 10, 14, 0)),
-        duracao=timedelta(hours=2),
+        data_inicio=make_aware(datetime(2024, 6, 10, 14, 0)),
+        data_fim=make_aware(datetime(2024, 6, 10, 16, 0)),
         briefing="",
+        coordenador=usuario,
+        status=0,  # Ativo
+        publico_alvo=1,  # Corrigido para usar um número inteiro válido
+        numero_convidados=50,  # Adicionado para corrigir o erro
+        numero_presentes=30,  # Adicionado para corrigir o erro
     )
 
 
 @pytest.fixture
 def usuario(client):
+    tipo_cliente = UserType.objects.get_or_create(descricao="cliente")[0]
     user = User.objects.create_user(
         username="pessoa",
         email="pessoa@example.com",
         password="12345",
-        tipo_id=User.Tipo.CLIENTE,
+        tipo=tipo_cliente,
     )
     client.force_login(user)
     return user
@@ -43,14 +49,19 @@ def usuario(client):
 
 @pytest.fixture
 def feedbacks(evento_passado, usuario):
+    outro_usuario = User.objects.create_user(
+        username="outro_pessoa",
+        email="outro_pessoa@example.com",
+        password="12345",
+        tipo=usuario.tipo,
+    )
     FeedbackNota.objects.create(evento=evento_passado, usuario=usuario, nota=4)
-    FeedbackNota.objects.create(evento=evento_passado, usuario=usuario, nota=5)
+    FeedbackNota.objects.create(evento=evento_passado, usuario=outro_usuario, nota=5)  # Usar outro usuário para evitar duplicação
 
 
 @freeze_time("2025-07-14 10:00:00")
 def test_envio_feedback_pos_evento(evento_passado, usuario, client):
-    evento_passado.inscritos.add(usuario)
-    evento_passado.save()
+    InscricaoEvento.objects.create(evento=evento_passado, user=usuario, data_confirmacao=make_aware(datetime.now()), status="confirmada", presente=False)  # Corrigido argumento 'data_confirmacao'
 
     url = reverse("agenda:evento_feedback", args=[evento_passado.pk])
     data = {"nota": "5"}
@@ -59,7 +70,6 @@ def test_envio_feedback_pos_evento(evento_passado, usuario, client):
     assert response.status_code in [200, 302]
 
     evento_passado.refresh_from_db()
-    # Aqui depende do modelo: adaptável
     assert evento_passado.feedbacks.filter(usuario=usuario, nota=5).exists()
 
 

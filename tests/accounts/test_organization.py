@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from accounts.models import TipoUsuario
+
 
 class OrganizationUserTests(TestCase):
     def setUp(self):
@@ -13,19 +15,20 @@ class OrganizationUserTests(TestCase):
             email="admin1@example.com",
             username="admin1",
             password="pass",
-            organization=self.org1,
+            organizacao=self.org1,
+            tipo_id=TipoUsuario.ADMIN.value,
         )
         self.admin2 = self.User.objects.create_user(
             email="admin2@example.com",
             username="admin2",
             password="pass",
-            organization=self.org2,
+            organizacao=self.org2,
         )
         self.root = self.User.objects.get(username="root")
 
     def test_user_sees_only_same_org(self):
         self.client.force_login(self.admin1)
-        users = list(self.User.objects.filter_current_org(self.admin1.organization))
+        users = list(self.User.objects.filter(organizacao=self.admin1.organizacao))
         self.assertEqual(users, [self.admin1])
 
     def test_unique_username_per_organization(self):
@@ -33,7 +36,7 @@ class OrganizationUserTests(TestCase):
             email="joao1@example.com",
             username="joao",
             password="pass",
-            organization=self.org1,
+            organizacao=self.org1,
         )
         from django.db import IntegrityError, transaction
 
@@ -43,13 +46,13 @@ class OrganizationUserTests(TestCase):
                     email="joao2@example.com",
                     username="joao",
                     password="pass",
-                    organization=self.org1,
+                    organizacao=self.org1,
                 )
         self.User.objects.create_user(
             email="joao3@example.com",
             username="joao",
             password="pass",
-            organization=self.org2,
+            organizacao=self.org2,
         )
 
     def test_superuser_sees_all(self):

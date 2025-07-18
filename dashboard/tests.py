@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from empresas.models import Empresa
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -16,7 +16,6 @@ class DashboardPermissionsTests(TestCase):
     def setUp(self):
         User = get_user_model()
 
-        # Criar registros no modelo UserType
         UserType.objects.get_or_create(id=User.Tipo.SUPERADMIN, descricao="Root")
         UserType.objects.get_or_create(id=User.Tipo.ADMIN, descricao="Admin")
         UserType.objects.get_or_create(id=User.Tipo.GERENTE, descricao="Manager")
@@ -47,26 +46,28 @@ class DashboardPermissionsTests(TestCase):
             tipo_id=User.Tipo.CLIENTE,
         )
         org = Organizacao.objects.create(nome="Org 1", cnpj="00.000.000/0001-00")
-        self.admin_user.organization = org  # Corrigido para usar 'organization'
+        self.admin_user.organization = org
         self.admin_user.save()
-        self.manager_user.organization = org  # Corrigido para usar 'organization'
+        self.manager_user.organization = org
         self.manager_user.save()
         Nucleo.objects.create(nome="Nucleo", organizacao=org)
         Empresa.objects.create(
-            nome="Empresa",
+            razao_social="Empresa",
+            nome_fantasia="Fantasia",
             cnpj="00.000.000/0001-01",
-            tipo="TI",
-            municipio="City",
+            ramo_atividade="TI",
+            cidade="City",
             estado="ST",
             usuario=self.client_user,
         )
-        Evento.objects.create(
+        evento = Evento.objects.create(
             titulo="Evento",
             organizacao=org,
             descricao="",
-            data_hora=timezone.now(),
-            duracao=timedelta(hours=1),
+            data_inicio=timezone.now(),
+            data_fim=timezone.now() + timedelta(hours=1),
         )
+        InscricaoEvento.objects.create(evento=evento, usuario=self.client_user, status="confirmada")
 
     def assert_status(self, user, url_name, status):
         self.client.force_login(user)

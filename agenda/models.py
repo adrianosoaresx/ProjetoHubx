@@ -49,6 +49,7 @@ class Evento(TimeStampedModel):
         upload_to="eventos/avatars/", null=True, blank=True
     )
     cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
+    briefing = models.TextField(blank=True, null=True)
 
     class Meta:
         verbose_name = "Evento"

@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from accounts.models import User
+from accounts.models import User, TipoUsuario
 from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
@@ -17,14 +17,15 @@ def organizacao():
 
 
 @pytest.fixture
-def evento(organizacao):
+def evento(organizacao, usuario_comum):
     return Evento.objects.create(
         organizacao=organizacao,
         titulo="Evento Público",
         descricao="Aberto a inscrições",
-        data_hora=make_aware(datetime(2025, 7, 20, 14, 0)),
-        duracao=timedelta(hours=2),
+        data_inicio=make_aware(datetime(2025, 7, 20, 14, 0)),
+        data_fim=make_aware(datetime(2025, 7, 20, 16, 0)),
         briefing="",
+        coordenador=usuario_comum,
     )
 
 
@@ -34,7 +35,7 @@ def usuario_comum(client):
         username="comum",
         email="comum@example.com",
         password="12345",
-        tipo_id=User.Tipo.CLIENTE,
+        tipo_id=TipoUsuario.CLIENTE.value,
     )
     client.force_login(user)
     return user
@@ -54,7 +55,7 @@ def gerente(organizacao):
 @pytest.fixture
 def inscricao(evento, usuario_comum):
     return InscricaoEvento.objects.create(
-        user=usuario_comum,
+        usuario=usuario_comum,
         evento=evento,
         status="pendente",
     )
@@ -74,24 +75,24 @@ def test_usuario_pode_inscrever_e_cancelar(evento, usuario_comum, client):
     # Inscreve
     resp1 = client.post(url)
     assert resp1.status_code == 302
-    assert evento.inscritos.filter(pk=usuario_comum.pk).exists()
+    assert InscricaoEvento.objects.filter(evento=evento, usuario=usuario_comum, status="confirmada").exists()
 
     # Cancela
     resp2 = client.post(url)
     assert resp2.status_code == 302
-    assert not evento.inscritos.filter(pk=usuario_comum.pk).exists()
+    assert InscricaoEvento.objects.filter(evento=evento, usuario=usuario_comum, status="cancelada").exists()
 
 
 def test_gerente_pode_remover_inscrito(evento, usuario_comum, gerente, client):
     evento.organizacao = gerente.organizacao
     evento.save()
-    evento.inscritos.add(usuario_comum)
+    InscricaoEvento.objects.create(evento=evento, usuario=usuario_comum, status="confirmada")
 
     client.force_login(gerente)
     url = reverse("agenda:evento_remover_inscrito", args=[evento.pk, usuario_comum.pk])
     response = client.post(url)
     assert response.status_code == 302
-    assert not evento.inscritos.filter(pk=usuario_comum.pk).exists()
+    assert not InscricaoEvento.objects.filter(evento=evento, usuario=usuario_comum).exists()
 
 
 def test_confirmar_inscricao(inscricao):

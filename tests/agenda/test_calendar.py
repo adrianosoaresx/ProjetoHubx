@@ -5,8 +5,9 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
+from accounts.models import TipoUsuario
 
 
 class CalendarViewTests(TestCase):
@@ -17,7 +18,7 @@ class CalendarViewTests(TestCase):
             email="admin@example.com",
             username="admin",
             password="pass",
-            tipo_id=User.Tipo.ADMIN,
+            tipo_id=TipoUsuario.ADMIN.value,
             organizacao=self.org,
         )
 
@@ -45,12 +46,13 @@ class CalendarViewTests(TestCase):
     def test_htmx_day_click_returns_events(self):
         self.client.force_login(self.admin)
         dia = date.today()
-        Evento.objects.create(
+        evento = Evento.objects.create(
             organizacao=self.org,
             titulo="Evento",
-            data_hora=make_aware(datetime.combine(dia, datetime.min.time())),
-            duracao=timedelta(hours=1),
+            data_inicio=make_aware(datetime.combine(dia, datetime.min.time())),
+            data_fim=make_aware(datetime.combine(dia, datetime.min.time()) + timedelta(hours=1)),
         )
+        InscricaoEvento.objects.create(evento=evento, usuario=self.admin, status="confirmada")
         resp = self.client.get(
             reverse("agenda:lista_eventos", args=[dia.isoformat()]),
             HTTP_HX_REQUEST="true",

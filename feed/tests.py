@@ -15,7 +15,7 @@ class PostModelTests(TestCase):
         self.user = get_user_model().objects.create_user("user", password="pass")
 
     def test_tipo_feed_validation(self):
-        post = Post(autor=self.user, conteudo="ok", tipo_feed=Post.PUBLICO)
+        post = Post(autor=self.user, conteudo="ok", tipo_feed="global")
         post.full_clean()  # should not raise
         post.save()
 
@@ -53,7 +53,7 @@ class FeedViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("feed:nova_postagem"),
-            {"conteudo": "hello", "destino": "publico"},
+            {"conteudo": "hello", "tipo_feed": "global"},
         )
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Post.objects.filter(conteudo="hello", autor=self.user).exists())
@@ -62,16 +62,16 @@ class FeedViewTests(TestCase):
         self.client.force_login(self.root_user)
         response = self.client.post(
             reverse("feed:nova_postagem"),
-            {"conteudo": "root post", "destino": "publico"},
+            {"conteudo": "root post", "tipo_feed": "global"},
         )
         self.assertEqual(response.status_code, 403)
 
     def test_feed_nucleo_filter(self):
         Post.objects.create(
-            autor=self.user, conteudo="A", tipo_feed=Post.NUCLEO, nucleo=self.nucleo1
+            autor=self.user, conteudo="A", tipo_feed="nucleo", nucleo=self.nucleo1
         )
         Post.objects.create(
-            autor=self.user, conteudo="B", tipo_feed=Post.NUCLEO, nucleo=self.nucleo2
+            autor=self.user, conteudo="B", tipo_feed="nucleo", nucleo=self.nucleo2
         )
 
         self.client.force_login(self.user)
@@ -83,8 +83,8 @@ class FeedViewTests(TestCase):
         self.assertEqual(posts[0].nucleo, self.nucleo1)
 
     def test_feed_search(self):
-        Post.objects.create(autor=self.user, conteudo="foo bar")
-        Post.objects.create(autor=self.user, conteudo="baz qux")
+        Post.objects.create(autor=self.user, conteudo="foo bar", tipo_feed="usuario")
+        Post.objects.create(autor=self.user, conteudo="baz qux", tipo_feed="usuario")
 
         self.client.force_login(self.user)
         url = reverse("feed:listar") + "?q=qux"
@@ -98,13 +98,12 @@ class FeedViewTests(TestCase):
         self.assertContains(response, 'type="submit"')
 
     def test_feed_without_nucleo_shows_public_only(self):
-        Post.objects.create(autor=self.user, conteudo="public", publico=True)
+        Post.objects.create(autor=self.user, conteudo="public", tipo_feed="global")
         Post.objects.create(
             autor=self.user,
             conteudo="priv",
-            publico=False,
+            tipo_feed="nucleo",
             nucleo=self.nucleo1,
-            tipo_feed=Post.NUCLEO,
         )
         self.client.force_login(self.user)
         resp = self.client.get(reverse("feed:listar"))

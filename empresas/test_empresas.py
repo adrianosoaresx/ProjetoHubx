@@ -9,17 +9,14 @@ from accounts.models import UserType
 
 class EmpresaVisibilityTests(TestCase):
     def setUp(self):
-        # Criação direta de instâncias de UserType
         UserType.objects.create(descricao="root")
         UserType.objects.create(descricao="admin")
         UserType.objects.create(descricao="user")
         UserType.objects.create(descricao="client")
         UserType.objects.create(descricao="manager")
 
-        # Configuração adicional para os testes
         super().setUp()
 
-        # Recria os usuários necessários para os testes
         self.User = get_user_model()
         self.root_user, _ = self.User.objects.get_or_create(username="root", defaults={"password": "rootpass", "email": "root@example.com"})
         self.admin_user, _ = self.User.objects.get_or_create(username="admin", defaults={"password": "adminpass", "email": "admin@example.com"})
@@ -48,13 +45,21 @@ class EmpresaVisibilityTests(TestCase):
         response = self.client.post(
             reverse("empresas:criar"),
             {
-                "nome": "Nova Empresa",
-                "descricao": "Descrição da nova empresa",
+                "razao_social": "Nova Empresa",
+                "nome_fantasia": "Fantasia Nova",
+                "cnpj": "12.345.678/0001-99",
+                "ramo_atividade": "Tecnologia",
+                "endereco": "Rua Nova, 123",
+                "cidade": "São Paulo",
+                "estado": "SP",
+                "cep": "12345-678",
+                "logo": None,
+                "banner": None,
             },
             **{"HTTP_HX_REQUEST": "true"}
         )
         self.assertEqual(response.status_code, 201)
-        self.assertTrue(Empresa.objects.filter(nome="Nova Empresa").exists())
+        self.assertTrue(Empresa.objects.filter(razao_social="Nova Empresa").exists())
 
     def test_edit_empresa(self):
         user = self.User.objects.exclude(is_superuser=True).first()
@@ -63,14 +68,22 @@ class EmpresaVisibilityTests(TestCase):
         response = self.client.post(
             reverse("empresas:editar", args=[empresa.id]),
             {
-                "nome": "Empresa Editada",
-                "descricao": empresa.descricao,
+                "razao_social": "Empresa Editada",
+                "nome_fantasia": empresa.nome_fantasia,
+                "cnpj": empresa.cnpj,
+                "ramo_atividade": empresa.ramo_atividade,
+                "endereco": empresa.endereco,
+                "cidade": empresa.cidade,
+                "estado": empresa.estado,
+                "cep": empresa.cep,
+                "logo": empresa.logo,
+                "banner": empresa.banner,
             },
             **{"HTTP_HX_REQUEST": "true"}
         )
         self.assertEqual(response.status_code, 200)
         empresa.refresh_from_db()
-        self.assertEqual(empresa.nome, "Empresa Editada")
+        self.assertEqual(empresa.razao_social, "Empresa Editada")
 
     def test_delete_empresa(self):
         user = self.User.objects.exclude(is_superuser=True).first()
@@ -203,12 +216,12 @@ class EmpresaModelTests(TestCase):
             razao_social="Empresa Teste",
             nome_fantasia="Teste LTDA",
             ramo_atividade="Tecnologia",
+            endereco="Rua Teste, 123",
             cidade="São Paulo",
             estado="SP",
-            endereco="Rua Teste, 123",
+            cep="12345-678",
+            logo=None,
             banner=None,
-            descricao="Uma empresa de teste",
-            contato="(11) 99999-9999",
         )
 
     def test_empresa_fields(self):
@@ -218,5 +231,4 @@ class EmpresaModelTests(TestCase):
         self.assertEqual(self.empresa.cidade, "São Paulo")
         self.assertEqual(self.empresa.estado, "SP")
         self.assertEqual(self.empresa.endereco, "Rua Teste, 123")
-        self.assertEqual(self.empresa.descricao, "Uma empresa de teste")
-        self.assertEqual(self.empresa.contato, "(11) 99999-9999")
+        self.assertEqual(self.empresa.cep, "12345-678")

@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from accounts.models import User
+from accounts.models import User, TipoUsuario
 from agenda.models import Evento
 from organizacoes.models import Organizacao
 
@@ -28,7 +28,7 @@ def usuario_logado(client, organizacao):
         email="test@example.com",
         password="12345",
         organizacao=organizacao,
-        tipo_id=User.Tipo.ADMIN,
+        tipo_id=TipoUsuario.ADMIN.value,
     )
     perm = Permission.objects.get(codename="add_evento")
     user.user_permissions.add(perm)
@@ -37,15 +37,16 @@ def usuario_logado(client, organizacao):
 
 
 @pytest.fixture
-def evento(organizacao):
+def evento(organizacao, usuario_logado):
     return Evento.objects.create(
         organizacao=organizacao,
         titulo="Evento de Teste",
         descricao="Descrição do evento",
-        data_hora=make_aware(datetime(2025, 7, 14, 10, 0)),
-        duracao=timedelta(hours=1),
+        data_inicio=make_aware(datetime(2025, 7, 14, 10, 0)),
+        data_fim=make_aware(datetime(2025, 7, 14, 11, 0)),
         link_inscricao="",
         briefing="",
+        coordenador=usuario_logado,
     )
 
 
