@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+import re
 
 from .models import NotificationSettings, UserMedia
+from accounts.models import user as User
 
 User = get_user_model()
 
@@ -12,13 +14,49 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta(UserCreationForm.Meta):
         model = User
-        fields = ("email", "username")
+        fields = (
+            "nome_completo",
+            "email",
+            "cpf",
+            "telefone",
+            "avatar",
+            "cover",
+            "organizacao",
+            "nucleo",
+            "data_nascimento",
+            "genero",
+            "user_type",
+        )
+
+    def clean_cpf(self):
+        cpf = self.cleaned_data.get("cpf")
+        if not re.match(r"^\d{11}$", cpf):
+            raise forms.ValidationError("CPF deve conter 11 dígitos numéricos.")
+        return cpf
+
+    def clean_telefone(self):
+        telefone = self.cleaned_data.get("telefone")
+        if not re.match(r"^\+?\d{10,15}$", telefone):
+            raise forms.ValidationError("Telefone deve ser válido.")
+        return telefone
 
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ("email", "username")
+        fields = (
+            "nome_completo",
+            "email",
+            "cpf",
+            "telefone",
+            "avatar",
+            "cover",
+            "organizacao",
+            "nucleo",
+            "data_nascimento",
+            "genero",
+            "user_type",
+        )
 
 
 class InformacoesPessoaisForm(forms.ModelForm):

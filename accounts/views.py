@@ -20,12 +20,14 @@ from django.core.files.storage import default_storage
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from tokens.forms import TokenAcessoForm
 from tokens.models import TokenAcesso
 
 from .forms import (CustomUserCreationForm, InformacoesPessoaisForm, MediaForm,
-                    NotificacoesForm, RedesSociaisForm)
+                    NotificacoesForm, RedesSociaisForm, CustomUserChangeForm)
 from .models import NotificationSettings, UserMedia, cpf_validator
 
 # ====================== PERFIL ======================
@@ -393,3 +395,41 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save(organizacao=organizacao, is_associado=False, is_staff=False)
         else:
             raise PermissionError("Você não tem permissão para criar usuários.")
+
+class RegisterView(View):
+    def get(self, request):
+        form = CustomUserCreationForm()
+        return render(request, "accounts/register.html", {"form": form})
+
+    def post(self, request):
+        form = CustomUserCreationForm(request.POST, request.FILES)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("user_profile")
+        return render(request, "accounts/register.html", {"form": form})
+
+class UserProfileView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = CustomUserChangeForm(instance=request.user)
+        return render(request, "accounts/user_profile.html", {"form": form})
+
+    def post(self, request):
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("user_profile")
+        return render(request, "accounts/user_profile.html", {"form": form})
+
+class ChangePasswordView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = PasswordChangeForm(user=request.user)
+        return render(request, "accounts/change_password.html", {"form": form})
+
+    def post(self, request):
+        form = PasswordChangeForm(data=request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            return redirect("user_profile")
+        return render(request, "accounts/change_password.html", {"form": form})
