@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.utils import timezone
 from core.models import TimeStampedModel
 from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
@@ -56,20 +58,50 @@ class Evento(TimeStampedModel):
         return self.titulo
 
 
-class InscricaoEvento(models.Model):
+class InscricaoEvento(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("pendente", "Pendente"),
+            ("confirmada", "Confirmada"),
+            ("cancelada", "Cancelada"),
+        ],
+        default="pendente",
+    )
     presente = models.BooleanField()
-    avaliacao = models.PositiveSmallIntegerField(null=True, blank=True)
-    valor_pago = models.DecimalField(
-        max_digits=8, decimal_places=2, null=True, blank=True
+    avaliacao = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        null=True,
+        blank=True,
+    )
+    valor_pago = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    metodo_pagamento = models.CharField(
+        max_length=20,
+        choices=[("pix", "Pix"), ("boleto", "Boleto"), ("gratuito", "Gratuito")],
+        null=True,
+        blank=True,
+    )
+    comprovante_pagamento = models.FileField(
+        upload_to="eventos/comprovantes/", null=True, blank=True
     )
     observacao = models.TextField(blank=True)
+    data_inscricao = models.DateTimeField(auto_now_add=True)
+    data_confirmacao = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "evento")
-        verbose_name = "Inscrição de Evento"
-        verbose_name_plural = "Inscrições de Eventos"
+        ordering = ["-created"]
+
+    def confirmar_inscricao(self):
+        self.status = "confirmada"
+        self.data_confirmacao = timezone.now()
+        self.save()
+
+    def cancelar_inscricao(self):
+        self.status = "cancelada"
+        self.save()
 
 
 class ParceriaEvento(models.Model):
@@ -105,13 +137,31 @@ class ParceriaEvento(models.Model):
 
 class MaterialDivulgacaoEvento(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    arquivo = models.FileField(upload_to="eventos/divulgacao/")
+    titulo = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
+    tipo = models.CharField(
+        max_length=20,
+        choices=[
+            ("banner", "Banner"),
+            ("flyer", "Flyer"),
+            ("video", "Vídeo"),
+            ("outro", "Outro"),
+        ],
+    )
+    arquivo = models.FileField(upload_to="eventos/divulgacao/")
+    imagem_thumb = models.ImageField(
+        upload_to="eventos/divulgacao/thumbs/", null=True, blank=True
+    )
+    data_publicacao = models.DateField(auto_now_add=True)
+    ativo = models.BooleanField(default=True)
     tags = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = "Material de Divulgação de Evento"
         verbose_name_plural = "Materiais de Divulgação de Eventos"
+
+    def url_publicacao(self):
+        return self.arquivo.url
 
 
 class BriefingEvento(models.Model):
@@ -119,7 +169,10 @@ class BriefingEvento(models.Model):
     objetivos = models.TextField()
     publico_alvo = models.TextField()
     requisitos_tecnicos = models.TextField()
+    cronograma_resumido = models.TextField(blank=True)
+    conteudo_programatico = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Briefing de Evento"
-        verbose_name_plural = "Briefings de Eventos"
+        ordering = ["evento"]
