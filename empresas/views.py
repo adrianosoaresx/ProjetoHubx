@@ -8,6 +8,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.response import Response
+from accounts.models import UserType
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from core.permissions import (ClienteGerenteRequiredMixin, NoSuperadminMixin,
@@ -26,9 +27,9 @@ def lista_empresas(request):
     qs = Empresa.objects.select_related("organizacao", "usuario")
     if request.user.is_superuser:
         empresas = qs
-    elif request.user.tipo.descricao == "admin":
+    elif request.user.user_type == UserType.ADMIN:
         empresas = qs.filter(organizacao=request.user.organizacao)
-    elif request.user.tipo.descricao in ["client", "manager"]:
+    elif request.user.user_type in [UserType.CLIENTE, UserType.GERENTE]:
         empresas = qs.filter(usuario=request.user)
     else:
         return HttpResponseForbidden("Usuário não autorizado.")
@@ -50,7 +51,7 @@ def lista_empresas(request):
 @login_required
 @no_superadmin_required
 def nova_empresa(request):
-    if not request.user.is_authenticated or request.user.is_superuser or request.user.tipo.descricao == "admin":
+    if not request.user.is_authenticated or request.user.is_superuser or request.user.user_type == UserType.ADMIN:
         return HttpResponseForbidden("Usuário não autorizado a criar empresas.")
 
     if request.method == "POST":

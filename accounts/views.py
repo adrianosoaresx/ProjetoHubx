@@ -7,6 +7,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from core.permissions import IsAdmin, IsCoordenador
+from accounts.models import UserType
 from accounts.serializers import UserSerializer
 
 User = get_user_model()
@@ -322,9 +323,9 @@ def termos(request):
 
         if username and pwd_hash:
             tipo_mapping = {
-                TokenAcesso.Tipo.ADMIN: User.Tipo.ADMIN,
-                TokenAcesso.Tipo.GERENTE: User.Tipo.GERENTE,
-                TokenAcesso.Tipo.CLIENTE: User.Tipo.CLIENTE,
+                TokenAcesso.Tipo.ADMIN: UserType.ADMIN,
+                TokenAcesso.Tipo.GERENTE: UserType.GERENTE,
+                TokenAcesso.Tipo.CLIENTE: UserType.CLIENTE,
             }
             user = User.objects.create(
                 username=username,
@@ -333,7 +334,7 @@ def termos(request):
                 last_name=last_name,
                 password=pwd_hash,
                 cpf=cpf_val,
-                tipo_id=tipo_mapping[token_obj.tipo_destino],
+                user_type=tipo_mapping[token_obj.tipo_destino],
             )
             if token_obj.nucleo_destino:
                 user.nucleo = token_obj.nucleo_destino

@@ -7,7 +7,6 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
-from enum import Enum
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import URLField
@@ -37,14 +36,23 @@ class UserQuerySet(models.QuerySet):
         return self.filter(organization=org)
 
 
+class UserType(models.TextChoices):
+    ROOT = "root", "Root"
+    ADMIN = "admin", "Admin"
+    COORDENADOR = "coordenador", "Coordenador"
+    NUCLEADO = "nucleado", "Nucleado"
+    ASSOCIADO = "associado", "Associado"
+    CONVIDADO = "convidado", "Convidado"
+
+
 class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
     """User manager que utiliza o email como identificador principal."""
 
-    def _create_user(self, email: str, password: str | None, **extra_fields):
+    def _create_user(self, email: str, username: str, password: str | None, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
         email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        user = self.model(email=email, username=username, **extra_fields)
         if password:
             user.set_password(password)
         else:
@@ -52,39 +60,32 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email: str, password: str | None = None, **extra_fields):
-        if not email:
-            raise ValueError("Email é obrigatório")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+    def create_user(
+        self,
+        email: str,
+        username: str,
+        password: str | None = None,
+        user_type: UserType = UserType.CONVIDADO,
+        **extra_fields,
+    ):
+        extra_fields.setdefault("user_type", user_type.value)
+        return self._create_user(email, username, password, **extra_fields)
 
-    def create_superuser(self, email: str, password: str, **extra_fields):
+    def create_superuser(self, email: str, username: str, password: str, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("user_type", UserType.ROOT.value)
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
             raise ValueError("Superuser must have is_superuser=True.")
-        return self._create_user(email, password, **extra_fields)
+        return self._create_user(email, username, password, **extra_fields)
 
     def get_by_natural_key(self, email: str):
         return self.get(email__iexact=email)
 
 
-class UserType(Enum):
-    ROOT = "root"
-    ADMIN = "admin"
-    COORDENADOR = "coordenador"
-    NUCLEADO = "nucleado"
-    ASSOCIADO = "associado"
-    CONVIDADO = "convidado"
 
-    @classmethod
-    def choices(cls):
-        return [(choice.value, choice.name) for choice in cls]
 
 
 class User(AbstractUser, TimeStampedModel):
@@ -158,8 +159,8 @@ class User(AbstractUser, TimeStampedModel):
 
     user_type = models.CharField(
         max_length=20,
-        choices=UserType.choices(),
-        default=UserType.CONVIDADO.value,
+        choices=UserType.choices,
+        default=UserType.CONVIDADO,
         verbose_name="Tipo de Usuário",
     )
 

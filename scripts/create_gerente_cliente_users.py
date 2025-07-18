@@ -16,8 +16,6 @@ from faker import Faker
 # Criar usuários gerente e cliente
 print("Criando usuários gerente e cliente para cada núcleo...")
 fake = Faker("pt_BR")
-gerente_type = UserType.objects.get(descricao="gerente")
-cliente_type = UserType.objects.get(descricao="cliente")
 nucleos = Nucleo.objects.all()
 
 for nucleo in nucleos:
@@ -26,7 +24,7 @@ for nucleo in nucleos:
         username=f"gerente_{nucleo.id}",
         email=f"gerente_{nucleo.id}@hubx.com",
         password="1234Hubx!",
-        tipo=gerente_type,
+        user_type=UserType.GERENTE,
         nucleo=nucleo
     )
 
@@ -36,7 +34,7 @@ for nucleo in nucleos:
             username=f"cliente_{nucleo.id}_{i}",
             email=f"cliente_{nucleo.id}_{i}@hubx.com",
             password="1234Hubx!",
-            tipo=cliente_type,
+            user_type=UserType.CLIENTE,
             nucleo=nucleo
         )
 

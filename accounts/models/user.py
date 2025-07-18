@@ -4,6 +4,7 @@ from django.utils import timezone
 from model_utils.models import TimeStampedModel
 
 class UserType(models.TextChoices):
+    ROOT = "root", "Root"
     ADMIN = "admin", "Admin"
     ASSOCIADO = "associado", "Associado"
     NUCLEADO = "nucleado", "Nucleado"
@@ -11,20 +12,29 @@ class UserType(models.TextChoices):
     CONVIDADO = "convidado", "Convidado"
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(
+        self,
+        email: str,
+        username: str,
+        password: str | None = None,
+        user_type: UserType = UserType.CONVIDADO,
+        **extra_fields,
+    ):
         if not email:
             raise ValueError("O email é obrigatório")
         email = self.normalize_email(email)
         extra_fields.setdefault("is_active", True)
-        user = self.model(email=email, **extra_fields)
+        extra_fields.setdefault("user_type", user_type.value)
+        user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, email: str, username: str, password: str, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        return self.create_user(email, password, **extra_fields)
+        extra_fields.setdefault("user_type", UserType.ROOT.value)
+        return self.create_user(email, username, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     nome_completo = models.CharField(max_length=255)
@@ -37,7 +47,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     nucleo = models.ForeignKey("nucleos.Nucleo", on_delete=models.SET_NULL, blank=True, null=True)
     data_nascimento = models.DateField(blank=True, null=True)
     genero = models.CharField(max_length=10, choices=[("M", "Masculino"), ("F", "Feminino"), ("Outro", "Outro")], blank=True, null=True)
-    user_type = models.CharField(max_length=20, choices=UserType.choices)
+    user_type = models.CharField(
+        max_length=20, choices=UserType.choices, default=UserType.CONVIDADO
+    )
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

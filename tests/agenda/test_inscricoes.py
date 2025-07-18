@@ -56,7 +56,7 @@ def gerente(organizacao):
         username="gerente",
         email="gerente@example.com",
         password="12345",
-        tipo_id=User.Tipo.GERENTE,
+        user_type=UserType.GERENTE,
         organizacao=organizacao,
     )
 

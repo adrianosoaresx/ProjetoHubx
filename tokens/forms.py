@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from .models import TokenAcesso, CodigoAutenticacao, TOTPDevice
 from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
+from accounts.models import UserType
 
 User = get_user_model()
 
@@ -17,7 +18,7 @@ class TokenAcessoForm(forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
 
-        if user and user.tipo_id == User.Tipo.SUPERADMIN:
+        if user and user.user_type == UserType.ROOT:
             self.fields["tipo_destino"].choices = [(TokenAcesso.Tipo.ADMIN, "admin")]
         elif user:
             self.fields["tipo_destino"].choices = [
@@ -29,7 +30,7 @@ class TokenAcessoForm(forms.ModelForm):
         cleaned = super().clean()
         if (
             self.user
-            and self.user.tipo_id == User.Tipo.ADMIN
+            and self.user.user_type == UserType.ADMIN
             and cleaned.get("tipo_destino")
             in {TokenAcesso.Tipo.GERENTE, TokenAcesso.Tipo.CLIENTE}
         ):

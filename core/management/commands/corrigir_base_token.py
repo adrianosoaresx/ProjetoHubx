@@ -15,19 +15,11 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
 
-        # Garantir UserTypes padrao
-        tipos_padrao = ["root", "admin", "gerente", "cliente"]
-        tipos = {}
-        for desc in tipos_padrao:
-            tipo, _ = UserType.objects.get_or_create(descricao=desc)
-            tipos[desc] = tipo
-        self.stdout.write(f"UserTypes verificados: {', '.join(tipos_padrao)}")
-
-        # Atribuir tipo CLIENTE para usuarios sem tipo
-        qs_sem_tipo = User.objects.filter(tipo__isnull=True)
+        # Garantir campo user_type preenchido
+        qs_sem_tipo = User.objects.filter(user_type__isnull=True)
         count_users = qs_sem_tipo.count()
         if count_users:
-            qs_sem_tipo.update(tipo=tipos["cliente"])
+            qs_sem_tipo.update(user_type=UserType.CLIENTE)
         self.stdout.write(f"Usuarios atualizados: {count_users}")
 
         # Ajustar tokens incompletos

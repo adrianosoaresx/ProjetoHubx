@@ -13,11 +13,10 @@ from accounts.models import User, UserType
 
 # Criar usuário root
 print("Criando usuário root...")
-root_type = UserType.objects.get(descricao="root")
 User.objects.create_superuser(
     username="root",
     email="root@hubx.com",
     password="1234Hubx!",
-    tipo=root_type
+    user_type=UserType.ROOT
 )
 print("Usuário root criado com sucesso!")
