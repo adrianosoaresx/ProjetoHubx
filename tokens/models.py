@@ -1,33 +1,41 @@
 import uuid
 from datetime import timedelta
-
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-
-from core.models import TimeStampedModel
-from nucleos.models import Nucleo
+from model_utils.models import TimeStampedModel
+import pyotp
 
 
 class TokenAcesso(TimeStampedModel):
-    """Token de convite para cadastro de usuários."""
-
-    class Tipo(models.TextChoices):
-        ADMIN = "admin", "admin"
-        GERENTE = "gerente", "gerente"
-        CLIENTE = "cliente", "cliente"
+    class TipoUsuario(models.TextChoices):
+        ADMIN = "admin", "Admin"
+        ASSOCIADO = "associado", "Associado"
+        NUCLEADO = "nucleado", "Nucleado"
+        COORDENADOR = "coordenador", "Coordenador"
+        CONVIDADO = "convidado", "Convidado"
 
     class Estado(models.TextChoices):
-        NAO_USADO = "novo", "não usado"
-        USADO = "usado", "usado"
-        EXPIRADO = "expirado", "expirado"
+        NOVO = "novo", "Não usado"
+        USADO = "usado", "Usado"
+        EXPIRADO = "expirado", "Expirado"
 
-    codigo = models.CharField(max_length=64, unique=True, editable=False)
-    tipo_destino = models.CharField(max_length=10, choices=Tipo.choices)
+    codigo = models.CharField(
+        max_length=64,
+        unique=True,
+        editable=False,
+        default=uuid.uuid4().hex,
+    )
+    tipo_destino = models.CharField(
+        max_length=20, choices=TipoUsuario.choices
+    )
     estado = models.CharField(
-        max_length=10, choices=Estado.choices, default=Estado.NAO_USADO
+        max_length=10,
+        choices=Estado.choices,
+        default=Estado.NOVO,
     )
     data_expiracao = models.DateTimeField()
+
     gerado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -36,33 +44,53 @@ class TokenAcesso(TimeStampedModel):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="tokens_acesso",
         null=True,
         blank=True,
-    )
-    nucleos = models.ManyToManyField(
-        Nucleo,
-        related_name="tokens_acesso",
-        blank=True,
+        related_name="token_usado",
     )
     organizacao = models.ForeignKey(
-        "organizacoes.Organizacao",
-        on_delete=models.CASCADE,
-        related_name="tokens",
-        db_column="organization",
+        "organizacoes.Organizacao", on_delete=models.CASCADE
+    )
+    nucleos = models.ManyToManyField(
+        "nucleos.Nucleo",
+        blank=True,
     )
 
     class Meta:
-        verbose_name = "Token de Acesso"
-        verbose_name_plural = "Tokens de Acesso"
-        db_table = "accounts_tokenacesso"
+        ordering = ["-created"]
+
+
+class CodigoAutenticacao(TimeStampedModel):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="codigos_autenticacao"
+    )
+    codigo = models.CharField(max_length=8, editable=False)
+    expira_em = models.DateTimeField()
+    verificado = models.BooleanField(default=False)
+    tentativas = models.PositiveSmallIntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.codigo:
-            self.codigo = uuid.uuid4().hex
-        if not self.data_expiracao:
-            self.data_expiracao = timezone.now() + timedelta(days=30)
+            self.codigo = uuid.uuid4().hex[:8]
+        if not self.expira_em:
+            self.expira_em = timezone.now() + timedelta(minutes=10)
         super().save(*args, **kwargs)
 
-    def __str__(self) -> str:
-        return self.codigo
+    def is_expirado(self) -> bool:
+        return timezone.now() > self.expira_em
+
+
+class TOTPDevice(models.Model):
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    secret = models.CharField(max_length=32)
+    confirmado = models.BooleanField(default=False)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def gerar_totp(self) -> str:
+        totp = pyotp.TOTP(self.secret)
+        return totp.now()

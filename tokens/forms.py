@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import TokenAcesso
+from .models import TokenAcesso, CodigoAutenticacao, TOTPDevice
 
 User = get_user_model()
 
@@ -33,3 +33,25 @@ class TokenAcessoForm(forms.ModelForm):
         ):
             self.add_error("nucleo_destino", "Selecione um núcleo")
         return cleaned
+
+
+class GerarTokenConviteForm(forms.Form):
+    tipo_destino = forms.ChoiceField(choices=TokenAcesso.TipoUsuario.choices)
+    organizacao = forms.ModelChoiceField(queryset=None)  # TODO: Definir queryset
+    nucleos = forms.ModelMultipleChoiceField(queryset=None, required=False)  # TODO: Definir queryset
+
+
+class ValidarTokenConviteForm(forms.Form):
+    codigo = forms.CharField(max_length=64)
+
+
+class GerarCodigoAutenticacaoForm(forms.Form):
+    usuario = forms.ModelChoiceField(queryset=None)  # TODO: Definir queryset
+
+
+class ValidarCodigoAutenticacaoForm(forms.Form):
+    codigo = forms.CharField(max_length=8)
+
+
+class Ativar2FAForm(forms.Form):
+    codigo_totp = forms.CharField(max_length=6)
