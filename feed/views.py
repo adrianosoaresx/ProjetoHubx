@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, DetailView
 
 from .forms import PostForm, CommentForm, LikeForm
+from accounts.models import UserType
 from .models import Post, Comment, Like
 
 
@@ -55,7 +56,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy("feed:meu_mural")
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.tipo and request.user.tipo.descricao.lower() == "root":
+        if request.user.user_type == UserType.ROOT:
             return HttpResponseForbidden("Usuário root não pode publicar no feed.")
         return super().dispatch(request, *args, **kwargs)
 
@@ -135,7 +136,7 @@ def toggle_like(request, post_id):
 @login_required
 def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    if request.user != post.autor and request.user.tipo_id not in (1, 2):
+    if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
         messages.error(request, "Você não tem permissão para editar esta postagem.")
         return redirect("feed:post_detail", pk=pk)
 
@@ -178,7 +179,7 @@ def post_update(request, pk):
 @login_required
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    if request.user != post.autor and request.user.tipo_id not in (1, 2):
+    if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
         messages.error(request, "Você não tem permissão para remover esta postagem.")
         return redirect("feed:post_detail", pk=pk)
 

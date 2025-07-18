@@ -14,7 +14,6 @@ from organizacoes.models import Organizacao
 
 # Criar usuários admin para cada organização
 print("Criando usuários admin para cada organização...")
-admin_type = UserType.objects.get(descricao="admin")
 organizacoes = Organizacao.objects.all()
 
 for organizacao in organizacoes:
@@ -22,7 +21,7 @@ for organizacao in organizacoes:
         username=f"admin_{organizacao.id}",
         email=f"admin_{organizacao.id}@hubx.com",
         password="1234Hubx!",
-        tipo=admin_type,
+        user_type=UserType.ADMIN,
         organizacao=organizacao
     )
 

@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 "first_name": "root",
                 "is_superuser": True,
                 "is_staff": True,
-                "tipo": UserType.objects.get(descricao="root"),
+                "user_type": UserType.ROOT,
             },
         )
 
@@ -48,27 +48,7 @@ class Command(BaseCommand):
         Organizacao.objects.all().delete()
         Tag.objects.all().delete()
 
-        # Tipos de usuario padrao
-        tipos = ["admin", "manager", "client", "root"]
-        for idx, desc in enumerate(tipos, start=1):
-            user_type, created = UserType.objects.get_or_create(id=idx, defaults={"descricao": desc})
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"Tipo de usuário '{desc}' criado com sucesso."))
-            else:
-                self.stdout.write(self.style.WARNING(f"Tipo de usuário '{desc}' já existia."))
-
-        # Verifica se todos os tipos foram criados corretamente
-        for desc in tipos:
-            if not UserType.objects.filter(descricao=desc).exists():
-                raise ValueError(f"Erro: Tipo de usuário '{desc}' não foi encontrado no banco de dados.")
-
-        # Validação explícita da persistência dos tipos de usuário
-        for desc in tipos:
-            try:
-                user_type = UserType.objects.get(descricao=desc)
-                self.stdout.write(self.style.SUCCESS(f"Tipo de usuário '{desc}' encontrado no banco de dados: {user_type}"))
-            except UserType.DoesNotExist:
-                raise ValueError(f"Erro crítico: Tipo de usuário '{desc}' não foi encontrado no banco de dados após a criação.")
+        tipos = [UserType.ADMIN, UserType.GERENTE, UserType.CLIENTE]
 
         # Organizacoes padrao
         org_data = [
@@ -94,7 +74,7 @@ class Command(BaseCommand):
                 nucleos.append(nucleo)
             nucleos_by_org[org] = nucleos
 
-        def criar_usuario(tipo_desc):
+        def criar_usuario(tipo_enum: UserType):
             primeiro = faker.first_name()
             ultimo = faker.last_name()
             username = faker.unique.user_name()
@@ -107,15 +87,15 @@ class Command(BaseCommand):
                     "email": faker.unique.email(),
                     "cpf": faker.unique.cpf(),
                     "genero": genero,
-                    "tipo": UserType.objects.get(descricao=tipo_desc),
+                    "user_type": tipo_enum,
                     "organizacao": random.choice(orgs),
                 },
             )
             return user
 
-        clientes = [criar_usuario("client") for _ in range(100)]
-        gerentes = [criar_usuario("manager") for _ in range(10)]
-        admins = [criar_usuario("admin") for _ in range(5)]
+        clientes = [criar_usuario(UserType.CLIENTE) for _ in range(100)]
+        gerentes = [criar_usuario(UserType.GERENTE) for _ in range(10)]
+        admins = [criar_usuario(UserType.ADMIN) for _ in range(5)]
 
         # Atribui gerentes a nucleos
         for org in orgs:

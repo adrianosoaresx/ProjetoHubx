@@ -8,6 +8,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
 
 from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
                               NoSuperadminMixin)
+from accounts.models import UserType
 
 from .forms import NucleoForm, NucleoSearchForm
 from .models import Nucleo
@@ -24,9 +25,9 @@ class NucleoListView(
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo_id == User.Tipo.ADMIN:
+        if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
-        elif user.tipo_id == User.Tipo.GERENTE:
+        elif user.user_type == UserType.GERENTE:
             qs = qs.filter(membros=user)
         form = NucleoSearchForm(self.request.GET)
         if form.is_valid() and form.cleaned_data["nucleo"]:
@@ -49,7 +50,7 @@ class NucleoCreateView(
     success_url = reverse_lazy("nucleos:list")
 
     def form_valid(self, form):
-        if self.request.user.tipo_id == User.Tipo.ADMIN:
+        if self.request.user.user_type == UserType.ADMIN:
             form.instance.organizacao = self.request.user.organization  # Corrigido para usar 'organization' ao criar
         messages.success(self.request, "Núcleo criado com sucesso.")
         return super().form_valid(form)
@@ -66,9 +67,9 @@ class NucleoUpdateView(
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo_id == User.Tipo.ADMIN:
+        if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
-        elif user.tipo_id == User.Tipo.GERENTE:
+        elif user.user_type == UserType.GERENTE:
             qs = qs.filter(membros=user)
         return qs
 
@@ -92,7 +93,7 @@ class NucleoDeleteView(
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo_id == User.Tipo.ADMIN:
+        if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
         return qs
 
@@ -110,9 +111,9 @@ class NucleoDetailView(
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.tipo_id == User.Tipo.ADMIN:
+        if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
-        elif user.tipo_id == User.Tipo.GERENTE:
+        elif user.user_type == UserType.GERENTE:
             qs = qs.filter(membros=user)
         return qs
 
@@ -123,12 +124,12 @@ class NucleoMemberRemoveView(
     def post(self, request, pk, user_id):
         nucleo = get_object_or_404(Nucleo, pk=pk)
         if (
-            request.user.tipo_id == User.Tipo.ADMIN
+            request.user.user_type == UserType.ADMIN
             and nucleo.organizacao != request.user.organization  # Corrigido para usar 'organization'
         ):
             return redirect("nucleos:list")
         if (
-            request.user.tipo_id == User.Tipo.GERENTE
+            request.user.user_type == UserType.GERENTE
             and request.user not in nucleo.membros.all()
         ):
             return redirect("nucleos:list")

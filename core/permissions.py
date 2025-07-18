@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import UserPassesTestMixin
 from rest_framework.permissions import BasePermission
 
-from accounts.models import TipoUsuario
+from accounts.models import UserType
 
 User = get_user_model()
 
@@ -11,7 +11,7 @@ class SuperadminRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a superadministradores."""
 
     def test_func(self):
-        return self.request.user.tipo_id == User.Tipo.SUPERADMIN
+        return self.request.user.user_type == UserType.ROOT
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
@@ -20,17 +20,17 @@ class AdminRequiredMixin(UserPassesTestMixin):
     raise_exception = True
 
     def test_func(self):
-        return self.request.user.tipo_id in {User.Tipo.SUPERADMIN, User.Tipo.ADMIN}
+        return self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}
 
 
 class GerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a gerentes, administradores e superadmins."""
 
     def test_func(self):
-        return self.request.user.tipo_id in {
-            User.Tipo.SUPERADMIN,
-            User.Tipo.ADMIN,
-            User.Tipo.GERENTE,
+        return self.request.user.user_type in {
+            UserType.ROOT,
+            UserType.ADMIN,
+            UserType.GERENTE,
         }
 
 
@@ -38,7 +38,7 @@ class ClienteRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a clientes."""
 
     def test_func(self):
-        return self.request.user.tipo_id == User.Tipo.CLIENTE
+        return self.request.user.user_type == UserType.CLIENTE
 
 
 class NoSuperadminMixin(UserPassesTestMixin):
@@ -46,7 +46,7 @@ class NoSuperadminMixin(UserPassesTestMixin):
 
     def test_func(self):
         user = self.request.user
-        return hasattr(user, "tipo_id") and user.tipo_id != User.Tipo.SUPERADMIN
+        return hasattr(user, "user_type") and user.user_type != UserType.ROOT
 
 
 def no_superadmin_required(view_func=None):
@@ -58,7 +58,7 @@ def no_superadmin_required(view_func=None):
     def decorator(func):
         @wraps(func)
         def _wrapped(request, *args, **kwargs):
-            if request.user.tipo_id == User.Tipo.SUPERADMIN:
+            if request.user.user_type == UserType.ROOT:
                 return HttpResponseForbidden()
             return func(request, *args, **kwargs)
 
@@ -82,7 +82,7 @@ class ClienteGerenteRequiredMixin(UserPassesTestMixin):
     """Permite acesso a clientes e gerentes."""
 
     def test_func(self):
-        return self.request.user.tipo_id in {User.Tipo.CLIENTE, User.Tipo.GERENTE}
+        return self.request.user.user_type in {UserType.CLIENTE, UserType.GERENTE}
 
 
 def pode_crud_empresa(user, empresa=None) -> bool:
@@ -92,7 +92,7 @@ def pode_crud_empresa(user, empresa=None) -> bool:
     """
     if not user.is_authenticated or not user.organizacao:
         return False
-    if user.is_superuser or user.tipo.descricao == "admin":
+    if user.is_superuser or user.user_type == UserType.ADMIN:
         return False
     # client ou manager:
     return empresa is None or empresa.usuario_id == user.id
@@ -102,7 +102,7 @@ class IsRoot(BasePermission):
     """Permite acesso apenas a usuários root."""
 
     def has_permission(self, request, view):
-        return request.user.get_tipo_usuario == TipoUsuario.ROOT.value
+        return request.user.get_tipo_usuario == UserType.ROOT.value
 
 
 class IsAdmin(BasePermission):
@@ -110,7 +110,7 @@ class IsAdmin(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            request.user.get_tipo_usuario == TipoUsuario.ADMIN.value
+            request.user.get_tipo_usuario == UserType.ADMIN.value
             and request.user.organizacao == obj.organizacao
         )
 
@@ -120,6 +120,6 @@ class IsCoordenador(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            request.user.get_tipo_usuario == TipoUsuario.COORDENADOR.value
+            request.user.get_tipo_usuario == UserType.COORDENADOR.value
             and request.user.organizacao == obj.organizacao
         )
