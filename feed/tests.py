@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from accounts.models import UserType
+from accounts.models import User, UserType
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -12,7 +12,7 @@ from .models import Post
 
 class PostModelTests(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user("user", password="pass")
+        self.user = User.objects.create_user("user", password="pass", user_type=UserType.CLIENTE)
 
     def test_tipo_feed_validation(self):
         post = Post(autor=self.user, conteudo="ok", tipo_feed="global")
@@ -26,11 +26,11 @@ class PostModelTests(TestCase):
 
 class FeedViewTests(TestCase):
     def setUp(self):
-        User = get_user_model()
-        self.root_user = User.objects.get(username="root")
-        tipo_client, _ = UserType.objects.get_or_create(descricao="client")
+        self.root_user = User.objects.create_user(
+            username="root", password="pass", user_type=UserType.ROOT
+        )
         self.user = User.objects.create_user(
-            "normal", password="pass", tipo=tipo_client
+            "normal", password="pass", user_type=UserType.CLIENTE
         )
 
         self.client = Client()

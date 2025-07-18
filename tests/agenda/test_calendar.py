@@ -7,7 +7,7 @@ from django.utils.timezone import make_aware
 
 from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
-from accounts.models import TipoUsuario
+from accounts.models import User, UserType
 
 
 class CalendarViewTests(TestCase):
@@ -18,7 +18,7 @@ class CalendarViewTests(TestCase):
             email="admin@example.com",
             username="admin",
             password="pass",
-            tipo_id=TipoUsuario.ADMIN.value,
+            user_type=UserType.ADMIN,
             organizacao=self.org,
         )
 
@@ -37,7 +37,7 @@ class CalendarViewTests(TestCase):
             email="cliente@example.com",
             username="cliente",
             password="pass",
-            tipo_id=User.Tipo.CLIENTE,
+            user_type=UserType.CLIENTE,
         )
         self.client.force_login(client_user)
         resp = self.client.get(url)

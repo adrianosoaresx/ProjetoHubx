@@ -6,7 +6,7 @@ from django.urls import reverse
 from tokens.models import TokenAcesso
 
 from .models import NotificationSettings, UserMedia, UserType
-from accounts.models import User, TipoUsuario
+from accounts.models import User, UserType
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -17,7 +17,7 @@ class RegistrationSessionTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.creator = get_user_model().objects.create_user(
-            username="creator", password="pass"
+            username="creator", password="pass", user_type=UserType.ADMIN
         )
         self.token = TokenAcesso.objects.create(
             gerado_por=self.creator,
@@ -173,9 +173,9 @@ class UserModelTests(TestCase):
         )
 
     def test_get_tipo_usuario(self):
-        self.assertEqual(self.user_root.get_tipo_usuario, TipoUsuario.ROOT.value)
-        self.assertEqual(self.user_admin.get_tipo_usuario, TipoUsuario.ADMIN.value)
-        self.assertEqual(self.user_coordenador.get_tipo_usuario, TipoUsuario.COORDENADOR.value)
+        self.assertEqual(self.user_root.get_user_type, UserType.ROOT.value)
+        self.assertEqual(self.user_admin.get_user_type, UserType.ADMIN.value)
+        self.assertEqual(self.user_coordenador.get_user_type, UserType.COORDENADOR.value)
 
     def test_criacao_usuario_validacoes(self):
         with self.assertRaises(PermissionError):
@@ -190,12 +190,11 @@ class UserModelTests(TestCase):
 
 class UserModelTest(TestCase):
     def setUp(self):
-        self.user_type = UserType.objects.create(descricao="Test Type")
         self.user = User.objects.create_user(
             email="testuser@example.com",
             password="password123",
             username="testuser",
-            tipo=self.user_type,
+            user_type=UserType.ADMIN.value,
         )
 
     def test_user_creation(self):
@@ -205,7 +204,7 @@ class UserModelTest(TestCase):
 
     def test_user_type(self):
         """Testa se o tipo de usuário está associado corretamente."""
-        self.assertEqual(self.user.tipo, self.user_type)
+        self.assertEqual(self.user.user_type, UserType.ADMIN.value)
 
     def test_user_permissions(self):
         """Testa permissões padrão do usuário."""
@@ -215,5 +214,5 @@ class UserModelTest(TestCase):
 class UserTypeModelTest(TestCase):
     def test_user_type_creation(self):
         """Testa a criação de um tipo de usuário."""
-        user_type = UserType.objects.create(descricao="Admin")
-        self.assertEqual(user_type.descricao, "Admin")
+        user_type = UserType.ADMIN.value
+        self.assertEqual(user_type, "admin")

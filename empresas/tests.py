@@ -4,19 +4,22 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from empresas.models import Empresa
-from accounts.models import UserType
+from accounts.models import User, UserType
 
 
 class EmpresaVisibilityTests(TestCase):
     def setUp(self):
         # Cria explicitamente os tipos de usuário necessários
-        tipos = ["admin", "manager", "client", "root"]
-        for idx, desc in enumerate(tipos, start=1):
-            UserType.objects.get_or_create(id=idx, defaults={"descricao": desc})
-        
+        self.root_user = User.objects.create_user(
+            username="rootuser", password="pass", user_type=UserType.ROOT
+        )
+        self.admin_user = User.objects.create_user(
+            username="adminuser", password="pass", user_type=UserType.ADMIN
+        )
+
         # Garante que o registro UserType com descrição 'root' existe
-        UserType.objects.get_or_create(descricao="root")
-        
+        UserType.ROOT
+
         # Chama o comando para gerar os dados de teste
         call_command("generate_test_data")
         

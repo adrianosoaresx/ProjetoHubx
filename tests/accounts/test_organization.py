@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from accounts.models import TipoUsuario
+from accounts.models import User, UserType
 
 
 class OrganizationUserTests(TestCase):
@@ -16,7 +16,7 @@ class OrganizationUserTests(TestCase):
             username="admin1",
             password="pass",
             organizacao=self.org1,
-            tipo_id=TipoUsuario.ADMIN.value,
+            user_type=UserType.ADMIN,
         )
         self.admin2 = self.User.objects.create_user(
             email="admin2@example.com",

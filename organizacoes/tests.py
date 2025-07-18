@@ -1,21 +1,20 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
+from accounts.models import User, UserType
 from .models import Organizacao
 
 
 class OrganizacaoPermissionsTests(TestCase):
     def setUp(self):
-        User = get_user_model()
         self.root_user = User.objects.create_user(
-            username="rootuser", password="pass", tipo_id=User.Tipo.SUPERADMIN
+            username="rootuser", password="pass", user_type=UserType.ROOT
         )
         self.admin_user = User.objects.create_user(
-            username="adminuser", password="pass", tipo_id=User.Tipo.ADMIN
+            username="adminuser", password="pass", user_type=UserType.ADMIN
         )
         org = Organizacao.objects.create(nome="Org 1", cnpj="00.000.000/0001-00")
-        self.admin_user.organizacao = org  # Corrigido para usar 'organizacao'
+        self.admin_user.organizacao = org
         self.admin_user.save()
 
     def test_root_can_access_list(self):

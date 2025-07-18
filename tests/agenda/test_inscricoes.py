@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from accounts.models import User, TipoUsuario
+from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
@@ -35,7 +35,7 @@ def usuario_comum(client):
         username="comum",
         email="comum@example.com",
         password="12345",
-        tipo_id=TipoUsuario.CLIENTE.value,
+        user_type=UserType.CLIENTE,
     )
     client.force_login(user)
     return user

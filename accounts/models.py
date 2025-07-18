@@ -74,7 +74,7 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         return self.get(email__iexact=email)
 
 
-class TipoUsuario(Enum):
+class UserType(Enum):
     ROOT = "root"
     ADMIN = "admin"
     COORDENADOR = "coordenador"
@@ -158,8 +158,8 @@ class User(AbstractUser, TimeStampedModel):
 
     user_type = models.CharField(
         max_length=20,
-        choices=TipoUsuario.choices(),
-        default=TipoUsuario.CONVIDADO.value,
+        choices=UserType.choices(),
+        default=UserType.CONVIDADO.value,
         verbose_name="Tipo de Usuário",
     )
 
@@ -203,19 +203,19 @@ class User(AbstractUser, TimeStampedModel):
     @property
     def get_tipo_usuario(self):
         if self.is_superuser:
-            return TipoUsuario.ROOT.value
+            return UserType.ROOT.value
         if self.is_staff and not self.is_associado:
-            return TipoUsuario.ADMIN.value
+            return UserType.ADMIN.value
         if self.is_associado and self.nucleo and self.is_coordenador:
-            return TipoUsuario.COORDENADOR.value
+            return UserType.COORDENADOR.value
         if self.is_associado and self.nucleo and not self.is_coordenador:
-            return TipoUsuario.NUCLEADO.value
+            return UserType.NUCLEADO.value
         if self.is_associado and not self.nucleo:
-            return TipoUsuario.ASSOCIADO.value
-        return TipoUsuario.CONVIDADO.value
+            return UserType.ASSOCIADO.value
+        return UserType.CONVIDADO.value
 
     def save(self, *args, **kwargs):
-        if self.user_type == TipoUsuario.ROOT.value:
+        if self.user_type == UserType.ROOT.value:
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
 

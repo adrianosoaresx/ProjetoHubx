@@ -5,7 +5,7 @@ from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
-from accounts.models import User, TipoUsuario
+from accounts.models import User, UserType
 from agenda.models import Evento
 from organizacoes.models import Organizacao
 
@@ -28,7 +28,7 @@ def usuario_logado(client, organizacao):
         email="test@example.com",
         password="12345",
         organizacao=organizacao,
-        tipo_id=TipoUsuario.ADMIN.value,
+        user_type=UserType.ADMIN,
     )
     perm = Permission.objects.get(codename="add_evento")
     user.user_permissions.add(perm)

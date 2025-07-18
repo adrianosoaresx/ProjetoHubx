@@ -6,7 +6,7 @@ from django.urls import reverse
 from tokens.models import TokenAcesso
 
 from .models import NotificationSettings, UserMedia, UserType
-from accounts.models import User, TipoUsuario
+from accounts.models import User, UserType
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -17,7 +17,7 @@ class RegistrationSessionTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.creator = get_user_model().objects.create_user(
-            username="creator", password="pass"
+            username="creator", password="pass", user_type=UserType.ADMIN
         )
         self.token = TokenAcesso.objects.create(
             gerado_por=self.creator,
@@ -173,9 +173,9 @@ class UserModelTests(TestCase):
         )
 
     def test_get_tipo_usuario(self):
-        self.assertEqual(self.user_root.get_tipo_usuario, TipoUsuario.ROOT.value)
-        self.assertEqual(self.user_admin.get_tipo_usuario, TipoUsuario.ADMIN.value)
-        self.assertEqual(self.user_coordenador.get_tipo_usuario, TipoUsuario.COORDENADOR.value)
+        self.assertEqual(self.user_root.get_user_type, UserType.ROOT.value)
+        self.assertEqual(self.user_admin.get_user_type, UserType.ADMIN.value)
+        self.assertEqual(self.user_coordenador.get_user_type, UserType.COORDENADOR.value)
 
     def test_criacao_usuario_validacoes(self):
         with self.assertRaises(PermissionError):
