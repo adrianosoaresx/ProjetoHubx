@@ -21,7 +21,7 @@ from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
 
 from .forms import (EventoForm, InscricaoEventoForm,
                      MaterialDivulgacaoEventoForm, BriefingEventoForm)
-from .models import Evento, FeedbackNota, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
+from .models import Evento, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
 
 User = get_user_model()
 
