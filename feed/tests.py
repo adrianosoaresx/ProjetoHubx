@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -12,7 +11,9 @@ from .models import Post
 
 class PostModelTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user("user", email="user@example.com", password="pass", user_type=UserType.CLIENTE.value)
+        self.user = User.objects.create_user(
+            "user", email="user@example.com", password="pass", user_type=UserType.CLIENTE.value
+        )
 
     def test_tipo_feed_validation(self):
         post = Post(autor=self.user, conteudo="ok", tipo_feed="global")
@@ -67,12 +68,8 @@ class FeedViewTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_feed_nucleo_filter(self):
-        Post.objects.create(
-            autor=self.user, conteudo="A", tipo_feed="nucleo", nucleo=self.nucleo1
-        )
-        Post.objects.create(
-            autor=self.user, conteudo="B", tipo_feed="nucleo", nucleo=self.nucleo2
-        )
+        Post.objects.create(autor=self.user, conteudo="A", tipo_feed="nucleo", nucleo=self.nucleo1)
+        Post.objects.create(autor=self.user, conteudo="B", tipo_feed="nucleo", nucleo=self.nucleo2)
 
         self.client.force_login(self.user)
         url = reverse("feed:listar") + f"?nucleo={self.nucleo1.id}"

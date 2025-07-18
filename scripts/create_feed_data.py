@@ -6,7 +6,7 @@ import django
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Configurar o ambiente do Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Hubx.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 django.setup()
 
 from faker import Faker
@@ -29,9 +29,8 @@ for organizacao in organizacoes:
         Post.objects.create(
             autor=autor,
             conteudo=fake.paragraph(),
-            publico=True,
-            tipo_feed=Post.PUBLICO,
-            organizacao=organizacao
+            tipo_feed="global",
+            organizacao=organizacao,
         )
 
     # Criar 5 postagens de núcleo para cada organização
@@ -41,10 +40,9 @@ for organizacao in organizacoes:
         Post.objects.create(
             autor=autor,
             conteudo=fake.paragraph(),
-            publico=False,
-            tipo_feed=Post.NUCLEO,
+            tipo_feed="nucleo",
             nucleo=nucleo,
-            organizacao=organizacao
+            organizacao=organizacao,
         )
 
 print("Dados do app feed criados com sucesso!")
