@@ -141,6 +141,45 @@ npm run build
 
 ---
 
+## 🆕 Novos Fluxos Implementados
+
+### Convites e Tokens
+- **Gerar Token de Convite**: Permite criar tokens associados a organizações e núcleos.
+- **Validar Token de Convite**: Valida tokens e associa ao usuário.
+
+### Autenticação em Dois Fatores (2FA)
+- **Ativar 2FA**: Gera um segredo TOTP e valida o código enviado.
+
+### Feed e Fórum
+- **Feed**: Suporte a tipos de feed (`global`, `usuario`, `nucleo`, `evento`).
+- **Fórum**: Discussões organizadas por categorias e tópicos.
+
+### Dashboard
+- **Dashboard**: Estatísticas de eventos, inscrições e interações.
+
+---
+
+## 🔧 Configuração de Redis/Celery
+
+Para tarefas assíncronas, configure Redis e Celery:
+
+1. Instale Redis:
+   ```bash
+   sudo apt install redis-server
+   ```
+
+2. Configure Celery no projeto:
+   ```bash
+   pip install celery[redis]
+   ```
+
+3. Inicie o worker:
+   ```bash
+   celery -A Hubx worker --loglevel=info
+   ```
+
+---
+
 ## 🏢 Estratégia Multi-tenant (Organizações)
 
 - Cada usuário pertence a **uma única organização**.

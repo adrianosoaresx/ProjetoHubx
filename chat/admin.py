@@ -1,13 +1,18 @@
 from django.contrib import admin
 
-from .models import Mensagem, Notificacao
+from .models import ChatConversation, ChatMessage, ChatNotification
 
 
-@admin.register(Mensagem)
-class MensagemAdmin(admin.ModelAdmin):
-    list_display = ["remetente", "nucleo", "tipo"]
+@admin.register(ChatConversation)
+class ChatConversationAdmin(admin.ModelAdmin):
+    list_display = ["titulo", "created_at"]
 
 
-@admin.register(Notificacao)
-class NotificacaoAdmin(admin.ModelAdmin):
-    list_display = ["usuario", "remetente", "mensagem", "created_at", "lida"]
+@admin.register(ChatMessage)
+class ChatMessageAdmin(admin.ModelAdmin):
+    list_display = ["sender", "conversation", "conteudo", "created_at"]
+
+
+@admin.register(ChatNotification)
+class ChatNotificationAdmin(admin.ModelAdmin):
+    list_display = ["user", "mensagem", "lido"]

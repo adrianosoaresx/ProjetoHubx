@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils.timezone import make_aware
 
 from accounts.models import User
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -51,6 +51,15 @@ def gerente(organizacao):
     )
 
 
+@pytest.fixture
+def inscricao(evento, usuario_comum):
+    return InscricaoEvento.objects.create(
+        user=usuario_comum,
+        evento=evento,
+        status="pendente",
+    )
+
+
 def test_evento_detail_htmx(evento, client):
     url = reverse("agenda:evento_detalhe", args=[evento.pk])
     client.force_login(evento.organizacao.user_set.first())
@@ -83,3 +92,14 @@ def test_gerente_pode_remover_inscrito(evento, usuario_comum, gerente, client):
     response = client.post(url)
     assert response.status_code == 302
     assert not evento.inscritos.filter(pk=usuario_comum.pk).exists()
+
+
+def test_confirmar_inscricao(inscricao):
+    inscricao.confirmar_inscricao()
+    assert inscricao.status == "confirmada"
+    assert inscricao.data_confirmacao is not None
+
+
+def test_cancelar_inscricao(inscricao):
+    inscricao.cancelar_inscricao()
+    assert inscricao.status == "cancelada"

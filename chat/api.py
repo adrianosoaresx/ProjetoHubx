@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 
-from .models import Mensagem, Notificacao
+from .models import ChatMessage, ChatNotification
 
 User = get_user_model()
 
@@ -17,13 +17,13 @@ def create_message(**kwargs):
     for k, v in kwargs.items():
         print(f"   {k}: {v}")
     """Create a chat message and return it."""
-    return Mensagem.objects.create(**kwargs)
+    return ChatMessage.objects.create(**kwargs)
 
 
-def notify_users(recipient_ids, remetente_id: int, message: Mensagem):
+def notify_users(recipient_ids, remetente_id: int, message: ChatMessage):
     """Create notifications for a list of recipients."""
     for uid in recipient_ids:
-        Notificacao.objects.create(
+        ChatNotification.objects.create(
             usuario_id=uid,
             remetente_id=remetente_id,
             mensagem=message,

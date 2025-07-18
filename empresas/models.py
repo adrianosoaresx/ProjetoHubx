@@ -31,35 +31,22 @@ class Empresa(TimeStampedModel):
         get_user_model(), on_delete=models.CASCADE, related_name="empresas"
     )
     cnpj = models.CharField(max_length=18, unique=True)
-    nome = models.CharField(max_length=255)
-    tipo = models.CharField(max_length=100)
-    municipio = models.CharField(max_length=100)
+    razao_social = models.CharField(max_length=255)
+    nome_fantasia = models.CharField(max_length=255)
+    ramo_atividade = models.CharField(max_length=100)
+    cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2)
-    logo = models.ImageField(upload_to="empresas/logos/", blank=True, null=True)
+    endereco = models.TextField()
+    banner = models.ImageField(upload_to="empresas/banners/", blank=True, null=True)
     descricao = models.TextField(blank=True)
     contato = models.CharField(max_length=255, blank=True)
-    palavras_chave = models.CharField(max_length=255, blank=True)
-    tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
-    organizacao = models.ForeignKey(
-        "organizacoes.Organizacao",
-        on_delete=models.CASCADE,
-        related_name="empresas",
-        db_column="organization",
-    )
-    site = models.URLField(max_length=255, blank=True)
-    telefone = models.CharField(max_length=20, blank=True)
-    whatsapp = models.CharField(max_length=20, blank=True)
-    facebook = models.URLField(max_length=255, blank=True)
-    instagram = models.URLField(max_length=255, blank=True)
-    linkedin = models.URLField(max_length=255, blank=True)
-    ativo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Empresa"
         verbose_name_plural = "Empresas"
 
     def __str__(self) -> str:
-        return self.nome
+        return self.razao_social
 
 
 class ContatoEmpresa(models.Model):

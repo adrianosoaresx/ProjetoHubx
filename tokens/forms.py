@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 
 from .models import TokenAcesso, CodigoAutenticacao, TOTPDevice
+from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
 
 User = get_user_model()
 
@@ -37,8 +39,16 @@ class TokenAcessoForm(forms.ModelForm):
 
 class GerarTokenConviteForm(forms.Form):
     tipo_destino = forms.ChoiceField(choices=TokenAcesso.TipoUsuario.choices)
-    organizacao = forms.ModelChoiceField(queryset=None)  # TODO: Definir queryset
-    nucleos = forms.ModelMultipleChoiceField(queryset=None, required=False)  # TODO: Definir queryset
+    organizacao = forms.ModelChoiceField(queryset=None)
+    nucleos = forms.ModelMultipleChoiceField(queryset=None, required=False)
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
+        if user:
+            self.fields['organizacao'].queryset = Organizacao.objects.filter(usuarios=user)
+            self.fields['nucleos'].queryset = Nucleo.objects.filter(organizacao__usuarios=user)
 
 
 class ValidarTokenConviteForm(forms.Form):

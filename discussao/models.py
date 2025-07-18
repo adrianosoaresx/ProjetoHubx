@@ -51,7 +51,9 @@ class TopicoDiscussao(TimeStampedModel):
 
     class Meta:
         ordering = ["-created"]
-        index_together = [["slug", "categoria"]]
+        indexes = [
+            models.Index(fields=["slug", "categoria"])
+        ]
 
     def incrementar_visualizacao(self):
         self.numero_visualizacoes += 1

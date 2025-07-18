@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 
-from .models import Mensagem
+from .models import ChatMessage
 
 User = get_user_model()
 
@@ -42,13 +42,10 @@ def modal_room(request, user_id):
         url = request.build_absolute_uri(settings.MEDIA_URL + path)
         return JsonResponse({"url": url, "tipo": tipo})
     messages_qs = (
-        Mensagem.objects.filter(nucleo=request.user.nucleo)
-        .filter(
-            Q(remetente=request.user, destinatario=dest)
-            | Q(remetente=dest, destinatario=request.user)
-        )
-        .select_related("remetente", "destinatario")
-        .order_by("-criado_em")[:20]
+        ChatMessage.objects.filter(conversation__participants__user=request.user)
+        .filter(remetente=request.user, destinatario=dest)
+        .select_related("remetente", "conversation")
+        .order_by("-created")[:20]
     )
 
     # List of messages in chronological order from oldest to newest
@@ -66,13 +63,10 @@ def messages_history(request, user_id):
     """Return the last 50 messages in JSON format."""
     dest = get_object_or_404(User, pk=user_id, nucleo=request.user.nucleo)
     messages_qs = (
-        Mensagem.objects.filter(nucleo=request.user.nucleo)
-        .filter(
-            Q(remetente=request.user, destinatario=dest)
-            | Q(remetente=dest, destinatario=request.user)
-        )
+        ChatMessage.objects.filter(conversation__participants__user=request.user)
+        .filter(remetente=request.user, destinatario=dest)
         .select_related("remetente")
-        .order_by("-criado_em")[:50]
+        .order_by("-created")[:50]
     )
 
     def _abs(url: str) -> str:
@@ -89,7 +83,7 @@ def messages_history(request, user_id):
             "conteudo": (
                 _abs(m.conteudo) if m.tipo in {"image", "video", "file"} else m.conteudo
             ),
-            "timestamp": m.criado_em.isoformat(),
+            "timestamp": m.created.isoformat(),
         }
         for m in reversed(list(messages_qs))
     ]

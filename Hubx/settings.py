@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     "chat",
     "forum",
     "feed",
+    "discussao",
+    "configuracoes",
 ]
 
 

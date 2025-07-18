@@ -10,6 +10,6 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ["nome", "cnpj", "usuario"]
-    search_fields = ["nome", "cnpj", "palavras_chave"]
+    list_display = ["razao_social", "cnpj", "usuario"]
+    search_fields = ["razao_social", "nome_fantasia", "cnpj"]
     list_filter = ["estado"]

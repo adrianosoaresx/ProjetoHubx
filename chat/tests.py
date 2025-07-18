@@ -9,7 +9,7 @@ from Hubx.asgi import application
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .models import Mensagem, Notificacao
+from .models import ChatConversation, ChatParticipant, ChatMessage, ChatNotification
 
 User = get_user_model()
 
@@ -24,17 +24,18 @@ class ChatViewTests(TestCase):
         self.user2 = User.objects.create_user(
             "user2", password="pass", nucleo=self.nucleo
         )
-        Mensagem.objects.create(
-            nucleo=self.nucleo,
+        self.conversation = ChatConversation.objects.create(titulo="Chat Teste")
+        ChatParticipant.objects.create(conversation=self.conversation, user=self.user1)
+        ChatParticipant.objects.create(conversation=self.conversation, user=self.user2)
+        ChatMessage.objects.create(
+            conversation=self.conversation,
             remetente=self.user1,
-            destinatario=self.user2,
             tipo="text",
             conteudo="hello",
         )
-        Mensagem.objects.create(
-            nucleo=self.nucleo,
+        ChatMessage.objects.create(
+            conversation=self.conversation,
             remetente=self.user2,
-            destinatario=self.user1,
             tipo="text",
             conteudo="hi",
         )
@@ -53,6 +54,15 @@ class ChatViewTests(TestCase):
         data = response.json()
         self.assertIn("messages", data)
         self.assertEqual(len(data["messages"]), 2)
+
+    def test_chat_message_creation(self):
+        msg = ChatMessage.objects.create(
+            conversation=self.conversation,
+            remetente=self.user1,
+            tipo="text",
+            conteudo="new message",
+        )
+        self.assertEqual(msg.conteudo, "new message")
 
 
 from unittest import skip
@@ -94,9 +104,9 @@ class ChatConsumerTests(TransactionTestCase):
 
     def test_websocket_message_creates_notification(self):
         asyncio.get_event_loop().run_until_complete(self._communicate())
-        self.assertTrue(Mensagem.objects.filter(conteudo="ping").exists())
+        self.assertTrue(ChatMessage.objects.filter(conteudo="ping").exists())
         self.assertTrue(
-            Notificacao.objects.filter(
+            ChatNotification.objects.filter(
                 usuario=self.receiver, mensagem__conteudo="ping"
             ).exists()
         )

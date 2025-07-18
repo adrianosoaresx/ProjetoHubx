@@ -25,25 +25,23 @@ class FeedPublicPrivateTests(TestCase):
         self.nucleo.membros.add(self.user)
         self.client.force_login(self.user)
 
-    def test_public_post_appears_on_feed(self):
+    def test_global_post_appears_on_feed(self):
         Post.objects.create(
             autor=self.user,
-            conteudo="public",
-            publico=True,
-            tipo_feed=Post.PUBLICO,
+            conteudo="global",
+            tipo_feed="global",
         )
         resp = self.client.get(reverse("feed:listar"))
-        self.assertContains(resp, "public")
+        self.assertContains(resp, "global")
 
-    def test_private_post_hidden_on_feed(self):
+    def test_nucleo_post_hidden_on_feed(self):
         Post.objects.create(
             autor=self.user,
-            conteudo="private",
-            publico=False,
-            tipo_feed=Post.PUBLICO,
+            conteudo="nucleo",
+            tipo_feed="nucleo",
         )
         resp = self.client.get(reverse("feed:listar"))
-        self.assertNotContains(resp, "private")
+        self.assertNotContains(resp, "nucleo")
 
     def test_nucleo_post_only_with_filter(self):
         Post.objects.create(

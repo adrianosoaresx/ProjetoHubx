@@ -2,11 +2,10 @@ from datetime import datetime
 from typing import Dict, Optional
 from django.db.models import Count, Avg, Sum, Q
 from accounts.models import User
-from .requisitos.eventos.modelos_django.evento_model import Evento
-from .requisitos.eventos.modelos_django.inscricao_evento_model import InscricaoEvento
-from forum.models import Topico, Resposta
+from agenda.models import Evento, InscricaoEvento
+from discussao.models import TopicoDiscussao, RespostaDiscussao
 from feed.models import Post
-from chat.models import Mensagem
+from chat.models import ChatMessage
 
 class DashboardService:
     @staticmethod
@@ -26,15 +25,15 @@ class DashboardService:
     def calcular_inscricoes_eventos() -> Dict[str, Dict[str, float]]:
         inscricoes = InscricaoEvento.objects.aggregate(
             total=Count('id'),
-            confirmados=Count('id', filter=Q(confirmado=True)),
-            avaliacao_media=Avg('avaliacao')
+            confirmados=Count('id', filter=Q(status='confirmada')),
+            avaliacao_media=Avg('evento__feedbacknota__nota')
         )
         return inscricoes
 
     @staticmethod
     def calcular_topicos_respostas_forum() -> Dict[str, int]:
-        topicos = Topico.objects.count()
-        respostas = Resposta.objects.count()
+        topicos = TopicoDiscussao.objects.count()
+        respostas = RespostaDiscussao.objects.count()
         return {'topicos': topicos, 'respostas': respostas}
 
     @staticmethod
@@ -43,7 +42,7 @@ class DashboardService:
 
     @staticmethod
     def calcular_mensagens_chat() -> int:
-        return Mensagem.objects.count()
+        return ChatMessage.objects.count()
 
     @staticmethod
     def calcular_valores_eventos() -> Dict[str, float]:

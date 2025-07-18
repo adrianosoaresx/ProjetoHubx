@@ -188,3 +188,35 @@ class EmpresaVisibilityTests(TestCase):
         self.client.force_login(user_without_org)
         response = self.client.get(reverse("empresas:lista"))
         self.assertEqual(response.status_code, 403)
+
+
+class EmpresaModelTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser",
+            password="testpass",
+            email="testuser@example.com",
+        )
+        self.empresa = Empresa.objects.create(
+            usuario=self.user,
+            cnpj="12.345.678/0001-99",
+            razao_social="Empresa Teste",
+            nome_fantasia="Teste LTDA",
+            ramo_atividade="Tecnologia",
+            cidade="São Paulo",
+            estado="SP",
+            endereco="Rua Teste, 123",
+            banner=None,
+            descricao="Uma empresa de teste",
+            contato="(11) 99999-9999",
+        )
+
+    def test_empresa_fields(self):
+        self.assertEqual(self.empresa.razao_social, "Empresa Teste")
+        self.assertEqual(self.empresa.nome_fantasia, "Teste LTDA")
+        self.assertEqual(self.empresa.ramo_atividade, "Tecnologia")
+        self.assertEqual(self.empresa.cidade, "São Paulo")
+        self.assertEqual(self.empresa.estado, "SP")
+        self.assertEqual(self.empresa.endereco, "Rua Teste, 123")
+        self.assertEqual(self.empresa.descricao, "Uma empresa de teste")
+        self.assertEqual(self.empresa.contato, "(11) 99999-9999")

@@ -5,25 +5,19 @@ from .models import Empresa, Tag
 
 
 class EmpresaForm(forms.ModelForm):
-    tags_field = forms.CharField(
-        required=False,
-        help_text="Separe as tags por v\u00edrgula",
-        label="Produtos e Servi\u00e7os",
-    )
-
     class Meta:
         model = Empresa
         fields = [
             "cnpj",
-            "nome",
-            "tipo",
-            "municipio",
+            "razao_social",
+            "nome_fantasia",
+            "ramo_atividade",
+            "cidade",
             "estado",
-            "logo",
+            "endereco",
+            "banner",
             "descricao",
             "contato",
-            "palavras_chave",
-            "tags_field",
         ]
 
     def __init__(self, *args, **kwargs):
