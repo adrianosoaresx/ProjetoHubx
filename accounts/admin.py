@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import MediaTag, NotificationSettings, User, UserMedia, UserType
+from .models import MediaTag, NotificationSettings, User, UserMedia
 
 
 @admin.register(User)
@@ -14,7 +14,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("email", "password")}),
         (
             "Personal info",
-            {"fields": ("username", "first_name", "last_name", "tipo")},
+            {"fields": ("username", "first_name", "last_name", "user_type")},
         ),
         (
             "Permissions",
@@ -40,7 +40,7 @@ class UserAdmin(BaseUserAdmin):
                     "username",
                     "password1",
                     "password2",
-                    "tipo",
+                    "user_type",
                 ),
             },
         ),
@@ -57,11 +57,6 @@ class UserAdmin(BaseUserAdmin):
 @admin.register(NotificationSettings)
 class NotificationSettingsAdmin(admin.ModelAdmin):
     list_display = ["user", "email_conexoes", "sistema_conexoes"]
-
-
-@admin.register(UserType)
-class UserTypeAdmin(admin.ModelAdmin):
-    list_display = ["id", "descricao"]
 
 
 @admin.register(UserMedia)

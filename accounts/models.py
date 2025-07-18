@@ -84,7 +84,7 @@ class TipoUsuario(Enum):
 
     @classmethod
     def choices(cls):
-        return [(key.value, key.name) for key in cls]
+        return [(choice.value, choice.name) for choice in cls]
 
 
 class User(AbstractUser, TimeStampedModel):
@@ -156,13 +156,11 @@ class User(AbstractUser, TimeStampedModel):
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
 
-    tipo = models.ForeignKey(
-        "UserType",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        default=None,  # Alterado de Tipo.CLIENTE para None
-        related_name="users",
+    user_type = models.CharField(
+        max_length=20,
+        choices=TipoUsuario.choices(),
+        default=TipoUsuario.CONVIDADO.value,
+        verbose_name="Tipo de Usuário",
     )
 
     organizacao = models.ForeignKey(
@@ -217,9 +215,7 @@ class User(AbstractUser, TimeStampedModel):
         return TipoUsuario.CONVIDADO.value
 
     def save(self, *args, **kwargs):
-        if not self.tipo:
-            self.tipo = UserType.objects.filter(descricao="client").first()
-        if self.tipo and self.tipo.descricao == "SUPERADMIN":
+        if self.user_type == TipoUsuario.ROOT.value:
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
 
@@ -247,19 +243,6 @@ class User(AbstractUser, TimeStampedModel):
     # Representação legível
     def __str__(self):
         return self.get_full_name() or self.username
-
-
-class UserType(TimeStampedModel):
-    """Tipos de usuário cadastrados no sistema."""
-
-    descricao = models.CharField("Descrição", max_length=20, unique=True)
-
-    class Meta:
-        verbose_name = "Tipo de Usuário"
-        verbose_name_plural = "Tipos de Usuário"
-
-    def __str__(self) -> str:  # pragma: no cover - simples
-        return self.descricao
 
 
 class NotificationSettings(TimeStampedModel):
