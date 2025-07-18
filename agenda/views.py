@@ -16,20 +16,21 @@ from django.views import View
 from django.views.generic import (CreateView, DeleteView, DetailView, UpdateView,
                                   ListView)
 
+from accounts.models import UserType
 from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
                               NoSuperadminMixin)
 
 from .forms import (EventoForm, InscricaoEventoForm,
                      MaterialDivulgacaoEventoForm, BriefingEventoForm)
-from .models import Evento, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
+from .models import Evento, InscricaoEvento, FeedbackNota, MaterialDivulgacaoEvento, BriefingEvento
 
 User = get_user_model()
 
 
 def _queryset_por_organizacao(request):
-    qs = Evento.objects.all()
-    if request.user.tipo_id == User.Tipo.ADMIN:
-        qs = qs.filter(organizacao=request.user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
+    qs = Evento.objects.prefetch_related("inscricoes").all()
+    if request.user.user_type == UserType.ADMIN:
+        qs = qs.filter(organizacao=request.user.organizacao)
     return qs
 
 
@@ -37,6 +38,9 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     today = timezone.localdate()
     ano = int(ano or today.year)
     mes = int(mes or today.month)
+    eventos = Evento.objects.filter(
+        data_inicio__year=ano, data_inicio__month=mes
+    ).prefetch_related("inscricoes")
 
     try:
         data_atual = date(ano, mes, 1)
@@ -50,7 +54,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         eventos = (
             Evento.objects.filter(data_hora__date=dia)
             .select_related("organizacao")
-            .prefetch_related("inscritos")
+            .prefetch_related("inscricoes")
         )
         dias.append(
             {
@@ -89,7 +93,7 @@ def lista_eventos(request, dia_iso):
             )
         )
         .select_related("organizacao")
-        .prefetch_related("inscritos")
+        .prefetch_related("inscricoes")
         .order_by("data_hora")
     )
 
@@ -180,7 +184,7 @@ class EventoDetailView(
         return (
             _queryset_por_organizacao(self.request)
             .select_related("organizacao")
-            .prefetch_related("inscritos")
+            .prefetch_related("inscricoes")
         )
 
 

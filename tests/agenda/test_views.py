@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils.timezone import make_aware
 
 from accounts.models import User, UserType
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -39,15 +39,28 @@ def usuario_logado(client, organizacao):
 @pytest.fixture
 def evento(organizacao, usuario_logado):
     return Evento.objects.create(
-        organizacao=organizacao,
-        titulo="Evento de Teste",
+        titulo="Evento Teste",
         descricao="Descrição do evento",
-        data_inicio=make_aware(datetime(2025, 7, 14, 10, 0)),
-        data_fim=make_aware(datetime(2025, 7, 14, 11, 0)),
-        link_inscricao="",
-        briefing="",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        endereco="Rua Teste, 123",
+        cidade="Cidade Teste",
+        estado="ST",
+        cep="12345-678",
         coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=100,
+        numero_presentes=0,
+        valor_ingresso=50.00,
+        orcamento=5000.00,
     )
+
+
+@pytest.fixture
+def inscricao(evento, usuario_logado):
+    return InscricaoEvento.objects.create(usuario=usuario_logado, evento=evento)
 
 
 def test_calendar_view_get(client):

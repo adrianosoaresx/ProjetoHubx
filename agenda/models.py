@@ -10,6 +10,16 @@ from nucleos.models import Nucleo
 User = get_user_model()
 
 
+class InscricaoEvento(models.Model):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="inscricoes"
+    )
+    evento = models.ForeignKey(
+        "Evento", on_delete=models.CASCADE, related_name="inscricoes"
+    )
+    data_inscricao = models.DateTimeField(auto_now_add=True)
+
+
 class Evento(TimeStampedModel):
     titulo = models.CharField(max_length=150)
     descricao = models.TextField()
@@ -20,7 +30,7 @@ class Evento(TimeStampedModel):
     estado = models.CharField(max_length=2)
     cep = models.CharField(max_length=9)
     coordenador = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name="eventos_criados"
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="eventos_criados"
     )
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(
@@ -37,9 +47,7 @@ class Evento(TimeStampedModel):
     valor_ingresso = models.DecimalField(
         max_digits=8, decimal_places=2, null=True, blank=True
     )
-    orcamento = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
+    orcamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     cronograma = models.TextField(blank=True)
     informacoes_adicionais = models.TextField(blank=True)
     contato_nome = models.CharField(max_length=100)
@@ -63,47 +71,6 @@ class Evento(TimeStampedModel):
         if feedbacks.exists():
             return feedbacks.aggregate(models.Avg("nota"))["nota__avg"]
         return None
-
-
-class InscricaoEvento(TimeStampedModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=20,
-        choices=[
-            ("pendente", "Pendente"),
-            ("confirmada", "Confirmada"),
-            ("cancelada", "Cancelada"),
-        ],
-        default="pendente",
-    )
-    presente = models.BooleanField()
-    valor_pago = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    metodo_pagamento = models.CharField(
-        max_length=20,
-        choices=[("pix", "Pix"), ("boleto", "Boleto"), ("gratuito", "Gratuito")],
-        null=True,
-        blank=True,
-    )
-    comprovante_pagamento = models.FileField(
-        upload_to="eventos/comprovantes/", null=True, blank=True
-    )
-    observacao = models.TextField(blank=True)
-    data_inscricao = models.DateTimeField(auto_now_add=True)
-    data_confirmacao = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ("user", "evento")
-        ordering = ["-data_inscricao"]
-
-    def confirmar_inscricao(self):
-        self.status = "confirmada"
-        self.data_confirmacao = timezone.now()
-        self.save()
-
-    def cancelar_inscricao(self):
-        self.status = "cancelada"
-        self.save()
 
 
 class ParceriaEvento(models.Model):
