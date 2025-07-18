@@ -63,9 +63,8 @@ INSTALLED_APPS = [
     "agenda",
     "chat",
     "feed",
-    "discussao",
+    "discussao.apps.DiscussaoConfig",
     "configuracoes",
-    
 ]
 
 

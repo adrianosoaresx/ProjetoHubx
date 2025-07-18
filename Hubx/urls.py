@@ -47,7 +47,7 @@ urlpatterns = [
         RedirectView.as_view(url="/agenda/%(rest)s", permanent=True),
     ),
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
-    path("forum/", include(("forum.urls", "forum"), namespace="forum")),
+    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("select2/", include("django_select2.urls")),
 ]
