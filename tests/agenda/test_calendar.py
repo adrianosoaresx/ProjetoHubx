@@ -5,9 +5,9 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import make_aware
 
+from accounts.models import UserType
 from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
-from accounts.models import User, UserType
 
 
 class CalendarViewTests(TestCase):

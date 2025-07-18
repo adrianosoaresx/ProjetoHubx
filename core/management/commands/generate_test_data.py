@@ -10,7 +10,7 @@ from django.utils import timezone
 from faker import Faker
 
 from accounts.models import UserType
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from empresas.models import Empresa, Tag
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -22,9 +22,7 @@ class Command(BaseCommand):
     NUCLEO_NOMES = ["CDL Mulher", "CDL Jovem"]
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--format", choices=["json", "csv"], default="json", help="Output format"
-        )
+        parser.add_argument("--format", choices=["json", "csv"], default="json", help="Output format")
 
     def handle(self, *args, **options):
         faker = Faker("pt_BR")
@@ -48,8 +46,6 @@ class Command(BaseCommand):
         Organizacao.objects.all().delete()
         Tag.objects.all().delete()
 
-        tipos = [UserType.ADMIN, UserType.GERENTE, UserType.CLIENTE]
-
         # Organizacoes padrao
         org_data = [
             ("CDL Blumenau", "87.640.225/0001-55"),
@@ -57,9 +53,7 @@ class Command(BaseCommand):
         ]
         orgs = []
         for nome, cnpj in org_data:
-            org, _ = Organizacao.objects.get_or_create(
-                nome=nome, defaults={"cnpj": cnpj}
-            )
+            org, _ = Organizacao.objects.get_or_create(nome=nome, defaults={"cnpj": cnpj})
             orgs.append(org)
 
         nucleos_by_org = {}
@@ -104,10 +98,7 @@ class Command(BaseCommand):
             for nucleo, gerente in zip(nucleos, gerentes_org):
                 nucleo.membros.add(gerente)
 
-        cdl_mulher_map = {
-            org.id: Nucleo.objects.get(organizacao=org, nome="CDL Mulher")
-            for org in orgs
-        }
+        cdl_mulher_map = {org.id: Nucleo.objects.get(organizacao=org, nome="CDL Mulher") for org in orgs}
 
         for cliente in clientes:
             if cliente.genero == "F":
@@ -148,7 +139,6 @@ class Command(BaseCommand):
         restantes = [c for c in clientes if c not in usuarios_servico]
         metade_restante = len(restantes) // 2
         usuarios_um_produto = restantes[:metade_restante]
-        usuarios_dois_produtos = restantes[metade_restante:]
 
         def criar_empresa(usuario):
             empresa = Empresa.objects.create(
@@ -240,22 +230,20 @@ class Command(BaseCommand):
         # Cria eventos para cada organização
         for org in orgs:
             for _ in range(5):
+                inicio = timezone.now() + timedelta(days=random.randint(1, 30), hours=random.randint(0, 23))
                 evento = Evento.objects.create(
                     organizacao=org,
                     titulo=faker.catch_phrase(),
                     descricao=faker.text(),
-                    data_hora=timezone.now()
-                    + timedelta(
-                        days=random.randint(1, 30), hours=random.randint(0, 23)
-                    ),
-                    duracao=timedelta(hours=random.randint(1, 3)),
-                    link_inscricao=faker.url(),
+                    data_inicio=inicio,
+                    data_fim=inicio + timedelta(hours=random.randint(1, 3)),
                     briefing=faker.text(),
                 )
                 # Inscreve apenas clientes da mesma organização
                 clientes_org = [c for c in clientes if c.organizacao == org]
                 inscritos = random.sample(clientes_org, k=5)
-                evento.inscritos.add(*inscritos)
+                for inscrito in inscritos:
+                    InscricaoEvento.objects.create(evento=evento, user=inscrito, status="confirmada")
 
         output_format = options["format"]
         if output_format == "json":
@@ -281,12 +269,14 @@ class Command(BaseCommand):
                 writer = csv.writer(csvfile)
                 writer.writerow(["cnpj", "nome", "tipo", "municipio", "estado", "organizacao"])
                 for empresa in Empresa.objects.all():
-                    writer.writerow([
-                        empresa.cnpj,
-                        empresa.nome,
-                        empresa.tipo,
-                        empresa.municipio,
-                        empresa.estado,
-                        empresa.organizacao.nome,
-                    ])
+                    writer.writerow(
+                        [
+                            empresa.cnpj,
+                            empresa.nome,
+                            empresa.tipo,
+                            empresa.municipio,
+                            empresa.estado,
+                            empresa.organizacao.nome,
+                        ]
+                    )
                 self.stdout.write(csvfile.getvalue())

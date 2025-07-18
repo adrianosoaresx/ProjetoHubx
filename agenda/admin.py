@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Evento, InscricaoEvento, ParceriaEvento, MaterialDivulgacaoEvento, BriefingEvento
+
+from .models import BriefingEvento, Evento, InscricaoEvento, MaterialDivulgacaoEvento, ParceriaEvento
 
 
 @admin.register(Evento)

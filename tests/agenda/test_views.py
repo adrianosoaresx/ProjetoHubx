@@ -98,7 +98,7 @@ def test_evento_detail_view_sem_htmx(evento, client):
 
 
 def test_eventos_por_dia_view_com_evento(client, evento):
-    dia = evento.data_hora.date().isoformat()
+    dia = evento.data_inicio.date().isoformat()
     url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
     response = client.get(url, HTTP_HX_REQUEST="true")
     assert response.status_code == 200
@@ -106,7 +106,7 @@ def test_eventos_por_dia_view_com_evento(client, evento):
 
 
 def test_eventos_por_dia_view_sem_htmx(client, evento):
-    dia = evento.data_hora.date().isoformat()
+    dia = evento.data_inicio.date().isoformat()
     url = reverse("agenda:eventos_por_dia") + f"?dia={dia}"
     response = client.get(url)
     assert response.status_code in [302, 403, 404]
@@ -125,9 +125,8 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
     data = {
         "titulo": "Novo Evento",
         "descricao": "Descrição",
-        "data_hora": make_aware(datetime.now()).isoformat(),
-        "duracao": "01:00:00",
-        "link_inscricao": "",
+        "data_inicio": make_aware(datetime.now()).isoformat(),
+        "data_fim": make_aware(datetime.now() + timedelta(hours=1)).isoformat(),
         "briefing": "",
         "organizacao": organizacao.pk,
     }
