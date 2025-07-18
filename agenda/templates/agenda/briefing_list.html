@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+    <h1>Briefings de Eventos</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Evento</th>
+                <th>Objetivos</th>
+                <th>Público Alvo</th>
+                <th>Requisitos Técnicos</th>
+                <th>Cronograma Resumido</th>
+                <th>Conteúdo Programático</th>
+                <th>Observações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for briefing in briefings %}
+            <tr>
+                <td>{{ briefing.evento }}</td>
+                <td>{{ briefing.objetivos }}</td>
+                <td>{{ briefing.publico_alvo }}</td>
+                <td>{{ briefing.requisitos_tecnicos }}</td>
+                <td>{{ briefing.cronograma_resumido }}</td>
+                <td>{{ briefing.conteudo_programatico }}</td>
+                <td>{{ briefing.observacoes }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django import forms
 from django_select2 import forms as s2forms
 
-from .models import Evento
+from .models import Evento, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
 
 
 class EventoForm(forms.ModelForm):
@@ -40,3 +40,44 @@ class EventoSearchForm(forms.Form):
             }
         ),
     )
+
+
+class InscricaoEventoForm(forms.ModelForm):
+    class Meta:
+        model = InscricaoEvento
+        fields = [
+            "evento",
+            "presente",
+            "avaliacao",
+            "valor_pago",
+            "metodo_pagamento",
+            "comprovante_pagamento",
+            "observacao",
+        ]
+
+
+class MaterialDivulgacaoEventoForm(forms.ModelForm):
+    class Meta:
+        model = MaterialDivulgacaoEvento
+        fields = [
+            "evento",
+            "titulo",
+            "descricao",
+            "tipo",
+            "arquivo",
+            "imagem_thumb",
+            "tags",
+        ]
+
+
+class BriefingEventoForm(forms.ModelForm):
+    class Meta:
+        model = BriefingEvento
+        fields = [
+            "objetivos",
+            "publico_alvo",
+            "requisitos_tecnicos",
+            "cronograma_resumido",
+            "conteudo_programatico",
+            "observacoes",
+        ]

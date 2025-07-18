@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+    <h1>Materiais de Divulgação</h1>
+    <div class="grid grid-cols-3 gap-4">
+        {% for material in materiais %}
+        <article>
+            <h2>{{ material.titulo }}</h2>
+            <p>{{ material.descricao }}</p>
+            {% if material.imagem_thumb %}
+            <img src="{{ material.imagem_thumb.url }}" alt="{{ material.titulo }}">
+            {% endif %}
+            <a href="{{ material.arquivo.url }}">Download</a>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

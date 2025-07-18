@@ -13,13 +13,15 @@ from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, UpdateView
+from django.views.generic import (CreateView, DeleteView, DetailView, UpdateView,
+                                  ListView)
 
 from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
                               NoSuperadminMixin)
 
-from .forms import EventoForm
-from .models import Evento, FeedbackNota
+from .forms import (EventoForm, InscricaoEventoForm,
+                     MaterialDivulgacaoEventoForm, BriefingEventoForm)
+from .models import Evento, FeedbackNota, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
 
 User = get_user_model()
 
@@ -258,3 +260,48 @@ def eventos_por_dia(request):
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
     return lista_eventos(request, dia_iso)
+
+class InscricaoEventoListView(LoginRequiredMixin, ListView):
+    model = InscricaoEvento
+    template_name = "agenda/inscricao_list.html"
+    context_object_name = "inscricoes"
+
+    def get_queryset(self):
+        return InscricaoEvento.objects.select_related("user", "evento")
+
+
+class InscricaoEventoCreateView(LoginRequiredMixin, CreateView):
+    model = InscricaoEvento
+    form_class = InscricaoEventoForm
+    template_name = "agenda/inscricao_form.html"
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
+    model = MaterialDivulgacaoEvento
+    template_name = "agenda/material_list.html"
+    context_object_name = "materiais"
+
+    def get_queryset(self):
+        return MaterialDivulgacaoEvento.objects.filter(ativo=True)
+
+
+class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
+    model = MaterialDivulgacaoEvento
+    form_class = MaterialDivulgacaoEventoForm
+    template_name = "agenda/material_form.html"
+
+
+class BriefingEventoListView(LoginRequiredMixin, ListView):
+    model = BriefingEvento
+    template_name = "agenda/briefing_list.html"
+    context_object_name = "briefings"
+
+
+class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
+    model = BriefingEvento
+    form_class = BriefingEventoForm
+    template_name = "agenda/briefing_form.html"
