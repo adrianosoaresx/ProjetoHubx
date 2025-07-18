@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 import re
 
 from .models import NotificationSettings, UserMedia
-from accounts.models import user as User
+from accounts.models import User
 
 User = get_user_model()
 
@@ -15,17 +15,11 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         fields = (
-            "nome_completo",
             "email",
             "cpf",
-            "telefone",
             "avatar",
-            "cover",
             "organizacao",
             "nucleo",
-            "data_nascimento",
-            "genero",
-            "user_type",
         )
 
     def clean_cpf(self):
@@ -45,17 +39,11 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
         fields = (
-            "nome_completo",
             "email",
             "cpf",
-            "telefone",
             "avatar",
-            "cover",
             "organizacao",
             "nucleo",
-            "data_nascimento",
-            "genero",
-            "user_type",
         )
 
 
