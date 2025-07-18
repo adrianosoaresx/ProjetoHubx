@@ -1,56 +1,60 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from core.models import TimeStampedModel
 
 User = get_user_model()
 
 
-class Post(models.Model):
-    PUBLICO = "publico"
-    NUCLEO = "nucleo"
-
+class Post(TimeStampedModel):
     TIPO_FEED_CHOICES = [
-        (PUBLICO, "Público"),
-        (NUCLEO, "Núcleo"),
+        ("global", "Feed Global"),
+        ("usuario", "Mural do Usuário"),
+        ("nucleo", "Feed do Núcleo"),
+        ("evento", "Feed do Evento"),
     ]
 
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
-    conteudo = models.TextField(blank=True)
-    image = models.ImageField(
-        upload_to="uploads/",
-        blank=True,
-        null=True,
-    )
-    pdf = models.FileField(
-        upload_to="uploads/",
-        blank=True,
-        null=True,
-    )
-    publico = models.BooleanField(default=True)
-    tipo_feed = models.CharField(
-        max_length=10,
-        choices=TIPO_FEED_CHOICES,
-        default=PUBLICO,
-    )
-    nucleo = models.ForeignKey(
-        "nucleos.Nucleo",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="postagens",
-    )
     organizacao = models.ForeignKey(
-        "organizacoes.Organizacao",
-        on_delete=models.CASCADE,
-        related_name="posts",
-        null=False,
-        blank=False,
-        db_column="organization",
+        "organizacoes.Organizacao", on_delete=models.CASCADE, related_name="posts"
     )
-    criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
+    tipo_feed = models.CharField(
+        max_length=10, choices=TIPO_FEED_CHOICES, default="global"
+    )
+    conteudo = models.TextField(blank=True)
+    image = models.ImageField(upload_to="uploads/", null=True, blank=True)
+    pdf = models.FileField(upload_to="uploads/", null=True, blank=True)
+    nucleo = models.ForeignKey(
+        "nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL
+    )
+    evento = models.ForeignKey(
+        "agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     class Meta:
-        ordering = ["-criado_em"]
+        ordering = ["-created"]
+        verbose_name = "Post"
+        verbose_name_plural = "Posts"
 
-    def __str__(self):  # pragma: no cover - simples
-        return f"Post de {self.autor.username} em {self.criado_em:%d/%m/%Y}"
+
+class Like(TimeStampedModel):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
+
+    class Meta:
+        unique_together = ("post", "user")
+        verbose_name = "Curtida"
+        verbose_name_plural = "Curtidas"
+
+
+class Comment(TimeStampedModel):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    reply_to = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
+    )
+    texto = models.TextField()
+
+    class Meta:
+        ordering = ["created"]
+        verbose_name = "Comentário"
+        verbose_name_plural = "Comentários"

@@ -8,7 +8,9 @@ class Organizacao(TimeStampedModel):
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)
-    logo = models.ImageField(upload_to="organizacoes/logos/", blank=True, null=True)
+    slug = models.SlugField(unique=True)
+    avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
+    cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
 
     class Meta:
         verbose_name = "Organização"

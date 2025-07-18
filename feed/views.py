@@ -5,10 +5,10 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, DetailView
 
-from .forms import PostForm
-from .models import Post
+from .forms import PostForm, CommentForm, LikeForm
+from .models import Post, Comment, Like
 
 
 @login_required
@@ -28,13 +28,11 @@ class FeedListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
+        tipo_feed = self.request.GET.get("tipo_feed", "global")
         q = self.request.GET.get("q", "").strip()
-        nucleo_id = self.request.GET.get("nucleo")
-        qs = Post.objects.select_related("autor", "nucleo").order_by("-criado_em")
-        if nucleo_id:
-            qs = qs.filter(nucleo_id=nucleo_id)
-        else:
-            qs = qs.filter(publico=True, nucleo__isnull=True)
+        qs = Post.objects.filter(tipo_feed=tipo_feed).select_related(
+            "autor", "nucleo", "evento"
+        ).order_by("-created")
         if q:
             qs = qs.filter(Q(conteudo__icontains=q))
         return qs
@@ -100,14 +98,38 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         return response
 
 
+class PostDetailView(LoginRequiredMixin, DetailView):
+    model = Post
+    template_name = "feed/post_detail.html"
+    context_object_name = "post"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["comment_form"] = CommentForm()
+        context["like_form"] = LikeForm()
+        return context
+
+
 @login_required
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    context = {
-        "post": post,
-        "user_can_moderate": request.user.tipo_id in (1, 2),
-    }
-    return render(request, "feed/post_detail.html", context)
+def create_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.user = request.user
+        comment.post = post
+        comment.save()
+        return redirect("feed:post_detail", pk=post.id)
+    return render(request, "feed/post_detail.html", {"post": post, "comment_form": form})
+
+
+@login_required
+def toggle_like(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    like, created = Like.objects.get_or_create(post=post, user=request.user)
+    if not created:
+        like.delete()
+    return redirect("feed:post_detail", pk=post.id)
 
 
 @login_required

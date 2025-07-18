@@ -1,49 +1,124 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-
-from core.fields import URLField
 from core.models import TimeStampedModel
 from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
 
 User = get_user_model()
 
 
 class Evento(TimeStampedModel):
-    organizacao = models.ForeignKey(
-        Organizacao, on_delete=models.CASCADE, related_name="eventos"
+    titulo = models.CharField(max_length=150)
+    descricao = models.TextField()
+    data_inicio = models.DateTimeField()
+    data_fim = models.DateTimeField()
+    endereco = models.CharField(max_length=255)
+    cidade = models.CharField(max_length=100)
+    estado = models.CharField(max_length=2)
+    cep = models.CharField(max_length=9)
+    coordenador = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name="eventos_criados"
     )
-    titulo = models.CharField(max_length=255)
-    descricao = models.TextField(blank=True)
-    data_hora = models.DateTimeField()
-    duracao = models.DurationField(help_text="Duração do evento")
-    link_inscricao = URLField(blank=True)
-    briefing = models.TextField(blank=True)
-    inscritos = models.ManyToManyField(
-        User, related_name="eventos_inscritos", blank=True
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
+    nucleo = models.ForeignKey(
+        Nucleo, on_delete=models.SET_NULL, null=True, blank=True
     )
+    status = models.PositiveSmallIntegerField(
+        choices=[(0, "Ativo"), (1, "Concluído"), (2, "Cancelado")]
+    )
+    publico_alvo = models.PositiveSmallIntegerField(
+        choices=[(0, "Público"), (1, "Somente nucleados"), (2, "Apenas associados")]
+    )
+    numero_convidados = models.PositiveIntegerField()
+    numero_presentes = models.PositiveIntegerField()
+    valor_ingresso = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
+    )
+    orcamento = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    cronograma = models.TextField(blank=True)
+    informacoes_adicionais = models.TextField(blank=True)
+    contato_nome = models.CharField(max_length=100)
+    contato_email = models.EmailField(blank=True)
+    contato_whatsapp = models.CharField(max_length=15, blank=True)
+    avatar = models.ImageField(
+        upload_to="eventos/avatars/", null=True, blank=True
+    )
+    cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
 
     class Meta:
         verbose_name = "Evento"
         verbose_name_plural = "Eventos"
-        ordering = ["-data_hora"]
 
     def __str__(self) -> str:
         return self.titulo
 
 
-class FeedbackNota(models.Model):
-    evento = models.ForeignKey(
-        Evento, on_delete=models.CASCADE, related_name="feedbacks"
+class InscricaoEvento(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    presente = models.BooleanField()
+    avaliacao = models.PositiveSmallIntegerField(null=True, blank=True)
+    valor_pago = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True
     )
-    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    nota = models.PositiveSmallIntegerField()
-    criado_em = models.DateTimeField(auto_now_add=True)
+    observacao = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ("evento", "usuario")
-        verbose_name = "Feedback do Evento"
-        verbose_name_plural = "Feedbacks dos Eventos"
+        unique_together = ("user", "evento")
+        verbose_name = "Inscrição de Evento"
+        verbose_name_plural = "Inscrições de Eventos"
 
-    def __str__(self):
-        return f"{self.usuario} → {self.evento} [{self.nota}]"
+
+class ParceriaEvento(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    nucleo = models.ForeignKey(
+        Nucleo, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    empresa_razao_social = models.CharField(max_length=150)
+    cnpj = models.CharField(max_length=18)
+    endereco_empresa = models.TextField()
+    representante_legal_nome = models.CharField(max_length=150)
+    representante_legal_cpf = models.CharField(max_length=14)
+    representante_legal_email = models.EmailField()
+    nome_solicitante = models.CharField(max_length=150, blank=True)
+    cpf_solicitante = models.CharField(max_length=14, blank=True)
+    whatsapp_contato = models.CharField(max_length=15)
+    tipo_parceria = models.CharField(
+        max_length=20,
+        choices=[
+            ("patrocinio", "Patrocínio"),
+            ("mentoria", "Mentoria"),
+            ("mantenedor", "Mantenedor"),
+            ("outro", "Outro"),
+        ],
+        default="patrocinio",
+    )
+
+    class Meta:
+        verbose_name = "Parceria de Evento"
+        verbose_name_plural = "Parcerias de Eventos"
+
+
+class MaterialDivulgacaoEvento(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    arquivo = models.FileField(upload_to="eventos/divulgacao/")
+    descricao = models.TextField(blank=True)
+    tags = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Material de Divulgação de Evento"
+        verbose_name_plural = "Materiais de Divulgação de Eventos"
+
+
+class BriefingEvento(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    objetivos = models.TextField()
+    publico_alvo = models.TextField()
+    requisitos_tecnicos = models.TextField()
+
+    class Meta:
+        verbose_name = "Briefing de Evento"
+        verbose_name_plural = "Briefings de Eventos"
