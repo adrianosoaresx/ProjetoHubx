@@ -17,15 +17,24 @@ def organizacao():
 
 
 @pytest.fixture
-def evento(organizacao, usuario_comum):
+def evento(organizacao, usuario_logado):
     return Evento.objects.create(
+        titulo="Evento Teste",
+        descricao="Descrição do evento",
+        data_inicio=make_aware(datetime.now() + timedelta(days=1)),
+        data_fim=make_aware(datetime.now() + timedelta(days=2)),
+        endereco="Rua Teste, 123",
+        cidade="Cidade Teste",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
         organizacao=organizacao,
-        titulo="Evento Público",
-        descricao="Aberto a inscrições",
-        data_inicio=make_aware(datetime(2025, 7, 20, 14, 0)),
-        data_fim=make_aware(datetime(2025, 7, 20, 16, 0)),
-        briefing="",
-        coordenador=usuario_comum,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=100,
+        numero_presentes=0,
+        valor_ingresso=50.00,
+        orcamento=5000.00,
     )
 
 
@@ -53,12 +62,8 @@ def gerente(organizacao):
 
 
 @pytest.fixture
-def inscricao(evento, usuario_comum):
-    return InscricaoEvento.objects.create(
-        usuario=usuario_comum,
-        evento=evento,
-        status="pendente",
-    )
+def inscricao(evento, usuario_logado):
+    return InscricaoEvento.objects.create(usuario=usuario_logado, evento=evento)
 
 
 def test_evento_detail_htmx(evento, client):

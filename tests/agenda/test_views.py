@@ -37,6 +37,19 @@ def usuario_logado(client, organizacao):
 
 
 @pytest.fixture
+def usuario_comum(client, organizacao):
+    user = User.objects.create_user(
+        username="comum",
+        email="comum@example.com",
+        password="12345",
+        organizacao=organizacao,
+        user_type=UserType.CLIENTE,
+    )
+    client.force_login(user)
+    return user
+
+
+@pytest.fixture
 def evento(organizacao, usuario_logado):
     return Evento.objects.create(
         titulo="Evento Teste",

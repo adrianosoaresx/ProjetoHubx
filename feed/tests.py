@@ -12,7 +12,7 @@ from .models import Post
 
 class PostModelTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user("user", email="user@example.com", password="pass", user_type=UserType.CLIENTE)
+        self.user = User.objects.create_user("user", email="user@example.com", password="pass", user_type=UserType.CLIENTE.value)
 
     def test_tipo_feed_validation(self):
         post = Post(autor=self.user, conteudo="ok", tipo_feed="global")
@@ -27,10 +27,10 @@ class PostModelTests(TestCase):
 class FeedViewTests(TestCase):
     def setUp(self):
         self.root_user = User.objects.create_user(
-            username="root", email="root@example.com", password="pass", user_type=UserType.ROOT
+            username="root", email="root@example.com", password="pass", user_type=UserType.ROOT.value
         )
         self.user = User.objects.create_user(
-            "normal", email="normal@example.com", password="pass", user_type=UserType.CLIENTE
+            "normal", email="normal@example.com", password="pass", user_type=UserType.CLIENTE.value
         )
 
         self.client = Client()
