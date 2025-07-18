@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import UserPassesTestMixin
 from rest_framework.permissions import BasePermission
 
-from accounts.models import TipoUsuario
+from accounts.enums import TipoUsuario
 
 User = get_user_model()
 

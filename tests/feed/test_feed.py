@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from accounts.models import UserType
+from accounts.enums import TipoUsuario
 from feed.models import Post
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -12,12 +12,10 @@ class FeedPublicPrivateTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.root_user = User.objects.get(username="root")
-        tipo_client, _ = UserType.objects.get_or_create(descricao="client")
         self.user = User.objects.create_user(
             email="normal@example.com",
             username="normal",
             password="pass",
-            tipo=tipo_client,
         )
 
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")

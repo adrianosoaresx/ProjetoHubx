@@ -7,7 +7,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
-from enum import Enum
+from accounts.enums import TipoUsuario
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import URLField
@@ -73,18 +73,6 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
     def get_by_natural_key(self, email: str):
         return self.get(email__iexact=email)
 
-
-class TipoUsuario(Enum):
-    ROOT = "root"
-    ADMIN = "admin"
-    COORDENADOR = "coordenador"
-    NUCLEADO = "nucleado"
-    ASSOCIADO = "associado"
-    CONVIDADO = "convidado"
-
-    @classmethod
-    def choices(cls):
-        return [(key.value, key.name) for key in cls]
 
 
 class User(AbstractUser, TimeStampedModel):

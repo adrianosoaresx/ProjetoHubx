@@ -9,18 +9,13 @@ from agenda.models import Evento
 from empresas.models import Empresa
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
-from accounts.models import UserType
+from accounts.enums import TipoUsuario
 
 
 class DashboardPermissionsTests(TestCase):
     def setUp(self):
         User = get_user_model()
 
-        # Criar registros no modelo UserType
-        UserType.objects.get_or_create(id=User.Tipo.SUPERADMIN, descricao="Root")
-        UserType.objects.get_or_create(id=User.Tipo.ADMIN, descricao="Admin")
-        UserType.objects.get_or_create(id=User.Tipo.GERENTE, descricao="Manager")
-        UserType.objects.get_or_create(id=User.Tipo.CLIENTE, descricao="Client")
 
         self.root_user = User.objects.create_user(
             username="rootuser",

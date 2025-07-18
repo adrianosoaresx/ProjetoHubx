@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from accounts.models import UserType
+from accounts.enums import TipoUsuario
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -28,9 +28,8 @@ class FeedViewTests(TestCase):
     def setUp(self):
         User = get_user_model()
         self.root_user = User.objects.get(username="root")
-        tipo_client, _ = UserType.objects.get_or_create(descricao="client")
         self.user = User.objects.create_user(
-            "normal", password="pass", tipo=tipo_client
+            "normal", password="pass"
         )
 
         self.client = Client()

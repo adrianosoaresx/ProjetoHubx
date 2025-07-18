@@ -4,18 +4,11 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from empresas.models import Empresa
-from accounts.models import UserType
+from accounts.enums import TipoUsuario
 
 
 class EmpresaVisibilityTests(TestCase):
     def setUp(self):
-        # Criação direta de instâncias de UserType
-        UserType.objects.create(descricao="root")
-        UserType.objects.create(descricao="admin")
-        UserType.objects.create(descricao="user")
-        UserType.objects.create(descricao="client")
-        UserType.objects.create(descricao="manager")
-
         # Configuração adicional para os testes
         super().setUp()
 

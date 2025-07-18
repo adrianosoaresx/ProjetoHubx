@@ -5,8 +5,9 @@ from django.urls import reverse
 
 from tokens.models import TokenAcesso
 
-from .models import NotificationSettings, UserMedia, UserType
-from accounts.models import User, TipoUsuario
+from .models import NotificationSettings, UserMedia
+from accounts.enums import TipoUsuario
+from accounts.models import User
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -190,12 +191,10 @@ class UserModelTests(TestCase):
 
 class UserModelTest(TestCase):
     def setUp(self):
-        self.user_type = UserType.objects.create(descricao="Test Type")
         self.user = User.objects.create_user(
             email="testuser@example.com",
             password="password123",
             username="testuser",
-            tipo=self.user_type,
         )
 
     def test_user_creation(self):
@@ -203,17 +202,9 @@ class UserModelTest(TestCase):
         self.assertEqual(self.user.email, "testuser@example.com")
         self.assertTrue(self.user.check_password("password123"))
 
-    def test_user_type(self):
-        """Testa se o tipo de usuário está associado corretamente."""
-        self.assertEqual(self.user.tipo, self.user_type)
 
     def test_user_permissions(self):
         """Testa permissões padrão do usuário."""
         self.assertFalse(self.user.is_staff)
         self.assertFalse(self.user.is_superuser)
 
-class UserTypeModelTest(TestCase):
-    def test_user_type_creation(self):
-        """Testa a criação de um tipo de usuário."""
-        user_type = UserType.objects.create(descricao="Admin")
-        self.assertEqual(user_type.descricao, "Admin")
