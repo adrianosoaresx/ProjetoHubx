@@ -46,6 +46,13 @@ class Empresa(TimeStampedModel):
         related_name="empresas",
         db_column="organization",
     )
+    site = models.URLField(max_length=255, blank=True)
+    telefone = models.CharField(max_length=20, blank=True)
+    whatsapp = models.CharField(max_length=20, blank=True)
+    facebook = models.URLField(max_length=255, blank=True)
+    instagram = models.URLField(max_length=255, blank=True)
+    linkedin = models.URLField(max_length=255, blank=True)
+    ativo = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Empresa"
@@ -53,3 +60,20 @@ class Empresa(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.nome
+
+
+class ContatoEmpresa(models.Model):
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="contatos")
+    nome = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=100)
+    email = models.EmailField()
+    telefone = models.CharField(max_length=20)
+    principal = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("empresa", "email")
+        verbose_name = "Contato da Empresa"
+        verbose_name_plural = "Contatos das Empresas"
+
+    def __str__(self) -> str:
+        return f"{self.nome} ({self.cargo})"

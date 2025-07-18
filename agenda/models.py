@@ -77,14 +77,11 @@ class ParceriaEvento(models.Model):
     nucleo = models.ForeignKey(
         Nucleo, on_delete=models.SET_NULL, null=True, blank=True
     )
-    empresa_razao_social = models.CharField(max_length=150)
-    cnpj = models.CharField(max_length=18)
-    endereco_empresa = models.TextField()
-    representante_legal_nome = models.CharField(max_length=150)
-    representante_legal_cpf = models.CharField(max_length=14)
-    representante_legal_email = models.EmailField()
-    nome_solicitante = models.CharField(max_length=150, blank=True)
-    cpf_solicitante = models.CharField(max_length=14, blank=True)
+    empresa = models.ForeignKey(
+        "empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias"
+    )
+    contato_adicional_nome = models.CharField(max_length=150, blank=True)
+    contato_adicional_cpf = models.CharField(max_length=14, blank=True)
     whatsapp_contato = models.CharField(max_length=15)
     tipo_parceria = models.CharField(
         max_length=20,
@@ -96,6 +93,10 @@ class ParceriaEvento(models.Model):
         ],
         default="patrocinio",
     )
+    acordo = models.FileField(upload_to="parcerias/contratos/", blank=True, null=True)
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    descricao = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Parceria de Evento"
