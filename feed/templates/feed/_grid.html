@@ -2,6 +2,17 @@
 <section id="feed-grid" class="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
   {% for post in posts %}
     <article class="rounded-lg bg-white shadow p-6 space-y-4">
+      <p class="text-xs text-neutral-500">
+        {% if post.tipo_feed == 'nucleo' %}
+          Feed do Núcleo: {{ post.nucleo.nome }}
+        {% elif post.tipo_feed == 'evento' %}
+          Feed do Evento: {{ post.evento.titulo }}
+        {% elif post.tipo_feed == 'usuario' %}
+          Mural do Usuário
+        {% else %}
+          Feed Global
+        {% endif %}
+      </p>
       <div class="flex items-center gap-4">
         <a href="{% url 'accounts:perfil' %}">
           {% if post.autor.avatar %}
@@ -35,6 +46,16 @@
           <img src="{{ post.image.url }}" class="w-full rounded" alt="">
         </div>
       {% endif %}
+      <div class="flex items-center justify-between text-sm text-neutral-600">
+        <form method="post" action="{% url 'feed:toggle_like' post.id %}">
+          {% csrf_token %}
+          <button type="submit" class="hover:text-emerald-600">
+            <i class="fa-solid fa-heart"></i>
+            {{ post.likes.count }}
+          </button>
+        </form>
+        <span>{{ post.comments.count }} comentários</span>
+      </div>
     </article>
   {% empty %}
     <p class="col-span-full text-center text-neutral-500">Nenhuma postagem encontrada.</p>

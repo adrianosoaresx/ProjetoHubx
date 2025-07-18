@@ -11,17 +11,21 @@ from organizacoes.models import Organizacao
 class FeedPublicPrivateTests(TestCase):
     def setUp(self):
         User = get_user_model()
-        self.root_user = User.objects.get(username="root")
+        self.root_user = User.objects.create_superuser(
+            email="root@example.com",
+            username="root",
+            password="pass",
+        )
         self.user = User.objects.create_user(
             email="normal@example.com",
             username="normal",
             password="pass",
-            user_type=UserType.CLIENTE,
+            user_type=UserType.NUCLEADO,
         )
 
-        org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
-        self.nucleo = Nucleo.objects.create(nome="N1", organizacao=org)
-        self.nucleo.membros.add(self.user)
+        self.org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+        self.nucleo = Nucleo.objects.create(nome="N1", organizacao=self.org)
+        self.nucleo.participacoes.create(user=self.user)
         self.client.force_login(self.user)
 
     def test_global_post_appears_on_feed(self):
@@ -29,6 +33,7 @@ class FeedPublicPrivateTests(TestCase):
             autor=self.user,
             conteudo="global",
             tipo_feed="global",
+            organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
         self.assertContains(resp, "global")
@@ -38,6 +43,7 @@ class FeedPublicPrivateTests(TestCase):
             autor=self.user,
             conteudo="nucleo",
             tipo_feed="nucleo",
+            organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
         self.assertNotContains(resp, "nucleo")
@@ -47,8 +53,8 @@ class FeedPublicPrivateTests(TestCase):
             autor=self.user,
             conteudo="nucleo",
             nucleo=self.nucleo,
-            publico=False,
-            tipo_feed=Post.NUCLEO,
+            tipo_feed="nucleo",
+            organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context["posts"]), 0)
@@ -58,8 +64,8 @@ class FeedPublicPrivateTests(TestCase):
         self.assertEqual(resp.context["posts"][0].nucleo, self.nucleo)
 
     def test_search_returns_matching_posts(self):
-        Post.objects.create(autor=self.user, conteudo="alpha bravo")
-        Post.objects.create(autor=self.user, conteudo="charlie delta")
+        Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)
+        Post.objects.create(autor=self.user, conteudo="charlie delta", organizacao=self.org)
         resp = self.client.get(reverse("feed:listar") + "?q=alpha")
         self.assertEqual(len(resp.context["posts"]), 1)
         self.assertContains(resp, "alpha bravo")

@@ -22,14 +22,14 @@
   </div>
 
   <div class="flex items-center gap-4 mb-4">
-    <label class="font-semibold">Filtrar:</label>
+    <label class="font-semibold">Núcleo:</label>
     <select id="filtro-nucleo" name="nucleo"
             hx-get="{% url 'feed:listar' %}"
             hx-target="#feed-grid"
             hx-indicator="#feed-loading"
             hx-include="#feed-search,#filtro-nucleo"
             class="rounded border-gray-300">
-      <option value="">Público</option>
+      <option value="">Global</option>
       {% for n in nucleos_do_usuario %}
         <option value="{{ n.id }}">{{ n.nome }}</option>
       {% endfor %}

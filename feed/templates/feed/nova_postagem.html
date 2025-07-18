@@ -48,13 +48,16 @@
     </div>
 
     <div class="mb-4">
-      <label for="destino" class="font-semibold mb-1 block">Visibilidade</label>
-      <select name="destino" id="destino" class="w-full rounded border-gray-300">
-        <option value="publico">Público</option>
-        {% for n in nucleos_do_usuario %}
-          <option value="{{ n.id }}">Núcleo: {{ n.nome }}</option>
-        {% endfor %}
-      </select>
+      <label for="id_tipo_feed" class="font-semibold mb-1 block">Tipo de Feed</label>
+      {{ form.tipo_feed|as_widget }}
+    </div>
+    <div class="mb-4">
+      <label for="id_nucleo" class="font-semibold mb-1 block">Núcleo</label>
+      {{ form.nucleo|as_widget }}
+    </div>
+    <div class="mb-4">
+      <label for="id_evento" class="font-semibold mb-1 block">Evento</label>
+      {{ form.evento|as_widget }}
     </div>
 
     <!-- Arquivo -->

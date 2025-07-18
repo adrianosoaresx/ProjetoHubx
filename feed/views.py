@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,19 +7,29 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, DetailView
+from django.views.generic import CreateView, DetailView, ListView
 
-from .forms import PostForm, CommentForm, LikeForm
 from accounts.models import UserType
-from .models import Post, Comment, Like
+from nucleos.models import Nucleo
+
+from .forms import CommentForm, LikeForm, PostForm
+from .models import Like, Post
 
 
 @login_required
 def meu_mural(request):
-    posts = Post.objects.filter(autor=request.user)
+    """Exibe o mural pessoal do usuário com seus posts e posts globais."""
+
+    posts = (
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+        .prefetch_related("likes", "comments")
+        .filter(Q(autor=request.user) | Q(tipo_feed="global", organizacao=request.user.organizacao))
+        .order_by("-created_at")
+    )
+
     context = {
         "posts": posts,
-        "nucleos_do_usuario": request.user.nucleos.all(),
+        "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
     }
     return render(request, "feed/mural.html", context)
 
@@ -31,16 +43,35 @@ class FeedListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         tipo_feed = self.request.GET.get("tipo_feed", "global")
         q = self.request.GET.get("q", "").strip()
-        qs = Post.objects.filter(tipo_feed=tipo_feed).select_related(
-            "autor", "nucleo", "evento"
-        ).order_by("-created")
+        user = self.request.user
+
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
+            "likes", "comments"
+        )
+
+        if tipo_feed == "usuario":
+            qs = qs.filter(Q(autor=user) | Q(tipo_feed="global", organizacao=user.organizacao))
+        elif tipo_feed == "nucleo":
+            nucleo_id = self.request.GET.get("nucleo")
+            qs = qs.filter(tipo_feed="nucleo", nucleo_id=nucleo_id)
+            if not user.nucleos.filter(id=nucleo_id).exists():
+                qs = qs.none()
+        elif tipo_feed == "evento":
+            evento_id = self.request.GET.get("evento")
+            qs = qs.filter(tipo_feed="evento", evento_id=evento_id)
+        else:  # global
+            qs = qs.filter(tipo_feed="global")
+            if user.user_type != UserType.ROOT:
+                qs = qs.filter(organizacao=user.organizacao)
+
         if q:
-            qs = qs.filter(Q(conteudo__icontains=q))
-        return qs
+            qs = qs.filter(conteudo__icontains=q)
+
+        return qs.order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["nucleos_do_usuario"] = self.request.user.nucleos.all()
+        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -66,9 +97,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         file = self.request.FILES.get("arquivo")
         if file:
             files = self.request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(
-                ".pdf"
-            ):
+            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
                 files["pdf"] = file
             else:
                 files["image"] = file
@@ -77,25 +106,15 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["nucleos_do_usuario"] = self.request.user.nucleos.all()
+        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
         return context
 
     def form_valid(self, form):
         form.instance.autor = self.request.user
-        destino = form.cleaned_data.get("destino")
-        if destino == "publico":
-            form.instance.tipo_feed = Post.PUBLICO
-            form.instance.nucleo = None
-            form.instance.publico = True
-        else:
-            form.instance.tipo_feed = Post.NUCLEO
-            form.instance.nucleo_id = destino
-            form.instance.publico = False
+        form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
         if self.request.headers.get("HX-Request") == "true":
-            return HttpResponse(
-                status=204, headers={"HX-Redirect": self.get_success_url()}
-            )
+            return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
         return response
 
 
@@ -145,33 +164,18 @@ def post_update(request, pk):
         file = request.FILES.get("arquivo")
         if file:
             files = request.FILES.copy()
-            if file.content_type == "application/pdf" or file.name.lower().endswith(
-                ".pdf"
-            ):
+            if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
                 files["pdf"] = file
             else:
                 files["image"] = file
         form = PostForm(request.POST, files, instance=post, user=request.user)
         if form.is_valid():
-            destino = form.cleaned_data.get("destino")
-            if destino == "publico":
-                post.tipo_feed = Post.PUBLICO
-                post.nucleo = None
-                post.publico = True
-            else:
-                post.tipo_feed = Post.NUCLEO
-                post.nucleo_id = destino
-                post.publico = False
+            form.instance.organizacao = request.user.organizacao
             form.save()
             messages.success(request, "Postagem atualizada com sucesso.")
             return redirect("feed:post_detail", pk=post.pk)
     else:
-        initial_destino = (
-            "publico" if post.tipo_feed == Post.PUBLICO else post.nucleo_id
-        )
-        form = PostForm(
-            instance=post, user=request.user, initial={"destino": initial_destino}
-        )
+        form = PostForm(instance=post, user=request.user)
 
     return render(request, "feed/post_update.html", {"form": form, "post": post})
 

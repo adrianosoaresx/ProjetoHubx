@@ -1,7 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
-from feed.models import Post
+
 from accounts.factories import UserFactory
+from feed.models import Post
+
 
 class PostFactory(DjangoModelFactory):
     class Meta:
