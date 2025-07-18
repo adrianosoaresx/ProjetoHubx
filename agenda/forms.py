@@ -63,7 +63,6 @@ class InscricaoEventoForm(forms.ModelForm):
         fields = [
             "evento",
             "presente",
-            "avaliacao",
             "valor_pago",
             "metodo_pagamento",
             "comprovante_pagamento",

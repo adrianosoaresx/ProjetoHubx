@@ -116,7 +116,7 @@ class ChatMessage(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ["created"]
+        ordering = ["-created_at"]
         verbose_name = "Mensagem"
         verbose_name_plural = "Mensagens"
 

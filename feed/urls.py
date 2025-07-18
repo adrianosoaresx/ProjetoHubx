@@ -8,7 +8,7 @@ urlpatterns = [
     path("", views.FeedListView.as_view(), name="listar"),
     path("mural/", views.meu_mural, name="meu_mural"),
     path("novo/", views.NovaPostagemView.as_view(), name="nova_postagem"),
-    path("<int:pk>/", views.post_detail, name="post_detail"),
+    path("<int:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("<int:pk>/editar/", views.post_update, name="post_update"),
     path("<int:pk>/remover/", views.post_delete, name="post_delete"),
 ]

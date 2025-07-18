@@ -31,7 +31,7 @@ class Post(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
         verbose_name = "Post"
         verbose_name_plural = "Posts"
 
@@ -55,6 +55,6 @@ class Comment(TimeStampedModel):
     texto = models.TextField()
 
     class Meta:
-        ordering = ["created"]
+        ordering = ["created_at"]
         verbose_name = "Comentário"
         verbose_name_plural = "Comentários"

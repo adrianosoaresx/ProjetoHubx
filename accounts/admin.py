@@ -66,7 +66,7 @@ class UserTypeAdmin(admin.ModelAdmin):
 
 @admin.register(UserMedia)
 class UserMediaAdmin(admin.ModelAdmin):
-    list_display = ["user", "file", "uploaded_at"]
+    list_display = ["user", "file"]
 
 
 @admin.register(MediaTag)

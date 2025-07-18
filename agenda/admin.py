@@ -9,12 +9,12 @@ class EventoAdmin(admin.ModelAdmin):
 
 @admin.register(InscricaoEvento)
 class InscricaoEventoAdmin(admin.ModelAdmin):
-    list_display = ["user", "evento", "presente", "avaliacao"]
+    list_display = ["user", "evento", "presente"]
 
 
 @admin.register(ParceriaEvento)
 class ParceriaEventoAdmin(admin.ModelAdmin):
-    list_display = ["empresa_razao_social", "evento", "tipo_parceria"]
+    list_display = ["empresa", "evento", "tipo_parceria"]
 
 
 @admin.register(MaterialDivulgacaoEvento)

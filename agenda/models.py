@@ -57,6 +57,12 @@ class Evento(TimeStampedModel):
     def __str__(self) -> str:
         return self.titulo
 
+    def calcular_media_feedback(self):
+        feedbacks = FeedbackNota.objects.filter(evento=self)
+        if feedbacks.exists():
+            return feedbacks.aggregate(models.Avg("nota"))["nota__avg"]
+        return None
+
 
 class InscricaoEvento(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -71,11 +77,6 @@ class InscricaoEvento(TimeStampedModel):
         default="pendente",
     )
     presente = models.BooleanField()
-    avaliacao = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        null=True,
-        blank=True,
-    )
     valor_pago = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     metodo_pagamento = models.CharField(
         max_length=20,
@@ -92,7 +93,7 @@ class InscricaoEvento(TimeStampedModel):
 
     class Meta:
         unique_together = ("user", "evento")
-        ordering = ["-created"]
+        ordering = ["-data_inscricao"]
 
     def confirmar_inscricao(self):
         self.status = "confirmada"
@@ -176,3 +177,17 @@ class BriefingEvento(models.Model):
     class Meta:
         verbose_name = "Briefing de Evento"
         ordering = ["evento"]
+
+
+class FeedbackNota(models.Model):
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    nota = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    observacao = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Feedback de Nota"
+        verbose_name_plural = "Feedbacks de Notas"
+        unique_together = ("evento", "usuario")

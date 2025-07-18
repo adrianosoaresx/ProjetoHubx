@@ -10,11 +10,11 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 @admin.register(Topico)
 class TopicoAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "categoria", "autor", "criado_em")
+    list_display = ("titulo", "categoria", "autor")
     list_filter = ("categoria", "autor")
 
 
 @admin.register(Resposta)
 class RespostaAdmin(admin.ModelAdmin):
-    list_display = ("topico", "autor", "criado_em")
+    list_display = ("topico", "autor")
     list_filter = ("topico", "autor")

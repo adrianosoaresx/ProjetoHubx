@@ -5,7 +5,7 @@ from .models import Mensagem, Notificacao
 
 @admin.register(Mensagem)
 class MensagemAdmin(admin.ModelAdmin):
-    list_display = ["remetente", "nucleo", "tipo", "criado_em"]
+    list_display = ["remetente", "nucleo", "tipo"]
 
 
 @admin.register(Notificacao)
