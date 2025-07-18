@@ -1,9 +1,15 @@
 from django.urls import path
 
 from . import views
-from .views import (EventoCreateView, EventoDeleteView, EventoDetailView,
-                    EventoFeedbackView, EventoRemoveInscritoView,
-                    EventoSubscribeView, EventoUpdateView)
+from .views import (
+    EventoCreateView,
+    EventoDeleteView,
+    EventoDetailView,
+    EventoFeedbackView,
+    EventoRemoveInscritoView,
+    EventoSubscribeView,
+    EventoUpdateView,
+)
 
 app_name = "agenda"
 

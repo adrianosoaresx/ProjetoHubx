@@ -1,7 +1,13 @@
 from django import forms
 from django_select2 import forms as s2forms
 
-from .models import Evento, InscricaoEvento, MaterialDivulgacaoEvento, BriefingEvento
+from .models import (
+    BriefingEvento,
+    Evento,
+    FeedbackNota,
+    InscricaoEvento,
+    MaterialDivulgacaoEvento,
+)
 
 
 class EventoForm(forms.ModelForm):
@@ -61,13 +67,16 @@ class InscricaoEventoForm(forms.ModelForm):
     class Meta:
         model = InscricaoEvento
         fields = [
-            "evento",
-            "presente",
-            "valor_pago",
             "metodo_pagamento",
             "comprovante_pagamento",
             "observacao",
         ]
+
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = FeedbackNota
+        fields = ["nota", "comentario"]
 
 
 class MaterialDivulgacaoEventoForm(forms.ModelForm):

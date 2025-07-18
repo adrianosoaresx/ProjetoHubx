@@ -3,26 +3,22 @@ from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import (LoginRequiredMixin,
-                                        PermissionRequiredMixin)
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import DateTimeField, ExpressionWrapper, F
+from django.db.models import F
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import (CreateView, DeleteView, DetailView, UpdateView,
-                                  ListView)
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from accounts.models import UserType
-from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
-                              NoSuperadminMixin)
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
-from .forms import (EventoForm, InscricaoEventoForm,
-                     MaterialDivulgacaoEventoForm, BriefingEventoForm)
-from .models import Evento, InscricaoEvento, FeedbackNota, MaterialDivulgacaoEvento, BriefingEvento
+from .forms import BriefingEventoForm, EventoForm, InscricaoEventoForm, MaterialDivulgacaoEventoForm
+from .models import BriefingEvento, Evento, FeedbackNota, InscricaoEvento, MaterialDivulgacaoEvento
 
 User = get_user_model()
 
@@ -38,9 +34,6 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     today = timezone.localdate()
     ano = int(ano or today.year)
     mes = int(mes or today.month)
-    eventos = Evento.objects.filter(
-        data_inicio__year=ano, data_inicio__month=mes
-    ).prefetch_related("inscricoes")
 
     try:
         data_atual = date(ano, mes, 1)
@@ -51,17 +44,15 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
     dias = []
 
     for dia in cal.itermonthdates(ano, mes):
-        eventos = (
-            Evento.objects.filter(data_hora__date=dia)
-            .select_related("organizacao")
-            .prefetch_related("inscricoes")
+        evs_dia = (
+            Evento.objects.filter(data_inicio__date=dia).select_related("organizacao").prefetch_related("inscricoes")
         )
         dias.append(
             {
                 "data": dia,
                 "hoje": dia == today,
                 "mes_atual": dia.month == mes,
-                "eventos": eventos,
+                "eventos": evs_dia,
             }
         )
 
@@ -86,15 +77,11 @@ def lista_eventos(request, dia_iso):
         raise Http404("Data inválida") from exc
 
     eventos = (
-        Evento.objects.filter(data_hora__date=dia)
-        .annotate(
-            fim=ExpressionWrapper(
-                F("data_hora") + F("duracao"), output_field=DateTimeField()
-            )
-        )
+        Evento.objects.filter(data_inicio__date=dia)
+        .annotate(fim=F("data_fim"))
         .select_related("organizacao")
         .prefetch_related("inscricoes")
-        .order_by("data_hora")
+        .order_by("data_inicio")
     )
 
     return render(
@@ -147,9 +134,7 @@ class EventoUpdateView(
         return _queryset_por_organizacao(self.request)
 
     def form_valid(self, form):  # pragma: no cover
-        messages.success(
-            self.request, "Evento atualizado com sucesso."
-        )  # pragma: no cover
+        messages.success(self.request, "Evento atualizado com sucesso.")  # pragma: no cover
         return super().form_valid(form)  # pragma: no cover
 
 
@@ -174,9 +159,7 @@ class EventoDeleteView(
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(
-    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView
-):
+class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Evento
     template_name = "agenda/detail.html"
 
@@ -184,7 +167,7 @@ class EventoDetailView(
         return (
             _queryset_por_organizacao(self.request)
             .select_related("organizacao")
-            .prefetch_related("inscricoes")
+            .prefetch_related("inscricoes", "feedbacks")
         )
 
 
@@ -193,37 +176,33 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
 
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
-        if request.user.tipo_id == User.Tipo.ADMIN:
-            messages.error(
-                request, "Administradores não podem se inscrever em eventos."
-            )  # pragma: no cover
+        if request.user.user_type == UserType.ADMIN:
+            messages.error(request, "Administradores não podem se inscrever em eventos.")  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
-        if request.user in evento.inscritos.all():
-            evento.inscritos.remove(request.user)
+        inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
+        if not created and inscricao.status != "cancelada":
+            inscricao.cancelar_inscricao()
             messages.success(request, "Inscrição cancelada.")  # pragma: no cover
         else:
-            evento.inscritos.add(request.user)
+            inscricao.confirmar_inscricao()
             messages.success(request, "Inscrição realizada.")  # pragma: no cover
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
-class EventoRemoveInscritoView(
-    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View
-):
+class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
     """Remove um inscrito do evento."""
 
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
         if (
-            request.user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}
-            and evento.organizacao != request.user.organization  # Corrigido para usar 'organization'
+            request.user.user_type in {UserType.ADMIN, UserType.GERENTE}
+            and evento.organizacao != request.user.organizacao
         ):
             messages.error(request, "Acesso negado.")  # pragma: no cover
             return redirect("agenda:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
-        if inscrito in evento.inscritos.all():
-            evento.inscritos.remove(inscrito)
-            messages.success(request, "Inscrito removido.")  # pragma: no cover
+        InscricaoEvento.objects.filter(user=inscrito, evento=evento).delete()
+        messages.success(request, "Inscrito removido.")  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
 
 
@@ -234,11 +213,10 @@ class EventoFeedbackView(LoginRequiredMixin, View):
         evento = get_object_or_404(Evento, pk=pk)
         usuario = request.user
 
-        if usuario not in evento.inscritos.all():
+        if not InscricaoEvento.objects.filter(user=usuario, evento=evento, status="confirmada").exists():
             return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
 
-        fim_evento = evento.data_hora + evento.duracao
-        if timezone.now() < fim_evento:
+        if timezone.now() < evento.data_fim:
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
 
         try:
@@ -252,11 +230,15 @@ class EventoFeedbackView(LoginRequiredMixin, View):
         FeedbackNota.objects.update_or_create(
             evento=evento,
             usuario=usuario,
-            defaults={"nota": nota},
+            defaults={
+                "nota": nota,
+                "comentario": request.POST.get("comentario", ""),
+            },
         )
 
         messages.success(request, "Feedback registrado com sucesso.")
         return redirect("agenda:evento_detalhe", pk=pk)
+
 
 def eventos_por_dia(request):
     """Compatível com reverse('agenda:eventos_por_dia') via ?dia=YYYY-MM-DD"""
@@ -264,6 +246,7 @@ def eventos_por_dia(request):
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
     return lista_eventos(request, dia_iso)
+
 
 class InscricaoEventoListView(LoginRequiredMixin, ListView):
     model = InscricaoEvento

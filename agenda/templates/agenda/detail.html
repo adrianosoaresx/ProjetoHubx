@@ -17,15 +17,15 @@
 
   <!-- Informações -->
   <div class="space-y-2 text-sm text-neutral-800 mb-6">
-    <p><strong>Quando:</strong> {{ object.data_hora|date:"d/m/Y H:i" }}</p>
-    <p><strong>Duração:</strong> {{ object.duracao }}</p>
+    <p><strong>Início:</strong> {{ object.data_inicio|date:"d/m/Y H:i" }}</p>
+    <p><strong>Fim:</strong> {{ object.data_fim|date:"d/m/Y H:i" }}</p>
   </div>
 
   <!-- Inscrição -->
-  {% if user.is_authenticated and user.tipo_id not in (1,4) %}
+  {% if user.is_authenticated and user.user_type not in ('admin','root') %}
     <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
       {% csrf_token %}
-      {% if user in object.inscritos.all %}
+      {% if object.inscricoes.filter(user=user, status='confirmada').exists %}
         <button type="submit" class="btn-secondary" aria-label="Cancelar inscrição">Cancelar inscrição</button>
       {% else %}
         <button type="submit" class="btn-primary" aria-label="Inscrever-se">Inscrever-se</button>
@@ -36,9 +36,10 @@
   <!-- Lista de Inscritos -->
   <h2 class="text-lg font-semibold text-neutral-900 mb-4">Inscritos</h2>
 
-  {% if object.inscritos.all %}
+  {% if object.inscricoes.all %}
     <div class="grid gap-4 sm:grid-cols-2">
-      {% for inscrito in object.inscritos.all %}
+      {% for ins in object.inscricoes.all %}
+        {% with inscrito=ins.user %}
         <div class="flex items-center gap-4 border border-neutral-200 rounded-xl p-4 bg-white shadow-sm">
           {% if inscrito.avatar %}
             <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
@@ -52,6 +53,7 @@
             <p class="text-xs text-neutral-500">@{{ inscrito.username }}</p>
           </div>
         </div>
+        {% endwith %}
       {% endfor %}
     </div>
   {% else %}

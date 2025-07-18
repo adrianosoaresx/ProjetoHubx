@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
 from django.urls import reverse
@@ -55,12 +55,20 @@ def feedbacks(evento_passado, usuario):
         user_type=usuario.user_type,
     )
     FeedbackNota.objects.create(evento=evento_passado, usuario=usuario, nota=4)
-    FeedbackNota.objects.create(evento=evento_passado, usuario=outro_usuario, nota=5)  # Usar outro usuário para evitar duplicação
+    FeedbackNota.objects.create(
+        evento=evento_passado, usuario=outro_usuario, nota=5
+    )  # Usar outro usuário para evitar duplicação
 
 
 @freeze_time("2025-07-14 10:00:00")
 def test_envio_feedback_pos_evento(evento_passado, usuario, client):
-    InscricaoEvento.objects.create(evento=evento_passado, user=usuario, data_confirmacao=make_aware(datetime.now()), status="confirmada", presente=False)  # Corrigido argumento 'data_confirmacao'
+    InscricaoEvento.objects.create(
+        evento=evento_passado,
+        user=usuario,
+        data_confirmacao=make_aware(datetime.now()),
+        status="confirmada",
+        presente=False,
+    )  # Corrigido argumento 'data_confirmacao'
 
     url = reverse("agenda:evento_feedback", args=[evento_passado.pk])
     data = {"nota": "5"}
