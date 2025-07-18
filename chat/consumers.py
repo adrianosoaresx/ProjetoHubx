@@ -72,9 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             msg.conteudo,
         )
         recipient_ids = await database_sync_to_async(list)(
-            User.objects.filter(nucleo_id=self.nucleo_id)
-            .exclude(id=user.id)
-            .values_list("id", flat=True)
+            User.objects.filter(nucleo_id=self.nucleo_id).exclude(id=user.id).values_list("id", flat=True)
         )
         await database_sync_to_async(notify_users)(recipient_ids, user.id, msg)
 

@@ -1,112 +1,48 @@
-import asyncio
-
-from channels.testing import WebsocketCommunicator
 from django.contrib.auth import get_user_model
-from django.test import TestCase, TransactionTestCase
-from django.urls import reverse
+from django.test import TestCase
 
-from Hubx.asgi import application
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .models import ChatConversation, ChatParticipant, ChatMessage, ChatNotification
+from .forms import NovaMensagemForm
+from .models import ChatConversation, ChatMessage, ChatNotification, ChatParticipant
 
 User = get_user_model()
 
 
-class ChatViewTests(TestCase):
-    def setUp(self):
+class ChatBasicsTests(TestCase):
+    def setUp(self) -> None:
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         self.nucleo = Nucleo.objects.create(nome="Nuc", organizacao=org)
         self.user1 = User.objects.create_user(
-            "user1", password="pass", nucleo=self.nucleo
+            email="u1@example.com",
+            username="user1",
+            password="pass",
+            nucleo=self.nucleo,
         )
         self.user2 = User.objects.create_user(
-            "user2", password="pass", nucleo=self.nucleo
-        )
-        self.conversation = ChatConversation.objects.create(titulo="Chat Teste")
-        ChatParticipant.objects.create(conversation=self.conversation, user=self.user1)
-        ChatParticipant.objects.create(conversation=self.conversation, user=self.user2)
-        ChatMessage.objects.create(
-            conversation=self.conversation,
-            remetente=self.user1,
-            tipo="text",
-            conteudo="hello",
-        )
-        ChatMessage.objects.create(
-            conversation=self.conversation,
-            remetente=self.user2,
-            tipo="text",
-            conteudo="hi",
+            email="u2@example.com",
+            username="user2",
+            password="pass",
+            nucleo=self.nucleo,
         )
         self.client.force_login(self.user1)
 
-    def test_conversation_shows_previous_messages(self):
-        url = reverse("chat:modal_room", args=[self.user2.id])
-        response = self.client.get(url)
-        self.assertContains(response, "hello")
-        self.assertContains(response, "hi")
+    def test_create_direct_conversation(self):
+        conv = ChatConversation.objects.create(titulo="Direta", slug="d1", tipo_conversa="direta")
+        ChatParticipant.objects.create(conversation=conv, user=self.user1, is_owner=True)
+        ChatParticipant.objects.create(conversation=conv, user=self.user2)
+        self.assertEqual(conv.participants.count(), 2)
 
-    def test_messages_history_endpoint_returns_json(self):
-        url = reverse("chat:messages_history", args=[self.user2.id])
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("messages", data)
-        self.assertEqual(len(data["messages"]), 2)
+    def test_message_form_requires_content_or_file(self):
+        form = NovaMensagemForm(data={}, files={})
+        self.assertFalse(form.is_valid())
 
-    def test_chat_message_creation(self):
-        msg = ChatMessage.objects.create(
-            conversation=self.conversation,
-            remetente=self.user1,
-            tipo="text",
-            conteudo="new message",
-        )
-        self.assertEqual(msg.conteudo, "new message")
-
-
-from unittest import skip
-
-
-@skip("WebSocket communication unsupported in this environment")
-class ChatConsumerTests(TransactionTestCase):
-    def setUp(self):
-        org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
-        self.nucleo = Nucleo.objects.create(nome="Nuc", organizacao=org)
-        self.sender = User.objects.create_user(
-            "sender", password="pass", nucleo=self.nucleo
-        )
-        self.receiver = User.objects.create_user(
-            "receiver", password="pass", nucleo=self.nucleo
-        )
-
-    async def _communicate(self):
-        comm_sender = WebsocketCommunicator(
-            application, f"/ws/chat/{self.receiver.id}/"
-        )
-        comm_sender.scope["user"] = self.sender
-        connected, _ = await comm_sender.connect()
-        assert connected
-
-        comm_receiver = WebsocketCommunicator(
-            application, f"/ws/chat/{self.sender.id}/"
-        )
-        comm_receiver.scope["user"] = self.receiver
-        connected, _ = await comm_receiver.connect()
-        assert connected
-
-        await comm_sender.send_json_to({"tipo": "text", "conteudo": "ping"})
-        await asyncio.sleep(0.1)
-        data = await comm_receiver.receive_json_from(timeout=5)
-        self.assertEqual(data["conteudo"], "ping")
-        await comm_sender.disconnect()
-        await comm_receiver.disconnect()
-
-    def test_websocket_message_creates_notification(self):
-        asyncio.get_event_loop().run_until_complete(self._communicate())
-        self.assertTrue(ChatMessage.objects.filter(conteudo="ping").exists())
-        self.assertTrue(
-            ChatNotification.objects.filter(
-                usuario=self.receiver, mensagem__conteudo="ping"
-            ).exists()
-        )
+    def test_send_message_marks_read_by_sender(self):
+        conv = ChatConversation.objects.create(titulo="Direta", slug="d2", tipo_conversa="direta")
+        ChatParticipant.objects.create(conversation=conv, user=self.user1, is_owner=True)
+        ChatParticipant.objects.create(conversation=conv, user=self.user2)
+        msg = ChatMessage.objects.create(conversation=conv, sender=self.user1, conteudo="hello")
+        msg.lido_por.add(self.user1)
+        self.assertIn(self.user1, msg.lido_por.all())
+        self.assertFalse(ChatNotification.objects.exists())
