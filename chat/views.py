@@ -1,90 +1,71 @@
-import uuid
+from __future__ import annotations
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import default_storage
-from django.db.models import Q
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.text import slugify
 
-from .models import ChatMessage
+from .forms import NovaConversaForm, NovaMensagemForm
+from .models import ChatConversation, ChatParticipant
 
 User = get_user_model()
 
 
 @login_required
-def modal_user_list(request):
-    users = (
-        get_user_model()
-        .objects.filter(nucleo=request.user.nucleo)
-        .exclude(id=request.user.id)
+def conversation_list(request):
+    qs = (
+        ChatConversation.objects.filter(participants__user=request.user)
+        .select_related("organizacao", "nucleo", "evento")
+        .prefetch_related("participants")
+        .distinct()
     )
-    return render(request, "chat/modal_user_list.html", {"users": users})
-
-
-@login_required
-def modal_room(request, user_id):
-    dest = get_object_or_404(get_user_model(), pk=user_id, nucleo=request.user.nucleo)
-    if request.method == "POST" and request.FILES.get("file"):
-        file = request.FILES["file"]
-        ext = file.name.split(".")[-1].lower()
-        tipo = "file"
-        if ext in ["jpg", "jpeg", "png"]:
-            tipo = "image"
-        elif ext in ["mp4"]:
-            tipo = "video"
-        filename = f"chat/{uuid.uuid4().hex}.{ext}"
-        path = default_storage.save(filename, file)
-        # Build an absolute URL so the client can access the file regardless of
-        # the current location. This also ensures previously saved attachments
-        # render correctly in the chat history.
-        url = request.build_absolute_uri(settings.MEDIA_URL + path)
-        return JsonResponse({"url": url, "tipo": tipo})
-    messages_qs = (
-        ChatMessage.objects.filter(conversation__participants__user=request.user)
-        .filter(remetente=request.user, destinatario=dest)
-        .select_related("remetente", "conversation")
-        .order_by("-created")[:20]
-    )
-
-    # List of messages in chronological order from oldest to newest
-    messages = list(messages_qs)[::-1]
-    context = {
-        "dest": dest,
-        "messages": messages,
-        "user": request.user,
+    grupos = {
+        "direta": qs.filter(tipo_conversa="direta"),
+        "grupo": qs.filter(tipo_conversa="grupo"),
+        "organizacao": qs.filter(tipo_conversa="organizacao"),
+        "nucleo": qs.filter(tipo_conversa="nucleo"),
+        "evento": qs.filter(tipo_conversa="evento"),
     }
-    return render(request, "chat/modal_room.html", context)
+    return render(request, "chat/conversation_list.html", {"grupos": grupos})
 
 
 @login_required
-def messages_history(request, user_id):
-    """Return the last 50 messages in JSON format."""
-    dest = get_object_or_404(User, pk=user_id, nucleo=request.user.nucleo)
-    messages_qs = (
-        ChatMessage.objects.filter(conversation__participants__user=request.user)
-        .filter(remetente=request.user, destinatario=dest)
-        .select_related("remetente")
-        .order_by("-created")[:50]
+def nova_conversa(request):
+    if request.method == "POST":
+        form = NovaConversaForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            conv = form.save(commit=False)
+            if not conv.slug:
+                conv.slug = slugify(conv.titulo or "conv")
+            conv.save()
+            ChatParticipant.objects.create(conversation=conv, user=request.user, is_owner=True)
+            return redirect("chat:conversation_detail", slug=conv.slug)
+    else:
+        form = NovaConversaForm(user=request.user)
+    return render(request, "chat/conversation_form.html", {"form": form})
+
+
+@login_required
+def conversation_detail(request, slug):
+    conversation = get_object_or_404(
+        ChatConversation.objects.prefetch_related("messages__lido_por", "participants__user"),
+        slug=slug,
+        participants__user=request.user,
     )
-
-    def _abs(url: str) -> str:
-        if url.startswith("http://") or url.startswith("https://"):
-            return url
-        return request.build_absolute_uri(
-            settings.MEDIA_URL.rstrip("/") + "/" + url.lstrip("/")
-        )
-
-    messages = [
-        {
-            "remetente": m.remetente.username,
-            "tipo": m.tipo,
-            "conteudo": (
-                _abs(m.conteudo) if m.tipo in {"image", "video", "file"} else m.conteudo
-            ),
-            "timestamp": m.created.isoformat(),
-        }
-        for m in reversed(list(messages_qs))
-    ]
-    return JsonResponse({"messages": messages})
+    if request.method == "POST":
+        form = NovaMensagemForm(request.POST, request.FILES)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.conversation = conversation
+            msg.sender = request.user
+            msg.save()
+            msg.lido_por.add(request.user)
+        return redirect("chat:conversation_detail", slug=slug)
+    else:
+        form = NovaMensagemForm()
+    mensagens = conversation.messages.select_related("sender").prefetch_related("lido_por")
+    return render(
+        request,
+        "chat/conversation_detail.html",
+        {"conversation": conversation, "mensagens": mensagens, "form": form},
+    )

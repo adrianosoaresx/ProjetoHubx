@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Nova conversa{% endblock %}
+{% block content %}
+<main class="max-w-4xl mx-auto p-4">
+  <h2 class="text-lg font-semibold mb-4">Nova conversa</h2>
+  <form method="post" enctype="multipart/form-data" class="space-y-2">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Criar</button>
+  </form>
+</main>
+{% endblock %}

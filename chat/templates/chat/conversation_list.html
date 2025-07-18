@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Conversas{% endblock %}
+
+{% block content %}
+<main class="max-w-4xl mx-auto p-4">
+  <h1 class="text-xl font-semibold mb-4">Minhas conversas</h1>
+  <ul class="space-y-2">
+    {% for conv in grupos.direta %}
+      <li>
+        <a href="{{ conv.get_absolute_url }}" class="text-blue-600">{{ conv.titulo|default:conv.slug }}</a>
+      </li>
+    {% empty %}
+      <li class="text-neutral-500">Nenhuma conversa.</li>
+    {% endfor %}
+  </ul>
+</main>
+{% endblock %}
