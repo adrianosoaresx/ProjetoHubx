@@ -32,7 +32,7 @@ def lista_empresas(request):
         empresas = qs
     elif request.user.user_type == UserType.ADMIN:
         empresas = qs.filter(organizacao=request.user.organizacao)
-    elif request.user.user_type in [UserType.CLIENTE, UserType.GERENTE]:
+    elif request.user.user_type in [UserType.NUCLEADO, UserType.COORDENADOR]:
         empresas = qs.filter(usuario=request.user)
     else:
         return HttpResponseForbidden("Usuário não autorizado.")

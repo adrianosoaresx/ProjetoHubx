@@ -19,7 +19,7 @@ class Command(BaseCommand):
         qs_sem_tipo = User.objects.filter(user_type__isnull=True)
         count_users = qs_sem_tipo.count()
         if count_users:
-            qs_sem_tipo.update(user_type=UserType.CLIENTE)
+            qs_sem_tipo.update(user_type=UserType.ASSOCIADO)
         self.stdout.write(f"Usuarios atualizados: {count_users}")
 
         # Ajustar tokens incompletos
@@ -28,7 +28,7 @@ class Command(BaseCommand):
         for token in tokens:
             changed = False
             if not token.tipo_destino:
-                token.tipo_destino = TokenAcesso.Tipo.CLIENTE
+                token.tipo_destino = TokenAcesso.TipoUsuario.ASSOCIADO
                 changed = True
             if not token.codigo:
                 token.codigo = uuid.uuid4().hex
@@ -42,10 +42,8 @@ class Command(BaseCommand):
         self.stdout.write(f"Tokens corrigidos: {updated_tokens}")
 
         # Criar tokens de exemplo para testes
-        exemplo_user = (
-            User.objects.filter(is_superuser=True).first() or User.objects.first()
-        )
-        for desc in ["admin", "gerente", "cliente"]:
+        exemplo_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+        for desc in ["admin", "coordenador", "associado"]:
             TokenAcesso.objects.get_or_create(
                 gerado_por=exemplo_user,
                 tipo_destino=desc,

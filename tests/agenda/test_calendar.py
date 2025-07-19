@@ -37,7 +37,7 @@ class CalendarViewTests(TestCase):
             email="cliente@example.com",
             username="cliente",
             password="pass",
-            user_type=UserType.CLIENTE,
+            user_type=UserType.NUCLEADO,
         )
         self.client.force_login(client_user)
         resp = self.client.get(url)
