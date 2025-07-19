@@ -17,4 +17,7 @@ urlpatterns = [
     path("criar/", views.criar_empresa, name="criar"),
     path("<int:pk>/deletar/", views.remover_empresa, name="deletar"),
     path("<int:pk>/remover/", views.remover_empresa, name="remover"),
+    path("<int:empresa_id>/contatos/novo/", views.adicionar_contato, name="contato_novo"),
+    path("contatos/<int:pk>/editar/", views.editar_contato, name="contato_editar"),
+    path("contatos/<int:pk>/remover/", views.remover_contato, name="contato_remover"),
 ]

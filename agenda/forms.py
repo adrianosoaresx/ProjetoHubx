@@ -7,6 +7,7 @@ from .models import (
     FeedbackNota,
     InscricaoEvento,
     MaterialDivulgacaoEvento,
+    ParceriaEvento,
 )
 
 
@@ -103,4 +104,22 @@ class BriefingEventoForm(forms.ModelForm):
             "cronograma_resumido",
             "conteudo_programatico",
             "observacoes",
+        ]
+
+
+class ParceriaEventoForm(forms.ModelForm):
+    class Meta:
+        model = ParceriaEvento
+        fields = [
+            "evento",
+            "nucleo",
+            "empresa",
+            "data_inicio",
+            "data_fim",
+            "tipo_parceria",
+            "descricao",
+            "acordo",
+            "contato_adicional_nome",
+            "contato_adicional_cpf",
+            "whatsapp_contato",
         ]

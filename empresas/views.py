@@ -4,18 +4,21 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-from rest_framework.permissions import BasePermission, SAFE_METHODS
-from rest_framework.response import Response
-from accounts.models import UserType
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
-from core.permissions import (ClienteGerenteRequiredMixin, NoSuperadminMixin,
-                              no_superadmin_required, pode_crud_empresa)
+from accounts.models import UserType
+from core.permissions import ClienteGerenteRequiredMixin, NoSuperadminMixin, no_superadmin_required, pode_crud_empresa
 
-from .forms import EmpresaForm, EmpresaSearchForm, TagForm, TagSearchForm
-from .models import Empresa, Tag
+from .forms import (
+    ContatoEmpresaForm,
+    EmpresaForm,
+    EmpresaSearchForm,
+    TagForm,
+    TagSearchForm,
+)
+from .models import ContatoEmpresa, Empresa, Tag
 
 
 # ------------------------------------------------------------------
@@ -118,9 +121,7 @@ def buscar_empresas(request):
     return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
 
 
-class TagListView(
-    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView
-):
+class TagListView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Tag
     template_name = "empresas/tags_list.html"
 
@@ -141,9 +142,7 @@ class TagListView(
         return context
 
 
-class TagCreateView(
-    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, CreateView
-):
+class TagCreateView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, CreateView):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -154,9 +153,7 @@ class TagCreateView(
         return super().form_valid(form)
 
 
-class TagUpdateView(
-    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, UpdateView
-):
+class TagUpdateView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Tag
     form_class = TagForm
     template_name = "empresas/tag_form.html"
@@ -167,9 +164,7 @@ class TagUpdateView(
         return super().form_valid(form)
 
 
-class TagDeleteView(
-    NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, DeleteView
-):
+class TagDeleteView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tag
     template_name = "empresas/tag_confirm_delete.html"
     success_url = reverse_lazy("empresas:tags_list")
@@ -241,3 +236,49 @@ def remover_empresa(request, pk):
         return redirect("empresas:lista")
 
     return render(request, "empresas/confirmar_remocao.html", {"empresa": empresa})
+
+
+@login_required
+@no_superadmin_required
+def adicionar_contato(request, empresa_id):
+    empresa = get_object_or_404(Empresa, pk=empresa_id)
+    if not pode_crud_empresa(request.user, empresa):
+        return HttpResponseForbidden()
+    if request.method == "POST":
+        form = ContatoEmpresaForm(request.POST)
+        if form.is_valid():
+            contato = form.save(commit=False)
+            contato.empresa = empresa
+            contato.save()
+            return JsonResponse({"message": "Contato adicionado"}, status=HTTP_201_CREATED)
+    else:
+        form = ContatoEmpresaForm()
+    return render(request, "empresas/contato_form.html", {"form": form, "empresa": empresa})
+
+
+@login_required
+@no_superadmin_required
+def editar_contato(request, pk):
+    contato = get_object_or_404(ContatoEmpresa, pk=pk)
+    if not pode_crud_empresa(request.user, contato.empresa):
+        return HttpResponseForbidden()
+    if request.method == "POST":
+        form = ContatoEmpresaForm(request.POST, instance=contato)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"message": "Contato atualizado"}, status=200)
+    else:
+        form = ContatoEmpresaForm(instance=contato)
+    return render(request, "empresas/contato_form.html", {"form": form, "empresa": contato.empresa})
+
+
+@login_required
+@no_superadmin_required
+def remover_contato(request, pk):
+    contato = get_object_or_404(ContatoEmpresa, pk=pk)
+    if not pode_crud_empresa(request.user, contato.empresa):
+        return HttpResponseForbidden()
+    if request.method == "POST":
+        contato.delete()
+        return JsonResponse({}, status=HTTP_204_NO_CONTENT)
+    return render(request, "empresas/contato_confirm_delete.html", {"contato": contato})
