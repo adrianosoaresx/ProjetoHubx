@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Remover Contato{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto py-8">
+  <p>Confirma remover contato {{ contato.nome }}?</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="bg-red-600 text-white px-4 py-2 rounded">Remover</button>
+  </form>
+</div>
+{% endblock %}

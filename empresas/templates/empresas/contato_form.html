@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Contato{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto py-8">
+  <form method="post" class="space-y-4" hx-post="" hx-target="closest form" hx-swap="outerHTML">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="bg-primary-600 text-white px-4 py-2 rounded">Salvar</button>
+  </form>
+</div>
+{% endblock %}

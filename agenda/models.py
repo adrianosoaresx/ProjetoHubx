@@ -144,6 +144,7 @@ class ParceriaEvento(models.Model):
     descricao = models.TextField(blank=True)
 
     class Meta:
+        ordering = ["-data_inicio"]
         verbose_name = "Parceria de Evento"
         verbose_name_plural = "Parcerias de Eventos"
 
