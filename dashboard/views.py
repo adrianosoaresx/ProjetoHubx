@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.views.generic import TemplateView
 
+from accounts.models import UserType
 from agenda.models import Evento
 from core.permissions import (
     AdminRequiredMixin,
@@ -28,8 +29,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         qs_eventos = Evento.objects.all()
 
         user = self.request.user
-        if user.tipo_id in {User.Tipo.ADMIN, User.Tipo.GERENTE}:
-            org = user.organizacao  # <- correto no User
+        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+            org = user.organizacao
 
             qs_users = qs_users.filter(organizacao=org)
             qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
@@ -73,10 +74,10 @@ def dashboard_redirect(request):
     if not user.is_authenticated:
         return redirect("accounts:login")
 
-    if user.tipo_id == User.Tipo.SUPERADMIN:
+    if user.user_type == UserType.ROOT:
         return redirect("dashboard:root")
-    if user.tipo_id == User.Tipo.ADMIN:
+    if user.user_type == UserType.ADMIN:
         return redirect("dashboard:admin")
-    if user.tipo_id == User.Tipo.GERENTE:
+    if user.user_type == UserType.COORDENADOR:
         return redirect("dashboard:gerente")
     return redirect("dashboard:cliente")

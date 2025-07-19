@@ -11,6 +11,10 @@ from django.utils import timezone
 from core.models import TimeStampedModel
 
 
+def generate_hex_uuid() -> str:
+    return uuid.uuid4().hex
+
+
 class TokenAcesso(TimeStampedModel):
     class TipoUsuario(models.TextChoices):
         ADMIN = "admin", "Admin"
@@ -26,7 +30,7 @@ class TokenAcesso(TimeStampedModel):
 
     codigo = models.CharField(
         max_length=32,
-        default=uuid.uuid4().hex,
+        default=generate_hex_uuid,
         unique=True,
         editable=False,
     )
