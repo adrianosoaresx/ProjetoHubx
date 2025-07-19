@@ -1,10 +1,14 @@
+from __future__ import annotations
+
+import random
 import uuid
-from datetime import timedelta
-from django.conf import settings
+
+import pyotp
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
-from model_utils.models import TimeStampedModel
-import pyotp
+
+from core.models import TimeStampedModel
 
 
 class TokenAcesso(TimeStampedModel):
@@ -21,76 +25,88 @@ class TokenAcesso(TimeStampedModel):
         EXPIRADO = "expirado", "Expirado"
 
     codigo = models.CharField(
-        max_length=64,
+        max_length=32,
+        default=uuid.uuid4().hex,
         unique=True,
         editable=False,
-        default=uuid.uuid4().hex,
     )
-    tipo_destino = models.CharField(
-        max_length=20, choices=TipoUsuario.choices
-    )
+    tipo_destino = models.CharField(max_length=20, choices=TipoUsuario.choices)
     estado = models.CharField(
         max_length=10,
         choices=Estado.choices,
         default=Estado.NOVO,
     )
-    data_expiracao = models.DateTimeField()
+    data_expiracao = models.DateTimeField(null=True, blank=True)
 
     gerado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        get_user_model(),
+        on_delete=models.PROTECT,
         related_name="tokens_gerados",
     )
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        get_user_model(),
         on_delete=models.CASCADE,
+        related_name="tokens_recebidos",
         null=True,
         blank=True,
-        related_name="token_usado",
     )
     organizacao = models.ForeignKey(
-        "organizacoes.Organizacao", on_delete=models.CASCADE
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="tokens",
+        null=True,
+        blank=True,
     )
     nucleos = models.ManyToManyField(
         "nucleos.Nucleo",
         blank=True,
+        related_name="tokens",
     )
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
 
 
 class CodigoAutenticacao(TimeStampedModel):
     usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        get_user_model(),
         on_delete=models.CASCADE,
-        related_name="codigos_autenticacao"
+        related_name="codigos_autenticacao",
     )
-    codigo = models.CharField(max_length=8, editable=False)
+    codigo = models.CharField(max_length=8)
     expira_em = models.DateTimeField()
     verificado = models.BooleanField(default=False)
     tentativas = models.PositiveSmallIntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        if not self.codigo:
-            self.codigo = uuid.uuid4().hex[:8]
-        if not self.expira_em:
-            self.expira_em = timezone.now() + timedelta(minutes=10)
+        if not self.pk:
+            self.codigo = f"{random.randint(0, 999999):06d}"
+            self.expira_em = timezone.now() + timezone.timedelta(minutes=10)
         super().save(*args, **kwargs)
 
     def is_expirado(self) -> bool:
         return timezone.now() > self.expira_em
 
+    class Meta:
+        ordering = ["-created_at"]
 
-class TOTPDevice(models.Model):
+
+class TOTPDevice(TimeStampedModel):
     usuario = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name="totp_device",
     )
     secret = models.CharField(max_length=32)
     confirmado = models.BooleanField(default=False)
-    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.secret:
+            self.secret = pyotp.random_base32()
+        super().save(*args, **kwargs)
 
     def gerar_totp(self) -> str:
-        totp = pyotp.TOTP(self.secret)
-        return totp.now()
+        return pyotp.TOTP(self.secret).now()
+
+    class Meta:
+        ordering = ["-created_at"]

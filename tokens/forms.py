@@ -1,10 +1,12 @@
+import pyotp
 from django import forms
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
-from .models import TokenAcesso, CodigoAutenticacao, TOTPDevice
-from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
-from accounts.models import UserType
+from organizacoes.models import Organizacao
+
+from .models import CodigoAutenticacao, TokenAcesso, TOTPDevice
 
 User = get_user_model()
 
@@ -14,28 +16,9 @@ class TokenAcessoForm(forms.ModelForm):
         model = TokenAcesso
         fields = ["tipo_destino"]
 
-    def __init__(self, *args, user=None, **kwargs):
-        self.user = user
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        if user and user.user_type == UserType.ROOT:
-            self.fields["tipo_destino"].choices = [(TokenAcesso.Tipo.ADMIN, "admin")]
-        elif user:
-            self.fields["tipo_destino"].choices = [
-                (TokenAcesso.Tipo.GERENTE, "gerente"),
-                (TokenAcesso.Tipo.CLIENTE, "cliente"),
-            ]
-
-    def clean(self):
-        cleaned = super().clean()
-        if (
-            self.user
-            and self.user.user_type == UserType.ADMIN
-            and cleaned.get("tipo_destino")
-            in {TokenAcesso.Tipo.GERENTE, TokenAcesso.Tipo.CLIENTE}
-        ):
-            self.add_error("nucleo_destino", "Selecione um núcleo")
-        return cleaned
+        self.fields["tipo_destino"].choices = TokenAcesso.TipoUsuario.choices
 
 
 class GerarTokenConviteForm(forms.Form):
@@ -45,24 +28,73 @@ class GerarTokenConviteForm(forms.Form):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user = user
-
         if user:
-            self.fields['organizacao'].queryset = Organizacao.objects.filter(usuarios=user)
-            self.fields['nucleos'].queryset = Nucleo.objects.filter(organizacao__usuarios=user)
+            self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
+            self.fields["nucleos"].queryset = Nucleo.objects.filter(organizacao__users=user)
 
 
 class ValidarTokenConviteForm(forms.Form):
-    codigo = forms.CharField(max_length=64)
+    codigo = forms.CharField(max_length=32)
+
+    def clean_codigo(self):
+        codigo = self.cleaned_data["codigo"]
+        try:
+            token = TokenAcesso.objects.get(codigo=codigo, estado=TokenAcesso.Estado.NOVO)
+        except TokenAcesso.DoesNotExist:
+            raise forms.ValidationError("Token inválido")
+        if token.data_expiracao and token.data_expiracao < timezone.now():
+            raise forms.ValidationError("Token expirado")
+        self.token = token
+        return codigo
 
 
 class GerarCodigoAutenticacaoForm(forms.Form):
-    usuario = forms.ModelChoiceField(queryset=None)  # TODO: Definir queryset
+    usuario = forms.ModelChoiceField(queryset=User.objects.all())
+
+    def save(self, commit: bool = True) -> CodigoAutenticacao:
+        codigo = CodigoAutenticacao(usuario=self.cleaned_data["usuario"])
+        if commit:
+            codigo.save()
+        return codigo
 
 
 class ValidarCodigoAutenticacaoForm(forms.Form):
     codigo = forms.CharField(max_length=8)
 
+    def __init__(self, *args, usuario: User | None = None, **kwargs):
+        self.usuario = usuario
+        super().__init__(*args, **kwargs)
+
+    def clean_codigo(self):
+        codigo = self.cleaned_data["codigo"]
+        try:
+            auth = CodigoAutenticacao.objects.filter(usuario=self.usuario, verificado=False).latest("created_at")
+        except CodigoAutenticacao.DoesNotExist:
+            raise forms.ValidationError("Código inválido")
+        if auth.tentativas >= 3:
+            raise forms.ValidationError("Código bloqueado")
+        if auth.is_expirado():
+            raise forms.ValidationError("Código expirado")
+        if codigo != auth.codigo:
+            auth.tentativas += 1
+            auth.save(update_fields=["tentativas"])
+            raise forms.ValidationError("Código incorreto")
+        auth.verificado = True
+        auth.save(update_fields=["verificado"])
+        return codigo
+
 
 class Ativar2FAForm(forms.Form):
     codigo_totp = forms.CharField(max_length=6)
+
+    def __init__(self, *args, device: TOTPDevice | None = None, **kwargs):
+        self.device = device
+        super().__init__(*args, **kwargs)
+
+    def clean_codigo_totp(self):
+        codigo = self.cleaned_data["codigo_totp"]
+        if not self.device:
+            raise forms.ValidationError("Dispositivo inválido")
+        if codigo != pyotp.TOTP(self.device.secret).now():
+            raise forms.ValidationError("Código inválido")
+        return codigo

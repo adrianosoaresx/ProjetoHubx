@@ -144,8 +144,10 @@ npm run build
 ## 🆕 Novos Fluxos Implementados
 
 ### Convites e Tokens
-- **Gerar Token de Convite**: Permite criar tokens associados a organizações e núcleos.
-- **Validar Token de Convite**: Valida tokens e associa ao usuário.
+- **Gerar Token de Convite**: admins podem gerar um código único válido por 30 dias (`/tokens/convites/gerar/`).
+- **Validar Token de Convite**: o usuário informa o código em `/tokens/convites/validar/`; se estiver "novo" e não expirado, o token é associado e marcado como usado.
+- **Códigos de Autenticação**: geração e validação de OTP numérico para ações sensíveis (`/tokens/codigo/gerar/`).
+- **2FA (TOTP)**: ativação opcional via aplicativo autenticador; exibe URL `otpauth://` para configuração inicial.
 
 ### Autenticação em Dois Fatores (2FA)
 - **Ativar 2FA**: Gera um segredo TOTP e valida o código enviado.
