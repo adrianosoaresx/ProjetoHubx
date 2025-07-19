@@ -195,7 +195,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
     def post(self, request, pk, user_id):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
         if (
-            request.user.user_type in {UserType.ADMIN, UserType.GERENTE}
+            request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}
             and evento.organizacao != request.user.organizacao
         ):
             messages.error(request, "Acesso negado.")  # pragma: no cover

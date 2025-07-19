@@ -77,10 +77,10 @@ class IsSameOrganization(BasePermission):
 
 
 class ClienteGerenteRequiredMixin(UserPassesTestMixin):
-    """Permite acesso a clientes e gerentes."""
+    """Permite acesso a nucleados e coordenadores."""
 
     def test_func(self):
-        return self.request.user.user_type in {UserType.CLIENTE, UserType.GERENTE}
+        return self.request.user.user_type in {UserType.NUCLEADO, UserType.COORDENADOR}
 
 
 def pode_crud_empresa(user, empresa=None) -> bool:

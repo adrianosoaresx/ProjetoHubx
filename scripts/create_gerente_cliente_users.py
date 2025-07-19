@@ -6,7 +6,7 @@ import django
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Configurar o ambiente do Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Hubx.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 django.setup()
 
 from accounts.models import User, UserType
@@ -19,13 +19,13 @@ fake = Faker("pt_BR")
 nucleos = Nucleo.objects.all()
 
 for nucleo in nucleos:
-    # Criar um gerente para o núcleo
+    # Criar um coordenador para o núcleo
     User.objects.create_user(
         username=f"gerente_{nucleo.id}",
         email=f"gerente_{nucleo.id}@hubx.com",
         password="1234Hubx!",
-        user_type=UserType.GERENTE,
-        nucleo=nucleo
+        user_type=UserType.COORDENADOR,
+        nucleo=nucleo,
     )
 
     # Criar 5 clientes para o núcleo
@@ -34,8 +34,8 @@ for nucleo in nucleos:
             username=f"cliente_{nucleo.id}_{i}",
             email=f"cliente_{nucleo.id}_{i}@hubx.com",
             password="1234Hubx!",
-            user_type=UserType.CLIENTE,
-            nucleo=nucleo
+            user_type=UserType.NUCLEADO,
+            nucleo=nucleo,
         )
 
 print("Usuários gerente e cliente criados com sucesso!")

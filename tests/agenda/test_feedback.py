@@ -40,7 +40,7 @@ def usuario(client):
         username="cliente",
         email="cliente@example.com",
         password="12345",
-        user_type=UserType.CLIENTE,
+        user_type=UserType.NUCLEADO,
     )
     client.force_login(user)
     return user

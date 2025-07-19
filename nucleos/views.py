@@ -3,11 +3,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView, View)
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
-from core.permissions import (AdminRequiredMixin, GerenteRequiredMixin,
-                              NoSuperadminMixin)
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 from accounts.models import UserType
 
 from .forms import NucleoForm, NucleoSearchForm
@@ -16,9 +14,7 @@ from .models import Nucleo
 User = get_user_model()
 
 
-class NucleoListView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView
-):
+class NucleoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Nucleo
     template_name = "nucleos/list.html"
 
@@ -27,7 +23,7 @@ class NucleoListView(
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organization)  # Corrigido para usar 'organization' ao filtrar
-        elif user.user_type == UserType.GERENTE:
+        elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(membros=user)
         form = NucleoSearchForm(self.request.GET)
         if form.is_valid() and form.cleaned_data["nucleo"]:
@@ -41,9 +37,7 @@ class NucleoListView(
         return context
 
 
-class NucleoCreateView(
-    NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView
-):
+class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/create.html"
@@ -56,9 +50,7 @@ class NucleoCreateView(
         return super().form_valid(form)
 
 
-class NucleoUpdateView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView
-):
+class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/update.html"
@@ -69,7 +61,7 @@ class NucleoUpdateView(
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
-        elif user.user_type == UserType.GERENTE:
+        elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(membros=user)
         return qs
 
@@ -83,9 +75,7 @@ class NucleoUpdateView(
         return context
 
 
-class NucleoDeleteView(
-    NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, DeleteView
-):
+class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Nucleo
     template_name = "nucleos/delete.html"
     success_url = reverse_lazy("nucleos:list")
@@ -102,9 +92,7 @@ class NucleoDeleteView(
         return super().delete(request, *args, **kwargs)
 
 
-class NucleoDetailView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView
-):
+class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -113,14 +101,12 @@ class NucleoDetailView(
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)  # Corrigido para usar 'organizacao' ao filtrar
-        elif user.user_type == UserType.GERENTE:
+        elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(membros=user)
         return qs
 
 
-class NucleoMemberRemoveView(
-    NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View
-):
+class NucleoMemberRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, user_id):
         nucleo = get_object_or_404(Nucleo, pk=pk)
         if (
@@ -128,10 +114,7 @@ class NucleoMemberRemoveView(
             and nucleo.organizacao != request.user.organization  # Corrigido para usar 'organization'
         ):
             return redirect("nucleos:list")
-        if (
-            request.user.user_type == UserType.GERENTE
-            and request.user not in nucleo.membros.all()
-        ):
+        if request.user.user_type == UserType.COORDENADOR and request.user not in nucleo.membros.all():
             return redirect("nucleos:list")
         membro = get_object_or_404(User, pk=user_id)
         nucleo.membros.remove(membro)

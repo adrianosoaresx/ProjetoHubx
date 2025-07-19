@@ -43,7 +43,7 @@ def usuario_comum(client, organizacao):
         email="comum@example.com",
         password="12345",
         organizacao=organizacao,
-        user_type=UserType.CLIENTE,
+        user_type=UserType.NUCLEADO,
     )
     client.force_login(user)
     return user

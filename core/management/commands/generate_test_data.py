@@ -87,8 +87,8 @@ class Command(BaseCommand):
             )
             return user
 
-        clientes = [criar_usuario(UserType.CLIENTE) for _ in range(100)]
-        gerentes = [criar_usuario(UserType.GERENTE) for _ in range(10)]
+        clientes = [criar_usuario(UserType.NUCLEADO) for _ in range(100)]
+        gerentes = [criar_usuario(UserType.COORDENADOR) for _ in range(10)]
         admins = [criar_usuario(UserType.ADMIN) for _ in range(5)]
 
         # Atribui gerentes a nucleos
