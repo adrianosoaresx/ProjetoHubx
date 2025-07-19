@@ -5,7 +5,8 @@ from factory.django import DjangoModelFactory
 
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
-from .models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao
+
+from .models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 
 
 class CategoriaDiscussaoFactory(DjangoModelFactory):
@@ -22,8 +23,10 @@ class TopicoDiscussaoFactory(DjangoModelFactory):
 
     categoria = factory.SubFactory(CategoriaDiscussaoFactory)
     titulo = factory.Faker("sentence", locale="pt_BR")
+    slug = factory.Sequence(lambda n: f"topico-{n}")
     conteudo = factory.Faker("paragraph", locale="pt_BR")
     autor = factory.SubFactory(UserFactory)
+    publico_alvo = factory.Faker("random_element", elements=[0, 1, 2])
 
 
 class RespostaDiscussaoFactory(DjangoModelFactory):

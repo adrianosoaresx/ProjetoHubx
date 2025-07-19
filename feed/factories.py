@@ -11,3 +11,5 @@ class PostFactory(DjangoModelFactory):
 
     conteudo = factory.Faker("text", locale="pt_BR")
     autor = factory.SubFactory(UserFactory)
+    organizacao = factory.SelfAttribute("autor.organizacao")
+    tipo_feed = factory.Faker("random_element", elements=[choice[0] for choice in Post.TIPO_FEED_CHOICES])

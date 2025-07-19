@@ -30,7 +30,7 @@ class GerenteRequiredMixin(UserPassesTestMixin):
         return self.request.user.user_type in {
             UserType.ROOT,
             UserType.ADMIN,
-            UserType.GERENTE,
+            UserType.COORDENADOR,
         }
 
 
@@ -38,7 +38,7 @@ class ClienteRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a clientes."""
 
     def test_func(self):
-        return self.request.user.user_type == UserType.CLIENTE
+        return self.request.user.user_type == UserType.CONVIDADO
 
 
 class NoSuperadminMixin(UserPassesTestMixin):
@@ -73,9 +73,7 @@ class IsSameOrganization(BasePermission):
     """Allow access only to objects within the user's organization."""
 
     def has_object_permission(self, request, view, obj) -> bool:
-        return getattr(obj, "organization_id", None) == getattr(
-            request.user, "organization_id", None
-        )
+        return getattr(obj, "organization_id", None) == getattr(request.user, "organization_id", None)
 
 
 class ClienteGerenteRequiredMixin(UserPassesTestMixin):
@@ -109,10 +107,7 @@ class IsAdmin(BasePermission):
     """Permite acesso a administradores da mesma organização."""
 
     def has_object_permission(self, request, view, obj):
-        return (
-            request.user.get_tipo_usuario == UserType.ADMIN.value
-            and request.user.organizacao == obj.organizacao
-        )
+        return request.user.get_tipo_usuario == UserType.ADMIN.value and request.user.organizacao == obj.organizacao
 
 
 class IsCoordenador(BasePermission):
@@ -120,6 +115,5 @@ class IsCoordenador(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (
-            request.user.get_tipo_usuario == UserType.COORDENADOR.value
-            and request.user.organizacao == obj.organizacao
+            request.user.get_tipo_usuario == UserType.COORDENADOR.value and request.user.organizacao == obj.organizacao
         )

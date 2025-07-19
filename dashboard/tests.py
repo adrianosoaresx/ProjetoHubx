@@ -1,49 +1,42 @@
-from datetime import timedelta
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 
-from agenda.models import Evento, InscricaoEvento
-from empresas.models import Empresa
+from accounts.models import UserType
+from agenda.factories import EventoFactory
+from agenda.models import InscricaoEvento
+from empresas.factories import EmpresaFactory
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
-from accounts.models import UserType
 
 
 class DashboardPermissionsTests(TestCase):
     def setUp(self):
         User = get_user_model()
 
-        UserType.objects.get_or_create(id=User.Tipo.SUPERADMIN, descricao="Root")
-        UserType.objects.get_or_create(id=User.Tipo.ADMIN, descricao="Admin")
-        UserType.objects.get_or_create(id=User.Tipo.GERENTE, descricao="Manager")
-        UserType.objects.get_or_create(id=User.Tipo.CLIENTE, descricao="Client")
-
         self.root_user = User.objects.create_user(
             username="rootuser",
             email="rootuser@example.com",
             password="pass",
-            tipo_id=User.Tipo.SUPERADMIN,
+            user_type=UserType.ROOT,
         )
         self.admin_user = User.objects.create_user(
             username="adminuser",
             email="adminuser@example.com",
             password="pass",
-            tipo_id=User.Tipo.ADMIN,
+            user_type=UserType.ADMIN,
         )
         self.manager_user = User.objects.create_user(
             username="manageruser",
             email="manageruser@example.com",
             password="pass",
-            tipo_id=User.Tipo.GERENTE,
+            user_type=UserType.COORDENADOR,
         )
         self.client_user = User.objects.create_user(
             username="clientuser",
             email="clientuser@example.com",
             password="pass",
-            tipo_id=User.Tipo.CLIENTE,
+            user_type=UserType.CONVIDADO,
         )
         org = Organizacao.objects.create(nome="Org 1", cnpj="00.000.000/0001-00")
         self.admin_user.organization = org
@@ -51,23 +44,9 @@ class DashboardPermissionsTests(TestCase):
         self.manager_user.organization = org
         self.manager_user.save()
         Nucleo.objects.create(nome="Nucleo", organizacao=org)
-        Empresa.objects.create(
-            razao_social="Empresa",
-            nome_fantasia="Fantasia",
-            cnpj="00.000.000/0001-01",
-            ramo_atividade="TI",
-            cidade="City",
-            estado="ST",
-            usuario=self.client_user,
-        )
-        evento = Evento.objects.create(
-            titulo="Evento",
-            organizacao=org,
-            descricao="",
-            data_inicio=timezone.now(),
-            data_fim=timezone.now() + timedelta(hours=1),
-        )
-        InscricaoEvento.objects.create(evento=evento, usuario=self.client_user, status="confirmada")
+        EmpresaFactory(usuario=self.client_user, organizacao=org)
+        evento = EventoFactory(organizacao=org, coordenador=self.admin_user)
+        InscricaoEvento.objects.create(evento=evento, user=self.client_user, status="confirmada")
 
     def assert_status(self, user, url_name, status):
         self.client.force_login(user)

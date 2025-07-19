@@ -1,8 +1,11 @@
 import factory
 from factory.django import DjangoModelFactory
-from .models import Empresa
+
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
+
+from .models import Empresa
+
 
 class EmpresaFactory(DjangoModelFactory):
     class Meta:
@@ -10,9 +13,15 @@ class EmpresaFactory(DjangoModelFactory):
 
     usuario = factory.SubFactory(UserFactory)
     organizacao = factory.SubFactory(OrganizacaoFactory)
+    razao_social = factory.Faker("company", locale="pt_BR")
+    nome_fantasia = factory.Faker("company_suffix", locale="pt_BR")
     cnpj = factory.Faker("cnpj", locale="pt_BR")
-    nome = factory.Faker("company", locale="pt_BR")
-    tipo = factory.Faker("word", locale="pt_BR")
-    municipio = factory.Faker("city", locale="pt_BR")
+    ramo_atividade = factory.Faker("job", locale="pt_BR")
+    endereco = factory.Faker("street_address", locale="pt_BR")
+    cidade = factory.Faker("city", locale="pt_BR")
     estado = factory.Faker("state_abbr", locale="pt_BR")
-    descricao = factory.Faker("paragraph", locale="pt_BR")
+    cep = factory.Faker("postcode", locale="pt_BR")
+    email_corporativo = factory.Faker("company_email", locale="pt_BR")
+    telefone_corporativo = factory.Faker("phone_number", locale="pt_BR")
+    site = factory.Faker("url")
+    rede_social = factory.Faker("url")
