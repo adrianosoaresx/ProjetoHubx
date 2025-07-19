@@ -1,5 +1,4 @@
-from django.contrib.auth import (get_user_model, login, logout,
-                                 update_session_auth_hash)
+from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth.hashers import make_password
@@ -27,8 +26,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from tokens.forms import TokenAcessoForm
 from tokens.models import TokenAcesso
 
-from .forms import (CustomUserCreationForm, InformacoesPessoaisForm, MediaForm,
-                    NotificacoesForm, RedesSociaisForm, CustomUserChangeForm)
+from .forms import (
+    CustomUserCreationForm,
+    InformacoesPessoaisForm,
+    MediaForm,
+    NotificacoesForm,
+    RedesSociaisForm,
+    CustomUserChangeForm,
+)
 from .models import NotificationSettings, UserMedia, cpf_validator
 
 # ====================== PERFIL ======================
@@ -42,9 +47,7 @@ def perfil_home(request):
 @login_required
 def perfil_informacoes(request):
     if request.method == "POST":
-        form = InformacoesPessoaisForm(
-            request.POST, request.FILES, instance=request.user
-        )
+        form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Informações pessoais atualizadas.")
@@ -102,9 +105,7 @@ def perfil_notificacoes(request):
 
 @login_required
 def perfil_conexoes(request):
-    connections = (
-        request.user.connections.all() if hasattr(request.user, "connections") else []
-    )
+    connections = request.user.connections.all() if hasattr(request.user, "connections") else []
     connection_requests = []  # pode ser implementado futuramente
 
     context = {
@@ -145,9 +146,7 @@ def perfil_midias(request):
 
     medias = request.user.medias.order_by("-uploaded_at")
     if q:
-        medias = medias.filter(
-            Q(descricao__icontains=q) | Q(tags__nome__icontains=q)
-        ).distinct()
+        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
 
     return render(
         request,
@@ -301,9 +300,7 @@ def termos(request):
     if request.method == "POST" and request.POST.get("aceitar_termos"):
         token_code = request.session.get("invite_token")
         try:
-            token_obj = TokenAcesso.objects.get(
-                codigo=token_code, estado=TokenAcesso.Estado.NAO_USADO
-            )
+            token_obj = TokenAcesso.objects.get(codigo=token_code, estado=TokenAcesso.Estado.NOVO)
         except TokenAcesso.DoesNotExist:
             messages.error(request, "Token inválido.")
             return redirect("tokens:token")
@@ -323,9 +320,11 @@ def termos(request):
 
         if username and pwd_hash:
             tipo_mapping = {
-                TokenAcesso.Tipo.ADMIN: UserType.ADMIN,
-                TokenAcesso.Tipo.GERENTE: UserType.GERENTE,
-                TokenAcesso.Tipo.CLIENTE: UserType.CLIENTE,
+                TokenAcesso.TipoUsuario.ADMIN: UserType.ADMIN,
+                TokenAcesso.TipoUsuario.COORDENADOR: UserType.COORDENADOR,
+                TokenAcesso.TipoUsuario.NUCLEADO: UserType.NUCLEADO,
+                TokenAcesso.TipoUsuario.ASSOCIADO: UserType.ASSOCIADO,
+                TokenAcesso.TipoUsuario.CONVIDADO: UserType.CONVIDADO,
             }
             user = User.objects.create(
                 username=username,
@@ -336,8 +335,9 @@ def termos(request):
                 cpf=cpf_val,
                 user_type=tipo_mapping[token_obj.tipo_destino],
             )
-            if token_obj.nucleo_destino:
-                user.nucleo = token_obj.nucleo_destino
+            primeiro_nucleo = token_obj.nucleos.first()
+            if primeiro_nucleo:
+                user.nucleo = primeiro_nucleo
                 user.save(update_fields=["nucleo"])
             foto_path = request.session.get("foto")
             if foto_path:
@@ -381,21 +381,22 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update']:
-            if self.request.user.get_tipo_usuario == 'admin':
+        if self.action in ["create", "update", "partial_update"]:
+            if self.request.user.get_tipo_usuario == "admin":
                 self.permission_classes.append(IsAdmin)
-            elif self.request.user.get_tipo_usuario == 'coordenador':
+            elif self.request.user.get_tipo_usuario == "coordenador":
                 self.permission_classes.append(IsCoordenador)
         return super().get_permissions()
 
     def perform_create(self, serializer):
         organizacao = self.request.user.organizacao
-        if self.request.user.get_tipo_usuario == 'admin':
+        if self.request.user.get_tipo_usuario == "admin":
             serializer.save(organizacao=organizacao)
-        elif self.request.user.get_tipo_usuario == 'coordenador':
+        elif self.request.user.get_tipo_usuario == "coordenador":
             serializer.save(organizacao=organizacao, is_associado=False, is_staff=False)
         else:
             raise PermissionError("Você não tem permissão para criar usuários.")
+
 
 class RegisterView(View):
     def get(self, request):
@@ -410,6 +411,7 @@ class RegisterView(View):
             return redirect("user_profile")
         return render(request, "accounts/register.html", {"form": form})
 
+
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request):
         form = CustomUserChangeForm(instance=request.user)
@@ -421,6 +423,7 @@ class UserProfileView(LoginRequiredMixin, View):
             form.save()
             return redirect("user_profile")
         return render(request, "accounts/user_profile.html", {"form": form})
+
 
 class ChangePasswordView(LoginRequiredMixin, View):
     def get(self, request):
