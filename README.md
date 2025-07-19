@@ -59,13 +59,13 @@ Você pode gerar também em CSV e aplicar filtros conforme necessário.
 
 ---
 
-## 💬 Fórum
+## 💬 Discussões
 
-O módulo `forum` permite a criação de tópicos e respostas por usuários autenticados.  
+O módulo `discussao` permite a criação de tópicos e respostas por usuários autenticados.
 Acesse:
 
 ```
-/forum/
+/discussao/
 ```
 
 para visualizar categorias e interações.
@@ -150,9 +150,9 @@ npm run build
 ### Autenticação em Dois Fatores (2FA)
 - **Ativar 2FA**: Gera um segredo TOTP e valida o código enviado.
 
-### Feed e Fórum
+### Feed e Discussões
 - **Feed**: Suporte a tipos de feed (`global`, `usuario`, `nucleo`, `evento`).
-- **Fórum**: Discussões organizadas por categorias e tópicos.
+- **Discussões**: Categorias e tópicos com respostas e interações.
 
 ### Dashboard
 - **Dashboard**: Estatísticas de eventos, inscrições e interações.

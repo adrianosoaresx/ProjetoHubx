@@ -9,8 +9,8 @@ class OrganizationUserTests(TestCase):
         from organizacoes.models import Organizacao
 
         self.User = get_user_model()
-        self.org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00")
-        self.org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00")
+        self.org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00", slug="org1")
+        self.org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00", slug="org2")
         self.admin1 = self.User.objects.create_user(
             email="admin1@example.com",
             username="admin1",
