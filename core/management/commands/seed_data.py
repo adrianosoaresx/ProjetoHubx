@@ -6,7 +6,7 @@ from organizacoes.factories import OrganizacaoFactory
 from empresas.factories import EmpresaFactory
 from agenda.factories import EventoFactory
 from tokens.factories import TokenAcessoFactory
-from forum.factories import CategoriaFactory, TopicoFactory
+from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory
 from feed.factories import PostFactory
 
 class Command(BaseCommand):
@@ -48,12 +48,12 @@ class Command(BaseCommand):
             self.stdout.write(f"Criando tokens de acesso para {organizacao.nome}...")
             TokenAcessoFactory.create_batch(5, organizacao=organizacao, usuario=random.choice(clientes))
 
-            self.stdout.write(f"Criando categorias de fórum para {organizacao.nome}...")
-            categorias = CategoriaFactory.create_batch(3, organizacao=organizacao)
+            self.stdout.write(f"Criando categorias de discussão para {organizacao.nome}...")
+            categorias = CategoriaDiscussaoFactory.create_batch(3, organizacao=organizacao)
 
             for categoria in categorias:
                 self.stdout.write(f"Criando tópicos para a categoria {categoria.nome}...")
-                TopicoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))
+                TopicoDiscussaoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))
 
             self.stdout.write(f"Criando postagens no feed para {organizacao.nome}...")
             for cliente in clientes:

@@ -4,7 +4,7 @@ from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
 from empresas.models import Empresa
 from feed.models import Post
-from forum.models import Categoria, Topico
+from discussao.models import CategoriaDiscussao, TopicoDiscussao
 
 User = get_user_model()
 
@@ -76,13 +76,13 @@ class Command(BaseCommand):
                     organizacao=org
                 )
 
-            categoria = Categoria.objects.create(
+            categoria = CategoriaDiscussao.objects.create(
                 nome='Categoria Geral',
                 organizacao=org
             )
 
             for i in range(2):
-                Topico.objects.create(
+                TopicoDiscussao.objects.create(
                     categoria=categoria,
                     autor=admin,
                     titulo=f'Tópico {i+1} da {org.nome}',
