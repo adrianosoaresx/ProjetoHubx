@@ -39,10 +39,16 @@ class ChatBasicsTests(TestCase):
         self.assertFalse(form.is_valid())
 
     def test_send_message_marks_read_by_sender(self):
-        conv = ChatConversation.objects.create(titulo="Direta", slug="d2", tipo_conversa="direta")
+        conv = ChatConversation.objects.create(
+            titulo="Direta",
+            slug="d2",
+            tipo_conversa="direta",
+            organizacao=self.nucleo.organizacao,
+        )
         ChatParticipant.objects.create(conversation=conv, user=self.user1, is_owner=True)
         ChatParticipant.objects.create(conversation=conv, user=self.user2)
         msg = ChatMessage.objects.create(conversation=conv, sender=self.user1, conteudo="hello")
+        self.assertEqual(msg.organizacao, conv.organizacao)
         msg.lido_por.add(self.user1)
         self.assertIn(self.user1, msg.lido_por.all())
         self.assertFalse(ChatNotification.objects.exists())

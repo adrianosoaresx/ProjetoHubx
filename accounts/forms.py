@@ -18,6 +18,11 @@ class CustomUserCreationForm(UserCreationForm):
             "email",
             "cpf",
             "avatar",
+            "nome_completo",
+            "biografia",
+            "cover",
+            "fone",
+            "whatsapp",
             "organizacao",
             "nucleo",
         )
@@ -28,11 +33,17 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError("CPF deve conter 11 dígitos numéricos.")
         return cpf
 
-    def clean_telefone(self):
-        telefone = self.cleaned_data.get("telefone")
-        if not re.match(r"^\+?\d{10,15}$", telefone):
+    def clean_fone(self):
+        fone = self.cleaned_data.get("fone")
+        if fone and not re.match(r"^\+?\d{8,20}$", fone):
             raise forms.ValidationError("Telefone deve ser válido.")
-        return telefone
+        return fone
+
+    def clean_whatsapp(self):
+        whatsapp = self.cleaned_data.get("whatsapp")
+        if whatsapp and not re.match(r"^\+?\d{8,20}$", whatsapp):
+            raise forms.ValidationError("WhatsApp deve ser válido.")
+        return whatsapp
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -42,21 +53,30 @@ class CustomUserChangeForm(UserChangeForm):
             "email",
             "cpf",
             "avatar",
+            "nome_completo",
+            "biografia",
+            "cover",
+            "fone",
+            "whatsapp",
             "organizacao",
             "nucleo",
         )
 
 
 class InformacoesPessoaisForm(forms.ModelForm):
-    nome = forms.CharField(max_length=150, label="Nome completo")
+    nome_completo = forms.CharField(max_length=255, label="Nome completo")
 
     class Meta:
         model = User
         fields = (
-            "nome",
+            "nome_completo",
             "username",
             "email",
             "avatar",
+            "cover",
+            "biografia",
+            "fone",
+            "whatsapp",
             "endereco",
             "cidade",
             "estado",
@@ -69,15 +89,11 @@ class InformacoesPessoaisForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            full = f"{self.instance.first_name} {self.instance.last_name}".strip()
-            self.initial["nome"] = full
+            self.initial["nome_completo"] = self.instance.nome_completo
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        nome = self.cleaned_data.get("nome", "").strip()
-        partes = nome.split()
-        user.first_name = partes[0] if partes else ""
-        user.last_name = " ".join(partes[1:]) if len(partes) > 1 else ""
+        user.nome_completo = self.cleaned_data.get("nome_completo", "")
         if commit:
             user.save()
         return user
@@ -109,19 +125,13 @@ class MediaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["tags_field"].initial = ", ".join(
-                self.instance.tags.values_list("nome", flat=True)
-            )
+            self.fields["tags_field"].initial = ", ".join(self.instance.tags.values_list("nome", flat=True))
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         if commit:
             instance.save()
-        tags_names = [
-            t.strip()
-            for t in self.cleaned_data.get("tags_field", "").split(",")
-            if t.strip()
-        ]
+        tags_names = [t.strip() for t in self.cleaned_data.get("tags_field", "").split(",") if t.strip()]
         from .models import MediaTag
 
         tags = []

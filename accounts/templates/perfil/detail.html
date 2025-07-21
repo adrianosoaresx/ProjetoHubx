@@ -3,9 +3,9 @@
 {% block perfil_content %}
 <section class="max-w-4xl mx-auto px-4 py-6 bg-white rounded-xl shadow">
 
-  {% if user.bio %}
+  {% if user.biografia %}
     <div class="mb-6">
-      <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.bio }}</p>
+      <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
     </div>
   {% endif %}
 
@@ -13,7 +13,7 @@
     <div>
       <h4 class="font-medium mb-1">Contato</h4>
       <p>Email: {{ user.email }}</p>
-      <p>Telefone: {{ user.telefone }}</p>
+      <p>Telefone: {{ user.fone }}</p>
       <p>WhatsApp: {{ user.whatsapp }}</p>
     </div>
     <div>
