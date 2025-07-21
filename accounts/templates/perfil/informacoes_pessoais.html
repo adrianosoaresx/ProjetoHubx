@@ -16,10 +16,10 @@
     {% csrf_token %}
 
     <div>
-      <label for="nome" class="block text-sm font-medium text-gray-700">Nome completo</label>
-      <input type="text" id="nome" name="nome"
+      <label for="nome_completo" class="block text-sm font-medium text-gray-700">Nome completo</label>
+      <input type="text" id="nome_completo" name="nome_completo"
              class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.get_full_name }}" required>
+             value="{{ user.nome_completo }}" required>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -39,9 +39,9 @@
     </div>
 
     <div>
-      <label for="bio" class="block text-sm font-medium text-gray-700">Bio</label>
-      <textarea id="bio" name="bio" rows="4"
-                class="mt-1 block w-full border rounded-lg p-2 text-sm">{{ user.bio }}</textarea>
+      <label for="biografia" class="block text-sm font-medium text-gray-700">Bio</label>
+      <textarea id="biografia" name="biografia" rows="4"
+                class="mt-1 block w-full border rounded-lg p-2 text-sm">{{ user.biografia }}</textarea>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -68,6 +68,9 @@
       <label for="avatar" class="block text-sm font-medium text-gray-700">Foto de Perfil</label>
       <input type="file" id="avatar" name="avatar"
              class="mt-1 block w-full border rounded-lg p-2 text-sm">
+      <label for="cover" class="block text-sm font-medium text-gray-700 mt-2">Capa</label>
+      <input type="file" id="cover" name="cover"
+             class="mt-1 block w-full border rounded-lg p-2 text-sm">
     </div>
 
     <hr class="my-6">
@@ -76,10 +79,10 @@
 
     <div class="grid md:grid-cols-2 gap-4">
       <div>
-        <label for="telefone" class="block text-sm font-medium text-gray-700">Telefone</label>
-        <input type="tel" id="telefone" name="telefone"
+        <label for="fone" class="block text-sm font-medium text-gray-700">Telefone</label>
+        <input type="tel" id="fone" name="fone"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
-               value="{{ user.telefone }}" placeholder="(00) 00000-0000">
+               value="{{ user.fone }}" placeholder="(00) 00000-0000">
       </div>
       <div>
         <label for="whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>

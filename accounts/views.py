@@ -314,7 +314,8 @@ def termos(request):
         email_val = request.session.get("email")
         pwd_hash = request.session.get("senha_hash")
         cpf_val = request.session.get("cpf")
-        nome_parts = request.session.get("nome", "").split()
+        nome_completo = request.session.get("nome", "")
+        nome_parts = nome_completo.split()
         first_name = nome_parts[0] if nome_parts else ""
         last_name = " ".join(nome_parts[1:]) if len(nome_parts) > 1 else ""
 
@@ -331,6 +332,7 @@ def termos(request):
                 email=email_val,
                 first_name=first_name,
                 last_name=last_name,
+                nome_completo=nome_completo,
                 password=pwd_hash,
                 cpf=cpf_val,
                 user_type=tipo_mapping[token_obj.tipo_destino],

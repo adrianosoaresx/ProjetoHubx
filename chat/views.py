@@ -57,6 +57,7 @@ def conversation_detail(request, slug):
         if form.is_valid():
             msg = form.save(commit=False)
             msg.conversation = conversation
+            msg.organizacao = conversation.organizacao
             msg.sender = request.user
             msg.save()
             msg.lido_por.add(request.user)

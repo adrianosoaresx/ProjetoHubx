@@ -76,6 +76,12 @@ class ChatMessage(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="messages",
     )
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

@@ -85,9 +85,6 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         return self.get(email__iexact=email)
 
 
-
-
-
 class User(AbstractUser, TimeStampedModel):
     """
     Modelo de usuário customizado.
@@ -101,9 +98,7 @@ class User(AbstractUser, TimeStampedModel):
         _("username"),
         max_length=150,
         unique=False,
-        help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
-        ),
+        help_text=_("Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."),
         validators=[username_validator],
         error_messages={"unique": _("A user with that username already exists.")},
     )
@@ -139,6 +134,11 @@ class User(AbstractUser, TimeStampedModel):
         unique=True,
         validators=[cpf_validator],
     )
+    nome_completo = models.CharField(max_length=255, blank=True)
+    biografia = models.TextField(blank=True)
+    cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
+    fone = models.CharField(max_length=20, blank=True)
+    whatsapp = models.CharField(max_length=20, blank=True)
 
     # Campos migrados do antigo modelo Perfil
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
@@ -173,12 +173,8 @@ class User(AbstractUser, TimeStampedModel):
         default=None,  # Removido o valor padrão inválido
         verbose_name=_("Organização"),
     )
-    is_associado = models.BooleanField(
-        default=False, verbose_name=_("É associado")
-    )
-    is_coordenador = models.BooleanField(
-        default=False, verbose_name=_("É coordenador")
-    )
+    is_associado = models.BooleanField(default=False, verbose_name=_("É associado"))
+    is_coordenador = models.BooleanField(default=False, verbose_name=_("É coordenador"))
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",
         on_delete=SET_NULL,
