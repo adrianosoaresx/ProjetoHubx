@@ -21,8 +21,7 @@ Results:
 
 ### Accounts
 
-`User` model contains most fields required by the PDF, including `nome_completo`, `biografia`, `cover`, `fone`, and `whatsapp`.
-However, the PDF specifies a JSONField `redes_sociais`, which is missing.
+`User` model contains all fields required by the PDF, including `nome_completo`, `biografia`, `cover`, `fone`, `whatsapp` e o JSONField `redes_sociais`.
 
 ### Configurações de Conta
 
@@ -47,8 +46,9 @@ Management commands and scripts rely on the `UserType` enum and appear up to dat
 
 ## Recommended Actions
 
-- Refactor tests to remove creation of `UserType` model instances and update field names to `user_type`.
-- Add `redes_sociais` JSONField to `accounts.models.User` if still required, or update documentation to match implementation.
+- Refactor tests to remover qualquer criação do modelo legado `UserType` e utilizar o campo `user_type`.
+- O modelo `UserType` como tabela foi removido; o campo `user_type` em `accounts.User` assume sua função.
+- O campo `redes_sociais` já foi incluído no modelo `User`; ajustar a documentação conforme necessário.
 - Ensure `ConfiguracaoConta` and `ChatMessage` maintain the fields as per requirements.
 - Verify dashboard views use `DashboardService` metrics consistently.
 

@@ -12,17 +12,6 @@ from phonenumber_field.modelfields import PhoneNumberField
 from core.fields import URLField
 from core.models import TimeStampedModel
 
-
-class TimeStampedModel(models.Model):
-    """Modelo base com campos de data de criação e atualização."""
-
-    created_at = models.DateTimeField(auto_now_add=True, editable=False)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
-
-
 # ───────────────────────────────────────────────────────────────
 #  Validador de CPF simples (###.###.###-## ou ###########)
 cpf_validator = RegexValidator(
@@ -151,7 +140,7 @@ class User(AbstractUser, TimeStampedModel):
     instagram = URLField(blank=True)
     linkedin = URLField(blank=True)
     website = URLField(blank=True)
-    redes_sociais = models.JSONField(default=dict, blank=True)
+    redes_sociais = models.JSONField(default=dict, blank=True, null=True)
     idioma = models.CharField(max_length=10, blank=True)
     fuso_horario = models.CharField(max_length=50, blank=True)
     perfil_publico = models.BooleanField(default=True)
