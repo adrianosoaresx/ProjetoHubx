@@ -8,26 +8,32 @@ from empresas.models import Empresa
 
 class EmpresaVisibilityTests(TestCase):
     def setUp(self):
-        UserType.objects.create(descricao="root")
-        UserType.objects.create(descricao="admin")
-        UserType.objects.create(descricao="user")
-        UserType.objects.create(descricao="client")
-        UserType.objects.create(descricao="manager")
-
         super().setUp()
 
         self.User = get_user_model()
-        self.root_user, _ = self.User.objects.get_or_create(
-            username="root", defaults={"password": "rootpass", "email": "root@example.com"}
+        self.root_user = self.User.objects.create_user(
+            username="root",
+            password="rootpass",
+            email="root@example.com",
+            user_type=UserType.ROOT,
         )
-        self.admin_user, _ = self.User.objects.get_or_create(
-            username="admin", defaults={"password": "adminpass", "email": "admin@example.com"}
+        self.admin_user = self.User.objects.create_user(
+            username="admin",
+            password="adminpass",
+            email="admin@example.com",
+            user_type=UserType.ADMIN,
         )
-        self.client_user, _ = self.User.objects.get_or_create(
-            username="client", defaults={"password": "clientpass", "email": "client@example.com"}
+        self.client_user = self.User.objects.create_user(
+            username="client",
+            password="clientpass",
+            email="client@example.com",
+            user_type=UserType.CONVIDADO,
         )
-        self.manager_user, _ = self.User.objects.get_or_create(
-            username="manager", defaults={"password": "managerpass", "email": "manager@example.com"}
+        self.manager_user = self.User.objects.create_user(
+            username="manager",
+            password="managerpass",
+            email="manager@example.com",
+            user_type=UserType.COORDENADOR,
         )
 
         self.client = Client()

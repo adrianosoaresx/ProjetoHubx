@@ -151,6 +151,7 @@ class User(AbstractUser, TimeStampedModel):
     instagram = URLField(blank=True)
     linkedin = URLField(blank=True)
     website = URLField(blank=True)
+    redes_sociais = models.JSONField(default=dict, blank=True)
     idioma = models.CharField(max_length=10, blank=True)
     fuso_horario = models.CharField(max_length=50, blank=True)
     perfil_publico = models.BooleanField(default=True)

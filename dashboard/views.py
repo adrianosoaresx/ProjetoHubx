@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
@@ -15,6 +17,8 @@ from empresas.models import Empresa
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
+from .services import DashboardService
+
 User = get_user_model()
 
 
@@ -22,6 +26,13 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
     """Base view para calcular métricas."""
 
     def get_metrics(self):
+        periodo = self.request.GET.get("periodo", "mensal")
+        inicio_str = self.request.GET.get("inicio")
+        fim_str = self.request.GET.get("fim")
+        inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
+        fim = datetime.fromisoformat(fim_str) if fim_str else None
+        inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
+
         qs_users = User.objects.all()
         qs_orgs = Organizacao.objects.all()
         qs_nucleos = Nucleo.objects.all()
@@ -34,16 +45,16 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
             qs_users = qs_users.filter(organizacao=org)
             qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
-            qs_nucleos = qs_nucleos.filter(organizacao=org)  # Corrigido para usar 'organizacao'
+            qs_nucleos = qs_nucleos.filter(organizacao=org)
             qs_empresas = qs_empresas.filter(usuario__organizacao=org)
-            qs_eventos = qs_eventos.filter(organizacao=org)  # Corrigido para usar 'organizacao'
+            qs_eventos = qs_eventos.filter(organizacao=org)
 
         return {
-            "num_users": qs_users.count(),
-            "num_organizacoes": qs_orgs.count(),
-            "num_nucleos": qs_nucleos.count(),
-            "num_empresas": qs_empresas.count(),
-            "num_eventos": qs_eventos.count(),
+            "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim),
+            "num_organizacoes": DashboardService.calcular_crescimento(qs_orgs, inicio, fim),
+            "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim),
+            "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim),
+            "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim),
         }
 
     def get_context_data(self, **kwargs):

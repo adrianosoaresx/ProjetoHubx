@@ -16,38 +16,8 @@
     {% csrf_token %}
 
     <div>
-      <label for="facebook" class="block text-sm font-medium text-gray-700">Facebook</label>
-      <input type="url" id="facebook" name="facebook"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.facebook }}" placeholder="https://facebook.com/seuperfil">
-    </div>
-
-    <div>
-      <label for="twitter" class="block text-sm font-medium text-gray-700">Twitter / X</label>
-      <input type="url" id="twitter" name="twitter"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.twitter }}" placeholder="https://twitter.com/seuperfil">
-    </div>
-
-    <div>
-      <label for="instagram" class="block text-sm font-medium text-gray-700">Instagram</label>
-      <input type="url" id="instagram" name="instagram"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.instagram }}" placeholder="https://instagram.com/seuperfil">
-    </div>
-
-    <div>
-      <label for="linkedin" class="block text-sm font-medium text-gray-700">LinkedIn</label>
-      <input type="url" id="linkedin" name="linkedin"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/seuperfil">
-    </div>
-
-    <div>
-      <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
-      <input type="url" id="website" name="website"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.website }}" placeholder="https://seusite.com">
+      {{ form.redes_sociais.label_tag }}
+      {{ form.redes_sociais }}
     </div>
 
     <div class="pt-4">
