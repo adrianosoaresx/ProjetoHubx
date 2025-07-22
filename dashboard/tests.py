@@ -76,3 +76,12 @@ class DashboardPermissionsTests(TestCase):
         self.assert_status(self.client_user, "admin", 403)
         self.assert_status(self.client_user, "gerente", 403)
         self.assert_status(self.client_user, "cliente", 200)
+
+    def test_metrics_structure(self):
+        self.client.force_login(self.root_user)
+        response = self.client.get(reverse("dashboard:root"))
+        self.assertEqual(response.status_code, 200)
+        metrics = response.context
+        self.assertIn("num_users", metrics)
+        self.assertIn("total", metrics["num_users"])
+        self.assertIn("crescimento", metrics["num_users"])

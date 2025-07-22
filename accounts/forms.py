@@ -1,10 +1,11 @@
+import json
+import re
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-import re
 
 from .models import NotificationSettings, UserMedia
-from accounts.models import User
 
 User = get_user_model()
 
@@ -23,6 +24,7 @@ class CustomUserCreationForm(UserCreationForm):
             "cover",
             "fone",
             "whatsapp",
+            "redes_sociais",
             "organizacao",
             "nucleo",
         )
@@ -58,6 +60,7 @@ class CustomUserChangeForm(UserChangeForm):
             "cover",
             "fone",
             "whatsapp",
+            "redes_sociais",
             "organizacao",
             "nucleo",
         )
@@ -100,9 +103,29 @@ class InformacoesPessoaisForm(forms.ModelForm):
 
 
 class RedesSociaisForm(forms.ModelForm):
+    redes_sociais = forms.JSONField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        label="Redes sociais (JSON)",
+    )
+
     class Meta:
         model = User
-        fields = ("facebook", "twitter", "instagram", "linkedin", "website")
+        fields = ("redes_sociais",)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.redes_sociais:
+            self.initial["redes_sociais"] = json.dumps(self.instance.redes_sociais, ensure_ascii=False, indent=2)
+
+    def clean_redes_sociais(self):
+        data = self.cleaned_data.get("redes_sociais") or {}
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError as exc:
+                raise forms.ValidationError("JSON inválido") from exc
+        return data
 
 
 class NotificacoesForm(forms.ModelForm):

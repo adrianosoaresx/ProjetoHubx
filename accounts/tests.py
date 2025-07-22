@@ -174,12 +174,11 @@ class UserModelTests(TestCase):
 
 class UserModelTest(TestCase):
     def setUp(self):
-        self.user_type = UserType.objects.create(descricao="Test Type")
         self.user = User.objects.create_user(
             email="testuser@example.com",
             password="password123",
             username="testuser",
-            tipo=self.user_type,
+            user_type=UserType.ADMIN,
         )
 
     def test_user_creation(self):
@@ -189,7 +188,7 @@ class UserModelTest(TestCase):
 
     def test_user_type(self):
         """Testa se o tipo de usuário está associado corretamente."""
-        self.assertEqual(self.user.tipo, self.user_type)
+        self.assertEqual(self.user.user_type, UserType.ADMIN.value)
 
     def test_user_permissions(self):
         """Testa permissões padrão do usuário."""
@@ -199,6 +198,5 @@ class UserModelTest(TestCase):
 
 class UserTypeModelTest(TestCase):
     def test_user_type_creation(self):
-        """Testa a criação de um tipo de usuário."""
-        user_type = UserType.objects.create(descricao="Admin")
-        self.assertEqual(user_type.descricao, "Admin")
+        """Enum possui valor esperado."""
+        self.assertEqual(UserType.ADMIN.value, "admin")
