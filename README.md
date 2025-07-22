@@ -10,10 +10,26 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Autenticação com formulários padrão Django
 - Onboarding automático em `/accounts/onboarding/`
 - Perfis personalizados
+- Campo `redes_sociais` em JSON para registrar links de redes sociais
 - Fórum e Chat integrados
 - Suporte WebSocket via `channels` e `daphne`
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
+
+---
+
+### Uso do campo `redes_sociais`
+
+No formulário de perfil é possível informar um JSON com os links de redes sociais. Exemplo:
+
+```json
+{
+  "github": "https://github.com/seuuser",
+  "linkedin": "https://br.linkedin.com/in/seuuser"
+}
+```
+
+O campo é opcional e é armazenado como `JSONField` no modelo `User`.
 
 ---
 
@@ -98,13 +114,14 @@ daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
 
 ## 🛠️ Correção de tokens e usuários
 
-Execute o comando abaixo para normalizar usuários legados e garantir que todos tenham `UserType` e token:
+Execute o comando abaixo para normalizar usuários legados e garantir que todos possuam o campo `user_type` e token:
 
 ```bash
 python manage.py corrigir_base_token
 ```
 
 > Evita falhas com CSRF e registro incompleto.
+> O antigo modelo `UserType` foi removido; agora o tipo lógico é definido pelo campo `user_type` no modelo `User`.
 
 ---
 
