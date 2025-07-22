@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("agenda", "__first__"),
+        ("agenda", "0001_initial"),
         ("contenttypes", "0002_remove_content_type_name"),
         ("nucleos", "0001_initial"),
         ("organizacoes", "0002_alter_organizacao_slug"),
