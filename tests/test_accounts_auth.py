@@ -18,7 +18,7 @@ class AuthTests(TestCase):
             email="alpha@example.com",
             username="alpha",
             password="pass",
-            organization=org,
+            organizacao=org,
         )
         resp = self.client.post(
             reverse("accounts:login"),
@@ -34,13 +34,13 @@ class AuthTests(TestCase):
             email="user1@example.com",
             username="dup",
             password="pass",
-            organization=org1,
+            organizacao=org1,
         )
         user = User.objects.create_user(
             email="user2@example.com",
             username="dup",
             password="pass",
-            organization=org2,
+            organizacao=org2,
         )
         self.assertEqual(user.username, "dup")
 
@@ -50,14 +50,14 @@ class AuthTests(TestCase):
             email="one@example.com",
             username="dup",
             password="pass",
-            organization=org,
+            organizacao=org,
         )
         with self.assertRaises(IntegrityError):
             User.objects.create_user(
                 email="two@example.com",
                 username="dup",
                 password="pass",
-                organization=org,
+                organizacao=org,
             )
 
     def test_superuser_created_with_email(self):
