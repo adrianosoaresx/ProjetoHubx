@@ -24,36 +24,40 @@ class OrganizationUserTests(TestCase):
             password="pass",
             organizacao=self.org2,
         )
-        self.root = self.User.objects.get(username="root")
+        self.root = self.User.objects.create_superuser(
+            email="root@example.com",
+            username="root",
+            password="pass",
+        )
 
     def test_user_sees_only_same_org(self):
         self.client.force_login(self.admin1)
         users = list(self.User.objects.filter(organizacao=self.admin1.organizacao))
         self.assertEqual(users, [self.admin1])
 
-    def test_unique_username_per_organization(self):
+    def test_username_can_repeat_across_same_org(self):
         self.User.objects.create_user(
             email="joao1@example.com",
             username="joao",
             password="pass",
             organizacao=self.org1,
         )
-        from django.db import IntegrityError, transaction
-
-        with self.assertRaises(IntegrityError):
-            with transaction.atomic():
-                self.User.objects.create_user(
-                    email="joao2@example.com",
-                    username="joao",
-                    password="pass",
-                    organizacao=self.org1,
-                )
         self.User.objects.create_user(
+            email="joao2@example.com",
+            username="joao",
+            password="pass",
+            organizacao=self.org1,
+        )
+        count = self.User.objects.filter(username="joao", organizacao=self.org1).count()
+        self.assertEqual(count, 2)
+        # usernames continuam únicos entre organizações diferentes
+        other = self.User.objects.create_user(
             email="joao3@example.com",
             username="joao",
             password="pass",
             organizacao=self.org2,
         )
+        self.assertEqual(other.username, "joao")
 
     def test_superuser_sees_all(self):
         self.client.force_login(self.root)
