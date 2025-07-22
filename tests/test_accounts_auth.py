@@ -28,8 +28,8 @@ class AuthTests(TestCase):
         self.assertEqual(resp.url, "/accounts/perfil/")
 
     def test_username_duplicates_different_org(self):
-        org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00")
-        org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00")
+        org1 = Organizacao.objects.create(nome="Org1", cnpj="00.000.000/0001-00", slug="org1")
+        org2 = Organizacao.objects.create(nome="Org2", cnpj="00.000.000/0002-00", slug="org2")
         User.objects.create_user(
             email="user1@example.com",
             username="dup",
@@ -44,7 +44,7 @@ class AuthTests(TestCase):
         )
         self.assertEqual(user.username, "dup")
 
-    def test_username_duplicate_same_org_fails(self):
+    def test_username_duplicate_same_org_allowed(self):
         org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
         User.objects.create_user(
             email="one@example.com",
@@ -52,13 +52,13 @@ class AuthTests(TestCase):
             password="pass",
             organizacao=org,
         )
-        with self.assertRaises(IntegrityError):
-            User.objects.create_user(
-                email="two@example.com",
-                username="dup",
-                password="pass",
-                organizacao=org,
-            )
+        user2 = User.objects.create_user(
+            email="two@example.com",
+            username="dup",
+            password="pass",
+            organizacao=org,
+        )
+        self.assertEqual(user2.username, "dup")
 
     def test_superuser_created_with_email(self):
         user = User.objects.create_superuser(

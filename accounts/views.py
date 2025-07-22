@@ -144,7 +144,7 @@ def perfil_midias(request):
     else:
         form = MediaForm()
 
-    medias = request.user.medias.order_by("-uploaded_at")
+    medias = request.user.medias.order_by("-created_at")
     if q:
         medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
 
