@@ -65,13 +65,14 @@ pip install -r requirements.txt
 
 ## 🧪 Gerar Dados de Teste
 
-Use o comando abaixo para popular o banco com usuários, organizações, núcleos, empresas e eventos fictícios:
+Para popular o banco de forma completa, execute o script abaixo:
 
 ```bash
-python manage.py generate_test_data --format json > seed.json
+python scripts/populate_test_data.py
 ```
 
-Você pode gerar também em CSV e aplicar filtros conforme necessário.
+Ele cria organizações, núcleos, **todos os perfis de usuários** (incluindo o superusuário `root`),
+eventos, inscrições, feed, conversas de chat, discussões, empresas, parcerias e tokens.
 
 ---
 
