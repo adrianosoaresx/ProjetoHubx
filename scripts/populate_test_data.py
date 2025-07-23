@@ -5,8 +5,8 @@
 from __future__ import annotations
 
 import os
-import sys
 import random
+import sys
 from decimal import Decimal
 
 # ---------------------------------------------------------------------------
@@ -46,6 +46,7 @@ fake = Faker("pt_BR")
 cpf = CPF()
 cnpj = CNPJ()
 
+
 def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     orgs = []
     for i in range(qtd):
@@ -61,6 +62,7 @@ def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     Organizacao.objects.bulk_create(orgs)
     return list(Organizacao.objects.order_by("-id")[:qtd])
 
+
 def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo]:
     nucleos: list[Nucleo] = []
     for org in orgs:
@@ -74,6 +76,7 @@ def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo
             )
     Nucleo.objects.bulk_create(nucleos)
     return list(Nucleo.objects.filter(organizacao__in=orgs))
+
 
 def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
     users: list[User] = []
@@ -167,6 +170,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         users.append(convidado)
     return users
 
+
 def create_eventos(nucleos: list[Nucleo], coordenadores: list[User]) -> list[Evento]:
     eventos: list[Evento] = []
     for nucleo in nucleos:
@@ -201,6 +205,7 @@ def create_eventos(nucleos: list[Nucleo], coordenadores: list[User]) -> list[Eve
     Evento.objects.bulk_create(eventos)
     return list(Evento.objects.filter(nucleo__in=nucleos))
 
+
 def create_inscricoes(eventos: list[Evento], participantes: list[User]) -> list[InscricaoEvento]:
     inscricoes: list[InscricaoEvento] = []
     for evento in eventos:
@@ -219,6 +224,7 @@ def create_inscricoes(eventos: list[Evento], participantes: list[User]) -> list[
     InscricaoEvento.objects.bulk_create(inscricoes)
     return inscricoes
 
+
 def create_feed(orgs: list[Organizacao], autores: list[User]) -> list[Post]:
     posts: list[Post] = []
     for org in orgs:
@@ -234,6 +240,7 @@ def create_feed(orgs: list[Organizacao], autores: list[User]) -> list[Post]:
             )
     Post.objects.bulk_create(posts)
     return posts
+
 
 def create_chat(orgs: list[Organizacao], users: list[User]) -> tuple[list[ChatConversation], list[ChatMessage]]:
     conversations: list[ChatConversation] = []
@@ -269,7 +276,10 @@ def create_chat(orgs: list[Organizacao], users: list[User]) -> tuple[list[ChatCo
     ChatMessage.objects.bulk_create(messages)
     return conversations, messages
 
-def create_discussao(orgs: list[Organizacao], autores: list[User]) -> tuple[list[CategoriaDiscussao], list[TopicoDiscussao]]:
+
+def create_discussao(
+    orgs: list[Organizacao], autores: list[User]
+) -> tuple[list[CategoriaDiscussao], list[TopicoDiscussao]]:
     categorias: list[CategoriaDiscussao] = []
     for org in orgs:
         categorias.append(
@@ -311,6 +321,7 @@ def create_discussao(orgs: list[Organizacao], autores: list[User]) -> tuple[list
     RespostaDiscussao.objects.bulk_create(respostas)
     return categorias, topicos
 
+
 def create_empresas(orgs: list[Organizacao], usuarios: list[User]) -> list[Empresa]:
     empresas: list[Empresa] = []
     for org in orgs:
@@ -336,6 +347,7 @@ def create_empresas(orgs: list[Organizacao], usuarios: list[User]) -> list[Empre
     Empresa.objects.bulk_create(empresas)
     return empresas
 
+
 def create_parcerias(eventos: list[Evento], empresas: list[Empresa]):
     from agenda.models import ParceriaEvento
 
@@ -356,20 +368,30 @@ def create_parcerias(eventos: list[Evento], empresas: list[Empresa]):
     ParceriaEvento.objects.bulk_create(parcerias)
     return parcerias
 
+
 def create_tokens(usuarios: list[User]) -> list[TokenAcesso]:
     tokens: list[TokenAcesso] = []
     for user in usuarios:
+        # pulamos usuários root/superadmin, pois não necessitam de token
+        if user.is_superuser:
+            continue
+        try:
+            tipo_enum = TokenAcesso.TipoUsuario[user.user_type.upper()]
+        except KeyError:
+            # se o tipo não existir (ex.: valor inesperado), não criamos token
+            continue
         tokens.append(
             TokenAcesso(
                 gerado_por=user,
                 usuario=user,
                 organizacao=user.organizacao,
-                tipo_destino=TokenAcesso.TipoUsuario[user.user_type.upper()],
+                tipo_destino=tipo_enum,
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
             )
         )
     TokenAcesso.objects.bulk_create(tokens)
     return tokens
+
 
 def main() -> None:
     with transaction.atomic():
@@ -393,6 +415,7 @@ def main() -> None:
         f"conversas:{len(convs)} mensagens:{len(msgs)} topicos:{len(topicos)} "
         f"empresas:{len(empresas)} parcerias:{len(parcerias)} tokens:{len(tokens)}"
     )
+
 
 if __name__ == "__main__":
     main()
