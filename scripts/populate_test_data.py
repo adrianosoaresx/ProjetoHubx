@@ -31,8 +31,13 @@ from faker import Faker
 from validate_docbr import CNPJ, CPF
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento
-from chat.models import ChatConversation, ChatMessage, ChatParticipant
+from agenda.models import Evento, InscricaoEvento, ParceriaEvento
+from chat.models import (
+    ChatConversation,
+    ChatMessage,
+    ChatNotification,
+    ChatParticipant,
+)
 from configuracoes.models import ConfiguracaoConta
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
@@ -45,6 +50,28 @@ from tokens.models import TokenAcesso
 fake = Faker("pt_BR")
 cpf = CPF()
 cnpj = CNPJ()
+
+
+def clear_test_data() -> None:
+    """Remove previously generated data keeping only the root user."""
+    TokenAcesso.objects.all().delete()
+    ChatNotification.objects.all().delete()
+    ChatMessage.objects.all().delete()
+    ChatParticipant.objects.all().delete()
+    ChatConversation.objects.all().delete()
+    Post.objects.all().delete()
+    RespostaDiscussao.objects.all().delete()
+    TopicoDiscussao.objects.all().delete()
+    CategoriaDiscussao.objects.all().delete()
+    InscricaoEvento.objects.all().delete()
+    ParceriaEvento.objects.all().delete()
+    Evento.objects.all().delete()
+    Empresa.objects.all().delete()
+    ParticipacaoNucleo.objects.all().delete()
+    Nucleo.objects.all().delete()
+    Organizacao.objects.all().delete()
+    ConfiguracaoConta.objects.exclude(user__is_superuser=True).delete()
+    User.objects.exclude(is_superuser=True).delete()
 
 
 def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
@@ -78,16 +105,25 @@ def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo
     return list(Nucleo.objects.filter(organizacao__in=orgs))
 
 
-def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
+def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> tuple[list[User], list[tuple[str, str, str]]]:
     users: list[User] = []
+    credentials: list[tuple[str, str, str]] = []
     # Usuário root/superadmin
-    root_user = User.objects.create_superuser(
+    root_user, _ = User.objects.get_or_create(
         username="root",
-        email="root@hubx.com",
-        password="1234Hubx!",
+        defaults={
+            "email": "root@hubx.com",
+            "is_staff": True,
+            "is_superuser": True,
+            "user_type": UserType.ROOT,
+        },
     )
-    ConfiguracaoConta.objects.create(user=root_user)
+    if not root_user.password:
+        root_user.set_password("1234Hubx!")
+        root_user.save()
+    ConfiguracaoConta.objects.get_or_create(user=root_user)
     users.append(root_user)
+    credentials.append(("root", "root@hubx.com", "1234Hubx!"))
     # Demais perfis por organização
     for org in orgs:
         # Admin
@@ -102,6 +138,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         )
         ConfiguracaoConta.objects.create(user=admin)
         users.append(admin)
+        credentials.append((admin.username, admin.email, "1234Hubx!"))
 
         # Coordenador
         nucleo_org = random.choice([n for n in nucleos if n.organizacao_id == org.id])
@@ -124,6 +161,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
             is_coordenador=True,
         )
         users.append(coordenador)
+        credentials.append((coordenador.username, coordenador.email, "1234Hubx!"))
 
         # Nucleado
         nucleo_org2 = random.choice([n for n in nucleos if n.organizacao_id == org.id])
@@ -141,6 +179,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         ConfiguracaoConta.objects.create(user=nucleado)
         ParticipacaoNucleo.objects.create(user=nucleado, nucleo=nucleo_org2)
         users.append(nucleado)
+        credentials.append((nucleado.username, nucleado.email, "1234Hubx!"))
 
         # Associado
         associado = User.objects.create_user(
@@ -155,6 +194,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         )
         ConfiguracaoConta.objects.create(user=associado)
         users.append(associado)
+        credentials.append((associado.username, associado.email, "1234Hubx!"))
 
         # Convidado
         convidado = User.objects.create_user(
@@ -168,7 +208,8 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         )
         ConfiguracaoConta.objects.create(user=convidado)
         users.append(convidado)
-    return users
+        credentials.append((convidado.username, convidado.email, "1234Hubx!"))
+    return users, credentials
 
 
 def create_eventos(nucleos: list[Nucleo], coordenadores: list[User]) -> list[Evento]:
@@ -395,9 +436,10 @@ def create_tokens(usuarios: list[User]) -> list[TokenAcesso]:
 
 def main() -> None:
     with transaction.atomic():
+        clear_test_data()
         orgs = create_organizacoes()
         nucleos = create_nucleos(orgs)
-        users = create_users(orgs, nucleos)
+        users, creds = create_users(orgs, nucleos)
         coordenadores = [u for u in users if u.user_type == UserType.COORDENADOR]
         eventos = create_eventos(nucleos, coordenadores)
         participantes = [u for u in users if u.user_type in {UserType.NUCLEADO, UserType.ASSOCIADO, UserType.CONVIDADO}]
@@ -408,6 +450,14 @@ def main() -> None:
         empresas = create_empresas(orgs, users)
         parcerias = create_parcerias(eventos, empresas)
         tokens = create_tokens(users)
+
+    usuarios_md = os.path.join(os.path.dirname(__file__), "usuarios.md")
+    with open(usuarios_md, "w", encoding="utf-8") as f:
+        f.write("# Usuários criados\n\n")
+        f.write("| Usuário | E-mail | Senha |\n")
+        f.write("|--------|--------|------|\n")
+        for usuario, email, senha in creds:
+            f.write(f"| {usuario} | {email} | {senha} |\n")
 
     print(
         f"Organizacoes:{len(orgs)} nucleos:{len(nucleos)} usuarios:{len(users)} "
