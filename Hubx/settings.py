@@ -18,7 +18,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Versão do HTMX utilizada nos templates
 HTMX_VERSION = "1.9.12"
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
@@ -34,7 +33,6 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -46,8 +44,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # ‑‑‑‑ Terceiros (third‑party) ‑‑‑‑
-    "rest_framework",  # ← necessário para core.permissions
-    "rest_framework.authtoken",  # (opcional) tokens de API
+    "rest_framework",
+    "rest_framework.authtoken",
     "widget_tweaks",
     "django_select2",
     "phonenumber_field",
@@ -66,7 +64,6 @@ INSTALLED_APPS = [
     "discussao.apps.DiscussaoConfig",
     "configuracoes",
 ]
-
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -97,7 +94,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "Hubx.wsgi.application"
-# Caminho da aplicação ASGI utilizado por servidores como o Daphne
 ASGI_APPLICATION = "Hubx.asgi.application"
 
 CHANNEL_LAYERS = {
@@ -107,10 +103,7 @@ CHANNEL_LAYERS = {
     }
 }
 
-
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -118,66 +111,36 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = "pt-br"
-
 TIME_ZONE = "America/Sao_Paulo"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Media files (user uploads)
+# Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Limite de upload para arquivos enviados via formulários (10 MB)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
-
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.User"
 
-# URL usado pelo decorator ``login_required``. Sem esta configuracao
-# o Django redireciona para ``/accounts/login/``, que nao existe no
-# projeto e resultava em erro 404.
 LOGIN_URL = "/accounts/login/"
-
-# Redireciona o usuario autenticado para seu perfil apos o login.
 LOGIN_REDIRECT_URL = "/perfil/"
 
 AUTHENTICATION_BACKENDS = [

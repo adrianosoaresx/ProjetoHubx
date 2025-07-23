@@ -5,9 +5,19 @@
 from __future__ import annotations
 
 import os
+import sys
 import random
 from decimal import Decimal
 
+# ---------------------------------------------------------------------------
+# Configure o ambiente Django corretamente
+# Inclua o diretório raiz do projeto no sys.path e defina DJANGO_SETTINGS_MODULE
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, os.pardir))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Use "Hubx.settings" pois a pasta do projeto se chama "Hubx"
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 
 import django
@@ -31,10 +41,10 @@ from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 from tokens.models import TokenAcesso
 
+# Instâncias de Faker e geradores de CPF/CNPJ
 fake = Faker("pt_BR")
 cpf = CPF()
 cnpj = CNPJ()
-
 
 def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     orgs = []
@@ -51,7 +61,6 @@ def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     Organizacao.objects.bulk_create(orgs)
     return list(Organizacao.objects.order_by("-id")[:qtd])
 
-
 def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo]:
     nucleos: list[Nucleo] = []
     for org in orgs:
@@ -66,9 +75,9 @@ def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo
     Nucleo.objects.bulk_create(nucleos)
     return list(Nucleo.objects.filter(organizacao__in=orgs))
 
-
 def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
     users: list[User] = []
+    # Usuário root/superadmin
     root_user = User.objects.create_superuser(
         username="root",
         email="root@hubx.com",
@@ -76,7 +85,9 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
     )
     ConfiguracaoConta.objects.create(user=root_user)
     users.append(root_user)
+    # Demais perfis por organização
     for org in orgs:
+        # Admin
         admin = User.objects.create_user(
             username=f"admin_{org.pk}",
             email=f"admin_{org.pk}@example.com",
@@ -89,6 +100,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         ConfiguracaoConta.objects.create(user=admin)
         users.append(admin)
 
+        # Coordenador
         nucleo_org = random.choice([n for n in nucleos if n.organizacao_id == org.id])
         coordenador = User.objects.create_user(
             username=f"coord_{org.pk}",
@@ -110,6 +122,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         )
         users.append(coordenador)
 
+        # Nucleado
         nucleo_org2 = random.choice([n for n in nucleos if n.organizacao_id == org.id])
         nucleado = User.objects.create_user(
             username=f"nucleado_{org.pk}",
@@ -126,6 +139,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         ParticipacaoNucleo.objects.create(user=nucleado, nucleo=nucleo_org2)
         users.append(nucleado)
 
+        # Associado
         associado = User.objects.create_user(
             username=f"assoc_{org.pk}",
             email=f"assoc_{org.pk}@example.com",
@@ -139,6 +153,7 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         ConfiguracaoConta.objects.create(user=associado)
         users.append(associado)
 
+        # Convidado
         convidado = User.objects.create_user(
             username=f"guest_{org.pk}",
             email=f"guest_{org.pk}@example.com",
@@ -151,7 +166,6 @@ def create_users(orgs: list[Organizacao], nucleos: list[Nucleo]) -> list[User]:
         ConfiguracaoConta.objects.create(user=convidado)
         users.append(convidado)
     return users
-
 
 def create_eventos(nucleos: list[Nucleo], coordenadores: list[User]) -> list[Evento]:
     eventos: list[Evento] = []
@@ -187,7 +201,6 @@ def create_eventos(nucleos: list[Nucleo], coordenadores: list[User]) -> list[Eve
     Evento.objects.bulk_create(eventos)
     return list(Evento.objects.filter(nucleo__in=nucleos))
 
-
 def create_inscricoes(eventos: list[Evento], participantes: list[User]) -> list[InscricaoEvento]:
     inscricoes: list[InscricaoEvento] = []
     for evento in eventos:
@@ -206,7 +219,6 @@ def create_inscricoes(eventos: list[Evento], participantes: list[User]) -> list[
     InscricaoEvento.objects.bulk_create(inscricoes)
     return inscricoes
 
-
 def create_feed(orgs: list[Organizacao], autores: list[User]) -> list[Post]:
     posts: list[Post] = []
     for org in orgs:
@@ -222,7 +234,6 @@ def create_feed(orgs: list[Organizacao], autores: list[User]) -> list[Post]:
             )
     Post.objects.bulk_create(posts)
     return posts
-
 
 def create_chat(orgs: list[Organizacao], users: list[User]) -> tuple[list[ChatConversation], list[ChatMessage]]:
     conversations: list[ChatConversation] = []
@@ -258,10 +269,7 @@ def create_chat(orgs: list[Organizacao], users: list[User]) -> tuple[list[ChatCo
     ChatMessage.objects.bulk_create(messages)
     return conversations, messages
 
-
-def create_discussao(
-    orgs: list[Organizacao], autores: list[User]
-) -> tuple[list[CategoriaDiscussao], list[TopicoDiscussao]]:
+def create_discussao(orgs: list[Organizacao], autores: list[User]) -> tuple[list[CategoriaDiscussao], list[TopicoDiscussao]]:
     categorias: list[CategoriaDiscussao] = []
     for org in orgs:
         categorias.append(
@@ -303,7 +311,6 @@ def create_discussao(
     RespostaDiscussao.objects.bulk_create(respostas)
     return categorias, topicos
 
-
 def create_empresas(orgs: list[Organizacao], usuarios: list[User]) -> list[Empresa]:
     empresas: list[Empresa] = []
     for org in orgs:
@@ -329,7 +336,6 @@ def create_empresas(orgs: list[Organizacao], usuarios: list[User]) -> list[Empre
     Empresa.objects.bulk_create(empresas)
     return empresas
 
-
 def create_parcerias(eventos: list[Evento], empresas: list[Empresa]):
     from agenda.models import ParceriaEvento
 
@@ -350,7 +356,6 @@ def create_parcerias(eventos: list[Evento], empresas: list[Empresa]):
     ParceriaEvento.objects.bulk_create(parcerias)
     return parcerias
 
-
 def create_tokens(usuarios: list[User]) -> list[TokenAcesso]:
     tokens: list[TokenAcesso] = []
     for user in usuarios:
@@ -365,7 +370,6 @@ def create_tokens(usuarios: list[User]) -> list[TokenAcesso]:
         )
     TokenAcesso.objects.bulk_create(tokens)
     return tokens
-
 
 def main() -> None:
     with transaction.atomic():
@@ -389,7 +393,6 @@ def main() -> None:
         f"conversas:{len(convs)} mensagens:{len(msgs)} topicos:{len(topicos)} "
         f"empresas:{len(empresas)} parcerias:{len(parcerias)} tokens:{len(tokens)}"
     )
-
 
 if __name__ == "__main__":
     main()
