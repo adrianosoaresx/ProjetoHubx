@@ -26,8 +26,8 @@
         <div class="border border-neutral-200 rounded-2xl shadow-sm bg-white p-4 flex flex-col gap-4">
           <div class="flex items-center gap-4">
             <div class="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden">
-              {% if organizacao.logo %}
-                <img src="{{ organizacao.logo.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl">
+              {% if organizacao.avatar %}
+                <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl">
               {% else %}
                 <span class="text-xl font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
               {% endif %}

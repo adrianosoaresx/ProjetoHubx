@@ -2,9 +2,16 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
-from core.permissions import SuperadminRequiredMixin
+from accounts.models import UserType
+from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
 
 from .forms import OrganizacaoForm
 from .models import Organizacao
@@ -12,7 +19,7 @@ from .models import Organizacao
 User = get_user_model()
 
 
-class OrganizacaoListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
+class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     model = Organizacao
     template_name = "organizacoes/list.html"
 
@@ -56,3 +63,15 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Organização removida.")
         return super().delete(request, *args, **kwargs)
+
+
+class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
+    model = Organizacao
+    template_name = "organizacoes/detail.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(pk=getattr(user, "organizacao_id", None))
+        return qs

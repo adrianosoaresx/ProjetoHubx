@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ object.nome }} | Hubx{% endblock %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto px-4 py-10 space-y-6">
+  <div class="text-center">
+    {% if object.avatar %}
+      <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-4">
+    {% else %}
+      <div class="w-24 h-24 bg-neutral-200 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-semibold text-neutral-600">
+        {{ object.nome|make_list|first|upper }}
+      </div>
+    {% endif %}
+    <h1 class="text-2xl font-bold text-neutral-900">{{ object.nome }}</h1>
+    <p class="text-sm text-neutral-600">{{ object.cnpj }}</p>
+    {% if object.descricao %}
+      <p class="text-neutral-700 mt-4">{{ object.descricao }}</p>
+    {% endif %}
+  </div>
+  <div class="flex justify-end">
+    <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+  </div>
+</section>
+{% endblock %}

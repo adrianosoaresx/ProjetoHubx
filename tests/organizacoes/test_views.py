@@ -1,4 +1,5 @@
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils.text import slugify
 
@@ -28,12 +29,13 @@ def superadmin_user(client):
 
 
 @pytest.fixture
-def admin_user(client):
+def admin_user(client, organizacao):
     user = User.objects.create_user(
         username="admin",
         email="admin@example.com",
         password="pass",
         user_type=UserType.ADMIN,
+        organizacao=organizacao,
     )
     client.force_login(user)
     return client
@@ -52,10 +54,10 @@ def test_list_view_superadmin(superadmin_user, organizacao):
     assert set(response.context["object_list"]) == set(Organizacao.objects.all())
 
 
-def test_list_view_denied_for_non_superadmin(admin_user):
+def test_list_view_admin_access(admin_user):
     url = reverse("organizacoes:list")
     response = admin_user.get(url)
-    assert response.status_code == 403
+    assert response.status_code == 200
 
 
 def test_create_view_superadmin(superadmin_user, faker_ptbr):
@@ -110,3 +112,39 @@ def test_delete_view_denied_for_admin(admin_user, organizacao):
     response = admin_user.post(url)
     assert response.status_code == 403
     assert Organizacao.objects.filter(pk=organizacao.pk).exists()
+
+
+def test_create_template_fields(superadmin_user):
+    url = reverse("organizacoes:create")
+    resp = superadmin_user.get(url)
+    html = resp.content.decode()
+    for field in ["nome", "cnpj", "descricao", "slug", "avatar", "cover"]:
+        assert f'name="{field}"' in html
+    assert 'name="logo"' not in html
+
+
+def test_list_template_avatar_and_cnpj(superadmin_user, faker_ptbr, tmp_path):
+    avatar = SimpleUploadedFile("a.png", b"x", content_type="image/png")
+    org1 = Organizacao.objects.create(nome="Alpha", cnpj=faker_ptbr.cnpj(), slug="alpha", avatar=avatar)
+    org2 = Organizacao.objects.create(nome="Beta", cnpj=faker_ptbr.cnpj(), slug="beta")
+    resp = superadmin_user.get(reverse("organizacoes:list"))
+    content = resp.content.decode()
+    assert org1.cnpj in content
+    assert org2.cnpj in content
+    assert "img" in content  # avatar shown
+    assert ">B<" in content  # initial for org2
+
+
+def test_ordering_by_nome(superadmin_user, faker_ptbr):
+    Organizacao.objects.create(nome="A Org", cnpj=faker_ptbr.cnpj(), slug="a-org")
+    Organizacao.objects.create(nome="B Org", cnpj=faker_ptbr.cnpj(), slug="b-org")
+    resp = superadmin_user.get(reverse("organizacoes:list"))
+    objs = list(resp.context["object_list"])
+    assert objs[0].nome == "A Org"
+
+
+def test_detail_view_admin_access(admin_user, organizacao):
+    url = reverse("organizacoes:detail", args=[organizacao.pk])
+    resp = admin_user.get(url)
+    assert resp.status_code == 200
+    assert organizacao.nome in resp.content.decode()

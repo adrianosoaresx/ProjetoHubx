@@ -13,7 +13,7 @@
       </svg>
       Voltar
     </a>
-    <h1 class="text-2xl font-bold text-neutral-900">Cadastrar Organização</h1>
+    <h1 class="text-2xl font-bold text-neutral-900">{% block form_title %}Cadastrar Organização{% endblock %}</h1>
   </div>
 
   <!-- Formulário -->
@@ -47,10 +47,26 @@
     </div>
 
     <div>
-      <label for="{{ form.logo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.logo.label }}</label>
-      {{ form.logo }}
-      {% if form.logo.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.logo.errors }}</p>
+      <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.slug.label }}</label>
+      {{ form.slug }}
+      {% if form.slug.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.slug.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
+      {{ form.avatar }}
+      {% if form.avatar.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.avatar.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cover.label }}</label>
+      {{ form.cover }}
+      {% if form.cover.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.cover.errors }}</p>
       {% endif %}
     </div>
 
