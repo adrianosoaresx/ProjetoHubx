@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from core.models import TimeStampedModel
@@ -15,6 +14,7 @@ class Organizacao(TimeStampedModel):
     class Meta:
         verbose_name = "Organização"
         verbose_name_plural = "Organizações"
+        ordering = ["nome"]
 
     def __str__(self) -> str:
         return self.nome
