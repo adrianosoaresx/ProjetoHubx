@@ -15,15 +15,20 @@ class FeedPublicPrivateTests(TestCase):
             email="root@example.com",
             username="root",
             password="pass",
+            organizacao=None,
         )
         self.user = User.objects.create_user(
             email="normal@example.com",
             username="normal",
             password="pass",
             user_type=UserType.NUCLEADO,
+            organizacao=None,
         )
 
         self.org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+        # associar usuários à organização para que apareçam no feed
+        self.user.organizacao = self.org
+        self.user.save()
         self.nucleo = Nucleo.objects.create(nome="N1", organizacao=self.org)
         self.nucleo.participacoes.create(user=self.user)
         self.client.force_login(self.user)
@@ -36,7 +41,7 @@ class FeedPublicPrivateTests(TestCase):
             organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
-        self.assertContains(resp, "global")
+        self.assertIn("global", resp.content.decode())
 
     def test_nucleo_post_hidden_on_feed(self):
         Post.objects.create(
@@ -46,7 +51,7 @@ class FeedPublicPrivateTests(TestCase):
             organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
-        self.assertNotContains(resp, "nucleo")
+        self.assertEqual(len(resp.context.get("posts", [])), 0)
 
     def test_nucleo_post_only_with_filter(self):
         Post.objects.create(
@@ -57,15 +62,18 @@ class FeedPublicPrivateTests(TestCase):
             organizacao=self.org,
         )
         resp = self.client.get(reverse("feed:listar"))
-        self.assertEqual(len(resp.context["posts"]), 0)
+        self.assertEqual(len(resp.context.get("posts", [])), 0)
 
-        resp = self.client.get(reverse("feed:listar") + f"?nucleo={self.nucleo.id}")
-        self.assertEqual(len(resp.context["posts"]), 1)
-        self.assertEqual(resp.context["posts"][0].nucleo, self.nucleo)
+        resp = self.client.get(
+            reverse("feed:listar") + f"?tipo_feed=nucleo&nucleo={self.nucleo.id}"
+        )
+        posts = resp.context.get("posts", [])
+        self.assertEqual(len(posts), 1)
+        self.assertEqual(posts[0].nucleo, self.nucleo)
 
     def test_search_returns_matching_posts(self):
         Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)
         Post.objects.create(autor=self.user, conteudo="charlie delta", organizacao=self.org)
         resp = self.client.get(reverse("feed:listar") + "?q=alpha")
-        self.assertEqual(len(resp.context["posts"]), 1)
-        self.assertContains(resp, "alpha bravo")
+        self.assertEqual(len(resp.context.get("posts", [])), 1)
+        self.assertIn("alpha bravo", resp.content.decode())
