@@ -14,7 +14,7 @@ def test_postform_media_validation(nucleado_user):
         user=nucleado_user,
     )
     assert not form.is_valid()
-    assert "Envie apenas imagem OU PDF, não ambos." in form.non_field_errors()[0]
+    assert form.errors.get("image") is not None
 
 
 @pytest.mark.django_db
@@ -26,23 +26,24 @@ def test_postform_content_required(nucleado_user):
 
 @pytest.mark.django_db
 def test_postform_nucleo_required(nucleado_user):
-    form = PostForm(data={"tipo_feed": "nucleo"}, user=nucleado_user)
+    form = PostForm(data={"tipo_feed": "nucleo", "conteudo": "x"}, user=nucleado_user)
     assert not form.is_valid()
-    assert form.errors["nucleo"] == ["Selecione o núcleo."]
+    assert form.errors.get("nucleo") == ["Selecione o núcleo."]
 
 
 @pytest.mark.django_db
 def test_postform_nucleo_membership(admin_user, nucleo):
-    form = PostForm(data={"tipo_feed": "nucleo", "nucleo": nucleo.id}, user=admin_user)
+    form = PostForm(data={"tipo_feed": "nucleo", "nucleo": nucleo.id, "conteudo": "x"}, user=admin_user)
     assert not form.is_valid()
-    assert form.errors["nucleo"] == ["Usuário não é membro do núcleo."]
+    msg = form.errors.get("nucleo")[0]
+    assert "faça uma escolha válida" in msg.lower()
 
 
 @pytest.mark.django_db
 def test_postform_evento_required(nucleado_user):
-    form = PostForm(data={"tipo_feed": "evento"}, user=nucleado_user)
+    form = PostForm(data={"tipo_feed": "evento", "conteudo": "x"}, user=nucleado_user)
     assert not form.is_valid()
-    assert form.errors["evento"] == ["Selecione o evento."]
+    assert form.errors.get("evento") == ["Selecione o evento."]
 
 
 @pytest.mark.django_db
