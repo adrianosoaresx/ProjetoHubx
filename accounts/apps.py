@@ -6,4 +6,5 @@ class AccountsConfig(AppConfig):
     name = "accounts"
 
     def ready(self) -> None:  # pragma: no cover - import side effects
-        """Dispara import de sinais se existir."""
+        """Importa sinais para criar configuracoes de notificacao."""
+        from . import signals  # noqa: F401
