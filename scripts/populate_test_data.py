@@ -24,20 +24,16 @@ import django
 
 django.setup()
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
 from faker import Faker
 from validate_docbr import CNPJ, CPF
 
-from accounts.models import User, UserType
+from accounts.models import UserType
 from agenda.models import Evento, InscricaoEvento, ParceriaEvento
-from chat.models import (
-    ChatConversation,
-    ChatMessage,
-    ChatNotification,
-    ChatParticipant,
-)
+from chat.models import ChatConversation, ChatMessage, ChatParticipant
 from configuracoes.models import ConfiguracaoConta
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
@@ -45,6 +41,8 @@ from feed.models import Post
 from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 from tokens.models import TokenAcesso
+
+User = get_user_model()
 
 # Instâncias de Faker e geradores de CPF/CNPJ
 fake = Faker("pt_BR")
@@ -55,23 +53,20 @@ cnpj = CNPJ()
 def clear_test_data() -> None:
     """Remove previously generated data keeping only the root user."""
     TokenAcesso.objects.all().delete()
-    ChatNotification.objects.all().delete()
     ChatMessage.objects.all().delete()
     ChatParticipant.objects.all().delete()
     ChatConversation.objects.all().delete()
-    Post.objects.all().delete()
     RespostaDiscussao.objects.all().delete()
     TopicoDiscussao.objects.all().delete()
     CategoriaDiscussao.objects.all().delete()
+    Post.objects.all().delete()
     InscricaoEvento.objects.all().delete()
-    ParceriaEvento.objects.all().delete()
     Evento.objects.all().delete()
     Empresa.objects.all().delete()
-    ParticipacaoNucleo.objects.all().delete()
+    ConfiguracaoConta.objects.exclude(user__is_superuser=True).delete()
+    User.objects.filter(is_superuser=False).delete()
     Nucleo.objects.all().delete()
     Organizacao.objects.all().delete()
-    ConfiguracaoConta.objects.exclude(user__is_superuser=True).delete()
-    User.objects.exclude(is_superuser=True).delete()
 
 
 def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
