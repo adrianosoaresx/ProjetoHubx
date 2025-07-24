@@ -26,11 +26,11 @@ def nucleo(organizacao):
 
 
 @pytest.fixture
-def evento(organizacao, nucleo):
+def evento(organizacao, nucleo, coordenador_user):
     return Evento.objects.create(
         organizacao=organizacao,
         nucleo=nucleo,
-        coordenador=None,
+        coordenador=coordenador_user,
         titulo="Evento",
         descricao="",
         data_inicio="2024-01-01",
