@@ -51,8 +51,18 @@ class CalendarViewTests(TestCase):
             titulo="Evento",
             data_inicio=make_aware(datetime.combine(dia, datetime.min.time())),
             data_fim=make_aware(datetime.combine(dia, datetime.min.time()) + timedelta(hours=1)),
+            status=0,
+            publico_alvo=0,
+            numero_convidados=10,
+            numero_presentes=0,
+            endereco="Rua X",
+            cidade="Cidade",
+            estado="ST",
+            cep="12345-678",
+            coordenador=self.admin,
+            contato_nome="Admin",
         )
-        InscricaoEvento.objects.create(evento=evento, usuario=self.admin, status="confirmada")
+        InscricaoEvento.objects.create(evento=evento, user=self.admin, status="confirmada")
         resp = self.client.get(
             reverse("agenda:lista_eventos", args=[dia.isoformat()]),
             HTTP_HX_REQUEST="true",
@@ -70,7 +80,11 @@ class CalendarViewTests(TestCase):
 
     def test_root_cannot_create_event(self):
         User = get_user_model()
-        root = User.objects.get(username="root")
+        root = User.objects.create_superuser(
+            email="root@example.com",
+            username="root",
+            password="pass",
+        )
         self.client.force_login(root)
         resp = self.client.get(reverse("agenda:evento_novo"))
         self.assertEqual(resp.status_code, 403)

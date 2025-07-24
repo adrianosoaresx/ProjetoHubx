@@ -52,7 +52,7 @@ def feedbacks(evento_passado, usuario):
         username="outro_pessoa",
         email="outro_pessoa@example.com",
         password="12345",
-        user_type=usuario.user_type,
+        user_type=UserType(usuario.user_type),
     )
     FeedbackNota.objects.create(evento=evento_passado, usuario=usuario, nota=4)
     FeedbackNota.objects.create(
