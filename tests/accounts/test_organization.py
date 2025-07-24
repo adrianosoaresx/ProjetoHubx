@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
+from accounts.models import User, UserType
+
 
 class OrganizationUserTests(TestCase):
     def setUp(self):
@@ -14,17 +16,13 @@ class OrganizationUserTests(TestCase):
             username="admin1",
             password="pass",
             organizacao=self.org1,
-            is_staff=True,
-            nome_completo="Admin Um",
-            cpf="000.000.000-01",
+            user_type=UserType.ADMIN,
         )
         self.admin2 = self.User.objects.create_user(
             email="admin2@example.com",
             username="admin2",
             password="pass",
             organizacao=self.org2,
-            nome_completo="Admin Dois",
-            cpf="000.000.000-02",
         )
         self.root = self.User.objects.create_superuser(
             email="root@example.com",
@@ -43,16 +41,12 @@ class OrganizationUserTests(TestCase):
             username="joao",
             password="pass",
             organizacao=self.org1,
-            nome_completo="Joao Um",
-            cpf="000.000.000-03",
         )
         self.User.objects.create_user(
             email="joao2@example.com",
             username="joao",
             password="pass",
             organizacao=self.org1,
-            nome_completo="Joao Dois",
-            cpf="000.000.000-04",
         )
         count = self.User.objects.filter(username="joao", organizacao=self.org1).count()
         self.assertEqual(count, 2)
@@ -62,8 +56,6 @@ class OrganizationUserTests(TestCase):
             username="joao",
             password="pass",
             organizacao=self.org2,
-            nome_completo="Joao Tres",
-            cpf="000.000.000-05",
         )
         self.assertEqual(other.username, "joao")
 

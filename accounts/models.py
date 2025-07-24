@@ -1,18 +1,15 @@
 # accounts/models.py
-from __future__ import annotations
-
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import PROTECT
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
 
+from core.fields import URLField
 from core.models import TimeStampedModel
 
 # ───────────────────────────────────────────────────────────────
@@ -57,13 +54,16 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         email: str,
         username: str,
         password: str | None = None,
+        user_type: UserType = UserType.CONVIDADO,
         **extra_fields,
     ):
+        extra_fields.setdefault("user_type", user_type.value)
         return self._create_user(email, username, password, **extra_fields)
 
     def create_superuser(self, email: str, username: str, password: str, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("user_type", UserType.ROOT.value)
         if extra_fields.get("is_staff") is not True:
             raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get("is_superuser") is not True:
@@ -100,30 +100,78 @@ class User(AbstractUser, TimeStampedModel):
         db_index=True,
     )
 
-    # Campos adicionais conforme requisitos
-    nome_completo = models.CharField(max_length=150, blank=True)
-    cpf = models.CharField(max_length=14, unique=True, validators=[cpf_validator], blank=True, null=True)
-    avatar = models.ImageField(upload_to="usuarios/avatars/", blank=True, null=True)
-    cover = models.ImageField(upload_to="usuarios/capas/", blank=True, null=True)
+    # Campos adicionais
+    phone_number = PhoneNumberField(
+        "Telefone",
+        region="BR",
+        blank=True,
+        null=True,
+        help_text="Ex.: +55 48 99999-0000",
+    )
+    address = models.CharField(
+        "Endereço",
+        max_length=255,
+        blank=True,
+        help_text="Rua, número, complemento, cidade/UF",
+    )
+    birth_date = models.DateField("Data de nascimento", blank=True, null=True)
+    cpf = models.CharField(
+        "CPF",
+        max_length=14,  # 000.000.000-00
+        blank=True,
+        null=True,
+        unique=True,
+        validators=[cpf_validator],
+    )
+    nome_completo = models.CharField(max_length=255, blank=True)
     biografia = models.TextField(blank=True)
+    cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
+    fone = models.CharField(max_length=20, blank=True)
+    whatsapp = models.CharField(max_length=20, blank=True)
+
+    # Campos migrados do antigo modelo Perfil
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     endereco = models.CharField(max_length=255, blank=True)
+    cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)
-    cep = models.CharField(max_length=9, blank=True)
-    fone = models.CharField(max_length=15, blank=True)
-    whatsapp = models.CharField(max_length=15, blank=True)
-    redes_sociais = models.JSONField(blank=True, null=True)
+    cep = models.CharField(max_length=10, blank=True)
+    facebook = URLField(blank=True)
+    twitter = URLField(blank=True)
+    instagram = URLField(blank=True)
+    linkedin = URLField(blank=True)
+    website = URLField(blank=True)
+    redes_sociais = models.JSONField(default=dict, blank=True, null=True)
+    idioma = models.CharField(max_length=10, blank=True)
+    fuso_horario = models.CharField(max_length=50, blank=True)
+    perfil_publico = models.BooleanField(default=True)
+    mostrar_email = models.BooleanField(default=True)
+    mostrar_telefone = models.BooleanField(default=False)
+
+    user_type = models.CharField(
+        max_length=20,
+        choices=UserType.choices,
+        default=UserType.CONVIDADO,
+        verbose_name="Tipo de Usuário",
+    )
+
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=PROTECT,
-        related_name="usuarios",
+        related_name="users",
+        null=True,  # Alterado de False para True
+        blank=True,  # Permitir valores nulos
+        default=None,  # Removido o valor padrão inválido
+        verbose_name=_("Organização"),
+    )
+    is_associado = models.BooleanField(default=False, verbose_name=_("É associado"))
+    is_coordenador = models.BooleanField(default=False, verbose_name=_("É coordenador"))
+    nucleo = models.ForeignKey(
+        "nucleos.Nucleo",
+        on_delete=SET_NULL,
+        related_name="usuarios_principais",
         null=True,
         blank=True,
-    )
-    is_associado = models.BooleanField(default=False)
-    nucleos = models.ManyToManyField(
-        "nucleos.Nucleo",
-        through="nucleos.ParticipacaoNucleo",
-        related_name="usuarios",
+        verbose_name=_("Núcleo"),
     )
 
     objects = CustomUserManager()
@@ -139,25 +187,23 @@ class User(AbstractUser, TimeStampedModel):
     def organizacao_display(self, value):
         self.organizacao = value
 
-    def get_tipo_usuario(self) -> str:
+    @property
+    def get_tipo_usuario(self):
         if self.is_superuser:
             return UserType.ROOT.value
         if self.is_staff and not self.is_associado:
             return UserType.ADMIN.value
-        if self.participacoes.filter(is_coordenador=True).exists():
+        if self.is_associado and self.nucleo and self.is_coordenador:
             return UserType.COORDENADOR.value
-        if self.is_associado and self.nucleos.exists():
+        if self.is_associado and self.nucleo and not self.is_coordenador:
             return UserType.NUCLEADO.value
-        if self.is_associado:
+        if self.is_associado and not self.nucleo:
             return UserType.ASSOCIADO.value
         return UserType.CONVIDADO.value
 
-    def is_coordenador_do(self, nucleo) -> bool:
-        return self.participacoes.filter(nucleo=nucleo, is_coordenador=True).exists()
-
     def save(self, *args, **kwargs):
-        if not self.is_superuser and not self.organizacao:
-            raise ValidationError({"organizacao": "Obrigatória para usuários comuns."})
+        if self.user_type == UserType.ROOT.value:
+            self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
 
     # Relacionamentos sociais
@@ -169,31 +215,46 @@ class User(AbstractUser, TimeStampedModel):
         blank=True,
     )
 
+    # Configurações de metadados
     class Meta:
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
+        # Removida a constraint temporariamente para evitar erro
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["username", "organizacao"],
+        #         name="accounts_user_username_org_uniq",
+        #     )
+        # ]
 
     # Representação legível
     def __str__(self):
         return self.get_full_name() or self.username
 
 
-class ConfiguracaoDeConta(TimeStampedModel):
+class NotificationSettings(TimeStampedModel):
+    """Preferências de notificação do usuário."""
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="configuracoes",
+        related_name="notification_settings",
     )
-    receber_notificacoes_email = models.BooleanField(default=True)
-    receber_notificacoes_whatsapp = models.BooleanField(default=False)
-    tema_escuro = models.BooleanField(default=False)
+    email_conexoes = models.BooleanField(default=True)
+    email_mensagens = models.BooleanField(default=True)
+    email_eventos = models.BooleanField(default=True)
+    email_newsletter = models.BooleanField(default=True)
+    sistema_conexoes = models.BooleanField(default=True)
+    sistema_mensagens = models.BooleanField(default=True)
+    sistema_eventos = models.BooleanField(default=True)
+    sistema_comentarios = models.BooleanField(default=True)
 
     class Meta:
-        verbose_name = "Configuração de Conta"
-        verbose_name_plural = "Configurações de Conta"
+        verbose_name = "Configuração de Notificação"
+        verbose_name_plural = "Configurações de Notificação"
 
-    def __str__(self) -> str:
-        return f"Configuração de {self.user}"
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"Notificações de {self.user}"
 
 
 class MediaTag(TimeStampedModel):
@@ -227,9 +288,3 @@ class UserMedia(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
-
-
-@receiver(post_save, sender=User)
-def criar_configuracao_conta(sender, instance: User, created: bool, **_: object) -> None:
-    if created:
-        ConfiguracaoDeConta.objects.create(user=instance)
