@@ -1,19 +1,12 @@
-from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
-from django.contrib.auth.hashers import make_password
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-
-from core.permissions import IsAdmin, IsCoordenador
-from accounts.models import UserType
-from accounts.serializers import UserSerializer
-
-User = get_user_model()
 import os
 import uuid
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -21,27 +14,27 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from tokens.forms import TokenAcessoForm
+from accounts.models import UserType
+from accounts.serializers import UserSerializer
+from core.permissions import IsAdmin, IsCoordenador
 from tokens.models import TokenAcesso
 
 from .forms import (
+    ConfiguracaoContaForm,
+    CustomUserChangeForm,
     CustomUserCreationForm,
     InformacoesPessoaisForm,
     MediaForm,
-    NotificacoesForm,
     RedesSociaisForm,
-    CustomUserChangeForm,
 )
-from .models import NotificationSettings, UserMedia, cpf_validator
+from .models import ConfiguracaoDeConta, UserMedia, cpf_validator
+
+User = get_user_model()
 
 # ====================== PERFIL ======================
-
-
-@login_required
-def perfil_home(request):
-    return redirect("accounts:informacoes_pessoais")
 
 
 @login_required
@@ -89,16 +82,16 @@ def perfil_seguranca(request):
 
 @login_required
 def perfil_notificacoes(request):
-    settings_obj, _ = NotificationSettings.objects.get_or_create(user=request.user)
+    settings_obj, _ = ConfiguracaoDeConta.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
-        form = NotificacoesForm(request.POST, instance=settings_obj)
+        form = ConfiguracaoContaForm(request.POST, instance=settings_obj)
         if form.is_valid():
             form.save()
             messages.success(request, "Preferências de notificação salvas.")
             return redirect("accounts:notificacoes")
     else:
-        form = NotificacoesForm(instance=settings_obj)
+        form = ConfiguracaoContaForm(instance=settings_obj)
 
     return render(request, "perfil/notificacoes.html", {"form": form})
 
@@ -372,7 +365,7 @@ def perfil_home(request):
         "user": user,
         "connections": getattr(user, "connections", []).all(),
         "medias": user.medias.all(),
-        "notifications": NotificationSettings.objects.filter(user=user).first(),
+        "notifications": ConfiguracaoDeConta.objects.filter(user=user).first(),
     }
     return render(request, "perfil/detail.html", context)
 
