@@ -1,17 +1,18 @@
-from django import forms
+from __future__ import annotations
 
-from configuracoes.models import ConfiguracaoConta
+from rest_framework import serializers
+
+from .models import ConfiguracaoConta
 
 
-class ConfiguracaoContaForm(forms.ModelForm):
+class ConfiguracaoContaSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConfiguracaoConta
-        fields = (
+        fields = [
             "receber_notificacoes_email",
             "frequencia_notificacoes_email",
             "receber_notificacoes_whatsapp",
             "frequencia_notificacoes_whatsapp",
             "idioma",
             "tema",
-            "tema_escuro",
-        )
+        ]

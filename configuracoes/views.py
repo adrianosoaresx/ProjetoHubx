@@ -1,7 +1,9 @@
-from django.shortcuts import render
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render
 from django.views.generic import View
+
 from configuracoes.forms import ConfiguracaoContaForm
+
 
 class ConfiguracoesView(LoginRequiredMixin, View):
     def get(self, request):
