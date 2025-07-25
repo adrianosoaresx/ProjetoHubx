@@ -4,8 +4,7 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from accounts.models import UserType
-from empresas.factories import EmpresaFactory
-from empresas.models import ContatoEmpresa
+from empresas.models import Tag
 from organizacoes.factories import OrganizacaoFactory
 
 User = get_user_model()
@@ -61,37 +60,13 @@ def nucleado_user(db, organizacao):
 
 
 @pytest.fixture
-def empresa(db, gerente_user):
-    return EmpresaFactory(usuario=gerente_user, organizacao=gerente_user.organizacao)
+def tag_factory(db):
+    def factory(**kwargs):
+        return Tag.objects.create(**kwargs)
+
+    return factory
 
 
-@pytest.fixture
-def outra_empresa(db, gerente_user):
-    return EmpresaFactory(usuario=gerente_user, organizacao=gerente_user.organizacao)
-
-
-@pytest.fixture
-def contato_principal(db, empresa):
-    return ContatoEmpresa.objects.create(
-        empresa=empresa,
-        nome="Fulano",
-        cargo="CEO",
-        email="contato1@example.com",
-        telefone="1111",
-        principal=True,
-    )
-
-
-@pytest.fixture
-def contato_secundario(db, empresa):
-    return ContatoEmpresa.objects.create(
-        empresa=empresa,
-        nome="Beltrano",
-        cargo="CTO",
-        email="contato2@example.com",
-        telefone="2222",
-        principal=False,
-    )
 
 
 @pytest.fixture(autouse=True)

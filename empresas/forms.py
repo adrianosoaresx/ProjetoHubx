@@ -12,20 +12,14 @@ class EmpresaForm(forms.ModelForm):
         model = Empresa
         fields = [
             "organizacao",
-            "razao_social",
-            "nome_fantasia",
+            "nome",
             "cnpj",
-            "ramo_atividade",
-            "endereco",
-            "cidade",
+            "tipo",
+            "municipio",
             "estado",
-            "cep",
-            "email_corporativo",
-            "telefone_corporativo",
-            "site",
-            "rede_social",
             "logo",
-            "banner",
+            "descricao",
+            "palavras_chave",
         ]
 
     def __init__(self, *args, **kwargs):
