@@ -51,6 +51,10 @@ urlpatterns = [
         include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
     ),
     path(
+        "api/",
+        include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
+    ),
+    path(
         "nucleos/",
         include(("nucleos.urls", "nucleos"), namespace="nucleos"),
     ),
