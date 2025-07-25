@@ -87,8 +87,18 @@ class ChatMessage(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="sent_messages",
     )
+    MESSAGE_TYPES = [
+        ("text", "Texto"),
+        ("image", "Imagem"),
+        ("video", "Vídeo"),
+        ("file", "Arquivo"),
+    ]
+
+    tipo = models.CharField(max_length=10, choices=MESSAGE_TYPES, default="text")
     conteudo = models.TextField(blank=True)
     arquivo = models.FileField(upload_to="chat/arquivos/", null=True, blank=True)
+    pinned_at = models.DateTimeField(null=True, blank=True)
+    reactions = models.JSONField(default=dict, blank=True)
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
 
     def __str__(self) -> str:
@@ -119,3 +129,14 @@ class ChatNotification(TimeStampedModel):
     class Meta:
         verbose_name = "Notificação"
         verbose_name_plural = "Notificações"
+
+
+class RelatorioChatExport(TimeStampedModel):
+    channel = models.ForeignKey(ChatConversation, on_delete=models.CASCADE)
+    formato = models.CharField(max_length=10)
+    gerado_por = models.ForeignKey(User, on_delete=models.CASCADE)
+    arquivo_url = models.URLField()
+
+    class Meta:
+        verbose_name = "Relatório de Exportação"
+        verbose_name_plural = "Relatórios de Exportação"

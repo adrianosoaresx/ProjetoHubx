@@ -1,12 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
-from django.conf import settings
 
 from accounts.models import UserType
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
 from agenda.models import Evento
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 User = get_user_model()
 
