@@ -1,11 +1,17 @@
+from __future__ import annotations
+
+import uuid
+
 from django.conf import settings
-from django.db import models
-from django.utils.text import slugify
-from model_utils.models import TimeStampedModel
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.utils import timezone
+from django.utils.text import slugify
+from model_utils.models import TimeStampedModel
 
 # Create your models here.
+
 
 class CategoriaDiscussao(TimeStampedModel):
     nome = models.CharField(max_length=100)
@@ -30,9 +36,7 @@ class CategoriaDiscussao(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="categorias_discussao",
     )
-    icone = models.ImageField(
-        upload_to="discussoes/icones/", null=True, blank=True
-    )
+    icone = models.ImageField(upload_to="discussoes/icones/", null=True, blank=True)
 
     class Meta:
         unique_together = ("nome", "organizacao", "nucleo", "evento")
@@ -44,6 +48,19 @@ class CategoriaDiscussao(TimeStampedModel):
         if not self.slug:
             self.slug = slugify(self.nome)
         super().save(*args, **kwargs)
+
+
+class Tag(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nome = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "Tag"
+        verbose_name_plural = "Tags"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.nome
 
 
 class TopicoDiscussao(TimeStampedModel):
@@ -63,9 +80,20 @@ class TopicoDiscussao(TimeStampedModel):
     publico_alvo = models.PositiveSmallIntegerField(
         choices=[(0, "Todos"), (1, "Apenas nucleados"), (2, "Apenas associados")]
     )
-    tags = models.CharField(max_length=255, blank=True)
+    melhor_resposta = models.ForeignKey(
+        "RespostaDiscussao",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="topico_melhor_resposta",
+    )
+    tags = models.ManyToManyField("Tag", blank=True, related_name="topicos")
+    status = models.CharField(
+        max_length=7,
+        choices=[("aberto", "Aberto"), ("fechado", "Fechado")],
+        default="aberto",
+    )
     numero_visualizacoes = models.PositiveIntegerField(default=0)
-    fechado = models.BooleanField(default=False)
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",
         null=True,
@@ -107,9 +135,7 @@ class RespostaDiscussao(TimeStampedModel):
         related_name="respostas_discussao",
     )
     conteudo = models.TextField()
-    arquivo = models.FileField(
-        upload_to="discussoes/arquivos/", null=True, blank=True
-    )
+    arquivo = models.FileField(upload_to="discussoes/arquivos/", null=True, blank=True)
     reply_to = models.ForeignKey(
         "self",
         null=True,
@@ -118,6 +144,8 @@ class RespostaDiscussao(TimeStampedModel):
         related_name="respostas_filhas",
     )
     editado = models.BooleanField(default=False)
+    editado_em = models.DateTimeField(null=True, blank=True)
+    motivo_edicao = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering = ["created"]
@@ -127,6 +155,7 @@ class RespostaDiscussao(TimeStampedModel):
     def editar_resposta(self, novo_conteudo):
         self.conteudo = novo_conteudo
         self.editado = True
+        self.editado_em = timezone.now()
         self.save()
 
 
