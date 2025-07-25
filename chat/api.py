@@ -31,3 +31,10 @@ def notify_users(recipient_ids, remetente_id: int, message: ChatMessage):
             remetente_id=remetente_id,
             mensagem=message,
         )
+
+
+def add_reaction(message: ChatMessage, emoji: str) -> None:
+    reactions = message.reactions
+    reactions[emoji] = reactions.get(emoji, 0) + 1
+    message.reactions = reactions
+    message.save(update_fields=["reactions"])

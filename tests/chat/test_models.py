@@ -66,6 +66,7 @@ def test_chat_message_creation(media_root, conversation, admin_user):
     msg = ChatMessage.objects.create(
         conversation=conversation,
         sender=admin_user,
+        tipo="text",
         conteudo="hello",
     )
     assert msg.conversation == conversation
@@ -80,6 +81,7 @@ def test_chat_message_file_handling(media_root, conversation, admin_user):
     msg = ChatMessage.objects.create(
         conversation=conversation,
         sender=admin_user,
+        tipo="file",
         arquivo=file,
     )
     assert msg.arquivo.name.startswith("chat/arquivos/")
@@ -93,6 +95,7 @@ def test_chat_notification_basic(conversation, admin_user):
     msg = ChatMessage.objects.create(
         conversation=conversation,
         sender=admin_user,
+        tipo="text",
         conteudo="oi",
     )
     notif = ChatNotification.objects.create(user=admin_user, mensagem=msg)

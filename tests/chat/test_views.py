@@ -54,7 +54,10 @@ def test_conversation_detail_allows_post_message(client, admin_user, coordenador
     ChatParticipant.objects.create(conversation=conv, user=coordenador_user)
 
     client.force_login(admin_user)
-    resp = client.post(reverse("chat:conversation_detail", args=[conv.slug]), {"conteudo": "hi"})
+    resp = client.post(
+        reverse("chat:conversation_detail", args=[conv.slug]),
+        {"tipo": "text", "conteudo": "hi"},
+    )
     assert resp.status_code == 302
     assert ChatMessage.objects.filter(conversation=conv, sender=admin_user, conteudo="hi").exists()
 
@@ -72,7 +75,10 @@ def test_conversation_detail_file_upload(client, admin_user, coordenador_user, m
     ChatParticipant.objects.create(conversation=conv, user=coordenador_user)
     client.force_login(admin_user)
     file = SimpleUploadedFile("f.txt", b"data")
-    resp = client.post(reverse("chat:conversation_detail", args=[conv.slug]), {"arquivo": file})
+    resp = client.post(
+        reverse("chat:conversation_detail", args=[conv.slug]),
+        {"tipo": "file", "arquivo": file},
+    )
     assert resp.status_code == 302
     msg = ChatMessage.objects.get(conversation=conv)
     assert msg.arquivo.name.startswith("chat/arquivos/")
