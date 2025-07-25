@@ -11,77 +11,57 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Página inicial (app core)
     path("", include(("core.urls", "core"), namespace="core")),
-    path(
-        "dashboard/",
-        include(("dashboard.urls", "dashboard"), namespace="dashboard"),
-    ),
+    # Dashboard web
+    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     # Apps de autenticação/usuário
-    path(
-        "accounts/",
-        include(("accounts.urls", "accounts"), namespace="accounts"),
-    ),
+    path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
-    # CRUD de Empresas
-    path(
-        "empresas/",
-        include(("empresas.urls", "empresas"), namespace="empresas"),
-    ),
-    path(
-        "organizacoes/",
-        include(("organizacoes.urls", "organizacoes"), namespace="organizacoes"),
-    ),
-    path(
-        "api/",
-        include(("organizacoes.api_urls", "organizacoes_api"), namespace="organizacoes_api"),
-    ),
-    path(
-        "api/",
-        include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
-    ),
-    path(
-        "api/",
-        include(("empresas.api_urls", "empresas_api"), namespace="empresas_api"),
-    ),
-    path(
-        "api/",
-        include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
-    ),
-    path(
-        "api/",
-        include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
-    ),
-    path(
-        "api/",
-        include(("configuracoes.api_urls", "configuracoes_api"), namespace="configuracoes_api")
-    ),
-    path(
-          "api/",
-          include(("accounts.api_urls", "accounts_api"), namespace="accounts_api")
-    ),
-    path(
-        "api/",
-    include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
-    ),
-    path(
-        "nucleos/",
-        include(("nucleos.urls", "nucleos"), namespace="nucleos"),
-    ),
-    path(
-        "agenda/",
-        include(("agenda.urls", "agenda"), namespace="agenda"),
-    ),
-    path(
-        "eventos/",
-        RedirectView.as_view(url="/agenda/", permanent=True),
-    ),
-    path(
-        "eventos/<path:rest>/",
-        RedirectView.as_view(url="/agenda/%(rest)s", permanent=True),
-    ),
+    # CRUD de Empresas, Organizações e Núcleos (front‑end)
+    path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
+    path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
+    path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
+    # Agenda/Eventos
+    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("eventos/", RedirectView.as_view(url="/agenda/", permanent=True)),
+    path("eventos/<path:rest>/", RedirectView.as_view(url="/agenda/%(rest)s", permanent=True)),
+    # Chat, Discussão e Feed (web)
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("select2/", include("django_select2.urls")),
+    # APIs REST (subcaminhos específicos)
+    path(
+        "api/organizacoes/",
+        include(("organizacoes.api_urls", "organizacoes_api"), namespace="organizacoes_api"),
+    ),
+    path(
+        "api/nucleos/",
+        include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
+    ),
+    path(
+        "api/empresas/",
+        include(("empresas.api_urls", "empresas_api"), namespace="empresas_api"),
+    ),
+    path(
+        "api/dashboard/",
+        include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
+    ),
+    path(
+        "api/tokens/",
+        include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
+    ),
+    path(
+        "api/configuracoes/",
+        include(("configuracoes.api_urls", "configuracoes_api"), namespace="configuracoes_api"),
+    ),
+    path(
+        "api/accounts/",
+        include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
+    ),
+    path(
+        "api/discussao/",
+        include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
+    ),
 ]
 
 # Arquivos de mídia em desenvolvimento
