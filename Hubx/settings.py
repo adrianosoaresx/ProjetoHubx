@@ -133,6 +133,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+USER_MEDIA_MAX_SIZE = 50 * 1024 * 1024  # 50MB
+USER_MEDIA_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".mp4", ".webm"]
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
