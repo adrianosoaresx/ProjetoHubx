@@ -7,6 +7,7 @@ import pyotp
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
 
@@ -24,9 +25,10 @@ class TokenAcesso(TimeStampedModel):
         CONVIDADO = "convidado", "Convidado"
 
     class Estado(models.TextChoices):
-        NOVO = "novo", "Não usado"
-        USADO = "usado", "Usado"
-        EXPIRADO = "expirado", "Expirado"
+        NOVO = "novo", _("Não usado")
+        USADO = "usado", _("Usado")
+        EXPIRADO = "expirado", _("Expirado")
+        REVOGADO = "revogado", _("Revogado")
 
     codigo = models.CharField(
         max_length=32,
@@ -41,6 +43,16 @@ class TokenAcesso(TimeStampedModel):
         default=Estado.NOVO,
     )
     data_expiracao = models.DateTimeField(null=True, blank=True)
+    ip_gerado = models.GenericIPAddressField(null=True, blank=True)
+    ip_utilizado = models.GenericIPAddressField(null=True, blank=True)
+    revogado_em = models.DateTimeField(null=True, blank=True)
+    revogado_por = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="tokens_revogados",
+    )
 
     gerado_por = models.ForeignKey(
         get_user_model(),
@@ -69,6 +81,34 @@ class TokenAcesso(TimeStampedModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class TokenUsoLog(models.Model):
+    class Acao(models.TextChoices):
+        GERACAO = "geracao", _("Geração")
+        VALIDACAO = "validacao", _("Validação")
+        USO = "uso", _("Uso")
+        REVOGACAO = "revogacao", _("Revogação")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.ForeignKey(
+        TokenAcesso,
+        on_delete=models.CASCADE,
+        related_name="logs",
+    )
+    usuario = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    acao = models.CharField(max_length=20, choices=Acao.choices)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=256, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
 
 
 class CodigoAutenticacao(TimeStampedModel):
