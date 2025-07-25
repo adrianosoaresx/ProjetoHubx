@@ -18,7 +18,11 @@ def test_configuracao_criada_automaticamente(admin_user):
 def test_configuracao_valores_padrao(admin_user):
     config = admin_user.configuracao
     assert config.receber_notificacoes_email is True
+    assert config.frequencia_notificacoes_email == "imediata"
     assert config.receber_notificacoes_whatsapp is False
+    assert config.frequencia_notificacoes_whatsapp == "imediata"
+    assert config.idioma == "pt-BR"
+    assert config.tema == "claro"
     assert config.tema_escuro is False
 
 
