@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -29,31 +33,27 @@ class Tag(TimeStampedModel):
 
 
 class Empresa(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="empresas")
     organizacao = models.ForeignKey("organizacoes.Organizacao", on_delete=models.CASCADE, related_name="empresas")
-    razao_social = models.CharField(max_length=255)
-    nome_fantasia = models.CharField(max_length=255)
+    nome = models.CharField(max_length=255, default="")
     cnpj = models.CharField(max_length=18, unique=True)
-    ramo_atividade = models.CharField(max_length=100)
-    endereco = models.CharField(max_length=255)
-    cidade = models.CharField(max_length=100)
-    estado = models.CharField(max_length=2)
-    cep = models.CharField(max_length=9)
-    email_corporativo = models.EmailField()
-    telefone_corporativo = models.CharField(max_length=20)
-    site = models.URLField(blank=True)
-    rede_social = models.URLField(blank=True)
+    tipo = models.CharField(max_length=50, default="")
+    municipio = models.CharField(max_length=100, default="")
+    estado = models.CharField(max_length=2, default="")
     logo = models.ImageField(upload_to="empresas/logos/", blank=True, null=True)
-    banner = models.ImageField(upload_to="empresas/banners/", blank=True, null=True)
+    descricao = models.TextField(blank=True)
+    palavras_chave = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ["razao_social"]
+        ordering = ["nome"]
         verbose_name = "Empresa"
         verbose_name_plural = "Empresas"
 
     def __str__(self) -> str:
-        return self.razao_social
+        return self.nome
 
     def clean(self) -> None:
         if not CNPJ().validate(self.cnpj):
@@ -82,3 +82,38 @@ class ContatoEmpresa(TimeStampedModel):
                 principal=False
             )
         super().save(*args, **kwargs)
+
+
+class EmpresaChangeLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="logs")
+    usuario = models.ForeignKey(
+        get_user_model(), on_delete=models.SET_NULL, null=True, blank=True
+    )
+    campo_alterado = models.CharField(max_length=50)
+    valor_antigo = models.TextField(blank=True)
+    valor_novo = models.TextField(blank=True)
+    alterado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-alterado_em"]
+
+    def __str__(self) -> str:
+        return f"{self.empresa.nome} - {self.campo_alterado}"
+
+
+class AvaliacaoEmpresa(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="avaliacoes")
+    usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    nota = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    comentario = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("empresa", "usuario")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.empresa.nome} - {self.usuario.email}"
