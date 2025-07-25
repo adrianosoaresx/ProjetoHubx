@@ -56,36 +56,8 @@
   - Versão: 1.0
   - Última atualização: 2025-07-25
 
-- **REQ-BRIEFINGEVENTO-001**
-  - Título: Briefing Evento
-  - Módulo: Eventos
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
 - **REQ-EVENTOS-001**
   - Título: Eventos
-  - Módulo: Eventos
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
-- **REQ-INSCRICAOEVENTO-001**
-  - Título: Inscricao Evento
-  - Módulo: Eventos
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
-- **REQ-MATERIALDIVULGACAOEVENTO-001**
-  - Título: Material Divulgacao Evento
-  - Módulo: Eventos
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
-- **REQ-PARCERIAEVENTO-001**
-  - Título: Parceria Evento
   - Módulo: Eventos
   - Status: Em vigor
   - Versão: 1.0
@@ -100,7 +72,7 @@
 
 - **REQ-NUCLEOS-001**
   - Título: Nucleos
-  - Módulo: Nucleos
+  - Módulo: Núcleos
   - Status: Em vigor
   - Versão: 1.0
   - Última atualização: 2025-07-25

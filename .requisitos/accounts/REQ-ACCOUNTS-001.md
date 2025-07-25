@@ -12,108 +12,132 @@ source: Requisitos_Accounts_Hubx.pdf
 
 ## 1. Visão Geral
 
-<descrição curta>
+O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hubx, incluindo registro, autenticação, gerenciamento de perfil, permissões e integrações externas.
 
 ## 2. Escopo
 - **Inclui**:
+  - Cadastro de usuário (email e senha)  
+  - Autenticação (login/logout)  
+  - Recuperação de senha via email  
+  - Edição de perfil (nome, CPF, email, avatar, capa, biografia e contatos)  
+  - Gestão de permissões lógicas por tipo de usuário  
 - **Exclui**:
+  - Gestão de organizações, núcleos ou eventos  
 
 ## 3. Requisitos Funcionais
-| Código | Descrição | Prioridade | Critérios de Aceite |
-|--------|-----------|-----------|---------------------|
+- **RF-01**  
+  - Descrição: Usuário pode se cadastrar com email e senha, gerando conta ativa.  
+  - Prioridade: Alta  
+  - Critérios de Aceite: Email único; senha atende política de segurança.  
+
+- **RF-02**  
+  - Descrição: Usuário pode realizar login e logout no sistema.  
+  - Prioridade: Alta  
+  - Critérios de Aceite: Sessão válida; logout remove token.  
+
+- **RF-03**  
+  - Descrição: Usuário pode recuperar senha via email com token expirável em 1 hora.  
+  - Prioridade: Média  
+  - Critérios de Aceite: Link enviado; token inválido após 1h.  
+
+- **RF-04**  
+  - Descrição: Usuário pode editar perfil incluindo avatar, capa e biografia.  
+  - Prioridade: Média  
+  - Critérios de Aceite: Uploads compatíveis; campos salvos.  
+
+- **RF-05**  
+  - Descrição: Validação de email único globalmente.  
+  - Prioridade: Alta  
+  - Critérios de Aceite: Tentativa de usar email existente retorna erro.  
 
 ## 4. Requisitos Não-Funcionais
-| Código | Categoria | Descrição | Métrica/Meta |
-|--------|-----------|-----------|--------------|
+- **RNF-01**  
+  - Categoria: Segurança  
+  - Descrição: Senhas armazenadas com bcrypt (mínimo 12 rounds)  
+  - Métrica/Meta: Tempo de hash ≤ 500 ms  
 
-## 5. Fluxo de Usuário / Caso de Uso
-```mermaid
-flowchart TD
-    U[Usuário] -->|Interação| S[Sistema]
-```
+- **RNF-02**  
+  - Categoria: Desempenho  
+  - Descrição: Respostas de login e cadastro devem ter p95 ≤ 200 ms  
+  - Métrica/Meta: 200 ms  
 
-### UC-01 – Descrição
+- **RNF-03**  
+  - Categoria: Escalabilidade  
+  - Descrição: Suportar 1000 cadastros por hora  
+  - Métrica/Meta: escalonamento automático  
+
+## 5. Casos de Uso
+### UC-01 – Criar Conta
+1. Usuário acessa formulário de registro.  
+2. Preenche email, senha e confirmação.  
+3. Sistema valida dados e cria conta inativa.  
+4. Envia email de confirmação com token de 1h.  
+5. Usuário confirma email e conta é ativada.  
+6. **Cenário de Erro**: email já cadastrado → mensagem de erro.
+
+### UC-02 – Recuperar Senha
+1. Usuário solicita recuperação informando email.  
+2. Sistema envia email com link de reset (token 1h).  
+3. Usuário redefine senha no link.  
+4. **Cenário de Erro**: token expirado → solicitação de novo link.
+
+### UC-03 – Editar Perfil
+1. Usuário navega até página de perfil.  
+2. Atualiza campos desejados (nome, avatar, cover, etc.).  
+3. Sistema valida e salva alterações.  
+4. **Cenário de Erro**: arquivo de imagem inválido → rejeitar.
 
 ## 6. Regras de Negócio
+- Email deve ser único e confirmado antes de ativar conta.  
+- Apenas usuários ativos podem autenticar.  
+- Perfis de usuário seguem lógica: root, admin, associado, nucleado, coordenador, convidado.
 
 ## 7. Modelo de Dados
+- **Account**  
+  - id: UUID  
+  - email: EmailField, único  
+  - password_hash: string  
+  - is_active: boolean  
+  - last_login: datetime  
+  - created_at, updated_at: datetime  
+
+- **Profile**  
+  - user: FK → Account.id  
+  - nome_completo: string  
+  - cpf: string (unique)  
+  - avatar: ImageField (opcional)  
+  - cover: ImageField (opcional)  
+  - biografia: TextField  
+  - endereco, estado, cep, fone, whatsapp: string  
+  - redes_sociais: JSONField (opcional)  
+
+- **Permission**  
+  - user: FK → Account.id  
+  - name: string  
+  - granted_at: datetime  
+
+- **AuthToken**  
+  - token: string  
+  - user: FK → Account.id  
+  - type: enum ('email_confirmation','password_reset')  
+  - expires_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
-Feature: <nome>
+Feature: Gerenciamento de contas
+  Scenario: Usuário cria conta com sucesso
+    Given formulário de registro válido
+    When envio dados com email exclusivo
+    Then conta é criada e email de confirmação é enviado
 ```
 
 ## 9. Dependências / Integrações
+- **Email Service**: envio de confirmação e reset (SMTP/Celery).  
+- **Cache (Redis)**: tokens de sessão e lockout de login.  
+- **OAuth2 / LDAP**: futuros métodos de login social.  
+- **Celery & RabbitMQ**: envio assíncrono de emails.  
+- **Sentry**: monitoramento de erros em produção.
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Accounts_Hubx.pdf
 
-## 99. Conteúdo Importado (para revisão)
-
-```
-Requisitos do Domínio: Accounts - Sistema Hubx (Atualizado com Avatar e Capa)
-1. MODELO USER (completo)
-Herança:
-- AbstractUser
-- TimeStampedModel
-Campos adicionais:
-- nome_completo: CharField(max_length=150)
-- cpf: CharField(max_length=14, unique=True)
-- email: EmailField(unique=True)
-- avatar: ImageField(upload_to='usuarios/avatars/', blank=True, null=True)
-- cover: ImageField(upload_to='usuarios/capas/', blank=True, null=True)
-- biografia: TextField(blank=True)
-- endereco: CharField(max_length=255)
-- estado: CharField(max_length=2)
-- cep: CharField(max_length=9)
-- fone: CharField(max_length=15)
-- whatsapp: CharField(max_length=15)
-- redes_sociais: JSONField(blank=True, null=True)
-- organizacao: ForeignKey('Organizacao', on_delete=PROTECT, null=True)
-- is_associado: BooleanField(default=False)
-- is_active: BooleanField(default=True)
-- nucleos: ManyToManyField('Nucleo', through='ParticipacaoNucleo', related_name='usuarios')
-Autenticação:
-- USERNAME_FIELD = 'email'
-- REQUIRED_FIELDS = ['username']
-Métodos utilitários:
-
-- get_tipo_usuario()
-- is_coordenador_do(nucleo)
-2. MODELO INTERMEDIÁRIO: ParticipacaoNucleo
-- user: ForeignKey(User, on_delete=CASCADE)
-- nucleo: ForeignKey(Nucleo, on_delete=CASCADE)
-- is_coordenador: BooleanField(default=False)
-- unique_together = ('user', 'nucleo')
-3. TIPOS LÓGICOS DE USUÁRIO
-- root: is_superuser == True
-- admin: is_staff == True and not is_associado
-- convidado: not is_staff and not is_associado
-- associado: is_associado == True and sem núcleo
-- nucleado: is_associado == True e com vínculo com núcleo(s)
-- coordenador: is_associado == True e coordena núcleo(s)
-4. COMPORTAMENTOS ESPERADOS
-- Login, edição de perfil, alteração de senha
-- Dashboard direcionado por tipo lógico
-- Permissões e escopo baseados em organizacao e núcleo
-- Validação única de email globalmente
-- Avatar e capa são visuais opcionais no perfil
-5. PERMISSÕES
-- IsRoot
-- IsAdmin
-- IsAssociado
-- IsNucleado
-
-- IsCoordenadorDoNucleo
-6. CRITÉRIOS DE ACEITAÇÃO
-- Modelo compatível com AbstractUser
-- Campo email obrigatório e único no sistema
-- Campo organizacao obrigatório (exceto root)
-- Permissões e filtros aplicados em endpoints
-- Upload opcional de avatar e capa do usuário
-- Testes unitários para:
-- Criação de usuários por tipo
-- Escopo por organização
-- Permissões por tipo
-- Upload e exibição de avatar e capa
-```

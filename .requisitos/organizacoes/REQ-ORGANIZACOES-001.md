@@ -1,6 +1,6 @@
 ---
 id: REQ-ORGANIZACOES-001
-title: Requisitos Organizacoes Hubx Atualizado
+title: Requisitos Organizações Hubx Atualizado
 module: Organizacoes
 status: Em vigor
 version: '1.0'
@@ -12,87 +12,127 @@ source: Requisitos_Organizacoes_Hubx_Atualizado.pdf
 
 ## 1. Visão Geral
 
-<descrição curta>
+O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hubx, incluindo criação, edição, remoção, visualização de detalhes e associação de usuários e recursos.
 
 ## 2. Escopo
 - **Inclui**:
+  - CRUD completo de Organizações (nome, slug, descrição, avatar e capa).  
+  - Listagem e busca por nome e slug.  
+  - Visualização de detalhes com avatar e cover.  
+  - Associação de usuários, núcleos, eventos, empresas e posts a uma Organização.  
 - **Exclui**:
+  - Permissões de alto nível (delegado ao App Accounts).  
+  - Gestão de recursos externos como faturamento.
 
 ## 3. Requisitos Funcionais
-| Código | Descrição | Prioridade | Critérios de Aceite |
-|--------|-----------|-----------|---------------------|
+
+- **RF-01**
+  - Descrição: Listar Organizações com paginação e filtros por nome ou slug.
+  - Prioridade: Alta
+  - Critérios de Aceite: `GET /api/organizacoes/?search=<termo>&page=<n>` retorna resultados paginados.
+
+- **RF-02**
+  - Descrição: Criar nova Organização garantindo slug único.
+  - Prioridade: Alta
+  - Critérios de Aceite: `POST /api/organizacoes/` retorna HTTP 201 e erro 400 em slug duplicado.
+
+- **RF-03**
+  - Descrição: Editar dados de uma Organização existente, incluindo avatar e cover.
+  - Prioridade: Média
+  - Critérios de Aceite: `PUT/PATCH /api/organizacoes/<id>/` atualiza campos permitidos.
+
+- **RF-04**
+  - Descrição: Excluir Organização (soft delete) pelo usuário root.
+  - Prioridade: Baixa
+  - Critérios de Aceite: `DELETE /api/organizacoes/<id>/` retorna HTTP 204 e marca flag `deleted`.
+
+- **RF-05**
+  - Descrição: Associar e remover usuários e recursos (núcleos, eventos, empresas, posts) à Organização.
+  - Prioridade: Média
+  - Critérios de Aceite: Endpoints especializados (`/api/organizacoes/<id>/associados/`, etc.).
 
 ## 4. Requisitos Não-Funcionais
-| Código | Categoria | Descrição | Métrica/Meta |
-|--------|-----------|-----------|--------------|
 
-## 5. Fluxo de Usuário / Caso de Uso
-```mermaid
-flowchart TD
-    U[Usuário] -->|Interação| S[Sistema]
-```
+- **RNF-01**
+  - Categoria: Desempenho
+  - Descrição: Listagem de Organizações responde em p95 ≤ 250 ms.
+  - Métrica/Meta: 250 ms
 
-### UC-01 – Descrição
+- **RNF-02**
+  - Categoria: Segurança
+  - Descrição: Operações de CRUD são protegidas por permissões adequadas.
+  - Métrica/Meta: 0 acessos não autorizados em testes.
+
+- **RNF-03**
+  - Categoria: Manutenibilidade
+  - Descrição: Código testável e modular, seguindo DDD.
+  - Métrica/Meta: Cobertura de testes ≥ 90%.
+
+## 5. Casos de Uso
+
+### UC-01 – Listar Organizações
+1. Usuário acessa endpoint de listagem.  
+2. Aplica busca por nome ou slug.  
+3. Sistema retorna lista paginada.
+
+### UC-02 – Criar Organização
+1. Usuário com permissão root envia dados de nova organização.  
+2. Sistema valida unicidade de slug.  
+3. Retorna HTTP 201 com dados da organização.
+
+### UC-03 – Editar Organização
+1. Usuário autorizado envia alterações.  
+2. Sistema atualiza avatar, cover e demais campos.
+
+### UC-04 – Excluir Organização
+1. Root solicita exclusão via DELETE.  
+2. Sistema marca organização como `deleted`.
+
+### UC-05 – Associar Recursos
+1. Usuário adiciona/remova núcleos, eventos, empresas ou posts.  
+2. Endpoints atualizam relacionamentos.
 
 ## 6. Regras de Negócio
+- Slug da organização deve ser único.  
+- Apenas usuários root podem criar e excluir organizações.  
+- Todos os demais recursos devem pertencer a uma organização.  
+- Organizações marcadas como `deleted` não aparecem em buscas.
 
 ## 7. Modelo de Dados
 
+- **Organizacao**  
+  - id: UUID  
+  - nome: string  
+  - slug: SlugField (único)  
+  - descricao: text (opcional)  
+  - avatar: ImageField (S3, opcional)  
+  - cover: ImageField (S3, opcional)  
+  - created_at, updated_at: datetime  
+  - deleted: boolean (default false)
+
+- **Relacionamentos**  
+  - organizacao é ForeignKey em: User, Nucleo, Evento, Empresa, Post, CategoriaForum, TopicoForum, etc.
+
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
-Feature: <nome>
+Feature: Gestão de Organizações
+  Scenario: Usuário root cria organização
+    Given usuário root autenticado
+    When envia POST com slug único
+    Then retorna HTTP 201 e organização é criada
+
+  Scenario: Busca por slug
+    Given organizações existentes
+    When GET /api/organizacoes/?search=hubx
+    Then retorna organizações correspondentes
 ```
 
 ## 9. Dependências / Integrações
+- **App Accounts**: validação de usuário root.  
+- **App Núcleos, Eventos, Empresas, Feed, Discussão**: validação de escopo organizacional.  
+- **Storage S3**: armazenamento de imagens.  
+- **Celery**: processamento assíncrono de uploads.  
+- **Sentry**: monitoramento de erros.
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Organizacoes_Hubx_Atualizado.pdf
-
-## 99. Conteúdo Importado (para revisão)
-
-```
-Requisitos do Domínio: Organizações - Sistema Hubx (Atualizado com Avatar e Capa)
-1. MODELO ORGANIZACAO
-Herança:
-- TimeStampedModel
-Campos:
-- nome: CharField(max_length=100)
-- slug: SlugField(unique=True)
-- descricao: TextField(blank=True)
-- avatar: ImageField(upload_to='organizacoes/avatars/', blank=True, null=True)
-- cover: ImageField(upload_to='organizacoes/capas/', blank=True, null=True)
-- created_at / updated_at: herdados de TimeStampedModel
-2. REGRAS
-- slug deve ser único
-- avatar e cover são imagens opcionais
-- avatar representa visualmente a organização
-- cover pode ser usada como capa em páginas institucionais ou de navegação
-- Usuários, núcleos e entidades relacionadas devem estar vinculadas a uma organização
-3. RELAÇÃO COM USUÁRIOS
-- Campo: organizacao = ForeignKey(Organizacao, on_delete=PROTECT)
-- Apenas root pode ter organizacao=None
-- Todos os outros usuários devem obrigatoriamente pertencer a uma organização
-4. ENTIDADES VINCULADAS À ORGANIZAÇÃO
-
-Todas devem conter: organizacao = ForeignKey(Organizacao, on_delete=CASCADE)
-- User
-- Nucleo
-- Evento
-- Empresa
-- Postagem
-- CategoriaForum
-- TopicoForum
-- Outros módulos (ex: chat, tokens, etc.)
-5. PERMISSÕES
-- Root: CRUD completo de organizações
-- Admin: pode visualizar sua organização, mas não editar
-- Outros perfis: não têm acesso direto ao modelo Organizacao
-6. CRITÉRIOS DE ACEITAÇÃO
-- Avatar e cover visíveis em painéis, cabeçalhos e listagens
-- Filtros de organização aplicados a todas as views protegidas
-- Viewsets e serializers devem incluir os campos visuais
-- Testes automatizados devem validar:
-- Escopo organizacional
-- Permissões por tipo de usuário
-- Upload e exibição do avatar e da cover
-```

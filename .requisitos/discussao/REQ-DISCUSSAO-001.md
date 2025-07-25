@@ -1,92 +1,159 @@
 ---
-id: REQ-APP_DISCUSSAO-001
+id: REQ-DISCUSSAO-001
 title: Requisitos App Discussao Hubx
-module: App_forum
+module: Discussao
 status: Em vigor
 version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: requisitos_app_forum_hubx.pdf
+source:
+  - requisitos_app_forum_hubx.pdf
 ---
 
 ## 1. Visão Geral
 
-<descrição curta>
+O App Discussão fornece um fórum colaborativo organizado por categorias, permitindo que usuários criem tópicos, respondam, votem e colaborem de forma estruturada dentro de organizações, núcleos e eventos.
 
 ## 2. Escopo
 - **Inclui**:
+  - Criação, edição e exclusão de categorias.
+  - Publicação de tópicos com título e conteúdo.
+  - Inserção de respostas em tópicos.
+  - Sistema de votações (upvote/downvote).
+  - Marcação de tópicos como resolvidos.
+  - Gestão de permissões por tipo de usuário.
 - **Exclui**:
+  - Chat em tempo real (delegado ao App Chat).
+  - Integração com redes sociais externas.
 
 ## 3. Requisitos Funcionais
-| Código | Descrição | Prioridade | Critérios de Aceite |
-|--------|-----------|-----------|---------------------|
+
+- **RF-01**
+  - Descrição: Usuário pode visualizar lista de categorias e seus tópicos.
+  - Prioridade: Alta
+  - Critérios de Aceite: Lista paginada com título e descrição das categorias.
+
+- **RF-02**
+  - Descrição: Usuário cria novos tópicos em uma categoria.
+  - Prioridade: Alta
+  - Critérios de Aceite: Formulário com validação de campos obrigatórios.
+
+- **RF-03**
+  - Descrição: Usuário responde a um tópico existente.
+  - Prioridade: Alta
+  - Critérios de Aceite: Resposta associada corretamente ao tópico e autor.
+
+- **RF-04**
+  - Descrição: Usuário vota em tópicos e respostas (upvote/downvote).
+  - Prioridade: Média
+  - Critérios de Aceite: Voto único por usuário e contagem atualizada em tempo real.
+
+- **RF-05**
+  - Descrição: Usuário marca tópico como resolvido se for criador ou admin.
+  - Prioridade: Média
+  - Critérios de Aceite: Status do tópico atualizado e indicações visuais.
 
 ## 4. Requisitos Não-Funcionais
-| Código | Categoria | Descrição | Métrica/Meta |
-|--------|-----------|-----------|--------------|
 
-## 5. Fluxo de Usuário / Caso de Uso
-```mermaid
-flowchart TD
-    U[Usuário] -->|Interação| S[Sistema]
-```
+- **RNF-01**
+  - Categoria: Desempenho
+  - Descrição: Paginação dos tópicos deve responder em p95 ≤ 300 ms.
+  - Métrica/Meta: 300 ms
 
-### UC-01 – Descrição
+- **RNF-02**
+  - Categoria: Usabilidade
+  - Descrição: Interface deve ser responsiva em dispositivos móveis.
+  - Métrica/Meta: Avaliação em testes de UX
+
+- **RNF-03**
+  - Categoria: Segurança
+  - Descrição: As ações de criação, edição e exclusão devem validar permissões.
+  - Métrica/Meta: 0 acessos indevidos em testes de penetração.
+
+## 5. Casos de Uso
+
+### UC-01 – Gerenciar Categorias
+1. Admin ou coordenador acessa seção de categorias.  
+2. Cria/edita/exclui categorias.  
+3. Sistema persiste alterações e atualiza lista.
+
+### UC-02 – Criar Tópico
+1. Usuário seleciona categoria desejada.  
+2. Preenche título e conteúdo.  
+3. Submete formulário.  
+4. Tópico é criado e aparece na lista.
+
+### UC-03 – Responder Tópico
+1. Usuário abre tópico.  
+2. Digita resposta e envia.  
+3. Resposta é salva e aparece em ordem cronológica.
+
+### UC-04 – Votar
+1. Usuário clica em upvote/downvote em tópico ou resposta.  
+2. Sistema registra e atualiza contagem.
+
+### UC-05 – Marcar Resolução
+1. Criador do tópico ou admin clica em “Marcar como Resolvido”.  
+2. Sistema define flag `resolved=true` e altera visualização.
 
 ## 6. Regras de Negócio
+- Cada usuário tem um único voto por item.  
+- Apenas criador ou admin pode marcar resolução.  
+- Respostas devem herdar contexto organizacional do tópico.
 
 ## 7. Modelo de Dados
 
+- **Categoria**  
+  - id: UUID  
+  - nome: string  
+  - descricao: text  
+  - organizacao: FK → Organizacao.id  
+
+- **Topico**  
+  - id: UUID  
+  - categoria: FK → Categoria.id  
+  - autor: FK → User.id  
+  - titulo: string  
+  - conteudo: text  
+  - created_at, updated_at: datetime  
+  - resolved: boolean  
+
+- **Resposta**  
+  - id: UUID  
+  - topico: FK → Topico.id  
+  - autor: FK → User.id  
+  - conteudo: text  
+  - created_at: datetime  
+
+- **Voto**  
+  - id: UUID  
+  - item_type: enum('topico','resposta')  
+  - item_id: UUID  
+  - user: FK → User.id  
+  - vote: integer (1 ou -1)  
+  - created_at: datetime  
+
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
-Feature: <nome>
+Feature: Fórum de Discussão
+  Scenario: Usuário cria tópico  
+    Given usuário autenticado  
+    When cria tópico com título "X" e conteúdo "Y"  
+    Then tópico aparece na lista da categoria  
+
+  Scenario: Voto em resposta  
+    Given resposta existente  
+    When usuário clica em upvote  
+    Then contagem de votos aumenta em 1
 ```
 
 ## 9. Dependências / Integrações
+- **chat.models.User**: autenticação e contexto de usuário.  
+- **Organizacoes API**: para filtrar categorias por organização.  
+- **Celery**: notificações assíncronas de novos tópicos/respostas.  
+- **Search Engine**: índices para busca de tópicos/respostas.  
+- **Sentry**: monitoramento de erros.
 
 ## 10. Anexos e Referências
 - Documento fonte: requisitos_app_forum_hubx.pdf
-
-## 99. Conteúdo Importado (para revisão)
-
-```
-Requisitos do App Discussao - HubX
-Objetivo
-Oferecer um espaço organizado por categorias de discussão, com tópicos e respostas, voltado à troca de
-conhecimento e comunicação interna entre membros de uma organização.
-Estrutura de Dados
-- Categoria: nome, descrição, organização
-- Tópico: título, conteúdo, autor, categoria, organização
-- Resposta: conteúdo, autor, tópico (herda organização do tópico)
-Permissões por Tipo de Usuário
-- Superadmin: Acesso bloqueado
-- Associado: Visualiza categorias, cria tópicos e responde
-- Coordenador: Acesso completo se também for gerente
-- Admin: Acesso completo
-Funcionalidades
-- Categorias:
-- Grid visual com descrição
-- Botão Gerenciar para tipos autorizados
-- Gerenciamento de Categorias:
-- Acesso exclusivo de gerentes
-- Criar, editar e remover
-- Tópicos:
-- Criação com formulário visual limpo
-- Listagem com autor e data
-- Respostas:
-- Inserção de respostas em tópicos
-- Sem edição/removal por padrão
-Aspectos Técnicos
-- Todas as views usam LoginRequiredMixin e NoSuperadminMixin
-- Gerenciamento restrito por GerenteRequiredMixin
-- Templates responsivos com classes modernas
-- Estrutura de URLs bem definida e intuitiva
-Sugestões Futuras
-- Permitir autores editarem/removerem tópicos e respostas
-- Marcar tópicos como resolvido
-- Sistema de votação (upvote)
-- Busca e filtro por autor
-- Adição de tags por tópico
-- Estatísticas de participação
-```

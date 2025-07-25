@@ -12,87 +12,122 @@ source: Requisitos_Tokens_Hubx.pdf
 
 ## 1. Visão Geral
 
-<descrição curta>
+O App Tokens gerencia a criação, validação e expiração de tokens de acesso para diferentes perfis de usuário (admin, associado, nucleado, coordenador e convidado), assegurando segurança e rastreabilidade no Hubx.
 
 ## 2. Escopo
 - **Inclui**:
+  - Geração de tokens únicos para acesso a funcionalidades específicas.
+  - Validação e expiração automática de tokens.
+  - Associação de tokens a usuário, organização e núcleos.
+  - Registro de uso e mudança de estado de tokens.
 - **Exclui**:
+  - Autenticação completa (delegado ao App Accounts).
+  - Log de sessões e devices.
 
 ## 3. Requisitos Funcionais
-| Código | Descrição | Prioridade | Critérios de Aceite |
-|--------|-----------|-----------|---------------------|
+
+- **RF-01**
+  - Descrição: Gerar token único e seguro (UUID4 ou `secrets.token_urlsafe`).
+  - Prioridade: Alta
+  - Critérios de Aceite: Token gerado com `codigo` único; HTTP 201 retorna token.
+
+- **RF-02**
+  - Descrição: Validar token em endpoint de uso.
+  - Prioridade: Alta
+  - Critérios de Aceite: `GET /api/tokens/validate/?codigo=<token>` retorna estado e dados associados.
+
+- **RF-03**
+  - Descrição: Expirar token após `data_expiracao`.
+  - Prioridade: Média
+  - Critérios de Aceite: Estado muda de `novo` para `expirado`; uso após expiração retorna erro 400.
+
+- **RF-04**
+  - Descrição: Marcar token como `usado` no primeiro uso válido.
+  - Prioridade: Alta
+  - Critérios de Aceite: Após uso, `estado='usado'`; reuso retorna erro 409.
+
+- **RF-05**
+  - Descrição: Restringir geração de tokens conforme perfil de quem gera.
+  - Prioridade: Alta
+  - Critérios de Aceite: Regras de permissão aplicadas (root→admin, admin→associado/nucleado/coordenador, coordenador→convidado).
 
 ## 4. Requisitos Não-Funcionais
-| Código | Categoria | Descrição | Métrica/Meta |
-|--------|-----------|-----------|--------------|
 
-## 5. Fluxo de Usuário / Caso de Uso
-```mermaid
-flowchart TD
-    U[Usuário] -->|Interação| S[Sistema]
-```
+- **RNF-01**
+  - Categoria: Segurança
+  - Descrição: Tokens criptograficamente seguros e imprevisíveis.
+  - Métrica/Meta: Entropia mínima de 128 bits.
 
-### UC-01 – Descrição
+- **RNF-02**
+  - Categoria: Desempenho
+  - Descrição: Validação de token em p95 ≤ 100 ms.
+  - Métrica/Meta: 100 ms
+
+- **RNF-03**
+  - Categoria: Rastreabilidade
+  - Descrição: Log de uso de tokens para auditoria.
+  - Métrica/Meta: 100% dos eventos registrados.
+
+## 5. Casos de Uso
+
+### UC-01 – Gerar Token
+1. Usuário autenticado com permissão apropriada solicita criação de token.
+2. Sistema valida perfil e gera token.
+3. Retorna HTTP 201 com `codigo`, `tipo_destino` e `data_expiracao`.
+
+### UC-02 – Validar Token
+1. Cliente envia token para endpoint de validação.
+2. Sistema verifica `estado` e `data_expiracao`.
+3. Retorna dados do token ou erro apropriado.
+
+### UC-03 – Usar Token
+1. Cliente usa token em ação de autorização.
+2. Sistema marca `estado='usado'` e associa `usuario`/`nucleo`.
+3. Próximas requisições com mesmo token são rejeitadas.
+
+### UC-04 – Expirar Token
+1. Scheduler ou validação em uso detecta `data_expiracao < agora`.
+2. Sistema atualiza `estado='expirado'`.
 
 ## 6. Regras de Negócio
+- Token pode ser usado apenas se `estado='novo'` e `data_expiracao > agora`.
+- Após uso válido, `estado` muda para `usado`.
+- Associação automática de `usuario`, `organizacao` e `nucleos` conforme `tipo_destino`.
+- Perfis sem permissão para geração devem receber erro 403.
 
 ## 7. Modelo de Dados
 
+- **TokenAcesso**  
+  - codigo: string (PK, unique, não editável)  
+  - tipo_destino: enum('admin','associado','nucleado','coordenador','convidado')  
+  - estado: enum('novo','usado','expirado')  
+  - data_expiracao: datetime  
+  - gerado_por: FK → User.id  
+  - usuario: FK → User.id (opcional)  
+  - organizacao: FK → Organizacao.id  
+  - nucleos: M2M → Nucleo.id (opcional)  
+  - created_at, updated_at: datetime  
+
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
-Feature: <nome>
+Feature: Gerenciamento de Tokens
+  Scenario: Gerar token para associado
+    Given usuário admin autenticado
+    When solicita POST /api/tokens/ com tipo_destino=associado
+    Then token é criado e retorna HTTP 201
+
+  Scenario: Reusar token usado
+    Given token com estado 'usado'
+    When tenta validar novamente
+    Then retorna HTTP 409 Conflict
 ```
 
 ## 9. Dependências / Integrações
+- **App Accounts**: validação de `gerado_por` e `usuario`.  
+- **App Organizações/Núcleos**: validação de escopo.  
+- **Scheduler**: expiração automática de tokens.  
+- **Redis**: cache temporário de tokens para alta performance.  
+- **Sentry**: log de erros em geração/validação.
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Tokens_Hubx.pdf
-
-## 99. Conteúdo Importado (para revisão)
-
-```
-Requisitos do Domínio: Tokens de Acesso - Sistema Hubx (Hierarquia Atualizada)
-1. MODELO TOKEN_ACESSO
-Herança:
-- TimeStampedModel
-Campos:
-- codigo: CharField(max_length=64, unique=True, editable=False)
-- tipo_destino: CharField (choices: admin, associado, nucleado, coordenador, convidado)
-- estado: CharField (choices: novo, usado, expirado)
-- data_expiracao: DateTimeField
-- gerado_por: ForeignKey(User)
-- usuario: ForeignKey(User, null=True, blank=True)
-- organizacao: ForeignKey(Organizacao)
-- nucleos: ManyToManyField(Nucleo, blank=True)
-2. ENUM TIPO_DESTINO
-- admin
-- associado
-- nucleado (associado com núcleo)
-- coordenador (associado com is_coordenador=True)
-- convidado
-3. PERMISSÕES PARA GERAÇÃO
-- Root -> pode gerar token para: admin
-- Admin -> pode gerar token para: associado, nucleado, coordenador
-- Coordenador -> pode gerar token para: convidado
-- Nucleado, Associado, Convidado -> não podem gerar tokens
-
-4. REGRAS
-- O token pode ser usado somente se:
-- estado == novo
-- data_expiracao > agora
-- Ao ser utilizado:
-- estado = usado
-- usuario recebe vínculo com organizacao
-- se tipo = nucleado ou coordenador -> vincular a núcleo(s)
-- se tipo = coordenador -> is_coordenador = True
-5. CRITÉRIOS DE ACEITAÇÃO
-- Geração de codigo único e seguro (ex: uuid4().hex ou secrets.token_urlsafe)
-- Geração restrita conforme tipo de quem cria (gerado_por)
-- Token nunca reutilizável
-- Escopo de organização obrigatório
-- Testes devem validar:
-- fluxo de uso
-- associação automática
-- validação de tipo e permissões de criação
-- restrição por data de expiração
-```
