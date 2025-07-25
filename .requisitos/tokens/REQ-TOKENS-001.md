@@ -26,74 +26,74 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**
+- **RF‑01**
   - Descrição: Gerar token único e seguro (UUID4 ou `secrets.token_urlsafe`).
   - Prioridade: Alta
-  - Critérios de Aceite: Token gerado com `codigo` único; HTTP 201 retorna token.
+  - Critérios de Aceite: Token gerado com `codigo` único; HTTP 201 retorna token.
 
-- **RF-02**
+- **RF‑02**
   - Descrição: Validar token em endpoint de uso.
   - Prioridade: Alta
-  - Critérios de Aceite: `GET /api/tokens/validate/?codigo=<token>` retorna estado e dados associados.
+  - Critérios de Aceite: `GET /api/tokens/validate/?codigo=<código>` retorna estado e dados associados.
 
-- **RF-03**
+- **RF‑03**
   - Descrição: Expirar token após `data_expiracao`.
   - Prioridade: Média
-  - Critérios de Aceite: Estado muda de `novo` para `expirado`; uso após expiração retorna erro 400.
+  - Critérios de Aceite: Estado muda de `novo` para `expirado`; uso após expiração retorna erro 400.
 
-- **RF-04**
+- **RF‑04**
   - Descrição: Marcar token como `usado` no primeiro uso válido.
   - Prioridade: Alta
-  - Critérios de Aceite: Após uso, `estado='usado'`; reuso retorna erro 409.
+  - Critérios de Aceite: Após uso, `estado='usado'`; reuso retorna erro 409.
 
-- **RF-05**
+- **RF‑05**
   - Descrição: Restringir geração de tokens conforme perfil de quem gera.
   - Prioridade: Alta
   - Critérios de Aceite: Regras de permissão aplicadas (root→admin, admin→associado/nucleado/coordenador, coordenador→convidado).
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**
+- **RNF‑01**
   - Categoria: Segurança
   - Descrição: Tokens criptograficamente seguros e imprevisíveis.
   - Métrica/Meta: Entropia mínima de 128 bits.
 
-- **RNF-02**
+- **RNF‑02**
   - Categoria: Desempenho
-  - Descrição: Validação de token em p95 ≤ 100 ms.
-  - Métrica/Meta: 100 ms
+  - Descrição: Validação de token em p95 ≤ 100 ms.
+  - Métrica/Meta: 100 ms
 
-- **RNF-03**
+- **RNF‑03**
   - Categoria: Rastreabilidade
   - Descrição: Log de uso de tokens para auditoria.
   - Métrica/Meta: 100% dos eventos registrados.
 
 ## 5. Casos de Uso
 
-### UC-01 – Gerar Token
-1. Usuário autenticado com permissão apropriada solicita criação de token.
-2. Sistema valida perfil e gera token.
-3. Retorna HTTP 201 com `codigo`, `tipo_destino` e `data_expiracao`.
+### UC‑01 – Gerar Token
+1. Usuário autenticado com permissão apropriada solicita criação de token.  
+2. Sistema valida perfil e gera token.  
+3. Retorna HTTP 201 com `codigo`, `tipo_destino` e `data_expiracao`.
 
-### UC-02 – Validar Token
-1. Cliente envia token para endpoint de validação.
-2. Sistema verifica `estado` e `data_expiracao`.
+### UC‑02 – Validar Token
+1. Cliente envia token para endpoint de validação.  
+2. Sistema verifica `estado` e `data_expiracao`.  
 3. Retorna dados do token ou erro apropriado.
 
-### UC-03 – Usar Token
-1. Cliente usa token em ação de autorização.
-2. Sistema marca `estado='usado'` e associa `usuario`/`nucleo`.
+### UC‑03 – Usar Token
+1. Cliente usa token em ação de autorização.  
+2. Sistema marca `estado='usado'` e associa `usuario`/`nucleo`.  
 3. Próximas requisições com mesmo token são rejeitadas.
 
-### UC-04 – Expirar Token
-1. Scheduler ou validação em uso detecta `data_expiracao < agora`.
+### UC‑04 – Expirar Token
+1. Scheduler ou validação em uso detecta `data_expiracao < agora`.  
 2. Sistema atualiza `estado='expirado'`.
 
 ## 6. Regras de Negócio
-- Token pode ser usado apenas se `estado='novo'` e `data_expiracao > agora`.
-- Após uso válido, `estado` muda para `usado`.
-- Associação automática de `usuario`, `organizacao` e `nucleos` conforme `tipo_destino`.
-- Perfis sem permissão para geração devem receber erro 403.
+- Token pode ser usado apenas se `estado='novo'` e `data_expiracao > agora`.  
+- Após uso válido, `estado` muda para `usado`.  
+- Associação automática de `usuario`, `organizacao` e `nucleos` conforme `tipo_destino`.  
+- Perfis sem permissão para geração devem receber erro 403.
 
 ## 7. Modelo de Dados
 
@@ -131,3 +131,20 @@ Feature: Gerenciamento de Tokens
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Tokens_Hubx.pdf
+
+## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑06** – Limitar a geração de tokens a no máximo 5 por usuário por dia. Requisições acima deste limite retornam erro 429.  
+- **RF‑07** – Registrar metadados de geração e uso de tokens (IP de origem, user agent).  
+- **RF‑08** – Permitir revogação manual de tokens, alterando estado para `revogado`.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑04** – Logs de uso e revogação devem ser criptografados e retidos por 1 ano para auditoria.  
+
+### Modelo de Dados Adicional
+- `TokenAcesso`: adicionar `ip_gerado: string`, `ip_utilizado: string`, `revogado_em: datetime`, `revogado_por: FK → User.id`.  
+- Criar tabela `TokenUsoLog` com campos: id, token_codigo, usuario_id, acao (`geracao`,`validacao`,`uso`,`revogacao`), ip, timestamp.  
+
+### Regras de Negócio Adicionais
+- Requisições de geração acima de 5 tokens/dia devem ser bloqueadas.  

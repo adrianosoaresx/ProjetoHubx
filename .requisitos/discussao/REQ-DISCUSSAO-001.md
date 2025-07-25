@@ -29,71 +29,71 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**
+- **RF‑01**
   - Descrição: Usuário pode visualizar lista de categorias e seus tópicos.
   - Prioridade: Alta
   - Critérios de Aceite: Lista paginada com título e descrição das categorias.
 
-- **RF-02**
+- **RF‑02**
   - Descrição: Usuário cria novos tópicos em uma categoria.
   - Prioridade: Alta
   - Critérios de Aceite: Formulário com validação de campos obrigatórios.
 
-- **RF-03**
+- **RF‑03**
   - Descrição: Usuário responde a um tópico existente.
   - Prioridade: Alta
   - Critérios de Aceite: Resposta associada corretamente ao tópico e autor.
 
-- **RF-04**
+- **RF‑04**
   - Descrição: Usuário vota em tópicos e respostas (upvote/downvote).
   - Prioridade: Média
   - Critérios de Aceite: Voto único por usuário e contagem atualizada em tempo real.
 
-- **RF-05**
+- **RF‑05**
   - Descrição: Usuário marca tópico como resolvido se for criador ou admin.
   - Prioridade: Média
   - Critérios de Aceite: Status do tópico atualizado e indicações visuais.
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**
+- **RNF‑01**
   - Categoria: Desempenho
   - Descrição: Paginação dos tópicos deve responder em p95 ≤ 300 ms.
   - Métrica/Meta: 300 ms
 
-- **RNF-02**
+- **RNF‑02**
   - Categoria: Usabilidade
   - Descrição: Interface deve ser responsiva em dispositivos móveis.
   - Métrica/Meta: Avaliação em testes de UX
 
-- **RNF-03**
+- **RNF‑03**
   - Categoria: Segurança
   - Descrição: As ações de criação, edição e exclusão devem validar permissões.
   - Métrica/Meta: 0 acessos indevidos em testes de penetração.
 
 ## 5. Casos de Uso
 
-### UC-01 – Gerenciar Categorias
+### UC‑01 – Gerenciar Categorias
 1. Admin ou coordenador acessa seção de categorias.  
 2. Cria/edita/exclui categorias.  
 3. Sistema persiste alterações e atualiza lista.
 
-### UC-02 – Criar Tópico
+### UC‑02 – Criar Tópico
 1. Usuário seleciona categoria desejada.  
 2. Preenche título e conteúdo.  
 3. Submete formulário.  
 4. Tópico é criado e aparece na lista.
 
-### UC-03 – Responder Tópico
+### UC‑03 – Responder Tópico
 1. Usuário abre tópico.  
 2. Digita resposta e envia.  
 3. Resposta é salva e aparece em ordem cronológica.
 
-### UC-04 – Votar
+### UC‑04 – Votar
 1. Usuário clica em upvote/downvote em tópico ou resposta.  
 2. Sistema registra e atualiza contagem.
 
-### UC-05 – Marcar Resolução
+### UC‑05 – Marcar Resolução
 1. Criador do tópico ou admin clica em “Marcar como Resolvido”.  
 2. Sistema define flag `resolved=true` e altera visualização.
 
@@ -137,14 +137,14 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
 Feature: Fórum de Discussão
-  Scenario: Usuário cria tópico  
-    Given usuário autenticado  
-    When cria tópico com título "X" e conteúdo "Y"  
-    Then tópico aparece na lista da categoria  
+  Scenario: Usuário cria tópico
+    Given usuário autenticado
+    When cria tópico com título "X" e conteúdo "Y"
+    Then tópico aparece na lista da categoria
 
-  Scenario: Voto em resposta  
-    Given resposta existente  
-    When usuário clica em upvote  
+  Scenario: Voto em resposta
+    Given resposta existente
+    When usuário clica em upvote
     Then contagem de votos aumenta em 1
 ```
 
@@ -157,3 +157,23 @@ Feature: Fórum de Discussão
 
 ## 10. Anexos e Referências
 - Documento fonte: requisitos_app_forum_hubx.pdf
+
+## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑06** – Permitir marcar uma resposta como “melhor resposta”, destacando‑a no topo do tópico.  
+- **RF‑07** – Introduzir sistema de tags associadas a tópicos para facilitar busca e categorização.  
+- **RF‑08** – Limitar a edição de tópicos e respostas a 15 minutos após a publicação; após esse período, somente admin pode editar.  
+- **RF‑09** – Permitir fechar e reabrir tópicos para novas respostas.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑04** – Prover campo “motivo de edição” para rastrear alterações.  
+
+### Modelo de Dados Adicional
+- `Topico`: adicionar `melhor_resposta: FK → Resposta.id (opcional)` e `tags: M2M → Tag`.  
+- `Resposta`: adicionar `editado_em: datetime`, `motivo_edicao: text`.  
+- Nova entidade `Tag`: `id`, `nome`, `created_at`.  
+
+### Regras de Negócio Adicionais
+- Apenas o autor ou admin pode marcar “melhor resposta”.  
+- Edição limitada a 15 minutos após publicação.  

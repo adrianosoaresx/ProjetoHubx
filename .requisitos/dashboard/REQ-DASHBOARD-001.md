@@ -25,34 +25,34 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**  
+- **RF‑01**  
   - Descrição: `DashboardBaseView` deve aceitar parâmetros: período, escopo e filtros.  
   - Prioridade: Alta  
   - Critérios de Aceite: Aceita `periodo`, `escopo` e filtros via `request.GET`.  
 
-- **RF-02**  
+- **RF‑02**  
   - Descrição: Função `get_metrics()` parametrizável via kwargs ou `request.GET`.  
   - Prioridade: Alta  
   - Critérios de Aceite: Métricas retornadas conforme parâmetros especificados.  
 
-- **RF-03**  
+- **RF‑03**  
   - Descrição: Calcular variação percentual de métricas em relação ao período anterior.  
   - Prioridade: Média  
   - Critérios de Aceite: Percentual calculado conforme fórmula definida.  
 
-- **RF-04**  
+- **RF‑04**  
   - Descrição: Redirecionamento inteligente conforme tipo de usuário (root, admin etc.).  
   - Prioridade: Alta  
   - Critérios de Aceite: Usuário redirecionado corretamente ao acessar `/dashboard`.  
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**  
+- **RNF‑01**  
   - Categoria: Desempenho  
   - Descrição: Tempo de resposta das views de dashboard  
   - Métrica/Meta: p95 ≤ 250 ms  
 
-- **RNF-02**  
+- **RNF‑02**  
   - Categoria: Manutenibilidade  
   - Descrição: Código modular e estruturado para herança.  
   - Métrica/Meta: Cobertura ≥ 90 %  
@@ -63,7 +63,7 @@ flowchart TD
     U[Usuário] -->|Acessa /dashboard| D[DashboardBaseView]
     D -->|Renderiza estatísticas| R[Relatórios]
 ```
-### UC-01 – Acesso ao Dashboard
+### UC‑01 – Acesso ao Dashboard
 1. Usuário faz login e acessa `/dashboard`.  
 2. Sistema identifica perfil e redireciona à view apropriada.  
 3. Dashboard é renderizado com métricas e opções de filtro.
@@ -101,7 +101,13 @@ Feature: Acesso ao Dashboard
 - `requisitos_dashboard_hubx.pdf`  
 - `estrutura_tecnica_dashboard.pdf`
 
-## 99. Conteúdo Importado (para revisão)
-```
-<cole aqui o texto bruto extraído dos PDFs>
-```
+## 11. Melhorias Sugeridas (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑05** – Implementar função `get_variation(previous_value, current_value)` para calcular variação percentual: `(current_value − previous_value) / max(previous_value,1) * 100`.  
+- **RF‑06** – Disponibilizar exportação de gráficos e métricas em PDF ou CSV para usuários autorizados.  
+- **RF‑07** – Permitir que usuários salvem e compartilhem filtros e configurações de dashboards.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑03** – As consultas de métricas devem ser cacheadas com invalidação automática a cada 5 minutos.  
+- **RNF‑04** – O componente de visualização deve seguir princípios de acessibilidade (WCAG 2.1).  

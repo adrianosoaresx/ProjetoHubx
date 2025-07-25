@@ -8,11 +8,11 @@ authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
 source:
-  - Requisitos_Eventos_Hubx.pdf fileciteturn3file4
-  - Requisitos_InscricaoEvento_Hubx.pdf fileciteturn3file0
-  - Requisitos_MaterialDivulgacaoEvento_Hubx.pdf fileciteturn3file1
-  - Requisitos_ParceriaEvento_Hubx.pdf fileciteturn3file2
-  - Requisitos_BriefingEvento_Hubx.pdf fileciteturn3file3
+  - Requisitos_Eventos_Hubx.pdf
+  - Requisitos_InscricaoEvento_Hubx.pdf
+  - Requisitos_MaterialDivulgacaoEvento_Hubx.pdf
+  - Requisitos_ParceriaEvento_Hubx.pdf
+  - Requisitos_BriefingEvento_Hubx.pdf
 ---
 
 ## 1. Visão Geral
@@ -32,83 +32,83 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**  
+- **RF‑01**  
   - Descrição: Criar, listar, editar e excluir eventos.  
   - Prioridade: Alta  
   - Critérios de Aceite: Endpoints RESTful retornam códigos HTTP apropriados.  
 
-- **RF-02**  
+- **RF‑02**  
   - Descrição: Registrar inscrição de usuários em eventos.  
   - Prioridade: Alta  
-  - Critérios de Aceite: Usuário não pode inscrever-se mais de uma vez por evento; presença e avaliação registrados após término fileciteturn3file0.
+  - Critérios de Aceite: Usuário não pode inscrever‑se mais de uma vez por evento; presença e avaliação registrados após término.  
 
-- **RF-03**  
+- **RF‑03**  
   - Descrição: Fazer upload e exibição de materiais de divulgação para eventos.  
   - Prioridade: Média  
-  - Critérios de Aceite: Suporte a múltiplos formatos; links válidos fileciteturn3file1.
+  - Critérios de Aceite: Suporte a múltiplos formatos; links válidos.  
 
-- **RF-04**  
+- **RF‑04**  
   - Descrição: Cadastrar e gerenciar parcerias e patrocínios de eventos.  
   - Prioridade: Média  
-  - Critérios de Aceite: Campos de empresa, representante e tipo de parceria validados fileciteturn3file2.
+  - Critérios de Aceite: Campos de empresa, representante e tipo de parceria validados.  
 
-- **RF-05**  
+- **RF‑05**  
   - Descrição: Criar e gerenciar briefing de eventos com controle de status (rascunho, orçamento, aprovação, recusa).  
   - Prioridade: Alta  
-  - Critérios de Aceite: Estados transicionais válidos e notificações emitidas fileciteturn3file3.
+  - Critérios de Aceite: Estados transicionais válidos e notificações emitidas.  
 
-- **RF-06**  
+- **RF‑06**  
   - Descrição: Permitir avaliação de eventos pelos participantes após conclusão.  
   - Prioridade: Baixa  
-  - Critérios de Aceite: Notas de 1 a 5 armazenadas; avaliação só pós-evento.
+  - Critérios de Aceite: Notas de 1 a 5 armazenadas; avaliação só pós‑evento.
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**  
+- **RNF‑01**  
   - Categoria: Desempenho  
   - Descrição: Listagem de eventos e inscrições com p95 ≤ 300 ms.  
   - Métrica/Meta: 300 ms
 
-- **RNF-02**  
+- **RNF‑02**  
   - Categoria: Confiabilidade  
   - Descrição: Upload de mídia resiliente a falhas de rede, com retries.  
   - Métrica/Meta: Até 3 tentativas automáticas
 
-- **RNF-03**  
+- **RNF‑03**  
   - Categoria: Segurança  
   - Descrição: Validação de permissões por escopo (organização, núcleo).  
   - Métrica/Meta: 0 acessos indevidos em testes automatizados
 
-- **RNF-04**  
+- **RNF‑04**  
   - Categoria: Auditoria  
   - Descrição: Logs e histórico de alterações para eventos, inscrições e briefings.  
   - Métrica/Meta: 100% dos eventos críticos registrados
 
 ## 5. Casos de Uso
 
-### UC-01 – Criar Evento
+### UC‑01 – Criar Evento
 1. Admin envia dados do evento.  
 2. Sistema valida e cria evento.  
 3. Retorna HTTP 201 com dados completos.
 
-### UC-02 – Inscrever Usuário
+### UC‑02 – Inscrever Usuário
 1. Usuário autenticado solicita inscrição.  
 2. Sistema cria registro e retorna confirmação.
 
-### UC-03 – Upload de Material
+### UC‑03 – Upload de Material
 1. Usuário autorizado faz upload de arquivo.  
 2. Sistema valida formato e armazena em S3/Storage.
 
-### UC-04 – Gerenciar Parcerias
+### UC‑04 – Gerenciar Parcerias
 1. Admin ou coordenador cadastra parceria.  
 2. Sistema persiste dados e notifica equipe.
 
-### UC-05 – Fluxo de Briefing
+### UC‑05 – Fluxo de Briefing
 1. Coordenador preenche briefing e envia para orçamento.  
 2. Admin aprova ou solicita revisão.  
 3. Notificações disparadas conforme transição.
 
-### UC-06 – Avaliar Evento
+### UC‑06 – Avaliar Evento
 1. Participante informa nota e feedback.  
 2. Sistema grava avaliação após data de fim.
 
@@ -160,8 +160,8 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 ```gherkin
 Feature: Gestão de Eventos
   Scenario: Criar e inscrever usuário
-    Given usuário root autenticado  
-    When POST /api/eventos/ e POST /api/eventos/<id>/inscricoes/  
+    Given usuário root autenticado
+    When POST /api/eventos/ e POST /api/eventos/<id>/inscricoes/
     Then eventos e inscrições criados com sucesso
 ```
 
@@ -174,3 +174,20 @@ Feature: Gestão de Eventos
 
 ## 10. Anexos e Referências
 - PDF fontes originais de requisitos.
+
+## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑07** – Gerar código QR exclusivo para cada inscrição, para check‑in rápido no evento. QRCode deve expirar após uso.  
+- **RF‑08** – Permitir avaliar parcerias e patrocínios separadamente, com notas de 1 a 5 e comentário.  
+- **RF‑09** – Registrar e acompanhar orçamento e gastos do evento, incluindo campos `orcamento_estimado` e `valor_gasto`.  
+- **RF‑10** – Definir número máximo de participantes e lista de espera automática quando lotado.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑05** – Geração de QRCode deve ocorrer em ≤ 100 ms.  
+- **RNF‑06** – Processos de orçamento devem ser rastreados com logs auditáveis.  
+
+### Modelo de Dados Adicional
+- `InscricaoEvento`: adicionar `qrcode_url: URLField`, `check_in_realizado_em: datetime`.  
+- `Evento`: adicionar `orcamento_estimado: decimal`, `valor_gasto: decimal`, `participantes_maximo: integer`, `espera_habilitada: boolean`.  
+- `ParceriaEvento`: adicionar `avaliacao: integer`, `comentario: text`.  

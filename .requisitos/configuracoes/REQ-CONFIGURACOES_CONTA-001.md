@@ -25,52 +25,52 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**
+- **RF‑01**
   - Descrição: Usuário pode ativar/desativar notificação por email.
   - Prioridade: Alta
   - Critérios de Aceite: Checkbox salva e reflete estado atual.
 
-- **RF-02**
+- **RF‑02**
   - Descrição: Usuário pode ativar/desativar notificação por WhatsApp.
   - Prioridade: Média
   - Critérios de Aceite: Estado persistido no banco.
 
-- **RF-03**
+- **RF‑03**
   - Descrição: Usuário pode trocar entre tema claro e escuro.
   - Prioridade: Alta
-  - Critérios de Aceite: Interface atualiza imediatamente e prefere-se cookie/localStorage.
+  - Critérios de Aceite: Interface atualiza imediatamente e prefere‑se cookie/localStorage.
 
-- **RF-04**
+- **RF‑04**
   - Descrição: Configurações são criadas automaticamente ao cadastrar usuário.
   - Prioridade: Alta
   - Critérios de Aceite: Após cadastro, existe instância Configurações_Conta.
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**
+- **RNF‑01**
   - Categoria: Desempenho
-  - Descrição: Carregamento das configurações em ≤ 100 ms.
-  - Métrica/Meta: p95 ≤ 100 ms
+  - Descrição: Carregamento das configurações em ≤ 100 ms.
+  - Métrica/Meta: p95 ≤ 100 ms
 
-- **RNF-02**
+- **RNF‑02**
   - Categoria: Confiabilidade
   - Descrição: Garantia de relação 1:1 sem duplicatas.
   - Métrica/Meta: 0 falhas em testes de unicidade.
 
 ## 5. Casos de Uso
 
-### UC-01 – Configurar Notificações por Email
+### UC‑01 – Configurar Notificações por Email
 1. Usuário acessa página de configurações.  
 2. Marca/desmarca a opção “Receber notificações por email”.  
 3. Clica em “Salvar”.  
 4. Sistema persiste preferência e exibe confirmação.
 
-### UC-02 – Configurar Notificações por WhatsApp
+### UC‑02 – Configurar Notificações por WhatsApp
 1. Usuário seleciona “Receber notificações por WhatsApp”.  
 2. Salva alterações.  
 3. Sistema persiste e exibe aviso de confirmação.
 
-### UC-03 – Alternar Tema
+### UC‑03 – Alternar Tema
 1. Usuário clica no toggle de tema.  
 2. Interface muda para tema escuro/claro.  
 3. Configuração é salva para próximas sessões.
@@ -107,9 +107,24 @@ Feature: Configurações de Conta
 ## 9. Dependências / Integrações
 - **App Accounts**: cria instância inicial de configurações.  
 - **Redis**: armazenamento de sessão opcional.  
-- **Celery**: dispara e-mails de notificação conforme preferências.  
-- **Front-end**: localStorage para tema (fallback).
+- **Celery**: dispara e‑mails de notificação conforme preferências.  
+- **Front‑end**: localStorage para tema (fallback).
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Configuracoes_Conta_Hubx.pdf
 
+## 11. Melhorias Sugeridas (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑05** – Permitir configurar frequência de notificações (imediata, diária, semanal) para cada canal.  
+- **RF‑06** – Opção de idioma da interface (português, inglês, espanhol).  
+- **RF‑07** – O tema pode ser automático (seguindo preferências do sistema operacional) além de claro/escuro.  
+
+### Modelo de Dados Adicional
+- `frequencia_notificacoes_email: enum('imediata','diaria','semanal')`  
+- `frequencia_notificacoes_whatsapp: enum('imediata','diaria','semanal')`  
+- `idioma: string (default='pt‑BR')`  
+- `tema: enum('claro','escuro','automatico')` – substitui `tema_escuro`.  
+
+### Regras de Negócio Adicionais
+- Frequências “diária” e “semanal” agrupam notificações no horário configurado pelo sistema.

@@ -27,70 +27,70 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 
 ## 3. Requisitos Funcionais
 
-- **RF-01**
+- **RF‑01**
   - Descrição: Listar empresas com paginação e filtros por organização, município e tags.
   - Prioridade: Alta
   - Critérios de Aceite: Resposta paginada com parâmetros via `request.GET`.
 
-- **RF-02**
+- **RF‑02**
   - Descrição: Criar empresa com validação de CNPJ único.
   - Prioridade: Alta
   - Critérios de Aceite: Retorna erro 400 se CNPJ já existir.
 
-- **RF-03**
+- **RF‑03**
   - Descrição: Editar dados de uma empresa existente.
   - Prioridade: Média
   - Critérios de Aceite: Apenas campos permitidos são atualizados.
 
-- **RF-04**
+- **RF‑04**
   - Descrição: Excluir empresa pelo usuário proprietário ou admin.
   - Prioridade: Média
   - Critérios de Aceite: Soft delete marcado no banco e não aparece em listagens.
 
-- **RF-05**
+- **RF‑05**
   - Descrição: Pesquisar empresas por palavras-chave e tags.
   - Prioridade: Média
   - Critérios de Aceite: Busca retorna empresas cujo nome ou tags correspondem ao termo.
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
 
-- **RNF-01**
+- **RNF‑01**
   - Categoria: Desempenho
-  - Descrição: Listagem de empresas com filtros deve responder em p95 ≤ 300 ms.
-  - Métrica/Meta: 300 ms
+  - Descrição: Listagem de empresas com filtros deve responder em p95 ≤ 300 ms.
+  - Métrica/Meta: 300 ms
 
-- **RNF-02**
+- **RNF‑02**
   - Categoria: Segurança
   - Descrição: Garantir unicidade de CNPJ e controle de acesso.
   - Métrica/Meta: 0 entradas duplicadas em testes automatizados.
 
-- **RNF-03**
+- **RNF‑03**
   - Categoria: Manutenibilidade
   - Descrição: Código modular e documentado para fácil extensão.
-  - Métrica/Meta: Cobertura de testes ≥ 90%.
+  - Métrica/Meta: Cobertura de testes ≥ 90 %.
 
 ## 5. Casos de Uso
 
-### UC-01 – Listar Empresas
+### UC‑01 – Listar Empresas
 1. Usuário acessa endpoint de listagem de empresas.  
 2. Aplica filtros e ordenações.  
 3. Sistema retorna página de resultados paginados.
 
-### UC-02 – Criar Empresa
+### UC‑02 – Criar Empresa
 1. Usuário preenche formulário com dados da empresa.  
 2. Sistema valida campos e salva no banco.  
-3. Retorna HTTP 201 com dados criados.
+3. Retorna HTTP 201 com dados criados.
 
-### UC-03 – Editar Empresa
+### UC‑03 – Editar Empresa
 1. Usuário solicita edição de empresa existente.  
 2. Sistema verifica permissões e atualiza campos.  
-3. Retorna HTTP 200 com dados atualizados.
+3. Retorna HTTP 200 com dados atualizados.
 
-### UC-04 – Excluir Empresa
+### UC‑04 – Excluir Empresa
 1. Usuário solicita remoção de empresa.  
-2. Sistema realiza soft delete e retorna HTTP 204.
+2. Sistema realiza soft delete e retorna HTTP 204.
 
-### UC-05 – Buscar Empresas
+### UC‑05 – Buscar Empresas
 1. Usuário envia termo de busca e/ou tags.  
 2. Sistema filtra empresas e retorna resultados.
 
@@ -114,13 +114,13 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
   - descricao: TextField (opcional)  
   - palavras_chave: CharField  
   - tags: M2M → Tag  
-  - created_at, updated_at: datetime
+  - created_at, updated_at: datetime  
 
 - **Tag**  
   - id: UUID  
   - nome: string (unique)  
   - categoria: enum('prod','serv')  
-  - created_at, updated_at: datetime
+  - created_at, updated_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
@@ -128,7 +128,7 @@ Feature: Gestão de Empresas
   Scenario: Cadastro de empresa com CNPJ único
     Given formulário válido e CNPJ não cadastrado
     When envia dados
-    Then retorna HTTP 201 e empresa aparece na listagem
+    Then retorna HTTP 201 e empresa aparece na listagem
 
   Scenario: Busca por tag
     Given empresas com tag "serviço"
@@ -145,3 +145,19 @@ Feature: Gestão de Empresas
 
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Empresas_Hubx.pdf
+
+## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑06** – Implementar histórico de alterações de dados (quem alterou, quando e quais campos).  
+- **RF‑07** – Permitir avaliações e comentários sobre empresas (1–5 estrelas) para feedback.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑04** – O histórico deve estar disponível para consulta por admins e atender requisitos de LGPD.  
+
+### Modelo de Dados Adicional
+- Nova entidade `EmpresaChangeLog` com campos: id, empresa_id, usuario_id, campo_alterado, valor_antigo, valor_novo, alterado_em.  
+- Nova entidade `AvaliacaoEmpresa` com campos: id, empresa_id, usuario_id, nota (1–5), comentario, created_at.  
+
+### Regras de Negócio Adicionais
+- Somente usuários autenticados podem avaliar empresas; um único usuário avalia uma empresa uma vez.  

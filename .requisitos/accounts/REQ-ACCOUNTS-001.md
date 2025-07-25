@@ -25,6 +25,7 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - Gestão de organizações, núcleos ou eventos  
 
 ## 3. Requisitos Funcionais
+
 - **RF-01**  
   - Descrição: Usuário pode se cadastrar com email e senha, gerando conta ativa.  
   - Prioridade: Alta  
@@ -50,7 +51,8 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - Prioridade: Alta  
   - Critérios de Aceite: Tentativa de usar email existente retorna erro.  
 
-## 4. Requisitos Não-Funcionais
+## 4. Requisitos Não‑Funcionais
+
 - **RNF-01**  
   - Categoria: Segurança  
   - Descrição: Senhas armazenadas com bcrypt (mínimo 12 rounds)  
@@ -67,7 +69,8 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - Métrica/Meta: escalonamento automático  
 
 ## 5. Casos de Uso
-### UC-01 – Criar Conta
+
+### UC‑01 – Criar Conta
 1. Usuário acessa formulário de registro.  
 2. Preenche email, senha e confirmação.  
 3. Sistema valida dados e cria conta inativa.  
@@ -75,13 +78,13 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
 5. Usuário confirma email e conta é ativada.  
 6. **Cenário de Erro**: email já cadastrado → mensagem de erro.
 
-### UC-02 – Recuperar Senha
+### UC‑02 – Recuperar Senha
 1. Usuário solicita recuperação informando email.  
 2. Sistema envia email com link de reset (token 1h).  
 3. Usuário redefine senha no link.  
 4. **Cenário de Erro**: token expirado → solicitação de novo link.
 
-### UC-03 – Editar Perfil
+### UC‑03 – Editar Perfil
 1. Usuário navega até página de perfil.  
 2. Atualiza campos desejados (nome, avatar, cover, etc.).  
 3. Sistema valida e salva alterações.  
@@ -141,3 +144,26 @@ Feature: Gerenciamento de contas
 ## 10. Anexos e Referências
 - Documento fonte: Requisitos_Accounts_Hubx.pdf
 
+## 11. Requisitos Adicionais e Melhorias (Auditoria 2025‑07‑25)
+
+### Requisitos Funcionais Adicionais
+- **RF‑06** – Confirmação de e‑mail deve ocorrer em até 24 horas após cadastro. Após expirar, o token é invalidado e o usuário deve solicitar nova confirmação.  
+- **RF‑07** – Limitar tentativas de login a 3. Após 3 falhas consecutivas, a conta é bloqueada por 15 minutos.  
+- **RF‑08** – Permitir remoção de conta pelo usuário com soft delete. Conta fica em estado “pendente_de_exclusao” por 30 dias antes de remoção permanente.  
+- **RF‑09** – Suporte a autenticação em duas etapas (2FA) opcional com códigos TOTP.  
+
+### Requisitos Não‑Funcionais Adicionais
+- **RNF‑04** – Segurança reforçada: tokens de recuperação e confirmação devem ter entropia ≥ 128 bits e expirar em 24 horas.  
+- **RNF‑05** – Logs de tentativas de login e eventos de segurança devem ser armazenados com carimbo de data/hora e IP.  
+
+### Modelo de Dados Adicional
+- `failed_login_attempts: integer` – contador de falhas consecutivas.  
+- `lock_expires_at: datetime` – data/hora em que o bloqueio por falhas expira.  
+- `deleted_at: datetime` – marca soft delete da conta.  
+- `two_factor_enabled: boolean` – indica se 2FA está habilitado.  
+- `two_factor_secret: string` – chave secreta TOTP (criptografada).  
+
+### Regras de Negócio Adicionais
+- Token de confirmação de e‑mail expira em 24 horas.  
+- Após 3 tentativas de login sem sucesso, a conta entra em bloqueio temporário.  
+- Processo de exclusão de conta deve solicitar confirmação e aguardar 30 dias antes da eliminação definitiva.
