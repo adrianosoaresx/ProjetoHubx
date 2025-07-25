@@ -1,6 +1,6 @@
 ---
-id: REQ-APP_FORUM-001
-title: Requisitos App Forum Hubx
+id: REQ-APP_DISCUSSAO-001
+title: Requisitos App Discussao Hubx
 module: App_forum
 status: Em vigor
 version: '1.0'
@@ -51,7 +51,7 @@ Feature: <nome>
 ## 99. Conteúdo Importado (para revisão)
 
 ```
-Requisitos do App Forum - HubX
+Requisitos do App Discussao - HubX
 Objetivo
 Oferecer um espaço organizado por categorias de discussão, com tópicos e respostas, voltado à troca de
 conhecimento e comunicação interna entre membros de uma organização.
