@@ -1,12 +1,20 @@
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
+
 from dateutil.relativedelta import relativedelta
-from django.db.models import Count, Avg, Sum, Q
-from accounts.models import User
+from django.core.cache import cache
+from django.db.models import Avg, Count, Q, Sum
+
+from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
-from discussao.models import TopicoDiscussao, RespostaDiscussao
-from feed.models import Post
 from chat.models import ChatMessage
+from discussao.models import RespostaDiscussao, TopicoDiscussao
+from feed.models import Post
+from empresas.models import Empresa
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
+
+from .utils import get_variation
 
 
 class DashboardService:
@@ -85,7 +93,7 @@ class DashboardService:
         periodo: str, inicio: Optional[datetime] = None, fim: Optional[datetime] = None
     ) -> Tuple[datetime, datetime]:
         if not inicio and not fim:
-            hoje = datetime.today().replace(day=1)
+            hoje = datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             inicio = hoje
         if periodo == "mensal":
             fim = inicio + relativedelta(months=1) - timedelta(seconds=1)
@@ -100,11 +108,56 @@ class DashboardService:
         return inicio, fim
 
     @staticmethod
-    def calcular_crescimento(queryset, inicio: datetime, fim: datetime, campo: str = "created_at") -> Dict[str, float]:
+    def calcular_crescimento(
+        queryset,
+        inicio: datetime,
+        fim: datetime,
+        campo: str = "created_at",
+    ) -> Dict[str, float]:
         atual = queryset.filter(**{f"{campo}__gte": inicio, f"{campo}__lte": fim}).count()
         delta = fim - inicio
         prev_inicio = inicio - delta
         prev_fim = inicio - timedelta(seconds=1)
         anterior = queryset.filter(**{f"{campo}__gte": prev_inicio, f"{campo}__lte": prev_fim}).count()
-        crescimento = ((atual - anterior) / anterior * 100) if anterior else (100.0 if atual else 0.0)
+        crescimento = get_variation(anterior, atual) if anterior else (100.0 if atual else 0.0)
         return {"total": atual, "crescimento": crescimento}
+
+
+class DashboardMetricsService:
+    @staticmethod
+    def get_metrics(
+        user: User,
+        periodo: str = "mensal",
+        inicio: Optional[datetime] = None,
+        fim: Optional[datetime] = None,
+    ) -> Dict[str, Dict[str, float]]:
+        """Return dashboard metrics, cached for 5 minutes."""
+        inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
+        cache_key = f"dashboard_metrics_{user.pk}_{periodo}_{inicio.isoformat()}_{fim.isoformat()}"
+        cached = cache.get(cache_key)
+        if cached:
+            return cached
+
+        qs_users = User.objects.all()
+        qs_orgs = Organizacao.objects.all()
+        qs_nucleos = Nucleo.objects.all()
+        qs_empresas = Empresa.objects.all()
+        qs_eventos = Evento.objects.all()
+
+        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+            org = user.organizacao
+            qs_users = qs_users.filter(organizacao=org)
+            qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
+            qs_nucleos = qs_nucleos.filter(organizacao=org)
+            qs_empresas = qs_empresas.filter(usuario__organizacao=org)
+            qs_eventos = qs_eventos.filter(organizacao=org)
+
+        metrics = {
+            "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim),
+            "num_organizacoes": DashboardService.calcular_crescimento(qs_orgs, inicio, fim),
+            "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim),
+            "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim),
+            "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim),
+        }
+        cache.set(cache_key, metrics, 300)
+        return metrics
