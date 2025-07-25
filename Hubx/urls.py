@@ -35,6 +35,10 @@ urlpatterns = [
         include(("organizacoes.api_urls", "organizacoes_api"), namespace="organizacoes_api"),
     ),
     path(
+        "api/",
+        include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
+    ),
+    path(
         "nucleos/",
         include(("nucleos.urls", "nucleos"), namespace="nucleos"),
     ),

@@ -8,9 +8,7 @@ User = get_user_model()
 
 
 class NucleoForm(forms.ModelForm):
-    membros = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(), required=False, widget=forms.SelectMultiple
-    )
+    membros = forms.ModelMultipleChoiceField(queryset=User.objects.all(), required=False, widget=forms.SelectMultiple)
 
     class Meta:
         model = Nucleo

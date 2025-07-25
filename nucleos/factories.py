@@ -1,7 +1,10 @@
 import factory
 from factory.django import DjangoModelFactory
-from .models import Nucleo
+
 from organizacoes.factories import OrganizacaoFactory
+
+from .models import Nucleo
+
 
 class NucleoFactory(DjangoModelFactory):
     class Meta:

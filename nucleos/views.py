@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 from accounts.models import UserType
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
 from .forms import NucleoForm, NucleoSearchForm
 from .models import Nucleo
