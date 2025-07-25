@@ -4,10 +4,10 @@
 {% block title %}Dashboard Root | Hubx{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 py-10">
+<main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Dashboard">
   <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">Dashboard Root</h1>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6" aria-live="polite">
 
     <!-- Usuários -->
     <div class="rounded-2xl shadow-sm border border-neutral-200 bg-white p-5 hover:shadow-md transition">
@@ -86,5 +86,5 @@
     </div>
 
   </div>
-</div>
+</main>
 {% endblock %}
