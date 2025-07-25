@@ -1,6 +1,7 @@
 # accounts/models.py
 from __future__ import annotations
 
+import secrets
 from pathlib import Path
 
 from django.conf import settings
@@ -23,6 +24,11 @@ cpf_validator = RegexValidator(
     regex=r"^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$",
     message="Digite um CPF válido no formato 000.000.000-00.",
 )
+
+
+def generate_secure_token() -> str:
+    """Retorna um token seguro com entropia >= 128 bits."""
+    return secrets.token_urlsafe(32)
 
 
 class UserQuerySet(models.QuerySet):
@@ -151,6 +157,13 @@ class User(AbstractUser, TimeStampedModel):
     perfil_publico = models.BooleanField(default=True)
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
+
+    failed_login_attempts = models.PositiveSmallIntegerField(default=0)
+    lock_expires_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    exclusao_confirmada = models.BooleanField(default=False)
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=32, blank=True, null=True)
 
     user_type = models.CharField(
         max_length=20,
@@ -307,3 +320,32 @@ class UserMedia(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
+
+
+class AccountToken(TimeStampedModel):
+    class Tipo(models.TextChoices):
+        EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
+        PASSWORD_RESET = "password_reset", "Redefinição de Senha"
+
+    codigo = models.CharField(max_length=64, unique=True, default=generate_secure_token)
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="account_tokens")
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    ip_gerado = models.GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Token de Conta"
+        verbose_name_plural = "Tokens de Conta"
+
+
+class LoginAttempt(models.Model):
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    email = models.EmailField()
+    sucesso = models.BooleanField(default=False)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Tentativa de Login"
+        verbose_name_plural = "Tentativas de Login"
