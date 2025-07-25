@@ -1,8 +1,13 @@
 # accounts/models.py
+from __future__ import annotations
+
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import PROTECT, SET_NULL
@@ -285,6 +290,20 @@ class UserMedia(TimeStampedModel):
     class Meta:
         verbose_name = "Mídia do Usuário"
         verbose_name_plural = "Mídias do Usuário"
+
+    def clean(self) -> None:
+        """Valida o tamanho e a extensão do arquivo enviado."""
+        super().clean()
+        if self.file:
+            ext = Path(self.file.name).suffix.lower()
+            allowed = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+            if ext not in allowed:
+                raise ValidationError({"file": _("Formato de arquivo não suportado.")})
+            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", 50 * 1024 * 1024)
+            if self.file.size > max_size:
+                raise ValidationError(
+                    {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}
+                )
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
