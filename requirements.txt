@@ -1,3 +1,4 @@
+amqp==5.3.1
 anyio==4.9.0
 asgiref==3.8.1
 async-timeout==5.0.1
@@ -5,13 +6,18 @@ attrs==25.3.0
 autobahn==24.4.2
 Automat==25.4.16
 bandit==1.7.7
+billiard==4.2.1
 black==24.4.2
+celery==5.5.3
 cffi==1.17.1
 cfgv==3.4.0
 channels==4.1.0
 channels_redis==4.2.1
 charset-normalizer==3.4.2
 click==8.2.1
+click-didyoumean==0.3.1
+click-plugins==1.1.1.2
+click-repl==0.3.0
 colorama==0.4.6
 constantly==23.10.4
 coverage==7.9.2
@@ -45,6 +51,7 @@ iniconfig==2.1.0
 isort==5.10.1
 jsonschema==4.24.0
 jsonschema-specifications==2025.4.1
+kombu==5.5.4
 markdown-it-py==3.0.0
 mdurl==0.1.2
 msgpack==1.1.1
@@ -59,6 +66,7 @@ phonenumbers==9.0.7
 pillow==11.2.1
 platformdirs==4.3.8
 pluggy==1.6.0
+prompt_toolkit==3.0.51
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
 pycparser==2.22
@@ -93,7 +101,9 @@ tzdata==2025.2
 uritemplate==4.2.0
 uvicorn==0.35.0
 validate_docbr==1.11.1
+vine==5.1.0
 virtualenv==20.31.2
 watchfiles==1.1.0
+wcwidth==0.2.13
 websockets==15.0.1
 zope.interface==7.2
