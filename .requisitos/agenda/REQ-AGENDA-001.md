@@ -1,7 +1,7 @@
 ---
-id: REQ-EVENTOS-001
-title: Requisitos do App Eventos
-module: Eventos
+id: REQ-AGENDA-001
+title: Requisitos do App Agenda
+module: Agenda
 status: Em vigor
 version: '1.0'
 authors: []
