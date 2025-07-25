@@ -52,7 +52,15 @@ urlpatterns = [
     ),
     path(
         "api/",
-        include(("configuracoes.api_urls", "configuracoes_api"), namespace="configuracoes_api"),
+        include(("configuracoes.api_urls", "configuracoes_api"), namespace="configuracoes_api")
+    ),
+    path(
+          "api/",
+          include(("accounts.api_urls", "accounts_api"), namespace="accounts_api")
+    ),
+    path(
+        "api/",
+    include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
     ),
     path(
         "nucleos/",

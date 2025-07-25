@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django import forms
 
-from .models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao
+from .models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao, Tag
 
 
 class CategoriaDiscussaoForm(forms.ModelForm):
@@ -14,6 +14,10 @@ class CategoriaDiscussaoForm(forms.ModelForm):
 
 
 class TopicoDiscussaoForm(forms.ModelForm):
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(), required=False, widget=forms.CheckboxSelectMultiple
+    )
+
     class Meta:
         model = TopicoDiscussao
         fields = [
