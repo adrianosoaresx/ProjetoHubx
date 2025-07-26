@@ -73,11 +73,25 @@ class InscricaoEvento(TimeStampedModel):
     data_confirmacao = models.DateTimeField(null=True, blank=True)
     qrcode_url = models.URLField(null=True, blank=True)
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
+    posicao_espera = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "evento")
 
     def confirmar_inscricao(self) -> None:
+        if self.evento.participantes_maximo and self.evento.espera_habilitada:
+            confirmados = self.evento.inscricoes.filter(status="confirmada").count()
+            if confirmados >= self.evento.participantes_maximo:
+                self.status = "pendente"
+                ultimo = (
+                    self.evento.inscricoes.filter(posicao_espera__isnull=False)
+                    .aggregate(mx=models.Max("posicao_espera"))
+                    .get("mx")
+                    or 0
+                )
+                self.posicao_espera = ultimo + 1
+                self.save(update_fields=["status", "posicao_espera", "updated_at"])
+                return
         self.status = "confirmada"
         self.data_confirmacao = timezone.now()
         if not self.qrcode_url:
@@ -172,6 +186,12 @@ class ParceriaEvento(models.Model):
     data_inicio = models.DateField()
     data_fim = models.DateField()
     descricao = models.TextField(blank=True)
+    avaliacao = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        null=True,
+        blank=True,
+    )
+    comentario = models.TextField(blank=True)
 
     class Meta:
         ordering = ["-data_inicio"]
@@ -197,6 +217,19 @@ class MaterialDivulgacaoEvento(models.Model):
     data_publicacao = models.DateField(auto_now_add=True)
     ativo = models.BooleanField(default=True)
     tags = models.CharField(max_length=255, blank=True)
+    status = models.CharField(
+        max_length=10,
+        choices=[("criado", "Criado"), ("aprovado", "Aprovado"), ("devolvido", "Devolvido")],
+        default="criado",
+    )
+    avaliado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="materiais_avaliados",
+    )
+    avaliado_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Material de Divulgação de Evento"
@@ -214,6 +247,19 @@ class BriefingEvento(models.Model):
     cronograma_resumido = models.TextField(blank=True)
     conteudo_programatico = models.TextField(blank=True)
     observacoes = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=10,
+        choices=[("criado", "Criado"), ("aprovado", "Aprovado"), ("devolvido", "Devolvido")],
+        default="criado",
+    )
+    avaliado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="briefings_avaliados",
+    )
+    avaliado_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Briefing de Evento"
