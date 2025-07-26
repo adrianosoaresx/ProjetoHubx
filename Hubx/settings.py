@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import base64
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,6 +25,12 @@ HTMX_VERSION = "1.9.12"
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-f_(^m#wo6a9xfpmwi)8n7bo@k@gs!sp_(9-=jhi0%2r6o@2i^8"
+
+# Chave para criptografia de campos sensíveis
+FERNET_KEY = os.environ.get(
+    "FERNET_KEY",
+    base64.urlsafe_b64encode(SECRET_KEY.encode()[:32]).decode(),
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

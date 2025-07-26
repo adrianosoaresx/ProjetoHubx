@@ -15,7 +15,7 @@ from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
-from core.fields import URLField
+from core.fields import EncryptedCharField, URLField
 from core.models import TimeStampedModel
 
 # ───────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ class User(AbstractUser, TimeStampedModel):
     deleted_at = models.DateTimeField(null=True, blank=True)
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
-    two_factor_secret = models.CharField(max_length=32, blank=True, null=True)
+    two_factor_secret = EncryptedCharField(max_length=128, blank=True, null=True)
 
     user_type = models.CharField(
         max_length=20,
