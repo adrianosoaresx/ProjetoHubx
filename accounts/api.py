@@ -71,6 +71,11 @@ class AccountViewSet(viewsets.GenericViewSet):
         user = token.usuario
         user.set_password(new_password)
         user.save(update_fields=["password"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="senha_redefinida",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
         return Response({"detail": _("Senha redefinida.")})

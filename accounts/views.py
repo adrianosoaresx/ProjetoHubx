@@ -5,15 +5,16 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from core.permissions import IsAdmin, IsCoordenador
 from accounts.models import UserType
 from accounts.serializers import UserSerializer
+from core.permissions import IsAdmin, IsCoordenador
 
 User = get_user_model()
 import os
 import uuid
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -21,20 +22,18 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-from tokens.forms import TokenAcessoForm
 from tokens.models import TokenAcesso
 
 from .forms import (
+    CustomUserChangeForm,
     CustomUserCreationForm,
     InformacoesPessoaisForm,
     MediaForm,
     NotificacoesForm,
     RedesSociaisForm,
-    CustomUserChangeForm,
 )
-from .models import NotificationSettings, UserMedia, cpf_validator
+from .models import NotificationSettings, SecurityEvent, UserMedia, cpf_validator
 
 # ====================== PERFIL ======================
 
@@ -79,6 +78,11 @@ def perfil_seguranca(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="senha_alterada",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
     else:
@@ -437,5 +441,10 @@ class ChangePasswordView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, form.user)
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="senha_alterada",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             return redirect("user_profile")
         return render(request, "accounts/change_password.html", {"form": form})
