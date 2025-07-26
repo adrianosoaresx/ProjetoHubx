@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from core.fields import EncryptedCharField
 from core.models import TimeStampedModel
 
 
@@ -103,8 +104,8 @@ class TokenUsoLog(models.Model):
         on_delete=models.SET_NULL,
     )
     acao = models.CharField(max_length=20, choices=Acao.choices)
-    ip = models.GenericIPAddressField(null=True, blank=True)
-    user_agent = models.CharField(max_length=256, null=True, blank=True)
+    ip = EncryptedCharField(max_length=128, null=True, blank=True)
+    user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
