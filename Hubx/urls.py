@@ -59,6 +59,10 @@ urlpatterns = [
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
     ),
     path(
+        "api/chat/",
+        include(("chat.api_urls", "chat_api"), namespace="chat_api"),
+    ),
+    path(
         "api/discussao/",
         include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
     ),
