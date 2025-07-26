@@ -86,6 +86,7 @@ python-dotenv==1.1.1
 python-slugify==8.0.4
 pytz==2025.2
 PyYAML==6.0.2
+qrcode==8.2
 redis==6.2.0
 referencing==0.36.2
 requests==2.32.4
@@ -115,4 +116,3 @@ watchfiles==1.1.0
 wcwidth==0.2.13
 websockets==15.0.1
 zope.interface==7.2
-reportlab==4.2.0
