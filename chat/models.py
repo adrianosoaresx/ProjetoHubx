@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 
 from core.models import TimeStampedModel
 
@@ -100,6 +103,7 @@ class ChatMessage(TimeStampedModel):
     pinned_at = models.DateTimeField(null=True, blank=True)
     reactions = models.JSONField(default=dict, blank=True)
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
+    hidden_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.sender} - {self.conversation.slug}"
@@ -129,6 +133,23 @@ class ChatNotification(TimeStampedModel):
     class Meta:
         verbose_name = "Notificação"
         verbose_name_plural = "Notificações"
+
+
+class ChatMessageFlag(TimeStampedModel):
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="flags")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("message", "user")
+        verbose_name = "Sinalização"
+        verbose_name_plural = "Sinalizações"
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        total = self.message.flags.count()
+        if total >= 3 and not self.message.hidden_at:
+            self.message.hidden_at = timezone.now()
+            self.message.save(update_fields=["hidden_at", "updated_at"])
 
 
 class RelatorioChatExport(TimeStampedModel):

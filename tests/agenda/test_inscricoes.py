@@ -119,3 +119,14 @@ def test_confirmar_inscricao(inscricao):
 def test_cancelar_inscricao(inscricao):
     inscricao.cancelar_inscricao()
     assert inscricao.status == "cancelada"
+
+
+def test_qrcode_and_checkin(client, inscricao):
+    inscricao.confirmar_inscricao()
+    assert inscricao.qrcode_url
+    url = reverse("agenda:inscricao_checkin", args=[inscricao.pk])
+    codigo = f"inscricao:{inscricao.pk}:{int(inscricao.created_at.timestamp())}"
+    resp = client.post(url, {"codigo": codigo})
+    assert resp.status_code == 200
+    inscricao.refresh_from_db()
+    assert inscricao.check_in_realizado_em is not None
