@@ -46,6 +46,20 @@ class ChatMessageViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixin
         serializer = self.get_serializer(msg)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAdminUser])
+    def revisar(self, request: Request, pk: str) -> Response:
+        msg = self.get_object()
+        acao = request.data.get("acao")
+        if acao == "aprovar":
+            msg.hidden_at = None
+            msg.flags.all().delete()
+            msg.save(update_fields=["hidden_at", "updated_at"])
+        elif acao == "remover":
+            msg.delete()
+            return Response(status=204)
+        serializer = self.get_serializer(msg)
+        return Response(serializer.data)
+
 
 @api_view(["GET"])
 @permission_classes([permissions.IsAdminUser])

@@ -58,6 +58,12 @@ class Post(TimeStampedModel):
             if self.video.size > max_size:
                 raise ValidationError({"video": "Vídeo maior que o limite"})
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        banned = getattr(settings, "FEED_BAD_WORDS", [])
+        if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
+            ModeracaoPost.objects.get_or_create(post=self)
+
 
 class Like(TimeStampedModel):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
@@ -79,3 +85,27 @@ class Comment(TimeStampedModel):
         ordering = ["created_at"]
         verbose_name = "Comentário"
         verbose_name_plural = "Comentários"
+
+
+class ModeracaoPost(TimeStampedModel):
+    STATUS_CHOICES = [
+        ("pendente", "Pendente"),
+        ("aprovado", "Aprovado"),
+        ("rejeitado", "Rejeitado"),
+    ]
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="moderacoes")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
+    motivo = models.TextField(blank=True)
+    avaliado_por = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="posts_avaliados",
+    )
+    avaliado_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Moderação de Post"
+        verbose_name_plural = "Moderações de Posts"

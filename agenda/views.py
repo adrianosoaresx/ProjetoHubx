@@ -1,8 +1,10 @@
 import calendar
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F
@@ -25,7 +27,14 @@ from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
 from .forms import BriefingEventoForm, EventoForm, InscricaoEventoForm, MaterialDivulgacaoEventoForm
-from .models import BriefingEvento, Evento, FeedbackNota, InscricaoEvento, MaterialDivulgacaoEvento
+from .models import (
+    BriefingEvento,
+    Evento,
+    FeedbackNota,
+    InscricaoEvento,
+    MaterialDivulgacaoEvento,
+    ParceriaEvento,
+)
 
 User = get_user_model()
 
@@ -253,6 +262,53 @@ def eventos_por_dia(request):
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
     return lista_eventos(request, dia_iso)
+
+
+@login_required
+def evento_orcamento(request, pk: int):
+    evento = get_object_or_404(Evento, pk=pk)
+    if (
+        request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}
+        or evento.organizacao != request.user.organizacao
+    ):
+        return HttpResponseForbidden()
+    if request.method == "POST":
+        try:
+            evento.orcamento_estimado = Decimal(request.POST.get("orcamento_estimado", 0))
+            evento.valor_gasto = Decimal(request.POST.get("valor_gasto", 0))
+            evento.save(update_fields=["orcamento_estimado", "valor_gasto", "updated_at"])
+        except (TypeError, InvalidOperation):
+            return HttpResponse(status=400)
+    data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
+    return JsonResponse(data)
+
+
+@login_required
+def fila_espera(request, pk: int):
+    evento = get_object_or_404(Evento, pk=pk)
+    if evento.organizacao != request.user.organizacao:
+        return HttpResponseForbidden()
+    inscritos = list(
+        evento.inscricoes.filter(status="pendente")
+        .order_by("posicao_espera")
+        .values("user__username", "posicao_espera")
+    )
+    return JsonResponse({"fila": inscritos})
+
+
+@login_required
+def avaliar_parceria(request, pk: int):
+    parceria = get_object_or_404(ParceriaEvento, pk=pk)
+    if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
+        return HttpResponseForbidden()
+    if request.method == "POST" and parceria.avaliacao is None:
+        try:
+            parceria.avaliacao = int(request.POST.get("avaliacao"))
+        except (TypeError, ValueError):
+            return HttpResponse(status=400)
+        parceria.comentario = request.POST.get("comentario", "")
+        parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
+    return JsonResponse({"avaliacao": parceria.avaliacao, "comentario": parceria.comentario})
 
 
 @csrf_exempt

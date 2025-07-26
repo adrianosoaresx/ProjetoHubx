@@ -1,19 +1,20 @@
 from __future__ import annotations
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView
 
 from accounts.models import UserType
 from nucleos.models import Nucleo
 
 from .forms import CommentForm, LikeForm, PostForm
-from .models import Like, Post
+from .models import Like, ModeracaoPost, Post
 
 
 @login_required
@@ -201,3 +202,24 @@ def post_delete(request, pk):
         return redirect("feed:listar")
 
     return render(request, "feed/post_delete.html", {"post": post})
+
+
+@login_required
+@permission_required("feed.change_post", raise_exception=True)
+def moderar_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    mod, _ = ModeracaoPost.objects.get_or_create(post=post)
+    if request.method == "POST":
+        acao = request.POST.get("acao")
+        if acao == "aprovar":
+            mod.status = "aprovado"
+            mod.avaliado_por = request.user
+            mod.avaliado_em = timezone.now()
+            mod.save(update_fields=["status", "avaliado_por", "avaliado_em", "updated_at"])
+        elif acao == "rejeitar":
+            mod.status = "rejeitado"
+            mod.motivo = request.POST.get("motivo", "")
+            mod.avaliado_por = request.user
+            mod.avaliado_em = timezone.now()
+            mod.save(update_fields=["status", "motivo", "avaliado_por", "avaliado_em", "updated_at"])
+    return redirect("feed:post_detail", pk=pk)

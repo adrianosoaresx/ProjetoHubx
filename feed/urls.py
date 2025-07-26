@@ -13,4 +13,5 @@ urlpatterns = [
     path("<int:post_id>/curtir/", views.toggle_like, name="toggle_like"),
     path("<int:pk>/editar/", views.post_update, name="post_update"),
     path("<int:pk>/remover/", views.post_delete, name="post_delete"),
+    path("<int:pk>/moderar/", views.moderar_post, name="post_moderar"),
 ]
