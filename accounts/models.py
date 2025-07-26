@@ -349,3 +349,18 @@ class LoginAttempt(models.Model):
     class Meta:
         verbose_name = "Tentativa de Login"
         verbose_name_plural = "Tentativas de Login"
+
+
+class SecurityEvent(models.Model):
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="security_events",
+    )
+    evento = models.CharField(max_length=50)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Evento de Segurança"
+        verbose_name_plural = "Eventos de Segurança"

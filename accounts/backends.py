@@ -1,3 +1,4 @@
+import pyotp
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.utils import timezone
@@ -25,6 +26,11 @@ class EmailBackend(ModelBackend):
             LoginAttempt.objects.create(usuario=user, email=username, sucesso=False, ip=ip)
             return None
         if user.check_password(password) and self.user_can_authenticate(user):
+            if user.two_factor_enabled:
+                totp_code = kwargs.get("totp") or (request.POST.get("totp") if request else None)
+                if not totp_code or not pyotp.TOTP(user.two_factor_secret).verify(totp_code):
+                    LoginAttempt.objects.create(usuario=user, email=username, sucesso=False, ip=ip)
+                    return None
             user.failed_login_attempts = 0
             user.lock_expires_at = None
             user.save(update_fields=["failed_login_attempts", "lock_expires_at"])

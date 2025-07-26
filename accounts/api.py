@@ -10,8 +10,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AccountToken
+from .models import AccountToken, SecurityEvent
 from .serializers import UserSerializer
+from .tasks import send_confirmation_email
 
 User = get_user_model()
 
@@ -21,7 +22,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action in {"delete_me", "cancel_delete", "enable_2fa", "disable_2fa"}:
+        if self.action in {"delete_me", "cancel_delete", "enable_2fa", "disable_2fa", "resend_confirmation"}:
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -37,7 +38,26 @@ class AccountViewSet(viewsets.GenericViewSet):
         token.save(update_fields=["used_at"])
         token.usuario.is_active = True
         token.usuario.save(update_fields=["is_active"])
+        SecurityEvent.objects.create(
+            usuario=token.usuario,
+            evento="email_confirmado",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return Response({"detail": _("Email confirmado.")})
+
+    @action(detail=False, methods=["post"], url_path="resend-confirmation")
+    def resend_confirmation(self, request):
+        user = request.user
+        if user.is_active:
+            return Response({"detail": _("Conta já ativada.")}, status=400)
+        token = AccountToken.objects.create(
+            usuario=user,
+            tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+            expires_at=timezone.now() + timezone.timedelta(hours=24),
+            ip_gerado=request.META.get("REMOTE_ADDR"),
+        )
+        send_confirmation_email.delay(token.id)
+        return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="reset-password")
     def reset_password(self, request):
@@ -62,6 +82,11 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.two_factor_secret = secret
         user.two_factor_enabled = True
         user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="2fa_habilitado",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         otp_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=user.email, issuer_name="Hubx")
         return Response({"otpauth_url": otp_uri})
 
@@ -71,6 +96,11 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.two_factor_enabled = False
         user.two_factor_secret = None
         user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="2fa_desabilitado",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return Response({"detail": _("2FA desabilitado.")})
 
     @action(detail=False, methods=["delete"], url_path="me")
@@ -79,6 +109,11 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.deleted_at = timezone.now()
         user.exclusao_confirmada = True
         user.save(update_fields=["deleted_at", "exclusao_confirmada"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="conta_excluida",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["post"], url_path="me/cancel-delete")
@@ -87,4 +122,9 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.deleted_at = None
         user.exclusao_confirmada = False
         user.save(update_fields=["deleted_at", "exclusao_confirmada"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="cancelou_exclusao",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return Response({"detail": _("Processo cancelado.")})
