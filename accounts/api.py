@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from .models import AccountToken, SecurityEvent
 from .serializers import UserSerializer
-from .tasks import send_confirmation_email
+from .tasks import send_confirmation_email, send_password_reset_email
 
 User = get_user_model()
 
@@ -57,6 +57,24 @@ class AccountViewSet(viewsets.GenericViewSet):
             ip_gerado=request.META.get("REMOTE_ADDR"),
         )
         send_confirmation_email.delay(token.id)
+        return Response(status=204)
+
+    @action(detail=False, methods=["post"], url_path="request-password-reset")
+    def request_password_reset(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": _("Email ausente.")}, status=400)
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return Response(status=204)
+        token = AccountToken.objects.create(
+            usuario=user,
+            tipo=AccountToken.Tipo.PASSWORD_RESET,
+            expires_at=timezone.now() + timezone.timedelta(hours=1),
+            ip_gerado=request.META.get("REMOTE_ADDR"),
+        )
+        send_password_reset_email.delay(token.id)
         return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="reset-password")

@@ -9,6 +9,20 @@ from .models import AccountToken, User
 
 
 @shared_task
+def send_password_reset_email(token_id: int) -> None:
+    token = AccountToken.objects.select_related("usuario").get(pk=token_id)
+    if token.used_at or token.expires_at < timezone.now():
+        return
+    url = f"{settings.FRONTEND_URL}/reset-password/?token={token.codigo}"
+    send_mail(
+        "Redefina sua senha",
+        f"Acesse o link para redefinir sua senha: {url}",
+        settings.DEFAULT_FROM_EMAIL,
+        [token.usuario.email],
+    )
+
+
+@shared_task
 def send_confirmation_email(token_id: int) -> None:
     token = AccountToken.objects.select_related("usuario").get(pk=token_id)
     if token.used_at or token.expires_at < timezone.now():
