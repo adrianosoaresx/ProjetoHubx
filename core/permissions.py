@@ -117,3 +117,11 @@ class IsCoordenador(BasePermission):
         return (
             request.user.get_tipo_usuario == UserType.COORDENADOR.value and request.user.organizacao == obj.organizacao
         )
+
+
+class IsModeratorUser(BasePermission):
+    """Permite acesso a usuários root ou admin."""
+
+    def has_permission(self, request, view) -> bool:
+        tipo = getattr(request.user, "get_tipo_usuario", None)
+        return tipo in {UserType.ROOT.value, UserType.ADMIN.value}

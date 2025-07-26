@@ -22,7 +22,7 @@ def test_pin_message(api_client: APIClient, admin_user, coordenador_user):
     msg = ChatMessage.objects.create(conversation=conv, sender=coordenador_user, tipo="text", conteudo="hi")
 
     api_client.force_authenticate(admin_user)
-    url = reverse("chat:mensagem-pin", args=[msg.pk])
+    url = reverse("chat_api:mensagem-pin", args=[msg.pk])
     resp = api_client.post(url)
     assert resp.status_code == 200
     msg.refresh_from_db()
@@ -35,7 +35,7 @@ def test_react_message(api_client: APIClient, admin_user):
     msg = ChatMessage.objects.create(conversation=conv, sender=admin_user, tipo="text", conteudo="hi")
 
     api_client.force_authenticate(admin_user)
-    url = reverse("chat:mensagem-react", args=[msg.pk])
+    url = reverse("chat_api:mensagem-react", args=[msg.pk])
     resp = api_client.post(url, {"emoji": "👍"})
     assert resp.status_code == 200
     msg.refresh_from_db()
@@ -51,7 +51,7 @@ def test_flag_message_hides(api_client: APIClient, admin_user):
     ChatParticipant.objects.create(conversation=conv, user=other2)
     msg = ChatMessage.objects.create(conversation=conv, sender=admin_user, tipo="text", conteudo="hi")
 
-    url = reverse("chat:mensagem-flag", args=[msg.pk])
+    url = reverse("chat_api:mensagem-flag", args=[msg.pk])
     api_client.force_authenticate(admin_user)
     api_client.post(url)
     api_client.force_authenticate(other1)
@@ -67,7 +67,16 @@ def test_export_channel(api_client: APIClient, admin_user):
     ChatParticipant.objects.create(conversation=conv, user=admin_user, is_admin=True)
     ChatMessage.objects.create(conversation=conv, sender=admin_user, conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = reverse("chat:canal_exportar", args=[conv.pk]) + "?formato=json"
+    url = reverse("chat_api:conversa_exportar", args=[conv.slug]) + "?formato=json"
     resp = api_client.get(url)
     assert resp.status_code == 200
     assert resp.json()["url"].endswith(".json")
+
+
+def test_export_requires_permission(api_client: APIClient, associado_user):
+    conv = ChatConversation.objects.create(titulo="e2", slug="e2", tipo_conversa="grupo")
+    ChatParticipant.objects.create(conversation=conv, user=associado_user)
+    api_client.force_authenticate(associado_user)
+    url = reverse("chat_api:conversa_exportar", args=[conv.slug])
+    resp = api_client.get(url)
+    assert resp.status_code == 403

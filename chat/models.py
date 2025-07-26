@@ -161,3 +161,15 @@ class RelatorioChatExport(TimeStampedModel):
     class Meta:
         verbose_name = "Relatório de Exportação"
         verbose_name_plural = "Relatórios de Exportação"
+
+
+class ChatModerationLog(TimeStampedModel):
+    ACTION_CHOICES = [("approve", "Aprovar"), ("remove", "Remover")]
+
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    moderator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_moderations")
+
+    class Meta:
+        verbose_name = "Log de Moderação"
+        verbose_name_plural = "Logs de Moderação"
