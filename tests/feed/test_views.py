@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponseForbidden
 from django.urls import reverse
 
-from feed.models import Comment, Like, Post
+from feed.models import Comment, Like, Post, Tag
 
 pytestmark = pytest.mark.django_db
 
@@ -127,6 +127,30 @@ def test_post_delete(client, admin_user, posts):
     resp = client.post(url)
     assert resp.status_code == 302
     assert not Post.objects.filter(id=post.id).exists()
+
+
+def test_video_upload(client, associado_user):
+    client.force_login(associado_user)
+    video = SimpleUploadedFile("vid.mp4", b"d", content_type="video/mp4")
+    resp = client.post(reverse("feed:nova_postagem"), {"tipo_feed": "global", "arquivo": video})
+    assert resp.status_code == 302
+    post = Post.objects.latest("id")
+    assert post.video
+
+
+def test_filter_by_tags(client, nucleado_user):
+    client.force_login(nucleado_user)
+    tag = Tag.objects.create(nome="python")
+    post = Post.objects.create(
+        autor=nucleado_user,
+        organizacao=nucleado_user.organizacao,
+        tipo_feed="global",
+        conteudo="tagged",
+    )
+    post.tags.add(tag)
+    url = reverse("feed:listar") + "?tags=python"
+    resp = client.get(url)
+    assert list(resp.context["posts"]) == [post]
 
 
 def test_meu_mural(client, nucleado_user, posts):

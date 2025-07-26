@@ -6,13 +6,20 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
@@ -246,6 +253,20 @@ def eventos_por_dia(request):
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
     return lista_eventos(request, dia_iso)
+
+
+@csrf_exempt
+def checkin_inscricao(request, pk: int):
+    """Valida o QRCode enviado e registra o check-in."""
+    if request.method != "POST":
+        return HttpResponse(status=405)
+    inscricao = get_object_or_404(InscricaoEvento, pk=pk)
+    codigo = request.POST.get("codigo")
+    expected = f"inscricao:{inscricao.pk}:{int(inscricao.created_at.timestamp())}"
+    if codigo != expected or inscricao.check_in_realizado_em:
+        return HttpResponseForbidden("QR inválido ou já usado")
+    inscricao.realizar_check_in()
+    return JsonResponse({"check_in": inscricao.check_in_realizado_em})
 
 
 class InscricaoEventoListView(LoginRequiredMixin, ListView):

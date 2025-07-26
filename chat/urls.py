@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from . import views
-from .api_views import ChatMessageViewSet
+from .api_views import ChatMessageViewSet, exportar_canal
 
 app_name = "chat"
 
@@ -13,5 +13,6 @@ urlpatterns = [
     path("", views.conversation_list, name="conversation_list"),
     path("nova/", views.nova_conversa, name="nova_conversa"),
     path("<slug:slug>/", views.conversation_detail, name="conversation_detail"),
+    path("api/canais/<int:pk>/exportar/", exportar_canal, name="canal_exportar"),
     path("", include(router.urls)),
 ]

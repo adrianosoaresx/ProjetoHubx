@@ -46,7 +46,7 @@ class FeedListView(LoginRequiredMixin, ListView):
         user = self.request.user
 
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
-            "likes", "comments"
+            "likes", "comments", "tags"
         )
 
         if tipo_feed == "usuario":
@@ -66,6 +66,10 @@ class FeedListView(LoginRequiredMixin, ListView):
 
         if q:
             qs = qs.filter(conteudo__icontains=q)
+        tags_param = self.request.GET.get("tags")
+        if tags_param:
+            tag_names = [t.strip() for t in tags_param.split(",") if t.strip()]
+            qs = qs.filter(tags__nome__in=tag_names).distinct()
 
         return qs.order_by("-created_at")
 
@@ -99,6 +103,8 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
             files = self.request.FILES.copy()
             if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
                 files["pdf"] = file
+            elif file.content_type.startswith("video/"):
+                files["video"] = file
             else:
                 files["image"] = file
             kwargs["files"] = files
@@ -166,6 +172,8 @@ def post_update(request, pk):
             files = request.FILES.copy()
             if file.content_type == "application/pdf" or file.name.lower().endswith(".pdf"):
                 files["pdf"] = file
+            elif file.content_type.startswith("video/"):
+                files["video"] = file
             else:
                 files["image"] = file
         form = PostForm(request.POST, files, instance=post, user=request.user)

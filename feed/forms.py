@@ -3,7 +3,7 @@ from __future__ import annotations
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import Comment, Like, Post
+from .models import Comment, Like, Post, Tag
 
 User = get_user_model()
 
@@ -15,7 +15,7 @@ class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
-        fields = ["tipo_feed", "conteudo", "image", "pdf", "nucleo", "evento"]
+        fields = ["tipo_feed", "conteudo", "image", "pdf", "video", "nucleo", "evento", "tags"]
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={
@@ -26,6 +26,7 @@ class PostForm(forms.ModelForm):
             ),
             "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
             "pdf": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "video": forms.ClearableFileInput(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
@@ -36,16 +37,18 @@ class PostForm(forms.ModelForm):
             self.fields["evento"].queryset = user.eventos.all()
         else:
             self.user = None
+        self.fields["tags"].queryset = Tag.objects.all()
 
     def clean(self):
         cleaned_data = super().clean()
         img = cleaned_data.get("image")
         pdf = cleaned_data.get("pdf")
+        video = cleaned_data.get("video")
         conteudo = cleaned_data.get("conteudo")
 
-        if img and pdf:
-            raise forms.ValidationError("Envie apenas imagem OU PDF, não ambos.")
-        if not conteudo and not img and not pdf:
+        if sum(bool(x) for x in [img, pdf, video]) > 1:
+            raise forms.ValidationError("Envie apenas uma mídia por vez.")
+        if not conteudo and not img and not pdf and not video:
             raise forms.ValidationError("Informe um conteúdo ou selecione uma mídia.")
 
         tipo_feed = cleaned_data.get("tipo_feed")

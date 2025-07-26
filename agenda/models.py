@@ -1,5 +1,12 @@
+from __future__ import annotations
+
+from io import BytesIO
+
+import qrcode
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -64,6 +71,8 @@ class InscricaoEvento(TimeStampedModel):
     )
     observacao = models.TextField(blank=True)
     data_confirmacao = models.DateTimeField(null=True, blank=True)
+    qrcode_url = models.URLField(null=True, blank=True)
+    check_in_realizado_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ("user", "evento")
@@ -71,12 +80,30 @@ class InscricaoEvento(TimeStampedModel):
     def confirmar_inscricao(self) -> None:
         self.status = "confirmada"
         self.data_confirmacao = timezone.now()
-        self.save(update_fields=["status", "data_confirmacao", "updated_at"])
+        if not self.qrcode_url:
+            self.gerar_qrcode()
+        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "updated_at"])
 
     def cancelar_inscricao(self) -> None:
         self.status = "cancelada"
         self.data_confirmacao = timezone.now()
         self.save(update_fields=["status", "data_confirmacao", "updated_at"])
+
+    def realizar_check_in(self) -> None:
+        if self.check_in_realizado_em:
+            return
+        self.check_in_realizado_em = timezone.now()
+        self.save(update_fields=["check_in_realizado_em", "updated_at"])
+
+    def gerar_qrcode(self) -> None:
+        """Gera um QRCode único e salva no armazenamento padrão."""
+        data = f"inscricao:{self.pk}:{self.created_at.timestamp()}"
+        img = qrcode.make(data)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        filename = f"inscricoes/qrcodes/{self.pk}.png"
+        path = default_storage.save(filename, ContentFile(buffer.getvalue()))
+        self.qrcode_url = default_storage.url(path)
 
 
 class Evento(TimeStampedModel):
@@ -99,6 +126,10 @@ class Evento(TimeStampedModel):
     numero_presentes = models.PositiveIntegerField()
     valor_ingresso = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     orcamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
+    espera_habilitada = models.BooleanField(default=False)
     cronograma = models.TextField(blank=True)
     informacoes_adicionais = models.TextField(blank=True)
     contato_nome = models.CharField(max_length=100)
