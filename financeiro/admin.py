@@ -11,8 +11,8 @@ class CentroCustoAdmin(admin.ModelAdmin):
 
 @admin.register(ContaAssociado)
 class ContaAssociadoAdmin(admin.ModelAdmin):
-    list_display = ["user_id", "saldo"]
-    search_fields = ["user_id"]
+    list_display = ["user", "saldo"]
+    search_fields = ["user__email"]
 
 
 @admin.register(LancamentoFinanceiro)

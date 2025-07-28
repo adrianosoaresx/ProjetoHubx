@@ -1,17 +1,19 @@
-import uuid
-
 import pytest
 from django.utils import timezone
 
+from accounts.factories import UserFactory
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from financeiro.serializers import LancamentoFinanceiroSerializer
+from organizacoes.factories import OrganizacaoFactory
 
 pytestmark = pytest.mark.django_db
 
 
 def test_lancamento_atualiza_saldos():
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO)
-    conta = ContaAssociado.objects.create(user_id=uuid.uuid4())
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
+    user = UserFactory()
+    conta = ContaAssociado.objects.create(user=user)
     serializer = LancamentoFinanceiroSerializer(
         data={
             "centro_custo": str(centro.id),
