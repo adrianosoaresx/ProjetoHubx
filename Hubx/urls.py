@@ -66,6 +66,10 @@ urlpatterns = [
         "api/discussao/",
         include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
     ),
+    path(
+        "api/financeiro/",
+        include(("financeiro.api_urls", "financeiro_api"), namespace="financeiro_api"),
+    ),
 ]
 
 # Arquivos de mídia em desenvolvimento

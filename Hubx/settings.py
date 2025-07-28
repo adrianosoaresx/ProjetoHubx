@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "feed",
     "discussao.apps.DiscussaoConfig",
     "configuracoes",
+    "financeiro.apps.FinanceiroConfig",
 ]
 
 MIDDLEWARE = [
