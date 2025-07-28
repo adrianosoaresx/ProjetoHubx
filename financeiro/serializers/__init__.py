@@ -77,7 +77,7 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
         return lancamento
 
 
-class ImportarPagamentosSerializer(serializers.Serializer):
+class ImportarPagamentosPreviewSerializer(serializers.Serializer):
     file = serializers.FileField()
 
     def validate_file(self, file):  # type: ignore[override]
@@ -85,3 +85,7 @@ class ImportarPagamentosSerializer(serializers.Serializer):
         if not (name.endswith(".csv") or name.endswith(".xlsx")):
             raise serializers.ValidationError("Formato inválido. Envie CSV ou XLSX")
         return file
+
+
+class ImportarPagamentosConfirmacaoSerializer(serializers.Serializer):
+    id = serializers.CharField()

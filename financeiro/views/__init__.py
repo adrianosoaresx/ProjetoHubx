@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import uuid
 from datetime import datetime
+from pathlib import Path
 
+from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db.models import Sum
 from django.utils.dateparse import parse_date
 from rest_framework import status, viewsets
@@ -12,9 +16,12 @@ from rest_framework.response import Response
 from ..models import CentroCusto, LancamentoFinanceiro
 from ..serializers import (
     CentroCustoSerializer,
-    ImportarPagamentosSerializer,
+    ImportarPagamentosConfirmacaoSerializer,
+    ImportarPagamentosPreviewSerializer,
     LancamentoFinanceiroSerializer,
 )
+from ..services.importacao import ImportadorPagamentos
+from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
 class CentroCustoViewSet(viewsets.ModelViewSet):
@@ -28,10 +35,31 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos")
     def importar_pagamentos(self, request):
-        serializer = ImportarPagamentosSerializer(data=request.data)
+        serializer = ImportarPagamentosPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # Validação mínima, processamento simplificado
-        return Response(status=status.HTTP_201_CREATED)
+        file = serializer.validated_data["file"]
+        uid = uuid.uuid4().hex
+        saved = default_storage.save(f"importacoes/{uid}_{file.name}", file)
+        full_path = default_storage.path(saved)
+        service = ImportadorPagamentos(full_path)
+        result = service.preview()
+        if result.errors and not result.preview:
+            return Response({"erros": result.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"id": uid, "preview": result.preview, "erros": result.errors}, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["post"], url_path="importar-pagamentos/confirmar")
+    def confirmar_importacao(self, request):
+        serializer = ImportarPagamentosConfirmacaoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uid = serializer.validated_data["id"]
+        # encontra arquivo salvo
+        media_path = Path(settings.MEDIA_ROOT) / "importacoes"
+        files = list(media_path.glob(f"{uid}_*"))
+        if not files:
+            return Response({"detail": "Arquivo não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        file_path = str(files[0])
+        importar_pagamentos_async.delay(file_path, str(request.user.id))
+        return Response({"detail": "Importação iniciada"}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):

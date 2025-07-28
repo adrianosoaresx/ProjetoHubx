@@ -249,3 +249,13 @@ make vet       # verifica padrões, imports, etc.
 make test      # roda testes com pytest
 make security  # roda análise de segurança com bandit
 make           # roda tudo acima
+
+### Importação de Pagamentos
+
+```
+POST /api/financeiro/importar-pagamentos/
+Multipart: file=<planilha.csv>
+
+POST /api/financeiro/importar-pagamentos/confirmar
+Payload: {"id": "<token>"}
+```
