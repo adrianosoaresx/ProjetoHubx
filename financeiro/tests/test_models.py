@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from django.utils import timezone
 
@@ -37,3 +39,38 @@ def test_contaassociado_str():
     user = UserFactory(email="teste@example.com")
     conta = ContaAssociado.objects.create(user=user, saldo=10)
     assert str(conta) == "teste@example.com (saldo: 10)"
+
+
+def test_lancamento_default_vencimento():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(
+        nome="Org",
+        tipo=CentroCusto.Tipo.ORGANIZACAO,
+        organizacao=org,
+    )
+    lanc = LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
+        valor=Decimal("10"),
+        data_lancamento=timezone.now(),
+    )
+    assert lanc.data_vencimento == lanc.data_lancamento
+
+
+def test_serializer_vencimento_anterior_lancamento_error():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
+    data_lanc = timezone.now()
+    data_venc = data_lanc - timezone.timedelta(days=1)
+    serializer = LancamentoFinanceiroSerializer(
+        data={
+            "centro_custo": str(centro.id),
+            "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+            "valor": "50",
+            "data_lancamento": data_lanc,
+            "data_vencimento": data_venc,
+            "status": LancamentoFinanceiro.Status.PENDENTE,
+        }
+    )
+    assert not serializer.is_valid()
+    assert "Vencimento" in str(serializer.errors)

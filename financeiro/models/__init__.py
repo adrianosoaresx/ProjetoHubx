@@ -71,6 +71,8 @@ class ContaAssociado(TimeStampedModel):
 
 
 class LancamentoFinanceiro(TimeStampedModel):
+    """Registro financeiro com data de vencimento para controle de inadimplência."""
+
     class Tipo(models.TextChoices):
         MENSALIDADE_ASSOCIACAO = "mensalidade_associacao", "Mensalidade Associação"
         MENSALIDADE_NUCLEO = "mensalidade_nucleo", "Mensalidade Núcleo"
@@ -91,7 +93,11 @@ class LancamentoFinanceiro(TimeStampedModel):
     tipo = models.CharField(max_length=32, choices=Tipo.choices)
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     data_lancamento = models.DateTimeField(default=timezone.now)
-    data_vencimento = models.DateTimeField(null=True, blank=True)
+    data_vencimento = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Data limite para pagamento do lançamento",
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE)
     descricao = models.TextField(blank=True)
 
