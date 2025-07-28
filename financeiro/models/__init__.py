@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
@@ -18,9 +19,27 @@ class CentroCusto(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
     tipo = models.CharField(max_length=12, choices=Tipo.choices)
-    organizacao = models.UUIDField(null=True, blank=True)
-    nucleo = models.UUIDField(null=True, blank=True)
-    evento = models.UUIDField(null=True, blank=True)
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="centros_custo",
+    )
+    nucleo = models.ForeignKey(
+        "nucleos.Nucleo",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="centros_custo",
+    )
+    evento = models.ForeignKey(
+        "agenda.Evento",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="centros_custo",
+    )
     saldo = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
 
     class Meta:
@@ -34,16 +53,21 @@ class CentroCusto(TimeStampedModel):
 
 class ContaAssociado(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user_id = models.UUIDField()
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="contas_financeiras",
+        db_column="user_id",
+    )
     saldo = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
 
     class Meta:
-        ordering = ["user_id"]
+        ordering = ["user"]
         verbose_name = "Conta do Associado"
         verbose_name_plural = "Contas dos Associados"
 
     def __str__(self) -> str:
-        return str(self.user_id)
+        return self.user.email if hasattr(self.user, "email") else str(self.user)
 
 
 class LancamentoFinanceiro(TimeStampedModel):
@@ -67,6 +91,7 @@ class LancamentoFinanceiro(TimeStampedModel):
     tipo = models.CharField(max_length=32, choices=Tipo.choices)
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     data_lancamento = models.DateTimeField(default=timezone.now)
+    data_vencimento = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE)
     descricao = models.TextField(blank=True)
 
@@ -77,6 +102,11 @@ class LancamentoFinanceiro(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.get_tipo_display()} - {self.valor}"
+
+    def save(self, *args, **kwargs) -> None:
+        if not self.data_vencimento:
+            self.data_vencimento = self.data_lancamento
+        super().save(*args, **kwargs)
 
 
 class Aporte(LancamentoFinanceiro):
