@@ -31,3 +31,9 @@ def test_lancamento_atualiza_saldos():
     conta.refresh_from_db()
     assert centro.saldo == lanc.valor
     assert conta.saldo == lanc.valor
+
+
+def test_contaassociado_str():
+    user = UserFactory(email="teste@example.com")
+    conta = ContaAssociado.objects.create(user=user, saldo=10)
+    assert str(conta) == "teste@example.com (saldo: 10)"
