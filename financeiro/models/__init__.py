@@ -67,7 +67,7 @@ class ContaAssociado(TimeStampedModel):
         verbose_name_plural = "Contas dos Associados"
 
     def __str__(self) -> str:
-        return self.user.email if hasattr(self.user, "email") else str(self.user)
+        return f"{self.user.email} (saldo: {self.saldo})"
 
 
 class LancamentoFinanceiro(TimeStampedModel):
