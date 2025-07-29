@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
 from django.utils import timezone
+
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import AccountToken, User
 
@@ -14,11 +15,10 @@ def send_password_reset_email(token_id: int) -> None:
     if token.used_at or token.expires_at < timezone.now():
         return
     url = f"{settings.FRONTEND_URL}/reset-password/?token={token.codigo}"
-    send_mail(
-        "Redefina sua senha",
-        f"Acesse o link para redefinir sua senha: {url}",
-        settings.DEFAULT_FROM_EMAIL,
-        [token.usuario.email],
+    enviar_para_usuario(
+        token.usuario,
+        "password_reset",
+        {"url": url, "nome": token.usuario.first_name},
     )
 
 
@@ -28,11 +28,10 @@ def send_confirmation_email(token_id: int) -> None:
     if token.used_at or token.expires_at < timezone.now():
         return
     url = f"{settings.FRONTEND_URL}/confirm-email/?token={token.codigo}"
-    send_mail(
-        "Confirme seu email",
-        f"Clique no link para confirmar: {url}",
-        settings.DEFAULT_FROM_EMAIL,
-        [token.usuario.email],
+    enviar_para_usuario(
+        token.usuario,
+        "email_confirmation",
+        {"url": url, "nome": token.usuario.first_name},
     )
 
 
