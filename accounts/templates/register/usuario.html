@@ -1,49 +1,39 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Registro - Usuário | Hubx{% endblock %}
 
 {% block content %}
-<div class="container-sm">
-    <div class="card" style="margin-top: var(--space-12);">
-        <div class="card-body">
-            <div style="margin-bottom: var(--space-8);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                    <span class="text-sm font-medium text-primary-600">Passo 2 de 7</span>
-                    <span class="text-sm text-neutral-500">28%</span>
-                </div>
-                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
-                    <div style="width: 28%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-neutral-900 mb-2">Escolha seu nome de usuário</h1>
-                <p class="text-neutral-600">Como você será identificado na plataforma</p>
-            </div>
-
-            <form id="usuarioForm" method="post" action="{% url 'accounts:usuario' %}" class="space-y-6 registro-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="usuario" class="form-label">Nome de Usuário</label>
-                    <input type="text" id="usuario" name="usuario" class="form-input" placeholder="Digite seu nome de usuário" required autofocus>
-                    <div class="field-validation" id="usuario_validation"></div>
-                    <small class="field-help">Use apenas letras, números e underscore (_)</small>
-                </div>
-
-                <div class="form-actions" style="display:flex; gap: var(--space-4);">
-                    <a href="{% url 'accounts:email' %}" class="btn btn-secondary" style="flex:1;">Voltar</a>
-                    <button type="submit" class="btn btn-primary" id="submitButton" style="flex:1;">
-                        <span class="button-text">Continuar</span>
-                        <span class="button-loader" id="buttonLoader" style="display:none"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
+<section class="max-w-md mx-auto px-4 py-12">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div class="mb-8">
+      <div class="mb-2 flex items-center justify-between">
+        <span class="text-sm font-medium text-primary-600">Passo 2 de 7</span>
+        <span class="text-sm text-neutral-500">28%</span>
+      </div>
+      <div class="h-2 w-full rounded-xl bg-neutral-200">
+        <div class="h-full rounded-xl bg-primary-600" style="width: 28%;"></div>
+      </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'accounts/js/register.js' %}"></script>
+    <div class="mb-8 text-center">
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Escolha seu nome de usuário</h1>
+      <p class="text-neutral-600">Como você será identificado na plataforma</p>
+    </div>
+
+    <form id="usuarioForm" method="post" action="{% url 'accounts:usuario' %}" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label for="usuario" class="mb-1 block text-sm font-medium text-neutral-700">Nome de Usuário</label>
+        <input type="text" id="usuario" name="usuario" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite seu nome de usuário" required autofocus>
+        <div class="text-sm text-red-600" id="usuario_validation"></div>
+        <small class="text-sm text-neutral-500">Use apenas letras, números e underscore (_)</small>
+      </div>
+
+      <div class="flex gap-4">
+        <a href="{% url 'accounts:email' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}
