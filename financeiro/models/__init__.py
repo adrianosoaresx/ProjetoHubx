@@ -107,6 +107,7 @@ class LancamentoFinanceiro(TimeStampedModel):
     )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE)
     descricao = models.TextField(blank=True)
+    ultima_notificacao = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-data_lancamento"]
