@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from ..serializers import LancamentoFinanceiroSerializer
@@ -18,11 +19,15 @@ from ..serializers import LancamentoFinanceiroSerializer
 
 @dataclass
 class ImportResult:
+    """Resultado da importação de pagamentos."""
+
     preview: list[dict[str, Any]]
     errors: list[str]
 
 
 class ImportadorPagamentos:
+    """Serviço para importar pagamentos a partir de arquivos CSV ou XLSX."""
+
     REQUIRED = {
         "centro_custo_id",
         "conta_associado_id",
@@ -38,6 +43,7 @@ class ImportadorPagamentos:
 
     # ────────────────────────────────────────────────────────────
     def _iter_rows(self) -> Iterable[dict[str, str]]:
+        """Itera sobre as linhas do arquivo e gera dicionários de dados."""
         name = self.file_path.name.lower()
         if name.endswith(".csv"):
             with self.file_path.open(newline="", encoding="utf-8") as f:
@@ -46,14 +52,14 @@ class ImportadorPagamentos:
                     return
                 missing = self.REQUIRED - set(h.lower() for h in reader.fieldnames)
                 if missing:
-                    raise ValueError(f"Colunas faltantes: {', '.join(missing)}")
+                    raise ValueError(_(f"Colunas faltantes: {', '.join(missing)}"))
                 for row in reader:
                     yield {k.strip(): (v or "").strip() for k, v in row.items()}
         elif name.endswith(".xlsx"):
             try:
                 from openpyxl import load_workbook
             except Exception as exc:  # pragma: no cover - openpyxl optional
-                raise ValueError("openpyxl não disponível") from exc
+                raise ValueError(_("openpyxl não disponível")) from exc
             wb = load_workbook(self.file_path, read_only=True)
             ws = wb.active
             rows = ws.iter_rows(values_only=True)
@@ -62,15 +68,16 @@ class ImportadorPagamentos:
                 return
             missing = self.REQUIRED - {str(h).lower() for h in headers}
             if missing:
-                raise ValueError(f"Colunas faltantes: {', '.join(missing)}")
+                raise ValueError(_(f"Colunas faltantes: {', '.join(missing)}"))
             for values in rows:
                 row = {str(h).strip(): str(v).strip() if v is not None else "" for h, v in zip(headers, values)}
                 yield row
         else:
-            raise ValueError("Formato não suportado")
+            raise ValueError(_("Formato não suportado"))
 
     # ────────────────────────────────────────────────────────────
     def preview(self) -> ImportResult:
+        """Lê o arquivo e retorna uma prévia dos lançamentos."""
         preview: list[dict[str, Any]] = []
         errors: list[str] = []
         try:
@@ -100,6 +107,7 @@ class ImportadorPagamentos:
 
     # ────────────────────────────────────────────────────────────
     def process(self, batch_size: int = 500) -> list[str]:
+        """Processa o arquivo criando lançamentos em lote."""
         errors: list[str] = []
         batch: list[dict[str, Any]] = []
 
@@ -155,6 +163,7 @@ class ImportadorPagamentos:
 
     # ────────────────────────────────────────────────────────────
     def _convert_row(self, row: dict[str, str]) -> dict[str, Any]:
+        """Converte uma linha do arquivo em dados validados."""
         centro = CentroCusto.objects.get(pk=row["centro_custo_id"])
         conta: ContaAssociado | None = None
         cid = row.get("conta_associado_id")
@@ -169,7 +178,7 @@ class ImportadorPagamentos:
                 user = User.objects.create_user(email=email, username=email.split("@")[0])
             conta, _ = ContaAssociado.objects.get_or_create(user=user)
         if not conta:
-            raise ValueError("Conta do associado não encontrada")
+            raise ValueError(_("Conta do associado não encontrada"))
         data_lanc = parse(row["data_lancamento"])
         if not data_lanc.tzinfo:
             data_lanc = timezone.make_aware(data_lanc)
@@ -179,7 +188,7 @@ class ImportadorPagamentos:
             if not venc.tzinfo:
                 venc = timezone.make_aware(venc)
             if venc < data_lanc:
-                raise ValueError("data_vencimento anterior a data_lancamento")
+                raise ValueError(_("data_vencimento anterior a data_lancamento"))
         else:
             venc = data_lanc
         return {

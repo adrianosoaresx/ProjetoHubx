@@ -1,4 +1,21 @@
-# Cobranças Recorrentes
+# Visão Geral
+
+O módulo **Financeiro** controla centros de custo, contas de associados e
+lançamentos financeiros da plataforma. É responsável por gerar cobranças
+recorrentes, registrar aportes e disponibilizar relatórios consolidados.
+
+## Modelos
+
+- **CentroCusto** — referência de organização de receitas e despesas. Campos:
+  `nome`, `tipo`, relações opcionais com `Organizacao`, `Nucleo` ou `Evento`, e
+  `saldo` acumulado.
+- **ContaAssociado** — saldo financeiro vinculado a um usuário.
+- **LancamentoFinanceiro** — registro genérico de entrada ou saída, com
+  `tipo`, `valor`, datas de lançamento e vencimento, `status` e descrição.
+- **Aporte** — proxy de `LancamentoFinanceiro` usado para registrar aportes
+  internos ou externos.
+
+## Cobranças Recorrentes
 
 O módulo Financeiro gera automaticamente cobranças mensais de associação e de núcleos.
 A tarefa `gerar_cobrancas_mensais` é executada via Celery Beat no primeiro dia de
@@ -33,6 +50,18 @@ Campos opcionais:
 
 Somente usuários administradores podem registrar `aporte_interno`.
 Após criado, o saldo do centro de custo é atualizado imediatamente.
+
+## Endpoints
+
+| Método e rota | Permissão | Descrição |
+|---------------|-----------|-----------|
+|`GET /api/financeiro/centros/`|Usuário autenticado|Lista centros de custo|
+|`POST /api/financeiro/centros/`|Financeiro/Admin|Cria centro de custo|
+|`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação|
+|`POST /api/financeiro/importar-pagamentos/confirmar/`|Financeiro/Admin|Confirma importação assíncrona|
+|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
+|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências|
+|`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 ### Permissões
 - Importação de pagamentos, geração de cobranças e relatórios completos: apenas admin ou root.
 - Relatórios por núcleo: admin, root ou coordenador do núcleo.
@@ -71,4 +100,11 @@ Resposta:
 Parâmetros opcionais: `centro`, `nucleo`, `periodo_inicial`, `periodo_final`.
 
 Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do associado.
+
+## Tarefas Celery
+
+- `gerar_cobrancas_mensais` – executada todo início de mês para criar cobranças.
+- `importar_pagamentos_async` – processa arquivos de importação em background.
+- `notificar_inadimplencia` – envia lembretes para lançamentos vencidos.
+  Todas registram logs no módulo e podem ter métricas Prometheus associadas.
 

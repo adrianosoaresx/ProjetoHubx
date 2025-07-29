@@ -9,6 +9,7 @@ from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.translation import gettext_lazy as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -41,6 +42,8 @@ class AportePermission(IsAuthenticated):
 
 
 class CentroCustoViewSet(viewsets.ModelViewSet):
+    """CRUD dos centros de custo."""
+
     queryset = CentroCusto.objects.all()
     serializer_class = CentroCustoSerializer
     permission_classes = [IsAuthenticated]
@@ -61,6 +64,8 @@ class CentroCustoViewSet(viewsets.ModelViewSet):
 
 
 class FinanceiroViewSet(viewsets.ViewSet):
+    """Endpoints auxiliares do módulo financeiro."""
+
     permission_classes = [IsAuthenticated]
 
     def get_permissions(self):
@@ -108,10 +113,10 @@ class FinanceiroViewSet(viewsets.ViewSet):
         media_path = Path(settings.MEDIA_ROOT) / "importacoes"
         files = list(media_path.glob(f"{uid}_*"))
         if not files:
-            return Response({"detail": "Arquivo não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
         importar_pagamentos_async.delay(file_path, str(request.user.id))
-        return Response({"detail": "Importação iniciada"}, status=status.HTTP_202_ACCEPTED)
+        return Response({"detail": _("Importação iniciada")}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
@@ -133,15 +138,15 @@ class FinanceiroViewSet(viewsets.ViewSet):
         inicio = _parse(pi)
         fim = _parse(pf)
         if pf and not fim:
-            return Response({"detail": "periodo_final inválido"}, status=400)
+            return Response({"detail": _("periodo_final inválido")}, status=400)
         if pi and not inicio:
-            return Response({"detail": "periodo_inicial inválido"}, status=400)
+            return Response({"detail": _("periodo_inicial inválido")}, status=400)
 
         user = request.user
         if user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             centros_user = [str(c.id) for c in _nucleos_do_usuario(user)]
             if centro_id and centro_id not in centros_user:
-                return Response({"detail": "Sem permissão"}, status=403)
+                return Response({"detail": _("Sem permissão")}, status=403)
             if not centro_id:
                 centro_id = centros_user
 

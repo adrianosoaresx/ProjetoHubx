@@ -112,4 +112,3 @@ def test_aporte_externo(api_client):
     assert resp.status_code == 201
     centro.refresh_from_db()
     assert centro.saldo == 5
-

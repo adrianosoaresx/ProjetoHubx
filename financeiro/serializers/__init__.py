@@ -11,6 +11,8 @@ from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 
 
 class CentroCustoSerializer(serializers.ModelSerializer):
+    """Serializador do modelo :class:`CentroCusto`."""
+
     class Meta:
         model = CentroCusto
         fields = [
@@ -28,6 +30,8 @@ class CentroCustoSerializer(serializers.ModelSerializer):
 
 
 class ContaAssociadoSerializer(serializers.ModelSerializer):
+    """Serializador do modelo :class:`ContaAssociado`."""
+
     class Meta:
         model = ContaAssociado
         fields = [
@@ -41,6 +45,8 @@ class ContaAssociadoSerializer(serializers.ModelSerializer):
 
 
 class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
+    """Serializador de ``LancamentoFinanceiro``."""
+
     class Meta:
         model = LancamentoFinanceiro
         fields = [
@@ -58,13 +64,15 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """Garante que o vencimento não seja anterior ao lançamento."""
         data_lanc = attrs.get("data_lancamento", timezone.now())
         venc = attrs.get("data_vencimento")
         if venc and venc < data_lanc:
-            raise serializers.ValidationError("Vencimento não pode ser anterior à data de lançamento")
+            raise serializers.ValidationError(_("Vencimento não pode ser anterior à data de lançamento"))
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> LancamentoFinanceiro:
+        """Cria o lançamento e atualiza saldos se estiver pago."""
         if "data_vencimento" not in validated_data:
             validated_data["data_vencimento"] = validated_data.get("data_lancamento", timezone.now())
         lancamento = super().create(validated_data)
@@ -80,6 +88,8 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
 
 
 class AporteSerializer(serializers.ModelSerializer):
+    """Serializador específico para criação de aportes."""
+
     class Meta:
         model = LancamentoFinanceiro
         fields = [
@@ -100,11 +110,13 @@ class AporteSerializer(serializers.ModelSerializer):
         extra_kwargs = {"tipo": {"required": False}}
 
     def validate_valor(self, value: Any) -> Any:  # type: ignore[override]
+        """Valida que o valor informado é positivo."""
         if value <= 0:
             raise serializers.ValidationError(_("Valor deve ser positivo"))
         return value
 
     def validate_tipo(self, value: str) -> str:  # type: ignore[override]
+        """Garante que o tipo do aporte é permitido."""
         if value not in {
             LancamentoFinanceiro.Tipo.APORTE_INTERNO,
             LancamentoFinanceiro.Tipo.APORTE_EXTERNO,
@@ -113,12 +125,14 @@ class AporteSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """Preenche campos padrão do aporte."""
         if "tipo" not in attrs:
             attrs["tipo"] = LancamentoFinanceiro.Tipo.APORTE_INTERNO
         attrs.setdefault("status", LancamentoFinanceiro.Status.PAGO)
         return super().validate(attrs)
 
     def create(self, validated_data: dict[str, Any]) -> LancamentoFinanceiro:
+        """Registra o aporte e atualiza os saldos."""
         request = self.context.get("request")
         tipo = validated_data.get("tipo", LancamentoFinanceiro.Tipo.APORTE_INTERNO)
         if "data_lancamento" not in validated_data:
@@ -131,9 +145,7 @@ class AporteSerializer(serializers.ModelSerializer):
                 originador = request.user
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
-            centro = (
-                CentroCusto.objects.select_related(None).get(pk=lancamento.centro_custo_id)
-            )
+            centro = CentroCusto.objects.select_related(None).get(pk=lancamento.centro_custo_id)
             centro.saldo += lancamento.valor
             centro.save(update_fields=["saldo"])
             if lancamento.conta_associado_id:
@@ -144,14 +156,19 @@ class AporteSerializer(serializers.ModelSerializer):
 
 
 class ImportarPagamentosPreviewSerializer(serializers.Serializer):
+    """Valida o arquivo enviado para pré-visualização da importação."""
+
     file = serializers.FileField()
 
     def validate_file(self, file):  # type: ignore[override]
+        """Aceita apenas arquivos CSV ou XLSX."""
         name = file.name.lower()
         if not (name.endswith(".csv") or name.endswith(".xlsx")):
-            raise serializers.ValidationError("Formato inválido. Envie CSV ou XLSX")
+            raise serializers.ValidationError(_("Formato inválido. Envie CSV ou XLSX"))
         return file
 
 
 class ImportarPagamentosConfirmacaoSerializer(serializers.Serializer):
+    """Valida o token de confirmação da importação."""
+
     id = serializers.CharField()
