@@ -23,6 +23,7 @@ class ImportResult:
 
     preview: list[dict[str, Any]]
     errors: list[str]
+    errors_file: str | None = None
 
 
 class ImportadorPagamentos:
@@ -86,6 +87,7 @@ class ImportadorPagamentos:
         """Lê o arquivo e retorna uma prévia dos lançamentos."""
         preview: list[dict[str, Any]] = []
         errors: list[str] = []
+        rejected: list[dict[str, str]] = []
         try:
             for idx, row in enumerate(self._iter_rows(), start=2):
                 try:
@@ -107,14 +109,24 @@ class ImportadorPagamentos:
                         )
                 except Exception as exc:
                     errors.append(f"Linha {idx}: {exc}")
+                    rejected.append(row)
         except Exception as exc:
             errors.append(str(exc))
-        return ImportResult(preview=preview, errors=errors)
+        errors_file = None
+        if rejected:
+            err_path = self.file_path.with_suffix(".errors.csv")
+            with err_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=rejected[0].keys())
+                writer.writeheader()
+                writer.writerows(rejected)
+            errors_file = str(err_path)
+        return ImportResult(preview=preview, errors=errors, errors_file=errors_file)
 
     # ────────────────────────────────────────────────────────────
-    def process(self, batch_size: int = 500) -> list[str]:
+    def process(self, batch_size: int = 500) -> tuple[int, list[str]]:
         """Processa o arquivo criando lançamentos em lote."""
         errors: list[str] = []
+        total = 0
         batch: list[dict[str, Any]] = []
 
         def flush(chunk: list[dict[str, Any]]):
@@ -147,6 +159,8 @@ class ImportadorPagamentos:
                 to_create.append(LancamentoFinanceiro(**data))
             if to_create:
                 LancamentoFinanceiro.objects.bulk_create(to_create)
+                nonlocal total
+                total += len(to_create)
             for cid, inc in saldo_centro.items():
                 CentroCusto.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
             for aid, inc in saldo_conta.items():
@@ -165,7 +179,7 @@ class ImportadorPagamentos:
         if batch:
             with transaction.atomic():
                 flush(batch)
-        return errors
+        return total, errors
 
     # ────────────────────────────────────────────────────────────
     def _convert_row(self, row: dict[str, str]) -> dict[str, Any]:

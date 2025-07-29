@@ -4,3 +4,4 @@ isort==5.10.1
 bandit==1.7.7
 pytest>=7.0
 pre-commit>=3.6
+pytest-benchmark>=4.0
