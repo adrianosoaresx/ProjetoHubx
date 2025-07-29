@@ -30,7 +30,8 @@ Valores padrão utilizados:
 Para cada associado ativo é criado um lançamento pendente em seu respectivo centro
 de custo. Caso ele participe de núcleos aprovados, é gerada também a cobrança de
 mensalidade de cada núcleo correspondente. Após a criação, o sistema envia
-notificações por e-mail e no aplicativo.
+notificações por e-mail e no aplicativo usando o app `notificacoes` com o
+template `cobranca_pendente`.
 
 ## Registro de Aportes
 

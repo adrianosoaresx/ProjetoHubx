@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from celery import shared_task
-from django.conf import settings
-from django.core.mail import send_mail
 from django.dispatch import Signal, receiver
+
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import AvaliacaoEmpresa
 
@@ -15,11 +15,10 @@ def notificar_responsavel(avaliacao_id: str) -> None:
     avaliacao = AvaliacaoEmpresa.objects.select_related("empresa__usuario").get(pk=avaliacao_id)
     email = avaliacao.empresa.usuario.email
     if email:
-        send_mail(
-            "Nova avaliação",
-            f"Sua empresa {avaliacao.empresa.nome} recebeu uma nova avaliação.",
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
+        enviar_para_usuario(
+            avaliacao.empresa.usuario,
+            "nova_avaliacao_empresa",
+            {"empresa": avaliacao.empresa.nome},
         )
 
 

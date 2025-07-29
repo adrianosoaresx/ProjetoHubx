@@ -3,11 +3,10 @@ from __future__ import annotations
 from datetime import timedelta
 
 from celery import shared_task
-from django.conf import settings
-from django.core.mail import send_mail
 from django.utils import timezone
 
 from chat.models import ChatNotification
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import ConfiguracaoConta
 
@@ -22,11 +21,10 @@ def _send_for_frequency(frequency: str) -> None:
     for config in configs:
         qs = ChatNotification.objects.filter(user=config.user, created_at__gte=since, lido=False)
         if qs.exists():
-            send_mail(
-                "Resumo de notificações",
-                f"Você tem {qs.count()} novas notificações.",
-                settings.DEFAULT_FROM_EMAIL,
-                [config.user.email],
+            enviar_para_usuario(
+                config.user,
+                "resumo_notificacoes",
+                {"quantidade": qs.count()},
             )
 
 

@@ -15,6 +15,10 @@ Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp.
 
 Envios são processados de forma assíncrona pelo Celery.
 
+Templates básicos já estão cadastrados via migração, incluindo `password_reset`,
+`email_confirmation`, `cobranca_pendente` e `inadimplencia`. Outros códigos
+podem ser adicionados conforme a necessidade de novos avisos.
+
 ## Configurações
 
 ```python

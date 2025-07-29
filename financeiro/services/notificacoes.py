@@ -7,7 +7,7 @@ from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
-from .notifications_client import send_email, send_push, send_whatsapp
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,11 @@ def enviar_cobranca(user: Any, lancamento: Any) -> None:
     assunto = _("Cobrança pendente")
     corpo = _("Existe um lançamento pendente de pagamento.")
     try:
-        send_email(user, str(assunto), str(corpo))
-        send_push(user, str(corpo))
-        send_whatsapp(user, str(corpo))
+        enviar_para_usuario(
+            user,
+            "cobranca_pendente",
+            {"assunto": str(assunto), "corpo": str(corpo)},
+        )
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar cobrança: %s", exc)
 
@@ -31,8 +33,10 @@ def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
     assunto = _("Inadimplência")
     corpo = _("Você possui lançamentos vencidos.")
     try:
-        send_email(user, str(assunto), str(corpo))
-        send_push(user, str(corpo))
-        send_whatsapp(user, str(corpo))
+        enviar_para_usuario(
+            user,
+            "inadimplencia",
+            {"assunto": str(assunto), "corpo": str(corpo)},
+        )
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar inadimplência: %s", exc)
