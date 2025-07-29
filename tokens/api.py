@@ -28,8 +28,16 @@ class TokenViewSet(viewsets.GenericViewSet):
     def create(self, request):
         ip = request.META.get("REMOTE_ADDR")
         agent = request.META.get("HTTP_USER_AGENT", "")
-        today = timezone.now().date()
-        if TokenAcesso.objects.filter(gerado_por=request.user, created_at__date=today).count() >= 5:
+        start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timezone.timedelta(days=1)
+        if (
+            TokenAcesso.objects.filter(
+                gerado_por=request.user,
+                created_at__gte=start,
+                created_at__lt=end,
+            ).count()
+            >= 5
+        ):
             return Response({"detail": _("Limite diário atingido.")}, status=status.HTTP_429_TOO_MANY_REQUESTS)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
