@@ -1,62 +1,44 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Registro - Senha | Hubx{% endblock %}
 
 {% block content %}
-<div class="container-sm">
-    <div class="card" style="margin-top: var(--space-12);">
-        <div class="card-body">
-            <div style="margin-bottom: var(--space-8);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                    <span class="text-sm font-medium text-primary-600">Passo 5 de 7</span>
-                    <span class="text-sm text-neutral-500">70%</span>
-                </div>
-                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
-                    <div style="width: 70%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-neutral-900 mb-2">Crie uma senha segura</h1>
-                <p class="text-neutral-600">Proteja sua conta com uma senha forte</p>
-            </div>
-
-            <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6 registro-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="senha" class="form-label">Senha</label>
-                    <input type="password" id="senha" name="senha" class="form-input" placeholder="Digite sua senha" required autofocus>
-                    <div class="field-validation" id="senha_validation"></div>
-                </div>
-
-                <div class="password-strength">
-                    <div class="strength-label">Força da senha:</div>
-                    <div class="strength-bar">
-                        <div class="strength-fill" id="strengthFill"></div>
-                    </div>
-                    <div class="strength-text" id="strengthText">Digite uma senha</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
-                    <input type="password" id="confirmar_senha" name="confirmar_senha" class="form-input" placeholder="Confirme sua senha" required>
-                    <div class="field-validation" id="confirmar_senha_validation"></div>
-                </div>
-
-                <div class="form-actions" style="display:flex; gap: var(--space-4);">
-                    <a href="{% url 'accounts:email' %}" class="btn btn-secondary" style="flex:1;">Voltar</a>
-                    <button type="submit" class="btn btn-primary" id="submitButton" style="flex:1;">
-                        <span class="button-text">Continuar</span>
-                        <span class="button-loader" id="buttonLoader" style="display:none"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
+<section class="max-w-md mx-auto px-4 py-12">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div class="mb-8">
+      <div class="mb-2 flex items-center justify-between">
+        <span class="text-sm font-medium text-primary-600">Passo 5 de 7</span>
+        <span class="text-sm text-neutral-500">70%</span>
+      </div>
+      <div class="h-2 w-full rounded-xl bg-neutral-200">
+        <div class="h-full rounded-xl bg-primary-600" style="width: 70%;"></div>
+      </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'accounts/js/register.js' %}"></script>
+    <div class="mb-8 text-center">
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Crie uma senha segura</h1>
+      <p class="text-neutral-600">Proteja sua conta com uma senha forte</p>
+    </div>
+
+    <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label for="senha" class="mb-1 block text-sm font-medium text-neutral-700">Senha</label>
+        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite sua senha" required autofocus>
+        <div class="text-sm text-red-600" id="senha_validation"></div>
+      </div>
+
+      <div>
+        <label for="confirmar_senha" class="mb-1 block text-sm font-medium text-neutral-700">Confirmar Senha</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Confirme sua senha" required>
+        <div class="text-sm text-red-600" id="confirmar_senha_validation"></div>
+      </div>
+
+      <div class="flex gap-4">
+        <a href="{% url 'accounts:email' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}

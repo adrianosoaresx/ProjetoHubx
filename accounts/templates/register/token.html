@@ -1,83 +1,52 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Token de Convite - HubX{% endblock %}
 
 {% block content %}
-<div class="container-sm">
-    <div class="card" style="margin-top: var(--space-12);">
-        <div class="card-body">
-            <!-- Progress Bar -->
-            <div style="margin-bottom: var(--space-8);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                    <span class="text-sm font-medium text-primary-600">Passo 1 de 7</span>
-                    <span class="text-sm text-neutral-500">14%</span>
-                </div>
-                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
-                    <div style="width: 14%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <div style="width: 64px; height: 64px; background: var(--primary-100); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4);">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <circle cx="12" cy="16" r="1"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-bold text-neutral-900 mb-2">
-                    Token de Convite
-                </h1>
-                <p class="text-neutral-600">
-                    Digite seu token de convite para começar o cadastro
-                </p>
-            </div>
-
-            <form method="post" action="{% url 'tokens:token' %}">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="token" class="form-label required">
-                        Token de Convite
-                    </label>
-                    <input 
-                        type="text" 
-                        id="token" 
-                        name="token" 
-                        class="form-input" 
-                        placeholder="Digite seu token de convite"
-                        required 
-                        autofocus
-                        style="text-align: center; font-family: var(--font-family-mono); letter-spacing: 2px;"
-                    >
-                    <div class="form-help">
-                        O token é necessário para continuar o cadastro na plataforma
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: var(--space-4); margin-top: var(--space-8);">
-                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary" style="flex: 1;">
-                        Voltar
-                    </a>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">
-                        Continuar
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9,18 15,12 9,6"/>
-                        </svg>
-                    </button>
-                </div>
-            </form>
-
-            <div class="text-center mt-8">
-                <p class="text-sm text-neutral-600">
-                    Já tem uma conta?
-                    <a href="{% url 'accounts:login' %}" class="text-primary-600 hover:text-primary-700 font-medium">
-                        Entrar
-                    </a>
-                </p>
-            </div>
-        </div>
+<section class="max-w-md mx-auto px-4 py-12">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div class="mb-8">
+      <div class="mb-2 flex items-center justify-between">
+        <span class="text-sm font-medium text-primary-600">Passo 1 de 7</span>
+        <span class="text-sm text-neutral-500">14%</span>
+      </div>
+      <div class="h-2 w-full rounded-xl bg-neutral-200">
+        <div class="h-full rounded-xl bg-primary-600" style="width: 14%;"></div>
+      </div>
     </div>
-</div>
+
+    <div class="mb-8 text-center">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <circle cx="12" cy="16" r="1"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Token de Convite</h1>
+      <p class="text-neutral-600">Digite seu token de convite para começar o cadastro</p>
+    </div>
+
+    <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label for="token" class="mb-1 block text-sm font-medium text-neutral-700">Token de Convite</label>
+        <input type="text" id="token" name="token" class="w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite seu token de convite" required autofocus>
+        <p class="mt-1 text-sm text-neutral-500">O token é necessário para continuar o cadastro na plataforma</p>
+      </div>
+
+      <div class="flex gap-4">
+        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
+        <button type="submit" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+      </div>
+    </form>
+
+    <div class="mt-8 text-center">
+      <p class="text-sm text-neutral-600">
+        Já tem uma conta?
+        <a href="{% url 'accounts:login' %}" class="font-medium text-primary-600 hover:text-primary-700">Entrar</a>
+      </p>
+    </div>
+  </div>
+</section>
 {% endblock %}

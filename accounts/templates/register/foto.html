@@ -1,61 +1,39 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Registro - Foto | Hubx{% endblock %}
 
 {% block content %}
-<div class="container-sm">
-    <div class="card" style="margin-top: var(--space-12);">
-        <div class="card-body">
-            <div style="margin-bottom: var(--space-8);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
-                    <span class="text-sm font-medium text-primary-600">Passo 6 de 7</span>
-                    <span class="text-sm text-neutral-500">84%</span>
-                </div>
-                <div style="width: 100%; background: var(--neutral-200); border-radius: var(--radius-xl); height: 8px;">
-                    <div style="width: 84%; background: var(--primary-600); border-radius: var(--radius-xl); height: 100%; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-neutral-900 mb-2">Adicione uma foto de perfil</h1>
-                <p class="text-neutral-600">Personalize sua presença na comunidade</p>
-            </div>
-
-            <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6 registro-form">
-                {% csrf_token %}
-                <div class="foto-upload-container">
-                    <div class="foto-preview" id="fotoPreview">
-                        <div class="foto-placeholder">
-                            <span class="foto-icon">👤</span>
-                        </div>
-                    </div>
-
-                    <div class="foto-actions">
-                        <label for="foto" class="btn-upload">
-                            Escolher Foto
-                            <input type="file" id="foto" name="foto" accept="image/*" class="foto-input" hidden>
-                        </label>
-                        <button type="button" class="btn-remove" id="removePhoto" disabled>Remover</button>
-                    </div>
-
-                    <div class="field-validation" id="foto_validation"></div>
-                    <small class="field-help">Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB</small>
-                </div>
-
-                <div class="form-actions" style="display:flex; gap: var(--space-4);">
-                    <a href="{% url 'accounts:senha' %}" class="btn btn-secondary" style="flex:1;">Voltar</a>
-                    <button type="submit" class="btn btn-primary" id="submitButton" style="flex:1;">
-                        <span class="button-text">Continuar</span>
-                        <span class="button-loader" id="buttonLoader" style="display:none"></span>
-                    </button>
-                </div>
-            </form>
-        </div>
+<section class="max-w-md mx-auto px-4 py-12">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div class="mb-8">
+      <div class="mb-2 flex items-center justify-between">
+        <span class="text-sm font-medium text-primary-600">Passo 6 de 7</span>
+        <span class="text-sm text-neutral-500">84%</span>
+      </div>
+      <div class="h-2 w-full rounded-xl bg-neutral-200">
+        <div class="h-full rounded-xl bg-primary-600" style="width: 84%;"></div>
+      </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'accounts/js/register.js' %}"></script>
+    <div class="mb-8 text-center">
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Adicione uma foto de perfil</h1>
+      <p class="text-neutral-600">Personalize sua presença na comunidade</p>
+    </div>
+
+    <form id="fotoForm" method="post" action="{% url 'accounts:foto' %}" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      <div>
+        <label for="foto" class="mb-1 block text-sm font-medium text-neutral-700">Escolher Foto</label>
+        <input type="file" id="foto" name="foto" accept="image/*" class="w-full rounded-lg border border-neutral-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500">
+        <div class="text-sm text-red-600" id="foto_validation"></div>
+        <small class="text-sm text-neutral-500">Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB</small>
+      </div>
+
+      <div class="flex gap-4">
+        <a href="{% url 'accounts:senha' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}

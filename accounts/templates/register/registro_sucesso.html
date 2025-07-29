@@ -1,15 +1,13 @@
 {% extends "base.html" %}
-{% load static %}
+
 {% block title %}Registro Concluído | Hubx{% endblock %}
 
 {% block content %}
-<div class="container-sm">
-    <div class="card" style="margin-top: var(--space-12); text-align:center;">
-        <div class="card-body">
-            <h1 class="text-3xl font-bold text-neutral-900 mb-4">Bem-vindo ao HubX!</h1>
-            <p class="text-neutral-600 mb-6">Seu cadastro foi concluído com sucesso.</p>
-            <a href="{% url 'accounts:perfil' %}" class="btn btn-primary">Ir para meu Perfil →</a>
-        </div>
-    </div>
-</div>
+<section class="max-w-md mx-auto px-4 py-12 text-center">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
+    <h1 class="mb-4 text-3xl font-bold text-neutral-900">Bem-vindo ao HubX!</h1>
+    <p class="mb-6 text-neutral-600">Seu cadastro foi concluído com sucesso.</p>
+    <a href="{% url 'accounts:perfil' %}" class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Ir para meu Perfil →</a>
+  </div>
+</section>
 {% endblock %}
