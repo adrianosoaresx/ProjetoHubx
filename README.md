@@ -140,6 +140,7 @@ python manage.py corrigir_base_token
 ```python
 from django.shortcuts import render
 
+
 def exemplo_view(request):
     return render(request, "pagina.html")
 ```
@@ -259,3 +260,15 @@ Multipart: file=<planilha.csv>
 POST /api/financeiro/importar-pagamentos/confirmar
 Payload: {"id": "<token>"}
 ```
+
+### Cobranças Recorrentes
+
+Lançamentos mensais são gerados automaticamente no primeiro dia de cada mês.
+Os valores padrão ficam em `Hubx/settings.py` e podem ser ajustados:
+
+- `MENSALIDADE_ASSOCIACAO`
+- `MENSALIDADE_NUCLEO`
+- `MENSALIDADE_VENCIMENTO_DIA`
+
+Consulte `docs/financeiro.md` para detalhes.
+
