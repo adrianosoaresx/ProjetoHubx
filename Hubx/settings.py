@@ -15,6 +15,8 @@ import os
 from decimal import Decimal
 from pathlib import Path
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -165,3 +167,12 @@ AUTHENTICATION_BACKENDS = [
 MENSALIDADE_ASSOCIACAO = Decimal("50.00")
 MENSALIDADE_NUCLEO = Decimal("30.00")
 MENSALIDADE_VENCIMENTO_DIA = 10
+
+# Celery Beat
+
+CELERY_BEAT_SCHEDULE = {
+    "notificar_inadimplencia": {
+        "task": "financeiro.tasks.notificar_inadimplencia.notificar_inadimplencia",
+        "schedule": crontab(minute=0, hour=7),
+    }
+}

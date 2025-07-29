@@ -6,8 +6,9 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.db.models import Sum
+from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.views.decorators.cache import cache_page
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -21,9 +22,10 @@ from ..serializers import (
     CentroCustoSerializer,
     ImportarPagamentosConfirmacaoSerializer,
     ImportarPagamentosPreviewSerializer,
-    LancamentoFinanceiroSerializer,
 )
+from ..services.cobrancas import _nucleos_do_usuario
 from ..services.importacao import ImportadorPagamentos
+from ..services.relatorios import gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
@@ -74,35 +76,91 @@ class FinanceiroViewSet(viewsets.ViewSet):
         importar_pagamentos_async.delay(file_path, str(request.user.id))
         return Response({"detail": "Importação iniciada"}, status=status.HTTP_202_ACCEPTED)
 
+    @cache_page(300)
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
         centro_id = request.query_params.get("centro")
-        periodo = request.query_params.get("periodo")
-        inicio: datetime | None = None
-        fim: datetime | None = None
-        if periodo:
+        nucleo_id = request.query_params.get("nucleo")
+        pi = request.query_params.get("periodo_inicial")
+        pf = request.query_params.get("periodo_final")
+
+        def _parse(periodo: str | None) -> datetime | None:
+            if not periodo:
+                return None
+            if not periodo or not periodo.count("-") == 1:
+                return None
             dt = parse_date(f"{periodo}-01")
             if dt:
-                inicio = datetime(dt.year, dt.month, 1)
-                if dt.month == 12:
-                    fim = datetime(dt.year + 1, 1, 1)
-                else:
-                    fim = datetime(dt.year, dt.month + 1, 1)
-        lancamentos = LancamentoFinanceiro.objects.all()
-        if centro_id:
-            lancamentos = lancamentos.filter(centro_custo_id=centro_id)
-        if inicio and fim:
-            lancamentos = lancamentos.filter(data_lancamento__gte=inicio, data_lancamento__lt=fim)
-        receitas = lancamentos.filter(valor__gt=0).aggregate(total=Sum("valor"))["total"] or 0
-        despesas = lancamentos.filter(valor__lt=0).aggregate(total=Sum("valor"))["total"] or 0
-        saldo = receitas + despesas
-        return Response({"saldo": saldo, "receitas": receitas, "despesas": abs(despesas)})
+                return datetime(dt.year, dt.month, 1)
+            return None
+
+        inicio = _parse(pi)
+        fim = _parse(pf)
+        if pf and not fim:
+            return Response({"detail": "periodo_final inválido"}, status=400)
+        if pi and not inicio:
+            return Response({"detail": "periodo_inicial inválido"}, status=400)
+
+        user = request.user
+        if user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+            centros_user = [str(c.id) for c in _nucleos_do_usuario(user)]
+            if centro_id and centro_id not in centros_user:
+                return Response({"detail": "Sem permissão"}, status=403)
+            if not centro_id:
+                centro_id = centros_user
+
+        result = gerar_relatorio(
+            centro=centro_id,
+            nucleo=nucleo_id,
+            periodo_inicial=inicio,
+            periodo_final=fim,
+        )
+        return Response(result)
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
-        pendentes = LancamentoFinanceiro.objects.filter(status=LancamentoFinanceiro.Status.PENDENTE)
-        serializer = LancamentoFinanceiroSerializer(pendentes, many=True)
-        return Response(serializer.data)
+        centro_id = request.query_params.get("centro")
+        nucleo_id = request.query_params.get("nucleo")
+        pi = request.query_params.get("periodo_inicial")
+        pf = request.query_params.get("periodo_final")
+
+        def _parse(periodo: str | None) -> datetime | None:
+            if not periodo or periodo.count("-") != 1:
+                return None
+            dt = parse_date(f"{periodo}-01")
+            if dt:
+                return datetime(dt.year, dt.month, 1)
+            return None
+
+        inicio = _parse(pi)
+        fim = _parse(pf)
+
+        qs = LancamentoFinanceiro.objects.select_related("conta_associado__user", "centro_custo").filter(
+            status=LancamentoFinanceiro.Status.PENDENTE
+        )
+        if centro_id:
+            qs = qs.filter(centro_custo_id=centro_id)
+        if nucleo_id:
+            qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
+        if inicio:
+            qs = qs.filter(data_vencimento__gte=inicio)
+        if fim:
+            qs = qs.filter(data_vencimento__lt=fim)
+
+        data = []
+        now = timezone.now().date()
+        for lanc in qs:
+            dias_atraso = (now - lanc.data_vencimento.date()).days if lanc.data_vencimento else 0
+            data.append(
+                {
+                    "id": str(lanc.id),
+                    "conta": lanc.conta_associado.user.email if lanc.conta_associado else None,
+                    "valor": float(lanc.valor),
+                    "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
+                    "dias_atraso": dias_atraso,
+                }
+            )
+        return Response(data)
 
     @action(detail=False, methods=["post"], url_path="aportes", permission_classes=[AportePermission])
     def aportes(self, request):

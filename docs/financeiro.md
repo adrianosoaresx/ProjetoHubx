@@ -34,3 +34,36 @@ Campos opcionais:
 Somente usuários administradores podem registrar `aporte_interno`.
 Após criado, o saldo do centro de custo é atualizado imediatamente.
 
+## Relatórios Financeiros
+
+`GET /api/financeiro/relatorios/`
+
+Parâmetros opcionais:
+
+- `centro`: ID do centro de custo
+- `nucleo`: ID do núcleo
+- `periodo_inicial`: `YYYY-MM`
+- `periodo_final`: `YYYY-MM`
+
+Resposta:
+
+```json
+{
+  "saldo_atual": 100.0,
+  "serie": [
+    {"mes": "2025-07", "receitas": 50.0, "despesas": 20.0, "saldo": 30.0}
+  ],
+  "inadimplencia": [
+    {"mes": "2025-07", "pendentes": 50.0, "quitadas": 0.0}
+  ]
+}
+```
+
+## Inadimplências
+
+`GET /api/financeiro/inadimplencias/`
+
+Parâmetros opcionais: `centro`, `nucleo`, `periodo_inicial`, `periodo_final`.
+
+Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do associado.
+
