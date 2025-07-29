@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "discussao.apps.DiscussaoConfig",
     "configuracoes",
     "financeiro.apps.FinanceiroConfig",
+    "notificacoes.apps.NotificacoesConfig",
 ]
 
 MIDDLEWARE = [
@@ -176,3 +177,12 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=0, hour=7),
     }
 }
+
+# Notificações
+NOTIFICATIONS_EMAIL_API_URL = os.getenv("NOTIFICATIONS_EMAIL_API_URL", "")
+NOTIFICATIONS_EMAIL_API_KEY = os.getenv("NOTIFICATIONS_EMAIL_API_KEY", "")
+NOTIFICATIONS_PUSH_API_URL = os.getenv("NOTIFICATIONS_PUSH_API_URL", "")
+NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "")
+NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "")
+NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "")
+NOTIFICATIONS_ENABLED = True

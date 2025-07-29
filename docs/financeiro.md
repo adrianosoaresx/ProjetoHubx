@@ -110,7 +110,7 @@ Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do as
 - `gerar_cobrancas_mensais` – executada todo início de mês para criar cobranças.
 - `importar_pagamentos_async` – processa arquivos de importação em background.
 - `notificar_inadimplencia` – envia lembretes para lançamentos vencidos (via `financeiro.services.notificacoes`).
-  Todas registram logs no módulo e podem ter métricas Prometheus associadas.
+  Todas registram logs no módulo e podem ter métricas Prometheus associadas. O envio utiliza o [app de notificações](notificacoes.md).
 
 ## Monitoramento
 
