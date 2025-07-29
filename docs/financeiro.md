@@ -62,10 +62,13 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
 |`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
+|`PATCH /api/financeiro/lancamentos/<id>/quitar/`|Financeiro/Admin|Marca lançamento como quitado|
+
+A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`, `data_lancamento`, `status` e pelo menos uma das colunas `conta_associado_id` ou `email`.
 ### Permissões
-- Importação de pagamentos, geração de cobranças e relatórios completos: apenas admin ou root.
-- Relatórios por núcleo: admin, root ou coordenador do núcleo.
-- Inadimplências individuais: admin, root ou o próprio associado.
+- Importação de pagamentos, geração de cobranças e relatórios completos: apenas administradores financeiros (root não possui acesso).
+- Relatórios por núcleo: admin ou coordenador do núcleo.
+- Inadimplências individuais: admin ou o próprio associado.
 
 
 ## Relatórios Financeiros

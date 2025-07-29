@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..services.distribuicao import repassar_receita_ingresso
 
 
 class CentroCustoSerializer(serializers.ModelSerializer):
@@ -27,6 +28,16 @@ class CentroCustoSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["saldo", "created_at", "updated_at"]
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        tipo = attrs.get("tipo", getattr(self.instance, "tipo", None))
+        evento = attrs.get("evento", getattr(self.instance, "evento", None))
+        if tipo == CentroCusto.Tipo.EVENTO:
+            if not evento:
+                raise serializers.ValidationError({"evento": _("Evento é obrigatório para centros do tipo evento")})
+            if not attrs.get("nucleo") and getattr(evento, "nucleo_id", None):
+                attrs["nucleo"] = evento.nucleo
+        return attrs
 
 
 class ContaAssociadoSerializer(serializers.ModelSerializer):
@@ -84,6 +95,8 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
                 conta = lancamento.conta_associado
                 conta.saldo += lancamento.valor
                 conta.save(update_fields=["saldo"])
+            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
+                repassar_receita_ingresso(lancamento)
         return lancamento
 
 

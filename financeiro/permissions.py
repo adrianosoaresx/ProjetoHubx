@@ -9,7 +9,14 @@ class IsFinanceiroOrAdmin(BasePermission):
     """Allow access only to financial staff or admins."""
 
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
-        return request.user.is_authenticated and request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        return request.user.is_authenticated and request.user.user_type == UserType.ADMIN
+
+
+class IsNotRoot(BasePermission):
+    """Negates access for root users."""
+
+    def has_permission(self, request, view) -> bool:  # type: ignore[override]
+        return request.user.is_authenticated and request.user.user_type != UserType.ROOT
 
 
 class IsCoordenador(BasePermission):

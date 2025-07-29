@@ -7,6 +7,10 @@ from pathlib import Path
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
+from django.db import transaction
+from django.db.models import F
+from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -17,8 +21,13 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from ..models import CentroCusto, LancamentoFinanceiro
-from ..permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..permissions import (
+    IsAssociadoReadOnly,
+    IsCoordenador,
+    IsFinanceiroOrAdmin,
+    IsNotRoot,
+)
 from ..serializers import (
     AporteSerializer,
     CentroCustoSerializer,
@@ -26,6 +35,7 @@ from ..serializers import (
     ImportarPagamentosPreviewSerializer,
 )
 from ..services.cobrancas import _nucleos_do_usuario
+from ..services.distribuicao import repassar_receita_ingresso
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
@@ -37,7 +47,7 @@ class AportePermission(IsAuthenticated):
             return False
         tipo = request.data.get("tipo", LancamentoFinanceiro.Tipo.APORTE_INTERNO)
         if tipo == LancamentoFinanceiro.Tipo.APORTE_INTERNO:
-            return request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            return request.user.user_type == UserType.ADMIN
         return True
 
 
@@ -46,13 +56,13 @@ class CentroCustoViewSet(viewsets.ModelViewSet):
 
     queryset = CentroCusto.objects.all()
     serializer_class = CentroCustoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsNotRoot]
 
     def get_permissions(self):
         if self.action in {"create", "update", "partial_update", "destroy"}:
-            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
+            self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
         else:
-            self.permission_classes = [IsAuthenticated]
+            self.permission_classes = [IsAuthenticated, IsNotRoot]
         return super().get_permissions()
 
     def get_queryset(self):
@@ -66,15 +76,21 @@ class CentroCustoViewSet(viewsets.ModelViewSet):
 class FinanceiroViewSet(viewsets.ViewSet):
     """Endpoints auxiliares do módulo financeiro."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsNotRoot]
 
     def get_permissions(self):
         if self.action in {"importar_pagamentos", "confirmar_importacao", "aportes"}:
-            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
+            self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
         elif self.action == "relatorios":
-            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin | IsCoordenador]
+            self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin | IsCoordenador]
         elif self.action == "inadimplencias":
-            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly]
+            self.permission_classes = [
+                IsAuthenticated,
+                IsNotRoot,
+                IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly,
+            ]
+        else:
+            self.permission_classes = [IsAuthenticated, IsNotRoot]
         return super().get_permissions()
 
     def _lancamentos_base(self):
@@ -86,7 +102,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         user = self.request.user
         if user.user_type == UserType.COORDENADOR and user.nucleo_id:
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
-        elif user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+        elif user.user_type != UserType.ADMIN:
             qs = qs.filter(conta_associado__user=user)
         return qs
 
@@ -160,6 +176,24 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 periodo_final=fim,
             )
             cache.set(cache_key, result, 600)
+
+        if request.query_params.get("format") == "csv":
+            import csv
+            from tempfile import NamedTemporaryFile
+
+            tmp = NamedTemporaryFile(mode="w", newline="", suffix=".csv", delete=False)
+            writer = csv.writer(tmp)
+            writer.writerow(["mes", "receitas", "despesas", "saldo"])
+            for row in result["serie"]:
+                writer.writerow([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
+            writer.writerow([])
+            writer.writerow(["mes", "pendentes", "quitadas"])
+            for row in result["inadimplencia"]:
+                writer.writerow([row["mes"], row["pendentes"], row["quitadas"]])
+            tmp.close()
+            response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.csv")
+            return response
+
         return Response(result)
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
@@ -211,3 +245,25 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
         return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="quitar",
+        permission_classes=[IsFinanceiroOrAdmin, IsNotRoot],
+    )
+    def quitar(self, request, pk=None):
+        lancamento = get_object_or_404(self._lancamentos_base(), pk=pk)
+        if lancamento.status == LancamentoFinanceiro.Status.PAGO:
+            return Response({"detail": _("Lançamento já quitado")}, status=400)
+        with transaction.atomic():
+            lancamento.status = LancamentoFinanceiro.Status.PAGO
+            lancamento.save(update_fields=["status"])
+            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
+            if lancamento.conta_associado_id:
+                ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
+                    saldo=F("saldo") + lancamento.valor
+                )
+            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
+                repassar_receita_ingresso(lancamento)
+        return Response({"detail": _("Lançamento quitado")})

@@ -30,12 +30,12 @@ class ImportadorPagamentos:
 
     REQUIRED = {
         "centro_custo_id",
-        "conta_associado_id",
         "tipo",
         "valor",
         "data_lancamento",
         "status",
     }
+    OPTIONAL_ACCOUNT_FIELDS = {"conta_associado_id", "email"}
 
     def __init__(self, file_path: str, preview_limit: int = 5) -> None:
         self.file_path = Path(file_path)
@@ -50,9 +50,12 @@ class ImportadorPagamentos:
                 reader = csv.DictReader(f)
                 if not reader.fieldnames:
                     return
-                missing = self.REQUIRED - set(h.lower() for h in reader.fieldnames)
+                headers = [h.lower() for h in reader.fieldnames]
+                missing = self.REQUIRED - set(headers)
                 if missing:
                     raise ValueError(_(f"Colunas faltantes: {', '.join(missing)}"))
+                if not (set(headers) & self.OPTIONAL_ACCOUNT_FIELDS):
+                    raise ValueError(_("Coluna conta_associado_id ou email obrigatória"))
                 for row in reader:
                     yield {k.strip(): (v or "").strip() for k, v in row.items()}
         elif name.endswith(".xlsx"):
@@ -66,9 +69,12 @@ class ImportadorPagamentos:
             headers = next(rows)
             if not headers:
                 return
-            missing = self.REQUIRED - {str(h).lower() for h in headers}
+            header_set = {str(h).lower() for h in headers}
+            missing = self.REQUIRED - header_set
             if missing:
                 raise ValueError(_(f"Colunas faltantes: {', '.join(missing)}"))
+            if not (header_set & self.OPTIONAL_ACCOUNT_FIELDS):
+                raise ValueError(_("Coluna conta_associado_id ou email obrigatória"))
             for values in rows:
                 row = {str(h).strip(): str(v).strip() if v is not None else "" for h, v in zip(headers, values)}
                 yield row
