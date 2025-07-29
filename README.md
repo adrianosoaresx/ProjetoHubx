@@ -16,6 +16,12 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
 
+### Limitações de Design
+
+Algumas telas ainda estão em processo de migração para Tailwind CSS e HTMX. Isso
+significa que partes da interface podem apresentar diferenças visuais ou falta de
+feedback. Caso encontre problemas, abra uma issue ou envie um pull request.
+
 ---
 
 ### Uso do campo `redes_sociais`

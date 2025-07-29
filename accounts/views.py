@@ -1,6 +1,10 @@
 from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordChangeForm,
+    SetPasswordForm,
+)
 from django.contrib.auth.hashers import make_password
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +18,7 @@ import os
 import uuid
 
 from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
@@ -25,6 +30,7 @@ from django.views import View
 
 from tokens.models import TokenAcesso
 
+from accounts.tasks import send_password_reset_email
 from .forms import (
     CustomUserChangeForm,
     CustomUserCreationForm,
@@ -33,7 +39,13 @@ from .forms import (
     NotificacoesForm,
     RedesSociaisForm,
 )
-from .models import NotificationSettings, SecurityEvent, UserMedia, cpf_validator
+from .models import (
+    AccountToken,
+    NotificationSettings,
+    SecurityEvent,
+    UserMedia,
+    cpf_validator,
+)
 
 # ====================== PERFIL ======================
 
@@ -229,7 +241,58 @@ def register_view(request):
 
 
 def password_reset(request):
-    return render(request, "login/login.html")
+    """Solicita redefinição de senha."""
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if email:
+            try:
+                user = User.objects.get(email__iexact=email)
+            except User.DoesNotExist:  # pragma: no cover - feedback uniforme
+                pass
+            else:
+                token = AccountToken.objects.create(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.PASSWORD_RESET,
+                    expires_at=timezone.now() + timezone.timedelta(hours=1),
+                    ip_gerado=request.META.get("REMOTE_ADDR"),
+                )
+                send_password_reset_email.delay(token.id)
+        messages.success(
+            request,
+            _("Se o e-mail estiver cadastrado, enviaremos instru\u00e7\u00f5es."),
+        )
+        return redirect("accounts:password_reset")
+
+    return render(request, "accounts/password_reset.html")
+
+
+def password_reset_confirm(request, code: str):
+    """Define nova senha a partir de um token."""
+    token = get_object_or_404(
+        AccountToken,
+        codigo=code,
+        tipo=AccountToken.Tipo.PASSWORD_RESET,
+    )
+    if token.expires_at < timezone.now() or token.used_at:
+        messages.error(request, _("Token inv\u00e1lido ou expirado."))
+        return redirect("accounts:password_reset")
+
+    if request.method == "POST":
+        form = SetPasswordForm(token.usuario, request.POST)
+        if form.is_valid():
+            form.save()
+            token.used_at = timezone.now()
+            token.save(update_fields=["used_at"])
+            messages.success(request, _("Senha redefinida com sucesso."))
+            return redirect("accounts:login")
+    else:
+        form = SetPasswordForm(token.usuario)
+
+    return render(
+        request,
+        "accounts/password_reset_confirm.html",
+        {"form": form},
+    )
 
 
 def onboarding(request):
