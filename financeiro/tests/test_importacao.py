@@ -1,11 +1,11 @@
 import csv
+import uuid
 from io import BytesIO, StringIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
-import uuid
 
 from accounts.factories import UserFactory
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
@@ -126,6 +126,7 @@ def test_invalid_vencimento(api_client, user):
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 400
 
+
 def test_reprocessar_erros(api_client, user, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     auth(api_client, user)
@@ -159,18 +160,49 @@ def test_reprocessar_erros(api_client, user, settings):
     token = resp.data["token_erros"]
     err_url = reverse("financeiro_api:financeiro-reprocessar-erros", args=[token])
     # corrige arquivo apenas com linha válida
-    corrected = make_csv([
+    corrected = make_csv(
         [
-            str(centro.id),
-            str(conta.id),
-            "aporte_interno",
-            "20",
-            timezone.now().isoformat(),
-            timezone.now().isoformat(),
-            "pago",
+            [
+                str(centro.id),
+                str(conta.id),
+                "aporte_interno",
+                "20",
+                timezone.now().isoformat(),
+                timezone.now().isoformat(),
+                "pago",
+            ]
         ]
-    ])
+    )
     file2 = SimpleUploadedFile("corr.csv", corrected, content_type="text/csv")
     resp = api_client.post(err_url, {"file": file2}, format="multipart")
     assert resp.status_code == 200
     assert LancamentoFinanceiro.objects.count() == 2
+
+
+def test_metrics_increment(api_client, user, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    rows = [
+        [
+            str(centro.id),
+            str(conta.id),
+            "aporte_interno",
+            "10",
+            timezone.now().isoformat(),
+            timezone.now().isoformat(),
+            "pago",
+        ]
+    ]
+    csv_bytes = make_csv(rows)
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    token = resp.data["id"]
+    from financeiro.services import metrics
+
+    before = metrics.importacao_pagamentos_total._value.get()
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    api_client.post(confirm_url, {"id": token})
+    assert metrics.importacao_pagamentos_total._value.get() == before + 1

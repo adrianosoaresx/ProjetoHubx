@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import logging
 
-from celery import shared_task
+from celery import shared_task  # type: ignore
 from django.utils import timezone
 
 from ..models import LancamentoFinanceiro
-from ..services.notificacoes import enviar_inadimplencia
 from ..services import metrics
+from ..services.notificacoes import enviar_inadimplencia
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +29,11 @@ def notificar_inadimplencia() -> None:
     for lanc in pendentes:
         user = lanc.conta_associado.user if lanc.conta_associado else None
         if user:
-            enviar_inadimplencia(user, lanc)
-            logger.info("Aviso de inadimplência para %s", user.email)
+            try:
+                enviar_inadimplencia(user, lanc)
+                logger.info("Aviso de inadimplência para %s", user.email)
+            except Exception as exc:  # pragma: no cover - integração externa
+                logger.error("Falha ao enviar inadimplência: %s", exc)
         lanc.ultima_notificacao = timezone.now()
         lanc.save(update_fields=["ultima_notificacao"])
         total += 1
