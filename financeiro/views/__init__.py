@@ -5,10 +5,10 @@ from datetime import datetime
 from pathlib import Path
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from django.views.decorators.cache import cache_page
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from accounts.models import UserType
 
 from ..models import CentroCusto, LancamentoFinanceiro
+from ..permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin
 from ..serializers import (
     AporteSerializer,
     CentroCustoSerializer,
@@ -44,9 +45,45 @@ class CentroCustoViewSet(viewsets.ModelViewSet):
     serializer_class = CentroCustoSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.action in {"create", "update", "partial_update", "destroy"}:
+            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("organizacao", "nucleo", "evento")
+        user = self.request.user
+        if user.user_type == UserType.COORDENADOR and user.nucleo_id:
+            qs = qs.filter(nucleo_id=user.nucleo_id)
+        return qs
+
 
 class FinanceiroViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in {"importar_pagamentos", "confirmar_importacao", "aportes"}:
+            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
+        elif self.action == "relatorios":
+            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin | IsCoordenador]
+        elif self.action == "inadimplencias":
+            self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly]
+        return super().get_permissions()
+
+    def _lancamentos_base(self):
+        qs = LancamentoFinanceiro.objects.select_related(
+            "centro_custo__nucleo",
+            "centro_custo__organizacao",
+            "conta_associado__user",
+        )
+        user = self.request.user
+        if user.user_type == UserType.COORDENADOR and user.nucleo_id:
+            qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
+        elif user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+            qs = qs.filter(conta_associado__user=user)
+        return qs
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos")
     def importar_pagamentos(self, request):
@@ -76,7 +113,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
         importar_pagamentos_async.delay(file_path, str(request.user.id))
         return Response({"detail": "Importação iniciada"}, status=status.HTTP_202_ACCEPTED)
 
-    @cache_page(300)
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
         centro_id = request.query_params.get("centro")
@@ -109,12 +145,16 @@ class FinanceiroViewSet(viewsets.ViewSet):
             if not centro_id:
                 centro_id = centros_user
 
-        result = gerar_relatorio(
-            centro=centro_id,
-            nucleo=nucleo_id,
-            periodo_inicial=inicio,
-            periodo_final=fim,
-        )
+        cache_key = f"rel:{centro_id}:{nucleo_id}:{pi}:{pf}"
+        result = cache.get(cache_key)
+        if result is None:
+            result = gerar_relatorio(
+                centro=centro_id,
+                nucleo=nucleo_id,
+                periodo_inicial=inicio,
+                periodo_final=fim,
+            )
+            cache.set(cache_key, result, 600)
         return Response(result)
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
@@ -135,9 +175,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         inicio = _parse(pi)
         fim = _parse(pf)
 
-        qs = LancamentoFinanceiro.objects.select_related("conta_associado__user", "centro_custo").filter(
-            status=LancamentoFinanceiro.Status.PENDENTE
-        )
+        qs = self._lancamentos_base().filter(status=LancamentoFinanceiro.Status.PENDENTE)
         if centro_id:
             qs = qs.filter(centro_custo_id=centro_id)
         if nucleo_id:
