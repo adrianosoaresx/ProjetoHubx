@@ -12,6 +12,11 @@ urlpatterns = [
     # Registro de usuário
     path("register/", views.register_view, name="register"),
     path("password_reset/", views.password_reset, name="password_reset"),
+    path(
+        "password_reset/<str:code>/",
+        views.password_reset_confirm,
+        name="password_reset_confirm",
+    ),
     path("onboarding/", views.onboarding, name="onboarding"),
     path("nome/", views.nome, name="nome"),
     path("cpf/", views.cpf, name="cpf"),
