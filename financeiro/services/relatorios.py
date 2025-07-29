@@ -98,10 +98,7 @@ def gerar_relatorio(
         saldo_atual = CentroCusto.objects.aggregate(total=Sum("saldo"))["total"] or Decimal("0")
 
     pendentes = qs.filter(status=LancamentoFinanceiro.Status.PENDENTE)
-    quitadas = qs.filter(
-        status=LancamentoFinanceiro.Status.PAGO,
-        ultima_notificacao__isnull=False,
-    )
+    quitadas = qs.filter(status=LancamentoFinanceiro.Status.PAGO)
 
     def _serie_inadimplencia(qs_in: Iterable[LancamentoFinanceiro], key: str) -> dict[str, dict[str, float]]:
         data: dict[str, dict[str, float]] = defaultdict(lambda: {"pendentes": 0.0, "quitadas": 0.0})
