@@ -17,6 +17,7 @@ def _base_queryset(
     inicio: datetime | None,
     fim: datetime | None,
 ) -> Iterable[LancamentoFinanceiro]:
+    """Retorna queryset filtrado para geração de relatórios."""
     qs = LancamentoFinanceiro.objects.select_related("centro_custo").prefetch_related("conta_associado").all()
 
     if centro:
@@ -41,6 +42,7 @@ def gerar_relatorio(
     periodo_inicial: datetime | None = None,
     periodo_final: datetime | None = None,
 ) -> dict[str, Any]:
+    """Computa séries temporais e dados de inadimplência."""
     qs = _base_queryset(centro, nucleo, periodo_inicial, periodo_final)
 
     valores = (

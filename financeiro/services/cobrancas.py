@@ -17,10 +17,12 @@ except Exception:  # pragma: no cover - núcleo opcional
 
 
 def _centro_organizacao() -> CentroCusto | None:
+    """Retorna o centro de custo principal da organização."""
     return CentroCusto.objects.filter(tipo=CentroCusto.Tipo.ORGANIZACAO).order_by("created_at").first()
 
 
 def _nucleos_do_usuario(user) -> Iterable[CentroCusto]:
+    """Obtém centros de custo dos núcleos ativos do usuário."""
     if not ParticipacaoNucleo:
         return []
     participacoes = getattr(user, "participacoes", None)
@@ -36,6 +38,7 @@ def _nucleos_do_usuario(user) -> Iterable[CentroCusto]:
 
 
 def gerar_cobrancas() -> None:
+    """Cria lançamentos de cobrança para associados e núcleos."""
     centro_org = _centro_organizacao()
     if not centro_org:
         return

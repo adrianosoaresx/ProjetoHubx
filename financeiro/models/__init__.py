@@ -9,8 +9,12 @@ from django.utils import timezone
 
 from core.models import TimeStampedModel
 
+"""Modelos do módulo financeiro."""
+
 
 class CentroCusto(TimeStampedModel):
+    """Centro de custos para organizar movimentações financeiras."""
+
     class Tipo(models.TextChoices):
         ORGANIZACAO = "organizacao", "Organização"
         NUCLEO = "nucleo", "Núcleo"
@@ -52,6 +56,8 @@ class CentroCusto(TimeStampedModel):
 
 
 class ContaAssociado(TimeStampedModel):
+    """Conta corrente vinculada a um usuário associado."""
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -126,18 +132,22 @@ class LancamentoFinanceiro(TimeStampedModel):
         return f"{self.get_tipo_display()} - {self.valor}"
 
     def save(self, *args, **kwargs) -> None:
+        """Define vencimento padrão e persiste o lançamento."""
         if not self.data_vencimento:
             self.data_vencimento = self.data_lancamento
         super().save(*args, **kwargs)
 
 
 class Aporte(LancamentoFinanceiro):
+    """Proxy de ``LancamentoFinanceiro`` para representar aportes."""
+
     class Meta:
         proxy = True
         verbose_name = "Aporte"
         verbose_name_plural = "Aportes"
 
     def save(self, *args, **kwargs):
+        """Garante tipo válido e salva o aporte."""
         if self.tipo not in {self.Tipo.APORTE_INTERNO, self.Tipo.APORTE_EXTERNO}:
             self.tipo = self.Tipo.APORTE_INTERNO
         super().save(*args, **kwargs)
