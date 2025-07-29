@@ -10,7 +10,11 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/wsgi/
 import os
 
 from django.core.wsgi import get_wsgi_application
+from prometheus_client import start_http_server
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
+
+# Expose Prometheus metrics
+start_http_server(int(os.environ.get("PROMETHEUS_PORT", "8001")))
 
 application = get_wsgi_application()

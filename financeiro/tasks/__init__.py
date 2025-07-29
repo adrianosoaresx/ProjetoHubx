@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import logging
 
-from celery import shared_task
-
-from ..services.cobrancas import gerar_cobrancas
-from ..services import metrics
+from celery import shared_task  # type: ignore
 from django.utils import timezone
+
+from ..services import metrics
+from ..services.cobrancas import gerar_cobrancas
 
 logger = logging.getLogger(__name__)
 

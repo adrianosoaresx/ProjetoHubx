@@ -1,14 +1,13 @@
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from organizacoes.factories import OrganizacaoFactory
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone
-import uuid
 
 from .test_importacao import make_csv
 
@@ -63,3 +62,33 @@ def test_importacao_benchmark(api_client, settings, benchmark):
     token = resp.data["id"]
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
     benchmark(lambda: api_client.post(confirm_url, {"id": token}))
+
+
+def test_importacao_10000_under_5min(api_client, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    admin = UserFactory(user_type=UserType.ADMIN)
+    api_client.force_authenticate(user=admin)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=admin)
+    rows = [
+        [
+            str(centro.id),
+            str(conta.id),
+            "aporte_interno",
+            "1",
+            timezone.now().isoformat(),
+            timezone.now().isoformat(),
+            "pago",
+        ]
+        for _ in range(10000)
+    ]
+    csv_bytes = make_csv(rows)
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    token = resp.data["id"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    start = timezone.now()
+    api_client.post(confirm_url, {"id": token})
+    elapsed = (timezone.now() - start).total_seconds()
+    assert elapsed < 300

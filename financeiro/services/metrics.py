@@ -1,15 +1,9 @@
+"""Prometheus metrics wrappers."""
+
 from __future__ import annotations
 
-"""Coletores de métricas simplificados para futura integração."""
+from prometheus_client import Counter  # type: ignore
 
-class Counter:
-    def __init__(self) -> None:
-        self.value = 0
-
-    def inc(self, amount: int = 1) -> None:
-        self.value += amount
-
-
-importacao_pagamentos_total = Counter()
-notificacoes_total = Counter()
-cobrancas_total = Counter()
+importacao_pagamentos_total = Counter("importacao_pagamentos_total", "Número total de lançamentos importados")
+notificacoes_total = Counter("notificacoes_total", "Número total de notificações enviadas")
+cobrancas_total = Counter("cobrancas_total", "Número total de cobranças geradas")

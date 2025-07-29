@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from decimal import Decimal
 from typing import Iterable
 
@@ -10,6 +11,8 @@ from django.utils import timezone
 
 from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from .notificacoes import enviar_cobranca
+
+logger = logging.getLogger(__name__)
 
 try:
     from nucleos.models import ParticipacaoNucleo
@@ -92,4 +95,7 @@ def gerar_cobrancas() -> None:
         if lancamentos:
             LancamentoFinanceiro.objects.bulk_create(lancamentos)
             for lanc in lancamentos:
-                enviar_cobranca(lanc.conta_associado.user, lanc)
+                try:
+                    enviar_cobranca(lanc.conta_associado.user, lanc)
+                except Exception as exc:  # pragma: no cover - integração externa
+                    logger.error("Falha ao notificar cobrança: %s", exc)

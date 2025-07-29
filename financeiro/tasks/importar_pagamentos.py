@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from celery import shared_task
+from celery import shared_task  # type: ignore
 from django.utils import timezone
 
-from ..services.importacao import ImportadorPagamentos
 from ..services import metrics
+from ..services.importacao import ImportadorPagamentos
 
 logger = logging.getLogger(__name__)
 
@@ -27,4 +27,4 @@ def importar_pagamentos_async(file_path: str, user_id: str) -> None:
         log_path.write_text("ok", encoding="utf-8")
     elapsed = (timezone.now() - inicio).total_seconds()
     logger.info("Importação concluída: %s registros em %.2fs", total, elapsed)
-    metrics.import_payments_total.inc(total)
+    metrics.importacao_pagamentos_total.inc(total)

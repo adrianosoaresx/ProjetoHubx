@@ -112,3 +112,11 @@ Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do as
 - `notificar_inadimplencia` – envia lembretes para lançamentos vencidos (via `financeiro.services.notificacoes`).
   Todas registram logs no módulo e podem ter métricas Prometheus associadas.
 
+## Monitoramento
+
+As métricas do módulo são expostas via Prometheus. Para habilitar, instale o
+pacote `prometheus-client` e garanta que o servidor WSGI execute com a
+variável `PROMETHEUS_PORT` definida (padrão 8001). Acesse
+`http://localhost:8001/` para visualizar os contadores
+`importacao_pagamentos_total`, `notificacoes_total` e `cobrancas_total`.
+
