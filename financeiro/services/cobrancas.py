@@ -9,6 +9,7 @@ from django.db.models import Prefetch
 from django.utils import timezone
 
 from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from .notificacoes import enviar_cobranca
 
 try:
     from nucleos.models import ParticipacaoNucleo
@@ -91,9 +92,4 @@ def gerar_cobrancas() -> None:
         if lancamentos:
             LancamentoFinanceiro.objects.bulk_create(lancamentos)
             for lanc in lancamentos:
-                _enviar_notificacao_cobranca(lanc.conta_associado.user, lanc)
-
-
-def _enviar_notificacao_cobranca(user, lancamento) -> None:  # pragma: no cover
-    """Placeholder para integração com sistema de notificações."""
-    pass
+                enviar_cobranca(lanc.conta_associado.user, lanc)

@@ -10,6 +10,12 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import F
 from django.http import FileResponse
+from tempfile import NamedTemporaryFile
+
+try:
+    from openpyxl import Workbook
+except Exception:  # pragma: no cover - opcional
+    Workbook = None  # type: ignore
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -79,7 +85,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsNotRoot]
 
     def get_permissions(self):
-        if self.action in {"importar_pagamentos", "confirmar_importacao", "aportes"}:
+        if self.action in {"importar_pagamentos", "confirmar_importacao", "reprocessar_erros", "aportes"}:
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
         elif self.action == "relatorios":
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin | IsCoordenador]
@@ -118,7 +124,10 @@ class FinanceiroViewSet(viewsets.ViewSet):
         result = service.preview()
         if result.errors and not result.preview:
             return Response({"erros": result.errors}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"id": uid, "preview": result.preview, "erros": result.errors}, status=status.HTTP_201_CREATED)
+        payload = {"id": uid, "preview": result.preview, "erros": result.errors}
+        if result.errors_file:
+            payload["token_erros"] = Path(result.errors_file).stem
+        return Response(payload, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos/confirmar")
     def confirmar_importacao(self, request):
@@ -133,6 +142,24 @@ class FinanceiroViewSet(viewsets.ViewSet):
         file_path = str(files[0])
         importar_pagamentos_async.delay(file_path, str(request.user.id))
         return Response({"detail": _("Importação iniciada")}, status=status.HTTP_202_ACCEPTED)
+
+    @action(detail=False, methods=["post"], url_path="importar-pagamentos/reprocessar/(?P<token>[\w-]+)")
+    def reprocessar_erros(self, request, token: str):
+        media_path = Path(settings.MEDIA_ROOT) / "importacoes"
+        err_file = media_path / f"{token}.errors.csv"
+        if not err_file.exists():
+            return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
+        uploaded = request.FILES.get("file")
+        if not uploaded:
+            return Response({"detail": _("Arquivo ausente")}, status=status.HTTP_400_BAD_REQUEST)
+        saved = default_storage.save(f"importacoes/{uuid.uuid4().hex}_{uploaded.name}", uploaded)
+        full_path = default_storage.path(saved)
+        service = ImportadorPagamentos(full_path)
+        total, errors = service.process()
+        if errors:
+            return Response({"erros": errors}, status=status.HTTP_400_BAD_REQUEST)
+        err_file.unlink(missing_ok=True)
+        return Response({"detail": _("Reprocessamento concluído"), "total": total})
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
@@ -177,22 +204,36 @@ class FinanceiroViewSet(viewsets.ViewSet):
             )
             cache.set(cache_key, result, 600)
 
-        if request.query_params.get("format") == "csv":
-            import csv
-            from tempfile import NamedTemporaryFile
+        fmt = request.query_params.get("format")
+        if fmt in {"csv", "xlsx"}:
+            tmp = NamedTemporaryFile(delete=False, suffix=f".{fmt}")
+            if fmt == "csv":
+                import csv
 
-            tmp = NamedTemporaryFile(mode="w", newline="", suffix=".csv", delete=False)
-            writer = csv.writer(tmp)
-            writer.writerow(["mes", "receitas", "despesas", "saldo"])
-            for row in result["serie"]:
-                writer.writerow([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
-            writer.writerow([])
-            writer.writerow(["mes", "pendentes", "quitadas"])
-            for row in result["inadimplencia"]:
-                writer.writerow([row["mes"], row["pendentes"], row["quitadas"]])
+                writer = csv.writer(tmp)
+                writer.writerow(["Mês", "Receitas", "Despesas", "Saldo"])
+                for row in result["serie"]:
+                    writer.writerow([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
+                writer.writerow([])
+                writer.writerow(["Mês", "Pendentes", "Quitadas"])
+                for row in result["inadimplencia"]:
+                    writer.writerow([row["mes"], row["pendentes"], row["quitadas"]])
+            else:
+                if not Workbook:
+                    return Response({"detail": _("openpyxl não disponível")}, status=500)
+                wb = Workbook()
+                ws = wb.active
+                ws.append(["Mês", "Receitas", "Despesas", "Saldo"])
+                for row in result["serie"]:
+                    ws.append([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
+                ws.append([])
+                ws.append(["Mês", "Pendentes", "Quitadas"])
+                for row in result["inadimplencia"]:
+                    ws.append([row["mes"], row["pendentes"], row["quitadas"]])
+                wb.save(tmp.name)
             tmp.close()
-            response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.csv")
-            return response
+            filename = f"relatorio.{fmt}"
+            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename)
 
         return Response(result)
 
@@ -232,11 +273,49 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 {
                     "id": str(lanc.id),
                     "conta": lanc.conta_associado.user.email if lanc.conta_associado else None,
+                    "status": lanc.status,
                     "valor": float(lanc.valor),
                     "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
                     "dias_atraso": dias_atraso,
                 }
             )
+        fmt = request.query_params.get("format")
+        if fmt in {"csv", "xlsx"}:
+            tmp = NamedTemporaryFile(delete=False, suffix=f".{fmt}")
+            if fmt == "csv":
+                import csv
+
+                writer = csv.writer(tmp)
+                writer.writerow(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
+                for item in data:
+                    writer.writerow([
+                        item["id"],
+                        item["conta"],
+                        item["status"],
+                        item["valor"],
+                        item["data_vencimento"],
+                        item["dias_atraso"],
+                    ])
+            else:
+                if not Workbook:
+                    return Response({"detail": _("openpyxl não disponível")}, status=500)
+                wb = Workbook()
+                ws = wb.active
+                ws.append(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
+                for item in data:
+                    ws.append([
+                        item["id"],
+                        item["conta"],
+                        item["status"],
+                        item["valor"],
+                        item["data_vencimento"],
+                        item["dias_atraso"],
+                    ])
+                wb.save(tmp.name)
+            tmp.close()
+            filename = f"inadimplencias.{fmt}"
+            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename)
+
         return Response(data)
 
     @action(detail=False, methods=["post"], url_path="aportes", permission_classes=[AportePermission])

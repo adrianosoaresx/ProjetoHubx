@@ -57,10 +57,11 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |---------------|-----------|-----------|
 |`GET /api/financeiro/centros/`|Usuário autenticado|Lista centros de custo|
 |`POST /api/financeiro/centros/`|Financeiro/Admin|Cria centro de custo|
-|`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação|
+|`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação; retorna `token_erros` quando houver rejeições|
 |`POST /api/financeiro/importar-pagamentos/confirmar/`|Financeiro/Admin|Confirma importação assíncrona|
-|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
-|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências|
+|`POST /api/financeiro/importar-pagamentos/reprocessar/<token>/`|Financeiro/Admin|Reprocessa linhas corrigidas|
+|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado (CSV/XLSX)|
+|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências (CSV/XLSX)|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 |`PATCH /api/financeiro/lancamentos/<id>/quitar/`|Financeiro/Admin|Marca lançamento como quitado|
 
@@ -108,6 +109,6 @@ Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do as
 
 - `gerar_cobrancas_mensais` – executada todo início de mês para criar cobranças.
 - `importar_pagamentos_async` – processa arquivos de importação em background.
-- `notificar_inadimplencia` – envia lembretes para lançamentos vencidos.
+- `notificar_inadimplencia` – envia lembretes para lançamentos vencidos (via `financeiro.services.notificacoes`).
   Todas registram logs no módulo e podem ter métricas Prometheus associadas.
 
