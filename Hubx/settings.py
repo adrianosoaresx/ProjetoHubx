@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import base64
 import os
+from decimal import Decimal
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -159,3 +160,8 @@ AUTHENTICATION_BACKENDS = [
     "accounts.backends.EmailBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+# Valores padrão para mensalidades
+MENSALIDADE_ASSOCIACAO = Decimal("50.00")
+MENSALIDADE_NUCLEO = Decimal("30.00")
+MENSALIDADE_VENCIMENTO_DIA = 10
