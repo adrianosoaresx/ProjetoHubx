@@ -113,7 +113,14 @@ class LancamentoFinanceiro(TimeStampedModel):
         ordering = ["-data_lancamento"]
         verbose_name = "Lançamento Financeiro"
         verbose_name_plural = "Lançamentos Financeiros"
-        indexes = [models.Index(fields=["centro_custo", "conta_associado"], name="idx_centro_conta")]
+        indexes = [
+            models.Index(fields=["centro_custo", "conta_associado"], name="idx_centro_conta"),
+            models.Index(fields=["centro_custo"], name="idx_lanc_centro"),
+            models.Index(fields=["conta_associado"], name="idx_lanc_conta"),
+            models.Index(fields=["data_lancamento"], name="idx_lanc_dt_lanc"),
+            models.Index(fields=["data_vencimento"], name="idx_lanc_dt_venc"),
+            models.Index(fields=["status"], name="idx_lanc_status"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.get_tipo_display()} - {self.valor}"

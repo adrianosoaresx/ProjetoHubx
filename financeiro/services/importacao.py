@@ -99,21 +99,15 @@ class ImportadorPagamentos:
         return ImportResult(preview=preview, errors=errors)
 
     # ────────────────────────────────────────────────────────────
-    def process(self) -> list[str]:
+    def process(self, batch_size: int = 500) -> list[str]:
         errors: list[str] = []
-        valid_data: list[dict[str, Any]] = []
-        for idx, row in enumerate(self._iter_rows(), start=2):
-            try:
-                valid_data.append(self._convert_row(row))
-            except Exception as exc:
-                errors.append(f"Linha {idx}: {exc}")
-        if not valid_data:
-            return errors
-        with transaction.atomic():
+        batch: list[dict[str, Any]] = []
+
+        def flush(chunk: list[dict[str, Any]]):
             to_create = []
             saldo_centro: dict[str, Decimal] = {}
             saldo_conta: dict[str, Decimal] = {}
-            for item in valid_data:
+            for item in chunk:
                 payload = {
                     "centro_custo": str(item["centro_custo"].id),
                     "conta_associado": str(item["conta_associado"].id) if item.get("conta_associado") else None,
@@ -143,6 +137,20 @@ class ImportadorPagamentos:
                 CentroCusto.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
             for aid, inc in saldo_conta.items():
                 ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
+
+        for idx, row in enumerate(self._iter_rows(), start=2):
+            try:
+                batch.append(self._convert_row(row))
+            except Exception as exc:
+                errors.append(f"Linha {idx}: {exc}")
+                continue
+            if len(batch) >= batch_size:
+                with transaction.atomic():
+                    flush(batch)
+                batch = []
+        if batch:
+            with transaction.atomic():
+                flush(batch)
         return errors
 
     # ────────────────────────────────────────────────────────────

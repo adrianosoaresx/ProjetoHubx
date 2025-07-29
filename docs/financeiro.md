@@ -33,6 +33,11 @@ Campos opcionais:
 
 Somente usuários administradores podem registrar `aporte_interno`.
 Após criado, o saldo do centro de custo é atualizado imediatamente.
+### Permissões
+- Importação de pagamentos, geração de cobranças e relatórios completos: apenas admin ou root.
+- Relatórios por núcleo: admin, root ou coordenador do núcleo.
+- Inadimplências individuais: admin, root ou o próprio associado.
+
 
 ## Relatórios Financeiros
 
