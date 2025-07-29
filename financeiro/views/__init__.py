@@ -13,8 +13,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.models import UserType
+
 from ..models import CentroCusto, LancamentoFinanceiro
 from ..serializers import (
+    AporteSerializer,
     CentroCustoSerializer,
     ImportarPagamentosConfirmacaoSerializer,
     ImportarPagamentosPreviewSerializer,
@@ -22,6 +25,16 @@ from ..serializers import (
 )
 from ..services.importacao import ImportadorPagamentos
 from ..tasks.importar_pagamentos import importar_pagamentos_async
+
+
+class AportePermission(IsAuthenticated):
+    def has_permission(self, request, view) -> bool:  # type: ignore[override]
+        if not super().has_permission(request, view):
+            return False
+        tipo = request.data.get("tipo", LancamentoFinanceiro.Tipo.APORTE_INTERNO)
+        if tipo == LancamentoFinanceiro.Tipo.APORTE_INTERNO:
+            return request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        return True
 
 
 class CentroCustoViewSet(viewsets.ModelViewSet):
@@ -91,13 +104,9 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer = LancamentoFinanceiroSerializer(pendentes, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"], url_path="aportes")
+    @action(detail=False, methods=["post"], url_path="aportes", permission_classes=[AportePermission])
     def aportes(self, request):
-        data = request.data.copy()
-        if "tipo" not in data:
-            data["tipo"] = LancamentoFinanceiro.Tipo.APORTE_INTERNO
-        serializer = LancamentoFinanceiroSerializer(data=data)
+        serializer = AporteSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
-        out = LancamentoFinanceiroSerializer(lancamento)
-        return Response(out.data, status=status.HTTP_201_CREATED)
+        return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)

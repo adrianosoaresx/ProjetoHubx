@@ -15,3 +15,22 @@ de custo. Caso ele participe de núcleos aprovados, é gerada também a cobranç
 mensalidade de cada núcleo correspondente. Após a criação, o sistema envia
 notificações por e-mail e no aplicativo.
 
+## Registro de Aportes
+
+Endpoint: `POST /api/financeiro/aportes/`
+
+Campos obrigatórios:
+
+- `centro_custo` — ID do centro de custo
+- `valor` — valor positivo do aporte
+- `descricao` — texto descritivo
+
+Campos opcionais:
+
+- `tipo` — `aporte_interno` (padrão) ou `aporte_externo`
+- `data_lancamento` e `data_vencimento`
+- `patrocinador` — para aportes externos
+
+Somente usuários administradores podem registrar `aporte_interno`.
+Após criado, o saldo do centro de custo é atualizado imediatamente.
+

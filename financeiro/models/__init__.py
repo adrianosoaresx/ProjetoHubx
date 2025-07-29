@@ -90,6 +90,13 @@ class LancamentoFinanceiro(TimeStampedModel):
     conta_associado = models.ForeignKey(
         ContaAssociado, on_delete=models.CASCADE, null=True, blank=True, related_name="lancamentos"
     )
+    originador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="aportes_lancados",
+    )
     tipo = models.CharField(max_length=32, choices=Tipo.choices)
     valor = models.DecimalField(max_digits=12, decimal_places=2)
     data_lancamento = models.DateTimeField(default=timezone.now)
@@ -105,6 +112,7 @@ class LancamentoFinanceiro(TimeStampedModel):
         ordering = ["-data_lancamento"]
         verbose_name = "Lançamento Financeiro"
         verbose_name_plural = "Lançamentos Financeiros"
+        indexes = [models.Index(fields=["centro_custo", "conta_associado"], name="idx_centro_conta")]
 
     def __str__(self) -> str:
         return f"{self.get_tipo_display()} - {self.valor}"
