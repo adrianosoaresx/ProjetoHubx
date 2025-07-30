@@ -7,7 +7,10 @@
 <section class="max-w-md mx-auto px-4 py-12">
   <h1 class="text-2xl font-bold text-center mb-6">Gerar Código de Autenticação</h1>
 
-  <form method="post" action="{% url 'tokens:gerar_codigo' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
+  <form method="post" action="{% url 'tokens:gerar_codigo' %}"
+        hx-post="{% url 'tokens:gerar_codigo' %}"
+        hx-target="#resultado" hx-swap="innerHTML"
+        class="bg-white rounded-2xl shadow p-6 space-y-4">
     {% csrf_token %}
     {% for field in form %}
       <div>
@@ -15,7 +18,11 @@
         {% if field.field.widget.input_type == 'select' %}
           {{ field|add_class:"form-select" }}
         {% else %}
-          {{ field|add_class:"form-input" }}
+          {% if forloop.first %}
+            {{ field|add_class:"form-input"|attr:"autofocus" }}
+          {% else %}
+            {{ field|add_class:"form-input" }}
+          {% endif %}
         {% endif %}
         {% if field.errors %}
           <p class="text-sm text-red-600 mt-1">{{ field.errors.0 }}</p>

@@ -1,0 +1,49 @@
+{% load i18n %}
+{% if empresas %}
+<table class="min-w-full text-sm">
+  <thead class="bg-neutral-100">
+    <tr>
+      <th class="px-3 py-2 text-left font-semibold">{% translate "Nome" %}</th>
+      <th class="px-3 py-2 text-left font-semibold">{% translate "Contato principal" %}</th>
+      <th class="px-3 py-2 text-left font-semibold">{% translate "Setor" %}</th>
+      <th class="px-3 py-2 text-center font-semibold">{% translate "Ações" %}</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-neutral-200 bg-white">
+    {% for empresa in empresas %}
+    <tr>
+      <td class="px-3 py-2">{{ empresa.nome }}</td>
+      <td class="px-3 py-2">
+        {% with contato=empresa.contatos.first %}
+          {% if contato %}{{ contato.nome }}{% else %}-{% endif %}
+        {% endwith %}
+      </td>
+      <td class="px-3 py-2">{{ empresa.tipo }}</td>
+      <td class="px-3 py-2 text-center space-x-2">
+        <a href="{% url 'empresas:editar' empresa.pk %}" class="text-blue-600 hover:underline">{% translate "Editar" %}</a>
+        <a href="{% url 'empresas:remover' empresa.pk %}" class="text-red-600 hover:underline">
+          {% translate "Remover" %}
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if is_paginated %}
+<nav class="mt-4 flex justify-center text-sm" aria-label="{% translate 'Paginação' %}">
+  {% if page_obj.has_previous %}
+    <a hx-get="?page={{ page_obj.previous_page_number }}&nome={{ request.GET.nome }}&segmento={{ request.GET.segmento }}" hx-target="#empresas-table" hx-push-url="true" class="px-3 py-1 border rounded-l">{% translate "Anterior" %}</a>
+  {% else %}
+    <span class="px-3 py-1 border rounded-l text-neutral-400">{% translate "Anterior" %}</span>
+  {% endif %}
+  <span class="px-3 py-1 border-t border-b">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}
+    <a hx-get="?page={{ page_obj.next_page_number }}&nome={{ request.GET.nome }}&segmento={{ request.GET.segmento }}" hx-target="#empresas-table" hx-push-url="true" class="px-3 py-1 border rounded-r">{% translate "Próxima" %}</a>
+  {% else %}
+    <span class="px-3 py-1 border rounded-r text-neutral-400">{% translate "Próxima" %}</span>
+  {% endif %}
+</nav>
+{% endif %}
+{% else %}
+<p class="text-center text-neutral-500 py-10">{% translate "Nenhuma empresa encontrada." %}</p>
+{% endif %}

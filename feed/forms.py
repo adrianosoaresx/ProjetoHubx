@@ -19,14 +19,26 @@ class PostForm(forms.ModelForm):
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={
-                    "class": "form-control",
+                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 4,
                     "placeholder": "Compartilhe algo...",
                 }
             ),
-            "image": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "pdf": forms.ClearableFileInput(attrs={"class": "form-control"}),
-            "video": forms.ClearableFileInput(attrs={"class": "form-control"}),
+            "image": forms.ClearableFileInput(
+                attrs={
+                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                }
+            ),
+            "pdf": forms.ClearableFileInput(
+                attrs={
+                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                }
+            ),
+            "video": forms.ClearableFileInput(
+                attrs={
+                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                }
+            ),
         }
 
     def __init__(self, *args, user: User | None = None, **kwargs) -> None:
@@ -72,7 +84,7 @@ class CommentForm(forms.ModelForm):
         widgets = {
             "texto": forms.Textarea(
                 attrs={
-                    "class": "form-control",
+                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 3,
                     "placeholder": "Escreva um comentário...",
                 }

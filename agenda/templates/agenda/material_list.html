@@ -1,10 +1,13 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Materiais de Divulgação | Hubx{% endblock %}
+{% block title %}{% trans "Materiais de Divulgação" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10">
-  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Materiais de Divulgação</h1>
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Materiais de Divulgação" %}</h1>
+  </header>
 
   {% if messages %}
     <div class="mb-4 space-y-2">
@@ -14,19 +17,21 @@
     </div>
   {% endif %}
 
-  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {% for material in materiais %}
-      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 flex flex-col">
-        <h2 class="text-lg font-semibold text-neutral-900 mb-2">{{ material.titulo }}</h2>
-        <p class="text-sm text-neutral-600 mb-4">{{ material.descricao }}</p>
-        {% if material.imagem_thumb %}
-          <img src="{{ material.imagem_thumb.url }}" alt="{{ material.titulo }}" class="mb-4 rounded-xl object-cover">
-        {% endif %}
-        <a href="{{ material.arquivo.url }}" class="mt-auto text-sm text-blue-600 hover:underline">Download</a>
-      </article>
-    {% empty %}
-      <p class="text-neutral-500">Nenhum material disponível.</p>
-    {% endfor %}
-  </div>
+  <main>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {% for material in materiais %}
+        <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 flex flex-col">
+          <h2 class="text-lg font-semibold text-neutral-900 mb-2">{{ material.titulo }}</h2>
+          <p class="text-sm text-neutral-600 mb-4">{{ material.descricao }}</p>
+          {% if material.imagem_thumb %}
+            <img src="{{ material.imagem_thumb.url }}" alt="{{ material.titulo }}" class="mb-4 rounded-xl object-cover">
+          {% endif %}
+          <a href="{{ material.arquivo.url }}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Download" %}</a>
+        </article>
+      {% empty %}
+        <p class="text-neutral-500">{% trans "Nenhum material disponível." %}</p>
+      {% endfor %}
+    </div>
+  </main>
 </section>
 {% endblock %}

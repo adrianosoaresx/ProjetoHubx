@@ -2,21 +2,27 @@ from __future__ import annotations
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.db.models import OuterRef, Subquery
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 
 from .forms import NovaConversaForm, NovaMensagemForm
-from .models import ChatConversation, ChatParticipant
+from .models import ChatConversation, ChatMessage, ChatParticipant
 
 User = get_user_model()
 
 
 @login_required
 def conversation_list(request):
+    last_msg = ChatMessage.objects.filter(conversation=OuterRef("pk")).order_by("-created_at")
     qs = (
         ChatConversation.objects.filter(participants__user=request.user)
         .select_related("organizacao", "nucleo", "evento")
         .prefetch_related("participants")
+        .annotate(
+            last_message_text=Subquery(last_msg.values("conteudo")[:1]),
+            last_message_at=Subquery(last_msg.values("created_at")[:1]),
+        )
         .distinct()
     )
     grupos = {
@@ -26,7 +32,11 @@ def conversation_list(request):
         "nucleo": qs.filter(tipo_conversa="nucleo"),
         "evento": qs.filter(tipo_conversa="evento"),
     }
-    return render(request, "chat/conversation_list.html", {"grupos": grupos})
+    return render(
+        request,
+        "chat/conversation_list.html",
+        {"grupos": grupos, "conversas": qs},
+    )
 
 
 @login_required

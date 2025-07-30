@@ -3,7 +3,7 @@
 {% block title %}Organizações | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-6xl mx-auto px-4 py-10">
+<section class="max-w-6xl mx-auto px-4 py-10" id="org-list">
 
   <!-- Cabeçalho -->
   <div class="flex items-center justify-between mb-8">
@@ -19,6 +19,11 @@
       Nova Organização
     </a>
   </div>
+
+  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 flex gap-2">
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar" class="w-full p-2 border rounded-lg" />
+    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">Buscar</button>
+  </form>
 
   {% if object_list %}
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -43,6 +48,15 @@
           </div>
         </div>
       {% endfor %}
+    </div>
+    <div class="mt-6 flex justify-center gap-2">
+      {% if page_obj.has_previous %}
+        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Anterior</a>
+      {% endif %}
+      <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Próxima</a>
+      {% endif %}
     </div>
   {% else %}
     <div class="text-center border border-neutral-200 rounded-2xl shadow-sm p-10 bg-white">

@@ -130,6 +130,11 @@ class FinanceiroViewSet(viewsets.ViewSet):
             payload["token_erros"] = Path(result.errors_file).stem
         return Response(payload, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=["post"], url_path="importar-pagamentos/preview")
+    def importar_pagamentos_preview(self, request):
+        """Alias para compatibilidade com a rota /preview/ utilizada nos templates."""
+        return self.importar_pagamentos(request)
+
     @action(detail=False, methods=["post"], url_path="importar-pagamentos/confirmar")
     def confirmar_importacao(self, request):
         serializer = ImportarPagamentosConfirmacaoSerializer(data=request.data)

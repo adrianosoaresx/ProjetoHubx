@@ -9,8 +9,9 @@ from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatMessage
 from discussao.models import RespostaDiscussao, TopicoDiscussao
-from feed.models import Post
 from empresas.models import Empresa
+from feed.models import Post
+from financeiro.models import LancamentoFinanceiro
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -121,6 +122,13 @@ class DashboardService:
         anterior = queryset.filter(**{f"{campo}__gte": prev_inicio, f"{campo}__lte": prev_fim}).count()
         crescimento = get_variation(anterior, atual) if anterior else (100.0 if atual else 0.0)
         return {"total": atual, "crescimento": crescimento}
+
+    @staticmethod
+    def ultimos_lancamentos(user: User, limit: int = 5):
+        qs = LancamentoFinanceiro.objects.select_related("centro_custo")
+        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+            qs = qs.filter(centro_custo__organizacao=user.organizacao)
+        return qs.order_by("-data_lancamento")[:limit]
 
 
 class DashboardMetricsService:

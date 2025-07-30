@@ -1,0 +1,8 @@
+{% load i18n %}
+<div class="p-4 bg-white rounded-lg shadow" aria-label="{{ title }}">
+  <div class="flex items-center justify-between">
+    <h3 class="text-sm font-medium text-neutral-700">{{ title }}</h3>
+    {% if icon %}<i class="fa-solid {{ icon }} text-primary-600"></i>{% endif %}
+  </div>
+  <p class="text-3xl font-bold text-neutral-900" id="{{ id }}">{{ value }}</p>
+</div>

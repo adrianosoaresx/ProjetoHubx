@@ -1,12 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Nova conversa{% endblock %}
+{% load widget_tweaks i18n %}
+
+{% block title %}{% trans "Nova conversa" %}{% endblock %}
+
 {% block content %}
 <main class="max-w-4xl mx-auto p-4">
-  <h2 class="text-lg font-semibold mb-4">Nova conversa</h2>
-  <form method="post" enctype="multipart/form-data" class="space-y-2">
+  <h2 class="text-lg font-semibold mb-4">{% trans "Nova conversa" %}</h2>
+  <form method="post" enctype="multipart/form-data" class="space-y-4 bg-white rounded-lg p-4">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Criar</button>
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
+        {{ field|add_class:"w-full p-2 border rounded" }}
+        {% if field.errors %}
+          <p class="text-red-500 text-sm">{{ field.errors }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div class="text-right">
+      <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90">
+        {% trans "Criar" %}
+      </button>
+    </div>
   </form>
 </main>
 {% endblock %}

@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
+{% load widget_tweaks i18n %}
 
-{% block title %}Ativar 2FA | HubX{% endblock %}
+{% block title %}{% trans "Ativar 2FA" %} | HubX{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold text-center mb-6">Ativar Autenticação de Dois Fatores</h1>
+  <header class="text-center mb-6">
+    <h1 class="text-2xl font-bold">{% trans "Ativar Autenticação de Dois Fatores" %}</h1>
+    <p class="text-sm text-neutral-600 mt-2">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>
+  </header>
 
   {% if messages %}
     <div class="mb-4 space-y-2">
@@ -17,18 +20,23 @@
     </div>
   {% endif %}
 
-  <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
-    {% csrf_token %}
-    <div>
-      <label for="{{ form.codigo_totp.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo_totp.label }}</label>
-      {{ form.codigo_totp|add_class:"form-input" }}
-      {% if form.codigo_totp.errors %}
-        <p class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
-      {% endif %}
-    </div>
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">Ativar</button>
-    </div>
-  </form>
+  <main>
+    <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label for="{{ form.codigo_totp.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo_totp.label }}</label>
+        {{ form.codigo_totp|add_class:"form-input" }}
+        {% if form.codigo_totp.errors %}
+          <p class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
+        {% endif %}
+      </div>
+      <div class="text-right">
+        <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Ativar" %}</button>
+      </div>
+    </form>
+  </main>
+  <footer class="mt-6 text-center">
+    <a href="{% url 'accounts:seguranca' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao perfil de segurança" %}</a>
+  </footer>
 </section>
 {% endblock %}

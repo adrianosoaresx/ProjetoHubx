@@ -1,0 +1,5 @@
+<li class="border border-neutral-200 bg-white rounded-xl shadow-sm p-4" id="comment-{{ comment.id }}">
+  <p class="text-sm font-medium">{{ comment.user.get_full_name|default:comment.user.username }}</p>
+  <p class="text-xs text-neutral-500">{{ comment.created|date:"d/m/Y H:i" }}</p>
+  <p class="text-sm text-neutral-800">{{ comment.texto }}</p>
+</li>
