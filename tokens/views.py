@@ -41,6 +41,16 @@ def criar_token(request):
             token = form.save(commit=False)
             token.gerado_por = request.user
             token.save()
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"token": token.codigo})
+        else:
+            if request.headers.get("HX-Request") == "true":
+                return render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": form.errors.as_text()},
+                    status=400,
+                )
     else:
         form = TokenAcessoForm()
 
@@ -63,7 +73,11 @@ class GerarTokenConviteView(View):
             )
             token.save()
             token.nucleos.set(form.cleaned_data["nucleos"])
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"token": token.codigo})
             return JsonResponse({"codigo": token.codigo})
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"error": "Dados inválidos"}, status=400)
         return JsonResponse({"error": "Dados inválidos"}, status=400)
 
 
@@ -75,7 +89,11 @@ class ValidarTokenConviteView(View):
             token.usuario = request.user
             token.estado = TokenAcesso.Estado.USADO
             token.save()
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"success": "Token validado"})
             return JsonResponse({"success": "Token validado"})
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
         return JsonResponse({"error": form.errors.as_text()}, status=400)
 
 
@@ -85,7 +103,11 @@ class GerarCodigoAutenticacaoView(View):
         if form.is_valid():
             codigo = form.save()
             # TODO: enviar via email/SMS
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
             return JsonResponse({"codigo": codigo.codigo})
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"error": "Dados inválidos"}, status=400)
         return JsonResponse({"error": "Dados inválidos"}, status=400)
 
 
@@ -93,7 +115,11 @@ class ValidarCodigoAutenticacaoView(View):
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"success": "Código validado"})
             return JsonResponse({"success": "Código validado"})
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
         return JsonResponse({"error": form.errors.as_text()}, status=400)
 
 
@@ -104,11 +130,17 @@ class Ativar2FAView(View):
         if form.is_valid():
             device.confirmado = True
             device.save()
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"success": "2FA ativado"})
             return JsonResponse({"success": "2FA ativado"})
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
         return JsonResponse({"error": form.errors.as_text()}, status=400)
 
 
 class Desativar2FAView(View):
     def post(self, request, *args, **kwargs):
         TOTPDevice.objects.filter(usuario=request.user).delete()
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"success": "2FA desativado"})
         return JsonResponse({"success": "2FA desativado"})
