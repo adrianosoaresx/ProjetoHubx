@@ -1,0 +1,10 @@
+{% load i18n %}
+<section class="mb-8" id="metrics">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% include "dashboard/partials/metric_card.html" with title=_("Usuários") value=num_users.total icon="fa-users" id="num_users" %}
+    {% include "dashboard/partials/metric_card.html" with title=_("Organizações") value=num_organizacoes.total icon="fa-building" id="num_organizacoes" %}
+    {% include "dashboard/partials/metric_card.html" with title=_("Núcleos") value=num_nucleos.total icon="fa-users-rectangle" id="num_nucleos" %}
+    {% include "dashboard/partials/metric_card.html" with title=_("Empresas") value=num_empresas.total icon="fa-city" id="num_empresas" %}
+    {% include "dashboard/partials/metric_card.html" with title=_("Eventos") value=num_eventos.total icon="fa-calendar" id="num_eventos" %}
+  </div>
+</section>
