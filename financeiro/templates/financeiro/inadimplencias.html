@@ -5,7 +5,7 @@
 {% block content %}
 <div class="p-4 max-w-6xl mx-auto">
   <h1 class="text-2xl font-semibold mb-2">Inadimplências</h1>
-  <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
     <select name="centro" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
       <option value="">Todos Centros</option>
       {% for c in centros %}
@@ -21,10 +21,26 @@
     <select name="status" class="border p-2 rounded" disabled>
       <option>Pendente</option>
     </select>
+    <input type="month" name="periodo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
   </div>
-  <div id="lista" hx-get="/api/financeiro/inadimplencias/" hx-target="this"></div>
-  <div class="mt-4">
+  <div id="lista" hx-get="/api/financeiro/inadimplencias/" hx-target="this">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">ID</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Centro de Custo</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Conta</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Valor</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Data de Vencimento</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Dias em atraso</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="mt-4 flex gap-4">
     <a href="/api/financeiro/inadimplencias/?format=csv" class="text-primary underline" hx-boost="false">Exportar CSV</a>
+    <a href="/api/financeiro/inadimplencias/?format=xlsx" class="text-primary underline" hx-boost="false">Exportar XLSX</a>
   </div>
 </div>
 {% endblock %}
