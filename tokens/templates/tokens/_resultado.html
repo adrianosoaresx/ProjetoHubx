@@ -1,0 +1,13 @@
+{% if codigo %}
+  <div class="bg-green-100 text-green-700 p-3 rounded" role="status">
+    Código gerado: <code class="font-mono text-lg">{{ codigo }}</code>
+  </div>
+{% elif token %}
+  <div class="bg-green-100 text-green-700 p-3 rounded" role="status">
+    Token: <code class="font-mono break-all">{{ token }}</code>
+  </div>
+{% elif success %}
+  <div class="bg-green-100 text-green-700 p-3 rounded" role="status">{{ success }}</div>
+{% elif error %}
+  <div class="bg-red-100 text-red-700 p-3 rounded" role="alert">{{ error }}</div>
+{% endif %}

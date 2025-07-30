@@ -6,7 +6,10 @@
 <section class="max-w-xl mx-auto px-4 py-10">
   <h1 class="text-2xl font-bold text-neutral-900 mb-6">Gerar Token de Acesso</h1>
 
-  <form method="post" action="{% url 'tokens:criar_token' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+  <form method="post" action="{% url 'tokens:criar_token' %}"
+        hx-post="{% url 'tokens:criar_token' %}"
+        hx-target="#resultado" hx-swap="innerHTML"
+        class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
 
     <div class="space-y-4">
@@ -16,7 +19,11 @@
           {% if field.field.widget.input_type == 'select' %}
             {{ field|add_class:"form-select" }}
           {% else %}
-            {{ field|add_class:"form-input" }}
+            {% if forloop.first %}
+              {{ field|add_class:"form-input"|attr:"autofocus" }}
+            {% else %}
+              {{ field|add_class:"form-input" }}
+            {% endif %}
           {% endif %}
           {% if field.errors %}
             <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
@@ -32,10 +39,12 @@
     </div>
   </form>
 
-  {% if token %}
-    <div class="mt-6 text-center rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
-      Código gerado: <strong>{{ token.codigo }}</strong>
-    </div>
-  {% endif %}
+  <div id="resultado" class="mt-6 text-center">
+    {% if token %}
+      <div class="rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
+        Código gerado: <strong>{{ token.codigo }}</strong>
+      </div>
+    {% endif %}
+  </div>
 </section>
 {% endblock %}
