@@ -5,6 +5,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext_lazy as _
 
 from .forms import NotificationTemplateForm, UserNotificationPreferenceForm
 from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
@@ -24,7 +25,7 @@ def create_template(request):
         form = NotificationTemplateForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Template criado com sucesso.")
+            messages.success(request, _("Template criado com sucesso."))
             return redirect("notificacoes:templates_list")
     else:
         form = NotificationTemplateForm()
@@ -39,7 +40,7 @@ def edit_template(request, codigo: str):
         form = NotificationTemplateForm(request.POST, instance=template)
         if form.is_valid():
             form.save()
-            messages.success(request, "Template atualizado com sucesso.")
+            messages.success(request, _("Template atualizado com sucesso."))
             return redirect("notificacoes:templates_list")
     else:
         form = NotificationTemplateForm(instance=template)
@@ -67,9 +68,10 @@ def list_logs(request):
     page_obj = paginator.get_page(request.GET.get("page"))
 
     context = {"logs": page_obj}
-    if request.headers.get("HX-Request"):
-        context["partial"] = True
-    return render(request, "notificacoes/logs_list.html", context)
+    template_name = (
+        "notificacoes/logs_rows.html" if request.headers.get("HX-Request") else "notificacoes/logs_list.html"
+    )
+    return render(request, template_name, context)
 
 
 @login_required
@@ -79,7 +81,7 @@ def editar_preferencias(request):
         form = UserNotificationPreferenceForm(request.POST, instance=pref)
         if form.is_valid():
             form.save()
-            messages.success(request, "Preferências salvas com sucesso.")
+            messages.success(request, _("Preferências salvas com sucesso."))
             return redirect("notificacoes:editar_preferencias")
     else:
         form = UserNotificationPreferenceForm(instance=pref)

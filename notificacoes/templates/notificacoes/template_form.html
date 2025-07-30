@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
-{% block title %}{% if form.instance.pk %}Editar Template{% else %}Novo Template{% endif %} | HubX{% endblock %}
+{% load i18n %}
+{% block title %}{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Novo Template' %}{% endif %} | HubX{% endblock %}
 {% block content %}
 <div class="max-w-xl mx-auto px-4 py-10">
   <div class="mb-8">
-    <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}Editar Template{% else %}Cadastrar Template{% endif %}</h1>
+    <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
   </div>
   {% if messages %}
   <div class="mb-4 space-y-2">
@@ -16,7 +17,7 @@
   <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
     <div>
-      <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">Código</label>
+      <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Código' %}</label>
       {% if form.instance.pk %}
         {{ form.codigo|add_class:'form-input'|attr:'readonly' }}
       {% else %}
@@ -25,27 +26,27 @@
       {% if form.codigo.errors %}<p class="text-sm text-red-600 mt-1">{{ form.codigo.errors.0 }}</p>{% endif %}
     </div>
     <div>
-      <label for="{{ form.assunto.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">Assunto</label>
+      <label for="{{ form.assunto.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Assunto' %}</label>
       {{ form.assunto|add_class:'form-input' }}
       {% if form.assunto.errors %}<p class="text-sm text-red-600 mt-1">{{ form.assunto.errors.0 }}</p>{% endif %}
     </div>
     <div>
-      <label for="{{ form.corpo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">Corpo</label>
+      <label for="{{ form.corpo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Corpo' %}</label>
       {{ form.corpo|add_class:'form-textarea' }}
       {% if form.corpo.errors %}<p class="text-sm text-red-600 mt-1">{{ form.corpo.errors.0 }}</p>{% endif %}
     </div>
     <div>
-      <label for="{{ form.canal.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">Canal</label>
+      <label for="{{ form.canal.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Canal' %}</label>
       {{ form.canal|add_class:'form-select' }}
       {% if form.canal.errors %}<p class="text-sm text-red-600 mt-1">{{ form.canal.errors.0 }}</p>{% endif %}
     </div>
     <div class="flex items-center gap-2">
       {{ form.ativo }}
-      <label for="{{ form.ativo.id_for_label }}" class="text-sm text-neutral-700">Ativo</label>
+      <label for="{{ form.ativo.id_for_label }}" class="text-sm text-neutral-700">{% trans 'Ativo' %}</label>
     </div>
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'notificacoes:templates_list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Cancelar</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Salvar</button>
+      <a href="{% url 'notificacoes:templates_list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans 'Cancelar' %}</a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans 'Salvar' %}</button>
     </div>
   </form>
 </div>
