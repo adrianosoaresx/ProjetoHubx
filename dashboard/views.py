@@ -2,7 +2,9 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView
 
 from accounts.models import UserType
@@ -64,3 +66,29 @@ def dashboard_redirect(request):
     if user.user_type == UserType.COORDENADOR:
         return redirect("dashboard:gerente")
     return redirect("dashboard:cliente")
+
+
+def metrics_partial(request):
+    """Retorna HTML com métricas para HTMX."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+    metrics = DashboardMetricsService.get_metrics(request.user)
+    html = render_to_string(
+        "dashboard/partials/metrics_list.html",
+        metrics,
+        request=request,
+    )
+    return HttpResponse(html)
+
+
+def lancamentos_partial(request):
+    """Últimos lançamentos financeiros."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+    lancamentos = DashboardService.ultimos_lancamentos(request.user)
+    html = render_to_string(
+        "dashboard/partials/latest_transactions.html",
+        {"lancamentos": lancamentos},
+        request=request,
+    )
+    return HttpResponse(html)

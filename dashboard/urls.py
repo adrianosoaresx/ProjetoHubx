@@ -10,4 +10,6 @@ urlpatterns = [
     path("admin/", views.AdminDashboardView.as_view(), name="admin"),
     path("gerente/", views.GerenteDashboardView.as_view(), name="gerente"),
     path("cliente/", views.ClienteDashboardView.as_view(), name="cliente"),
+    path("metrics-partial/", views.metrics_partial, name="metrics-partial"),
+    path("lancamentos-partial/", views.lancamentos_partial, name="lancamentos-partial"),
 ]
