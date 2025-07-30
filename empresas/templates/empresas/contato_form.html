@@ -1,11 +1,35 @@
 {% extends 'base.html' %}
-{% block title %}Contato{% endblock %}
+{% load i18n %}
+{% block title %}{% translate 'Contato' %}{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto py-8">
-  <form method="post" class="space-y-4" hx-post="" hx-target="closest form" hx-swap="outerHTML">
+<section class="max-w-md mx-auto py-8">
+  <form method="post" class="space-y-4 bg-white border border-neutral-200 p-6 rounded-md" hx-post="" hx-target="closest form" hx-swap="outerHTML">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="bg-primary-600 text-white px-4 py-2 rounded">Salvar</button>
+    <div>
+      <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{% translate 'Nome' %}</label>
+      {{ form.nome|add_class:'w-full p-2 border rounded' }}
+      {{ form.nome.errors }}
+    </div>
+    <div>
+      <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-neutral-700">{% translate 'E-mail' %}</label>
+      {{ form.email|add_class:'w-full p-2 border rounded' }}
+      {{ form.email.errors }}
+    </div>
+    <div>
+      <label for="{{ form.telefone.id_for_label }}" class="block text-sm font-medium text-neutral-700">{% translate 'Telefone' %}</label>
+      {{ form.telefone|add_class:'w-full p-2 border rounded' }}
+      {{ form.telefone.errors }}
+    </div>
+    <div>
+      <label for="{{ form.cargo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{% translate 'Cargo' %}</label>
+      {{ form.cargo|add_class:'w-full p-2 border rounded' }}
+      {{ form.cargo.errors }}
+    </div>
+    <div class="flex items-center gap-2">
+      {{ form.principal }}
+      <label for="{{ form.principal.id_for_label }}" class="text-sm text-neutral-700">{% translate 'Contato principal' %}</label>
+    </div>
+    <button class="bg-primary-600 text-white px-4 py-2 rounded" type="submit">{% translate 'Salvar' %}</button>
   </form>
-</div>
+</section>
 {% endblock %}

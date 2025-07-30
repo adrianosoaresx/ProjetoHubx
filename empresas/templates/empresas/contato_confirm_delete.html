@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Remover Contato{% endblock %}
+{% load i18n %}
+{% block title %}{% translate 'Remover Contato' %}{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto py-8">
-  <p>Confirma remover contato {{ contato.nome }}?</p>
-  <form method="post">
-    {% csrf_token %}
-    <button class="bg-red-600 text-white px-4 py-2 rounded">Remover</button>
-  </form>
-</div>
+<section class="max-w-md mx-auto py-10">
+  <div class="bg-red-50 text-red-800 p-6 rounded-md text-center space-y-4">
+    <p>{% blocktrans %}Confirma remover contato {{ contato.nome }}?{% endblocktrans %}</p>
+    <form method="post" class="flex justify-center gap-3">
+      {% csrf_token %}
+      <a href="#" onclick="history.back()" class="px-4 py-2 border rounded">{% translate 'Cancelar' %}</a>
+      <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">{% translate 'Remover' %}</button>
+    </form>
+  </div>
+</section>
 {% endblock %}
