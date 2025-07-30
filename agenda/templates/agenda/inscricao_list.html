@@ -1,34 +1,52 @@
 {% extends "base.html" %}
+
+{% block title %}Inscrições | Hubx{% endblock %}
+
 {% block content %}
-<section>
-    <h1>Lista de Inscrições</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Usuário</th>
-                <th>Evento</th>
-                <th>Status</th>
-                <th>Presente</th>
-                <th>Avaliação</th>
-                <th>Valor Pago</th>
-                <th>Método de Pagamento</th>
-                <th>Observação</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for inscricao in inscricoes %}
-            <tr>
-                <td>{{ inscricao.user }}</td>
-                <td>{{ inscricao.evento }}</td>
-                <td>{{ inscricao.get_status_display }}</td>
-                <td>{{ inscricao.presente }}</td>
-                <td>{{ inscricao.avaliacao }}</td>
-                <td>{{ inscricao.valor_pago }}</td>
-                <td>{{ inscricao.get_metodo_pagamento_display }}</td>
-                <td>{{ inscricao.observacao }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+<section class="max-w-7xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Lista de Inscrições</h1>
+
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+    <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
+      <thead class="bg-neutral-50">
+        <tr>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Usuário</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Evento</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Status</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Presente</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Avaliação</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Valor Pago</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Método de Pagamento</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Observação</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-neutral-200">
+        {% for inscricao in inscricoes %}
+          <tr>
+            <td class="px-4 py-2">{{ inscricao.user }}</td>
+            <td class="px-4 py-2">{{ inscricao.evento }}</td>
+            <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
+            <td class="px-4 py-2">{{ inscricao.presente }}</td>
+            <td class="px-4 py-2">{{ inscricao.avaliacao }}</td>
+            <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
+            <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
+            <td class="px-4 py-2">{{ inscricao.observacao }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="px-4 py-4 text-center text-neutral-500">Nenhuma inscrição encontrada.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 </section>
 {% endblock %}
