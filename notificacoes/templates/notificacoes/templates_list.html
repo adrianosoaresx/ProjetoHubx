@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Templates de Notificação | HubX{% endblock %}
+{% load i18n %}
+{% block title %}{% trans 'Templates de Notificação' %} | HubX{% endblock %}
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-10">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold text-neutral-900">Templates de Notificação</h1>
-      <p class="text-sm text-neutral-600">Gerencie as mensagens utilizadas nos envios.</p>
+      <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Templates de Notificação' %}</h1>
+      <p class="text-sm text-neutral-600">{% trans 'Gerencie as mensagens utilizadas nos envios.' %}</p>
     </div>
     <a href="{% url 'notificacoes:template_create' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
-      <span class="text-xl leading-none">+</span> Novo Template
+      <span class="text-xl leading-none">+</span> {% trans 'Novo Template' %}
     </a>
   </div>
   {% if messages %}
@@ -23,11 +24,11 @@
     <table class="min-w-full divide-y divide-neutral-200 text-sm">
       <thead class="bg-neutral-50">
         <tr>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">Código</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">Assunto</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">Canal</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">Ativo</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">Ações</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Código' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Assunto' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Canal' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ativo' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ações' %}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-neutral-200" id="templates_table">
@@ -38,7 +39,7 @@
           <td class="px-4 py-2">{{ tpl.get_canal_display }}</td>
           <td class="px-4 py-2">{{ tpl.ativo|yesno:'Sim,Não' }}</td>
           <td class="px-4 py-2">
-            <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary-600 hover:underline">Editar</a>
+            <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary-600 hover:underline">{% trans 'Editar' %}</a>
           </td>
         </tr>
         {% endfor %}
@@ -46,7 +47,7 @@
     </table>
   </div>
   {% else %}
-    <p class="text-center text-neutral-600">Nenhum template cadastrado.</p>
+    <p class="text-center text-neutral-600">{% trans 'Nenhum template cadastrado.' %}</p>
   {% endif %}
 </div>
 {% endblock %}
