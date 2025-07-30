@@ -1,17 +1,14 @@
-{% extends "base.html" %}
-{% load static %}
-
-{% block title %}Chat | HubX{% endblock %}
-
-{% block extra_css %}
-{{ block.super }}
-{% endblock %}
-
-{% block content %}
-<section class="max-w-6xl mx-auto px-4 py-10">
-  {% block chat_content %}
-    <h2 class="text-xl font-semibold mb-4">{{ dest.get_full_name|default:dest.username }}</h2>
-    <ul class="space-y-2" id="messages">
+<div
+  id="room-modal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+  role="dialog"
+  aria-modal="true"
+  hx-target="this"
+  hx-swap="outerHTML"
+>
+  <div class="bg-white rounded-lg max-w-lg w-full p-6 space-y-4" tabindex="-1">
+    <h2 class="text-lg font-semibold">{{ dest.get_full_name|default:dest.username }}</h2>
+    <ul class="space-y-2 max-h-96 overflow-y-auto" id="messages">
       {% for m in messages %}
         <li class="border-b border-neutral-200 pb-2">
           <strong>{{ m.remetente.username }}:</strong>
@@ -23,6 +20,5 @@
         <li class="text-neutral-500">Nenhuma mensagem.</li>
       {% endfor %}
     </ul>
-  {% endblock %}
-</section>
-{% endblock %}
+  </div>
+</div>

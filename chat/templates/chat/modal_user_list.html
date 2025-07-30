@@ -1,33 +1,37 @@
-<div id="chat-container" class="max-w-4xl mx-auto py-6 px-4">
-  <h3 class="text-lg font-semibold text-neutral-900 mb-4">Escolha um usuário para conversar</h3>
+<div
+  id="user-list-modal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+  role="dialog"
+  aria-modal="true"
+  hx-target="this"
+  hx-swap="outerHTML"
+>
+  <div class="bg-white rounded-lg max-w-2xl w-full p-6" tabindex="-1">
+    <h3 class="text-lg font-semibold text-neutral-900 mb-4">Escolha um usuário para conversar</h3>
 
-  <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-    {% for u in users %}
-      <div onclick="abrirChat({{ u.id }})"
-           class="cursor-pointer group border border-neutral-200 rounded-2xl p-4 bg-white shadow-sm hover:shadow-md transition-all flex items-center gap-4">
-        
-        <!-- Avatar -->
-        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-100 overflow-hidden">
-          {% if u.avatar %}
-            <img src="{{ u.avatar.url }}" alt="{{ u.username }}" class="w-full h-full object-cover rounded-full">
-          {% else %}
-            <span class="text-neutral-500 font-semibold text-lg">{{ u.username|first|upper }}</span>
-          {% endif %}
-        </div>
-
-        <!-- Info -->
-        <div class="flex-1">
-          <h4 class="text-sm font-medium text-neutral-800">{{ u.get_full_name|default:u.username }}</h4>
-          <p class="text-xs text-neutral-500">@{{ u.username }}</p>
-        </div>
-
-        <!-- Ação -->
-        <div class="text-lg text-neutral-400 group-hover:text-primary-600">
-          💬
-        </div>
-      </div>
-    {% empty %}
-      <p class="text-neutral-500 text-sm">Nenhum outro membro encontrado.</p>
-    {% endfor %}
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {% for u in users %}
+        <button
+          hx-post="/chat/iniciar/{{ u.id }}/"
+          hx-target="body"
+          class="w-full text-left cursor-pointer group border border-neutral-200 rounded-2xl p-4 bg-white shadow-sm hover:shadow-md transition-all flex items-center gap-4"
+        >
+          <div class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-100 overflow-hidden">
+            {% if u.avatar %}
+              <img src="{{ u.avatar.url }}" alt="{{ u.username }}" class="w-full h-full object-cover rounded-full" />
+            {% else %}
+              <span class="text-neutral-500 font-semibold text-lg">{{ u.username|first|upper }}</span>
+            {% endif %}
+          </div>
+          <div class="flex-1">
+            <h4 class="text-sm font-medium text-neutral-800">{{ u.get_full_name|default:u.username }}</h4>
+            <p class="text-xs text-neutral-500">@{{ u.username }}</p>
+          </div>
+          <div class="text-lg text-neutral-400 group-hover:text-primary-600">💬</div>
+        </button>
+      {% empty %}
+        <p class="text-neutral-500 text-sm">Nenhum outro membro encontrado.</p>
+      {% endfor %}
+    </div>
   </div>
 </div>
