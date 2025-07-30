@@ -1,0 +1,14 @@
+<article class="p-4 border-b border-neutral-200" id="coment-{{ comentario.id }}">
+  <header class="mb-2 flex items-center justify-between">
+    <div class="text-sm text-neutral-700">
+      {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"d/m/Y H:i" }}
+    </div>
+    {% if user == comentario.autor or user.get_tipo_usuario in ['admin','coordenador','root'] %}
+      <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
+        {% csrf_token %}
+        <button type="submit" class="text-red-600 text-xs">{% trans "Remover" %}</button>
+      </form>
+    {% endif %}
+  </header>
+  <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
+</article>

@@ -4,13 +4,13 @@ from .views import (
     CategoriaListView,
     InteracaoView,
     RespostaCreateView,
+    RespostaDeleteView,
     TopicoCreateView,
     TopicoDeleteView,
     TopicoDetailView,
     TopicoListView,
     TopicoUpdateView,
 )
-
 
 urlpatterns = [
     path("", CategoriaListView.as_view(), name="categorias"),
@@ -35,6 +35,11 @@ urlpatterns = [
         "<slug:categoria_slug>/<slug:topico_slug>/responder/",
         RespostaCreateView.as_view(),
         name="resposta_criar",
+    ),
+    path(
+        "comentario/<int:pk>/remover/",
+        RespostaDeleteView.as_view(),
+        name="delete_comment",
     ),
     path(
         "interacao/<int:content_type_id>/<int:object_id>/<str:tipo>/",
