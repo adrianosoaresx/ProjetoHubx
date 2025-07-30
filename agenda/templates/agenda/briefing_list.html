@@ -1,32 +1,50 @@
 {% extends "base.html" %}
+
+{% block title %}Briefings | Hubx{% endblock %}
+
 {% block content %}
-<section>
-    <h1>Briefings de Eventos</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Evento</th>
-                <th>Objetivos</th>
-                <th>Público Alvo</th>
-                <th>Requisitos Técnicos</th>
-                <th>Cronograma Resumido</th>
-                <th>Conteúdo Programático</th>
-                <th>Observações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for briefing in briefings %}
-            <tr>
-                <td>{{ briefing.evento }}</td>
-                <td>{{ briefing.objetivos }}</td>
-                <td>{{ briefing.publico_alvo }}</td>
-                <td>{{ briefing.requisitos_tecnicos }}</td>
-                <td>{{ briefing.cronograma_resumido }}</td>
-                <td>{{ briefing.conteudo_programatico }}</td>
-                <td>{{ briefing.observacoes }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+<section class="max-w-7xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Briefings de Eventos</h1>
+
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+    <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
+      <thead class="bg-neutral-50">
+        <tr>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Evento</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Objetivos</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Público Alvo</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Requisitos Técnicos</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Cronograma Resumido</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Conteúdo Programático</th>
+          <th class="px-4 py-2 text-left font-semibold text-neutral-700">Observações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-neutral-200">
+        {% for briefing in briefings %}
+          <tr>
+            <td class="px-4 py-2">{{ briefing.evento }}</td>
+            <td class="px-4 py-2">{{ briefing.objetivos }}</td>
+            <td class="px-4 py-2">{{ briefing.publico_alvo }}</td>
+            <td class="px-4 py-2">{{ briefing.requisitos_tecnicos }}</td>
+            <td class="px-4 py-2">{{ briefing.cronograma_resumido }}</td>
+            <td class="px-4 py-2">{{ briefing.conteudo_programatico }}</td>
+            <td class="px-4 py-2">{{ briefing.observacoes }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="px-4 py-4 text-center text-neutral-500">Nenhum briefing encontrado.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
+  </div>
 </section>
 {% endblock %}

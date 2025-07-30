@@ -1,4 +1,29 @@
-{% extends 'base.html' %} {% block title %}Página Inicial{% endblock %} {% block content %}
-<h2>Bem-vindo ao Hubx!</h2>
-<p>Uma plataforma para conectar organizações, empresas e pessoas.</p>
+{% extends 'base.html' %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 py-10 text-center">
+  <h1 class="text-3xl font-bold text-neutral-900 mb-4">Bem-vindo ao Hubx!</h1>
+  <p class="text-neutral-600 mb-10">Uma plataforma colaborativa para conectar organizações, empresas e pessoas.</p>
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <a href="{% url 'feed:listar' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
+      <h2 class="text-lg font-semibold text-primary mb-2">Mural e Feed</h2>
+      <p class="text-sm text-neutral-600">Compartilhe novidades e acompanhe atualizações.</p>
+    </a>
+    <a href="{% url 'agenda:calendario' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
+      <h2 class="text-lg font-semibold text-primary mb-2">Agenda</h2>
+      <p class="text-sm text-neutral-600">Organize eventos e gerencie inscrições.</p>
+    </a>
+    <a href="{% url 'nucleos:list' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
+      <h2 class="text-lg font-semibold text-primary mb-2">Núcleos</h2>
+      <p class="text-sm text-neutral-600">Encontre grupos de interesse e colabore.</p>
+    </a>
+    <a href="{% url 'dashboard:dashboard' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
+      <h2 class="text-lg font-semibold text-primary mb-2">Dashboard</h2>
+      <p class="text-sm text-neutral-600">Acompanhe métricas e atividades da sua conta.</p>
+    </a>
+  </div>
+</section>
 {% endblock %}
