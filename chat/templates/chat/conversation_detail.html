@@ -1,21 +1,42 @@
 {% extends "base.html" %}
-{% block title %}Conversa{% endblock %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{{ conversation.titulo }}{% endblock %}
+
 {% block content %}
 <main class="max-w-4xl mx-auto p-4">
-  <h2 class="text-lg font-semibold mb-4">{{ conversation.titulo }}</h2>
-  <ul class="space-y-2 mb-4">
+  <header class="mb-4">
+    <h2 class="text-lg font-semibold">{{ conversation.titulo }}</h2>
+    <p class="text-sm text-gray-500">
+      {% trans "Participantes" %}:
+      {% for p in conversation.participants.all %}
+        {{ p.user.username }}{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+  </header>
+
+  <div id="messages" class="overflow-y-auto h-[calc(100vh-15rem)] space-y-4 mb-4">
     {% for m in mensagens %}
-      <li>
-        <strong>{{ m.sender.username }}</strong>: {{ m.conteudo }}
-      </li>
+      <div class="{% if m.sender_id == user.id %}text-right{% endif %}">
+        <article class="inline-block px-3 py-2 rounded-lg {% if m.sender_id == user.id %}bg-blue-100{% else %}bg-gray-100{% endif %}">
+          <header class="text-xs text-gray-500">
+            <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:'d/m H:i' }}</time>
+            – <span>{{ m.sender.username }}</span>
+          </header>
+          <p>{{ m.conteudo }}</p>
+        </article>
+      </div>
     {% empty %}
-      <li class="text-neutral-500">Nenhuma mensagem.</li>
+      <p class="text-neutral-500">{% trans "Nenhuma mensagem." %}</p>
     {% endfor %}
-  </ul>
-  <form method="post" enctype="multipart/form-data" class="space-y-2">
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="flex gap-2" hx-post="." hx-target="#messages" hx-swap="afterend">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Enviar</button>
+    {{ form.tipo }}
+    {{ form.arquivo }}
+    {{ form.conteudo|add_class:"flex-1 border rounded p-2" }}
+    <button class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90" type="submit">{% trans "Enviar" %}</button>
   </form>
 </main>
 {% endblock %}
