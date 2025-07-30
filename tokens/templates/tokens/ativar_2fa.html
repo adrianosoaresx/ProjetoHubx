@@ -1,8 +1,34 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Ativar 2FA | HubX{% endblock %}
+
 {% block content %}
-<h1>Ativar 2FA</h1>
-<form method="post">
-    {{ form.as_p }}
-    <button type="submit">Ativar</button>
-</form>
+<section class="max-w-md mx-auto px-4 py-12">
+  <h1 class="text-2xl font-bold text-center mb-6">Ativar Autenticação de Dois Fatores</h1>
+
+  {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">
+          {{ message }}
+        </p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
+    {% csrf_token %}
+    <div>
+      <label for="{{ form.codigo_totp.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo_totp.label }}</label>
+      {{ form.codigo_totp|add_class:"form-input" }}
+      {% if form.codigo_totp.errors %}
+        <p class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
+      {% endif %}
+    </div>
+    <div class="text-right">
+      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">Ativar</button>
+    </div>
+  </form>
+</section>
 {% endblock %}

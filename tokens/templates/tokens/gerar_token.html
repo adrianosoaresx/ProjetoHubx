@@ -6,7 +6,7 @@
 <section class="max-w-xl mx-auto px-4 py-10">
   <h1 class="text-2xl font-bold text-neutral-900 mb-6">Gerar Token de Acesso</h1>
 
-  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+  <form method="post" action="{% url 'tokens:criar_token' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
 
     <div class="space-y-4">
@@ -33,7 +33,7 @@
   </form>
 
   {% if token %}
-    <div class="mt-6 alert alert-success">
+    <div class="mt-6 text-center rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
       Código gerado: <strong>{{ token.codigo }}</strong>
     </div>
   {% endif %}
