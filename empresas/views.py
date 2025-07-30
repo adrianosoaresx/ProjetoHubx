@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,7 +15,6 @@ from core.permissions import ClienteGerenteRequiredMixin, NoSuperadminMixin, no_
 from .forms import (
     ContatoEmpresaForm,
     EmpresaForm,
-    EmpresaSearchForm,
     TagForm,
     TagSearchForm,
 )
@@ -27,7 +27,7 @@ from .models import ContatoEmpresa, Empresa, Tag
 @login_required
 @no_superadmin_required
 def lista_empresas(request):
-    qs = Empresa.objects.select_related("organizacao", "usuario")
+    qs = Empresa.objects.select_related("organizacao", "usuario").prefetch_related("contatos")
     if request.user.is_superuser:
         empresas = qs
     elif request.user.user_type == UserType.ADMIN:
@@ -37,15 +37,25 @@ def lista_empresas(request):
     else:
         return HttpResponseForbidden("Usuário não autorizado.")
 
-    form = EmpresaSearchForm(request.GET or None)
-    if form.is_valid() and form.cleaned_data["empresa"]:
-        empresas = empresas.filter(pk=form.cleaned_data["empresa"].pk)
+    nome = request.GET.get("nome", "")
+    segmento = request.GET.get("segmento", "")
+    if nome:
+        empresas = empresas.filter(nome__icontains=nome)
+    if segmento:
+        empresas = empresas.filter(tipo__icontains=segmento)
 
-    return render(
-        request,
-        "empresas/lista.html",
-        {"empresas": empresas, "form": form},
-    )
+    paginator = Paginator(empresas, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    context = {
+        "empresas": page_obj,
+        "page_obj": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+    }
+
+    template = "empresas/includes/empresas_table.html" if request.headers.get("HX-Request") else "empresas/lista.html"
+
+    return render(request, template, context)
 
 
 # ------------------------------------------------------------------
@@ -104,10 +114,9 @@ def editar_empresa(request, pk):
 @no_superadmin_required
 def buscar_empresas(request):
     query = request.GET.get("q", "")
-    if request.user.is_superuser:
-        empresas = Empresa.objects.all()
-    else:
-        empresas = Empresa.objects.filter(usuario__organization=request.user.organization)
+    empresas = Empresa.objects.select_related("usuario", "organizacao").prefetch_related("tags")
+    if not request.user.is_superuser:
+        empresas = empresas.filter(usuario__organizacao=request.user.organizacao)
     if query:
         palavras = [p.strip() for p in query.split() if p.strip()]
         q_objects = Q()
@@ -116,9 +125,14 @@ def buscar_empresas(request):
             q_objects |= Q(palavras_chave__icontains=palavra)
             q_objects |= Q(nome__icontains=palavra)
             q_objects |= Q(descricao__icontains=palavra)
+            q_objects |= Q(cnpj__icontains=palavra)
+            q_objects |= Q(municipio__icontains=palavra) | Q(estado__icontains=palavra)
+            q_objects |= Q(tipo__icontains=palavra)
         empresas = empresas.filter(q_objects)
     empresas = empresas.distinct()
-    return render(request, "empresas/busca.html", {"empresas": empresas, "q": query})
+    template = "empresas/includes/empresas_table.html" if request.headers.get("HX-Request") else "empresas/busca.html"
+    context = {"empresas": empresas, "q": query, "is_paginated": False}
+    return render(request, template, context)
 
 
 class TagListView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView):

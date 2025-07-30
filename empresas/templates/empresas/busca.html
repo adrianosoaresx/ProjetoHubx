@@ -1,76 +1,26 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load i18n %}
 
-{% block title %}Buscar Empresas | Hubx{% endblock %}
+{% block title %}{% translate 'Buscar Empresas' %}{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
-  <div class="text-center mb-10">
-    <h1 class="text-3xl font-bold text-neutral-900">Buscar Empresas</h1>
-    <p class="text-neutral-600 text-sm mt-1">Encontre empresas na plataforma HubX</p>
-  </div>
+<section class="max-w-7xl mx-auto px-4 py-10 space-y-6">
+  <header class="text-center">
+    <h1 class="text-3xl font-bold text-neutral-900">{% translate 'Buscar Empresas' %}</h1>
+    <p class="text-neutral-600 text-sm">{% translate 'Encontre empresas na plataforma HubX' %}</p>
+  </header>
 
-  <!-- Barra de busca -->
-  <form method="get" class="max-w-xl mx-auto mb-10 flex items-center gap-2">
-    <input
-      type="text"
-      name="q"
-      value="{{ q }}"
-      placeholder="Buscar por nome, tags ou palavras-chave..."
-      class="flex-grow px-4 py-2 rounded-xl border border-neutral-300 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-    />
-    <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-xl hover:bg-primary-700 transition text-sm">
-      🔍
-    </button>
+  <form hx-get="{% url 'empresas:buscar' %}" hx-target="#resultado-busca" hx-push-url="true" class="max-w-xl mx-auto flex items-center gap-2">
+    <input type="text" name="q" value="{{ q }}" placeholder="{% translate 'Buscar por nome, CNPJ ou localização...' %}" class="flex-grow p-2 border rounded" />
+    <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">🔍</button>
   </form>
 
-  <!-- Lista de empresas -->
-  {% if empresas %}
-    <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-      {% for empresa in empresas %}
-      <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between">
-        <div class="flex justify-center mb-4">
-          {% if empresa.logo %}
-            <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" class="h-16 w-16 object-cover rounded-xl" />
-          {% else %}
-            <div class="h-16 w-16 rounded-xl bg-neutral-100 flex items-center justify-center text-lg font-semibold text-neutral-600">
-              {{ empresa.nome|first|upper }}
-            </div>
-          {% endif %}
-        </div>
-        <div class="text-center mb-2">
-          <h3 class="text-lg font-bold text-neutral-900">{{ empresa.nome }}</h3>
-          <p class="text-sm text-neutral-600">{{ empresa.tipo }}</p>
-          <p class="text-sm text-neutral-500">{{ empresa.municipio }}, {{ empresa.estado }}</p>
-        </div>
-        <div class="flex flex-wrap gap-1 justify-center my-2">
-          {% for tag in empresa.tags.all|slice:":3" %}
-            <span class="text-xs bg-primary-100 text-primary-800 rounded-full px-2 py-0.5">{{ tag.nome }}</span>
-          {% endfor %}
-          {% if empresa.tags.count > 3 %}
-            <span class="text-xs text-neutral-500">+{{ empresa.tags.count|add:"-3" }}</span>
-          {% endif %}
-        </div>
-        <div class="flex justify-center gap-3 mt-4">
-          <a href="{% url 'empresas:detail' empresa.id %}" class="text-sm text-blue-600 hover:underline">Ver</a>
-          {% if user == empresa.usuario %}
-            <a href="{% url 'empresas:editar' empresa.id %}" class="text-sm text-yellow-600 hover:underline">Editar</a>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <!-- Estado vazio -->
-    <div class="text-center mt-20">
-      <p class="text-neutral-500 text-sm">Nenhuma empresa encontrada para <strong>{{ q }}</strong>.</p>
-    </div>
-  {% endif %}
+  <div id="resultado-busca">
+    {% include 'empresas/includes/empresas_table.html' with empresas=empresas %}
+  </div>
 
   <div class="mt-10 text-center">
-    <a href="{% url 'empresas:lista' %}" class="inline-block text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-      Voltar para Minhas Empresas
-    </a>
+    <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 border rounded hover:bg-neutral-100">{% translate 'Voltar para Minhas Empresas' %}</a>
   </div>
 </section>
 {% endblock %}
