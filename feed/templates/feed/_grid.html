@@ -47,13 +47,9 @@
         </div>
       {% endif %}
       <div class="flex items-center justify-between text-sm text-neutral-600">
-        <form method="post" action="{% url 'feed:toggle_like' post.id %}">
-          {% csrf_token %}
-          <button type="submit" class="hover:text-emerald-600">
-            <i class="fa-solid fa-heart"></i>
-            {{ post.likes.count }}
-          </button>
-        </form>
+        <div id="like-btn-{{ post.id }}">
+          {% include 'feed/_like_button.html' with post=post %}
+        </div>
         <span>{{ post.comments.count }} comentários</span>
       </div>
     </article>
