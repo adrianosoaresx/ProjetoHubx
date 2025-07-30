@@ -1,29 +1,72 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load i18n tz %}
 
-{% block title %}Página Inicial{% endblock %}
+{% block title %}{% trans "Bem-vindo ao HubX" %}{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10 text-center">
-  <h1 class="text-3xl font-bold text-neutral-900 mb-4">Bem-vindo ao Hubx!</h1>
-  <p class="text-neutral-600 mb-10">Uma plataforma colaborativa para conectar organizações, empresas e pessoas.</p>
+<header class="bg-white">
+  <div class="max-w-7xl mx-auto px-4 py-16 text-center">
+    <h1 class="text-4xl font-bold text-neutral-900 mb-4">{% trans "Junte-se à comunidade Hubx.space" %}</h1>
+    <p class="text-neutral-600 mb-8">{% trans "Plataforma colaborativa que conecta organizações, empresas e pessoas." %}</p>
+    {% if user.is_authenticated %}
+    <div class="flex justify-center gap-4">
+      <a href="{% url 'dashboard:dashboard' %}" class="bg-primary text-white px-5 py-3 rounded-xl shadow hover:bg-primary/90">{% trans "Ir para Dashboard" %}</a>
+      <a href="{% url 'feed:listar' %}" class="bg-white border border-primary text-primary px-5 py-3 rounded-xl hover:bg-primary/5">{% trans "Ver Feed" %}</a>
+    </div>
+    {% else %}
+    <div class="flex justify-center gap-4">
+      <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white px-5 py-3 rounded-xl shadow hover:bg-primary/90">{% trans "Criar conta" %}</a>
+      <a href="{% url 'accounts:login' %}" class="bg-white border border-primary text-primary px-5 py-3 rounded-xl hover:bg-primary/5">{% trans "Entrar" %}</a>
+    </div>
+    {% endif %}
+  </div>
+</header>
 
-  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    <a href="{% url 'feed:listar' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Mural e Feed</h2>
-      <p class="text-sm text-neutral-600">Compartilhe novidades e acompanhe atualizações.</p>
-    </a>
-    <a href="{% url 'agenda:calendario' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Agenda</h2>
-      <p class="text-sm text-neutral-600">Organize eventos e gerencie inscrições.</p>
-    </a>
-    <a href="{% url 'nucleos:list' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Núcleos</h2>
-      <p class="text-sm text-neutral-600">Encontre grupos de interesse e colabore.</p>
-    </a>
-    <a href="{% url 'dashboard:dashboard' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Dashboard</h2>
-      <p class="text-sm text-neutral-600">Acompanhe métricas e atividades da sua conta.</p>
-    </a>
+<section class="py-12 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 text-center">
+    <h2 class="text-2xl font-bold text-neutral-900 mb-8">{% trans "Principais Funcionalidades" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
+        <i class="fas fa-rss text-indigo-600 text-3xl mb-4"></i>
+        <h3 class="font-semibold text-neutral-900">{% trans "Feed/Mural" %}</h3>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Compartilhe novidades e acompanhe atualizações." %}</p>
+        <a href="{% url 'feed:listar' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
+        <i class="fas fa-calendar-alt text-indigo-600 text-3xl mb-4"></i>
+        <h3 class="font-semibold text-neutral-900">{% trans "Agenda" %}</h3>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Organize eventos e gerencie inscrições." %}</p>
+        <a href="{% url 'agenda:calendario' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
+        <i class="fas fa-users text-indigo-600 text-3xl mb-4"></i>
+        <h3 class="font-semibold text-neutral-900">{% trans "Núcleos" %}</h3>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Encontre grupos de interesse e colabore." %}</p>
+        <a href="{% url 'nucleos:list' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
+        <i class="fas fa-chart-line text-indigo-600 text-3xl mb-4"></i>
+        <h3 class="font-semibold text-neutral-900">{% trans "Dashboard/Financeiro" %}</h3>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Acompanhe métricas e controle financeiro." %}</p>
+        <a href="{% url 'dashboard:dashboard' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
+        <i class="fas fa-bell text-indigo-600 text-3xl mb-4"></i>
+        <h3 class="font-semibold text-neutral-900">{% trans "Notificações" %}</h3>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Centralize alertas e preferências de contato." %}</p>
+        <a href="{% url 'notificacoes:editar_preferencias' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-12">
+  <div class="max-w-7xl mx-auto px-4">
+    {% now 'Y-m-d' as today %}
+    <h2 class="text-xl font-semibold mb-4">{% trans "Próximos Eventos" %}</h2>
+    <div id="eventos-destaque" hx-get="{% url 'agenda:lista_eventos' today %}" hx-trigger="load" hx-swap="innerHTML">
+      <p class="text-center text-sm text-gray-500">{% trans "Carregando eventos..." %}</p>
+    </div>
   </div>
 </section>
 {% endblock %}
