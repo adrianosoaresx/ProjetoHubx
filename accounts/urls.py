@@ -47,4 +47,10 @@ urlpatterns = [
         views.perfil_midia_delete,
         name="midia_delete",
     ),
+    path("excluir/", views.excluir_conta, name="excluir_conta"),
+    path(
+        "confirmar-email/<str:token>/",
+        views.confirmar_email,
+        name="confirmar_email",
+    ),
 ]
