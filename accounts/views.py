@@ -18,19 +18,20 @@ import os
 import uuid
 
 from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 
+from accounts.tasks import send_password_reset_email
 from tokens.models import TokenAcesso
 
-from accounts.tasks import send_password_reset_email
 from .forms import (
     CustomUserChangeForm,
     CustomUserCreationForm,
@@ -227,6 +228,30 @@ def logout_view(request):
     return redirect("accounts:login")
 
 
+@login_required
+def excluir_conta(request):
+    """Permite que o usuário exclua sua própria conta."""
+    if request.method == "POST":
+        if request.POST.get("confirm") != "EXCLUIR":
+            messages.error(request, _("Confirme digitando EXCLUIR."))
+            return redirect("accounts:excluir_conta")
+        with transaction.atomic():
+            user = request.user
+            user.deleted_at = timezone.now()
+            user.exclusao_confirmada = True
+            user.is_active = False
+            user.save(update_fields=["deleted_at", "exclusao_confirmada", "is_active"])
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="conta_excluida",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
+        logout(request)
+        messages.success(request, _("Sua conta foi excluída com sucesso."))
+        return redirect("core:home")
+    return render(request, "accounts/delete_account_confirm.html")
+
+
 def register_view(request):
     if request.method == "POST":
         form = CustomUserCreationForm(request.POST)
@@ -293,6 +318,33 @@ def password_reset_confirm(request, code: str):
         "accounts/password_reset_confirm.html",
         {"form": form},
     )
+
+
+def confirmar_email(request, token: str):
+    """Valida token de confirmação de e-mail."""
+    try:
+        token_obj = AccountToken.objects.select_related("usuario").get(
+            codigo=token,
+            tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+        )
+    except AccountToken.DoesNotExist:
+        return render(request, "accounts/email_confirm.html", {"status": "erro"})
+
+    if token_obj.expires_at < timezone.now() or token_obj.used_at:
+        return render(request, "accounts/email_confirm.html", {"status": "erro"})
+
+    with transaction.atomic():
+        user = token_obj.usuario
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        token_obj.used_at = timezone.now()
+        token_obj.save(update_fields=["used_at"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="email_confirmado",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
+    return render(request, "accounts/email_confirm.html", {"status": "sucesso"})
 
 
 def onboarding(request):
