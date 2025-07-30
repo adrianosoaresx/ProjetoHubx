@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Inadimplências{% endblock %}
+
+{% block content %}
+<div class="p-4 max-w-6xl mx-auto">
+  <h1 class="text-2xl font-semibold mb-2">Inadimplências</h1>
+  <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <select name="centro" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
+      <option value="">Todos Centros</option>
+      {% for c in centros %}
+        <option value="{{ c.id }}">{{ c.nome }}</option>
+      {% endfor %}
+    </select>
+    <select name="nucleo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
+      <option value="">Todos Núcleos</option>
+      {% for n in nucleos %}
+        <option value="{{ n.id }}">{{ n.nome }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="border p-2 rounded" disabled>
+      <option>Pendente</option>
+    </select>
+  </div>
+  <div id="lista" hx-get="/api/financeiro/inadimplencias/" hx-target="this"></div>
+  <div class="mt-4">
+    <a href="/api/financeiro/inadimplencias/?format=csv" class="text-primary underline" hx-boost="false">Exportar CSV</a>
+  </div>
+</div>
+{% endblock %}

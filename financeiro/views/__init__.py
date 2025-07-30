@@ -6,17 +6,18 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import F
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404, render
 
 try:
     from openpyxl import Workbook
 except Exception:  # pragma: no cover - opcional
     Workbook = None  # type: ignore
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -288,14 +289,16 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 writer = csv.writer(tmp)
                 writer.writerow(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
                 for item in data:
-                    writer.writerow([
-                        item["id"],
-                        item["conta"],
-                        item["status"],
-                        item["valor"],
-                        item["data_vencimento"],
-                        item["dias_atraso"],
-                    ])
+                    writer.writerow(
+                        [
+                            item["id"],
+                            item["conta"],
+                            item["status"],
+                            item["valor"],
+                            item["data_vencimento"],
+                            item["dias_atraso"],
+                        ]
+                    )
             else:
                 if not Workbook:
                     return Response({"detail": _("openpyxl não disponível")}, status=500)
@@ -303,14 +306,16 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 ws = wb.active
                 ws.append(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
                 for item in data:
-                    ws.append([
-                        item["id"],
-                        item["conta"],
-                        item["status"],
-                        item["valor"],
-                        item["data_vencimento"],
-                        item["dias_atraso"],
-                    ])
+                    ws.append(
+                        [
+                            item["id"],
+                            item["conta"],
+                            item["status"],
+                            item["valor"],
+                            item["data_vencimento"],
+                            item["dias_atraso"],
+                        ]
+                    )
                 wb.save(tmp.name)
             tmp.close()
             filename = f"inadimplencias.{fmt}"
@@ -346,3 +351,49 @@ class FinanceiroViewSet(viewsets.ViewSet):
             if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
                 repassar_receita_ingresso(lancamento)
         return Response({"detail": _("Lançamento quitado")})
+
+
+def _is_financeiro_or_admin(user) -> bool:
+    return user.is_authenticated and user.user_type == UserType.ADMIN
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def importar_pagamentos_view(request):
+    return render(request, "financeiro/importar_pagamentos.html")
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def relatorios_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/relatorios.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def lancamentos_list_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/lancamentos_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def inadimplencias_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/inadimplencias.html", context)
