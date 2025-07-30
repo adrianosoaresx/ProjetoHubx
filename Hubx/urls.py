@@ -28,6 +28,7 @@ urlpatterns = [
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
+    path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("select2/", include("django_select2.urls")),
     # APIs REST (subcaminhos específicos)

@@ -1,0 +1,76 @@
+{% if partial %}
+  {% for log in logs %}
+  <tr>
+    <td class="px-4 py-2">{{ log.data_envio|date:'d/m/Y H:i' }}</td>
+    <td class="px-4 py-2">{{ log.user.get_full_name|default:log.user.username }}</td>
+    <td class="px-4 py-2">{{ log.template.codigo }}</td>
+    <td class="px-4 py-2">{{ log.get_canal_display }}</td>
+    <td class="px-4 py-2">{{ log.get_status_display }}</td>
+    <td class="px-4 py-2 text-sm">{{ log.erro|default:'-' }}</td>
+  </tr>
+  {% endfor %}
+{% else %}
+{% extends 'base.html' %}
+{% block title %}Logs de Notificação | HubX{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-neutral-900">Logs de Notificação</h1>
+  </div>
+  <form method="get" class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4 sm:items-end">
+    <div>
+      <label for="inicio" class="block text-sm font-medium text-neutral-700 mb-1">De</label>
+      <input type="date" name="inicio" id="inicio" value="{{ request.GET.inicio }}" class="form-input" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#tabela_logs" hx-include="closest form">
+    </div>
+    <div>
+      <label for="fim" class="block text-sm font-medium text-neutral-700 mb-1">Até</label>
+      <input type="date" name="fim" id="fim" value="{{ request.GET.fim }}" class="form-input" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#tabela_logs" hx-include="closest form">
+    </div>
+    <div>
+      <label for="canal" class="block text-sm font-medium text-neutral-700 mb-1">Canal</label>
+      <select name="canal" id="canal" class="form-select" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#tabela_logs" hx-include="closest form">
+        <option value="" {% if not request.GET.canal %}selected{% endif %}>Todos</option>
+        <option value="email" {% if request.GET.canal == 'email' %}selected{% endif %}>E-mail</option>
+        <option value="push" {% if request.GET.canal == 'push' %}selected{% endif %}>Push</option>
+        <option value="whatsapp" {% if request.GET.canal == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+      </select>
+    </div>
+    <div>
+      <label for="status" class="block text-sm font-medium text-neutral-700 mb-1">Status</label>
+      <select name="status" id="status" class="form-select" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#tabela_logs" hx-include="closest form">
+        <option value="" {% if not request.GET.status %}selected{% endif %}>Todos</option>
+        <option value="enviada" {% if request.GET.status == 'enviada' %}selected{% endif %}>Enviada</option>
+        <option value="falha" {% if request.GET.status == 'falha' %}selected{% endif %}>Falha</option>
+      </select>
+    </div>
+    <noscript><button type="submit" class="mt-2 sm:mt-0 bg-neutral-200 text-neutral-800 px-4 py-2 rounded-xl text-sm hover:bg-neutral-300">Filtrar</button></noscript>
+  </form>
+  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+    <table class="min-w-full divide-y divide-neutral-200 text-sm">
+      <thead class="bg-neutral-50">
+        <tr>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Data</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Usuário</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Template</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Canal</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Status</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">Erro</th>
+        </tr>
+      </thead>
+      <tbody id="tabela_logs" class="divide-y divide-neutral-200">
+        {% include 'notificacoes/logs_list.html' with partial=True only %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-4 flex justify-center gap-3">
+    {% if logs.has_previous %}
+      <a hx-get="?page={{ logs.previous_page_number }}&{{ request.GET.urlencode }}" hx-target="#tabela_logs" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">Anterior</a>
+    {% endif %}
+    <span class="px-3 py-1 text-sm">Página {{ logs.number }} de {{ logs.paginator.num_pages }}</span>
+    {% if logs.has_next %}
+      <a hx-get="?page={{ logs.next_page_number }}&{{ request.GET.urlencode }}" hx-target="#tabela_logs" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">Próxima</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% endif %}
