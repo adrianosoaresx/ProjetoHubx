@@ -6,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView
@@ -146,7 +147,17 @@ def create_comment(request, post_id):
         comment.user = request.user
         comment.post = post
         comment.save()
+        if request.headers.get("HX-Request"):
+            html = render_to_string("feed/_comment.html", {"comment": comment}, request=request)
+            return HttpResponse(html)
         return redirect("feed:post_detail", pk=post.id)
+    if request.headers.get("HX-Request"):
+        html = render_to_string(
+            "feed/post_detail.html",
+            {"post": post, "comment_form": form},
+            request=request,
+        )
+        return HttpResponse(html, status=400)
     return render(request, "feed/post_detail.html", {"post": post, "comment_form": form})
 
 
@@ -156,6 +167,9 @@ def toggle_like(request, post_id):
     like, created = Like.objects.get_or_create(post=post, user=request.user)
     if not created:
         like.delete()
+    if request.headers.get("HX-Request"):
+        html = render_to_string("feed/_like_button.html", {"post": post, "user": request.user}, request=request)
+        return HttpResponse(html)
     return redirect("feed:post_detail", pk=post.id)
 
 

@@ -37,30 +37,24 @@
       </div>
     {% endif %}
 
-    <div class="mt-4">
-      <form method="post" action="{% url 'feed:toggle_like' post.id %}">
-        {% csrf_token %}
-        <button type="submit" class="px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-          {% if user in post.likes.all %}Descurtir{% else %}Curtir{% endif %}
-        </button>
-      </form>
+    <div class="mt-4" id="like-btn-{{ post.id }}">
+      {% include 'feed/_like_button.html' with post=post %}
     </div>
 
     <div class="mt-6">
       <h3 class="text-lg font-medium">Comentários</h3>
-      <form method="post" action="{% url 'feed:create_comment' post.id %}">
+      <form method="post" action="{% url 'feed:create_comment' post.id %}" hx-post="{% url 'feed:create_comment' post.id %}" hx-target="#comments" hx-swap="afterbegin" class="space-y-2">
         {% csrf_token %}
-        {{ comment_form.as_p }}
-        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600">Enviar</button>
+        {{ comment_form.texto }}
+        {% if comment_form.texto.errors %}
+          <p class="text-red-500 text-xs">{{ comment_form.texto.errors }}</p>
+        {% endif %}
+        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Enviar comentário">Enviar</button>
       </form>
 
-      <ul class="mt-4 space-y-4">
+      <ul id="comments" class="mt-4 space-y-4">
         {% for comment in post.comments.all %}
-          <li class="border border-neutral-200 bg-white rounded-xl shadow-sm p-4">
-            <p class="text-sm font-medium">{{ comment.user.get_full_name|default:comment.user.username }}</p>
-            <p class="text-xs text-neutral-500">{{ comment.created|date:"d/m/Y H:i" }}</p>
-            <p class="text-sm text-neutral-800">{{ comment.texto }}</p>
-          </li>
+          {% include 'feed/_comment.html' with comment=comment %}
         {% endfor %}
       </ul>
     </div>

@@ -1,0 +1,8 @@
+{% load i18n %}
+<form method="post" hx-post="{% url 'feed:toggle_like' post.id %}" hx-target="this" hx-swap="outerHTML" class="inline-flex items-center gap-1" aria-label="{% if user in post.likes.all %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}">
+  {% csrf_token %}
+  <button type="submit" class="hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">
+    <i class="fa-solid fa-heart {% if user in post.likes.all %}text-emerald-600{% endif %}"></i>
+    <span>{{ post.likes.count }}</span>
+  </button>
+</form>
