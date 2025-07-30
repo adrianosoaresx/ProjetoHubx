@@ -22,9 +22,14 @@ User = get_user_model()
 class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     model = Organizacao
     template_name = "organizacoes/list.html"
+    paginate_by = 10
 
     def get_queryset(self):
-        return super().get_queryset()
+        qs = super().get_queryset()
+        query = self.request.GET.get("q")
+        if query:
+            qs = qs.filter(nome__icontains=query)
+        return qs.order_by("nome")
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):

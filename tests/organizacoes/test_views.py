@@ -143,6 +143,25 @@ def test_ordering_by_nome(superadmin_user, faker_ptbr):
     assert objs[0].nome == "A Org"
 
 
+def test_list_search(superadmin_user, faker_ptbr):
+    org_a = Organizacao.objects.create(nome="Alpha Org", cnpj=faker_ptbr.cnpj(), slug="a")
+    Organizacao.objects.create(nome="Beta Org", cnpj=faker_ptbr.cnpj(), slug="b")
+    url = reverse("organizacoes:list") + "?q=Alpha"
+    resp = superadmin_user.get(url)
+    content = resp.content.decode()
+    assert org_a.nome in content and "Beta Org" not in content
+
+
+def test_list_pagination(superadmin_user, faker_ptbr):
+    for i in range(12):
+        Organizacao.objects.create(nome=f"Org {i}", cnpj=faker_ptbr.cnpj(), slug=f"org-{i}")
+    url = reverse("organizacoes:list")
+    resp1 = superadmin_user.get(url)
+    assert len(resp1.context["object_list"]) == 10
+    resp2 = superadmin_user.get(url + "?page=2")
+    assert len(resp2.context["object_list"]) == 2
+
+
 def test_detail_view_admin_access(admin_user, organizacao):
     url = reverse("organizacoes:detail", args=[organizacao.pk])
     resp = admin_user.get(url)
