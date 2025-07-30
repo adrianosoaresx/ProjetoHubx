@@ -1,18 +1,19 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Editar Organização | Hubx{% endblock %}
+{% block title %}{% trans "Editar Organização" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-10">
-  <div class="mb-6 flex items-center gap-4">
+  <header class="mb-6 flex items-center gap-4">
     <a href="{% url 'organizacoes:list' %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
       <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6" />
       </svg>
-      Voltar
+      {% trans "Voltar" %}
     </a>
-    <h1 class="text-2xl font-bold text-neutral-900">Editar Organização</h1>
-  </div>
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Editar Organização" %}</h1>
+  </header>
 
   {% if messages %}
   <div class="mb-4 space-y-2">
@@ -22,6 +23,7 @@
   </div>
   {% endif %}
 
+  <main>
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
 
@@ -75,9 +77,10 @@
     </div>
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Cancelar</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Salvar</button>
+      <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Cancelar" %}</a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Salvar" %}</button>
     </div>
   </form>
+  </main>
 </section>
 {% endblock %}

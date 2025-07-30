@@ -1,29 +1,48 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Página Inicial{% endblock %}
+{% block title %}{% trans "Página Inicial" %}{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10 text-center">
-  <h1 class="text-3xl font-bold text-neutral-900 mb-4">Bem-vindo ao Hubx!</h1>
-  <p class="text-neutral-600 mb-10">Uma plataforma colaborativa para conectar organizações, empresas e pessoas.</p>
+<section class="max-w-7xl mx-auto px-4 py-10">
+  <header class="text-center mb-10">
+    <h1 class="text-3xl font-bold text-neutral-900 mb-2">{% trans "Bem-vindo ao Hubx!" %}</h1>
+    <p class="text-neutral-600">{% trans "Uma plataforma colaborativa para conectar organizações, empresas e pessoas." %}</p>
+  </header>
 
-  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    <a href="{% url 'feed:listar' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Mural e Feed</h2>
-      <p class="text-sm text-neutral-600">Compartilhe novidades e acompanhe atualizações.</p>
-    </a>
-    <a href="{% url 'agenda:calendario' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Agenda</h2>
-      <p class="text-sm text-neutral-600">Organize eventos e gerencie inscrições.</p>
-    </a>
-    <a href="{% url 'nucleos:list' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Núcleos</h2>
-      <p class="text-sm text-neutral-600">Encontre grupos de interesse e colabore.</p>
-    </a>
-    <a href="{% url 'dashboard:dashboard' %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 hover:bg-neutral-50">
-      <h2 class="text-lg font-semibold text-primary mb-2">Dashboard</h2>
-      <p class="text-sm text-neutral-600">Acompanhe métricas e atividades da sua conta.</p>
-    </a>
-  </div>
+  <main>
+    <div class="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
+        <i class="fa-solid fa-rss text-3xl text-primary mb-3" aria-hidden="true"></i>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-1">{% trans "Mural e Feed" %}</h2>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Compartilhe novidades e acompanhe atualizações." %}</p>
+        <a href="{% url 'feed:listar' %}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Acessar" %}</a>
+      </article>
+      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
+        <i class="fa-solid fa-calendar-alt text-3xl text-primary mb-3" aria-hidden="true"></i>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-1">{% trans "Agenda" %}</h2>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Organize eventos e gerencie inscrições." %}</p>
+        <a href="{% url 'agenda:calendario' %}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Acessar" %}</a>
+      </article>
+      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
+        <i class="fa-solid fa-users text-3xl text-primary mb-3" aria-hidden="true"></i>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-1">{% trans "Núcleos" %}</h2>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Encontre grupos de interesse e colabore." %}</p>
+        <a href="{% url 'nucleos:list' %}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Acessar" %}</a>
+      </article>
+      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
+        <i class="fa-solid fa-hand-holding-dollar text-3xl text-primary mb-3" aria-hidden="true"></i>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-1">{% trans "Financeiro" %}</h2>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Controle lançamentos e relatórios financeiros." %}</p>
+        <a href="{% url 'financeiro:lancamentos' %}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Acessar" %}</a>
+      </article>
+      <article class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 flex flex-col items-center text-center">
+        <i class="fa-solid fa-bell text-3xl text-primary mb-3" aria-hidden="true"></i>
+        <h2 class="text-lg font-semibold text-neutral-900 mb-1">{% trans "Notificações" %}</h2>
+        <p class="text-sm text-neutral-600 mb-4">{% trans "Gerencie suas preferências e históricos de avisos." %}</p>
+        <a href="{% url 'accounts:notificacoes' %}" class="mt-auto text-sm text-blue-600 hover:underline">{% trans "Acessar" %}</a>
+      </article>
+    </div>
+  </main>
 </section>
 {% endblock %}
