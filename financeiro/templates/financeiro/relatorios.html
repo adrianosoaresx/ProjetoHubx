@@ -5,7 +5,7 @@
 {% block content %}
 <div class="max-w-5xl mx-auto p-4 space-y-4">
   <h1 class="text-2xl font-semibold mb-2">Relatórios</h1>
-  <form id="relatorio-form" class="space-y-4" hx-get="/api/financeiro/relatorios/" hx-target="#resultado">
+  <form id="relatorio-form" class="space-y-4" hx-get="/api/financeiro/relatorios/" hx-target="#relatorio">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700">Centro de Custo</label>
@@ -39,9 +39,10 @@
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Gerar Relatório</button>
   </form>
 
-  <div id="resultado" class="mt-6"></div>
-  <div class="mt-4">
+  <div id="relatorio" class="mt-6"></div>
+  <div class="mt-4 flex gap-4">
     <a href="#" id="export-csv" class="text-primary underline" hx-boost="false">Exportar CSV</a>
+    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false">Exportar XLSX</a>
   </div>
 </div>
 {% endblock %}
