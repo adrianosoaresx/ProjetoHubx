@@ -11,10 +11,21 @@
     {% csrf_token %}
     <div>
       <label for="confirm" class="block text-sm font-medium text-neutral-700">{% trans "Digite EXCLUIR para confirmar" %}</label>
-      <input type="text" name="confirm" id="confirm" required class="form-input" />
+      <input
+        type="text"
+        name="confirm"
+        id="confirm"
+        required
+        class="w-full rounded-md border border-neutral-300 px-3 py-2"
+      />
     </div>
     <div class="text-right">
-      <button type="submit" class="bg-red-600 text-white py-2 px-4 rounded">{% trans "Confirmar exclusão" %}</button>
+      <button
+        type="submit"
+        class="rounded-xl bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+      >
+        {% trans "Confirmar exclusão" %}
+      </button>
     </div>
   </form>
 </section>
