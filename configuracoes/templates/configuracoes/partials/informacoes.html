@@ -1,0 +1,17 @@
+{% load widget_tweaks i18n %}
+<form method="post" hx-post="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" class="space-y-4">
+  {% csrf_token %}
+  <input type="hidden" name="tab" value="informacoes">
+  {% for field in informacoes_form %}
+    <div>
+      <label for="{{ field.id_for_label }}" class="block text-sm font-medium">{{ field.label }}</label>
+      {{ field|add_class:'w-full p-2 border rounded-lg' }}
+      {% for error in field.errors %}
+        <p class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
+    </div>
+  {% endfor %}
+  <div class="text-right pt-2">
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">{% trans 'Salvar Alterações' %}</button>
+  </div>
+</form>
