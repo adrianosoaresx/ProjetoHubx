@@ -34,8 +34,6 @@ Você atua no repositório `ProjetoHubx` (Hubx.space), uma plataforma colaborati
 
 ## ✅ Regra especial
 
-## ✅ Regra especial
-
 > **⚠️ O Codex deve sempre criar uma branch auxiliar e abrir uma Pull Request (PR) para o branch `principal`.**
 > - Não deve comitar diretamente no `principal`.
 > - Nomeie a branch de forma clara: `fix/nome`, `feat/modulo`, etc.
