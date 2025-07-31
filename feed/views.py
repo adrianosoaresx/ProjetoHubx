@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView
 
@@ -177,6 +177,8 @@ def toggle_like(request, post_id):
 def post_update(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+        if request.headers.get("HX-Request"):
+            return HttpResponseForbidden()
         messages.error(request, "Você não tem permissão para editar esta postagem.")
         return redirect("feed:post_detail", pk=pk)
 
@@ -195,6 +197,8 @@ def post_update(request, pk):
         if form.is_valid():
             form.instance.organizacao = request.user.organizacao
             form.save()
+            if request.headers.get("HX-Request"):
+                return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:post_detail", args=[post.pk])})
             messages.success(request, "Postagem atualizada com sucesso.")
             return redirect("feed:post_detail", pk=post.pk)
     else:
@@ -207,11 +211,15 @@ def post_update(request, pk):
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+        if request.headers.get("HX-Request"):
+            return HttpResponseForbidden()
         messages.error(request, "Você não tem permissão para remover esta postagem.")
         return redirect("feed:post_detail", pk=pk)
 
     if request.method == "POST":
         post.delete()
+        if request.headers.get("HX-Request"):
+            return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:listar")})
         messages.success(request, "Postagem removida.")
         return redirect("feed:listar")
 

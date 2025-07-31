@@ -1,0 +1,29 @@
+{% load i18n %}
+<div class="space-y-4">
+  <h2 class="text-lg font-semibold">{% trans 'Contas conectadas' %}</h2>
+  {% if redes_conectadas %}
+    <ul class="divide-y">
+      {% for nome, link in redes_conectadas.items %}
+        <li class="flex items-center justify-between py-2">
+          <span class="text-sm font-medium">{{ nome }}</span>
+          <form method="post" hx-post="{% url 'configuracoes' %}?tab=redes" hx-target="#content" class="inline">
+            {% csrf_token %}
+            <input type="hidden" name="tab" value="redes" />
+            <input type="hidden" name="action" value="disconnect" />
+            <input type="hidden" name="network" value="{{ nome }}" />
+            <button type="submit" class="text-red-600 text-sm">
+              {% trans 'Desconectar' %}
+            </button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-sm text-gray-600">{% trans 'Nenhuma conta conectada.' %}</p>
+  {% endif %}
+  <div class="pt-2">
+    <a href="#" class="bg-primary text-white px-4 py-2 rounded-lg">
+      {% trans 'Conectar nova conta' %}
+    </a>
+  </div>
+</div>

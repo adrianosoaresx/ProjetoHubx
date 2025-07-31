@@ -1,16 +1,17 @@
 {% extends 'base.html' %}
-{% block title %}Remover Postagem | Hubx{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Remover Postagem" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-16">
   <div class="bg-white border border-red-200 rounded-2xl shadow-sm p-6 text-center">
-    <h2 class="text-xl font-semibold text-red-700 mb-4">Remover Postagem</h2>
-    <p class="text-sm text-neutral-700">Tem certeza que deseja remover esta postagem?</p>
+    <h2 class="text-xl font-semibold text-red-700 mb-4">{% trans "Remover Postagem" %}</h2>
+    <p class="text-sm text-neutral-700">{% trans "Tem certeza que deseja remover esta postagem?" %}</p>
 
-    <form method="post" class="mt-6 flex justify-center gap-3">
+    <form method="post" hx-post="{% url 'feed:post_delete' post.pk %}" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'feed:post_detail' post.pk %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Cancelar</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">Remover</button>
+      <a href="{% url 'feed:post_detail' post.pk %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-500" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
     </form>
   </div>
 </section>

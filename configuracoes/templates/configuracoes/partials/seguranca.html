@@ -1,10 +1,18 @@
 {% load widget_tweaks i18n %}
-<form method="post" hx-post="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" class="space-y-4">
+
+<form
+  method="post"
+  hx-post="{% url 'configuracoes' %}?tab=seguranca"
+  hx-target="#content"
+  class="space-y-4"
+>
   {% csrf_token %}
-  <input type="hidden" name="tab" value="seguranca">
+  <input type="hidden" name="tab" value="seguranca" />
   {% for field in seguranca_form %}
     <div>
-      <label for="{{ field.id_for_label }}" class="block text-sm font-medium">{{ field.label }}</label>
+      <label for="{{ field.id_for_label }}" class="block text-sm font-medium"
+        >{{ field.label }}</label
+      >
       {{ field|add_class:'w-full p-2 border rounded-lg' }}
       {% for error in field.errors %}
         <p class="text-red-600 text-sm">{{ error }}</p>
@@ -12,6 +20,38 @@
     </div>
   {% endfor %}
   <div class="text-right pt-2">
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">{% trans 'Salvar Alterações' %}</button>
+    <button
+      type="submit"
+      class="bg-primary text-white px-4 py-2 rounded-lg"
+    >
+      {% trans 'Salvar Alterações' %}
+    </button>
   </div>
 </form>
+
+<div class="mt-6 border-t pt-4">
+  <h2 class="text-lg font-semibold mb-2">
+    {% trans 'Autenticação em duas etapas' %}
+  </h2>
+  {% if two_factor_enabled %}
+    <p class="text-sm mb-4">
+      {% trans '2FA está habilitado para sua conta.' %}
+    </p>
+    <a
+      href="{% url 'tokens:desativar_2fa' %}"
+      class="bg-red-500 text-white px-4 py-2 rounded-lg"
+    >
+      {% trans 'Desativar 2FA' %}
+    </a>
+  {% else %}
+    <p class="text-sm mb-4">
+      {% trans '2FA não está habilitado.' %}
+    </p>
+    <a
+      href="{% url 'tokens:ativar_2fa' %}"
+      class="bg-primary text-white px-4 py-2 rounded-lg"
+    >
+      {% trans 'Ativar 2FA' %}
+    </a>
+  {% endif %}
+</div>
