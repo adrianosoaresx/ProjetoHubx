@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n custom_filters %}
 {% block title %}{% if form.instance.pk %}{% translate 'Editar Item' %}{% else %}{% translate 'Novo Item' %}{% endif %}{% endblock %}
 {% block content %}
 <section class="max-w-xl mx-auto px-4 py-10 space-y-6">
   <header>
     <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% translate 'Editar' %}{% else %}{% translate 'Cadastrar' %}{% endif %} {% translate 'Item' %}</h1>
-    <p class="text-sm text-neutral-600">{% translate 'Preencha o nome e descrição do item' %}</p>
+    <p class="text-sm text-neutral-600">{% translate 'Preencha o nome e a categoria do item' %}</p>
   </header>
   <form method="post" class="bg-white border border-neutral-200 rounded-md p-6 space-y-6">
     {% csrf_token %}
@@ -15,9 +15,9 @@
       {% if form.nome.errors %}<p class="text-sm text-red-600">{{ form.nome.errors }}</p>{% endif %}
     </div>
     <div>
-      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.descricao.label }}</label>
-      {{ form.descricao|add_class:'w-full p-2 border rounded' }}
-      {% if form.descricao.errors %}<p class="text-sm text-red-600">{{ form.descricao.errors }}</p>{% endif %}
+      <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.categoria.label }}</label>
+      {{ form.categoria|add_class:'w-full p-2 border rounded' }}
+      {% if form.categoria.errors %}<p class="text-sm text-red-600">{{ form.categoria.errors }}</p>{% endif %}
     </div>
     <div class="flex justify-end gap-3 border-t pt-4">
       <a href="{% url 'empresas:tags_list' %}" class="px-4 py-2 text-sm border rounded">{% translate 'Cancelar' %}</a>

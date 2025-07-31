@@ -22,9 +22,21 @@
         {{ form.nome.errors }}
       </div>
       <div>
+        <label for="{{ form.cnpj.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cnpj.label }}</label>
+        {{ form.cnpj|add_class:'w-full p-2 border rounded' }}
+        {{ form.cnpj.errors }}
+      </div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
         <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.tipo.label }}</label>
         {{ form.tipo|add_class:'w-full p-2 border rounded' }}
         {{ form.tipo.errors }}
+      </div>
+      <div>
+        <label for="{{ form.tags_field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.tags_field.label }}</label>
+        {{ form.tags_field|add_class:'w-full p-2 border rounded' }}
+        {{ form.tags_field.errors }}
       </div>
     </div>
     <div>
@@ -35,9 +47,9 @@
     </div>
     <div class="grid md:grid-cols-2 gap-6">
       <div>
-        <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cidade.label }}</label>
-        {{ form.cidade|add_class:'w-full p-2 border rounded' }}
-        {{ form.cidade.errors }}
+        <label for="{{ form.municipio.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.municipio.label }}</label>
+        {{ form.municipio|add_class:'w-full p-2 border rounded' }}
+        {{ form.municipio.errors }}
       </div>
       <div>
         <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.estado.label }}</label>
@@ -45,23 +57,11 @@
         {{ form.estado.errors }}
       </div>
     </div>
-    <div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.email.label }}</label>
-        {{ form.email|add_class:'w-full p-2 border rounded' }}
-        {{ form.email.errors }}
-      </div>
-      <div>
-        <label for="{{ form.telefone.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.telefone.label }}</label>
-        {{ form.telefone|add_class:'w-full p-2 border rounded' }}
-        {{ form.telefone.errors }}
-      </div>
-    </div>
     <div>
-      <label for="{{ form.website.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.website.label }}</label>
-      {{ form.website|add_class:'w-full p-2 border rounded' }}
-      {{ form.website.errors }}
-      <p class="text-xs text-neutral-500 mt-1">{% translate 'Inclua http:// ou https:// no início da URL.' %}</p>
+      <label for="{{ form.palavras_chave.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.palavras_chave.label }}</label>
+      {{ form.palavras_chave|add_class:'w-full p-2 border rounded' }}
+      {{ form.palavras_chave.errors }}
+      <p class="text-xs text-neutral-500 mt-1">{% translate 'Separe por vírgulas.' %}</p>
     </div>
     <div>
       <label for="{{ form.logo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.logo.label }}</label>
