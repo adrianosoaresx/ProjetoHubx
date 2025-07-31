@@ -1,25 +1,26 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Relatórios Financeiros{% endblock %}
+{% block title %}{{ _('Relatórios Financeiros') }}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto p-4 space-y-4">
-  <h1 class="text-2xl font-semibold mb-2">Relatórios</h1>
+<section class="max-w-5xl mx-auto p-4 space-y-4">
+  <h1 class="text-2xl font-semibold mb-2">{{ _('Relatórios') }}</h1>
   <form id="relatorio-form" class="space-y-4" hx-get="/api/financeiro/relatorios/" hx-target="#relatorio">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700">Centro de Custo</label>
-        <select name="centro" class="mt-1 block w-full border rounded p-2">
-          <option value="">Todos</option>
+        <label for="rel-centro" class="block text-sm font-medium text-gray-700">{{ _('Centro de Custo') }}</label>
+        <select id="rel-centro" name="centro" class="mt-1 block w-full border rounded p-2">
+          <option value="">{{ _('Todos') }}</option>
           {% for c in centros %}
             <option value="{{ c.id }}">{{ c.nome }}</option>
           {% endfor %}
         </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700">Núcleo</label>
-        <select name="nucleo" class="mt-1 block w-full border rounded p-2">
-          <option value="">Todos</option>
+        <label for="rel-nucleo" class="block text-sm font-medium text-gray-700">{{ _('Núcleo') }}</label>
+        <select id="rel-nucleo" name="nucleo" class="mt-1 block w-full border rounded p-2">
+          <option value="">{{ _('Todos') }}</option>
           {% for n in nucleos %}
             <option value="{{ n.id }}">{{ n.nome }}</option>
           {% endfor %}
@@ -28,21 +29,21 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700">Período inicial</label>
-        <input type="month" name="periodo_inicial" class="mt-1 block w-full border rounded p-2" />
+        <label for="rel-periodo-inicial" class="block text-sm font-medium text-gray-700">{{ _('Período inicial') }}</label>
+        <input id="rel-periodo-inicial" type="month" name="periodo_inicial" class="mt-1 block w-full border rounded p-2" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700">Período final</label>
-        <input type="month" name="periodo_final" class="mt-1 block w-full border rounded p-2" />
+        <label for="rel-periodo-final" class="block text-sm font-medium text-gray-700">{{ _('Período final') }}</label>
+        <input id="rel-periodo-final" type="month" name="periodo_final" class="mt-1 block w-full border rounded p-2" />
       </div>
     </div>
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Gerar Relatório</button>
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{{ _('Gerar Relatório') }}</button>
   </form>
 
   <div id="relatorio" class="mt-6"></div>
   <div class="mt-4 flex gap-4">
-    <a href="#" id="export-csv" class="text-primary underline" hx-boost="false">Exportar CSV</a>
-    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false">Exportar XLSX</a>
+    <a href="#" id="export-csv" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar relatório em CSV') }}">{{ _('Exportar CSV') }}</a>
+    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar relatório em XLSX') }}">{{ _('Exportar XLSX') }}</a>
   </div>
-</div>
+</section>
 {% endblock %}
