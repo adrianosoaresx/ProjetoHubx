@@ -34,13 +34,11 @@ Você atua no repositório `ProjetoHubx` (Hubx.space), uma plataforma colaborati
 
 ## ✅ Regra especial
 
-> **⚠️ O Codex deve sempre criar uma branch auxiliar e abrir uma Pull Request (PR) para o branch `principal`.**
-> - Não deve comitar diretamente no `principal`.
-> - Nomeie a branch de forma clara: `fix/nome`, `feat/modulo`, etc.
-> - A PR deve conter:
->   - Título no padrão Conventional Commit (ex: `fix: corrigir acessibilidade nos templates`)
->   - Descrição com objetivo, impacto, requisitos e rota envolvida.
-> - O merge será feito **manualmente no GitHub** após revisão e sucesso no CI.
+> **⚠️ O Codex deve comitar diretamente no branch `principal`.**
+> - Não crie branch auxiliar
+> - Não abra Pull Requests
+> - Aplique as alterações e envie diretamente para o repositório principal (`main`)
+> - Deixe o commit já integrado no histórico, pronto para rodar CI
 
 ---
 
