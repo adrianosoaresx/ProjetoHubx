@@ -3,11 +3,13 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
+from django.utils.translation import gettext as _
 from django.views.generic import View
 
 from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
 from notificacoes.forms import UserNotificationPreferenceForm
 from notificacoes.models import UserNotificationPreference
+from tokens.models import TOTPDevice
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
@@ -30,10 +32,19 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             return form_class(data, instance=pref)
         return form_class(data, files, instance=user)
 
+    def get_two_factor_enabled(self) -> bool:
+        return TOTPDevice.objects.filter(usuario=self.request.user, confirmado=True).exists()
+
     def get(self, request):
         tab = request.GET.get("tab", "informacoes")
         context = {f"{name}_form": self.get_form(name) for name in self.form_classes}
-        context.update({"tab": tab})
+        context.update(
+            {
+                "tab": tab,
+                "two_factor_enabled": self.get_two_factor_enabled(),
+                "redes_conectadas": request.user.redes_sociais or {},
+            }
+        )
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
@@ -43,17 +54,35 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
     def post(self, request):
         tab = request.GET.get("tab", request.POST.get("tab", "informacoes"))
-        form = self.get_form(tab, request.POST, request.FILES)
-        if form.is_valid():
-            saved = form.save()
-            if isinstance(form, PasswordChangeForm):
-                update_session_auth_hash(request, saved)
-            messages.success(request, "Alterações salvas com sucesso.")
+        if tab == "redes" and request.POST.get("action") == "disconnect":
+            redes = request.user.redes_sociais or {}
+            network = request.POST.get("network")
+            if network in redes:
+                redes.pop(network)
+                request.user.redes_sociais = redes
+                request.user.save()
+                messages.success(request, _("Conta desconectada."))
+            else:
+                messages.error(request, _("Rede social não encontrada."))
+            form = self.get_form("redes")
         else:
-            messages.error(request, "Corrija os erros abaixo.")
+            form = self.get_form(tab, request.POST, request.FILES)
+            if form.is_valid():
+                saved = form.save()
+                if isinstance(form, PasswordChangeForm):
+                    update_session_auth_hash(request, saved)
+                messages.success(request, _("Alterações salvas com sucesso."))
+            else:
+                messages.error(request, _("Corrija os erros abaixo."))
 
         context = {f"{name}_form": form if name == tab else self.get_form(name) for name in self.form_classes}
-        context["tab"] = tab
+        context.update(
+            {
+                "tab": tab,
+                "two_factor_enabled": self.get_two_factor_enabled(),
+                "redes_conectadas": request.user.redes_sociais or {},
+            }
+        )
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
