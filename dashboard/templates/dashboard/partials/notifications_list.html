@@ -1,0 +1,14 @@
+{% load i18n %}
+<section class="mb-8" id="notifications">
+  <h2 class="text-xl font-semibold mb-4">{% trans "Notificações Recentes" %}</h2>
+  <ul class="space-y-2">
+    {% for log in notificacoes %}
+    <li class="p-4 bg-white rounded-lg shadow flex justify-between">
+      <span>{{ log.template.assunto }}</span>
+      <time datetime="{{ log.data_envio|date:'c' }}" class="text-sm text-neutral-600">{{ log.data_envio|date:'d/m/Y H:i' }}</time>
+    </li>
+    {% empty %}
+    <li class="p-4 bg-white rounded-lg shadow text-neutral-500">{% trans "Nenhuma notificação." %}</li>
+    {% endfor %}
+  </ul>
+</section>

@@ -1,13 +1,36 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Dashboard Cliente | Hubx{% endblock %}
+{% block title %}{% trans "Dashboard Cliente" %} | Hubx{% endblock %}
 
 {% block content %}
 <main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Dashboard">
-  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">Dashboard Cliente</h1>
+  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Cliente" %}</h1>
+
   <div hx-get="{% url 'dashboard:metrics-partial' %}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
+
+  <div hx-get="{% url 'dashboard:eventos-partial' %}" hx-trigger="load, every 20s" hx-target="#upcoming-events" hx-swap="innerHTML"></div>
+
+  <div hx-get="{% url 'dashboard:tarefas-partial' %}" hx-trigger="load, every 20s" hx-target="#tasks" hx-swap="innerHTML"></div>
+
+  <div hx-get="{% url 'dashboard:notificacoes-partial' %}" hx-trigger="load, every 20s" hx-target="#notifications" hx-swap="innerHTML"></div>
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Atalhos" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a href="{% url 'agenda:evento-list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+        <i class="fa-solid fa-calendar-plus mb-2"></i>
+        <span class="block">{% trans "Inscrever-se em Eventos" %}</span>
+      </a>
+      <a href="{% url 'feed:home' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+        <i class="fa-solid fa-rss mb-2"></i>
+        <span class="block">{% trans "Ver Feed" %}</span>
+      </a>
+    </div>
+  </section>
+
 </main>
 {% endblock %}
