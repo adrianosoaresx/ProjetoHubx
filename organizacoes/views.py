@@ -27,9 +27,29 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         query = self.request.GET.get("q")
+        tipo = self.request.GET.get("tipo")
+        cidade = self.request.GET.get("cidade")
+        estado = self.request.GET.get("estado")
+        order = self.request.GET.get("order", "nome")
+
         if query:
             qs = qs.filter(nome__icontains=query)
-        return qs.order_by("nome")
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+        if cidade:
+            qs = qs.filter(cidade__icontains=cidade)
+        if estado:
+            qs = qs.filter(estado__icontains=estado)
+
+        allowed_order = {"nome", "tipo", "cidade", "estado", "created"}
+        if order not in allowed_order:
+            order = "nome"
+        return qs.order_by(order)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tipos"] = Organizacao._meta.get_field("tipo").choices
+        return context
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -75,7 +95,7 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
     template_name = "organizacoes/detail.html"
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().prefetch_related("nucleos")
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(pk=getattr(user, "organizacao_id", None))

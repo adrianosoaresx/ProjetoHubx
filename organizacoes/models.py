@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
 
@@ -11,6 +12,22 @@ class Organizacao(TimeStampedModel):
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)
     slug = models.SlugField(unique=True)
+    tipo = models.CharField(
+        _("Tipo"),
+        max_length=20,
+        choices=[
+            ("ong", _("ONG")),
+            ("empresa", _("Empresa")),
+            ("coletivo", _("Coletivo")),
+        ],
+        blank=True,
+    )
+    rua = models.CharField(_("Rua"), max_length=255, blank=True)
+    cidade = models.CharField(_("Cidade"), max_length=100, blank=True)
+    estado = models.CharField(_("Estado"), max_length=50, blank=True)
+    contato_nome = models.CharField(_("Contato principal"), max_length=255, blank=True)
+    contato_email = models.EmailField(_("Email do contato"), blank=True)
+    contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     deleted = models.BooleanField(default=False)

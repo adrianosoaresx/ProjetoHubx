@@ -6,7 +6,21 @@ from .models import Organizacao
 class OrganizacaoForm(forms.ModelForm):
     class Meta:
         model = Organizacao
-        fields = ["nome", "cnpj", "descricao", "slug", "avatar", "cover"]
+        fields = [
+            "nome",
+            "cnpj",
+            "descricao",
+            "slug",
+            "tipo",
+            "rua",
+            "cidade",
+            "estado",
+            "contato_nome",
+            "contato_email",
+            "contato_telefone",
+            "avatar",
+            "cover",
+        ]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

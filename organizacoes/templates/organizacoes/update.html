@@ -43,6 +43,13 @@
         {% endif %}
       </div>
     </div>
+    <div>
+      <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.tipo.label }}</label>
+      {{ form.tipo }}
+      {% if form.tipo.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.tipo.errors }}</p>
+      {% endif %}
+    </div>
 
     <div>
       <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.descricao.label }}</label>
@@ -50,6 +57,54 @@
       {% if form.descricao.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.descricao.errors }}</p>
       {% endif %}
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="md:col-span-3">
+        <label for="{{ form.rua.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rua.label }}</label>
+        {{ form.rua }}
+        {% if form.rua.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.rua.errors }}</p>
+        {% endif %}
+      </div>
+      <div class="md:col-span-2">
+        <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cidade.label }}</label>
+        {{ form.cidade }}
+        {% if form.cidade.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.cidade.errors }}</p>
+        {% endif %}
+      </div>
+      <div>
+        <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.estado.label }}</label>
+        {{ form.estado }}
+        {% if form.estado.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.estado.errors }}</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div>
+        <label for="{{ form.contato_nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_nome.label }}</label>
+        {{ form.contato_nome }}
+        {% if form.contato_nome.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.contato_nome.errors }}</p>
+        {% endif %}
+      </div>
+      <div>
+        <label for="{{ form.contato_email.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_email.label }}</label>
+        {{ form.contato_email }}
+        {% if form.contato_email.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.contato_email.errors }}</p>
+        {% endif %}
+      </div>
+      <div>
+        <label for="{{ form.contato_telefone.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_telefone.label }}</label>
+        {{ form.contato_telefone }}
+        {% if form.contato_telefone.errors %}
+          <p class="text-red-500 text-xs mt-1">{{ form.contato_telefone.errors }}</p>
+        {% endif %}
+      </div>
     </div>
 
     <div>
