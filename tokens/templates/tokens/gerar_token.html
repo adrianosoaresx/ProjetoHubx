@@ -1,13 +1,16 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
-{% block title %}Gerar Token de Acesso | HubX{% endblock %}
+{% load widget_tweaks i18n %}
+{% block title %}{% trans "Gerar Token de Acesso" %} | HubX{% endblock %}
 
 {% block content %}
 <section class="max-w-xl mx-auto px-4 py-10">
-  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Gerar Token de Acesso</h1>
+  <header class="mb-6 text-center">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Gerar Token de Acesso" %}</h1>
+    <p class="text-sm text-neutral-600 mt-2">{% trans "Use este token para convidar novos membros ou recuperar o acesso." %}</p>
+  </header>
 
-  <form method="post" action="{% url 'tokens:criar_token' %}"
-        hx-post="{% url 'tokens:criar_token' %}"
+  <form method="post" action="{% url 'tokens:gerar_token' %}"
+        hx-post="{% url 'tokens:gerar_token' %}"
         hx-target="#resultado" hx-swap="innerHTML"
         class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
@@ -17,12 +20,12 @@
         <div>
           <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
           {% if field.field.widget.input_type == 'select' %}
-            {{ field|add_class:"form-select" }}
+            {{ field|add_class:"form-select"|attr:"required" }}
           {% else %}
             {% if forloop.first %}
-              {{ field|add_class:"form-input"|attr:"autofocus" }}
+              {{ field|add_class:"form-input"|attr:"autofocus required" }}
             {% else %}
-              {{ field|add_class:"form-input" }}
+              {{ field|add_class:"form-input"|attr:"required" }}
             {% endif %}
           {% endif %}
           {% if field.errors %}
@@ -34,17 +37,19 @@
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        Gerar Token
+        {% trans "Gerar Token" %}
       </button>
     </div>
   </form>
 
-  <div id="resultado" class="mt-6 text-center">
+  <div id="resultado" class="mt-6 text-center" aria-live="polite">
     {% if token %}
-      <div class="rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
-        Código gerado: <strong>{{ token.codigo }}</strong>
-      </div>
+      {% include "tokens/_resultado.html" with token=token.codigo %}
     {% endif %}
   </div>
+
+  <footer class="mt-6 text-center">
+    <a href="{% url 'accounts:seguranca' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+  </footer>
 </section>
 {% endblock %}

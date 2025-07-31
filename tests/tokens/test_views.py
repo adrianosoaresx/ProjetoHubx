@@ -15,10 +15,10 @@ def _login(client, user):
     client.force_login(user)
 
 
-def test_criar_token_view_creates_token(client):
+def test_gerar_token_view_creates_token(client):
     user = UserFactory(is_staff=True)
     _login(client, user)
-    resp = client.post(reverse("tokens:criar_token"), {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN})
+    resp = client.post(reverse("tokens:gerar_token"), {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN})
     assert resp.status_code == 200
     token = TokenAcesso.objects.get(gerado_por=user)
     assert token.tipo_destino == TokenAcesso.TipoUsuario.ADMIN
@@ -49,13 +49,13 @@ def test_validar_token_convite_view(client):
     token = TokenAcesso.objects.create(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
 
     _login(client, user)
-    resp = client.post(reverse("tokens:validar_convite"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
     assert resp.status_code == 200
     token.refresh_from_db()
     assert token.estado == TokenAcesso.Estado.USADO
     assert token.usuario == user
 
-    resp = client.post(reverse("tokens:validar_convite"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
     assert resp.status_code == 400
 
 
