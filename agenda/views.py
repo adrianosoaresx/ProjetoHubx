@@ -7,12 +7,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import (
@@ -128,7 +129,7 @@ class EventoCreateView(
 
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
-        messages.success(self.request, "Evento criado com sucesso.")
+        messages.success(self.request, _("Evento criado com sucesso."))
         return super().form_valid(form)
 
 
@@ -150,7 +151,7 @@ class EventoUpdateView(
         return _queryset_por_organizacao(self.request)
 
     def form_valid(self, form):  # pragma: no cover
-        messages.success(self.request, "Evento atualizado com sucesso.")  # pragma: no cover
+        messages.success(self.request, _("Evento atualizado com sucesso."))  # pragma: no cover
         return super().form_valid(form)  # pragma: no cover
 
 
@@ -171,7 +172,7 @@ class EventoDeleteView(
         return _queryset_por_organizacao(self.request)
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
-        messages.success(self.request, "Evento removido.")  # pragma: no cover
+        messages.success(self.request, _("Evento removido."))  # pragma: no cover
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
@@ -193,15 +194,15 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(Evento, pk=pk)
         if request.user.user_type == UserType.ADMIN:
-            messages.error(request, "Administradores não podem se inscrever em eventos.")  # pragma: no cover
+            messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
         if not created and inscricao.status != "cancelada":
             inscricao.cancelar_inscricao()
-            messages.success(request, "Inscrição cancelada.")  # pragma: no cover
+            messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
         else:
             inscricao.confirmar_inscricao()
-            messages.success(request, "Inscrição realizada.")  # pragma: no cover
+            messages.success(request, _("Inscrição realizada."))  # pragma: no cover
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
@@ -214,11 +215,11 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}
             and evento.organizacao != request.user.organizacao
         ):
-            messages.error(request, "Acesso negado.")  # pragma: no cover
+            messages.error(request, _("Acesso negado."))  # pragma: no cover
             return redirect("agenda:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
         InscricaoEvento.objects.filter(user=inscrito, evento=evento).delete()
-        messages.success(request, "Inscrito removido.")  # pragma: no cover
+        messages.success(request, _("Inscrito removido."))  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
 
 
@@ -252,7 +253,7 @@ class EventoFeedbackView(LoginRequiredMixin, View):
             },
         )
 
-        messages.success(request, "Feedback registrado com sucesso.")
+        messages.success(request, _("Feedback registrado com sucesso."))
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
@@ -331,7 +332,11 @@ class InscricaoEventoListView(LoginRequiredMixin, ListView):
     context_object_name = "inscricoes"
 
     def get_queryset(self):
-        return InscricaoEvento.objects.select_related("user", "evento")
+        qs = InscricaoEvento.objects.select_related("user", "evento")
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(Q(user__username__icontains=q) | Q(evento__titulo__icontains=q))
+        return qs
 
 
 class InscricaoEventoCreateView(LoginRequiredMixin, CreateView):
@@ -350,7 +355,11 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
     context_object_name = "materiais"
 
     def get_queryset(self):
-        return MaterialDivulgacaoEvento.objects.filter(ativo=True)
+        qs = MaterialDivulgacaoEvento.objects.filter(ativo=True)
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(titulo__icontains=q)
+        return qs
 
 
 class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
@@ -363,6 +372,13 @@ class BriefingEventoListView(LoginRequiredMixin, ListView):
     model = BriefingEvento
     template_name = "agenda/briefing_list.html"
     context_object_name = "briefings"
+
+    def get_queryset(self):
+        qs = BriefingEvento.objects.select_related("evento")
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(evento__titulo__icontains=q)
+        return qs
 
 
 class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):

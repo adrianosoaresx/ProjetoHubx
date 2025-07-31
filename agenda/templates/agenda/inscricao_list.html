@@ -4,7 +4,7 @@
 {% block title %}{% trans "Inscrições" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
+<section id="inscricao-container" class="max-w-7xl mx-auto px-4 py-10">
   <header class="mb-6">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Lista de Inscrições" %}</h1>
   </header>
@@ -16,6 +16,27 @@
       {% endfor %}
     </div>
   {% endif %}
+
+  <form
+    hx-get="{% url 'agenda:inscricao_list' %}"
+    hx-target="#inscricao-container"
+    hx-push-url="true"
+    class="mb-6 flex gap-2"
+  >
+    <input
+      type="text"
+      name="q"
+      value="{{ request.GET.q }}"
+      placeholder="{% trans 'Buscar por usuário ou evento' %}"
+      class="w-full rounded-md border-gray-300 px-3 py-2"
+    />
+    <button
+      type="submit"
+      class="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90"
+    >
+      {% trans "Filtrar" %}
+    </button>
+  </form>
 
   <main>
     <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
@@ -30,6 +51,7 @@
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Valor Pago" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Método de Pagamento" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Observação" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-200">
@@ -43,15 +65,27 @@
               <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
               <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
               <td class="px-4 py-2">{{ inscricao.observacao }}</td>
+              <td class="px-4 py-2">
+                <a
+                  href="{% url 'agenda:evento_detalhe' inscricao.evento.pk %}"
+                  class="text-blue-600 hover:underline"
+                >
+                  {% trans "Ver" %}
+                </a>
+              </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="8" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
+              <td colspan="9" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </main>
+
+  <footer class="mt-6 text-right">
+    <a href="{% url 'agenda:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à agenda" %}</a>
+  </footer>
 </section>
 {% endblock %}

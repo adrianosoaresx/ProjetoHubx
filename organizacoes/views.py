@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -59,7 +60,7 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
     success_url = reverse_lazy("organizacoes:list")
 
     def form_valid(self, form):
-        messages.success(self.request, "Organização criada com sucesso.")
+        messages.success(self.request, _("Organização criada com sucesso."))
         return super().form_valid(form)
 
 
@@ -73,7 +74,7 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         return super().get_queryset()
 
     def form_valid(self, form):
-        messages.success(self.request, "Organização atualizada com sucesso.")
+        messages.success(self.request, _("Organização atualizada com sucesso."))
         return super().form_valid(form)
 
 
@@ -86,7 +87,7 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
         return super().get_queryset()
 
     def delete(self, request, *args, **kwargs):
-        messages.success(self.request, "Organização removida.")
+        messages.success(self.request, _("Organização removida."))
         return super().delete(request, *args, **kwargs)
 
 
