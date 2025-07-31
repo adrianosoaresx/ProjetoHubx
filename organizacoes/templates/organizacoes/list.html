@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}Organizações | Hubx{% endblock %}
 
@@ -21,7 +22,7 @@
   </div>
 
   <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-4 gap-2">
-    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar" class="w-full p-2 border rounded-lg" />
+    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por nome ou slug' %}" class="w-full p-2 border rounded-lg" />
     <select name="tipo" class="w-full p-2 border rounded-lg">
       <option value="">Tipo</option>
       {% for value, label in tipos %}
@@ -71,12 +72,20 @@
             <td class="px-4 py-2">{{ organizacao.cidade }}{% if organizacao.estado %}/{{ organizacao.estado }}{% endif %}</td>
             <td class="px-4 py-2">{{ organizacao.created|date:'d/m/Y' }}</td>
             <td class="px-4 py-2 whitespace-nowrap flex gap-2">
-              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline">Visualizar</a>
+              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline">{% trans 'Visualizar' %}</a>
               {% if perms.organizacoes.change_organizacao %}
-              <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline">Editar</a>
+              <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline">{% trans 'Editar' %}</a>
               {% endif %}
               {% if perms.organizacoes.delete_organizacao %}
-              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline">Remover</a>
+              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline">{% trans 'Remover' %}</a>
+              {% endif %}
+              {% if request.user.user_type == 'root' %}
+                <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-neutral-700 hover:underline">
+                    {% if organizacao.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
+                  </button>
+                </form>
               {% endif %}
             </td>
           </tr>

@@ -1,9 +1,15 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
 {% block title %}{{ object.nome }} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-2xl mx-auto px-4 py-10 space-y-6">
+<section class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+  <div class="w-full h-40 bg-neutral-200 rounded-xl overflow-hidden">
+    {% if object.cover %}
+      <img src="{{ object.cover.url }}" alt="{{ object.nome }}" class="w-full h-full object-cover">
+    {% endif %}
+  </div>
   <div class="text-center">
     {% if object.avatar %}
       <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-4">
@@ -18,22 +24,22 @@
   <section>
     <dl class="divide-y divide-neutral-200">
       <div class="py-4 grid grid-cols-3 gap-4">
-        <dt class="font-medium text-neutral-700">CNPJ</dt>
+        <dt class="font-medium text-neutral-700">{% trans 'CNPJ' %}</dt>
         <dd class="col-span-2 text-neutral-900">{{ object.cnpj }}</dd>
       </div>
       <div class="py-4 grid grid-cols-3 gap-4">
-        <dt class="font-medium text-neutral-700">Tipo</dt>
+        <dt class="font-medium text-neutral-700">{% trans 'Tipo' %}</dt>
         <dd class="col-span-2 text-neutral-900">{{ object.get_tipo_display }}</dd>
       </div>
       <div class="py-4 grid grid-cols-3 gap-4">
-        <dt class="font-medium text-neutral-700">Endereço</dt>
+        <dt class="font-medium text-neutral-700">{% trans 'Endereço' %}</dt>
         <dd class="col-span-2 text-neutral-900">
           {{ object.rua }}<br>
           {{ object.cidade }}{% if object.estado %}/{{ object.estado }}{% endif %}
         </dd>
       </div>
       <div class="py-4 grid grid-cols-3 gap-4">
-        <dt class="font-medium text-neutral-700">Contato</dt>
+        <dt class="font-medium text-neutral-700">{% trans 'Contato' %}</dt>
         <dd class="col-span-2 text-neutral-900">
           {{ object.contato_nome }}<br>
           {{ object.contato_email }}<br>
@@ -42,34 +48,90 @@
       </div>
       {% if object.descricao %}
       <div class="py-4 grid grid-cols-3 gap-4">
-        <dt class="font-medium text-neutral-700">Descrição</dt>
+        <dt class="font-medium text-neutral-700">{% trans 'Descrição' %}</dt>
         <dd class="col-span-2 text-neutral-900">{{ object.descricao }}</dd>
       </div>
       {% endif %}
     </dl>
   </section>
 
-  {% if object.nucleos.all %}
   <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">Núcleos</h2>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Membros' %}</h2>
     <ul class="list-disc pl-6 text-neutral-700">
-      {% for nucleo in object.nucleos.all %}
-        <li>{{ nucleo.nome }}</li>
+      {% for user in usuarios %}
+        <li>{{ user.get_full_name|default:user.username }}</li>
       {% empty %}
-        <li class="list-none text-neutral-500">Nenhum núcleo associado.</li>
+        <li class="list-none text-neutral-500">{% trans 'Nenhum usuário associado.' %}</li>
       {% endfor %}
     </ul>
+    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline">{% trans 'Adicionar/Remover' %}</a>
   </section>
-  {% endif %}
+
+  <section>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Núcleos' %}</h2>
+    <ul class="list-disc pl-6 text-neutral-700">
+      {% for nucleo in nucleos %}
+        <li>{{ nucleo.nome }}</li>
+      {% empty %}
+        <li class="list-none text-neutral-500">{% trans 'Nenhum núcleo associado.' %}</li>
+      {% endfor %}
+    </ul>
+    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline">{% trans 'Adicionar/Remover' %}</a>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Eventos' %}</h2>
+    <ul class="list-disc pl-6 text-neutral-700">
+      {% for evento in eventos %}
+        <li>{{ evento.titulo }}</li>
+      {% empty %}
+        <li class="list-none text-neutral-500">{% trans 'Nenhum evento associado.' %}</li>
+      {% endfor %}
+    </ul>
+    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline">{% trans 'Adicionar/Remover' %}</a>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Empresas' %}</h2>
+    <ul class="list-disc pl-6 text-neutral-700">
+      {% for empresa in empresas %}
+        <li>{{ empresa.nome }}</li>
+      {% empty %}
+        <li class="list-none text-neutral-500">{% trans 'Nenhuma empresa associada.' %}</li>
+      {% endfor %}
+    </ul>
+    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline">{% trans 'Adicionar/Remover' %}</a>
+  </section>
+
+  <section>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Posts' %}</h2>
+    <ul class="list-disc pl-6 text-neutral-700">
+      {% for post in posts %}
+        <li>{{ post.conteudo|truncatewords:10 }}</li>
+      {% empty %}
+        <li class="list-none text-neutral-500">{% trans 'Nenhum post associado.' %}</li>
+      {% endfor %}
+    </ul>
+    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline">{% trans 'Adicionar/Remover' %}</a>
+  </section>
 
   <div class="flex justify-end gap-3">
     {% if perms.organizacoes.change_organizacao %}
-      <a href="{% url 'organizacoes:update' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Editar</a>
+      <a href="{% url 'organizacoes:update' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">{% trans 'Editar' %}</a>
     {% endif %}
     {% if perms.organizacoes.delete_organizacao %}
-      <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">Excluir</a>
+      <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">{% trans 'Excluir' %}</a>
     {% endif %}
-    <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+    {% if request.user.user_type == 'root' %}
+      <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
+        {% csrf_token %}
+        <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">
+          {% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
+        </button>
+      </form>
+      <a href="{% url 'organizacoes:logs' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">{% trans 'Histórico de alterações' %}</a>
+    {% endif %}
+    <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans 'Voltar' %}</a>
   </div>
 </section>
 {% endblock %}
