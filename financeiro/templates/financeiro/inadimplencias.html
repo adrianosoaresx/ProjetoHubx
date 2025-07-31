@@ -1,46 +1,60 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Inadimplências{% endblock %}
+{% block title %}{{ _('Inadimplências') }}{% endblock %}
 
 {% block content %}
-<div class="p-4 max-w-6xl mx-auto">
-  <h1 class="text-2xl font-semibold mb-2">Inadimplências</h1>
-  <div class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-    <select name="centro" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
-      <option value="">Todos Centros</option>
-      {% for c in centros %}
-        <option value="{{ c.id }}">{{ c.nome }}</option>
-      {% endfor %}
-    </select>
-    <select name="nucleo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
-      <option value="">Todos Núcleos</option>
-      {% for n in nucleos %}
-        <option value="{{ n.id }}">{{ n.nome }}</option>
-      {% endfor %}
-    </select>
-    <select name="status" class="border p-2 rounded" disabled>
-      <option>Pendente</option>
-    </select>
-    <input type="month" name="periodo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest div">
-  </div>
+<section class="p-4 max-w-6xl mx-auto">
+  <h1 class="text-2xl font-semibold mb-2">{{ _('Inadimplências') }}</h1>
+  <fieldset class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <legend class="sr-only">{{ _('Filtros') }}</legend>
+    <div>
+      <label for="filtro-centro" class="block text-sm font-medium text-gray-700">{{ _('Centro de Custo') }}</label>
+      <select id="filtro-centro" name="centro" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest fieldset">
+        <option value="">{{ _('Todos Centros') }}</option>
+        {% for c in centros %}
+          <option value="{{ c.id }}">{{ c.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="filtro-nucleo" class="block text-sm font-medium text-gray-700">{{ _('Núcleo') }}</label>
+      <select id="filtro-nucleo" name="nucleo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest fieldset">
+        <option value="">{{ _('Todos Núcleos') }}</option>
+        {% for n in nucleos %}
+          <option value="{{ n.id }}">{{ n.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="filtro-status" class="block text-sm font-medium text-gray-700">{{ _('Status') }}</label>
+      <select id="filtro-status" name="status" class="border p-2 rounded" disabled>
+        <option>{{ _('Pendente') }}</option>
+      </select>
+    </div>
+    <div>
+      <label for="filtro-periodo" class="block text-sm font-medium text-gray-700">{{ _('Período') }}</label>
+      <input id="filtro-periodo" type="month" name="periodo" class="border p-2 rounded" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-include="closest fieldset" />
+    </div>
+  </fieldset>
   <div id="lista" hx-get="/api/financeiro/inadimplencias/" hx-target="this">
     <table class="min-w-full divide-y divide-gray-200">
       <thead>
         <tr class="bg-gray-50">
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">ID</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Centro de Custo</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Conta</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Valor</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Data de Vencimento</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Dias em atraso</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('ID') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Conta') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Vencimento') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Dias em atraso') }}</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
   <div class="mt-4 flex gap-4">
-    <a href="/api/financeiro/inadimplencias/?format=csv" class="text-primary underline" hx-boost="false">Exportar CSV</a>
-    <a href="/api/financeiro/inadimplencias/?format=xlsx" class="text-primary underline" hx-boost="false">Exportar XLSX</a>
+    <a href="/api/financeiro/inadimplencias/?format=csv" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar inadimplências em CSV') }}">{{ _('Exportar CSV') }}</a>
+    <a href="/api/financeiro/inadimplencias/?format=xlsx" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar inadimplências em XLSX') }}">{{ _('Exportar XLSX') }}</a>
   </div>
-</div>
+</section>
 {% endblock %}
