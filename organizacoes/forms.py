@@ -24,7 +24,7 @@ class OrganizacaoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        base_cls = "w-full p-2 border rounded-lg"
+        base_cls = "mt-1 w-full rounded-md border-gray-300 p-2"
         for field in self.fields.values():
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()

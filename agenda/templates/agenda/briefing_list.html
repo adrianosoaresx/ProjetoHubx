@@ -4,7 +4,7 @@
 {% block title %}{% trans "Briefings" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
+<section id="briefing-container" class="max-w-7xl mx-auto px-4 py-10">
   <header class="mb-6">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Briefings de Eventos" %}</h1>
   </header>
@@ -16,6 +16,27 @@
       {% endfor %}
     </div>
   {% endif %}
+
+  <form
+    hx-get="{% url 'agenda:briefing_list' %}"
+    hx-target="#briefing-container"
+    hx-push-url="true"
+    class="mb-6 flex gap-2"
+  >
+    <input
+      type="text"
+      name="q"
+      value="{{ request.GET.q }}"
+      placeholder="{% trans 'Buscar por evento' %}"
+      class="w-full rounded-md border-gray-300 px-3 py-2"
+    />
+    <button
+      type="submit"
+      class="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90"
+    >
+      {% trans "Filtrar" %}
+    </button>
+  </form>
 
   <main>
     <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
@@ -29,6 +50,7 @@
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Cronograma Resumido" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Conteúdo Programático" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Observações" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-200">
@@ -41,15 +63,27 @@
               <td class="px-4 py-2">{{ briefing.cronograma_resumido }}</td>
               <td class="px-4 py-2">{{ briefing.conteudo_programatico }}</td>
               <td class="px-4 py-2">{{ briefing.observacoes }}</td>
+              <td class="px-4 py-2">
+                <a
+                  href="{% url 'agenda:briefing_editar' briefing.pk %}"
+                  class="text-blue-600 hover:underline"
+                >
+                  {% trans "Editar" %}
+                </a>
+              </td>
             </tr>
           {% empty %}
             <tr>
-              <td colspan="7" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhum briefing encontrado." %}</td>
+              <td colspan="8" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhum briefing encontrado." %}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
   </main>
+
+  <footer class="mt-6 text-right">
+    <a href="{% url 'agenda:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à agenda" %}</a>
+  </footer>
 </section>
 {% endblock %}

@@ -133,9 +133,12 @@
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Cancelar" %}</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Salvar" %}</button>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700">{% trans "Salvar" %}</button>
     </div>
   </form>
   </main>
+  <footer class="mt-6 text-right">
+    <a href="{% url 'organizacoes:list' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à lista" %}</a>
+  </footer>
 </section>
 {% endblock %}

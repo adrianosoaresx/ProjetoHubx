@@ -22,6 +22,7 @@
   </div>
 </header>
 
+<main>
 <section class="py-12 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 text-center">
     <h2 class="text-2xl font-bold text-neutral-900 mb-8">{% trans "Principais Funcionalidades" %}</h2>
@@ -58,7 +59,7 @@
       </div>
     </div>
   </div>
-</section>
+ </section>
 
 <section class="py-12">
   <div class="max-w-7xl mx-auto px-4">
@@ -69,7 +70,7 @@
     </div>
   </div>
 
-</section>
+ </section>
 
 {% if user.is_authenticated %}
 <section class="py-12 bg-gray-50">
@@ -81,4 +82,9 @@
   </div>
 </section>
 {% endif %}
+</main>
+
+<footer class="py-6 text-center text-sm text-neutral-500">
+  &copy; {{ now|date:"Y" }} Hubx
+</footer>
 {% endblock %}
