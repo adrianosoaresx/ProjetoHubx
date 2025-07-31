@@ -1,23 +1,26 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Importar Pagamentos{% endblock %}
+{% block title %}{{ _('Importar Pagamentos') }}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto p-4">
-  <h1 class="text-2xl font-semibold mb-4">Importar Pagamentos</h1>
+<section class="max-w-3xl mx-auto p-4">
+  <h1 class="text-2xl font-semibold mb-4">{{ _('Importar Pagamentos') }}</h1>
   <form id="upload-form" method="post" enctype="multipart/form-data"
         hx-post="/api/financeiro/importar-pagamentos/preview/" hx-target="#preview"
+        hx-on="htmx:afterRequest: document.getElementById('confirm-btn').removeAttribute('disabled')"
         class="space-y-4 border p-4 rounded-lg bg-white">
     {% csrf_token %}
-    <input type="file" name="file" class="block w-full border p-2 rounded" required />
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Pré-visualizar</button>
+    <label for="file" class="block text-sm font-medium text-gray-700">{{ _('Arquivo') }}</label>
+    <input id="file" type="file" name="file" class="block w-full border p-2 rounded" required />
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{{ _('Pré-visualizar') }}</button>
   </form>
   <div id="preview" class="mt-6"></div>
   <div id="messages" class="mt-4"></div>
   <div class="mt-4">
-    <button id="confirm-btn" hx-post="/api/financeiro/importar-pagamentos/confirmar/" hx-target="#messages" hx-include="#upload-form" class="bg-secondary text-white px-4 py-2 rounded">
-      Confirmar Importação
+    <button id="confirm-btn" disabled hx-post="/api/financeiro/importar-pagamentos/confirmar/" hx-target="#messages" hx-include="#upload-form" class="bg-secondary text-white px-4 py-2 rounded">
+      {{ _('Confirmar Importação') }}
     </button>
   </div>
-</div>
+</section>
 {% endblock %}
