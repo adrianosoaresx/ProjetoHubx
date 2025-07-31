@@ -1,5 +1,5 @@
 {% comment %}Lista de postagens reutilizável com Tailwind{% endcomment %}
-{% load static %}
+{% load static i18n %}
 
 <div class="space-y-6">
   {% for post in posts %}
@@ -25,7 +25,7 @@
 
       {% if post.pdf %}
         <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="PDF" class="rounded-xl shadow-sm max-w-full">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl shadow-sm max-w-full">
           <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
             <i class="fa-solid fa-eye"></i>
           </a>
@@ -35,17 +35,17 @@
         </div>
       {% elif post.image %}
         <div class="feed-media">
-          <img src="{{ post.image.url }}" alt="mídia do post" class="rounded-xl shadow-sm max-w-full">
+          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl shadow-sm max-w-full">
         </div>
       {% endif %}
     </article>
   {% empty %}
     <div class="text-center border border-neutral-200 rounded-2xl shadow-sm bg-white p-10">
       <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
-      <h3 class="text-lg font-semibold text-neutral-900 mb-1">{{ empty_title|default:"Nenhuma postagem ainda" }}</h3>
-      <p class="text-neutral-500 text-sm mb-4">{{ empty_message|default:"Seja o primeiro a compartilhar algo!" }}</p>
-      <a href="{% url 'feed:nova_postagem' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        {{ empty_button|default:"Criar postagem" }}
+      <h3 class="text-lg font-semibold text-neutral-900 mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
+      <p class="text-neutral-500 text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
+      <a href="{% url 'feed:nova_postagem' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+        {{ empty_button|default:_("Criar postagem") }}
       </a>
     </div>
   {% endfor %}

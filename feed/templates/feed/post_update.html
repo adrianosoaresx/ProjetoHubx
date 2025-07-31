@@ -1,23 +1,23 @@
 {% extends 'base.html' %}
-{% load static %}
-{% block title %}Editar Postagem - Hubx{% endblock %}
+{% load static i18n %}
+{% block title %}{% trans "Editar Postagem" %} - Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-10">
   <div class="mb-6 flex items-center gap-4">
-    <a href="{% url 'feed:post_detail' post.pk %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
+    <a href="{% url 'feed:post_detail' post.pk %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Voltar' %}">
       <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6"/>
       </svg>
-      Voltar
+      {% trans "Voltar" %}
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-neutral-900">Editar Postagem</h1>
-      <p class="text-sm text-neutral-600">Atualize sua postagem</p>
+      <h1 class="text-2xl font-bold text-neutral-900">{% trans "Editar Postagem" %}</h1>
+      <p class="text-sm text-neutral-600">{% trans "Atualize sua postagem" %}</p>
     </div>
   </div>
 
-  <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+  <form method="post" enctype="multipart/form-data" hx-post="{% url 'feed:post_update' post.pk %}" hx-encoding="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
     <div>
       <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-neutral-700">
@@ -30,14 +30,14 @@
     </div>
 
     <div>
-      <label for="id_file" class="block text-sm font-medium text-neutral-700">Arquivo (imagem ou PDF)</label>
+      <label for="id_file" class="block text-sm font-medium text-neutral-700">{% trans "Arquivo (imagem ou PDF)" %}</label>
       <input type="file" id="id_file" name="arquivo" accept="image/*,.pdf" class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
       {% if form.image.errors or form.pdf.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.image.errors }} {{ form.pdf.errors }}</p>
       {% endif %}
       {% if post.pdf %}
         <div class="relative mt-2">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="PDF" class="max-w-xs rounded-xl shadow-sm">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl shadow-sm">
           <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
             <i class="fa-solid fa-eye"></i>
           </a>
@@ -51,9 +51,10 @@
     </div>
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'feed:post_detail' post.pk %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Cancelar</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Salvar</button>
+      <a href="{% url 'feed:post_detail' post.pk %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-500" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
     </div>
   </form>
 </section>
+<script src="{% static 'feed/js/feed.js' %}"></script>
 {% endblock %}
