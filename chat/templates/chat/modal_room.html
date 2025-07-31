@@ -1,3 +1,4 @@
+{% load i18n %}
 <div
   id="room-modal"
   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -17,7 +18,7 @@
           {% endif %}
         </li>
       {% empty %}
-        <li class="text-neutral-500">Nenhuma mensagem.</li>
+        <li class="text-neutral-500">{% trans "Nenhuma mensagem." %}</li>
       {% endfor %}
     </ul>
   </div>
