@@ -1,67 +1,61 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}{{ object.nome }} | Hubx{% endblock %}
+{% block title %}{{ object.nome }}{% endblock %}
 
 {% block content %}
-<section class="max-w-4xl mx-auto px-4 py-10 space-y-10">
-
-  <!-- Perfil do Núcleo -->
-  <div class="text-center">
-    {% if object.avatar %}
-      <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4">
-    {% else %}
-      <div class="w-24 h-24 mx-auto flex items-center justify-center bg-neutral-200 text-neutral-600 rounded-full text-xl font-semibold mb-4">
-        {{ object.nome|make_list|first|upper }}
-      </div>
-    {% endif %}
-
-    <h1 class="text-2xl font-bold text-neutral-900">{{ object.nome }}</h1>
-
-    {% if object.descricao %}
-      <p class="text-neutral-600 mt-2">{{ object.descricao }}</p>
-    {% endif %}
-
-    <p class="text-sm text-neutral-500 mt-1"><strong>Criado em:</strong> {{ object.data_criacao|date:"d/m/Y" }}</p>
+<section class="max-w-3xl mx-auto py-8">
+  {% if object.cover %}
+  <img src="{{ object.cover.url }}" class="w-full h-48 object-cover rounded" />
+  {% endif %}
+  <div class="flex items-center gap-4 mt-4">
+    {% if object.avatar %}<img src="{{ object.avatar.url }}" class="w-16 h-16 rounded-full" />{% endif %}
+    <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
   </div>
 
-  <!-- Membros -->
-  <div>
-    <h2 class="text-lg font-semibold text-neutral-900 mb-4">Membros</h2>
+  <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
+  <ul>
+    {% for part in membros_aprovados %}
+    <li>{{ part.user.get_full_name|default:part.user.username }}{% if part.is_coordenador %} - {% trans 'Coordenador' %}{% endif %}
+      {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+      <form method="post" action="{% url 'nucleos:membro_role' object.pk part.pk %}" class="inline">{% csrf_token %}
+        <input type="hidden" name="is_coordenador" value="{% if part.is_coordenador %}False{% else %}True{% endif %}">
+        <button class="text-sm text-blue-600">{% if part.is_coordenador %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}</button>
+      </form>
+      <form method="post" action="{% url 'nucleos:membro_remover' object.pk part.pk %}" class="inline">{% csrf_token %}
+        <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% empty %}
+    <li>{% trans 'Sem membros.' %}</li>
+    {% endfor %}
+  </ul>
 
-    {% if object.membros.all %}
-      <div class="grid sm:grid-cols-2 gap-4">
-        {% for membro in object.membros.all %}
-          <div class="border border-neutral-200 rounded-2xl bg-white shadow-sm p-4 flex items-center gap-4">
-            <div class="w-12 h-12 flex-shrink-0">
-              {% if membro.avatar %}
-                <img src="{{ membro.avatar.url }}" alt="{{ membro.username }}" class="w-12 h-12 rounded-full object-cover">
-              {% else %}
-                <div class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-200 text-neutral-600 font-semibold">
-                  {{ membro.username|make_list|first|upper }}
-                </div>
-              {% endif %}
-            </div>
-            <div class="flex-1">
-              <h4 class="text-sm font-medium text-neutral-800">{{ membro.get_full_name|default:membro.username }}</h4>
-              <p class="text-sm text-neutral-500">@{{ membro.username }}</p>
-            </div>
-            <form method="post" action="{% url 'nucleos:remove_member' object.id membro.id %}">
-              {% csrf_token %}
-              <button type="submit" class="text-red-500 hover:text-red-700 text-xl" title="Remover">×</button>
-            </form>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="text-neutral-500">Nenhum membro neste núcleo.</p>
-    {% endif %}
+  {% if membros_pendentes %}
+  <h2 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h2>
+  <ul>
+    {% for part in membros_pendentes %}
+    <li>{{ part.user.get_full_name|default:part.user.username }}
+      <form method="post" action="{% url 'nucleos:participacao_decidir' object.pk part.pk %}" class="inline">{% csrf_token %}
+        <input type="hidden" name="acao" value="approve"><button class="text-sm text-green-600">{% trans 'Aprovar' %}</button>
+      </form>
+      <form method="post" action="{% url 'nucleos:participacao_decidir' object.pk part.pk %}" class="inline">{% csrf_token %}
+        <input type="hidden" name="acao" value="reject"><button class="text-sm text-red-600">{% trans 'Recusar' %}</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="mt-6">
+    <a href="{% url 'nucleos:exportar_membros' object.pk %}" class="text-blue-600">{% trans 'Exportar membros (CSV)' %}</a>
   </div>
 
-  <div class="flex justify-end">
-    <a href="{% url 'nucleos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-      Voltar
-    </a>
-  </div>
-
+  {% if request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
+  <form method="post" action="{% url 'nucleos:participacao_solicitar' object.pk %}" class="mt-4">{% csrf_token %}
+    <button class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Solicitar participação' %}</button>
+  </form>
+  {% endif %}
 </section>
 {% endblock %}

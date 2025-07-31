@@ -1,69 +1,50 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Núcleos | Hubx{% endblock %}
+{% block title %}{% trans "Núcleos" %}{% endblock %}
 
 {% block content %}
-<section class="max-w-6xl mx-auto px-4 py-10">
-
-  <!-- Cabeçalho -->
-  <div class="flex items-center justify-between mb-8">
-    <h1 class="text-2xl font-bold text-neutral-900">Núcleos</h1>
-    <a href="{% url 'nucleos:create' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      Novo Núcleo
-    </a>
-  </div>
-
-  <!-- Filtro -->
-  <form method="get" class="mb-8">
-    {{ form.media }}
-    {{ form.nucleo }}
-    <noscript>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 hover:bg-neutral-100">
-        Buscar
-      </button>
-    </noscript>
+<section class="max-w-5xl mx-auto py-8">
+  <form method="get" class="mb-4 flex gap-2">
+    <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
+    <button class="px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Buscar' %}</button>
   </form>
-
-  <!-- Lista -->
-  {% if object_list %}
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for nucleo in object_list %}
-        <div class="border border-neutral-200 rounded-2xl shadow-sm bg-white p-4 flex flex-col gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden">
-              {% if nucleo.avatar %}
-                <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="w-full h-full object-cover rounded-xl">
-              {% else %}
-                <span class="text-xl font-bold text-neutral-500">{{ nucleo.nome|make_list|first|upper }}</span>
-              {% endif %}
-            </div>
-            <div>
-              <h3 class="font-semibold text-neutral-900">
-                <a href="{% url 'nucleos:detail' nucleo.id %}" class="hover:underline">{{ nucleo.nome }}</a>
-              </h3>
-              <p class="text-sm text-neutral-600">{{ nucleo.organizacao.nome }}</p>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <a href="{% url 'nucleos:detail' nucleo.id %}" class="text-sm px-3 py-1 rounded-xl bg-blue-100 text-blue-700 hover:bg-blue-200">Ver</a>
-            <a href="{% url 'nucleos:update' nucleo.id %}" class="text-sm px-3 py-1 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Editar</a>
-            <a href="{% url 'nucleos:delete' nucleo.id %}" class="text-sm px-3 py-1 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">Remover</a>
-          </div>
-        </div>
-      {% endfor %}
+  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+  <div class="mb-4">
+    <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded">{% trans 'Novo' %}</a>
+  </div>
+  {% endif %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for nucleo in object_list %}
+    <div class="border rounded p-4">
+      <div class="flex items-center gap-3">
+        {% if nucleo.avatar %}<img src="{{ nucleo.avatar.url }}" class="w-12 h-12 rounded-full" />{% endif %}
+        <h3 class="font-semibold">{{ nucleo.nome }}</h3>
+      </div>
+      <p class="text-sm mt-2">{% trans "Membros" %}: {{ nucleo.membros_aprovados.count }}</p>
+      <div class="mt-2">
+        <a href="{% url 'nucleos:detail' nucleo.pk %}" class="text-blue-600">{% trans 'Detalhes' %}</a>
+        {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+        <form method="post" action="{% url 'nucleos:delete' nucleo.pk %}" class="inline">{% csrf_token %}
+          <button class="text-red-600 ml-2">{% trans 'Excluir' %}</button>
+        </form>
+        {% endif %}
+      </div>
     </div>
-  {% else %}
-    <div class="text-center border border-neutral-200 rounded-2xl shadow-sm p-10 bg-white">
-      <p class="text-neutral-500 mb-4">Nenhum núcleo cadastrado.</p>
-      <a href="{% url 'nucleos:create' %}" class="inline-block text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        Cadastrar
-      </a>
+    {% empty %}
+    <p>{% trans "Nenhum núcleo encontrado." %}</p>
+    {% endfor %}
+  </div>
+  {% if is_paginated %}
+    <div class="mt-4">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="mr-2">{% trans 'Anterior' %}</a>
+      {% endif %}
+      <span class="mr-2">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">{% trans 'Próxima' %}</a>
+      {% endif %}
     </div>
   {% endif %}
-
 </section>
 {% endblock %}
