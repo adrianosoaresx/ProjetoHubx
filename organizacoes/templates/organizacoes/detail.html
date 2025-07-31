@@ -13,12 +13,62 @@
       </div>
     {% endif %}
     <h1 class="text-2xl font-bold text-neutral-900">{{ object.nome }}</h1>
-    <p class="text-sm text-neutral-600">{{ object.cnpj }}</p>
-    {% if object.descricao %}
-      <p class="text-neutral-700 mt-4">{{ object.descricao }}</p>
-    {% endif %}
   </div>
-  <div class="flex justify-end">
+
+  <section>
+    <dl class="divide-y divide-neutral-200">
+      <div class="py-4 grid grid-cols-3 gap-4">
+        <dt class="font-medium text-neutral-700">CNPJ</dt>
+        <dd class="col-span-2 text-neutral-900">{{ object.cnpj }}</dd>
+      </div>
+      <div class="py-4 grid grid-cols-3 gap-4">
+        <dt class="font-medium text-neutral-700">Tipo</dt>
+        <dd class="col-span-2 text-neutral-900">{{ object.get_tipo_display }}</dd>
+      </div>
+      <div class="py-4 grid grid-cols-3 gap-4">
+        <dt class="font-medium text-neutral-700">Endereço</dt>
+        <dd class="col-span-2 text-neutral-900">
+          {{ object.rua }}<br>
+          {{ object.cidade }}{% if object.estado %}/{{ object.estado }}{% endif %}
+        </dd>
+      </div>
+      <div class="py-4 grid grid-cols-3 gap-4">
+        <dt class="font-medium text-neutral-700">Contato</dt>
+        <dd class="col-span-2 text-neutral-900">
+          {{ object.contato_nome }}<br>
+          {{ object.contato_email }}<br>
+          {{ object.contato_telefone }}
+        </dd>
+      </div>
+      {% if object.descricao %}
+      <div class="py-4 grid grid-cols-3 gap-4">
+        <dt class="font-medium text-neutral-700">Descrição</dt>
+        <dd class="col-span-2 text-neutral-900">{{ object.descricao }}</dd>
+      </div>
+      {% endif %}
+    </dl>
+  </section>
+
+  {% if object.nucleos.all %}
+  <section>
+    <h2 class="text-xl font-semibold text-neutral-900 mb-2">Núcleos</h2>
+    <ul class="list-disc pl-6 text-neutral-700">
+      {% for nucleo in object.nucleos.all %}
+        <li>{{ nucleo.nome }}</li>
+      {% empty %}
+        <li class="list-none text-neutral-500">Nenhum núcleo associado.</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <div class="flex justify-end gap-3">
+    {% if perms.organizacoes.change_organizacao %}
+      <a href="{% url 'organizacoes:update' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Editar</a>
+    {% endif %}
+    {% if perms.organizacoes.delete_organizacao %}
+      <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">Excluir</a>
+    {% endif %}
     <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
   </div>
 </section>

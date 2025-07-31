@@ -20,6 +20,13 @@ def test_form_fields():
         "cnpj",
         "descricao",
         "slug",
+        "tipo",
+        "rua",
+        "cidade",
+        "estado",
+        "contato_nome",
+        "contato_email",
+        "contato_telefone",
         "avatar",
         "cover",
     ]

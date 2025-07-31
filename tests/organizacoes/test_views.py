@@ -118,19 +118,44 @@ def test_create_template_fields(superadmin_user):
     url = reverse("organizacoes:create")
     resp = superadmin_user.get(url)
     html = resp.content.decode()
-    for field in ["nome", "cnpj", "descricao", "slug", "avatar", "cover"]:
+    for field in [
+        "nome",
+        "cnpj",
+        "descricao",
+        "slug",
+        "tipo",
+        "rua",
+        "cidade",
+        "estado",
+        "contato_nome",
+        "contato_email",
+        "contato_telefone",
+        "avatar",
+        "cover",
+    ]:
         assert f'name="{field}"' in html
     assert 'name="logo"' not in html
 
 
-def test_list_template_avatar_and_cnpj(superadmin_user, faker_ptbr, tmp_path):
+def test_list_template_avatar_and_tipo(superadmin_user, faker_ptbr, tmp_path):
     avatar = SimpleUploadedFile("a.png", b"x", content_type="image/png")
-    org1 = Organizacao.objects.create(nome="Alpha", cnpj=faker_ptbr.cnpj(), slug="alpha", avatar=avatar)
-    org2 = Organizacao.objects.create(nome="Beta", cnpj=faker_ptbr.cnpj(), slug="beta")
+    org1 = Organizacao.objects.create(
+        nome="Alpha",
+        cnpj=faker_ptbr.cnpj(),
+        slug="alpha",
+        avatar=avatar,
+        tipo="ong",
+    )
+    org2 = Organizacao.objects.create(
+        nome="Beta",
+        cnpj=faker_ptbr.cnpj(),
+        slug="beta",
+        tipo="empresa",
+    )
     resp = superadmin_user.get(reverse("organizacoes:list"))
     content = resp.content.decode()
-    assert org1.cnpj in content
-    assert org2.cnpj in content
+    assert org1.get_tipo_display() in content
+    assert org2.get_tipo_display() in content
     assert "img" in content  # avatar shown
     assert ">B<" in content  # initial for org2
 

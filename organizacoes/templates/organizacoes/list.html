@@ -20,42 +20,77 @@
     </a>
   </div>
 
-  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 flex gap-2">
+  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-4 gap-2">
     <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar" class="w-full p-2 border rounded-lg" />
-    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">Buscar</button>
+    <select name="tipo" class="w-full p-2 border rounded-lg">
+      <option value="">Tipo</option>
+      {% for value, label in tipos %}
+        <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" name="cidade" value="{{ request.GET.cidade }}" placeholder="Cidade" class="w-full p-2 border rounded-lg" />
+    <select name="order" class="w-full p-2 border rounded-lg">
+      <option value="nome" {% if request.GET.order == 'nome' or not request.GET.order %}selected{% endif %}>Nome</option>
+      <option value="tipo" {% if request.GET.order == 'tipo' %}selected{% endif %}>Tipo</option>
+      <option value="cidade" {% if request.GET.order == 'cidade' %}selected{% endif %}>Localização</option>
+      <option value="created" {% if request.GET.order == 'created' %}selected{% endif %}>Data</option>
+    </select>
+    <div class="md:col-span-4 flex justify-end">
+      <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">Filtrar</button>
+    </div>
   </form>
 
   {% if object_list %}
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for organizacao in object_list %}
-        <div class="border border-neutral-200 rounded-2xl shadow-sm bg-white p-4 flex flex-col gap-4">
-          <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden">
-              {% if organizacao.avatar %}
-                <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl">
-              {% else %}
-                <span class="text-xl font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-neutral-200 rounded-2xl shadow-sm">
+        <thead class="bg-neutral-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Nome</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Tipo</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Cidade/Estado</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Data de Criação</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-200">
+          {% for organizacao in object_list %}
+          <tr class="hover:bg-neutral-50">
+            <td class="px-4 py-2 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden">
+                  {% if organizacao.avatar %}
+                    <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" />
+                  {% else %}
+                    <span class="text-sm font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
+                  {% endif %}
+                </div>
+                <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
+              </div>
+            </td>
+            <td class="px-4 py-2">{{ organizacao.get_tipo_display }}</td>
+            <td class="px-4 py-2">{{ organizacao.cidade }}{% if organizacao.estado %}/{{ organizacao.estado }}{% endif %}</td>
+            <td class="px-4 py-2">{{ organizacao.created|date:'d/m/Y' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap flex gap-2">
+              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline">Visualizar</a>
+              {% if perms.organizacoes.change_organizacao %}
+              <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline">Editar</a>
               {% endif %}
-            </div>
-            <div>
-              <h3 class="font-semibold text-neutral-900">{{ organizacao.nome }}</h3>
-              <p class="text-sm text-neutral-600">{{ organizacao.cnpj }}</p>
-            </div>
-          </div>
-          <div class="flex gap-3">
-            <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-sm px-3 py-1 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">Editar</a>
-            <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-sm px-3 py-1 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">Remover</a>
-          </div>
-        </div>
-      {% endfor %}
+              {% if perms.organizacoes.delete_organizacao %}
+              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline">Remover</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
     <div class="mt-6 flex justify-center gap-2">
       {% if page_obj.has_previous %}
-        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Anterior</a>
+        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Anterior</a>
       {% endif %}
       <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Próxima</a>
+        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Próxima</a>
       {% endif %}
     </div>
   {% else %}
