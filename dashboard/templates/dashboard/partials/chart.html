@@ -1,0 +1,18 @@
+{% load i18n %}
+<div class="p-4 bg-white rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4">{{ title }}</h2>
+  <canvas id="{{ chart_id }}" class="w-full h-64"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function(){
+    const ctx = document.getElementById('{{ chart_id }}');
+    if(ctx){
+      new Chart(ctx, {
+        type: '{{ type|default:"bar" }}',
+        data: {labels: {{ labels|safe }}, datasets:[{label: '{{ title }}', data: {{ data|safe }}, backgroundColor: '#3b82f6'}]},
+        options: {responsive: true, maintainAspectRatio: false}
+      });
+    }
+  })();
+</script>

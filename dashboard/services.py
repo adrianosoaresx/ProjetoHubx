@@ -4,6 +4,7 @@ from typing import Dict, Optional, Tuple
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.db.models import Avg, Count, Q, Sum
+from django.utils import timezone
 
 from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
@@ -12,6 +13,7 @@ from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
 from feed.models import Post
 from financeiro.models import LancamentoFinanceiro
+from notificacoes.models import NotificationLog
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -130,6 +132,27 @@ class DashboardService:
             qs = qs.filter(centro_custo__organizacao=user.organizacao)
         return qs.order_by("-data_lancamento")[:limit]
 
+    @staticmethod
+    def ultimas_notificacoes(user: User, limit: int = 5):
+        qs = NotificationLog.objects.select_related("template")
+        if user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            qs = qs.filter(user=user)
+        return qs.order_by("-data_envio")[:limit]
+
+    @staticmethod
+    def tarefas_pendentes(user: User, limit: int = 5):
+        qs = LancamentoFinanceiro.objects.filter(status=LancamentoFinanceiro.Status.PENDENTE)
+        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+            qs = qs.filter(centro_custo__organizacao=user.organizacao)
+        return qs.order_by("data_vencimento")[:limit]
+
+    @staticmethod
+    def proximos_eventos(user: User, limit: int = 5):
+        qs = Evento.objects.filter(data_inicio__gte=timezone.now())
+        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+            qs = qs.filter(organizacao=user.organizacao)
+        return qs.order_by("data_inicio")[:limit]
+
 
 class DashboardMetricsService:
     @staticmethod
@@ -151,6 +174,7 @@ class DashboardMetricsService:
         qs_nucleos = Nucleo.objects.all()
         qs_empresas = Empresa.objects.all()
         qs_eventos = Evento.objects.all()
+        qs_posts = Post.objects.all()
 
         if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
             org = user.organizacao
@@ -159,6 +183,7 @@ class DashboardMetricsService:
             qs_nucleos = qs_nucleos.filter(organizacao=org)
             qs_empresas = qs_empresas.filter(usuario__organizacao=org)
             qs_eventos = qs_eventos.filter(organizacao=org)
+            qs_posts = qs_posts.filter(organizacao=org)
 
         metrics = {
             "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim),
@@ -166,6 +191,7 @@ class DashboardMetricsService:
             "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim),
             "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim),
             "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim),
+            "num_posts": DashboardService.calcular_crescimento(qs_posts, inicio, fim),
         }
         cache.set(cache_key, metrics, 300)
         return metrics

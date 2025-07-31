@@ -1,13 +1,60 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}Dashboard Root | Hubx{% endblock %}
+{% block title %}{% trans "Dashboard Root" %} | Hubx{% endblock %}
 
 {% block content %}
 <main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Dashboard">
-  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">Dashboard Root</h1>
+  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Root" %}</h1>
+
   <div hx-get="{% url 'dashboard:metrics-partial' %}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
+
+  {% with labels='["Usuários","Eventos","Posts"]' data='['|add:num_users.total|stringformat:"d"|add:","|add:num_eventos.total|stringformat:"d"|add:","|add:num_posts.total|stringformat:"d"|add:"]' %}
+  {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=data|safe %}
+  {% endwith %}
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Status dos Serviços" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-4 bg-white rounded-lg shadow">
+        <span class="block font-medium">{% trans "Celery" %}</span>
+        <span>{{ service_status.celery }}</span>
+      </div>
+      <div class="p-4 bg-white rounded-lg shadow">
+        <span class="block font-medium">{% trans "Fila de Mensagens" %}</span>
+        <span>{{ service_status.fila_mensagens }}</span>
+      </div>
+      <div class="p-4 bg-white rounded-lg shadow">
+        <span class="block font-medium">{% trans "Uso de Disco" %}</span>
+        <span>{{ service_status.disco }}%</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Métricas de Segurança" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-4 bg-white rounded-lg shadow">
+        <span class="block font-medium">{% trans "Tentativas de Login Bloqueadas" %}</span>
+        <span>{{ security_metrics.login_bloqueados }}</span>
+      </div>
+    </div>
+  </section>
+
+  <div hx-get="{% url 'dashboard:notificacoes-partial' %}" hx-trigger="load, every 20s" hx-target="#notifications" hx-swap="innerHTML"></div>
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <a href="{% url 'admin:index' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+        <i class="fa-solid fa-wrench mb-2"></i>
+        <span class="block">{% trans "Django Admin" %}</span>
+      </a>
+    </div>
+  </section>
+
 </main>
 {% endblock %}
