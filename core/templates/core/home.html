@@ -70,4 +70,15 @@
   </div>
 
 </section>
+
+{% if user.is_authenticated %}
+<section class="py-12 bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Posts em destaque" %}</h2>
+    <div id="posts-destaque" hx-get="{% url 'core:posts_highlights' %}" hx-trigger="load" hx-swap="innerHTML">
+      <p class="text-center text-sm text-gray-500">{% trans "Carregando posts..." %}</p>
+    </div>
+  </div>
+</section>
+{% endif %}
 {% endblock %}

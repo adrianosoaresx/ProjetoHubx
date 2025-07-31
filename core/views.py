@@ -1,9 +1,18 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.views.generic import TemplateView
+
+from feed.models import Post
 
 
 def home(request):
     return render(request, "core/home.html")
+
+
+@login_required
+def posts_highlights(request):
+    posts = Post.objects.select_related("autor").order_by("-created_at")[:3]
+    return render(request, "feed/_post_list.html", {"posts": posts})
 
 
 class AboutView(TemplateView):
