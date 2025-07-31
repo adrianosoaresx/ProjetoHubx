@@ -1,5 +1,6 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client
 from django.urls import reverse
 from django.utils.text import slugify
 
@@ -16,8 +17,16 @@ def faker_ptbr():
     return Faker("pt_BR")
 
 
+@pytest.fixture(autouse=True)
+def no_celery(monkeypatch):
+    monkeypatch.setattr(
+        "organizacoes.tasks.enviar_email_membros.delay", lambda *a, **k: None
+    )
+
+
 @pytest.fixture
-def superadmin_user(client):
+def superadmin_user():
+    client = Client()
     user = User.objects.create_user(
         username="root",
         email="root@example.com",
@@ -29,7 +38,8 @@ def superadmin_user(client):
 
 
 @pytest.fixture
-def admin_user(client, organizacao):
+def admin_user(organizacao):
+    client = Client()
     user = User.objects.create_user(
         username="admin",
         email="admin@example.com",
@@ -47,11 +57,26 @@ def organizacao(faker_ptbr):
     return Organizacao.objects.create(nome=name, cnpj=faker_ptbr.cnpj(), slug=slugify(name))
 
 
-def test_list_view_superadmin(superadmin_user, organizacao):
+def test_list_view_superadmin(superadmin_user, organizacao, faker_ptbr):
+    Organizacao.objects.create(
+        nome="Inativa",
+        cnpj=faker_ptbr.cnpj(),
+        slug="inativa",
+        inativa=True,
+    )
+    Organizacao.objects.create(
+        nome="Excluida",
+        cnpj=faker_ptbr.cnpj(),
+        slug="excluida",
+        deleted=True,
+    )
     url = reverse("organizacoes:list")
     response = superadmin_user.get(url)
     assert response.status_code == 200
-    assert set(response.context["object_list"]) == set(Organizacao.objects.all())
+    objs = response.context["object_list"]
+    assert organizacao in objs
+    assert not any(o.slug == "inativa" for o in objs)
+    assert not any(o.slug == "excluida" for o in objs)
 
 
 def test_list_view_admin_access(admin_user):
@@ -104,7 +129,8 @@ def test_delete_view_superadmin(superadmin_user, organizacao):
     url = reverse("organizacoes:delete", args=[organizacao.pk])
     response = superadmin_user.post(url, follow=True)
     assert response.status_code == 200
-    assert not Organizacao.objects.filter(pk=organizacao.pk).exists()
+    organizacao.refresh_from_db()
+    assert organizacao.deleted is True
 
 
 def test_delete_view_denied_for_admin(admin_user, organizacao):
@@ -169,9 +195,9 @@ def test_ordering_by_nome(superadmin_user, faker_ptbr):
 
 
 def test_list_search(superadmin_user, faker_ptbr):
-    org_a = Organizacao.objects.create(nome="Alpha Org", cnpj=faker_ptbr.cnpj(), slug="a")
-    Organizacao.objects.create(nome="Beta Org", cnpj=faker_ptbr.cnpj(), slug="b")
-    url = reverse("organizacoes:list") + "?q=Alpha"
+    org_a = Organizacao.objects.create(nome="Alpha Org", cnpj=faker_ptbr.cnpj(), slug="alpha-slug")
+    Organizacao.objects.create(nome="Beta Org", cnpj=faker_ptbr.cnpj(), slug="beta-slug")
+    url = reverse("organizacoes:list") + "?q=alpha-slug"
     resp = superadmin_user.get(url)
     content = resp.content.decode()
     assert org_a.nome in content and "Beta Org" not in content
@@ -192,3 +218,38 @@ def test_detail_view_admin_access(admin_user, organizacao):
     resp = admin_user.get(url)
     assert resp.status_code == 200
     assert organizacao.nome in resp.content.decode()
+
+
+def test_toggle_active_and_logs(superadmin_user, organizacao):
+    url = reverse("organizacoes:toggle", args=[organizacao.pk])
+    resp = superadmin_user.post(url, follow=True)
+    assert resp.status_code == 200
+    organizacao.refresh_from_db()
+    assert organizacao.inativa is True
+    log = organizacao.logs.first()
+    assert log.acao == "inativada"
+
+
+def test_toggle_denied_for_admin(admin_user, organizacao):
+    url = reverse("organizacoes:toggle", args=[organizacao.pk])
+    resp = admin_user.post(url)
+    assert resp.status_code == 403
+
+
+def test_logs_view_permission(superadmin_user, admin_user, organizacao):
+    url = reverse("organizacoes:logs", args=[organizacao.pk])
+    assert superadmin_user.get(url).status_code == 200
+    assert admin_user.get(url).status_code == 403
+
+
+def test_signal_emitted_on_create(monkeypatch, superadmin_user, faker_ptbr):
+    called = {}
+
+    def fake_delay(org_id, acao):
+        called["called"] = True
+
+    monkeypatch.setattr("organizacoes.tasks.enviar_email_membros.delay", fake_delay)
+    url = reverse("organizacoes:create")
+    data = {"nome": "Org", "cnpj": faker_ptbr.cnpj(), "slug": "org"}
+    superadmin_user.post(url, data=data, follow=True)
+    assert called.get("called") is True

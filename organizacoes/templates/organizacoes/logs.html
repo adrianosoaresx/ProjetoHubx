@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Histórico de alterações' %} | Hubx{% endblock %}
+{% block content %}
+<section class="max-w-4xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold mb-4">{% trans 'Histórico de alterações' %}</h1>
+  <table class="min-w-full bg-white border border-neutral-200 rounded-2xl shadow-sm">
+    <thead class="bg-neutral-50">
+      <tr>
+        <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Ação' %}</th>
+        <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Usuário' %}</th>
+        <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Data' %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-200">
+      {% for log in object_list %}
+      <tr>
+        <td class="px-4 py-2">{{ log.acao }}</td>
+        <td class="px-4 py-2">{{ log.usuario }}</td>
+        <td class="px-4 py-2">{{ log.created_at|date:'d/m/Y H:i' }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="3" class="px-4 py-2 text-center text-neutral-500">{% trans 'Nenhum log encontrado.' %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="mt-6 flex justify-center gap-2">
+    {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded">{% trans 'Anterior' %}</a>
+    {% endif %}
+    <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded">{% trans 'Próxima' %}</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
