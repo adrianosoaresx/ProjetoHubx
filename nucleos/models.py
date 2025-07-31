@@ -52,6 +52,12 @@ class Nucleo(TimeStampedModel):
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
+    membros = models.ManyToManyField(
+        User,
+        through="ParticipacaoNucleo",
+        through_fields=("nucleo", "user"),
+        related_name="nucleos",
+    )
     data_criacao = models.DateField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
@@ -62,6 +68,11 @@ class Nucleo(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.nome
+
+    @property
+    def membros_aprovados(self):
+        """Retorna apenas os usuários com participação aprovada."""
+        return self.membros.filter(participacoes__status="aprovado")
 
 
 class CoordenadorSuplente(models.Model):

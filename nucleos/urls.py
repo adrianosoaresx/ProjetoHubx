@@ -9,10 +9,36 @@ urlpatterns = [
     path("novo/", views.NucleoCreateView.as_view(), name="create"),
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
     path("<int:pk>/editar/", views.NucleoUpdateView.as_view(), name="update"),
-    path(
-        "<int:pk>/membro/<int:user_id>/remover/",
-        views.NucleoMemberRemoveView.as_view(),
-        name="remove_member",
-    ),
     path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
+    path("<int:pk>/participar/", views.ParticipacaoCreateView.as_view(), name="participacao_solicitar"),
+    path(
+        "<int:pk>/participacao/<int:participacao_id>/decidir/",
+        views.ParticipacaoDecisaoView.as_view(),
+        name="participacao_decidir",
+    ),
+    path(
+        "<int:pk>/membro/<int:participacao_id>/remover/",
+        views.MembroRemoveView.as_view(),
+        name="membro_remover",
+    ),
+    path(
+        "<int:pk>/membro/<int:participacao_id>/role/",
+        views.MembroRoleView.as_view(),
+        name="membro_role",
+    ),
+    path(
+        "<int:pk>/suplentes/adicionar/",
+        views.SuplenteCreateView.as_view(),
+        name="suplente_adicionar",
+    ),
+    path(
+        "<int:pk>/suplentes/<uuid:suplente_id>/remover/",
+        views.SuplenteDeleteView.as_view(),
+        name="suplente_remover",
+    ),
+    path(
+        "<int:pk>/exportar-membros/",
+        views.ExportarMembrosView.as_view(),
+        name="exportar_membros",
+    ),
 ]

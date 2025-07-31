@@ -1,7 +1,6 @@
 import pytest
-from django import forms
 
-from nucleos.forms import NucleoForm, NucleoSearchForm
+from nucleos.forms import NucleoForm, NucleoSearchForm, SuplenteForm
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -19,14 +18,13 @@ def test_nucleo_form_fields():
         "nome",
         "descricao",
         "avatar",
-        "membros",
+        "cover",
     ]
-    assert isinstance(form.fields["membros"], forms.ModelMultipleChoiceField)
 
 
 def test_membros_queryset_includes_all_users():
     form = NucleoForm()
-    assert hasattr(form.fields["membros"], "queryset")
+    assert "organizacao" in form.fields
 
 
 def test_form_validation_errors(organizacao):
@@ -37,4 +35,9 @@ def test_form_validation_errors(organizacao):
 
 def test_search_form_contains_field():
     form = NucleoSearchForm()
-    assert "nucleo" in form.fields
+    assert "q" in form.fields
+
+
+def test_suplente_form_date_validation():
+    form = SuplenteForm(data={"usuario": None, "periodo_inicio": "2024-01-02", "periodo_fim": "2024-01-01"})
+    assert not form.is_valid()

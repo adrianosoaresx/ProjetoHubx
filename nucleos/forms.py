@@ -1,33 +1,50 @@
+from __future__ import annotations
+
 from django import forms
 from django.contrib.auth import get_user_model
-from django_select2 import forms as s2forms
+from django.utils.translation import gettext_lazy as _
 
-from .models import Nucleo
+from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 
 User = get_user_model()
 
 
 class NucleoForm(forms.ModelForm):
-    membros = forms.ModelMultipleChoiceField(queryset=User.objects.all(), required=False, widget=forms.SelectMultiple)
-
     class Meta:
         model = Nucleo
-        fields = ["organizacao", "nome", "descricao", "avatar", "membros"]
-
-
-class NucleoWidget(s2forms.ModelSelect2Widget):
-    search_fields = ["nome__icontains"]
+        fields = ["organizacao", "nome", "descricao", "avatar", "cover"]
 
 
 class NucleoSearchForm(forms.Form):
-    nucleo = forms.ModelChoiceField(
-        queryset=Nucleo.objects.all(),
-        required=False,
-        label="",
-        widget=NucleoWidget(
-            attrs={
-                "data-placeholder": "Buscar núcleos...",
-                "data-minimum-input-length": 2,
-            }
-        ),
-    )
+    q = forms.CharField(label="", required=False)
+
+
+class ParticipacaoForm(forms.ModelForm):
+    class Meta:
+        model = ParticipacaoNucleo
+        fields = ["nucleo"]
+        widgets = {"nucleo": forms.HiddenInput()}
+
+
+class ParticipacaoDecisaoForm(forms.Form):
+    acao = forms.CharField(widget=forms.HiddenInput())
+
+
+class SuplenteForm(forms.ModelForm):
+    class Meta:
+        model = CoordenadorSuplente
+        fields = ["usuario", "periodo_inicio", "periodo_fim"]
+
+    def clean(self):
+        data = super().clean()
+        inicio = data.get("periodo_inicio")
+        fim = data.get("periodo_fim")
+        if inicio and fim and inicio >= fim:
+            raise forms.ValidationError(_("Período inválido"))
+        return data
+
+
+class MembroRoleForm(forms.ModelForm):
+    class Meta:
+        model = ParticipacaoNucleo
+        fields = ["is_coordenador"]
