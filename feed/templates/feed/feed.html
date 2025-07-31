@@ -1,35 +1,36 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Feed | Hubx{% endblock %}
+{% block title %}{% trans "Feed" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10">
 
   <!-- Cabeçalho -->
   <div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold text-neutral-900">Feed de Postagens</h1>
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Feed de Postagens" %}</h1>
     <div class="flex gap-2">
-      <a href="{% url 'feed:meu_mural' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Mural</a>
+      <a href="{% url 'feed:meu_mural' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Mural' %}">{% trans "Mural" %}</a>
       {% if request.user.user_type != 'root' %}
-        <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 focus-visible:ring">
+        <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500" aria-label="{% trans 'Nova postagem' %}">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          Nova postagem
+          {% trans "Nova postagem" %}
         </a>
       {% endif %}
     </div>
   </div>
 
   <div class="flex items-center gap-4 mb-4">
-    <label class="font-semibold">Núcleo:</label>
+    <label class="font-semibold">{% trans "Núcleo" %}:</label>
     <select id="filtro-nucleo" name="nucleo"
             hx-get="{% url 'feed:listar' %}"
             hx-target="#feed-grid"
             hx-indicator="#feed-loading"
             hx-include="#feed-search,#filtro-nucleo"
-            class="rounded border-gray-300">
-      <option value="">Global</option>
+            class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      <option value="">{% trans "Global" %}</option>
       {% for n in nucleos_do_usuario %}
         <option value="{{ n.id }}">{{ n.nome }}</option>
       {% endfor %}
@@ -37,14 +38,14 @@
   </div>
 
   <input type="search" name="q" id="feed-search"
-         placeholder="Buscar postagens…"
+         placeholder="{% trans 'Buscar postagens…' %}"
          hx-get="{% url 'feed:listar' %}"
          hx-trigger="keyup changed delay:500ms"
          hx-target="#feed-grid"
          hx-include="#filtro-nucleo"
-         class="w-full rounded border-gray-300 mb-6">
+         class="w-full rounded border-gray-300 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-  <div id="feed-loading" class="htmx-indicator">Carregando…</div>
+  <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
 
   {% include "feed/_grid.html" %}
 

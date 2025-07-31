@@ -1,16 +1,16 @@
-{% load static %}
+{% load static i18n %}
 <section id="feed-grid" class="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
   {% for post in posts %}
     <article class="rounded-lg bg-white shadow p-6 space-y-4">
       <p class="text-xs text-neutral-500">
         {% if post.tipo_feed == 'nucleo' %}
-          Feed do Núcleo: {{ post.nucleo.nome }}
+          {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
         {% elif post.tipo_feed == 'evento' %}
-          Feed do Evento: {{ post.evento.titulo }}
+          {% blocktrans with titulo=post.evento.titulo %}Feed do Evento: {{ titulo }}{% endblocktrans %}
         {% elif post.tipo_feed == 'usuario' %}
-          Mural do Usuário
+          {% trans "Mural do Usuário" %}
         {% else %}
-          Feed Global
+          {% trans "Feed Global" %}
         {% endif %}
       </p>
       <div class="flex items-center gap-4">
@@ -33,7 +33,7 @@
       </div>
       {% if post.pdf %}
         <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="PDF" class="w-full rounded">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded">
           <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
             <i class="fa-solid fa-eye"></i>
           </a>
@@ -50,10 +50,10 @@
         <div id="like-btn-{{ post.id }}">
           {% include 'feed/_like_button.html' with post=post %}
         </div>
-        <span>{{ post.comments.count }} comentários</span>
+        <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
       </div>
     </article>
   {% empty %}
-    <p class="col-span-full text-center text-neutral-500">Nenhuma postagem encontrada.</p>
+    <p class="col-span-full text-center text-neutral-500">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
 </section>
