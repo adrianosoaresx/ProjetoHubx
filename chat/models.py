@@ -19,6 +19,7 @@ class ChatConversation(TimeStampedModel):
     ]
 
     titulo = models.CharField(max_length=200, null=True, blank=True)
+    descricao = models.TextField(blank=True)
     slug = models.SlugField(unique=True)
     tipo_conversa = models.CharField(
         max_length=12,

@@ -1,0 +1,10 @@
+{% load i18n %}
+<div class="{% if m.sender_id == user.id %}text-right{% endif %}">
+  <article class="inline-block px-3 py-2 rounded-lg {% if m.sender_id == user.id %}bg-blue-100{% else %}bg-gray-100{% endif %}">
+    <header class="text-xs text-gray-500">
+      <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:'d/m H:i' }}</time>
+      – <span>{{ m.sender.username }}</span>
+    </header>
+    <p>{{ m.conteudo }}</p>
+  </article>
+</div>
