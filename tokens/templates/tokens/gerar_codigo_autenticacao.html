@@ -1,11 +1,14 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
+{% load widget_tweaks i18n %}
 
-{% block title %}Gerar Código de Autenticação | HubX{% endblock %}
+{% block title %}{% trans "Gerar Código de Autenticação" %} | HubX{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold text-center mb-6">Gerar Código de Autenticação</h1>
+  <header class="text-center mb-6">
+    <h1 class="text-2xl font-bold">{% trans "Gerar Código de Autenticação" %}</h1>
+    <p class="text-sm text-neutral-600 mt-2">{% trans "Gere um código temporário para validar sua identidade." %}</p>
+  </header>
 
   <form method="post" action="{% url 'tokens:gerar_codigo' %}"
         hx-post="{% url 'tokens:gerar_codigo' %}"
@@ -16,12 +19,12 @@
       <div>
         <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
         {% if field.field.widget.input_type == 'select' %}
-          {{ field|add_class:"form-select" }}
+          {{ field|add_class:"form-select"|attr:"required" }}
         {% else %}
           {% if forloop.first %}
-            {{ field|add_class:"form-input"|attr:"autofocus" }}
+            {{ field|add_class:"form-input"|attr:"autofocus required" }}
           {% else %}
-            {{ field|add_class:"form-input" }}
+            {{ field|add_class:"form-input"|attr:"required" }}
           {% endif %}
         {% endif %}
         {% if field.errors %}
@@ -30,10 +33,14 @@
       </div>
     {% endfor %}
     <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">Gerar Código</button>
+      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Gerar Código" %}</button>
     </div>
   </form>
 
-  <div id="resultado" class="mt-6 text-center"></div>
+  <div id="resultado" class="mt-6 text-center" aria-live="polite"></div>
+
+  <footer class="mt-6 text-center">
+    <a href="{% url 'accounts:seguranca' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+  </footer>
 </section>
 {% endblock %}

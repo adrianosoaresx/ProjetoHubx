@@ -25,7 +25,7 @@
       {% csrf_token %}
       <div>
         <label for="{{ form.codigo_totp.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo_totp.label }}</label>
-        {{ form.codigo_totp|add_class:"form-input" }}
+        {{ form.codigo_totp|add_class:"form-input"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
         {% if form.codigo_totp.errors %}
           <p class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
         {% endif %}
