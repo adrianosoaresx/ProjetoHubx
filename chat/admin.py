@@ -15,12 +15,12 @@ class ChatConversationAdmin(admin.ModelAdmin):
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ["sender", "conversation", "tipo", "pinned_at", "created_at"]
+    list_display = ["remetente", "conversation", "tipo", "pinned_at", "timestamp"]
 
 
 @admin.register(ChatNotification)
 class ChatNotificationAdmin(admin.ModelAdmin):
-    list_display = ["user", "mensagem", "lido"]
+    list_display = ["usuario", "mensagem", "lido"]
 
 
 @admin.register(RelatorioChatExport)

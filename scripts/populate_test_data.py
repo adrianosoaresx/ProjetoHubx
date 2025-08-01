@@ -2,6 +2,7 @@
 """Populate database with realistic test data for all domains."""
 
 from __future__ import annotations
+
 import os
 import random
 import sys
@@ -9,7 +10,7 @@ from decimal import Decimal
 
 from django.utils import timezone
 from faker import Faker
-from validate_docbr import CPF, CNPJ
+from validate_docbr import CNPJ, CPF
 
 # ---------------------------------------------------------------------------
 # Configuração do ambiente Django
@@ -19,28 +20,30 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
 
-import django
+import django  # noqa: E402
+
 django.setup()
 
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.utils.text import slugify
+from django.contrib.auth import get_user_model  # noqa: E402
+from django.db import transaction  # noqa: E402
+from django.utils.text import slugify  # noqa: E402
 
-from accounts.models import UserType
-from agenda.models import Evento, InscricaoEvento, ParceriaEvento
-from chat.models import ChatConversation, ChatMessage, ChatParticipant
-from configuracoes.models import ConfiguracaoConta
-from discussao.models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao
-from empresas.models import Empresa
-from feed.models import Post
-from nucleos.models import Nucleo, ParticipacaoNucleo
-from organizacoes.models import Organizacao
-from tokens.models import TokenAcesso
+from accounts.models import UserType  # noqa: E402
+from agenda.models import Evento, InscricaoEvento, ParceriaEvento  # noqa: E402
+from chat.models import ChatConversation, ChatMessage, ChatParticipant  # noqa: E402
+from configuracoes.models import ConfiguracaoConta  # noqa: E402
+from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao  # noqa: E402
+from empresas.models import Empresa  # noqa: E402
+from feed.models import Post  # noqa: E402
+from nucleos.models import Nucleo, ParticipacaoNucleo  # noqa: E402
+from organizacoes.models import Organizacao  # noqa: E402
+from tokens.models import TokenAcesso  # noqa: E402
 
 User = get_user_model()
 fake = Faker("pt_BR")
 cpf = CPF()
 cnpj = CNPJ()
+
 
 def clear_test_data() -> None:
     """Remove previously generated data keeping only the root user."""
@@ -60,6 +63,7 @@ def clear_test_data() -> None:
     Nucleo.objects.all().delete()
     Organizacao.objects.all().delete()
 
+
 def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     orgs = []
     for i in range(qtd):
@@ -75,6 +79,7 @@ def create_organizacoes(qtd: int = 3) -> list[Organizacao]:
     Organizacao.objects.bulk_create(orgs)
     return list(Organizacao.objects.order_by("-id")[:qtd])
 
+
 def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo]:
     nucleos = []
     for org in orgs:
@@ -88,6 +93,7 @@ def create_nucleos(orgs: list[Organizacao], qtd_por_org: int = 2) -> list[Nucleo
             )
     Nucleo.objects.bulk_create(nucleos)
     return list(Nucleo.objects.filter(organizacao__in=orgs))
+
 
 def create_users(orgs, nucleos):
     users = []
@@ -184,6 +190,7 @@ def create_users(orgs, nucleos):
         creds.append((convidado.username, convidado.email, "1234Hubx!"))
     return users, creds
 
+
 def create_eventos(nucleos, coordenadores):
     eventos = []
     for nucleo in nucleos:
@@ -223,6 +230,7 @@ def create_eventos(nucleos, coordenadores):
     Evento.objects.bulk_create(eventos)
     return list(Evento.objects.filter(nucleo__in=nucleos))
 
+
 def create_inscricoes(eventos, participantes):
     inscricoes = []
     for evento in eventos:
@@ -241,6 +249,7 @@ def create_inscricoes(eventos, participantes):
     InscricaoEvento.objects.bulk_create(inscricoes)
     return inscricoes
 
+
 def create_feed(orgs, autores):
     posts = []
     for org in orgs:
@@ -256,6 +265,7 @@ def create_feed(orgs, autores):
             )
     Post.objects.bulk_create(posts)
     return posts
+
 
 def create_chat(orgs, users):
     conversations = []
@@ -278,18 +288,19 @@ def create_chat(orgs, users):
         for u in conv_users:
             participants.append(ChatParticipant(conversation=conv, user=u))
         for _ in range(5):
-            sender = random.choice(conv_users)
+            remetente = random.choice(conv_users)
             messages.append(
                 ChatMessage(
                     conversation=conv,
                     organizacao=conv.organizacao,
-                    sender=sender,
+                    remetente=remetente,
                     conteudo=fake.sentence(),
                 )
             )
     ChatParticipant.objects.bulk_create(participants)
     ChatMessage.objects.bulk_create(messages)
     return conversations, messages
+
 
 def create_discussao(orgs, autores):
     categorias = []
@@ -333,6 +344,7 @@ def create_discussao(orgs, autores):
     RespostaDiscussao.objects.bulk_create(respostas)
     return categorias, topicos
 
+
 def create_empresas(orgs, usuarios):
     empresas = []
     for org in orgs:
@@ -358,6 +370,7 @@ def create_empresas(orgs, usuarios):
     Empresa.objects.bulk_create(empresas)
     return empresas
 
+
 def create_parcerias(eventos, empresas):
     parcerias = []
     for evento in eventos:
@@ -375,6 +388,7 @@ def create_parcerias(eventos, empresas):
         )
     ParceriaEvento.objects.bulk_create(parcerias)
     return parcerias
+
 
 def create_tokens(usuarios):
     tokens = []
@@ -396,6 +410,7 @@ def create_tokens(usuarios):
         )
     TokenAcesso.objects.bulk_create(tokens)
     return tokens
+
 
 def main():
     with transaction.atomic():
@@ -428,6 +443,7 @@ def main():
         f"conversas:{len(convs)} mensagens:{len(msgs)} topicos:{len(topicos)} "
         f"empresas:{len(empresas)} parcerias:{len(parcerias)} tokens:{len(tokens)}"
     )
+
 
 if __name__ == "__main__":
     main()

@@ -59,7 +59,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         msg = await database_sync_to_async(create_message)(
             nucleo_id=self.nucleo_id,
             remetente_id=user.id,
-            destinatario_id=self.dest.id,
             tipo=message_type,
             conteudo=content,
         )
@@ -67,14 +66,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "Mensagem salva:",
             msg.id,
             msg.remetente_id,
-            "->",
-            msg.destinatario_id,
             msg.conteudo,
         )
         recipient_ids = await database_sync_to_async(list)(
             User.objects.filter(nucleo_id=self.nucleo_id).exclude(id=user.id).values_list("id", flat=True)
         )
-        await database_sync_to_async(notify_users)(recipient_ids, user.id, msg)
+        await database_sync_to_async(notify_users)(recipient_ids, msg)
 
         await self.channel_layer.group_send(
             self.group_name,
@@ -83,7 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 "remetente": user.username,
                 "tipo": message_type,
                 "conteudo": content,
-                "timestamp": msg.criado_em.isoformat(),
+                "timestamp": msg.timestamp.isoformat(),
             },
         )
         print("Enviada ao grupo", self.group_name)

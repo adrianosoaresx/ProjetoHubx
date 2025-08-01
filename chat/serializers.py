@@ -11,12 +11,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "conversation",
-            "sender",
+            "remetente",
             "tipo",
             "conteudo",
             "arquivo",
             "pinned_at",
             "reactions",
-            "created_at",
+            "timestamp",
         ]
-        read_only_fields = ["id", "sender", "created_at"]
+        read_only_fields = ["id", "remetente", "timestamp"]

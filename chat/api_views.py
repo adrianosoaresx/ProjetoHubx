@@ -13,6 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from core.permissions import IsModeratorUser
+
 from .api import add_reaction
 from .models import (
     ChatConversation,
@@ -25,7 +26,7 @@ from .serializers import ChatMessageSerializer
 
 
 class ChatMessageViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
-    queryset = ChatMessage.objects.select_related("sender", "conversation")
+    queryset = ChatMessage.objects.select_related("remetente", "conversation")
     serializer_class = ChatMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -75,13 +76,13 @@ class ChatMessageViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixin
 def exportar_conversa(request: Request, slug: str) -> Response:
     formato = request.GET.get("formato", "json")
     canal = get_object_or_404(ChatConversation, slug=slug)
-    mensagens = canal.messages.filter(hidden_at__isnull=True).select_related("sender").order_by("created_at")
+    mensagens = canal.messages.filter(hidden_at__isnull=True).select_related("remetente").order_by("timestamp")
     data = [
         {
-            "remetente": m.sender_id,
+            "remetente": m.remetente_id,
             "conteudo": m.conteudo,
             "tipo": m.tipo,
-            "timestamp": m.created_at.isoformat(),
+            "timestamp": m.timestamp.isoformat(),
         }
         for m in mensagens
     ]
@@ -101,7 +102,7 @@ def exportar_conversa(request: Request, slug: str) -> Response:
     else:
         json.dump(data, buffer)
         ext = "json"
-    path = default_storage.save(f"chat/exports/{canal.slug}.{ext}", ContentFile(buffer.getvalue().encode()))
+        path = default_storage.save(f"chat/exports/{canal.slug}.{ext}", ContentFile(buffer.getvalue().encode()))
     rel = RelatorioChatExport.objects.create(
         channel=canal,
         formato=ext,

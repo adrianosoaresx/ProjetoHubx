@@ -123,7 +123,7 @@ class Command(BaseCommand):
             for _ in range(10):
                 ChatMessage.objects.create(
                     conversation=conv,
-                    sender=random.choice(participantes),
+                    remetente=random.choice(participantes),
                     conteudo=faker.sentence(),
                 )
 
