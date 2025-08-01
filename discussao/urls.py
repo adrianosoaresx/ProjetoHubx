@@ -1,7 +1,10 @@
 from django.urls import path
 
 from .views import (
+    CategoriaCreateView,
+    CategoriaDeleteView,
     CategoriaListView,
+    CategoriaUpdateView,
     InteracaoView,
     RespostaCreateView,
     RespostaDeleteView,
@@ -14,6 +17,9 @@ from .views import (
 
 urlpatterns = [
     path("", CategoriaListView.as_view(), name="categorias"),
+    path("categorias/novo/", CategoriaCreateView.as_view(), name="categoria_criar"),
+    path("categorias/<slug:slug>/editar/", CategoriaUpdateView.as_view(), name="categoria_editar"),
+    path("categorias/<slug:slug>/remover/", CategoriaDeleteView.as_view(), name="categoria_remover"),
     path("<slug:categoria_slug>/", TopicoListView.as_view(), name="topicos"),
     path(
         "<slug:categoria_slug>/<slug:topico_slug>/",
@@ -42,7 +48,7 @@ urlpatterns = [
         name="delete_comment",
     ),
     path(
-        "interacao/<int:content_type_id>/<int:object_id>/<str:tipo>/",
+        "interacao/<int:content_type_id>/<int:object_id>/<str:acao>/",
         InteracaoView.as_view(),
         name="interacao",
     ),

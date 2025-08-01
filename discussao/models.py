@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
@@ -106,6 +106,7 @@ class TopicoDiscussao(TimeStampedModel):
         blank=True,
         on_delete=models.SET_NULL,
     )
+    interacoes = GenericRelation("InteracaoDiscussao")
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -121,6 +122,14 @@ class TopicoDiscussao(TimeStampedModel):
     def incrementar_visualizacao(self):
         self.numero_visualizacoes += 1
         self.save()
+
+    @property
+    def score(self) -> int:
+        return self.interacoes.aggregate(total=models.Sum("valor"))["total"] or 0
+
+    @property
+    def num_votos(self) -> int:
+        return self.interacoes.count()
 
 
 class RespostaDiscussao(TimeStampedModel):
@@ -146,6 +155,7 @@ class RespostaDiscussao(TimeStampedModel):
     editado = models.BooleanField(default=False)
     editado_em = models.DateTimeField(null=True, blank=True)
     motivo_edicao = models.TextField(null=True, blank=True)
+    interacoes = GenericRelation("InteracaoDiscussao")
 
     class Meta:
         ordering = ["created"]
@@ -158,17 +168,30 @@ class RespostaDiscussao(TimeStampedModel):
         self.editado_em = timezone.now()
         self.save()
 
+    @property
+    def score(self) -> int:
+        return self.interacoes.aggregate(total=models.Sum("valor"))["total"] or 0
+
+    @property
+    def num_votos(self) -> int:
+        return self.interacoes.count()
+
 
 class InteracaoDiscussao(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
-    tipo = models.CharField(
-        max_length=7,
-        choices=[("like", "Curtir"), ("dislike", "Não Curtir")],
-    )
+    valor = models.SmallIntegerField(choices=[(1, "Curtir"), (-1, "Não Curtir")], default=1)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "content_type", "object_id")
+
+    @property
+    def tipo(self) -> str:
+        return "like" if self.valor == 1 else "dislike"
+
+    @tipo.setter
+    def tipo(self, value: str) -> None:
+        self.valor = 1 if value == "like" else -1

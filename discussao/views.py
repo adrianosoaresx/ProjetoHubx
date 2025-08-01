@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db.models import Count, Max
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext_lazy
@@ -19,8 +19,9 @@ from django.views.generic import (
 )
 
 from accounts.models import UserType
+from core.permissions import AdminRequiredMixin
 
-from .forms import RespostaDiscussaoForm, TopicoDiscussaoForm
+from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TopicoDiscussaoForm
 from .models import (
     CategoriaDiscussao,
     InteracaoDiscussao,
@@ -33,13 +34,75 @@ class CategoriaListView(LoginRequiredMixin, ListView):
     model = CategoriaDiscussao
     template_name = "discussao/categorias.html"
     context_object_name = "categorias"
+    paginate_by = 20
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("organizacao", "nucleo", "evento").prefetch_related("topicos")
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("organizacao", "nucleo", "evento")
+            .prefetch_related("topicos")
+            .order_by("nome")
+        )
         user = self.request.user
         if user.user_type != UserType.ROOT:
             qs = qs.filter(organizacao=user.organizacao)
+        org = self.request.GET.get("organizacao")
+        nucleo = self.request.GET.get("nucleo")
+        evento = self.request.GET.get("evento")
+        if org:
+            qs = qs.filter(organizacao_id=org)
+        if nucleo:
+            qs = qs.filter(nucleo_id=nucleo)
+        if evento:
+            qs = qs.filter(evento_id=evento)
         return qs
+
+
+class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+    model = CategoriaDiscussao
+    form_class = CategoriaDiscussaoForm
+    template_name = "discussao/categoria_form.html"
+
+    def form_valid(self, form):
+        form.instance.organizacao = self.request.user.organizacao
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("discussao:categorias")
+
+
+class CategoriaUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = CategoriaDiscussao
+    form_class = CategoriaDiscussaoForm
+    template_name = "discussao/categoria_form.html"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.user_type != UserType.ROOT:
+            qs = qs.filter(organizacao=self.request.user.organizacao)
+        return qs
+
+    def get_success_url(self):
+        return reverse("discussao:categorias")
+
+
+class CategoriaDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = CategoriaDiscussao
+    template_name = "discussao/categoria_confirm_delete.html"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.request.user.user_type != UserType.ROOT:
+            qs = qs.filter(organizacao=self.request.user.organizacao)
+        return qs
+
+    def get_success_url(self):
+        return reverse("discussao:categorias")
 
 
 class TopicoListView(LoginRequiredMixin, ListView):
@@ -63,6 +126,9 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 last_activity=Max("respostas__created"),
             )
         )
+        tag = self.request.GET.get("tag")
+        if tag:
+            qs = qs.filter(tags__nome=tag)
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
         else:
@@ -73,6 +139,8 @@ class TopicoListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["categoria"] = self.categoria
         context["ordenacao"] = self.request.GET.get("ordenacao", "recentes")
+        context["tag"] = self.request.GET.get("tag")
+        context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
 
@@ -112,6 +180,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         context["comentarios"] = comentarios
+        context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
 
@@ -122,15 +191,20 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
-        if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}:
+        if request.user.user_type != UserType.ROOT and request.user.organizacao != self.categoria.organizacao:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.autor = self.request.user
         form.instance.categoria = self.categoria
+        if self.categoria.nucleo_id:
+            form.instance.nucleo = self.categoria.nucleo
+        if self.categoria.evento_id:
+            form.instance.evento = self.categoria.evento
         response = super().form_valid(form)
-        messages.success(self.request, gettext_lazy("T\u00f3pico criado com sucesso"))
+        form.instance.tags.set(form.cleaned_data["tags"])
+        messages.success(self.request, gettext_lazy("Tópico criado com sucesso"))
         return response
 
     def get_success_url(self):
@@ -219,19 +293,22 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class InteracaoView(LoginRequiredMixin, View):
-    def post(self, request, content_type_id, object_id, tipo):
+    def post(self, request, content_type_id, object_id, acao):
         content_type = get_object_or_404(ContentType, id=content_type_id)
-        get_object_or_404(content_type.model_class(), id=object_id)
+        obj = get_object_or_404(content_type.model_class(), id=object_id)
+        valor_map = {"up": 1, "down": -1, "like": 1, "dislike": -1}
+        valor = valor_map.get(acao, 1)
         interacao, created = InteracaoDiscussao.objects.get_or_create(
             user=request.user,
             content_type=content_type,
             object_id=object_id,
-            defaults={"tipo": tipo},
+            defaults={"valor": valor},
         )
         if not created:
-            if interacao.tipo == tipo:
+            if interacao.valor == valor:
                 interacao.delete()
             else:
-                interacao.tipo = tipo
+                interacao.valor = valor
                 interacao.save()
-        return HttpResponse(status=204)
+        data = {"score": obj.score, "num_votos": obj.num_votos}
+        return JsonResponse(data)
