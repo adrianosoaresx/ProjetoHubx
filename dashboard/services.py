@@ -161,10 +161,22 @@ class DashboardMetricsService:
         periodo: str = "mensal",
         inicio: Optional[datetime] = None,
         fim: Optional[datetime] = None,
+        escopo: str = "auto",
+        **filters,
     ) -> Dict[str, Dict[str, float]]:
         """Return dashboard metrics, cached for 5 minutes."""
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
-        cache_key = f"dashboard_metrics_{user.pk}_{periodo}_{inicio.isoformat()}_{fim.isoformat()}"
+
+        cache_parts = [
+            str(user.pk),
+            periodo,
+            inicio.isoformat(),
+            fim.isoformat(),
+            escopo,
+        ]
+        for k in sorted(filters.keys()):
+            cache_parts.append(f"{k}:{filters[k]}")
+        cache_key = "dashboard_metrics_" + "_".join(cache_parts)
         cached = cache.get(cache_key)
         if cached:
             return cached
@@ -176,14 +188,59 @@ class DashboardMetricsService:
         qs_eventos = Evento.objects.all()
         qs_posts = Post.objects.all()
 
-        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
-            org = user.organizacao
-            qs_users = qs_users.filter(organizacao=org)
-            qs_orgs = qs_orgs.filter(pk=getattr(org, "pk", None))
-            qs_nucleos = qs_nucleos.filter(organizacao=org)
-            qs_empresas = qs_empresas.filter(usuario__organizacao=org)
-            qs_eventos = qs_eventos.filter(organizacao=org)
-            qs_posts = qs_posts.filter(organizacao=org)
+        organizacao_id = filters.get("organizacao_id")
+        nucleo_id = filters.get("nucleo_id")
+        evento_id = filters.get("evento_id")
+
+        # determine filtering based on scope
+        if escopo == "auto":
+            if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+                organizacao_id = organizacao_id or getattr(user.organizacao, "pk", None)
+            elif user.user_type not in {UserType.ROOT}:
+                # for clientes limit to user's own data
+                organizacao_id = getattr(user.organizacao, "pk", None)
+        elif escopo == "organizacao" and organizacao_id:
+            if user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+                raise PermissionError("Escopo de organização não permitido")
+        elif escopo == "nucleo" and nucleo_id:
+            nucleo = Nucleo.objects.filter(pk=nucleo_id).first()
+            if not nucleo:
+                raise PermissionError("Núcleo inválido")
+            if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not nucleo.membros.filter(
+                pk=user.pk
+            ).exists():
+                raise PermissionError("Acesso negado ao núcleo")
+            organizacao_id = organizacao_id or nucleo.organizacao_id
+        elif escopo == "evento" and evento_id:
+            evento = Evento.objects.filter(pk=evento_id).first()
+            if not evento:
+                raise PermissionError("Evento inválido")
+            if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not (
+                evento.coordenador_id == user.pk
+                or evento.nucleo and evento.nucleo.membros.filter(pk=user.pk).exists()
+            ):
+                raise PermissionError("Acesso negado ao evento")
+            organizacao_id = organizacao_id or evento.organizacao_id
+            nucleo_id = nucleo_id or evento.nucleo_id
+
+        if organizacao_id:
+            qs_users = qs_users.filter(organizacao_id=organizacao_id)
+            qs_orgs = qs_orgs.filter(pk=organizacao_id)
+            qs_nucleos = qs_nucleos.filter(organizacao_id=organizacao_id)
+            qs_empresas = qs_empresas.filter(usuario__organizacao_id=organizacao_id)
+            qs_eventos = qs_eventos.filter(organizacao_id=organizacao_id)
+            qs_posts = qs_posts.filter(organizacao_id=organizacao_id)
+
+        if nucleo_id:
+            qs_users = qs_users.filter(nucleos__id=nucleo_id)
+            qs_nucleos = qs_nucleos.filter(pk=nucleo_id)
+            qs_empresas = qs_empresas.filter(usuario__nucleos__id=nucleo_id)
+            qs_eventos = qs_eventos.filter(nucleo_id=nucleo_id)
+            qs_posts = qs_posts.filter(nucleo_id=nucleo_id)
+
+        if evento_id:
+            qs_eventos = qs_eventos.filter(pk=evento_id)
+            qs_posts = qs_posts.filter(evento_id=evento_id)
 
         metrics = {
             "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim),
@@ -193,5 +250,10 @@ class DashboardMetricsService:
             "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim),
             "num_posts": DashboardService.calcular_crescimento(qs_posts, inicio, fim),
         }
+
+        metricas = filters.get("metricas")
+        if metricas:
+            metrics = {k: v for k, v in metrics.items() if k in metricas}
+
         cache.set(cache_key, metrics, 300)
         return metrics
