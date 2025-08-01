@@ -1,138 +1,101 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db import IntegrityError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
 from accounts.models import UserType
-from core.permissions import ClienteGerenteRequiredMixin, NoSuperadminMixin, no_superadmin_required, pode_crud_empresa
-
-from .forms import (
-    ContatoEmpresaForm,
-    EmpresaForm,
-    TagForm,
-    TagSearchForm,
+from core.permissions import (
+    ClienteGerenteRequiredMixin,
+    NoSuperadminMixin,
+    no_superadmin_required,
+    pode_crud_empresa,
 )
+
+from .forms import ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
 from .models import ContatoEmpresa, Empresa, Tag
+from .services import LOG_FIELDS, filter_empresas, list_all_tags, registrar_alteracoes
 
 
-# ------------------------------------------------------------------
-# LISTA
-# ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def lista_empresas(request):
-    qs = Empresa.objects.select_related("organizacao", "usuario").prefetch_related("contatos")
-    if request.user.is_superuser:
-        empresas = qs
-    elif request.user.user_type == UserType.ADMIN:
-        empresas = qs.filter(organizacao=request.user.organizacao)
-    elif request.user.user_type in [UserType.NUCLEADO, UserType.COORDENADOR]:
-        empresas = qs.filter(usuario=request.user)
-    else:
+class EmpresaListView(LoginRequiredMixin, ListView):
+    model = Empresa
+    template_name = "empresas/lista.html"
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        if request.user.is_superuser or request.user.user_type in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.NUCLEADO,
+        }:
+            return super().dispatch(request, *args, **kwargs)
         return HttpResponseForbidden("Usuário não autorizado.")
 
-    nome = request.GET.get("nome", "")
-    segmento = request.GET.get("segmento", "")
-    if nome:
-        empresas = empresas.filter(nome__icontains=nome)
-    if segmento:
-        empresas = empresas.filter(tipo__icontains=segmento)
+    def get_queryset(self):
+        return filter_empresas(self.request.user, self.request.GET)
 
-    paginator = Paginator(empresas, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tags"] = list_all_tags()
+        context["selected_tags"] = self.request.GET.getlist("tags")
+        return context
 
-    context = {
-        "empresas": page_obj,
-        "page_obj": page_obj,
-        "is_paginated": page_obj.has_other_pages(),
-    }
-
-    template = "empresas/includes/empresas_table.html" if request.headers.get("HX-Request") else "empresas/lista.html"
-
-    return render(request, template, context)
+    def get_template_names(self):  # type: ignore[override]
+        if self.request.headers.get("HX-Request"):
+            return ["empresas/includes/empresas_table.html"]
+        return [self.template_name]
 
 
-# ------------------------------------------------------------------
-# CADASTRAR
-# ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def nova_empresa(request):
-    if not request.user.is_authenticated or request.user.is_superuser or request.user.user_type == UserType.ADMIN:
-        return HttpResponseForbidden("Usuário não autorizado a criar empresas.")
+class EmpresaCreateView(LoginRequiredMixin, CreateView):
+    model = Empresa
+    form_class = EmpresaForm
+    template_name = "empresas/nova.html"
+    success_url = reverse_lazy("empresas:lista")
 
-    if request.method == "POST":
-        form = EmpresaForm(request.POST, request.FILES)
-        if form.is_valid():
-            empresa = form.save(commit=False)
-            empresa.organizacao = request.user.organizacao
-            empresa.usuario = request.user
-            empresa.save()
-            form.save_m2m()
-            status_code = 201 if request.headers.get("HX-Request") else 302
-            return JsonResponse({"message": "Empresa criada com sucesso."}, status=status_code)
-    else:
-        form = EmpresaForm()
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        if not pode_crud_empresa(request.user):
+            return HttpResponseForbidden("Usuário não autorizado a criar empresas.")
+        return super().dispatch(request, *args, **kwargs)
 
-    return render(request, "empresas/nova.html", {"form": form})
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        form.instance.organizacao = self.request.user.organizacao
+        try:
+            response = super().form_valid(form)
+        except IntegrityError:
+            form.add_error("cnpj", _("Empresa com este CNPJ já existe."))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Empresa criada com sucesso."))
+        return response
 
 
-# ------------------------------------------------------------------
-# EDITAR
-# ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def editar_empresa(request, pk):
-    empresa = get_object_or_404(Empresa, pk=pk)
+class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
+    model = Empresa
+    form_class = EmpresaForm
+    template_name = "empresas/nova.html"
+    success_url = reverse_lazy("empresas:lista")
 
-    if not pode_crud_empresa(request.user, empresa):
-        return HttpResponseForbidden("Usuário não autorizado a editar esta empresa.")
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        self.empresa = self.get_object()
+        if not pode_crud_empresa(request.user, self.empresa):
+            return HttpResponseForbidden("Usuário não autorizado a editar esta empresa.")
+        return super().dispatch(request, *args, **kwargs)
 
-    if request.method == "POST":
-        form = EmpresaForm(request.POST, request.FILES, instance=empresa)
-        if form.is_valid():
-            form.save()
-            if request.headers.get("HX-Request"):
-                return JsonResponse({"message": "Empresa atualizada com sucesso."}, status=200)
-            return redirect("empresas:lista")
-    else:
-        form = EmpresaForm(instance=empresa)
-
-    return render(request, "empresas/nova.html", {"form": form, "empresa": empresa})
-
-
-# ------------------------------------------------------------------
-# BUSCAR
-# ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def buscar_empresas(request):
-    query = request.GET.get("q", "")
-    empresas = Empresa.objects.select_related("usuario", "organizacao").prefetch_related("tags")
-    if not request.user.is_superuser:
-        empresas = empresas.filter(usuario__organizacao=request.user.organizacao)
-    if query:
-        palavras = [p.strip() for p in query.split() if p.strip()]
-        q_objects = Q()
-        for palavra in palavras:
-            q_objects |= Q(tags__nome__icontains=palavra)
-            q_objects |= Q(palavras_chave__icontains=palavra)
-            q_objects |= Q(nome__icontains=palavra)
-            q_objects |= Q(descricao__icontains=palavra)
-            q_objects |= Q(cnpj__icontains=palavra)
-            q_objects |= Q(municipio__icontains=palavra) | Q(estado__icontains=palavra)
-            q_objects |= Q(tipo__icontains=palavra)
-        empresas = empresas.filter(q_objects)
-    empresas = empresas.distinct()
-    template = "empresas/includes/empresas_table.html" if request.headers.get("HX-Request") else "empresas/busca.html"
-    context = {"empresas": empresas, "q": query, "is_paginated": False}
-    return render(request, template, context)
+    def form_valid(self, form):
+        old_data = {campo: getattr(form.instance, campo) for campo in LOG_FIELDS}
+        try:
+            response = super().form_valid(form)
+        except IntegrityError:
+            form.add_error("cnpj", _("Empresa com este CNPJ já existe."))
+            return self.form_invalid(form)
+        registrar_alteracoes(self.request.user, self.object, old_data)
+        messages.success(self.request, _("Empresa atualizada com sucesso."))
+        return response
 
 
 class TagListView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView):
@@ -212,27 +175,6 @@ def detalhes_empresa(request, pk):
 
 
 # ------------------------------------------------------------------
-# CRIAR
-# ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def criar_empresa(request):
-    if request.method == "POST":
-        form = EmpresaForm(request.POST, request.FILES)
-        if form.is_valid():
-            empresa = form.save(commit=False)
-            empresa.usuario = request.user
-            empresa.save()
-            form.save_m2m()
-            messages.success(request, "Empresa criada com sucesso.")
-            return redirect("empresas:lista")
-    else:
-        form = EmpresaForm()
-
-    return render(request, "empresas/nova.html", {"form": form})
-
-
-# ------------------------------------------------------------------
 # DELETAR
 # ------------------------------------------------------------------
 @login_required
@@ -244,7 +186,7 @@ def remover_empresa(request, pk):
         return HttpResponseForbidden("Usuário não autorizado a remover esta empresa.")
 
     if request.method == "POST":
-        empresa.delete()
+        empresa.soft_delete()
         if request.headers.get("HX-Request"):
             return JsonResponse({"message": "Empresa removida com sucesso."}, status=204)
         return redirect("empresas:lista")

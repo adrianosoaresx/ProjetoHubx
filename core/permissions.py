@@ -88,12 +88,19 @@ def pode_crud_empresa(user, empresa=None) -> bool:
     Retorna True se o usuário puder criar/editar/excluir a empresa,
     conforme matriz de permissões (Root/Admin = read‑only).
     """
-    if not user.is_authenticated or not user.organizacao:
+    if not user.is_authenticated or not getattr(user, "organizacao", None):
         return False
-    if user.is_superuser or user.user_type == UserType.ADMIN:
+    if user.is_superuser or user.user_type == UserType.ROOT:
         return False
-    # client ou manager:
-    return empresa is None or empresa.usuario_id == user.id
+    if user.user_type == UserType.ADMIN:
+        if empresa is None:
+            return True
+        return empresa.organizacao_id == user.organizacao_id
+    if user.user_type in {UserType.COORDENADOR, UserType.NUCLEADO}:
+        if empresa is None:
+            return True
+        return empresa.usuario_id == user.id
+    return False
 
 
 class IsRoot(BasePermission):

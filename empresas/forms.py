@@ -11,7 +11,6 @@ class EmpresaForm(forms.ModelForm):
     class Meta:
         model = Empresa
         fields = [
-            "organizacao",
             "nome",
             "cnpj",
             "tipo",
@@ -26,6 +25,8 @@ class EmpresaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.fields["tags_field"].initial = ", ".join(self.instance.tags.values_list("nome", flat=True))
+        self.initial.setdefault("organizacao", getattr(self.instance, "organizacao", None))
+        self.initial.setdefault("usuario", getattr(self.instance, "usuario", None))
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data["cnpj"]

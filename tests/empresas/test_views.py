@@ -1,0 +1,74 @@
+import pytest
+from django.urls import reverse
+from validate_docbr import CNPJ
+
+from empresas.models import Empresa
+from empresas.factories import EmpresaFactory
+
+
+@pytest.mark.django_db
+def test_list_filters_name_municipio_tags(client, admin_user, tag_factory):
+    tag1 = tag_factory(nome="Tech")
+    tag2 = tag_factory(nome="Food")
+    e1 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Alpha", municipio="X")
+    e1.tags.add(tag1)
+    e2 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Beta", municipio="Y")
+    e2.tags.add(tag2)
+    client.force_login(admin_user)
+    resp = client.get(reverse("empresas:lista"), {"nome": "Alpha", "municipio": "X", "tags": [tag1.id]})
+    content = resp.content.decode()
+    assert "Alpha" in content
+    assert "Beta" not in content
+
+
+@pytest.mark.django_db
+def test_create_empresa_sets_user_and_org(client, nucleado_user):
+    client.force_login(nucleado_user)
+    cnpj = CNPJ().generate()
+    data = {
+        "nome": "Nova",
+        "cnpj": cnpj,
+        "tipo": "mei",
+        "municipio": "Cidade",
+        "estado": "SP",
+        "descricao": "",
+        "palavras_chave": "",
+        "tags_field": "",
+    }
+    resp = client.post(reverse("empresas:empresa_criar"), data)
+    assert resp.status_code in (302, 200)
+    empresa = Empresa.objects.get(cnpj=cnpj)
+    assert empresa.usuario == nucleado_user
+    assert empresa.organizacao == nucleado_user.organizacao
+
+
+@pytest.mark.django_db
+def test_duplicate_cnpj_returns_error(client, nucleado_user):
+    client.force_login(nucleado_user)
+    cnpj = CNPJ().generate()
+    EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao, cnpj=cnpj)
+    data = {
+        "nome": "Outra",
+        "cnpj": cnpj,
+        "tipo": "mei",
+        "municipio": "Cidade",
+        "estado": "SP",
+        "descricao": "",
+        "palavras_chave": "",
+        "tags_field": "",
+    }
+    resp = client.post(reverse("empresas:empresa_criar"), data)
+    assert resp.status_code == 200
+    assert "já existe" in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_soft_delete_marks_deleted(client, nucleado_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    client.force_login(nucleado_user)
+    resp = client.post(reverse("empresas:remover", args=[empresa.pk]))
+    assert resp.status_code in (302, 200)
+    empresa.refresh_from_db()
+    assert empresa.deleted
+    resp = client.get(reverse("empresas:lista"))
+    assert empresa.nome not in resp.content.decode()

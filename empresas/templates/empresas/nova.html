@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load custom_filters i18n %}
 
-{% block title %}{% translate 'Nova Empresa' %}{% endblock %}
+{% block title %}{% if form.instance.pk %}{% translate 'Editar Empresa' %}{% else %}{% translate 'Nova Empresa' %}{% endif %}{% endblock %}
 
 {% block content %}
 <section class="max-w-3xl mx-auto px-4 py-10 space-y-6">
   <header class="flex items-start gap-4">
     <a href="{% url 'empresas:lista' %}" class="text-sm px-3 py-2 border rounded hover:bg-neutral-100">{% translate 'Voltar' %}</a>
     <div>
-      <h1 class="text-2xl font-bold text-neutral-900">{% translate 'Nova Empresa' %}</h1>
+      <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% translate 'Editar Empresa' %}{% else %}{% translate 'Nova Empresa' %}{% endif %}</h1>
       <p class="text-sm text-neutral-600">{% translate 'Cadastre sua empresa na plataforma' %}</p>
     </div>
   </header>
@@ -73,7 +73,7 @@
       <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 border rounded">{% translate 'Cancelar' %}</a>
       <button type="submit" class="text-sm px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 inline-flex items-center gap-2">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        {% translate 'Cadastrar Empresa' %}
+        {% if form.instance.pk %}{% translate 'Salvar' %}{% else %}{% translate 'Cadastrar Empresa' %}{% endif %}
       </button>
     </div>
   </form>

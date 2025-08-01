@@ -51,6 +51,11 @@ class Empresa(TimeStampedModel):
         ordering = ["nome"]
         verbose_name = "Empresa"
         verbose_name_plural = "Empresas"
+        indexes = [
+            models.Index(fields=["cnpj"]),
+            models.Index(fields=["municipio"]),
+            models.Index(fields=["estado"]),
+        ]
 
     def __str__(self) -> str:
         return self.nome
@@ -58,6 +63,17 @@ class Empresa(TimeStampedModel):
     def clean(self) -> None:
         if not CNPJ().validate(self.cnpj):
             raise ValidationError({"cnpj": "CNPJ inválido"})
+
+    # ------------------------------------------------------------------
+    # Soft delete
+    # ------------------------------------------------------------------
+    def soft_delete(self) -> None:
+        """Marca o registro como excluído sem removê-lo do banco."""
+        self.deleted = True
+        self.save(update_fields=["deleted"])
+
+    def delete(self, using=None, keep_parents=False):  # type: ignore[override]
+        self.soft_delete()
 
 
 class ContatoEmpresa(TimeStampedModel):
