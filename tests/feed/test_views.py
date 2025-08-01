@@ -69,7 +69,7 @@ def test_novapostagem_create(client, associado_user):
     data = {"tipo_feed": "global", "conteudo": "ola"}
     resp = client.post(reverse("feed:nova_postagem"), data)
     assert resp.status_code == 302
-    post = Post.objects.latest("id")
+    post = Post.objects.order_by("-created_at").first()
     assert post.autor == associado_user
     assert post.organizacao == associado_user.organizacao
 
@@ -79,7 +79,7 @@ def test_novapostagem_file_upload(client, associado_user):
     pdf = SimpleUploadedFile("file.pdf", b"data", content_type="application/pdf")
     resp = client.post(reverse("feed:nova_postagem"), {"tipo_feed": "global", "arquivo": pdf})
     assert resp.status_code in {302, 204}
-    post = Post.objects.latest("id")
+    post = Post.objects.order_by("-created_at").first()
     assert post.pdf
 
 
@@ -126,7 +126,8 @@ def test_post_delete(client, admin_user, posts):
     client.force_login(admin_user)
     resp = client.post(url)
     assert resp.status_code == 302
-    assert not Post.objects.filter(id=post.id).exists()
+    post.refresh_from_db()
+    assert post.deleted is True
 
 
 def test_video_upload(client, associado_user):
@@ -134,7 +135,7 @@ def test_video_upload(client, associado_user):
     video = SimpleUploadedFile("vid.mp4", b"d", content_type="video/mp4")
     resp = client.post(reverse("feed:nova_postagem"), {"tipo_feed": "global", "arquivo": video})
     assert resp.status_code == 302
-    post = Post.objects.latest("id")
+    post = Post.objects.order_by("-created_at").first()
     assert post.video
 
 

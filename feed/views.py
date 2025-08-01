@@ -26,7 +26,10 @@ def meu_mural(request):
         Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
         .prefetch_related("likes", "comments")
         .filter(Q(autor=request.user) | Q(tipo_feed="global", organizacao=request.user.organizacao))
+        .filter(deleted=False)
+        .filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
         .order_by("-created_at")
+        .distinct()
     )
 
     context = {
@@ -50,6 +53,7 @@ class FeedListView(LoginRequiredMixin, ListView):
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
             "likes", "comments", "tags"
         )
+        qs = qs.filter(deleted=False).filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True)).distinct()
 
         if tipo_feed == "usuario":
             qs = qs.filter(Q(autor=user) | Q(tipo_feed="global", organizacao=user.organizacao))
@@ -127,7 +131,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
 
 
 class PostDetailView(LoginRequiredMixin, DetailView):
-    model = Post
+    queryset = Post.objects.filter(deleted=False).filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
     template_name = "feed/post_detail.html"
     context_object_name = "post"
 
@@ -140,7 +144,7 @@ class PostDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def create_comment(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post.objects.filter(deleted=False), id=post_id)
     form = CommentForm(request.POST)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -163,7 +167,7 @@ def create_comment(request, post_id):
 
 @login_required
 def toggle_like(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post.objects.filter(deleted=False), id=post_id)
     like, created = Like.objects.get_or_create(post=post, user=request.user)
     if not created:
         like.delete()
@@ -175,7 +179,7 @@ def toggle_like(request, post_id):
 
 @login_required
 def post_update(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(Post.objects.filter(deleted=False), pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
         if request.headers.get("HX-Request"):
             return HttpResponseForbidden()
@@ -209,7 +213,7 @@ def post_update(request, pk):
 
 @login_required
 def post_delete(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(Post.objects.filter(deleted=False), pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
         if request.headers.get("HX-Request"):
             return HttpResponseForbidden()
@@ -217,7 +221,7 @@ def post_delete(request, pk):
         return redirect("feed:post_detail", pk=pk)
 
     if request.method == "POST":
-        post.delete()
+        post.soft_delete()
         if request.headers.get("HX-Request"):
             return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:listar")})
         messages.success(request, "Postagem removida.")

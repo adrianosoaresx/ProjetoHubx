@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from pathlib import Path
 
 from django.conf import settings
@@ -31,6 +32,7 @@ class Post(TimeStampedModel):
         ("evento", "Feed do Evento"),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     organizacao = models.ForeignKey("organizacoes.Organizacao", on_delete=models.CASCADE, related_name="posts")
     tipo_feed = models.CharField(max_length=10, choices=TIPO_FEED_CHOICES, default="global")
@@ -41,6 +43,7 @@ class Post(TimeStampedModel):
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
     evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
+    deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -64,8 +67,15 @@ class Post(TimeStampedModel):
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
             ModeracaoPost.objects.get_or_create(post=self)
 
+    def soft_delete(self) -> None:
+        """Mark post as deleted without removing from the database."""
+        if not self.deleted:
+            self.deleted = True
+            self.save(update_fields=["deleted", "updated_at"])
+
 
 class Like(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
 
@@ -76,6 +86,7 @@ class Like(TimeStampedModel):
 
 
 class Comment(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     reply_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies")
@@ -94,6 +105,7 @@ class ModeracaoPost(TimeStampedModel):
         ("rejeitado", "Rejeitado"),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="moderacoes")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
     motivo = models.TextField(blank=True)
