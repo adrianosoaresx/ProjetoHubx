@@ -35,7 +35,7 @@ def evento(organizacao, nucleo, admin_user):
         descricao="",
         data_inicio=now(),
         data_fim=now(),
-        endereco="Rua 1",
+        local="Rua 1",
         cidade="Cidade",
         estado="SC",
         cep="00000-000",

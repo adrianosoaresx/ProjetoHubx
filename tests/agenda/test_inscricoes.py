@@ -36,7 +36,7 @@ def evento(organizacao, usuario_logado):
         descricao="Descrição do evento",
         data_inicio=make_aware(datetime.now() + timedelta(days=1)),
         data_fim=make_aware(datetime.now() + timedelta(days=2)),
-        endereco="Rua Teste, 123",
+        local="Rua Teste, 123",
         cidade="Cidade Teste",
         estado="ST",
         cep="12345-678",

@@ -22,7 +22,7 @@ class EventoFactory(DjangoModelFactory):
     descricao = factory.Faker("paragraph", locale="pt_BR")
     data_inicio = factory.Faker("future_datetime", tzinfo=dt_timezone.utc)
     data_fim = factory.LazyAttribute(lambda o: o.data_inicio + timedelta(hours=1))
-    endereco = factory.Faker("street_address", locale="pt_BR")
+    local = factory.Faker("street_address", locale="pt_BR")
     cidade = factory.Faker("city", locale="pt_BR")
     estado = factory.Faker("state_abbr", locale="pt_BR")
     cep = factory.Faker("postcode", locale="pt_BR")

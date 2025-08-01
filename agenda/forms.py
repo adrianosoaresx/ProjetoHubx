@@ -15,12 +15,11 @@ class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
         fields = [
-            "organizacao",
             "titulo",
             "descricao",
             "data_inicio",
             "data_fim",
-            "endereco",
+            "local",
             "cidade",
             "estado",
             "cep",
@@ -114,12 +113,12 @@ class ParceriaEventoForm(forms.ModelForm):
             "evento",
             "nucleo",
             "empresa",
+            "cnpj",
+            "contato",
+            "representante_legal",
             "data_inicio",
             "data_fim",
             "tipo_parceria",
             "descricao",
             "acordo",
-            "contato_adicional_nome",
-            "contato_adicional_cpf",
-            "whatsapp_contato",
         ]

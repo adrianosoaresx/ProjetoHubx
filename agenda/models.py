@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 from io import BytesIO
+import uuid
 
 import qrcode
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import (
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
 from django.utils import timezone
 
@@ -121,15 +126,29 @@ class InscricaoEvento(TimeStampedModel):
 
 
 class Evento(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     titulo = models.CharField(max_length=150)
     descricao = models.TextField()
     data_inicio = models.DateTimeField()
     data_fim = models.DateTimeField()
-    endereco = models.CharField(max_length=255)
-    cidade = models.CharField(max_length=100)
-    estado = models.CharField(max_length=2)
-    cep = models.CharField(max_length=9)
-    coordenador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="eventos_criados")
+    local = models.CharField(max_length=255)
+    cidade = models.CharField(
+        max_length=100,
+        validators=[RegexValidator(r"^[A-Za-zÀ-ÿ\s-]+$", "Cidade inválida")],
+    )
+    estado = models.CharField(
+        max_length=2,
+        validators=[RegexValidator(r"^[A-Z]{2}$", "UF inválida")],
+    )
+    cep = models.CharField(
+        max_length=9,
+        validators=[RegexValidator(r"^\d{5}-\d{3}$", "CEP inválido")],
+    )
+    coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="eventos_criados",
+    )
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
     status = models.PositiveSmallIntegerField(choices=[(0, "Ativo"), (1, "Concluído"), (2, "Cancelado")])
@@ -164,14 +183,22 @@ class Evento(TimeStampedModel):
         agg = self.feedbacks.aggregate(media=models.Avg("nota"))
         return agg["media"] or 0
 
+    def endereco_completo(self) -> str:
+        return f"{self.local}, {self.cidade} - {self.estado}, {self.cep}"
+
 
 class ParceriaEvento(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    empresa = models.ForeignKey("empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias")
-    contato_adicional_nome = models.CharField(max_length=150, blank=True)
-    contato_adicional_cpf = models.CharField(max_length=14, blank=True)
-    whatsapp_contato = models.CharField(max_length=15)
+    empresa = models.ForeignKey(
+        "empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias"
+    )
+    cnpj = models.CharField(
+        max_length=14,
+        validators=[RegexValidator(r"^\d{14}$", "CNPJ inválido")],
+    )
+    contato = models.CharField(max_length=150)
+    representante_legal = models.CharField(max_length=150)
     tipo_parceria = models.CharField(
         max_length=20,
         choices=[
@@ -248,10 +275,19 @@ class BriefingEvento(models.Model):
     conteudo_programatico = models.TextField(blank=True)
     observacoes = models.TextField(blank=True)
     status = models.CharField(
-        max_length=10,
-        choices=[("criado", "Criado"), ("aprovado", "Aprovado"), ("devolvido", "Devolvido")],
-        default="criado",
+        max_length=15,
+        choices=[
+            ("rascunho", "Rascunho"),
+            ("orcamentado", "Orçamentado"),
+            ("aprovado", "Aprovado"),
+            ("recusado", "Recusado"),
+        ],
+        default="rascunho",
     )
+    orcamento_enviado_em = models.DateTimeField(null=True, blank=True)
+    aprovado_em = models.DateTimeField(null=True, blank=True)
+    recusado_em = models.DateTimeField(null=True, blank=True)
+    motivo_recusa = models.TextField(blank=True)
     avaliado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
