@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Confirme seu e-mail" %}{% endblock %}
+{% block content %}
+<section class="max-w-md mx-auto px-4 py-12 text-center">
+  <div class="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
+    <h1 class="mb-4 text-2xl font-bold text-neutral-900">{% trans "Quase lá!" %}</h1>
+    <p class="text-neutral-600">{% trans "Conta criada. Confirme seu e-mail em até 24 horas para ativá-la." %}</p>
+  </div>
+</section>
+{% endblock %}

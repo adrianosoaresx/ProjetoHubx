@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db import IntegrityError
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -22,7 +21,7 @@ class AuthTests(TestCase):
         )
         resp = self.client.post(
             reverse("accounts:login"),
-            {"username": "alpha@example.com", "password": "pass"},
+            {"email": "alpha@example.com", "password": "pass"},
         )
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, "/accounts/perfil/")

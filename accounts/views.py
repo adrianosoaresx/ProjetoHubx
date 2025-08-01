@@ -1,23 +1,11 @@
-from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import (
-    AuthenticationForm,
-    PasswordChangeForm,
-    SetPasswordForm,
-)
-from django.contrib.auth.hashers import make_password
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-
-from accounts.models import UserType
-from accounts.serializers import UserSerializer
-from core.permissions import IsAdmin, IsCoordenador
-
-User = get_user_model()
 import os
 import uuid
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
@@ -28,13 +16,19 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
-from accounts.tasks import send_password_reset_email
+from accounts.models import UserType
+from accounts.serializers import UserSerializer
+from accounts.tasks import send_confirmation_email, send_password_reset_email
+from core.permissions import IsAdmin, IsCoordenador
 from tokens.models import TokenAcesso
 
 from .forms import (
     CustomUserChangeForm,
     CustomUserCreationForm,
+    EmailLoginForm,
     InformacoesPessoaisForm,
     MediaForm,
     NotificacoesForm,
@@ -47,6 +41,8 @@ from .models import (
     UserMedia,
     cpf_validator,
 )
+
+User = get_user_model()
 
 # ====================== PERFIL ======================
 
@@ -215,7 +211,7 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect("accounts:perfil")
 
-    form = AuthenticationForm(request, data=request.POST or None)
+    form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
         login(request, form.get_user())
         return redirect("accounts:perfil")
@@ -254,15 +250,18 @@ def excluir_conta(request):
 
 def register_view(request):
     if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("accounts:perfil")
+            form.save()
+            return redirect("accounts:registro_pendente")
     else:
         form = CustomUserCreationForm()
 
     return render(request, "register/onboarding.html", {"form": form})
+
+
+def registro_pendente(request):
+    return render(request, "register/registro_pendente.html")
 
 
 def password_reset(request):
@@ -349,6 +348,30 @@ def confirmar_email(request, token: str):
 
 def onboarding(request):
     return render(request, "register/onboarding.html")
+
+
+def resend_confirmation(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if email:
+            try:
+                user = User.objects.get(email__iexact=email, is_active=False)
+            except User.DoesNotExist:
+                pass
+            else:
+                token = AccountToken.objects.create(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                    expires_at=timezone.now() + timezone.timedelta(hours=24),
+                    ip_gerado=request.META.get("REMOTE_ADDR"),
+                )
+                send_confirmation_email.delay(token.id)
+        messages.success(
+            request,
+            _("Se o e-mail estiver cadastrado, enviaremos nova confirmação."),
+        )
+        return redirect("accounts:login")
+    return render(request, "accounts/resend_confirmation.html")
 
 
 # ====================== REGISTRO MULTIETAPAS ======================
@@ -484,18 +507,6 @@ def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
 
 
-@login_required
-def perfil_home(request):
-    user = request.user
-    context = {
-        "user": user,
-        "connections": getattr(user, "connections", []).all(),
-        "medias": user.medias.all(),
-        "notifications": NotificationSettings.objects.filter(user=user).first(),
-    }
-    return render(request, "perfil/detail.html", context)
-
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -527,9 +538,8 @@ class RegisterView(View):
     def post(self, request):
         form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("user_profile")
+            form.save()
+            return redirect("accounts:registro_pendente")
         return render(request, "accounts/register.html", {"form": form})
 
 

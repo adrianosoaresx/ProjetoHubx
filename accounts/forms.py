@@ -1,11 +1,14 @@
 import json
 import re
 
+import pyotp
 from django import forms
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.utils import timezone
 
-from .models import NotificationSettings, UserMedia
+from .models import AccountToken, NotificationSettings, UserMedia
+from .tasks import send_confirmation_email
 
 User = get_user_model()
 
@@ -29,6 +32,12 @@ class CustomUserCreationForm(UserCreationForm):
             "nucleo",
         )
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Este e-mail já está em uso.")
+        return email
+
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
         if not re.match(r"^\d{11}$", cpf):
@@ -46,6 +55,21 @@ class CustomUserCreationForm(UserCreationForm):
         if whatsapp and not re.match(r"^\+?\d{8,20}$", whatsapp):
             raise forms.ValidationError("WhatsApp deve ser válido.")
         return whatsapp
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.is_active = False
+        user.failed_login_attempts = 0
+        user.lock_expires_at = None
+        if commit:
+            user.save()
+            token = AccountToken.objects.create(
+                usuario=user,
+                tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                expires_at=timezone.now() + timezone.timedelta(hours=24),
+            )
+            send_confirmation_email.delay(token.id)
+        return user
 
 
 class CustomUserChangeForm(UserChangeForm):
@@ -167,3 +191,50 @@ class MediaForm(forms.ModelForm):
         else:
             self._save_m2m = lambda: instance.tags.set(tags)
         return instance
+
+
+class EmailLoginForm(forms.Form):
+    email = forms.EmailField(label="Email")
+    password = forms.CharField(widget=forms.PasswordInput, label="Senha")
+    totp = forms.CharField(label="TOTP", required=False)
+
+    def __init__(self, request=None, *args, **kwargs):
+        self.request = request
+        self.user = None
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        email = self.cleaned_data.get("email")
+        password = self.cleaned_data.get("password")
+        totp = self.cleaned_data.get("totp")
+        if not email or not password:
+            raise forms.ValidationError("Informe e-mail e senha.")
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            authenticate(self.request, username=email, password=password)
+            raise forms.ValidationError("Credenciais inválidas.")
+        now = timezone.now()
+        if user.lock_expires_at and user.lock_expires_at > now:
+            raise forms.ValidationError(
+                f"Conta bloqueada. Tente novamente após {user.lock_expires_at.strftime('%H:%M')}"
+            )
+        if not user.is_active:
+            raise forms.ValidationError("Conta inativa. Confirme seu e-mail.")
+        if not user.check_password(password):
+            authenticate(self.request, username=email, password=password)
+            raise forms.ValidationError("Credenciais inválidas.")
+        if user.two_factor_enabled:
+            if not totp:
+                raise forms.ValidationError("Código de verificação obrigatório.")
+            if not pyotp.TOTP(user.two_factor_secret).verify(totp):
+                authenticate(self.request, username=email, password=password, totp=totp)
+                raise forms.ValidationError("Código de verificação inválido.")
+        auth_user = authenticate(self.request, username=email, password=password, totp=totp)
+        if auth_user is None:
+            raise forms.ValidationError("Credenciais inválidas.")
+        self.user = auth_user
+        return self.cleaned_data
+
+    def get_user(self):
+        return self.user
