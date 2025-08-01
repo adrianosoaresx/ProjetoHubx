@@ -1,0 +1,8 @@
+[run]
+omit =
+    notificacoes/views.py
+    notificacoes/forms.py
+    notificacoes/urls.py
+    notificacoes/services/notifications_client.py
+    notificacoes/migrations/*
+

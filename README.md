@@ -15,6 +15,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Suporte WebSocket via `channels` e `daphne`
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
+- Serviço central de notificações assíncronas
 
 ### Limitações de Design
 

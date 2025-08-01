@@ -5,9 +5,15 @@ from typing import Any
 
 from django.conf import settings
 from django.template import Context, Template
-from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
-from ..models import NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
+from ..models import (
+    Canal,
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
 from ..tasks import enviar_notificacao_async
 
 logger = logging.getLogger(__name__)
@@ -24,24 +30,45 @@ def enviar_para_usuario(user: Any, template_codigo: str, context: dict[str, Any]
     if not getattr(settings, "NOTIFICATIONS_ENABLED", True):
         return
 
-    template = NotificationTemplate.objects.get(codigo=template_codigo, ativo=True)
+    qs = NotificationTemplate.objects.filter(codigo=template_codigo, ativo=True)
+    template = qs.first()
+    if not template:
+        raise ValueError(_("Template '%(codigo)s' não encontrado") % {"codigo": template_codigo})
+
     subject, body = render_template(template, context)
 
-    prefs, _ = UserNotificationPreference.objects.get_or_create(user=user)
-    canais = []
-    if template.canal in {"email", "todos"} and prefs.email:
-        canais.append("email")
-    if template.canal in {"push", "todos"} and prefs.push:
-        canais.append("push")
-    if template.canal in {"whatsapp", "todos"} and prefs.whatsapp:
-        canais.append("whatsapp")
+    prefs, _created = UserNotificationPreference.objects.get_or_create(user=user)
+
+    canais: list[str] = []
+    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.email:
+        canais.append(Canal.EMAIL)
+    if template.canal in {Canal.PUSH, Canal.TODOS} and prefs.push:
+        canais.append(Canal.PUSH)
+    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.whatsapp:
+        canais.append(Canal.WHATSAPP)
+
+    if not canais:
+        NotificationLog.objects.create(
+            user=user,
+            template=template,
+            canal=template.canal,
+            status=NotificationStatus.FALHA,
+            erro=_("Canais desabilitados pelo usuário"),
+        )
+        return
 
     for canal in canais:
         log = NotificationLog.objects.create(
             user=user,
             template=template,
             canal=canal,
-            status=NotificationStatus.ENVIADA,
-            data_envio=timezone.now(),
+            status=NotificationStatus.PENDENTE,
         )
-        enviar_notificacao_async.delay(user.id, template.id, canal, subject, body, log.id)  # type: ignore[attr-defined]
+        enviar_notificacao_async.delay(
+            user.id,
+            str(template.id),
+            canal,
+            subject,
+            body,
+            str(log.id),
+        )
