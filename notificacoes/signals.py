@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from django.conf import settings
-
-from django.db.models.signals import post_save
+from django.db.models.signals import post_migrate, post_save
 from django.dispatch import Signal, receiver
 from django.utils.translation import gettext_lazy as _
 
-from .models import UserNotificationPreference
-from django.db.models.signals import post_migrate
-from django.dispatch import receiver
+from .models import NotificationTemplate, UserNotificationPreference
+from .services import metrics
 
 
 # Signal para que outros módulos definam templates padrão
