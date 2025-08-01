@@ -58,7 +58,10 @@ def perfil_informacoes(request):
         form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, "Informações pessoais atualizadas.")
+            if getattr(form, "email_changed", False):
+                messages.info(request, _("Confirme o novo e-mail enviado."))
+            else:
+                messages.success(request, _("Informações pessoais atualizadas."))
             return redirect("accounts:informacoes_pessoais")
     else:
         form = InformacoesPessoaisForm(instance=request.user)
@@ -305,6 +308,10 @@ def password_reset_confirm(request, code: str):
         form = SetPasswordForm(token.usuario, request.POST)
         if form.is_valid():
             form.save()
+            user = token.usuario
+            user.failed_login_attempts = 0
+            user.lock_expires_at = None
+            user.save(update_fields=["failed_login_attempts", "lock_expires_at"])
             token.used_at = timezone.now()
             token.save(update_fields=["used_at"])
             messages.success(request, _("Senha redefinida com sucesso."))
@@ -335,7 +342,8 @@ def confirmar_email(request, token: str):
     with transaction.atomic():
         user = token_obj.usuario
         user.is_active = True
-        user.save(update_fields=["is_active"])
+        user.email_confirmed = True
+        user.save(update_fields=["is_active", "email_confirmed"])
         token_obj.used_at = timezone.now()
         token_obj.save(update_fields=["used_at"])
         SecurityEvent.objects.create(
@@ -355,10 +363,19 @@ def resend_confirmation(request):
         email = request.POST.get("email")
         if email:
             try:
-                user = User.objects.get(email__iexact=email, is_active=False)
+                user = User.objects.get(
+                    email__iexact=email,
+                    is_active=False,
+                    deleted_at__isnull=True,
+                )
             except User.DoesNotExist:
                 pass
             else:
+                AccountToken.objects.filter(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                    used_at__isnull=True,
+                ).update(used_at=timezone.now())
                 token = AccountToken.objects.create(
                     usuario=user,
                     tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
