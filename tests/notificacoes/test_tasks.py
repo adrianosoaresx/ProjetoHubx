@@ -1,20 +1,18 @@
 import pytest
-from django.utils import timezone
 
 from accounts.factories import UserFactory
 from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
 from notificacoes.tasks import enviar_notificacao_async
+from notificacoes.services import metrics
 
 pytestmark = pytest.mark.django_db
 
 
-def test_enviar_notificacao_async(settings, monkeypatch) -> None:
+def test_enviar_notificacao_async_sucesso(settings, monkeypatch) -> None:
     settings.CELERY_TASK_ALWAYS_EAGER = True
     user = UserFactory()
     template = NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
-    log = NotificationLog.objects.create(
-        user=user, template=template, canal="email", status=NotificationStatus.ENVIADA, data_envio=timezone.now()
-    )
+    log = NotificationLog.objects.create(user=user, template=template, canal="email")
     called = {}
 
     def fake_send(*args, **kwargs):
@@ -22,8 +20,42 @@ def test_enviar_notificacao_async(settings, monkeypatch) -> None:
 
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
-    enviar_notificacao_async(user.id, template.id, "email", "Oi", "C", log.id)
+    enviar_notificacao_async(user.id, str(template.id), "email", "Oi", "C", str(log.id))
 
     assert called.get("count") == 1
     log.refresh_from_db()
     assert log.status == NotificationStatus.ENVIADA
+    assert log.data_envio is not None
+    assert metrics.notificacoes_enviadas_total.labels(canal="email")._value.get() == 1
+
+
+def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email")
+
+    def fake_send(*args, **kwargs):
+        raise RuntimeError("erro")
+
+    monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
+
+    with pytest.raises(RuntimeError):
+        enviar_notificacao_async.run(
+            user.id,
+            str(template.id),
+            "email",
+            "Oi",
+            "C",
+            str(log.id),
+        )
+
+    log.refresh_from_db()
+    assert log.status == NotificationStatus.FALHA
+    assert log.erro == "erro"
+    assert metrics.notificacoes_falhadas_total.labels(canal="email")._value.get() == 1
+
+
+def test_task_configuracao():
+    assert enviar_notificacao_async.max_retries == 3
+    assert enviar_notificacao_async.retry_backoff is True

@@ -15,6 +15,26 @@ Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp.
 
 Envios são processados de forma assíncrona pelo Celery.
 
+### Serviço `enviar_para_usuario`
+
+```python
+from notificacoes.services.notificacoes import enviar_para_usuario
+
+enviar_para_usuario(user, "codigo_do_template", {"nome": "Ana"})
+```
+
+Parâmetros:
+
+- `user`: instância de usuário destino.
+- `template_codigo`: código do `NotificationTemplate` ativo.
+- `context`: dicionário usado para renderizar assunto e corpo.
+
+Exceções:
+
+- `ValueError` caso o template não exista ou esteja inativo.
+
+Se todos os canais preferidos do usuário estiverem desabilitados, um `NotificationLog` é criado com status **FALHA** e nenhum envio é disparado.
+
 Templates básicos já estão cadastrados via migração, incluindo `password_reset`,
 `email_confirmation`, `cobranca_pendente` e `inadimplencia`. Outros códigos
 podem ser adicionados conforme a necessidade de novos avisos.

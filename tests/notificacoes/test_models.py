@@ -1,8 +1,13 @@
 import pytest
-from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 from accounts.factories import UserFactory
-from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
+from notificacoes.models import (
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -25,7 +30,19 @@ def test_log_str() -> None:
         user=user,
         template=template,
         canal="email",
-        status=NotificationStatus.ENVIADA,
-        data_envio=timezone.now(),
+        status=NotificationStatus.PENDENTE,
     )
     assert template.codigo in str(log)
+
+
+def test_preferencias_criadas_automaticamente() -> None:
+    user = UserFactory()
+    assert UserNotificationPreference.objects.filter(user=user).exists()
+
+
+def test_log_nao_pode_ser_deletado():
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="a", assunto="a", corpo="a", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email")
+    with pytest.raises(ValidationError):
+        log.delete()
