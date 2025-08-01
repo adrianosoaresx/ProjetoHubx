@@ -3,14 +3,13 @@ import datetime as dt
 import pytest
 from django.utils import timezone
 
-from agenda.models import Evento, InscricaoEvento
 from agenda.factories import EventoFactory
-from discussao.models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao
-from feed.factories import PostFactory
-from chat.models import ChatMessage, ChatConversation
-from organizacoes.factories import OrganizacaoFactory
-
+from agenda.models import Evento, InscricaoEvento
+from chat.models import ChatConversation, ChatMessage
 from dashboard.services import DashboardService
+from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
+from feed.factories import PostFactory
+from organizacoes.factories import OrganizacaoFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -41,7 +40,9 @@ def test_calcular_inscricoes_eventos(evento, cliente_user):
 
 def test_calcular_topicos_respostas_forum(admin_user, organizacao):
     cat = CategoriaDiscussao.objects.create(nome="c", slug="c", organizacao=organizacao)
-    topico = TopicoDiscussao.objects.create(categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0)
+    topico = TopicoDiscussao.objects.create(
+        categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
+    )
     RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
     data = DashboardService.calcular_topicos_respostas_forum()
     assert data["topicos"] >= 1
@@ -54,7 +55,7 @@ def test_calcular_posts_feed(admin_user):
 
 
 def test_calcular_mensagens_chat(conversa, admin_user):
-    ChatMessage.objects.create(conversation=conversa, sender=admin_user, conteudo="hi")
+    ChatMessage.objects.create(conversation=conversa, remetente=admin_user, conteudo="hi")
     assert DashboardService.calcular_mensagens_chat() >= 1
 
 

@@ -17,14 +17,14 @@ User = get_user_model()
 
 @login_required
 def conversation_list(request):
-    last_msg = ChatMessage.objects.filter(conversation=OuterRef("pk")).order_by("-created_at")
+    last_msg = ChatMessage.objects.filter(conversation=OuterRef("pk")).order_by("-timestamp")
     qs = (
         ChatConversation.objects.filter(participants__user=request.user)
         .select_related("organizacao", "nucleo", "evento")
         .prefetch_related("participants")
         .annotate(
             last_message_text=Subquery(last_msg.values("conteudo")[:1]),
-            last_message_at=Subquery(last_msg.values("created_at")[:1]),
+            last_message_at=Subquery(last_msg.values("timestamp")[:1]),
         )
         .distinct()
     )
@@ -75,7 +75,7 @@ def conversation_detail(request, slug):
             msg = form.save(commit=False)
             msg.conversation = conversation
             msg.organizacao = conversation.organizacao
-            msg.sender = request.user
+            msg.remetente = request.user
             msg.save()
             msg.lido_por.add(request.user)
             if request.headers.get("HX-Request"):
@@ -88,7 +88,7 @@ def conversation_detail(request, slug):
         return redirect("chat:conversation_detail", slug=slug)
     else:
         form = NovaMensagemForm()
-    mensagens = conversation.messages.select_related("sender").prefetch_related("lido_por")
+    mensagens = conversation.messages.select_related("remetente").prefetch_related("lido_por")
     return render(
         request,
         "chat/conversation_detail.html",

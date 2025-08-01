@@ -59,7 +59,7 @@ def test_conversation_detail_allows_post_message(client, admin_user, coordenador
         {"tipo": "text", "conteudo": "hi"},
     )
     assert resp.status_code == 302
-    assert ChatMessage.objects.filter(conversation=conv, sender=admin_user, conteudo="hi").exists()
+    assert ChatMessage.objects.filter(conversation=conv, remetente=admin_user, conteudo="hi").exists()
 
 
 def test_conversation_detail_denies_non_participant(client, admin_user):

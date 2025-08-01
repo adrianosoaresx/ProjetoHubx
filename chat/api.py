@@ -23,12 +23,11 @@ def create_message(**kwargs):
     return ChatMessage.objects.create(**kwargs)
 
 
-def notify_users(recipient_ids, remetente_id: int, message: ChatMessage):
+def notify_users(recipient_ids, message: ChatMessage) -> None:
     """Create notifications for a list of recipients."""
     for uid in recipient_ids:
         ChatNotification.objects.create(
             usuario_id=uid,
-            remetente_id=remetente_id,
             mensagem=message,
         )
 

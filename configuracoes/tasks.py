@@ -19,7 +19,7 @@ def _send_for_frequency(frequency: str) -> None:
         receber_notificacoes_email=True,
     )
     for config in configs:
-        qs = ChatNotification.objects.filter(user=config.user, created_at__gte=since, lido=False)
+        qs = ChatNotification.objects.filter(usuario=config.user, created_at__gte=since, lido=False)
         if qs.exists():
             enviar_para_usuario(
                 config.user,

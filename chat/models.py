@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uuid
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
@@ -75,6 +77,7 @@ class ChatParticipant(models.Model):
 
 
 class ChatMessage(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     conversation = models.ForeignKey(
         ChatConversation,
         on_delete=models.CASCADE,
@@ -86,10 +89,10 @@ class ChatMessage(TimeStampedModel):
         null=True,
         blank=True,
     )
-    sender = models.ForeignKey(
+    remetente = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="sent_messages",
+        related_name="mensagens_enviadas",
     )
     MESSAGE_TYPES = [
         ("text", "Texto"),
@@ -105,21 +108,23 @@ class ChatMessage(TimeStampedModel):
     reactions = models.JSONField(default=dict, blank=True)
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
     hidden_at = models.DateTimeField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"{self.sender} - {self.conversation.slug}"
+        return f"{self.remetente} - {self.conversation.slug}"
 
     class Meta:
-        ordering = ["created_at"]
+        ordering = ["timestamp"]
         verbose_name = "Mensagem"
         verbose_name_plural = "Mensagens"
 
 
 class ChatNotification(TimeStampedModel):
-    user = models.ForeignKey(
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="notifications",
+        related_name="notificacoes",
     )
     mensagem = models.ForeignKey(
         ChatMessage,
@@ -129,7 +134,7 @@ class ChatNotification(TimeStampedModel):
     lido = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return f"{self.user} - {self.mensagem_id}"
+        return f"{self.usuario} - {self.mensagem_id}"
 
     class Meta:
         verbose_name = "Notificação"

@@ -65,12 +65,12 @@ def test_chat_participant_flags(conversation, admin_user, coordenador_user):
 def test_chat_message_creation(media_root, conversation, admin_user):
     msg = ChatMessage.objects.create(
         conversation=conversation,
-        sender=admin_user,
+        remetente=admin_user,
         tipo="text",
         conteudo="hello",
     )
     assert msg.conversation == conversation
-    assert msg.sender == admin_user
+    assert msg.remetente == admin_user
     msg.lido_por.add(admin_user)
     assert admin_user in msg.lido_por.all()
 
@@ -80,7 +80,7 @@ def test_chat_message_file_handling(media_root, conversation, admin_user):
     file = SimpleUploadedFile("file.txt", b"data")
     msg = ChatMessage.objects.create(
         conversation=conversation,
-        sender=admin_user,
+        remetente=admin_user,
         tipo="file",
         arquivo=file,
     )
@@ -94,11 +94,11 @@ def test_chat_message_file_handling(media_root, conversation, admin_user):
 def test_chat_notification_basic(conversation, admin_user):
     msg = ChatMessage.objects.create(
         conversation=conversation,
-        sender=admin_user,
+        remetente=admin_user,
         tipo="text",
         conteudo="oi",
     )
-    notif = ChatNotification.objects.create(user=admin_user, mensagem=msg)
+    notif = ChatNotification.objects.create(usuario=admin_user, mensagem=msg)
     assert notif.lido is False
     notif.lido = True
     notif.save()
