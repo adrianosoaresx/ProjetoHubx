@@ -24,6 +24,11 @@
   <header class="mb-6 border-b border-neutral-200 pb-4">
     <h1 class="text-2xl font-bold text-neutral-900 mb-2">{{ topico.titulo }}</h1>
     <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:"d/m/Y H:i" }}</p>
+    <div class="flex items-center space-x-1 mt-2">
+      <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('topic-score').innerText = event.detail.xhr.responseJSON.score">&#9650;</button>
+      <span id="topic-score">{{ topico.score }}</span>
+      <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('topic-score').innerText = event.detail.xhr.responseJSON.score">&#9660;</button>
+    </div>
   </header>
   <div class="prose max-w-none mb-10">{{ topico.conteudo|linebreaks }}</div>
   <section aria-labelledby="comentarios" class="space-y-4">

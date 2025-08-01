@@ -1,34 +1,52 @@
 from __future__ import annotations
 
-from __future__ import annotations
-
 from django import forms
+from django_select2 import forms as s2forms
 
-from .models import CategoriaDiscussao, TopicoDiscussao, RespostaDiscussao, Tag
+from .models import CategoriaDiscussao, RespostaDiscussao, Tag, TopicoDiscussao
 
 
 class CategoriaDiscussaoForm(forms.ModelForm):
     class Meta:
         model = CategoriaDiscussao
         fields = ["nome", "descricao", "organizacao", "nucleo", "evento", "icone"]
+        widgets = {
+            "organizacao": forms.HiddenInput(),
+            "nucleo": forms.HiddenInput(),
+            "evento": forms.HiddenInput(),
+        }
 
 
 class TopicoDiscussaoForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(
-        queryset=Tag.objects.all(), required=False, widget=forms.CheckboxSelectMultiple
+        queryset=Tag.objects.all(),
+        required=False,
+        widget=s2forms.Select2TagWidget,
     )
 
     class Meta:
         model = TopicoDiscussao
-        fields = [
-            "categoria",
-            "titulo",
-            "conteudo",
-            "publico_alvo",
-            "tags",
-            "nucleo",
-            "evento",
-        ]
+        fields = ["categoria", "titulo", "conteudo", "publico_alvo", "tags", "nucleo", "evento"]
+        widgets = {
+            "categoria": forms.HiddenInput(),
+            "nucleo": forms.HiddenInput(),
+            "evento": forms.HiddenInput(),
+        }
+
+    def clean_tags(self):
+        tags = list(self.cleaned_data.get("tags", []))
+        if hasattr(self.data, "getlist"):
+            raw_values = self.data.getlist("tags")
+        else:
+            raw_values = self.data.get("tags", [])
+            if isinstance(raw_values, str):
+                raw_values = [raw_values]
+        existing_ids = {str(tag.id) for tag in tags}
+        for value in raw_values:
+            if value and value not in existing_ids:
+                tag, _ = Tag.objects.get_or_create(nome=value)
+                tags.append(tag)
+        return tags
 
     def clean(self):
         cleaned = super().clean()
