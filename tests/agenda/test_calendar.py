@@ -55,7 +55,7 @@ class CalendarViewTests(TestCase):
             publico_alvo=0,
             numero_convidados=10,
             numero_presentes=0,
-            endereco="Rua X",
+            local="Rua X",
             cidade="Cidade",
             estado="ST",
             cep="12345-678",

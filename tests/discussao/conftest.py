@@ -35,7 +35,7 @@ def evento(organizacao, nucleo, coordenador_user):
         descricao="",
         data_inicio="2024-01-01",
         data_fim="2024-01-02",
-        endereco="",
+        local="",
         cidade="",
         estado="SC",
         cep="00000-000",
