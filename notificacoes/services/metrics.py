@@ -1,4 +1,3 @@
-"""Métricas Prometheus para o app de notificações."""
 
 from prometheus_client import Counter, Gauge  # type: ignore
 
@@ -15,3 +14,4 @@ notificacoes_falhadas_total = Counter(
 )
 
 templates_total = Gauge("templates_total", "Total de templates ativos")
+
