@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 
-from .services import metrics
 class NotificacoesConfig(AppConfig):
     default_auto_field = "django.db.models.AutoField"
     name = "notificacoes"
@@ -27,16 +26,6 @@ class NotificacoesConfig(AppConfig):
                 f"Missing notification settings: {', '.join(missing)}"
             )
 
-        from .models import NotificationTemplate
-        from . import signals
-
-        try:
-            metrics.templates_total.set(
-                NotificationTemplate.objects.filter(ativo=True).count()
-            )
-        except Exception:  # pragma: no cover - durante migrações
-            metrics.templates_total.set(0)
-
-        signals.definir_template_default.send(sender=self.__class__)
+        from . import signals  # noqa: F401
 
 
