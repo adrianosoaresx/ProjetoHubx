@@ -353,13 +353,16 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
     model = MaterialDivulgacaoEvento
     template_name = "agenda/material_list.html"
     context_object_name = "materiais"
+    paginate_by = 10
 
     def get_queryset(self):
-        qs = MaterialDivulgacaoEvento.objects.filter(ativo=True)
+        qs = MaterialDivulgacaoEvento.objects.select_related("evento")
+        if self.request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
+            qs = qs.filter(status="aprovado")
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(titulo__icontains=q)
-        return qs
+        return qs.order_by("id")
 
 
 class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
