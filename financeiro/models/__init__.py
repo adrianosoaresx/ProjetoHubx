@@ -151,3 +151,22 @@ class Aporte(LancamentoFinanceiro):
         if self.tipo not in {self.Tipo.APORTE_INTERNO, self.Tipo.APORTE_EXTERNO}:
             self.tipo = self.Tipo.APORTE_INTERNO
         super().save(*args, **kwargs)
+
+
+class ImportacaoPagamentos(TimeStampedModel):
+    """Registro de importações de pagamentos em massa."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    arquivo = models.CharField(max_length=255)
+    data_importacao = models.DateTimeField(default=timezone.now)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    total_processado = models.PositiveIntegerField(default=0)
+    erros = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        ordering = ["-data_importacao"]
+        verbose_name = "Importação de Pagamentos"
+        verbose_name_plural = "Importações de Pagamentos"
+
+    def __str__(self) -> str:
+        return f"{self.arquivo} ({self.total_processado})"

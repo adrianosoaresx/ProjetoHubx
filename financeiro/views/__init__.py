@@ -127,7 +127,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
             return Response({"erros": result.errors}, status=status.HTTP_400_BAD_REQUEST)
         payload = {"id": uid, "preview": result.preview, "erros": result.errors}
         if result.errors_file:
-            payload["token_erros"] = Path(result.errors_file).stem
+            payload["token_erros"] = Path(result.errors_file).stem.replace(".errors", "")
         return Response(payload, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos/preview")
@@ -142,7 +142,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         uid = serializer.validated_data["id"]
         # encontra arquivo salvo
         media_path = Path(settings.MEDIA_ROOT) / "importacoes"
-        files = list(media_path.glob(f"{uid}_*"))
+        files = [f for f in media_path.glob(f"{uid}_*") if not f.name.endswith(".errors.csv")]
         if not files:
             return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
