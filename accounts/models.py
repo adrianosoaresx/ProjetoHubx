@@ -164,6 +164,7 @@ class User(AbstractUser, TimeStampedModel):
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = EncryptedCharField(max_length=128, blank=True, null=True)
+    email_confirmed = models.BooleanField(default=False)
 
     user_type = models.CharField(
         max_length=20,

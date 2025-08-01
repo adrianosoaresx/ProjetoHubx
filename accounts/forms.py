@@ -6,8 +6,9 @@ from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
-from .models import AccountToken, NotificationSettings, UserMedia
+from .models import AccountToken, NotificationSettings, UserMedia, cpf_validator
 from .tasks import send_confirmation_email
 
 User = get_user_model()
@@ -59,6 +60,7 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.is_active = False
+        user.email_confirmed = False
         user.failed_login_attempts = 0
         user.lock_expires_at = None
         if commit:
@@ -92,6 +94,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 class InformacoesPessoaisForm(forms.ModelForm):
     nome_completo = forms.CharField(max_length=255, label="Nome completo")
+    cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
 
     class Meta:
         model = User
@@ -99,6 +102,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "nome_completo",
             "username",
             "email",
+            "cpf",
             "avatar",
             "cover",
             "biografia",
@@ -117,12 +121,42 @@ class InformacoesPessoaisForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
             self.initial["nome_completo"] = self.instance.nome_completo
+            self.initial["cpf"] = self.instance.cpf
+            self.original_email = self.instance.email
+        else:
+            self.original_email = None
+
+    def clean_cpf(self):
+        cpf = self.cleaned_data.get("cpf")
+        if cpf and User.objects.exclude(pk=self.instance.pk).filter(cpf=cpf).exists():
+            raise forms.ValidationError(_("CPF já cadastrado."))
+        return cpf
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.nome_completo = self.cleaned_data.get("nome_completo", "")
+        user.cpf = self.cleaned_data.get("cpf")
+        self.email_changed = (
+            self.original_email
+            and self.cleaned_data.get("email") != self.original_email
+        )
+        if self.email_changed:
+            user.is_active = False
+            user.email_confirmed = False
         if commit:
             user.save()
+            if self.email_changed:
+                AccountToken.objects.filter(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                    used_at__isnull=True,
+                ).update(used_at=timezone.now())
+                token = AccountToken.objects.create(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                    expires_at=timezone.now() + timezone.timedelta(hours=24),
+                )
+                send_confirmation_email.delay(token.id)
         return user
 
 

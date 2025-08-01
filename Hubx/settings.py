@@ -133,6 +133,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+]
+BCRYPT_ROUNDS = 12
+
 # Internationalization
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
