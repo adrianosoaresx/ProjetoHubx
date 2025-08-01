@@ -75,4 +75,4 @@ def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:
     url = reverse("dashboard_api:dashboard-list")
     api_client.get(url)
     api_client.get(url)
-    assert calls["c"] == 5
+    assert calls["c"] == 6

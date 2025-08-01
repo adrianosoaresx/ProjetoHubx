@@ -12,8 +12,8 @@
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
 
-  {% with labels='["Usuários","Eventos","Posts"]' data='['|add:num_users.total|stringformat:"d"|add:","|add:num_eventos.total|stringformat:"d"|add:","|add:num_posts.total|stringformat:"d"|add:"]' %}
-  {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=data|safe %}
+  {% with labels='["Usuários","Eventos","Posts"]' %}
+  {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
   {% endwith %}
 
   <section class="mb-8">

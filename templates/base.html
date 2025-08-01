@@ -91,14 +91,24 @@
   </footer>
 
   <script src="https://unpkg.com/htmx.org@{{ HTMX_VERSION }}"></script>
-
   <script>
-    const menuToggle = document.getElementById('menu-toggle');
-    const menu = document.getElementById('menu');
-    if (menuToggle && menu) {
-      menuToggle.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-      });
-    }
+    (function () {
+      const cookieMatch = document.cookie.match(/(?:^|; )tema=([^;]+)/);
+      let theme = cookieMatch ? cookieMatch[1] : localStorage.getItem('tema');
+      if (!theme || theme === 'automatico') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+      }
+      document.documentElement.classList.toggle('dark', theme === 'escuro');
+      localStorage.setItem('tema', theme);
+      document.cookie = `tema=${theme};path=/`;
+
+      const menuToggle = document.getElementById('menu-toggle');
+      const menu = document.getElementById('menu');
+      if (menuToggle && menu) {
+        menuToggle.addEventListener('click', () => {
+          menu.classList.toggle('hidden');
+        });
+      }
+    })();
   </script>
 </body></html>

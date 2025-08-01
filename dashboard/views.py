@@ -4,6 +4,8 @@ from datetime import datetime
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+import shutil
+
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -37,6 +39,11 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(self.get_metrics())
+        context["chart_data"] = [
+            context["num_users"]["total"],
+            context["num_eventos"]["total"],
+            context["num_posts"]["total"],
+        ]
         return context
 
 
@@ -45,7 +52,7 @@ class RootDashboardView(SuperadminRequiredMixin, DashboardBaseView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        total, used, _ = shutil.disk_usage("/")
+        total, used, _free = shutil.disk_usage("/")
         context["service_status"] = {
             "celery": _("Desconhecido"),
             "fila_mensagens": 0,

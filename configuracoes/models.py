@@ -45,3 +45,8 @@ class ConfiguracaoConta(TimeStampedModel):
 
     class Meta:
         ordering = ["-modified"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"], name="configuracao_conta_user_unique"
+            )
+        ]

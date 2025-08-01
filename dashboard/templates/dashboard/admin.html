@@ -12,8 +12,8 @@
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
 
-  {% with labels='["Usuários","Eventos","Posts"]' data='['|add:num_users.total|stringformat:"d"|add:","|add:num_eventos.total|stringformat:"d"|add:","|add:num_posts.total|stringformat:"d"|add:"]' %}
-  {% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=data|safe %}
+  {% with labels='["Usuários","Eventos","Posts"]' %}
+  {% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
   {% endwith %}
 
   <div hx-get="{% url 'dashboard:lancamentos-partial' %}" hx-trigger="load, every 30s" hx-target="#lancamentos" hx-swap="innerHTML"></div>
@@ -23,19 +23,19 @@
   <section class="mb-8">
     <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <a href="{% url 'accounts:user-list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="#" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
         <i class="fa-solid fa-user-gear mb-2"></i>
         <span class="block">{% trans "Administrar Usuários" %}</span>
       </a>
-      <a href="{% url 'agenda:evento-list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="#" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
         <i class="fa-solid fa-calendar-check mb-2"></i>
         <span class="block">{% trans "Aprovar Eventos" %}</span>
       </a>
-      <a href="{% url 'financeiro:lancamento-list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="#" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
         <i class="fa-solid fa-file-invoice-dollar mb-2"></i>
         <span class="block">{% trans "Relatórios Financeiros" %}</span>
       </a>
-      <a href="{% url 'notificacoes:logs-list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="#" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
         <i class="fa-solid fa-bell mb-2"></i>
         <span class="block">{% trans "Logs de Notificações" %}</span>
       </a>

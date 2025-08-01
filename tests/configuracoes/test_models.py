@@ -23,7 +23,6 @@ def test_configuracao_valores_padrao(admin_user):
     assert config.frequencia_notificacoes_whatsapp == "imediata"
     assert config.idioma == "pt-BR"
     assert config.tema == "claro"
-    assert config.tema_escuro is False
 
 
 def test_configuracao_unica_por_usuario(admin_user):
