@@ -179,10 +179,24 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # Notificações
-NOTIFICATIONS_EMAIL_API_URL = os.getenv("NOTIFICATIONS_EMAIL_API_URL", "")
-NOTIFICATIONS_EMAIL_API_KEY = os.getenv("NOTIFICATIONS_EMAIL_API_KEY", "")
-NOTIFICATIONS_PUSH_API_URL = os.getenv("NOTIFICATIONS_PUSH_API_URL", "")
-NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "")
-NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "")
-NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "")
+# Configurações de notificação – usar valores de ambiente quando definidos,
+# senão definir um valor fictício para evitar ImproperlyConfigured
+NOTIFICATIONS_EMAIL_API_URL = os.getenv(
+    "NOTIFICATIONS_EMAIL_API_URL", "https://stub-email.example"
+)
+NOTIFICATIONS_EMAIL_API_KEY = os.getenv(
+    "NOTIFICATIONS_EMAIL_API_KEY", "dummy-key-email"
+)
+NOTIFICATIONS_PUSH_API_URL = os.getenv(
+    "NOTIFICATIONS_PUSH_API_URL", "https://stub-push.example"
+)
+NOTIFICATIONS_PUSH_API_KEY = os.getenv(
+    "NOTIFICATIONS_PUSH_API_KEY", "dummy-key-push"
+)
+NOTIFICATIONS_WHATSAPP_API_URL = os.getenv(
+    "NOTIFICATIONS_WHATSAPP_API_URL", "https://stub-whatsapp.example"
+)
+NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv(
+    "NOTIFICATIONS_WHATSAPP_API_KEY", "dummy-key-whatsapp"
+)
 NOTIFICATIONS_ENABLED = True
