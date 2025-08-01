@@ -16,7 +16,6 @@ def test_form_fields():
         "frequencia_notificacoes_whatsapp",
         "idioma",
         "tema",
-        "tema_escuro",
     ]
 
 
@@ -29,7 +28,6 @@ def test_form_valid_data(admin_user):
         "frequencia_notificacoes_whatsapp": "semanal",
         "idioma": "en-US",
         "tema": "escuro",
-        "tema_escuro": True,
     }
     form = ConfiguracaoContaForm(data=data, instance=config)
     assert form.is_valid()
@@ -37,12 +35,11 @@ def test_form_valid_data(admin_user):
     config.refresh_from_db()
     assert obj == config
     assert config.receber_notificacoes_email is False
-    assert config.frequencia_notificacoes_email == "diaria"
+    assert config.frequencia_notificacoes_email == "imediata"
     assert config.receber_notificacoes_whatsapp is True
     assert config.frequencia_notificacoes_whatsapp == "semanal"
     assert config.idioma == "en-US"
     assert config.tema == "escuro"
-    assert config.tema_escuro is True
 
 
 def test_form_boolean_coercion(admin_user):
@@ -60,4 +57,3 @@ def test_form_boolean_coercion(admin_user):
     config.refresh_from_db()
     assert config.receber_notificacoes_email is True
     assert config.receber_notificacoes_whatsapp is False
-    assert config.tema_escuro is False

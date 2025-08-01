@@ -1,0 +1,30 @@
+{% load widget_tweaks i18n %}
+<form method="post" hx-post="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" class="space-y-4">
+  {% csrf_token %}
+  <input type="hidden" name="tab" value="preferencias">
+  <div>
+    <label class="flex items-center gap-2">
+      {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox' }}
+      <span class="text-sm font-medium">{% trans 'Receber notificações por e-mail' %}</span>
+    </label>
+    {{ preferencias_form.frequencia_notificacoes_email|add_class:'form-select mt-2' }}
+  </div>
+  <div>
+    <label class="flex items-center gap-2">
+      {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox' }}
+      <span class="text-sm font-medium">{% trans 'Receber notificações por WhatsApp' %}</span>
+    </label>
+    {{ preferencias_form.frequencia_notificacoes_whatsapp|add_class:'form-select mt-2' }}
+  </div>
+  <div>
+    <label for="{{ preferencias_form.idioma.id_for_label }}" class="block text-sm font-medium">{% trans 'Idioma' %}</label>
+    {{ preferencias_form.idioma|add_class:'form-select mt-1' }}
+  </div>
+  <div>
+    <label for="{{ preferencias_form.tema.id_for_label }}" class="block text-sm font-medium">{% trans 'Tema' %}</label>
+    {{ preferencias_form.tema|add_class:'form-select mt-1' }}
+  </div>
+  <div class="text-right pt-2">
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">{% trans 'Salvar Alterações' %}</button>
+  </div>
+</form>

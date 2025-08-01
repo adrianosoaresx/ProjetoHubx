@@ -17,7 +17,7 @@
     <button hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
     <button hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
     <button hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=notificacoes" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'notificacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Notificações' %}</button>
+    <button hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
   </nav>
   <div id="content" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
     {% include 'configuracoes/partials/'|add:tab|add:'.html' %}

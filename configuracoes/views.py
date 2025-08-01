@@ -7,8 +7,8 @@ from django.utils.translation import gettext as _
 from django.views.generic import View
 
 from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
-from notificacoes.forms import UserNotificationPreferenceForm
-from notificacoes.models import UserNotificationPreference
+from configuracoes.forms import ConfiguracaoContaForm
+from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
 from tokens.models import TOTPDevice
 
 
@@ -19,7 +19,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         "informacoes": InformacoesPessoaisForm,
         "seguranca": PasswordChangeForm,
         "redes": RedesSociaisForm,
-        "notificacoes": UserNotificationPreferenceForm,
+        "preferencias": ConfiguracaoContaForm,
     }
 
     def get_form(self, tab: str, data=None, files=None):
@@ -27,9 +27,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         form_class = self.form_classes[tab]
         if form_class is PasswordChangeForm:
             return form_class(user, data)
-        if form_class is UserNotificationPreferenceForm:
-            pref, _ = UserNotificationPreference.objects.get_or_create(user=user)
-            return form_class(data, instance=pref)
+        if form_class is ConfiguracaoContaForm:
+            return form_class(data, instance=get_configuracao_conta(user))
         return form_class(data, files, instance=user)
 
     def get_two_factor_enabled(self) -> bool:
@@ -68,9 +67,14 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         else:
             form = self.get_form(tab, request.POST, request.FILES)
             if form.is_valid():
-                saved = form.save()
-                if isinstance(form, PasswordChangeForm):
-                    update_session_auth_hash(request, saved)
+                if tab == "preferencias":
+                    form.instance = atualizar_preferencias_usuario(
+                        request.user, form.cleaned_data
+                    )
+                else:
+                    saved = form.save()
+                    if isinstance(form, PasswordChangeForm):
+                        update_session_auth_hash(request, saved)
                 messages.success(request, _("Alterações salvas com sucesso."))
             else:
                 messages.error(request, _("Corrija os erros abaixo."))
@@ -88,4 +92,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request")
             else "configuracoes/configuracoes.html"
         )
-        return render(request, template, context)
+        response = render(request, template, context)
+        if tab == "preferencias" and form.is_valid():
+            response.set_cookie("tema", form.instance.tema)
+        return response

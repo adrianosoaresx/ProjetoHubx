@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from configuracoes.models import ConfiguracaoConta
 
 
 class ConfiguracaoContaForm(forms.ModelForm):
+    """Formulário para atualização de preferências do usuário."""
+
     class Meta:
         model = ConfiguracaoConta
         fields = (
@@ -13,5 +18,20 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "frequencia_notificacoes_whatsapp",
             "idioma",
             "tema",
-            "tema_escuro",
         )
+        widgets = {
+            "receber_notificacoes_email": forms.CheckboxInput(),
+            "receber_notificacoes_whatsapp": forms.CheckboxInput(),
+            "frequencia_notificacoes_email": forms.Select(),
+            "frequencia_notificacoes_whatsapp": forms.Select(),
+            "idioma": forms.Select(),
+            "tema": forms.Select(),
+        }
+
+    def clean(self) -> dict[str, object]:
+        data = super().clean()
+        if not data.get("receber_notificacoes_email"):
+            data["frequencia_notificacoes_email"] = "imediata"
+        if not data.get("receber_notificacoes_whatsapp"):
+            data["frequencia_notificacoes_whatsapp"] = "imediata"
+        return data

@@ -2,7 +2,6 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from accounts.models import UserType
-from configuracoes.models import ConfiguracaoConta
 from organizacoes.models import Organizacao
 
 User = get_user_model()
@@ -11,19 +10,6 @@ User = get_user_model()
 @pytest.fixture
 def organizacao(db):
     return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-99", slug="org")
-
-
-@pytest.fixture(autouse=True)
-def configuracoes_signals():
-    from django.db.models.signals import post_save
-
-    def criar_configuracao(sender, instance, created, **_kwargs):
-        if created:
-            ConfiguracaoConta.objects.create(user=instance)
-
-    post_save.connect(criar_configuracao, sender=User)
-    yield
-    post_save.disconnect(criar_configuracao, sender=User)
 
 
 @pytest.fixture
