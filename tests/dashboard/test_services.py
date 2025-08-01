@@ -3,10 +3,11 @@ import datetime as dt
 import pytest
 from django.utils import timezone
 
+from accounts.models import User, UserType
 from agenda.factories import EventoFactory
 from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatConversation, ChatMessage
-from dashboard.services import DashboardService
+from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -78,3 +79,38 @@ def test_calcular_crescimento(evento):
     fim = inicio + dt.timedelta(days=30)
     data = DashboardService.calcular_crescimento(Evento.objects.all(), inicio, fim)
     assert "total" in data and "crescimento" in data
+
+
+def test_get_metrics_with_filters(admin_user, organizacao):
+    other_org = OrganizacaoFactory()
+    User.objects.create_user(
+        email="other@example.com",
+        username="other",
+        password="x",
+        user_type=UserType.ADMIN,
+        organizacao=other_org,
+    )
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user,
+        escopo="organizacao",
+        organizacao_id=admin_user.organizacao_id,
+        metricas=["num_users"],
+    )
+    assert set(metrics.keys()) == {"num_users"}
+    assert metrics["num_users"]["total"] >= 1
+
+
+def test_get_metrics_cache_differentiates(admin_user):
+    other_org = OrganizacaoFactory()
+    User.objects.create_user(
+        email="another@example.com",
+        username="another",
+        password="x",
+        user_type=UserType.ADMIN,
+        organizacao=other_org,
+    )
+    metrics1 = DashboardMetricsService.get_metrics(
+        admin_user, escopo="organizacao", organizacao_id=admin_user.organizacao_id
+    )
+    metrics2 = DashboardMetricsService.get_metrics(admin_user, escopo="global")
+    assert metrics1["num_users"]["total"] < metrics2["num_users"]["total"]

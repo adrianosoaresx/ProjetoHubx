@@ -15,4 +15,8 @@ urlpatterns = [
     path("notificacoes-partial/", views.notificacoes_partial, name="notificacoes-partial"),
     path("tarefas-partial/", views.tarefas_partial, name="tarefas-partial"),
     path("eventos-partial/", views.eventos_partial, name="eventos-partial"),
+    path("export/", views.DashboardExportView.as_view(), name="export"),
+    path("configs/", views.DashboardConfigListView.as_view(), name="configs"),
+    path("configs/create/", views.DashboardConfigCreateView.as_view(), name="config-create"),
+    path("configs/<uuid:pk>/apply/", views.DashboardConfigApplyView.as_view(), name="config-apply"),
 ]
