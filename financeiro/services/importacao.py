@@ -133,6 +133,7 @@ class ImportadorPagamentos:
             to_create = []
             saldo_centro: dict[str, Decimal] = {}
             saldo_conta: dict[str, Decimal] = {}
+            seen: set[tuple[str | None, str, Decimal, Any, str]] = set()
             for item in chunk:
                 payload = {
                     "centro_custo": str(item["centro_custo"].id),
@@ -149,6 +150,29 @@ class ImportadorPagamentos:
                     errors.append(f"Dados inválidos na linha: {serializer.errors}")
                     continue
                 data = serializer.validated_data
+                conta = data.get("conta_associado")
+                key = (
+                    str(data["centro_custo"].id),
+                    str(conta.id) if conta else None,
+                    data["tipo"],
+                    data["valor"],
+                    data["data_lancamento"],
+                    data["descricao"],
+                )
+                if (
+                    key in seen
+                    or LancamentoFinanceiro.objects.filter(
+                        centro_custo=data["centro_custo"],
+                        conta_associado=data.get("conta_associado"),
+                        tipo=data["tipo"],
+                        valor=data["valor"],
+                        data_lancamento=data["data_lancamento"],
+                        descricao=data["descricao"],
+                    ).exists()
+                ):
+                    errors.append("Lançamento duplicado")
+                    continue
+                seen.add(key)
                 if data["status"] == LancamentoFinanceiro.Status.PAGO:
                     cid = str(data["centro_custo"].id)
                     saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + data["valor"]
@@ -211,11 +235,14 @@ class ImportadorPagamentos:
                 raise ValueError(_("data_vencimento anterior a data_lancamento"))
         else:
             venc = data_lanc
+        valor = Decimal(row["valor"])
+        if valor < 0 and row["tipo"] != "despesa":
+            raise ValueError(_("Valor negativo não permitido para este tipo"))
         return {
             "centro_custo": centro,
             "conta_associado": conta,
             "tipo": row["tipo"],
-            "valor": Decimal(row["valor"]),
+            "valor": valor,
             "data_lancamento": data_lanc,
             "data_vencimento": venc,
             "status": row["status"],

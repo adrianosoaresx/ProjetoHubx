@@ -8,7 +8,8 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.factories import UserFactory
-from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from accounts.models import UserType
+from financeiro.models import CentroCusto, ContaAssociado, ImportacaoPagamentos, LancamentoFinanceiro
 
 pytestmark = pytest.mark.django_db
 
@@ -26,6 +27,8 @@ def user():
 
 
 def auth(client, user):
+    user.user_type = UserType.ADMIN
+    user.save()
     client.force_authenticate(user=user)
 
 
@@ -157,8 +160,11 @@ def test_reprocessar_erros(api_client, user, settings):
     url = reverse("financeiro_api:financeiro-importar-pagamentos")
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 201
-    token = resp.data["token_erros"]
-    err_url = reverse("financeiro_api:financeiro-reprocessar-erros", args=[token])
+    token = resp.data["id"]
+    token_erros = resp.data["token_erros"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    api_client.post(confirm_url, {"id": token})
+    err_url = reverse("financeiro_api:financeiro-reprocessar-erros", args=[token_erros])
     # corrige arquivo apenas com linha válida
     corrected = make_csv(
         [
@@ -206,3 +212,52 @@ def test_metrics_increment(api_client, user, settings):
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
     api_client.post(confirm_url, {"id": token})
     assert metrics.importacao_pagamentos_total._value.get() == before + 1
+
+
+def test_ignore_duplicate_lines(api_client, user, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    row = [
+        str(centro.id),
+        str(conta.id),
+        "aporte_interno",
+        "10",
+        timezone.now().isoformat(),
+        timezone.now().isoformat(),
+        "pago",
+    ]
+    csv_bytes = make_csv([row, row])
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    token = resp.data["id"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    api_client.post(confirm_url, {"id": token})
+    assert LancamentoFinanceiro.objects.count() == 1
+    log = ImportacaoPagamentos.objects.latest("data_importacao")
+    assert log.total_processado == 1
+    assert log.erros
+
+
+def test_negative_value_invalid(api_client, user):
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    rows = [
+        [
+            str(centro.id),
+            str(conta.id),
+            "aporte_interno",
+            "-10",
+            timezone.now().isoformat(),
+            timezone.now().isoformat(),
+            "pago",
+        ]
+    ]
+    csv_bytes = make_csv(rows)
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 400

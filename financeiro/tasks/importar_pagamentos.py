@@ -6,6 +6,7 @@ from pathlib import Path
 from celery import shared_task  # type: ignore
 from django.utils import timezone
 
+from ..models import ImportacaoPagamentos
 from ..services import metrics
 from ..services.importacao import ImportadorPagamentos
 
@@ -25,6 +26,12 @@ def importar_pagamentos_async(file_path: str, user_id: str) -> None:
         logger.error("Erros na importação: %s", errors)
     else:
         log_path.write_text("ok", encoding="utf-8")
+    ImportacaoPagamentos.objects.create(
+        arquivo=file_path,
+        usuario_id=user_id,
+        total_processado=total,
+        erros=errors,
+    )
     elapsed = (timezone.now() - inicio).total_seconds()
     logger.info("Importação concluída: %s registros em %.2fs", total, elapsed)
     metrics.importacao_pagamentos_total.inc(total)
