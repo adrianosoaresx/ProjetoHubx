@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import csv  # pragma: no cover
+
+import csv
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 
@@ -19,7 +24,7 @@ def list_templates(request):
 
 
 @login_required
-@permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
+@permission_required("notificacoes.add_notificationtemplate", raise_exception=True)
 def create_template(request):
     if request.method == "POST":
         form = NotificationTemplateForm(request.POST)
@@ -55,6 +60,7 @@ def list_logs(request):
     fim = request.GET.get("fim")
     canal = request.GET.get("canal")
     status = request.GET.get("status")
+    template_codigo = request.GET.get("template")
     if inicio:
         logs = logs.filter(data_envio__date__gte=inicio)
     if fim:
@@ -63,6 +69,19 @@ def list_logs(request):
         logs = logs.filter(canal=canal)
     if status in NotificationStatus.values:
         logs = logs.filter(status=status)
+    if template_codigo:
+        logs = logs.filter(template__codigo=template_codigo)
+
+    if request.GET.get("export") == "csv":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=logs.csv"
+        writer = csv.writer(response)
+        writer.writerow(["user", "template", "canal", "status", "data_envio", "erro"])
+        for log in logs:
+            writer.writerow(
+                [log.user_id, log.template.codigo, log.canal, log.status, log.data_envio, log.erro]
+            )
+        return response
 
     paginator = Paginator(logs, 20)
     page_obj = paginator.get_page(request.GET.get("page"))
@@ -86,3 +105,14 @@ def editar_preferencias(request):
     else:
         form = UserNotificationPreferenceForm(instance=pref)
     return render(request, "notificacoes/preferencias.html", {"form": form})
+@login_required
+@permission_required("notificacoes.delete_notificationtemplate", raise_exception=True)
+def delete_template(request, codigo: str):
+    template = get_object_or_404(NotificationTemplate, codigo=codigo)
+    if NotificationLog.objects.filter(template=template).exists():
+        messages.error(request, _("Template em uso; desative-o."))
+    else:
+        template.delete()
+        messages.success(request, _("Template excluído com sucesso."))
+    return redirect("notificacoes:templates_list")
+
