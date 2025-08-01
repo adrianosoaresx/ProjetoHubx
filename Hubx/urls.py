@@ -72,6 +72,10 @@ urlpatterns = [
         "api/financeiro/",
         include(("financeiro.api_urls", "financeiro_api"), namespace="financeiro_api"),
     ),
+    path(
+        "api/feed/",
+        include(("feed.api_urls", "feed_api"), namespace="feed_api"),
+    ),
 ]
 
 # Arquivos de mídia em desenvolvimento
