@@ -7,7 +7,8 @@ from django.dispatch import Signal, receiver
 from django.utils.translation import gettext_lazy as _
 
 from .models import UserNotificationPreference
-
+from django.db.models.signals import post_migrate
+from django.dispatch import receiver
 
 
 # Signal para que outros módulos definam templates padrão
