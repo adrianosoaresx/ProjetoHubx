@@ -1,5 +1,7 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
+import os
 
 from .models import (
     BriefingEvento,
@@ -91,6 +93,32 @@ class MaterialDivulgacaoEventoForm(forms.ModelForm):
             "imagem_thumb",
             "tags",
         ]
+
+    def clean_arquivo(self):
+        arquivo = self.cleaned_data.get("arquivo")
+        if not arquivo:
+            return arquivo
+        ext = os.path.splitext(arquivo.name)[1].lower()
+        if ext in {".jpg", ".jpeg", ".png"}:
+            max_size = 10 * 1024 * 1024
+        elif ext == ".pdf":
+            max_size = 20 * 1024 * 1024
+        else:
+            raise forms.ValidationError(_("Formato de arquivo não permitido."))
+        if arquivo.size > max_size:
+            raise forms.ValidationError(_("Arquivo excede o tamanho máximo permitido."))
+        return arquivo
+
+    def clean_imagem_thumb(self):
+        img = self.cleaned_data.get("imagem_thumb")
+        if not img:
+            return img
+        ext = os.path.splitext(img.name)[1].lower()
+        if ext not in {".jpg", ".jpeg", ".png"}:
+            raise forms.ValidationError(_("Formato de imagem não permitido."))
+        if img.size > 10 * 1024 * 1024:
+            raise forms.ValidationError(_("Imagem excede o tamanho máximo de 10MB."))
+        return img
 
 
 class BriefingEventoForm(forms.ModelForm):

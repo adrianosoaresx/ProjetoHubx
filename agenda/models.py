@@ -190,9 +190,7 @@ class Evento(TimeStampedModel):
 class ParceriaEvento(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    empresa = models.ForeignKey(
-        "empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias"
-    )
+    empresa = models.ForeignKey("empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias")
     cnpj = models.CharField(
         max_length=14,
         validators=[RegexValidator(r"^\d{14}$", "CNPJ inválido")],
@@ -242,7 +240,6 @@ class MaterialDivulgacaoEvento(models.Model):
     arquivo = models.FileField(upload_to="eventos/divulgacao/")
     imagem_thumb = models.ImageField(upload_to="eventos/divulgacao/thumbs/", null=True, blank=True)
     data_publicacao = models.DateField(auto_now_add=True)
-    ativo = models.BooleanField(default=True)
     tags = models.CharField(max_length=255, blank=True)
     status = models.CharField(
         max_length=10,
@@ -257,6 +254,7 @@ class MaterialDivulgacaoEvento(models.Model):
         related_name="materiais_avaliados",
     )
     avaliado_em = models.DateTimeField(null=True, blank=True)
+    motivo_devolucao = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Material de Divulgação de Evento"
