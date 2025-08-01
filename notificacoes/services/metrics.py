@@ -1,3 +1,4 @@
+
 from prometheus_client import Counter, Gauge  # type: ignore
 
 notificacoes_enviadas_total = Counter(
