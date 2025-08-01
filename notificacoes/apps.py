@@ -4,9 +4,8 @@ from django.apps import AppConfig
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+
 from .services import metrics
-
-
 class NotificacoesConfig(AppConfig):
     default_auto_field = "django.db.models.AutoField"
     name = "notificacoes"
@@ -23,6 +22,7 @@ class NotificacoesConfig(AppConfig):
         ]
         missing = [name for name in required if not getattr(settings, name, "")]
         if missing:
+
             raise ImproperlyConfigured(
                 f"Missing notification settings: {', '.join(missing)}"
             )
@@ -38,4 +38,5 @@ class NotificacoesConfig(AppConfig):
             metrics.templates_total.set(0)
 
         signals.definir_template_default.send(sender=self.__class__)
+
 
