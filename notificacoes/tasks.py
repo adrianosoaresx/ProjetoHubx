@@ -7,7 +7,7 @@ from celery import shared_task  # type: ignore
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
+from .models import Canal, NotificationLog, NotificationStatus
 from .services import metrics
 from .services.notifications_client import send_email, send_push, send_whatsapp
 
@@ -15,15 +15,12 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-@shared_task(
-    bind=True, max_retries=3, autoretry_for=(Exception,), retry_backoff=True
-)
-def enviar_notificacao_async(
-    self, user_id: int, template_id: str, canal: str, subject: str, body: str, log_id: str
-) -> None:
-    user = User.objects.get(id=user_id)
-    template = NotificationTemplate.objects.get(id=template_id)
+@shared_task(bind=True, max_retries=3)
+def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None:
     log = NotificationLog.objects.get(id=log_id)
+    user = log.user
+    canal = log.canal
+    template = log.template
     if log.status != NotificationStatus.PENDENTE:
         logger.info(
             "Log em estado inválido", extra={"log_id": str(log.id), "status": log.status}
@@ -42,19 +39,23 @@ def enviar_notificacao_async(
         log.status = NotificationStatus.FALHA
         log.erro = str(exc)
         metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
+        log.data_envio = timezone.now()
+        log.save(update_fields=["status", "erro", "data_envio"])
         sentry_sdk.capture_exception(exc)
         logger.exception(
             "Falha no envio de notificação",
-            extra={"user": user_id, "template": str(template.id), "canal": canal},
+            extra={"user": user.id, "template": str(template.id), "canal": canal},
         )
-        raise
-    finally:
+        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+    else:
         log.data_envio = timezone.now()
-        log.save(update_fields=["status", "erro", "data_envio"])
+        log.erro = None
+        log.save(update_fields=["status", "data_envio", "erro"])
+    finally:
         logger.info(
             "notificacao_enviada",
             extra={
-                "user": user_id,
+                "user": user.id,
                 "template": str(template.id),
                 "canal": canal,
                 "status": log.status,

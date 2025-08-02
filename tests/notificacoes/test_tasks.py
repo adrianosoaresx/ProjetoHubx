@@ -1,4 +1,5 @@
 import pytest
+from celery.exceptions import Retry
 
 from accounts.factories import UserFactory
 from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
@@ -20,7 +21,7 @@ def test_enviar_notificacao_async_sucesso(settings, monkeypatch) -> None:
 
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
-    enviar_notificacao_async(user.id, str(template.id), "email", "Oi", "C", str(log.id))
+    enviar_notificacao_async("Oi", "C", str(log.id))
 
     assert called.get("count") == 1
     log.refresh_from_db()
@@ -41,14 +42,7 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
     with pytest.raises(RuntimeError):
-        enviar_notificacao_async.run(
-            user.id,
-            str(template.id),
-            "email",
-            "Oi",
-            "C",
-            str(log.id),
-        )
+        enviar_notificacao_async("Oi", "C", str(log.id))
 
     log.refresh_from_db()
     assert log.status == NotificationStatus.FALHA
@@ -58,4 +52,3 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
 
 def test_task_configuracao():
     assert enviar_notificacao_async.max_retries == 3
-    assert enviar_notificacao_async.retry_backoff is True

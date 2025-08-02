@@ -57,6 +57,10 @@ urlpatterns = [
         include(("configuracoes.api_urls", "configuracoes_api"), namespace="configuracoes_api"),
     ),
     path(
+        "api/notificacoes/",
+        include(("notificacoes.api_urls", "notificacoes_api"), namespace="notificacoes_api"),
+    ),
+    path(
         "api/accounts/",
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
     ),
