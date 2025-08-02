@@ -98,7 +98,8 @@ para visualizar categorias e interações.
 
 ## 📡 Chat (WebSocket)
 
-O módulo de chat registra mensagens trocadas entre usuários. Acesse `/chat/` para ver os canais disponíveis agrupados por contexto. Ao abrir um canal, as mensagens são exibidas em tempo real via WebSocket com HTMX. Se o JavaScript estiver desativado o envio ainda funciona, mas a página será recarregada.
+O módulo de chat registra mensagens trocadas entre usuários.  
+Ao abrir uma conversa, as últimas 20 mensagens são carregadas automaticamente do banco de dados (`Mensagem`), mantendo o histórico.
 
 Para que o WebSocket funcione:
 
@@ -116,10 +117,6 @@ Para rodar manualmente com `daphne`:
 ```bash
 daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
 ```
-
-### Produção
-
-Em produção defina `ALLOWED_HOSTS` com o domínio usado e configure o proxy para aceitar conexões `wss://`. O endpoint do WebSocket segue o padrão `/ws/chat/<id>/`.
 
 ---
 
