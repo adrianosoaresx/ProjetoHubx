@@ -22,14 +22,21 @@ from .models import (
     RelatorioChatExport,
 )
 from .permissions import IsChannelAdminOrOwner, IsChannelParticipant, IsModeratorPermission
+from .serializers import ChatChannelSerializer, ChatMessageSerializer
 from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
-from .serializers import ChatChannelSerializer, ChatMessageSerializer
 
 User = get_user_model()
 
 
 class ChatChannelViewSet(viewsets.ModelViewSet):
+    """ViewSet para gerenciamento de canais de chat.
+
+    Lista somente canais do usuário autenticado e permite
+    ações administrativas como adicionar participantes ou
+    exportar o histórico de mensagens.
+    """
+
     serializer_class = ChatChannelSerializer
     permission_classes = [permissions.IsAuthenticated]
     queryset = ChatChannel.objects.all()
@@ -129,6 +136,12 @@ class ChatMessagePagination(PageNumberPagination):
 
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
+    """Gerencia mensagens de um canal.
+
+    Oferece listagem paginada, criação de mensagens e
+    ações customizadas como reagir ou sinalizar conteúdo.
+    """
+
     serializer_class = ChatMessageSerializer
     permission_classes = [permissions.IsAuthenticated, IsChannelParticipant]
     pagination_class = ChatMessagePagination
@@ -192,6 +205,8 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
 
 class ModeracaoViewSet(viewsets.ViewSet):
+    """Endpoints para moderação de mensagens sinalizadas."""
+
     permission_classes = [permissions.IsAuthenticated, IsModeratorPermission]
 
     def list(self, request: Request) -> Response:
