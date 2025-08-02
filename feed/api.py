@@ -36,14 +36,44 @@ class PostSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at"]
 
+    def validate(self, attrs):
+        tipo_feed = attrs.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
+        if tipo_feed == "nucleo" and not attrs.get("nucleo"):
+            raise serializers.ValidationError({"nucleo": "Núcleo é obrigatório"})
+        if tipo_feed == "evento" and not attrs.get("evento"):
+            raise serializers.ValidationError({"evento": "Evento é obrigatório"})
+        return attrs
+
+    def _handle_media(self, validated_data):
+        from .services import upload_media
+
+        for field in ["image", "pdf", "video"]:
+            file = validated_data.get(field)
+            if file:
+                validated_data[field] = upload_media(file)
+
+    def create(self, validated_data):
+        self._handle_media(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self._handle_media(validated_data)
+        return super().update(instance, validated_data)
+
     def get_image_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        return obj.image.url if obj.image else None
+        if not obj.image:
+            return None
+        return obj.image if isinstance(obj.image, str) else obj.image.url
 
     def get_pdf_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        return obj.pdf.url if obj.pdf else None
+        if not obj.pdf:
+            return None
+        return obj.pdf if isinstance(obj.pdf, str) else obj.pdf.url
 
     def get_video_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        return obj.video.url if obj.video else None
+        if not obj.video:
+            return None
+        return obj.video if isinstance(obj.video, str) else obj.video.url
 
 
 class PostViewSet(viewsets.ModelViewSet):
