@@ -6,21 +6,19 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import OuterRef, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from .forms import NovaConversaForm, NovaMensagemForm
-from .models import ChatConversation, ChatMessage, ChatParticipant
+from .models import ChatChannel, ChatMessage, ChatParticipant
 
 User = get_user_model()
 
 
 @login_required
 def conversation_list(request):
-    last_msg = ChatMessage.objects.filter(conversation=OuterRef("pk")).order_by("-timestamp")
+    last_msg = ChatMessage.objects.filter(channel=OuterRef("pk")).order_by("-timestamp")
     qs = (
-        ChatConversation.objects.filter(participants__user=request.user)
-        .select_related("organizacao", "nucleo", "evento")
+        ChatChannel.objects.filter(participants__user=request.user)
         .prefetch_related("participants")
         .annotate(
             last_message_text=Subquery(last_msg.values("conteudo")[:1]),
@@ -29,11 +27,10 @@ def conversation_list(request):
         .distinct()
     )
     grupos = {
-        "direta": qs.filter(tipo_conversa="direta"),
-        "grupo": qs.filter(tipo_conversa="grupo"),
-        "organizacao": qs.filter(tipo_conversa="organizacao"),
-        "nucleo": qs.filter(tipo_conversa="nucleo"),
-        "evento": qs.filter(tipo_conversa="evento"),
+        "privado": qs.filter(contexto_tipo="privado"),
+        "organizacao": qs.filter(contexto_tipo="organizacao"),
+        "nucleo": qs.filter(contexto_tipo="nucleo"),
+        "evento": qs.filter(contexto_tipo="evento"),
     }
     return render(
         request,
@@ -48,14 +45,13 @@ def nova_conversa(request):
         form = NovaConversaForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             conv = form.save(commit=False)
-            if not conv.slug:
-                conv.slug = slugify(conv.titulo or "conv")
+            conv.contexto_tipo = "privado"
             conv.save()
-            ChatParticipant.objects.create(conversation=conv, user=request.user, is_owner=True)
+            ChatParticipant.objects.create(channel=conv, user=request.user, is_owner=True)
             for user in form.cleaned_data.get("participants"):
-                ChatParticipant.objects.get_or_create(conversation=conv, user=user)
+                ChatParticipant.objects.get_or_create(channel=conv, user=user)
             messages.success(request, _("Conversa criada com sucesso."))
-            return redirect("chat:conversation_detail", slug=conv.slug)
+            return redirect("chat:conversation_detail", channel_id=conv.pk)
         messages.error(request, _("Erro ao criar conversa."))
     else:
         form = NovaConversaForm(user=request.user)
@@ -63,29 +59,28 @@ def nova_conversa(request):
 
 
 @login_required
-def conversation_detail(request, slug):
+def conversation_detail(request, channel_id):
     conversation = get_object_or_404(
-        ChatConversation.objects.prefetch_related("messages__lido_por", "participants__user"),
-        slug=slug,
+        ChatChannel.objects.prefetch_related("messages__lido_por", "participants__user"),
+        pk=channel_id,
         participants__user=request.user,
     )
     if request.method == "POST":
         form = NovaMensagemForm(request.POST, request.FILES)
         if form.is_valid():
             msg = form.save(commit=False)
-            msg.conversation = conversation
-            msg.organizacao = conversation.organizacao
+            msg.channel = conversation
             msg.remetente = request.user
             msg.save()
             msg.lido_por.add(request.user)
             if request.headers.get("HX-Request"):
                 return render(request, "chat/partials/message.html", {"m": msg})
             messages.success(request, _("Mensagem enviada."))
-            return redirect("chat:conversation_detail", slug=slug)
+            return redirect("chat:conversation_detail", channel_id=channel_id)
         messages.error(request, _("Erro ao enviar mensagem."))
         if request.headers.get("HX-Request"):
             return HttpResponse(status=400)
-        return redirect("chat:conversation_detail", slug=slug)
+        return redirect("chat:conversation_detail", channel_id=channel_id)
     else:
         form = NovaMensagemForm()
     mensagens = conversation.messages.select_related("remetente").prefetch_related("lido_por")

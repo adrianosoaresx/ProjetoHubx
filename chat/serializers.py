@@ -10,7 +10,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         model = ChatMessage
         fields = [
             "id",
-            "conversation",
+            "channel",
             "remetente",
             "tipo",
             "conteudo",

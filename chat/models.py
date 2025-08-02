@@ -11,54 +11,37 @@ from core.models import TimeStampedModel
 User = get_user_model()
 
 
-class ChatConversation(TimeStampedModel):
-    TIPO_CONVERSA_CHOICES = [
-        ("direta", "Mensagem direta"),
-        ("grupo", "Grupo global"),
-        ("organizacao", "Grupo da Organização"),
-        ("nucleo", "Grupo do Núcleo"),
-        ("evento", "Grupo do Evento"),
+class ChatChannel(TimeStampedModel):
+    CONTEXT_CHOICES = [
+        ("privado", "Privado"),
+        ("nucleo", "Núcleo"),
+        ("evento", "Evento"),
+        ("organizacao", "Organização"),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contexto_tipo = models.CharField(max_length=20, choices=CONTEXT_CHOICES)
+    contexto_id = models.UUIDField(null=True, blank=True)
     titulo = models.CharField(max_length=200, null=True, blank=True)
     descricao = models.TextField(blank=True)
-    slug = models.SlugField(unique=True)
-    tipo_conversa = models.CharField(
-        max_length=12,
-        choices=TIPO_CONVERSA_CHOICES,
-        default="direta",
-    )
-    organizacao = models.ForeignKey(
-        "organizacoes.Organizacao",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-    )
-    nucleo = models.ForeignKey(
-        "nucleos.Nucleo",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
-    evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     imagem = models.ImageField(upload_to="chat/avatars/", null=True, blank=True)
 
     def __str__(self) -> str:
-        return self.titulo or self.slug
+        return self.titulo or str(self.id)
 
     def get_absolute_url(self):
         from django.urls import reverse
 
-        return reverse("chat:conversation_detail", args=[self.slug])
+        return reverse("chat:conversation_detail", args=[self.pk])
 
     class Meta:
-        verbose_name = "Conversa"
-        verbose_name_plural = "Conversas"
+        verbose_name = "Canal de Chat"
+        verbose_name_plural = "Canais de Chat"
 
 
 class ChatParticipant(models.Model):
-    conversation = models.ForeignKey(
-        ChatConversation,
+    channel = models.ForeignKey(
+        ChatChannel,
         on_delete=models.CASCADE,
         related_name="participants",
     )
@@ -71,23 +54,17 @@ class ChatParticipant(models.Model):
     is_owner = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("user", "conversation")
+        unique_together = ("user", "channel")
         verbose_name = "Participante"
         verbose_name_plural = "Participantes"
 
 
 class ChatMessage(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    conversation = models.ForeignKey(
-        ChatConversation,
+    channel = models.ForeignKey(
+        ChatChannel,
         on_delete=models.CASCADE,
         related_name="messages",
-    )
-    organizacao = models.ForeignKey(
-        "organizacoes.Organizacao",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
     )
     remetente = models.ForeignKey(
         User,
@@ -111,7 +88,7 @@ class ChatMessage(TimeStampedModel):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f"{self.remetente} - {self.conversation.slug}"
+        return f"{self.remetente} - {self.channel_id}"
 
     class Meta:
         ordering = ["timestamp"]
@@ -159,7 +136,7 @@ class ChatMessageFlag(TimeStampedModel):
 
 
 class RelatorioChatExport(TimeStampedModel):
-    channel = models.ForeignKey(ChatConversation, on_delete=models.CASCADE)
+    channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
     gerado_por = models.ForeignKey(User, on_delete=models.CASCADE)
     arquivo_url = models.URLField()

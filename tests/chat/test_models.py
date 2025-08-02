@@ -4,57 +4,42 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 
-from chat.models import ChatConversation, ChatMessage, ChatNotification, ChatParticipant
+from chat.models import ChatChannel, ChatMessage, ChatNotification, ChatParticipant
 
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize(
-    "tipo,rel_field",
-    [
-        ("direta", None),
-        ("grupo", None),
-        ("organizacao", "organizacao"),
-        ("nucleo", "nucleo"),
-        ("evento", "evento"),
-    ],
-)
-def test_chat_conversation_creation(tipo, rel_field, organizacao, nucleo, evento):
-    data = {"titulo": "Conversa", "slug": f"slug-{tipo}", "tipo_conversa": tipo}
-    if rel_field == "organizacao":
-        data["organizacao"] = organizacao
-    if rel_field == "nucleo":
-        data["nucleo"] = nucleo
-    if rel_field == "evento":
-        data["evento"] = evento
-    conv = ChatConversation.objects.create(**data)
-    assert conv.tipo_conversa == tipo
-    if rel_field:
-        assert getattr(conv, rel_field) is not None
+@pytest.mark.parametrize("tipo", ["privado", "organizacao", "nucleo", "evento"])
+def test_chat_channel_creation(tipo, organizacao, nucleo, evento):
+    data = {"titulo": "Conversa", "contexto_tipo": tipo}
+    if tipo == "organizacao":
+        data["contexto_id"] = organizacao.id
+    elif tipo == "nucleo":
+        data["contexto_id"] = nucleo.id
+    elif tipo == "evento":
+        data["contexto_id"] = evento.id
+    channel = ChatChannel.objects.create(**data)
+    assert channel.contexto_tipo == tipo
+    if tipo == "privado":
+        assert channel.contexto_id is None
     else:
-        assert conv.organizacao is None and conv.nucleo is None and conv.evento is None
+        assert channel.contexto_id is not None
 
 
-def test_chat_conversation_slug_unique(organizacao):
-    ChatConversation.objects.create(titulo="C1", slug="s", tipo_conversa="grupo")
+def test_chat_participant_unique(channel, admin_user):
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
     with pytest.raises(IntegrityError):
-        ChatConversation.objects.create(titulo="C2", slug="s", tipo_conversa="grupo")
+        ChatParticipant.objects.create(channel=channel, user=admin_user)
 
 
-def test_chat_participant_unique(conversation, admin_user):
-    ChatParticipant.objects.create(conversation=conversation, user=admin_user)
-    with pytest.raises(IntegrityError):
-        ChatParticipant.objects.create(conversation=conversation, user=admin_user)
-
-
-def test_chat_participant_flags(conversation, admin_user, coordenador_user):
+def test_chat_participant_flags(channel, admin_user, coordenador_user):
     owner = ChatParticipant.objects.create(
-        conversation=conversation,
+        channel=channel,
         user=admin_user,
         is_owner=True,
     )
     admin = ChatParticipant.objects.create(
-        conversation=conversation,
+        channel=channel,
         user=coordenador_user,
         is_admin=True,
     )
@@ -62,24 +47,24 @@ def test_chat_participant_flags(conversation, admin_user, coordenador_user):
     assert admin.is_admin is True and admin.is_owner is False
 
 
-def test_chat_message_creation(media_root, conversation, admin_user):
+def test_chat_message_creation(media_root, channel, admin_user):
     msg = ChatMessage.objects.create(
-        conversation=conversation,
+        channel=channel,
         remetente=admin_user,
         tipo="text",
         conteudo="hello",
     )
-    assert msg.conversation == conversation
+    assert msg.channel == channel
     assert msg.remetente == admin_user
     msg.lido_por.add(admin_user)
     assert admin_user in msg.lido_por.all()
 
 
 @pytest.mark.xfail(reason="Arquivo não é removido ao deletar a mensagem")
-def test_chat_message_file_handling(media_root, conversation, admin_user):
+def test_chat_message_file_handling(media_root, channel, admin_user):
     file = SimpleUploadedFile("file.txt", b"data")
     msg = ChatMessage.objects.create(
-        conversation=conversation,
+        channel=channel,
         remetente=admin_user,
         tipo="file",
         arquivo=file,
@@ -91,9 +76,9 @@ def test_chat_message_file_handling(media_root, conversation, admin_user):
     assert not os.path.exists(path)
 
 
-def test_chat_notification_basic(conversation, admin_user):
+def test_chat_notification_basic(channel, admin_user):
     msg = ChatMessage.objects.create(
-        conversation=conversation,
+        channel=channel,
         remetente=admin_user,
         tipo="text",
         conteudo="oi",
@@ -108,10 +93,5 @@ def test_chat_notification_basic(conversation, admin_user):
 
 # Helpers
 @pytest.fixture
-def conversation(organizacao):
-    return ChatConversation.objects.create(
-        titulo="Conv",
-        slug="conv",
-        tipo_conversa="grupo",
-        organizacao=organizacao,
-    )
+def channel():
+    return ChatChannel.objects.create(titulo="Conv", contexto_tipo="privado")

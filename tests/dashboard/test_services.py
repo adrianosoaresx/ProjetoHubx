@@ -6,7 +6,7 @@ from django.utils import timezone
 from accounts.models import User, UserType
 from agenda.factories import EventoFactory
 from agenda.models import Evento, InscricaoEvento
-from chat.models import ChatConversation, ChatMessage
+from chat.models import ChatChannel, ChatMessage
 from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
@@ -22,7 +22,7 @@ def organizacao():
 
 @pytest.fixture
 def conversa(organizacao, admin_user):
-    return ChatConversation.objects.create(organizacao=organizacao, slug="c1")
+    return ChatChannel.objects.create(titulo="c1", contexto_tipo="organizacao", contexto_id=organizacao.id)
 
 
 def test_calcular_eventos_por_status(evento):
@@ -56,7 +56,7 @@ def test_calcular_posts_feed(admin_user):
 
 
 def test_calcular_mensagens_chat(conversa, admin_user):
-    ChatMessage.objects.create(conversation=conversa, remetente=admin_user, conteudo="hi")
+    ChatMessage.objects.create(channel=conversa, remetente=admin_user, conteudo="hi")
     assert DashboardService.calcular_mensagens_chat() >= 1
 
 
