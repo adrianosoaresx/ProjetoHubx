@@ -31,7 +31,7 @@ def organizacao():
 
 @pytest.fixture
 def nucleo(organizacao):
-    return Nucleo.objects.create(nome="Nuc", organizacao=organizacao)
+    return Nucleo.objects.create(nome="Nuc", slug="nuc", organizacao=organizacao)
 
 
 @pytest.fixture

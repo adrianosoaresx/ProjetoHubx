@@ -5,6 +5,8 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import SET_NULL
+from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from core.models import TimeStampedModel
@@ -49,6 +51,7 @@ class Nucleo(TimeStampedModel):
         db_column="organizacao",
     )
     nome = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, default=uuid.uuid4)
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
@@ -61,6 +64,8 @@ class Nucleo(TimeStampedModel):
     data_criacao = models.DateField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    inativa = models.BooleanField(default=False)
+    inativada_em = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Núcleo"
@@ -73,6 +78,20 @@ class Nucleo(TimeStampedModel):
     def membros_aprovados(self):
         """Retorna apenas os usuários com participação aprovada."""
         return self.membros.filter(participacoes__status="aprovado")
+
+    @property
+    def coordenadores(self):
+        return self.membros.filter(participacoes__status="aprovado", participacoes__is_coordenador=True)
+
+    def soft_delete(self) -> None:
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=["deleted", "deleted_at"])
+
+    def save(self, *args, **kwargs):
+        if self.slug:
+            self.slug = slugify(self.slug)
+        super().save(*args, **kwargs)
 
 
 class CoordenadorSuplente(models.Model):

@@ -3,6 +3,7 @@ from __future__ import annotations
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+import bleach
 
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 
@@ -12,7 +13,11 @@ User = get_user_model()
 class NucleoForm(forms.ModelForm):
     class Meta:
         model = Nucleo
-        fields = ["organizacao", "nome", "descricao", "avatar", "cover"]
+        fields = ["nome", "slug", "descricao", "avatar", "cover"]
+
+    def clean_descricao(self):
+        descricao = self.cleaned_data.get("descricao", "")
+        return bleach.clean(descricao)
 
 
 class NucleoSearchForm(forms.Form):

@@ -60,7 +60,7 @@ def test_topico_form_validation(categoria, admin_user, nucleo, evento):
         }
     )
     assert form2.is_valid()
-    outro = Nucleo.objects.create(nome="Outro", organizacao=categoria.organizacao)
+    outro = Nucleo.objects.create(nome="Outro", slug="outro", organizacao=categoria.organizacao)
     form3 = TopicoDiscussaoForm(
         data={
             "categoria": cat_nucleo.pk,

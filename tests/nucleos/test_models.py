@@ -36,7 +36,7 @@ def usuario(organizacao):
 
 
 def test_str_representation(organizacao):
-    nucleo = Nucleo.objects.create(nome="Núcleo Alpha", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="Núcleo Alpha", slug="alpha", organizacao=organizacao)
     assert str(nucleo) == "Núcleo Alpha"
 
 
@@ -46,6 +46,7 @@ def test_create_with_required_fields(media_root, organizacao):
     nucleo = Nucleo.objects.create(
         organizacao=organizacao,
         nome="Núcleo Teste",
+        slug="teste",
         descricao="Desc",
         avatar=avatar,
         cover=cover,
@@ -58,14 +59,14 @@ def test_create_with_required_fields(media_root, organizacao):
 
 
 def test_participacao_unique_constraint(organizacao, usuario):
-    nucleo = Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo)
     with pytest.raises(IntegrityError):
         ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo)
 
 
 def test_membros_aprovados_property(organizacao, usuario):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="pendente")
     u2 = get_user_model().objects.create_user(
         username="u2", email="u2@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
@@ -81,6 +82,7 @@ def test_upload_cleanup(media_root, organizacao):
     nucleo = Nucleo.objects.create(
         organizacao=organizacao,
         nome="Cleanup",
+        slug="cleanup",
         avatar=avatar,
         cover=cover,
     )

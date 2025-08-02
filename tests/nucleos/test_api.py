@@ -71,7 +71,7 @@ def _auth(client, user):
 
 
 def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-participacoes", args=[nucleo.pk])
     resp = api_client.post(url)
@@ -94,7 +94,7 @@ def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizac
 
 
 def test_expiracao_automatica(api_client, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N2", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
     part = ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo)
     ParticipacaoNucleo.objects.filter(pk=part.pk).update(data_solicitacao=timezone.now() - timedelta(days=31))
     expirar_solicitacoes_pendentes()
@@ -103,7 +103,7 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
 
 
 def test_designar_suplente(api_client, admin_user, coord_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N3", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-adicionar-suplente", args=[nucleo.pk])
     data = {
@@ -117,7 +117,7 @@ def test_designar_suplente(api_client, admin_user, coord_user, organizacao):
 
 
 def test_exportar_membros(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N4", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N4", slug="n4", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="aprovado")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
