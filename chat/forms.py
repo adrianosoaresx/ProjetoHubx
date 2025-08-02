@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 
-from .models import ChatConversation, ChatMessage
+from .models import ChatChannel, ChatMessage
 
 User = get_user_model()
 
@@ -22,7 +22,7 @@ class NovaConversaForm(forms.ModelForm):
     )
 
     class Meta:
-        model = ChatConversation
+        model = ChatChannel
         fields = ["titulo", "descricao"]
 
     def __init__(self, *args, user=None, **kwargs):

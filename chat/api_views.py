@@ -16,7 +16,7 @@ from core.permissions import IsModeratorUser
 
 from .api import add_reaction
 from .models import (
-    ChatConversation,
+    ChatChannel,
     ChatMessage,
     ChatMessageFlag,
     ChatModerationLog,
@@ -26,7 +26,7 @@ from .serializers import ChatMessageSerializer
 
 
 class ChatMessageViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixins.RetrieveModelMixin):
-    queryset = ChatMessage.objects.select_related("remetente", "conversation")
+    queryset = ChatMessage.objects.select_related("remetente", "channel")
     serializer_class = ChatMessageSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -73,9 +73,9 @@ class ChatMessageViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, mixin
 
 @api_view(["GET"])
 @permission_classes([IsModeratorUser])
-def exportar_conversa(request: Request, slug: str) -> Response:
+def exportar_conversa(request: Request, channel_id: str) -> Response:
     formato = request.GET.get("formato", "json")
-    canal = get_object_or_404(ChatConversation, slug=slug)
+    canal = get_object_or_404(ChatChannel, pk=channel_id)
     mensagens = canal.messages.filter(hidden_at__isnull=True).select_related("remetente").order_by("timestamp")
     data = [
         {
@@ -102,7 +102,7 @@ def exportar_conversa(request: Request, slug: str) -> Response:
     else:
         json.dump(data, buffer)
         ext = "json"
-        path = default_storage.save(f"chat/exports/{canal.slug}.{ext}", ContentFile(buffer.getvalue().encode()))
+        path = default_storage.save(f"chat/exports/{canal.id}.{ext}", ContentFile(buffer.getvalue().encode()))
     rel = RelatorioChatExport.objects.create(
         channel=canal,
         formato=ext,

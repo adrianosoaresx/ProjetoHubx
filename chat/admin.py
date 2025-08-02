@@ -1,21 +1,16 @@
 from django.contrib import admin
 
-from .models import (
-    ChatConversation,
-    ChatMessage,
-    ChatNotification,
-    RelatorioChatExport,
-)
+from .models import ChatChannel, ChatMessage, ChatNotification, RelatorioChatExport
 
 
-@admin.register(ChatConversation)
-class ChatConversationAdmin(admin.ModelAdmin):
+@admin.register(ChatChannel)
+class ChatChannelAdmin(admin.ModelAdmin):
     list_display = ["titulo", "created_at"]
 
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ["remetente", "conversation", "tipo", "pinned_at", "timestamp"]
+    list_display = ["remetente", "channel", "tipo", "pinned_at", "timestamp"]
 
 
 @admin.register(ChatNotification)

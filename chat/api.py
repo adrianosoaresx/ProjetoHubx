@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from django.contrib.auth import get_user_model
 
 from .models import ChatMessage, ChatNotification
@@ -17,9 +19,6 @@ def create_message(**kwargs):
     for k, v in kwargs.items():
         print(f"   {k}: {v}")
     """Create a chat message and return it."""
-    conversation = kwargs.get("conversation")
-    if conversation and "organizacao" not in kwargs:
-        kwargs["organizacao"] = conversation.organizacao
     return ChatMessage.objects.create(**kwargs)
 
 

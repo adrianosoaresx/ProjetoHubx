@@ -7,5 +7,5 @@ router = DefaultRouter()
 router.register(r"mensagens", ChatMessageViewSet, basename="mensagem")
 
 urlpatterns = router.urls + [
-    path("conversas/<slug:slug>/exportar/", exportar_conversa, name="conversa_exportar"),
+    path("conversas/<uuid:channel_id>/exportar/", exportar_conversa, name="conversa_exportar"),
 ]

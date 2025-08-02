@@ -2,16 +2,16 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from chat.models import ChatConversation, ChatMessage, ChatMessageFlag, ChatParticipant
+from chat.models import ChatChannel, ChatMessage, ChatMessageFlag, ChatParticipant
 
 pytestmark = pytest.mark.django_db
 
 
 def test_review_flagged_message(admin_user):
     client = APIClient()
-    conv = ChatConversation.objects.create(titulo="c", slug="c", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=admin_user)
-    msg = ChatMessage.objects.create(conversation=conv, remetente=admin_user, conteudo="oi")
+    conv = ChatChannel.objects.create(titulo="c", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="oi")
     ChatMessageFlag.objects.create(message=msg, user=admin_user)
     client.force_authenticate(admin_user)
     url = reverse("chat_api:mensagem-moderate", args=[msg.pk])
@@ -23,9 +23,9 @@ def test_review_flagged_message(admin_user):
 
 def test_moderate_requires_permission(associado_user):
     client = APIClient()
-    conv = ChatConversation.objects.create(titulo="c2", slug="c2", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=associado_user)
-    msg = ChatMessage.objects.create(conversation=conv, remetente=associado_user, conteudo="oi")
+    conv = ChatChannel.objects.create(titulo="c2", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=associado_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=associado_user, conteudo="oi")
     ChatMessageFlag.objects.create(message=msg, user=associado_user)
     client.force_authenticate(associado_user)
     url = reverse("chat_api:mensagem-moderate", args=[msg.pk])

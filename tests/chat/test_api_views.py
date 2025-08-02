@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from chat.models import ChatConversation, ChatMessage, ChatParticipant
+from chat.models import ChatChannel, ChatMessage, ChatParticipant
 
 User = get_user_model()
 
@@ -16,10 +16,10 @@ def api_client():
 
 
 def test_pin_message(api_client: APIClient, admin_user, coordenador_user):
-    conv = ChatConversation.objects.create(titulo="t", slug="t", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=admin_user, is_admin=True)
-    ChatParticipant.objects.create(conversation=conv, user=coordenador_user)
-    msg = ChatMessage.objects.create(conversation=conv, remetente=coordenador_user, tipo="text", conteudo="hi")
+    conv = ChatChannel.objects.create(titulo="t", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
+    ChatParticipant.objects.create(channel=conv, user=coordenador_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=coordenador_user, tipo="text", conteudo="hi")
 
     api_client.force_authenticate(admin_user)
     url = reverse("chat_api:mensagem-pin", args=[msg.pk])
@@ -30,9 +30,9 @@ def test_pin_message(api_client: APIClient, admin_user, coordenador_user):
 
 
 def test_react_message(api_client: APIClient, admin_user):
-    conv = ChatConversation.objects.create(titulo="r", slug="r", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=admin_user)
-    msg = ChatMessage.objects.create(conversation=conv, remetente=admin_user, tipo="text", conteudo="hi")
+    conv = ChatChannel.objects.create(titulo="r", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
 
     api_client.force_authenticate(admin_user)
     url = reverse("chat_api:mensagem-react", args=[msg.pk])
@@ -43,13 +43,13 @@ def test_react_message(api_client: APIClient, admin_user):
 
 
 def test_flag_message_hides(api_client: APIClient, admin_user):
-    conv = ChatConversation.objects.create(titulo="f", slug="f", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=admin_user)
+    conv = ChatChannel.objects.create(titulo="f", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
     other1 = User.objects.create_user(email="o1@x.com", username="o1", password="x")
     other2 = User.objects.create_user(email="o2@x.com", username="o2", password="x")
-    ChatParticipant.objects.create(conversation=conv, user=other1)
-    ChatParticipant.objects.create(conversation=conv, user=other2)
-    msg = ChatMessage.objects.create(conversation=conv, remetente=admin_user, tipo="text", conteudo="hi")
+    ChatParticipant.objects.create(channel=conv, user=other1)
+    ChatParticipant.objects.create(channel=conv, user=other2)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
 
     url = reverse("chat_api:mensagem-flag", args=[msg.pk])
     api_client.force_authenticate(admin_user)
@@ -63,20 +63,20 @@ def test_flag_message_hides(api_client: APIClient, admin_user):
 
 
 def test_export_channel(api_client: APIClient, admin_user):
-    conv = ChatConversation.objects.create(titulo="e", slug="e", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=admin_user, is_admin=True)
-    ChatMessage.objects.create(conversation=conv, remetente=admin_user, conteudo="hi")
+    conv = ChatChannel.objects.create(titulo="e", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
+    ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:conversa_exportar", args=[conv.slug]) + "?formato=json"
+    url = reverse("chat_api:conversa_exportar", args=[conv.id]) + "?formato=json"
     resp = api_client.get(url)
     assert resp.status_code == 200
     assert resp.json()["url"].endswith(".json")
 
 
 def test_export_requires_permission(api_client: APIClient, associado_user):
-    conv = ChatConversation.objects.create(titulo="e2", slug="e2", tipo_conversa="grupo")
-    ChatParticipant.objects.create(conversation=conv, user=associado_user)
+    conv = ChatChannel.objects.create(titulo="e2", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=associado_user)
     api_client.force_authenticate(associado_user)
-    url = reverse("chat_api:conversa_exportar", args=[conv.slug])
+    url = reverse("chat_api:conversa_exportar", args=[conv.id])
     resp = api_client.get(url)
     assert resp.status_code == 403
