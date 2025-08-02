@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import NovaConversaForm, NovaMensagemForm
 from .models import ChatChannel, ChatMessage
-from .services import criar_canal
+from .services import criar_canal, enviar_mensagem
 
 User = get_user_model()
 
@@ -71,10 +71,13 @@ def conversation_detail(request, channel_id):
     if request.method == "POST":
         form = NovaMensagemForm(request.POST, request.FILES)
         if form.is_valid():
-            msg = form.save(commit=False)
-            msg.channel = conversation
-            msg.remetente = request.user
-            msg.save()
+            msg = enviar_mensagem(
+                canal=conversation,
+                remetente=request.user,
+                tipo=form.cleaned_data.get("tipo", "text"),
+                conteudo=form.cleaned_data.get("conteudo", ""),
+                arquivo=form.cleaned_data.get("arquivo"),
+            )
             msg.lido_por.add(request.user)
             if request.headers.get("HX-Request"):
                 return render(request, "chat/partials/message.html", {"m": msg})
