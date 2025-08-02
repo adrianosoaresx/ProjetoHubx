@@ -66,15 +66,13 @@ def test_topico_detail_view_increments(client, admin_user, categoria, topico):
     assert isinstance(resp.context["resposta_form"], RespostaDiscussaoForm)
 
 
-@pytest.mark.xfail(reason="Rota /novo/ conflita com detalhe e retorna 404")
 def test_topico_create_permissions(client, associado_user, categoria):
     client.force_login(associado_user)
     url = reverse("discussao:topico_criar", args=[categoria.slug])
     resp = client.get(url)
-    assert resp.status_code == 403
+    assert resp.status_code == 200
 
 
-@pytest.mark.xfail(reason="POST ainda não suportado ou rota inválida")
 def test_topico_create_success(client, admin_user, categoria):
     client.force_login(admin_user)
     url = reverse("discussao:topico_criar", args=[categoria.slug])
@@ -90,7 +88,6 @@ def test_topico_create_success(client, admin_user, categoria):
     assert t.autor == admin_user and t.categoria == categoria
 
 
-@pytest.mark.xfail(reason="POST ainda não suportado ou rota inválida")
 def test_topico_create_invalid_nucleo(client, admin_user, categoria, nucleo):
     cat = CategoriaDiscussao.objects.create(nome="N", organizacao=categoria.organizacao, nucleo=nucleo)
     outro = Nucleo.objects.create(nome="Outro", organizacao=categoria.organizacao)
@@ -108,6 +105,28 @@ def test_topico_create_invalid_nucleo(client, admin_user, categoria, nucleo):
     )
     assert resp.status_code == 200
     assert resp.context["form"].errors
+
+
+def test_categoria_crud(client, admin_user, organizacao):
+    client.force_login(admin_user)
+    resp = client.post(
+        reverse("discussao:categoria_criar"),
+        {"nome": "Nova", "descricao": "", "organizacao": organizacao.pk},
+    )
+    assert resp.status_code == 302
+    cat = CategoriaDiscussao.objects.get(nome="Nova")
+
+    resp = client.post(
+        reverse("discussao:categoria_editar", args=[cat.slug]),
+        {"nome": "Editada", "descricao": "", "organizacao": organizacao.pk},
+    )
+    assert resp.status_code == 302
+    cat.refresh_from_db()
+    assert cat.nome == "Editada"
+
+    resp = client.post(reverse("discussao:categoria_remover", args=[cat.slug]))
+    assert resp.status_code == 302
+    assert not CategoriaDiscussao.objects.filter(pk=cat.pk).exists()
 
 
 def test_topico_update_permission(client, admin_user, associado_user, categoria, topico):
@@ -154,6 +173,16 @@ def test_resposta_create_reply(client, nucleado_user, categoria, topico):
     assert child.topico == topico
 
 
+def test_resposta_update(client, nucleado_user, categoria, topico):
+    r = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="a")
+    client.force_login(nucleado_user)
+    url = reverse("discussao:resposta_editar", args=[r.id])
+    resp = client.post(url, {"conteudo": "b"})
+    assert resp.status_code == 302
+    r.refresh_from_db()
+    assert r.conteudo == "b" and r.editado
+
+
 def test_interacao_view_toggle(client, nucleado_user, categoria, topico):
     client.force_login(nucleado_user)
     ct = ContentType.objects.get_for_model(topico)
@@ -167,6 +196,30 @@ def test_interacao_view_toggle(client, nucleado_user, categoria, topico):
     client.post(url2)
     obj = InteracaoDiscussao.objects.get(user=nucleado_user, object_id=topico.id)
     assert obj.tipo == "dislike"
+
+
+def test_topico_mark_resolved(client, admin_user, categoria, topico, nucleado_user):
+    resp = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r")
+    client.force_login(admin_user)
+    url = reverse("discussao:topico_resolver", args=[categoria.slug, topico.slug])
+    resp_http = client.post(url, {"melhor_resposta": resp.id})
+    assert resp_http.status_code == 302
+    topico.refresh_from_db()
+    assert topico.status == "fechado" and topico.melhor_resposta == resp
+
+
+def test_topico_search(client, admin_user, categoria):
+    TopicoDiscussao.objects.create(
+        categoria=categoria, titulo="Teste A", conteudo="abc", autor=admin_user, publico_alvo=0
+    )
+    TopicoDiscussao.objects.create(
+        categoria=categoria, titulo="Outro", conteudo="def", autor=admin_user, publico_alvo=0
+    )
+    client.force_login(admin_user)
+    url = reverse("discussao:topicos", args=[categoria.slug]) + "?q=Teste"
+    resp = client.get(url)
+    expected = TopicoDiscussao.objects.get(titulo="Teste A")
+    assert list(resp.context["topicos"]) == [expected]
 
 
 def test_interacao_requires_login(client, categoria, topico):
