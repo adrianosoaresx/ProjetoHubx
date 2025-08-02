@@ -4,10 +4,11 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy
 from django.views.generic import (
     CreateView,
@@ -129,6 +130,11 @@ class TopicoListView(LoginRequiredMixin, ListView):
         tag = self.request.GET.get("tag")
         if tag:
             qs = qs.filter(tags__nome=tag)
+        query = self.request.GET.get("q")
+        if query:
+            qs = qs.filter(
+                Q(titulo__icontains=query) | Q(conteudo__icontains=query) | Q(respostas__conteudo__icontains=query)
+            ).distinct()
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
         else:
@@ -250,9 +256,13 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
         self.topico = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
+        if request.user.user_type != UserType.ROOT and request.user.organizacao != self.categoria.organizacao:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        if self.topico.status == "fechado":
+            return HttpResponseForbidden()
         form.instance.autor = self.request.user
         form.instance.topico = self.topico
         response = super().form_valid(form)
@@ -272,10 +282,10 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
         self.topico = self.object.topico
-        if request.user != self.object.autor and request.user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.COORDENADOR.value,
-            UserType.ROOT.value,
+        if request.user != self.object.autor and request.user.user_type not in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.ROOT,
         }:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
@@ -289,6 +299,32 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
             "discussao:topico_detalhe",
             categoria_slug=self.topico.categoria.slug,
             topico_slug=self.topico.slug,
+        )
+
+
+class RespostaUpdateView(LoginRequiredMixin, UpdateView):
+    model = RespostaDiscussao
+    form_class = RespostaDiscussaoForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
+        if request.user != self.object.autor and request.user.user_type not in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.editado = True
+        form.instance.editado_em = timezone.now()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            "discussao:topico_detalhe",
+            args=[self.object.topico.categoria.slug, self.object.topico.slug],
         )
 
 
@@ -312,3 +348,25 @@ class InteracaoView(LoginRequiredMixin, View):
                 interacao.save()
         data = {"score": obj.score, "num_votos": obj.num_votos}
         return JsonResponse(data)
+
+
+class TopicoMarkResolvedView(LoginRequiredMixin, View):
+    def post(self, request, categoria_slug, topico_slug):
+        categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
+        topico = get_object_or_404(TopicoDiscussao, categoria=categoria, slug=topico_slug)
+        if request.user != topico.autor and request.user.user_type not in {
+            UserType.ADMIN,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
+        resposta_id = request.POST.get("melhor_resposta")
+        if resposta_id:
+            resposta = get_object_or_404(topico.respostas, pk=resposta_id)
+            topico.melhor_resposta = resposta
+        topico.status = "fechado"
+        topico.save()
+        return redirect(
+            "discussao:topico_detalhe",
+            categoria_slug=categoria.slug,
+            topico_slug=topico.slug,
+        )
