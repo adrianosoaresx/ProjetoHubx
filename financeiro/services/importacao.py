@@ -157,7 +157,6 @@ class ImportadorPagamentos:
                     data["tipo"],
                     data["valor"],
                     data["data_lancamento"],
-                    data["descricao"],
                 )
                 if (
                     key in seen
@@ -167,7 +166,6 @@ class ImportadorPagamentos:
                         tipo=data["tipo"],
                         valor=data["valor"],
                         data_lancamento=data["data_lancamento"],
-                        descricao=data["descricao"],
                     ).exists()
                 ):
                     errors.append("Lançamento duplicado")
