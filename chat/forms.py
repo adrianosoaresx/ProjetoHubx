@@ -9,6 +9,15 @@ User = get_user_model()
 
 
 class NovaConversaForm(forms.ModelForm):
+    contexto_tipo = forms.ChoiceField(
+        choices=ChatChannel.CONTEXT_CHOICES,
+        label=_("Tipo de contexto"),
+    )
+    contexto_id = forms.UUIDField(
+        required=False,
+        label=_("Contexto"),
+        widget=s2forms.Select2Widget,
+    )
     participants = forms.ModelMultipleChoiceField(
         queryset=User.objects.none(),
         widget=s2forms.Select2MultipleWidget,
@@ -20,10 +29,17 @@ class NovaConversaForm(forms.ModelForm):
         required=False,
         label=_("Descrição"),
     )
+    imagem = forms.ImageField(required=False, label=_("Imagem"))
 
     class Meta:
         model = ChatChannel
-        fields = ["titulo", "descricao"]
+        fields = [
+            "contexto_tipo",
+            "contexto_id",
+            "titulo",
+            "descricao",
+            "imagem",
+        ]
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)

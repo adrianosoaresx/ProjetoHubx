@@ -5,20 +5,36 @@
 
 {% block chat_content %}
 <main class="max-w-4xl mx-auto h-screen flex flex-col p-4">
-  <header class="mb-4 flex items-center gap-3">
-    {% if conversation.imagem %}
-      <img src="{{ conversation.imagem.url }}" alt="" class="w-12 h-12 rounded-full" />
-    {% endif %}
-    <div class="flex-1">
-      <h2 class="text-lg font-semibold">{{ conversation.titulo }}</h2>
-      {% if conversation.descricao %}
-        <p class="text-sm text-neutral-500">{{ conversation.descricao }}</p>
+  <header class="mb-4 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      {% if conversation.imagem %}
+        <img src="{{ conversation.imagem.url }}" alt="" class="w-12 h-12 rounded-full" />
+      {% endif %}
+      <div>
+        <h2 class="text-lg font-semibold">{{ conversation.titulo }}</h2>
+        {% if conversation.descricao %}
+          <p class="text-sm text-neutral-500">{{ conversation.descricao }}</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="flex items-center gap-2 text-sm text-neutral-600">
+      <span>{{ conversation.participants.count }} {% trans 'participantes' %}</span>
+      {% if not is_owner %}
+        <a href="#" class="text-red-600 hover:underline" aria-label="{% trans 'Sair do canal' %}">{% trans 'Sair' %}</a>
       {% endif %}
     </div>
   </header>
 
+  {% if pinned_messages %}
+    <section id="pinned" class="mb-4 space-y-2" aria-label="{% trans 'Mensagens fixadas' %}">
+      {% for m in pinned_messages %}
+        {% include "chat/partials/message.html" with m=m %}
+      {% endfor %}
+    </section>
+  {% endif %}
+
   <section id="message-list" class="flex-1 overflow-y-auto space-y-4 mb-4" aria-live="polite">
-    {% for m in mensagens %}
+    {% for m in messages %}
       {% include "chat/partials/message.html" with m=m %}
     {% empty %}
       <p class="text-neutral-500">{% trans "Nenhuma mensagem." %}</p>

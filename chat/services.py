@@ -17,6 +17,7 @@ def criar_canal(
     titulo: Optional[str],
     descricao: Optional[str],
     participantes: Iterable[User],
+    imagem=None,
 ) -> ChatChannel:
     """Cria um ``ChatChannel`` e adiciona participantes.
 
@@ -29,6 +30,7 @@ def criar_canal(
         contexto_id=contexto_id,
         titulo=titulo or "",
         descricao=descricao or "",
+        imagem=imagem,
     )
     ChatParticipant.objects.create(channel=canal, user=criador, is_owner=True, is_admin=True)
     for user in participantes:

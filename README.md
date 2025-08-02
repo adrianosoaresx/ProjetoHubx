@@ -98,7 +98,9 @@ para visualizar categorias e interações.
 
 ## 📡 Chat (WebSocket)
 
-O módulo de chat registra mensagens trocadas entre usuários. Acesse `/chat/` para ver os canais disponíveis agrupados por contexto. Ao abrir um canal, as mensagens são exibidas em tempo real via WebSocket com HTMX. Se o JavaScript estiver desativado o envio ainda funciona, mas a página será recarregada.
+O módulo de chat registra mensagens trocadas entre usuários. Acesse `/chat/` para ver os canais disponíveis agrupados por contexto (privado, núcleo, evento, organização). Cada item exibe o número de mensagens não lidas e o preview da última mensagem. Ao abrir um canal é possível visualizar mensagens fixadas, reagir com emojis e enviar anexos. A interface usa HTMX + WebSocket e possui *fallback* para quando o JavaScript está desabilitado.
+
+![Demonstração do chat](docs/chat-demo.png)
 
 Para que o WebSocket funcione:
 
@@ -118,8 +120,14 @@ daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
 ```
 
 ### Produção
+Em produção defina `ALLOWED_HOSTS` com o domínio usado e configure o proxy para aceitar conexões `wss://`. O endpoint do WebSocket segue o padrão `/ws/chat/<id>/`. Exemplo de configuração no `settings.py`:
 
-Em produção defina `ALLOWED_HOSTS` com o domínio usado e configure o proxy para aceitar conexões `wss://`. O endpoint do WebSocket segue o padrão `/ws/chat/<id>/`.
+```python
+ALLOWED_HOSTS = ["seu-dominio.com"]
+CSRF_TRUSTED_ORIGINS = ["https://seu-dominio.com"]
+```
+
+Certifique-se também de liberar o esquema `wss://` no servidor ou proxy reverso.
 
 ---
 

@@ -15,12 +15,11 @@
     socket.onmessage = function (e) {
       const data = JSON.parse(e.data);
       if (!data.id) return;
-      fetch('/chat/partials/message/' + data.id + '/')
-        .then((r) => r.text())
-        .then((html) => {
-          list.insertAdjacentHTML('beforeend', html);
-          scrollToBottom(list);
-        });
+      htmx.ajax('GET', '/chat/partials/message/' + data.id + '/', {
+        target: list,
+        swap: 'beforeend'
+      });
+      scrollToBottom(list);
     };
 
     socket.onclose = function () {
@@ -37,7 +36,7 @@
       } else {
         form.submit();
       }
-    });
+      });
 
     scrollToBottom(list);
   }
