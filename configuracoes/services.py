@@ -5,17 +5,18 @@ from typing import Any
 from django.core.cache import cache
 
 from accounts.models import User
+
 from .models import ConfiguracaoConta
 
 CACHE_KEY = "configuracao_conta:{id}"
 
 
 def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
-    """Obtém configurações do cache ou do banco."""
+    """Obtém configurações do cache ou do banco com chave única por usuário."""
     key = CACHE_KEY.format(id=usuario.id)
     config = cache.get(key)
     if config is None:
-        config, _ = ConfiguracaoConta.objects.get_or_create(user=usuario)
+        config, _ = ConfiguracaoConta.objects.get_or_create(user_id=usuario.id, defaults={"user": usuario})
         cache.set(key, config)
     return config
 

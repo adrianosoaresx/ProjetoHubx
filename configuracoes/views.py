@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
@@ -22,8 +22,14 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         "preferencias": ConfiguracaoContaForm,
     }
 
+    def get_user(self):
+        if not hasattr(self, "_user_cache"):
+            User = get_user_model()
+            self._user_cache = User.objects.select_related("configuracao").get(pk=self.request.user.pk)
+        return self._user_cache
+
     def get_form(self, tab: str, data=None, files=None):
-        user = self.request.user
+        user = self.get_user()
         form_class = self.form_classes[tab]
         if form_class is PasswordChangeForm:
             return form_class(user, data)
@@ -36,14 +42,12 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
     def get(self, request):
         tab = request.GET.get("tab", "informacoes")
-        context = {f"{name}_form": self.get_form(name) for name in self.form_classes}
-        context.update(
-            {
-                "tab": tab,
-                "two_factor_enabled": self.get_two_factor_enabled(),
-                "redes_conectadas": request.user.redes_sociais or {},
-            }
-        )
+        context = {
+            f"{tab}_form": self.get_form(tab),
+            "tab": tab,
+            "two_factor_enabled": self.get_two_factor_enabled(),
+            "redes_conectadas": request.user.redes_sociais or {},
+        }
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
@@ -68,9 +72,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             form = self.get_form(tab, request.POST, request.FILES)
             if form.is_valid():
                 if tab == "preferencias":
-                    form.instance = atualizar_preferencias_usuario(
-                        request.user, form.cleaned_data
-                    )
+                    form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)
                 else:
                     saved = form.save()
                     if isinstance(form, PasswordChangeForm):
@@ -79,14 +81,12 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             else:
                 messages.error(request, _("Corrija os erros abaixo."))
 
-        context = {f"{name}_form": form if name == tab else self.get_form(name) for name in self.form_classes}
-        context.update(
-            {
-                "tab": tab,
-                "two_factor_enabled": self.get_two_factor_enabled(),
-                "redes_conectadas": request.user.redes_sociais or {},
-            }
-        )
+        context = {
+            f"{tab}_form": form,
+            "tab": tab,
+            "two_factor_enabled": self.get_two_factor_enabled(),
+            "redes_conectadas": request.user.redes_sociais or {},
+        }
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
@@ -94,5 +94,12 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         )
         response = render(request, template, context)
         if tab == "preferencias" and form.is_valid():
-            response.set_cookie("tema", form.instance.tema)
+            tema = form.instance.tema
+            response.set_cookie("tema", tema)
+            response.set_cookie("django_language", form.instance.idioma)
+            response.headers["HX-Refresh"] = "true"
+            messages.info(
+                request,
+                _("Preferências atualizadas. As mudanças serão aplicadas no próximo carregamento."),
+            )
         return response

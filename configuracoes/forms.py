@@ -27,11 +27,15 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "idioma": forms.Select(),
             "tema": forms.Select(),
         }
+        help_texts = {
+            "frequencia_notificacoes_email": _("Aplicável apenas se notificações por e-mail estiverem ativas."),
+            "frequencia_notificacoes_whatsapp": _("Aplicável apenas se notificações por WhatsApp estiverem ativas."),
+        }
 
     def clean(self) -> dict[str, object]:
         data = super().clean()
         if not data.get("receber_notificacoes_email"):
-            data["frequencia_notificacoes_email"] = "imediata"
+            data["frequencia_notificacoes_email"] = self.instance.frequencia_notificacoes_email
         if not data.get("receber_notificacoes_whatsapp"):
-            data["frequencia_notificacoes_whatsapp"] = "imediata"
+            data["frequencia_notificacoes_whatsapp"] = self.instance.frequencia_notificacoes_whatsapp
         return data

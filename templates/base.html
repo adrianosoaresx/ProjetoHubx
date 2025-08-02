@@ -1,6 +1,7 @@
-<!DOCTYPE html>
-<html lang="pt-br" class="h-full bg-gray-50">
 {% load static i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" class="h-full bg-gray-50">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -93,14 +94,38 @@
   <script src="https://unpkg.com/htmx.org@{{ HTMX_VERSION }}"></script>
   <script>
     (function () {
-      const cookieMatch = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-      let theme = cookieMatch ? cookieMatch[1] : localStorage.getItem('tema');
-      if (!theme || theme === 'automatico') {
-        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+      function getThemePreference() {
+        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
+        return match ? match[1] : 'automatico';
       }
-      document.documentElement.classList.toggle('dark', theme === 'escuro');
-      localStorage.setItem('tema', theme);
-      document.cookie = `tema=${theme};path=/`;
+
+      function applyTheme(theme) {
+        document.documentElement.classList.toggle('dark', theme === 'escuro');
+      }
+
+      function toggleTheme(theme) {
+        if (theme === 'automatico') {
+          document.cookie = 'tema=automatico;path=/';
+          applyTheme(mediaQuery.matches ? 'escuro' : 'claro');
+        } else {
+          document.cookie = `tema=${theme};path=/`;
+          applyTheme(theme);
+        }
+      }
+
+      toggleTheme(getThemePreference());
+      mediaQuery.addEventListener('change', e => {
+        if (getThemePreference() === 'automatico') {
+          toggleTheme(e.matches ? 'escuro' : 'claro');
+        }
+      });
+
+      const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
+      if (langMatch) {
+        localStorage.setItem('idioma', langMatch[1]);
+      }
 
       const menuToggle = document.getElementById('menu-toggle');
       const menu = document.getElementById('menu');
@@ -109,6 +134,9 @@
           menu.classList.toggle('hidden');
         });
       }
+
+      window.toggleTheme = toggleTheme;
+      window.getThemePreference = getThemePreference;
     })();
   </script>
 </body></html>
