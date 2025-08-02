@@ -9,7 +9,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 
 from .forms import NovaConversaForm, NovaMensagemForm
-from .models import ChatChannel, ChatMessage, ChatParticipant
+from .models import ChatChannel, ChatMessage
+from .services import criar_canal
 
 User = get_user_model()
 
@@ -44,14 +45,16 @@ def nova_conversa(request):
     if request.method == "POST":
         form = NovaConversaForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            conv = form.save(commit=False)
-            conv.contexto_tipo = "privado"
-            conv.save()
-            ChatParticipant.objects.create(channel=conv, user=request.user, is_owner=True)
-            for user in form.cleaned_data.get("participants"):
-                ChatParticipant.objects.get_or_create(channel=conv, user=user)
+            canal = criar_canal(
+                criador=request.user,
+                contexto_tipo="privado",
+                contexto_id=None,
+                titulo=form.cleaned_data.get("titulo"),
+                descricao=form.cleaned_data.get("descricao"),
+                participantes=form.cleaned_data.get("participants") or [],
+            )
             messages.success(request, _("Conversa criada com sucesso."))
-            return redirect("chat:conversation_detail", channel_id=conv.pk)
+            return redirect("chat:conversation_detail", channel_id=canal.pk)
         messages.error(request, _("Erro ao criar conversa."))
     else:
         form = NovaConversaForm(user=request.user)
