@@ -32,15 +32,16 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Organizacao) -> None:
         instance.deleted = True
-        instance.save(update_fields=["deleted"])
+        instance.deleted_at = timezone.now()
+        instance.save(update_fields=["deleted", "deleted_at"])
         OrganizacaoLog.objects.create(
             organizacao=instance,
             usuario=self.request.user,
-            acao="exclusao",
+            acao="deleted",
             dados_antigos={},
-            dados_novos={"deleted": True},
+            dados_novos={"deleted": True, "deleted_at": instance.deleted_at.isoformat()},
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="exclusao")
+        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="deleted")
 
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def inativar(self, request, pk: str | None = None):
@@ -51,11 +52,11 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         OrganizacaoLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
-            acao="inativacao",
+            acao="inactivated",
             dados_antigos={},
             dados_novos={"inativa": True, "inativada_em": organizacao.inativada_em.isoformat()},
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inativacao")
+        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inactivated")
         serializer = self.get_serializer(organizacao)
         return Response(serializer.data)
 
@@ -68,11 +69,11 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         OrganizacaoLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
-            acao="reativacao",
+            acao="reactivated",
             dados_antigos={},
             dados_novos={"inativa": False, "inativada_em": None},
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reativacao")
+        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
         serializer = self.get_serializer(organizacao)
         return Response(serializer.data)
 

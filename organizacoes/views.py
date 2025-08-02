@@ -18,7 +18,11 @@ from django.views.generic import (
 )
 
 from accounts.models import UserType
+from agenda.models import Evento
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
+from empresas.models import Empresa
+from feed.models import Post
+from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
 from .models import Organizacao, OrganizacaoLog
@@ -34,7 +38,13 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(deleted=False, inativa=False).prefetch_related("users")
+        qs = (
+            super()
+            .get_queryset()
+            .filter(deleted=False, inativa=False)
+            .select_related("created_by")
+            .prefetch_related("evento_set", "nucleos", "users")
+        )
         query = self.request.GET.get("q")
         tipo = self.request.GET.get("tipo")
         cidade = self.request.GET.get("cidade")
@@ -68,11 +78,12 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
     success_url = reverse_lazy("organizacoes:list")
 
     def form_valid(self, form):
+        form.instance.created_by = self.request.user
         response = super().form_valid(form)
         messages.success(self.request, _("Organização criada com sucesso."))
         novo = serialize_organizacao(self.object)
-        registrar_log(self.object, self.request.user, "criada", {}, novo)
-        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="criada")
+        registrar_log(self.object, self.request.user, "created", {}, novo)
+        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="created")
         return response
 
 
@@ -94,11 +105,11 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         registrar_log(
             self.object,
             self.request.user,
-            "atualizada",
+            "updated",
             dif_antiga,
             dif_nova,
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="atualizada")
+        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="updated")
         messages.success(self.request, _("Organização atualizada com sucesso."))
         return response
 
@@ -115,15 +126,16 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
         self.object = self.get_object()
         antiga = serialize_organizacao(self.object)
         self.object.deleted = True
-        self.object.save()
+        self.object.deleted_at = timezone.now()
+        self.object.save(update_fields=["deleted", "deleted_at"])
         registrar_log(
             self.object,
             request.user,
-            "removida",
+            "deleted",
             antiga,
-            {"deleted": True},
+            {"deleted": True, "deleted_at": self.object.deleted_at.isoformat()},
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="removida")
+        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="deleted")
         messages.success(self.request, _("Organização removida."))
         return redirect(self.success_url)
 
@@ -153,13 +165,18 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         org = self.object
+        usuarios = User.objects.filter(organizacao=org)
+        nucleos = Nucleo.objects.filter(organizacao=org, deleted=False)
+        eventos = Evento.objects.filter(organizacao=org)
+        empresas = Empresa.objects.filter(organizacao=org, deleted=False)
+        posts = Post.objects.filter(organizacao=org, deleted=False)
         context.update(
             {
-                "usuarios": org.users.all(),
-                "nucleos": org.nucleos.all(),
-                "empresas": org.empresas.all(),
-                "posts": org.posts.all(),
-                "eventos": org.evento_set.all(),
+                "usuarios": usuarios,
+                "nucleos": nucleos,
+                "eventos": eventos,
+                "empresas": empresas,
+                "posts": posts,
             }
         )
         return context
@@ -172,14 +189,14 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
         if org.inativa:
             org.inativa = False
             org.inativada_em = None
-            acao = "reativada"
+            acao = "reactivated"
             msg = _("Organização reativada com sucesso.")
         else:
             org.inativa = True
             org.inativada_em = timezone.now()
-            acao = "inativada"
+            acao = "inactivated"
             msg = _("Organização inativada com sucesso.")
-        org.save()
+        org.save(update_fields=["inativa", "inativada_em"])
         nova = serialize_organizacao(org)
         dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
         dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}

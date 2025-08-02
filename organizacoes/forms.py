@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.text import slugify
 
 from .models import Organizacao
 
@@ -34,3 +35,11 @@ class OrganizacaoForm(forms.ModelForm):
         if Organizacao.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError("Uma organização com este CNPJ já existe.")
         return cnpj
+
+    def clean_slug(self):
+        slug = self.cleaned_data.get("slug")
+        if slug:
+            slug = slugify(slug)
+            if Organizacao.objects.exclude(pk=self.instance.pk).filter(slug=slug).exists():
+                raise forms.ValidationError("Este slug já está em uso.")
+        return slug

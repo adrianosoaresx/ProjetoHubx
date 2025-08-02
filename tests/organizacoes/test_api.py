@@ -72,7 +72,7 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
     assert org.inativa is False and org.inativada_em is None
-    assert OrganizacaoLog.objects.filter(organizacao=org, acao="inativacao").exists()
+    assert OrganizacaoLog.objects.filter(organizacao=org, acao="inactivated").exists()
 
 
 def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
@@ -93,7 +93,7 @@ def test_logs_access_restricted(api_client, root_user, faker_ptbr):
         user_type=UserType.ADMIN,
     )
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="l")
-    OrganizacaoLog.objects.create(organizacao=org, acao="criacao", dados_antigos={}, dados_novos={})
+    OrganizacaoLog.objects.create(organizacao=org, acao="created", dados_antigos={}, dados_novos={})
     url = reverse("organizacoes_api:organizacao-logs", args=[org.pk])
     # unauthorized
     resp = api_client.get(url)

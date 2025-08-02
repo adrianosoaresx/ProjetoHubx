@@ -14,6 +14,8 @@ def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
         value = getattr(org, name)
         if hasattr(value, "isoformat"):
             value = value.isoformat()
+        elif isinstance(value, Model):
+            value = value.pk
         elif hasattr(value, "name"):
             value = value.name
         data[name] = value

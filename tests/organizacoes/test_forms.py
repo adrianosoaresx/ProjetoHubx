@@ -45,3 +45,15 @@ def test_slug_required(faker_ptbr):
     form = OrganizacaoForm(data=data)
     assert not form.is_valid()
     assert "slug" in form.errors
+
+
+def test_slug_unique_and_slugified(faker_ptbr):
+    cnpj1 = faker_ptbr.cnpj()
+    Organizacao.objects.create(nome="Org1", cnpj=cnpj1, slug="org1")
+    data = {"nome": "Org2", "cnpj": faker_ptbr.cnpj(), "slug": "Org1"}
+    form = OrganizacaoForm(data=data)
+    assert not form.is_valid()
+    assert "slug" in form.errors
+    form2 = OrganizacaoForm(data={"nome": "Org3", "cnpj": faker_ptbr.cnpj(), "slug": "NOVA-ORG"})
+    assert form2.is_valid()
+    assert form2.cleaned_data["slug"] == "nova-org"
