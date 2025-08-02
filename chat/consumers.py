@@ -1,44 +1,39 @@
-import json
+from __future__ import annotations
 
 from channels.db import database_sync_to_async
-from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth import get_user_model
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from .api import create_message, get_user, notify_users
+from .api import notify_users
+from .models import ChatChannel, ChatMessage, ChatParticipant
+from .services import adicionar_reacao, enviar_mensagem
 
-User = get_user_model()
 
-
-class ChatConsumer(AsyncWebsocketConsumer):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope["user"]
         if not user or not user.is_authenticated:
             await self.close()
             return
-
-        dest_id = self.scope["url_route"].get("kwargs", {}).get("dest_id")
-        if dest_id is None:
-            await self.close()
-            return
+        channel_id = self.scope["url_route"].get("kwargs", {}).get("channel_id")
         try:
-            dest_id = int(dest_id)
-        except (TypeError, ValueError):
+            channel = await database_sync_to_async(ChatChannel.objects.get)(pk=channel_id)
+        except ChatChannel.DoesNotExist:
             await self.close()
             return
-
-        self.nucleo_id = getattr(user, "nucleo_id", None)
-
-        dest = await database_sync_to_async(get_user)(dest_id)
-        if not dest or dest.nucleo_id != self.nucleo_id:
-            await self.close()
-            return
-
-        print("WebSocket conectado por:", user.username, "->", dest_id)
-
-        self.dest = dest
-        sorted_ids = sorted([user.id, dest.id])
-        self.group_name = f"chat_{sorted_ids[0]}_{sorted_ids[1]}"
-
+        is_participant = await database_sync_to_async(
+            ChatParticipant.objects.filter(channel=channel, user=user).exists
+        )()
+        if not is_participant:
+            if channel.contexto_tipo in {"nucleo", "evento", "organizacao"}:
+                attr = f"{channel.contexto_tipo}_id"
+                if getattr(user, attr, None) != channel.contexto_id:
+                    await self.close()
+                    return
+            else:
+                await self.close()
+                return
+        self.channel = channel
+        self.group_name = f"chat_{channel.id}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
 
@@ -47,43 +42,42 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive_json(self, data, **kwargs):
-        print("📥 Mensagem recebida via WebSocket:", data)
+        message_type = data.get("tipo")
         user = self.scope["user"]
-        if not user or not user.is_authenticated or not hasattr(self, "dest"):
-            await self.send(text_data=json.dumps({"erro": "destinatário inválido"}))
-            return
-
-        message_type = data.get("tipo", "text")
-        content = data.get("conteudo", "")
-
-        msg = await database_sync_to_async(create_message)(
-            nucleo_id=self.nucleo_id,
-            remetente_id=user.id,
-            tipo=message_type,
-            conteudo=content,
-        )
-        print(
-            "Mensagem salva:",
-            msg.id,
-            msg.remetente_id,
-            msg.conteudo,
-        )
-        recipient_ids = await database_sync_to_async(list)(
-            User.objects.filter(nucleo_id=self.nucleo_id).exclude(id=user.id).values_list("id", flat=True)
-        )
-        await database_sync_to_async(notify_users)(recipient_ids, msg)
-
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
+        if message_type in {"text", "image", "video", "file"}:
+            conteudo = data.get("conteudo", "")
+            arquivo = None
+            msg = await database_sync_to_async(enviar_mensagem)(self.channel, user, message_type, conteudo, arquivo)
+            await database_sync_to_async(notify_users)(self.channel, msg)
+            payload = {
                 "type": "chat.message",
+                "id": str(msg.id),
                 "remetente": user.username,
-                "tipo": message_type,
-                "conteudo": content,
+                "tipo": msg.tipo,
+                "conteudo": msg.conteudo,
+                "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "timestamp": msg.timestamp.isoformat(),
-            },
-        )
-        print("Enviada ao grupo", self.group_name)
+                "reactions": msg.reactions,
+            }
+            await self.channel_layer.group_send(self.group_name, payload)
+        elif message_type == "reaction":
+            msg_id = data.get("mensagem_id")
+            emoji = data.get("emoji")
+            if not msg_id or not emoji:
+                return
+            msg = await database_sync_to_async(ChatMessage.objects.get)(pk=msg_id)
+            await database_sync_to_async(adicionar_reacao)(msg, emoji)
+            payload = {
+                "type": "chat.message",
+                "id": str(msg.id),
+                "remetente": msg.remetente.username,
+                "tipo": msg.tipo,
+                "conteudo": msg.conteudo,
+                "arquivo_url": msg.arquivo.url if msg.arquivo else None,
+                "timestamp": msg.timestamp.isoformat(),
+                "reactions": msg.reactions,
+            }
+            await self.channel_layer.group_send(self.group_name, payload)
 
     async def chat_message(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send_json(event)
