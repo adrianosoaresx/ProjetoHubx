@@ -95,9 +95,3 @@ def conversation_detail(request, channel_id):
         "chat/conversation_detail.html",
         {"conversation": conversation, "mensagens": mensagens, "form": form},
     )
-
-
-@login_required
-def message_partial(request, message_id):
-    message = get_object_or_404(ChatMessage.objects.select_related("remetente"), pk=message_id)
-    return render(request, "chat/partials/message.html", {"m": message})
