@@ -100,6 +100,14 @@ para visualizar categorias e interações.
 
 O módulo de chat registra mensagens trocadas entre usuários. Acesse `/chat/` para ver os canais disponíveis agrupados por contexto (privado, núcleo, evento, organização). Cada item exibe o número de mensagens não lidas e o preview da última mensagem. Ao abrir um canal é possível visualizar mensagens fixadas, reagir com emojis e enviar anexos. A interface usa HTMX + WebSocket e possui *fallback* para quando o JavaScript está desabilitado.
 
+### Moderação e exportação
+
+Mensagens podem ser sinalizadas pelos participantes através do endpoint `POST /api/chat/channels/<canal>/messages/<id>/flag/` ou via WebSocket com `{"tipo": "flag"}`. Após três sinalizações a mensagem é ocultada automaticamente. Moderadores acessam `/chat/moderacao/` para revisar os conteúdos reportados e podem aprovar (`POST /api/chat/moderacao/messages/<id>/approve/`) ou remover (`POST /api/chat/moderacao/messages/<id>/remove/`) definitivamente.
+
+Administradores dos canais podem exportar o histórico acessando o botão *Exportar histórico* na página do canal ou via API `GET /api/chat/channels/<id>/export/` com parâmetros `formato` (`json` ou `csv`), intervalo de datas (`inicio`/`fim`) e tipos de mensagem (`tipos`). O arquivo gerado fica disponível em `media/chat_exports/`.
+
+O módulo expõe métricas Prometheus em `/metrics`, incluindo `chat_mensagens_sinalizadas_total`, `chat_mensagens_ocultadas_total` e `chat_exportacoes_total`.
+
 ![Demonstração do chat](docs/chat-demo.png)
 
 Para que o WebSocket funcione:
