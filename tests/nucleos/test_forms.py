@@ -1,34 +1,17 @@
 import pytest
 
 from nucleos.forms import NucleoForm, NucleoSearchForm, SuplenteForm
-from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
-
-
 def test_nucleo_form_fields():
     form = NucleoForm()
-    assert list(form.fields) == [
-        "organizacao",
-        "nome",
-        "descricao",
-        "avatar",
-        "cover",
-    ]
+    assert list(form.fields) == ["nome", "slug", "descricao", "avatar", "cover"]
 
 
-def test_membros_queryset_includes_all_users():
-    form = NucleoForm()
-    assert "organizacao" in form.fields
-
-
-def test_form_validation_errors(organizacao):
-    form = NucleoForm(data={"organizacao": organizacao.pk, "nome": ""})
+def test_form_validation_errors():
+    form = NucleoForm(data={"nome": "", "slug": ""})
     assert not form.is_valid()
     assert "nome" in form.errors
 

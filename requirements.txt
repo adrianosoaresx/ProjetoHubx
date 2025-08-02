@@ -120,3 +120,4 @@ websockets==15.0.1
 zope.interface==7.2
 prometheus-client==0.20.0
 sentry-sdk
+bleach==6.2.0

@@ -22,7 +22,7 @@ from django.views.generic import (
 )
 
 from accounts.models import UserType
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
 
 from .forms import (
     MembroRoleForm,
@@ -42,25 +42,26 @@ from .tasks import (
 User = get_user_model()
 
 
-class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
+class NucleoListView(LoginRequiredMixin, ListView):
     model = Nucleo
     template_name = "nucleos/list.html"
     paginate_by = 10
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False)
+        qs = (
+            Nucleo.objects.select_related("organizacao")
+            .prefetch_related("participacoes")
+            .filter(deleted=False, inativa=False)
+        )
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user, participacoes__status="aprovado")
+            qs = qs.filter(participacoes__user=user)
         q = self.request.GET.get("q")
         if q:
-            qs = qs.filter(Q(nome__icontains=q) | Q(descricao__icontains=q))
-        order_by = self.request.GET.get("order_by")
-        if order_by:
-            qs = qs.order_by(order_by)
-        return qs.distinct()
+            qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
+        return qs.order_by("nome").distinct()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -68,7 +69,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         return ctx
 
 
-class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/create.html"
@@ -80,19 +81,19 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         return super().form_valid(form)
 
 
-class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/update.html"
     success_url = reverse_lazy("nucleos:list")
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False)
+        qs = Nucleo.objects.filter(deleted=False, inativa=False)
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user, participacoes__status="aprovado")
+            qs = qs.filter(participacoes__user=user)
         return qs
 
     def form_valid(self, form):
@@ -100,29 +101,27 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
         return super().form_valid(form)
 
 
-class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
+class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
-        nucleo.deleted = True
-        nucleo.deleted_at = timezone.now()
-        nucleo.save(update_fields=["deleted", "deleted_at"])
+        nucleo.soft_delete()
         messages.success(request, _("Núcleo removido."))
         return redirect("nucleos:list")
 
 
-class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False)
+        qs = Nucleo.objects.filter(deleted=False, inativa=False)
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
-            qs = qs.filter(participacoes__user=user, participacoes__status="aprovado")
+            qs = qs.filter(participacoes__user=user)
         return qs
 
     def get_context_data(self, **kwargs):
@@ -138,13 +137,13 @@ class NucleoDetailView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
 
 class ParticipacaoCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
         ParticipacaoNucleo.objects.get_or_create(user=request.user, nucleo=nucleo)
         messages.success(request, _("Solicitação enviada."))
         return redirect("nucleos:detail", pk=pk)
 
 
-class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, FormView):
+class ParticipacaoDecisaoView(GerenteRequiredMixin, LoginRequiredMixin, FormView):
     form_class = ParticipacaoDecisaoForm
 
     def form_valid(self, form):
@@ -165,18 +164,18 @@ class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequ
         return redirect("nucleos:detail", pk=nucleo.pk)
 
 
-class MembroRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         participacao.delete()
         messages.success(request, _("Membro removido do núcleo."))
         return redirect("nucleos:detail", pk=pk)
 
 
-class MembroRoleView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroRoleView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         form = MembroRoleForm(request.POST, instance=participacao)
         if form.is_valid():
@@ -184,13 +183,13 @@ class MembroRoleView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin
         return redirect("nucleos:detail", pk=pk)
 
 
-class SuplenteCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
     model = CoordenadorSuplente
     form_class = SuplenteForm
     template_name = "nucleos/suplente_form.html"
 
     def form_valid(self, form):
-        nucleo = get_object_or_404(Nucleo, pk=self.kwargs["pk"])
+        nucleo = get_object_or_404(Nucleo, pk=self.kwargs["pk"], deleted=False, inativa=False)
         form.instance.nucleo = nucleo
         response = super().form_valid(form)
         notify_suplente_designado.delay(nucleo.id, form.instance.usuario.email)
@@ -206,18 +205,18 @@ class SuplenteCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredM
         return ctx
 
 
-class SuplenteDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class SuplenteDeleteView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, suplente_id):
-        nucleo = get_object_or_404(Nucleo, pk=pk)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
         suplente = get_object_or_404(CoordenadorSuplente, pk=suplente_id, nucleo=nucleo)
         suplente.delete()
         messages.success(request, _("Suplente removido."))
         return redirect("nucleos:detail", pk=pk)
 
 
-class ExportarMembrosView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
+class ExportarMembrosView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk)
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacoes = nucleo.participacoes.select_related("user")
         output = io.StringIO()
         writer = csv.writer(output)
@@ -230,3 +229,12 @@ class ExportarMembrosView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequired
         response = HttpResponse(output.getvalue(), content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
         return response
+
+
+class NucleoToggleActiveView(GerenteRequiredMixin, LoginRequiredMixin, View):
+    def post(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        nucleo.inativa = not nucleo.inativa
+        nucleo.inativada_em = timezone.now() if nucleo.inativa else None
+        nucleo.save(update_fields=["inativa", "inativada_em"])
+        return redirect("nucleos:list")

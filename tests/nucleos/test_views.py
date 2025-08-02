@@ -56,7 +56,7 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
     client.force_login(admin_user)
     resp = client.post(
         reverse("nucleos:create"),
-        data={"organizacao": organizacao.id, "nome": "N1", "descricao": "d"},
+        data={"nome": "N1", "slug": "n1", "descricao": "d"},
     )
     assert resp.status_code == 302
     nucleo = Nucleo.objects.get(nome="N1")
@@ -67,7 +67,7 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
 
 
 def test_participacao_flow(client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     client.force_login(membro_user)
     client.post(reverse("nucleos:participacao_solicitar", args=[nucleo.pk]))
     part = ParticipacaoNucleo.objects.get(user=membro_user, nucleo=nucleo)
@@ -83,7 +83,7 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
 
 
 def test_exportar_membros_csv(client, admin_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="aprovado", is_coordenador=True)
     client.force_login(admin_user)
     resp = client.get(reverse("nucleos:exportar_membros", args=[nucleo.pk]))
@@ -91,3 +91,12 @@ def test_exportar_membros_csv(client, admin_user, organizacao):
     reader = csv.reader(resp.content.decode().splitlines())
     rows = list(reader)
     assert rows[0] == ["Nome", "Email", "Status", "Função"]
+
+
+def test_toggle_active(client, admin_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    client.force_login(admin_user)
+    resp = client.post(reverse("nucleos:toggle_active", args=[nucleo.pk]))
+    assert resp.status_code == 302
+    nucleo.refresh_from_db()
+    assert nucleo.inativa is True

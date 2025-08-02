@@ -90,7 +90,7 @@ def test_topico_create_success(client, admin_user, categoria):
 
 def test_topico_create_invalid_nucleo(client, admin_user, categoria, nucleo):
     cat = CategoriaDiscussao.objects.create(nome="N", organizacao=categoria.organizacao, nucleo=nucleo)
-    outro = Nucleo.objects.create(nome="Outro", organizacao=categoria.organizacao)
+    outro = Nucleo.objects.create(nome="Outro", slug="outro", organizacao=categoria.organizacao)
     client.force_login(admin_user)
     url = reverse("discussao:topico_criar", args=[cat.slug])
     resp = client.post(

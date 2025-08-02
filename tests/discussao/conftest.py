@@ -22,7 +22,7 @@ def outra_organizacao(db):
 
 @pytest.fixture
 def nucleo(organizacao):
-    return Nucleo.objects.create(nome="Nucleo", organizacao=organizacao)
+    return Nucleo.objects.create(nome="Nucleo", slug="nucleo", organizacao=organizacao)
 
 
 @pytest.fixture

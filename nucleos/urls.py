@@ -41,4 +41,9 @@ urlpatterns = [
         views.ExportarMembrosView.as_view(),
         name="exportar_membros",
     ),
+    path(
+        "<int:pk>/toggle-active/",
+        views.NucleoToggleActiveView.as_view(),
+        name="toggle_active",
+    ),
 ]
