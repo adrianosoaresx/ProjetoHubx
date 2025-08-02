@@ -1,0 +1,77 @@
+from __future__ import annotations
+
+from django.contrib.auth import get_user_model
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
+from .permissions import CanSendNotifications
+from .serializers import (
+    NotificationLogSerializer,
+    NotificationTemplateSerializer,
+    UserNotificationPreferenceSerializer,
+)
+from .services.notificacoes import enviar_para_usuario
+
+
+class NotificationTemplateViewSet(viewsets.ModelViewSet):
+    queryset = NotificationTemplate.objects.all()
+    serializer_class = NotificationTemplateSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class UserNotificationPreferenceViewSet(viewsets.ModelViewSet):
+    serializer_class = UserNotificationPreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserNotificationPreference.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):  # pragma: no cover - criação explícita
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):  # pragma: no cover - atualização simples
+        serializer.save(user=self.request.user)
+
+
+class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = NotificationLogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = NotificationLog.objects.select_related("template").order_by("-data_envio")
+        user = self.request.user
+        if not user.is_staff:
+            qs = qs.filter(user=user)
+        canal = self.request.query_params.get("canal")
+        status_param = self.request.query_params.get("status")
+        inicio = self.request.query_params.get("inicio")
+        fim = self.request.query_params.get("fim")
+        if canal in Canal.values:
+            qs = qs.filter(canal=canal)
+        if status_param in NotificationStatus.values:
+            qs = qs.filter(status=status_param)
+        if inicio:
+            qs = qs.filter(data_envio__date__gte=inicio)
+        if fim:
+            qs = qs.filter(data_envio__date__lte=fim)
+        return qs
+
+
+@api_view(["POST"])
+@permission_classes([CanSendNotifications])
+def enviar_view(request):
+    template_codigo = request.data.get("template_codigo")
+    user_id = request.data.get("user_id")
+    context = request.data.get("context", {})
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({"detail": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+    try:
+        enviar_para_usuario(user, template_codigo, context)
+    except ValueError as exc:
+        return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(status=status.HTTP_204_NO_CONTENT)

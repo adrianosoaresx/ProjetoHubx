@@ -7,13 +7,7 @@ from django.conf import settings
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
-from ..models import (
-    Canal,
-    NotificationLog,
-    NotificationStatus,
-    NotificationTemplate,
-    UserNotificationPreference,
-)
+from ..models import Canal, NotificationLog, NotificationTemplate, UserNotificationPreference
 from ..tasks import enviar_notificacao_async
 
 logger = logging.getLogger(__name__)
@@ -24,6 +18,12 @@ def render_template(template: NotificationTemplate, context: dict[str, Any]) -> 
     body_tpl = Template(template.corpo)
     ctx = Context(context)
     return subject_tpl.render(ctx), body_tpl.render(ctx)
+
+
+def _mask_email(email: str) -> str:
+    nome, _, dominio = email.partition("@")
+    prefixo = nome[:2]
+    return f"{prefixo}***@{dominio}" if dominio else email
 
 
 def enviar_para_usuario(user: Any, template_codigo: str, context: dict[str, Any]) -> None:
@@ -48,27 +48,13 @@ def enviar_para_usuario(user: Any, template_codigo: str, context: dict[str, Any]
         canais.append(Canal.WHATSAPP)
 
     if not canais:
-        NotificationLog.objects.create(
-            user=user,
-            template=template,
-            canal=template.canal,
-            status=NotificationStatus.FALHA,
-            erro=_("Canais desabilitados pelo usuário"),
-        )
-        return
+        raise ValueError(_("Canais desabilitados pelo usuário"))
 
     for canal in canais:
         log = NotificationLog.objects.create(
             user=user,
             template=template,
             canal=canal,
-            status=NotificationStatus.PENDENTE,
+            destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
         )
-        enviar_notificacao_async.delay(
-            user.id,
-            str(template.id),
-            canal,
-            subject,
-            body,
-            str(log.id),
-        )
+        enviar_notificacao_async.delay(subject, body, str(log.id))

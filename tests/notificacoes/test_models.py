@@ -1,6 +1,6 @@
 import pytest
-from django.core.exceptions import ValidationError
 
+import pytest
 from accounts.factories import UserFactory
 from notificacoes.models import (
     NotificationLog,
@@ -44,5 +44,5 @@ def test_log_nao_pode_ser_deletado():
     user = UserFactory()
     template = NotificationTemplate.objects.create(codigo="a", assunto="a", corpo="a", canal="email")
     log = NotificationLog.objects.create(user=user, template=template, canal="email")
-    with pytest.raises(ValidationError):
+    with pytest.raises(PermissionError):
         log.delete()

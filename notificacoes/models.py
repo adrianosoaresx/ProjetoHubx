@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from model_utils.models import TimeStampedModel
@@ -37,6 +36,7 @@ class NotificationTemplate(models.Model):
     class Meta:
         verbose_name = _("Template de Notificação")
         verbose_name_plural = _("Templates de Notificação")
+        permissions = [("can_send_notifications", "Can send notifications")]
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.codigo
@@ -68,6 +68,7 @@ class NotificationLog(TimeStampedModel):
         primary_key=True, default=uuid.uuid4, editable=False
     )
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    destinatario: models.CharField = models.CharField(max_length=254, blank=True)
     template: models.ForeignKey = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices)
     status: models.CharField = models.CharField(
@@ -82,7 +83,7 @@ class NotificationLog(TimeStampedModel):
         unique_together = ("user", "template", "data_envio", "canal")
 
     def delete(self, *args, **kwargs):  # pragma: no cover - comportamento definido
-        raise ValidationError("NotificationLog é imutável")
+        raise PermissionError("NotificationLog é imutável")
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.template.codigo} -> {self.user}"  # type: ignore[attr-defined]  # pragma: no cover
