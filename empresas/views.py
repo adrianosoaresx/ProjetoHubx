@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,8 +18,8 @@ from core.permissions import (
 )
 
 from .forms import ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
-from .models import ContatoEmpresa, Empresa, Tag
-from .services import LOG_FIELDS, filter_empresas, list_all_tags, registrar_alteracoes
+from .models import ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
+from .services import LOG_FIELDS, list_all_tags, registrar_alteracoes, search_empresas
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -37,12 +37,13 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
-        return filter_empresas(self.request.user, self.request.GET)
+        return search_empresas(self.request.user, self.request.GET)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tags"] = list_all_tags()
         context["selected_tags"] = self.request.GET.getlist("tags")
+        context["empresas"] = context.get("object_list")
         return context
 
     def get_template_names(self):  # type: ignore[override]
@@ -149,6 +150,30 @@ class TagDeleteView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequire
     def delete(self, request, *args, **kwargs):
         messages.success(request, "Item removido.")
         return super().delete(request, *args, **kwargs)
+
+
+class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = EmpresaChangeLog
+    template_name = "empresas/historico.html"
+    paginate_by = 10
+
+    def test_func(self):
+        empresa = self.get_empresa()
+        user = self.request.user
+        return user.is_superuser or user == empresa.usuario or user.user_type == UserType.ADMIN
+
+    def get_empresa(self):
+        if not hasattr(self, "_empresa"):
+            self._empresa = get_object_or_404(Empresa, pk=self.kwargs["pk"])
+        return self._empresa
+
+    def get_queryset(self):
+        return self.get_empresa().logs.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empresa"] = self.get_empresa()
+        return context
 
 
 # ------------------------------------------------------------------

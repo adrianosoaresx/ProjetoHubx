@@ -66,8 +66,9 @@
 
   <div class="flex justify-end gap-3 mt-8">
     <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+    <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Histórico</a>
     {% if request.user == empresa.usuario %}
-      <a href="{% url 'empresas:editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Editar</a>
+      <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Editar</a>
     {% endif %}
   </div>
 </section>
