@@ -28,7 +28,11 @@ class DashboardConfig(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
-        if self.publico and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+        if (
+            self.publico
+            and self.user_id
+            and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}
+        ):
             raise ValidationError({"publico": "Somente admins podem tornar público"})
 
     def __str__(self) -> str:  # pragma: no cover - simples

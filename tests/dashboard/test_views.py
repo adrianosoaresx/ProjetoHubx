@@ -9,6 +9,13 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 from dashboard.services import DashboardMetricsService
+from dashboard.models import DashboardConfig
+import pytest
+
+try:
+    import reportlab  # type: ignore
+except Exception:  # pragma: no cover - optional
+    reportlab = None
 from dashboard.views import (
     AdminDashboardView,
     ClienteDashboardView,
@@ -100,7 +107,7 @@ def test_base_view_accepts_params(monkeypatch, client, admin_user):
             "periodo": "anual",
             "escopo": "organizacao",
             "organizacao_id": admin_user.organizacao_id,
-            "metricas": "num_users",
+            "metricas": ["num_users"],
         },
     )
     assert resp.status_code == 200
@@ -127,6 +134,8 @@ def test_export_view_csv(monkeypatch, client, admin_user):
 
 
 def test_export_view_pdf(monkeypatch, client, admin_user):
+    if reportlab is None:
+        pytest.skip("reportlab não instalado")
     client.force_login(admin_user)
 
     monkeypatch.setattr(
@@ -152,4 +161,22 @@ def test_forbidden_dashboard_views(client, cliente_user):
     assert resp.status_code == 403
     resp = client.get(reverse("dashboard:root"))
     assert resp.status_code == 403
+
+
+def test_config_save_and_apply(client, admin_user, gerente_user):
+    client.force_login(admin_user)
+    url = reverse("dashboard:config-create") + "?periodo=mensal&escopo=organizacao&organizacao_id=" + str(
+        admin_user.organizacao_id
+    ) + "&metricas=num_users"
+    resp = client.post(url, {"nome": "cfg", "publico": True})
+    assert resp.status_code == 302
+    cfg = DashboardConfig.objects.get(nome="cfg")
+
+    client.force_login(gerente_user)
+    resp = client.get(reverse("dashboard:configs"))
+    assert cfg in resp.context["object_list"]
+
+    resp = client.get(reverse("dashboard:config-apply", args=[cfg.pk]))
+    assert resp.status_code == 302
+    assert "metricas=num_users" in resp["Location"]
 

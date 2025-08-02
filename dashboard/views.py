@@ -34,22 +34,26 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
     def get_metrics(self):
         periodo = self.request.GET.get("periodo", "mensal")
         escopo = self.request.GET.get("escopo", "auto")
-        inicio_str = self.request.GET.get("inicio")
-        fim_str = self.request.GET.get("fim")
+
+        inicio_str = self.request.GET.get("data_inicio")
+        fim_str = self.request.GET.get("data_fim")
         inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
         fim = datetime.fromisoformat(fim_str) if fim_str else None
+
         filters: dict[str, object] = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             value = self.request.GET.get(key)
             if value:
                 filters[key] = value
-        metricas_param = self.request.GET.get("metricas")
-        if metricas_param:
-            filters["metricas"] = [m for m in metricas_param.split(",") if m]
+
+        metricas_list = self.request.GET.getlist("metricas")
+        if metricas_list:
+            filters["metricas"] = metricas_list
 
         self.periodo = periodo
         self.escopo = escopo
-        self.filters = filters
+        self.filters = {**filters, "data_inicio": inicio_str, "data_fim": fim_str}
+
         return DashboardMetricsService.get_metrics(
             self.request.user,
             periodo=periodo,
@@ -63,6 +67,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         metrics = self.get_metrics()
         context.update(metrics)
+        context["metrics_data"] = metrics
         context["periodo"] = getattr(self, "periodo", "mensal")
         context["escopo"] = getattr(self, "escopo", "auto")
         context["filtros"] = getattr(self, "filters", {})
@@ -70,6 +75,22 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         metricas = metricas or ["num_users", "num_eventos", "num_posts"]
         context["metricas_selecionadas"] = metricas
         context["chart_data"] = [metrics[m]["total"] for m in metricas if m in metrics]
+        metricas_info = {
+            "num_users": {"label": _("Usuários"), "icon": "fa-users"},
+            "num_organizacoes": {"label": _("Organizações"), "icon": "fa-building"},
+            "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
+            "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
+            "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
+            "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
+        }
+        context["metricas_disponiveis"] = [
+            {"key": key, "label": data["label"]} for key, data in metricas_info.items()
+        ]
+        context["metrics_iter"] = [
+            {"key": m, "data": metrics[m], "label": metricas_info[m]["label"], "icon": metricas_info[m]["icon"]}
+            for m in metricas
+            if m in metrics
+        ]
         return context
 
 
@@ -120,10 +141,33 @@ def metrics_partial(request):
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     try:
-        metrics = DashboardMetricsService.get_metrics(request.user)
+        metricas = request.GET.getlist("metricas") or [
+            "num_users",
+            "num_organizacoes",
+            "num_nucleos",
+            "num_empresas",
+            "num_eventos",
+            "num_posts",
+        ]
+        metrics = DashboardMetricsService.get_metrics(
+            request.user, metricas=metricas
+        )
+        info = {
+            "num_users": {"label": _("Usuários"), "icon": "fa-users"},
+            "num_organizacoes": {"label": _("Organizações"), "icon": "fa-building"},
+            "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
+            "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
+            "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
+            "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
+        }
+        metrics_iter = [
+            {"key": m, "data": metrics[m], "label": info[m]["label"], "icon": info[m]["icon"]}
+            for m in metricas
+            if m in metrics
+        ]
         html = render_to_string(
             "dashboard/partials/metrics_list.html",
-            metrics,
+            {"metrics_iter": metrics_iter, "metricas_selecionadas": metricas},
             request=request,
         )
         return HttpResponse(html)
@@ -211,19 +255,25 @@ class DashboardExportView(LoginRequiredMixin, View):
         periodo = request.GET.get("periodo", "mensal")
         escopo = request.GET.get("escopo", "auto")
         formato = request.GET.get("formato", "csv")
+        inicio_str = request.GET.get("data_inicio")
+        fim_str = request.GET.get("data_fim")
+        inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
+        fim = datetime.fromisoformat(fim_str) if fim_str else None
 
         filters: dict[str, object] = {}
-        for key in ["organizacao_id", "nucleo_id", "evento_id", "metricas"]:
+        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             value = request.GET.get(key)
             if value:
-                if key == "metricas":
-                    filters[key] = [m for m in value.split(",") if m]
-                else:
-                    filters[key] = value
+                filters[key] = value
+        metricas_list = request.GET.getlist("metricas")
+        if metricas_list:
+            filters["metricas"] = metricas_list
 
         metrics = DashboardMetricsService.get_metrics(
             user,
             periodo=periodo,
+            inicio=inicio,
+            fim=fim,
             escopo=escopo,
             **filters,
         )
@@ -242,7 +292,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 p.drawString(
                     50,
                     y,
-                    f"{key}: total={data['total']} crescimento={data['crescimento']:.2f}%",
+                    f"{key}: total={data['total']} variação={data['crescimento']:.2f}%",
                 )
                 y -= 20
             p.showPage()
@@ -258,7 +308,7 @@ class DashboardExportView(LoginRequiredMixin, View):
         filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.csv")
         resp["Content-Disposition"] = f"attachment; filename={filename}"
         writer = csv.writer(resp)
-        writer.writerow(["metric", "total", "crescimento"])
+        writer.writerow(["Métrica", "Valor", "Variação (%)"])
         for key, data in metrics.items():
             writer.writerow([key, data["total"], data["crescimento"]])
         return resp
@@ -277,15 +327,21 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
             "escopo": self.request.GET.get("escopo", "auto"),
             "filters": {},
         }
-        for key in ["organizacao_id", "nucleo_id", "evento_id", "metricas"]:
+        inicio = self.request.GET.get("data_inicio")
+        fim = self.request.GET.get("data_fim")
+        if inicio:
+            config_data["filters"]["data_inicio"] = inicio
+        if fim:
+            config_data["filters"]["data_fim"] = fim
+        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = self.request.GET.get(key)
             if val:
-                if key == "metricas":
-                    config_data["filters"][key] = [m for m in val.split(",") if m]
-                else:
-                    config_data["filters"][key] = val
-        form.save(self.request.user, config_data)
-        return super().form_valid(form)
+                config_data["filters"][key] = val
+        metricas_list = self.request.GET.getlist("metricas")
+        if metricas_list:
+            config_data["filters"]["metricas"] = metricas_list
+        self.object = form.save(self.request.user, config_data)
+        return redirect(self.get_success_url())
 
 
 class DashboardConfigListView(LoginRequiredMixin, ListView):
@@ -294,16 +350,27 @@ class DashboardConfigListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = DashboardConfig.objects.filter(user=self.request.user)
-        if self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}:
-            qs = qs | DashboardConfig.objects.filter(publico=True).exclude(user=self.request.user)
+        public_qs = DashboardConfig.objects.filter(publico=True).exclude(user=self.request.user)
+        if self.request.user.user_type == UserType.ROOT:
+            qs = qs | public_qs
+        else:
+            qs = qs | public_qs.filter(user__organizacao=self.request.user.organizacao)
         return qs
 
 
 class DashboardConfigApplyView(LoginRequiredMixin, View):
     def get(self, request, pk):
         cfg = DashboardConfig.objects.filter(pk=pk).first()
-        if not cfg or (cfg.user != request.user and not cfg.publico):
-            return HttpResponse(status=403)
+        if not cfg:
+            return HttpResponse(status=404)
+        if cfg.user != request.user:
+            if not cfg.publico:
+                return HttpResponse(status=403)
+            if (
+                request.user.user_type != UserType.ROOT
+                and cfg.user.organizacao_id != getattr(request.user, "organizacao_id", None)
+            ):
+                return HttpResponse(status=403)
         params = cfg.config.copy()
         filters = params.pop("filters", {})
         params.update(filters)
