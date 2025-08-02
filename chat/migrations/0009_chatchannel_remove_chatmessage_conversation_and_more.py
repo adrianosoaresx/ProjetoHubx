@@ -43,11 +43,6 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Canais de Chat",
             },
         ),
-        migrations.RunSQL("DELETE FROM chat_chatconversation"),
-        migrations.RemoveField(
-            model_name="chatmessage",
-            name="conversation",
-        ),
         migrations.RemoveField(
             model_name="chatmessage",
             name="organizacao",
@@ -60,23 +55,21 @@ class Migration(migrations.Migration):
             model_name="chatmessage",
             name="channel",
             field=models.ForeignKey(
-                default="00000000-0000-0000-0000-000000000000",
+                null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="messages",
                 to="chat.chatchannel",
             ),
-            preserve_default=False,
         ),
         migrations.AddField(
             model_name="chatparticipant",
             name="channel",
             field=models.ForeignKey(
-                default="00000000-0000-0000-0000-000000000000",
+                null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="participants",
                 to="chat.chatchannel",
             ),
-            preserve_default=False,
         ),
         migrations.AlterField(
             model_name="relatoriochatexport",
@@ -86,12 +79,5 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name="chatparticipant",
             unique_together={("user", "channel")},
-        ),
-        migrations.RemoveField(
-            model_name="chatparticipant",
-            name="conversation",
-        ),
-        migrations.DeleteModel(
-            name="ChatConversation",
         ),
     ]
