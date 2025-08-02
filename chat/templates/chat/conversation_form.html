@@ -9,10 +9,31 @@
   <form method="post" enctype="multipart/form-data" class="space-y-4 bg-white rounded-lg p-4">
     {% csrf_token %}
     <div>
+      <label for="{{ form.contexto_tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contexto_tipo.label }}</label>
+      {{ form.contexto_tipo|add_class:"w-full p-2 border rounded"|attr:"hx-get:/chat/contextos/"|attr:"hx-target:#id_contexto_id"|attr:"hx-trigger:change" }}
+      {% if form.contexto_tipo.errors %}
+        <p class="text-red-500 text-sm">{{ form.contexto_tipo.errors }}</p>
+      {% endif %}
+    </div>
+    <div>
+      <label for="{{ form.contexto_id.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contexto_id.label }}</label>
+      {{ form.contexto_id|add_class:"w-full p-2 border rounded" }}
+      {% if form.contexto_id.errors %}
+        <p class="text-red-500 text-sm">{{ form.contexto_id.errors }}</p>
+      {% endif %}
+    </div>
+    <div>
       <label for="{{ form.titulo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.titulo.label }}</label>
       {{ form.titulo|add_class:"w-full p-2 border rounded" }}
       {% if form.titulo.errors %}
         <p class="text-red-500 text-sm">{{ form.titulo.errors }}</p>
+      {% endif %}
+    </div>
+    <div>
+      <label for="{{ form.imagem.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.imagem.label }}</label>
+      {{ form.imagem|add_class:"w-full p-2 border rounded" }}
+      {% if form.imagem.errors %}
+        <p class="text-red-500 text-sm">{{ form.imagem.errors }}</p>
       {% endif %}
     </div>
     <div>

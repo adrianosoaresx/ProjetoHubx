@@ -40,7 +40,7 @@ def test_nova_conversa_creates_conversation(client, admin_user, monkeypatch):
     monkeypatch.setattr(views, "NovaConversaForm", DummyForm)
 
     client.force_login(admin_user)
-    data = {"titulo": "Nova"}
+    data = {"titulo": "Nova", "contexto_tipo": "privado"}
     resp = client.post(reverse("chat:nova_conversa"), data=data)
     assert resp.status_code == 302
     assert ChatChannel.objects.filter(titulo="Nova").exists()

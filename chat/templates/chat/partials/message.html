@@ -11,6 +11,7 @@
     <header class="flex items-center gap-2 text-xs text-gray-500">
       <span class="font-semibold text-gray-700">{{ m.remetente.username }}</span>
       <time datetime="{{ m.timestamp|date:'c' }}">{{ m.timestamp|date:"d/m/Y H:i" }}</time>
+      {% if m.pinned_at %}<span class="text-primary" aria-label="{% trans 'Mensagem fixada' %}">📌</span>{% endif %}
       {% if m.hidden_at %}<span class="text-red-500">{% trans "Oculta" %}</span>{% endif %}
     </header>
     <div class="mt-1">
@@ -24,12 +25,33 @@
         <a href="{{ m.arquivo.url }}" class="text-primary underline">{{ m.arquivo.name }}</a>
       {% endif %}
     </div>
-    {% if m.reactions %}
-      <ul class="flex gap-2 mt-2">
-        {% for emoji, count in m.reactions.items %}
-          <li class="text-sm">{{ emoji }} {{ count }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+    <div class="mt-2 flex items-center gap-2">
+      <button
+        hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/react/"
+        hx-vals='{"emoji":"👍"}'
+        class="text-xs text-neutral-600"
+        aria-label="{% trans 'Adicionar reação' %}"
+        type="button"
+      >
+        👍
+      </button>
+      {% if is_admin %}
+        <button
+          hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/pin/"
+          class="text-xs text-neutral-600"
+          aria-label="{% trans 'Fixar mensagem' %}"
+          type="button"
+        >
+          📌
+        </button>
+      {% endif %}
+      {% if m.reactions %}
+        <ul class="flex gap-2 ml-2">
+          {% for emoji, count in m.reactions.items %}
+            <li class="text-sm">{{ emoji }} {{ count }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
   </div>
 </article>

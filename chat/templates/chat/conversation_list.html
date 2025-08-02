@@ -15,40 +15,45 @@
       {% trans "Nova conversa" %}
     </a>
   </div>
+  <aside aria-label="{% trans 'Canais de chat' %}">
   {% for tipo, canais in grupos.items %}
     <section class="mb-6">
       <h2 class="text-sm font-semibold text-neutral-500 mb-2">
         {% if tipo == 'privado' %}{% trans "Privado" %}{% elif tipo == 'nucleo' %}{% trans "Núcleo" %}{% elif tipo == 'evento' %}{% trans "Evento" %}{% elif tipo == 'organizacao' %}{% trans "Organização" %}{% else %}{{ tipo }}{% endif %}
       </h2>
-      <nav aria-label="{% trans 'Lista de conversas' %}">
-        <ul role="list" class="bg-white divide-y divide-gray-200 rounded-lg">
-        {% for conv in canais %}
-          <li>
-            <a href="{{ conv.get_absolute_url }}" class="flex items-center justify-between py-2 px-4 hover:bg-gray-100 focus:outline-none focus:ring">
-              <div class="flex items-center gap-3">
-                {% if conv.imagem %}
-                  <img src="{{ conv.imagem.url }}" alt="" class="w-8 h-8 rounded-full" />
-                {% endif %}
-                <div>
-                  <p class="font-medium">{{ conv.titulo|default:conv.id }}</p>
-                  {% if conv.last_message_text %}
-                    <p class="text-sm text-gray-500">{{ conv.last_message_text|truncatechars:50 }}</p>
+        <nav aria-label="{% trans 'Lista de conversas' %}">
+          <ul role="list" class="bg-white divide-y divide-gray-200 rounded-lg">
+          {% for conv in canais %}
+            <li>
+              <a href="{% url 'chat:conversation_detail' conv.id %}" class="flex items-center justify-between py-2 px-4 hover:bg-gray-100 focus:outline-none focus:ring">
+                <div class="flex items-center gap-3">
+                  {% if conv.imagem %}
+                    <img src="{{ conv.imagem.url }}" alt="" class="w-8 h-8 rounded-full" />
+                  {% endif %}
+                  <div>
+                    <p class="font-medium">{{ conv.titulo|default:conv.id }}</p>
+                    {% if conv.last_message_text %}
+                      <p class="text-sm text-gray-500">{{ conv.last_message_text|truncatechars:50 }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="text-right">
+                  {% if conv.unread_count %}
+                    <span class="inline-block bg-primary text-white text-xs px-2 py-0.5 rounded-full mr-2">{{ conv.unread_count }}</span>
+                  {% endif %}
+                  {% if conv.last_message_at %}
+                    <time datetime="{{ conv.last_message_at|date:'c' }}" class="block text-xs text-gray-400">{{ conv.last_message_at|date:'d/m H:i' }}</time>
                   {% endif %}
                 </div>
-              </div>
-              <div class="text-right">
-                {% if conv.last_message_at %}
-                  <time datetime="{{ conv.last_message_at|date:'c' }}" class="block text-xs text-gray-400">{{ conv.last_message_at|date:'d/m H:i' }}</time>
-                {% endif %}
-              </div>
-            </a>
-          </li>
-        {% empty %}
-          <li class="py-2 px-4 text-gray-500">{% trans "Nenhuma conversa." %}</li>
-        {% endfor %}
-        </ul>
-      </nav>
-    </section>
-  {% endfor %}
-</main>
-{% endblock %}
+              </a>
+            </li>
+          {% empty %}
+            <li class="py-2 px-4 text-gray-500">{% trans "Nenhuma conversa." %}</li>
+          {% endfor %}
+          </ul>
+        </nav>
+      </section>
+    {% endfor %}
+  </aside>
+  </main>
+  {% endblock %}
