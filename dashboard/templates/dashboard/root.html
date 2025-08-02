@@ -8,6 +8,8 @@
 <main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="Dashboard">
   <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Root" %}</h1>
 
+  {% include 'dashboard/partials/filters_form.html' %}
+
   <div hx-get="{% url 'dashboard:metrics-partial' %}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>

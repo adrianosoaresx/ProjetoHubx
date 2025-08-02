@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 from typing import Dict, Optional, Tuple
 
 from dateutil.relativedelta import relativedelta
@@ -167,16 +168,16 @@ class DashboardMetricsService:
         """Return dashboard metrics, cached for 5 minutes."""
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
-        cache_parts = [
-            str(user.pk),
-            periodo,
-            inicio.isoformat(),
-            fim.isoformat(),
-            escopo,
-        ]
-        for k in sorted(filters.keys()):
-            cache_parts.append(f"{k}:{filters[k]}")
-        cache_key = "dashboard_metrics_" + "_".join(cache_parts)
+        cache_filters = {
+            "periodo": periodo,
+            "inicio": inicio.isoformat(),
+            "fim": fim.isoformat(),
+            **filters,
+        }
+        cache_key = (
+            f"dashboard-{user.id}-{escopo}-"
+            f"{json.dumps(cache_filters, sort_keys=True)}"
+        )
         cached = cache.get(cache_key)
         if cached:
             return cached

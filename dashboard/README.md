@@ -9,12 +9,13 @@ A view base aceita os seguintes parâmetros via query string:
 - `periodo`: `mensal`, `trimestral`, `semestral`, `anual`.
 - `escopo`: `auto`, `global`, `organizacao`, `nucleo`, `evento`.
 - `organizacao_id`, `nucleo_id`, `evento_id`: identificadores para filtragem.
-- `metricas`: lista separada por vírgula com métricas desejadas (ex.: `num_users,num_eventos`).
+- `metricas`: múltiplos valores permitidos (ex.: `metricas=num_users&metricas=num_eventos`).
+- `data_inicio`, `data_fim`: limites opcionais de datas no formato ISO `YYYY-MM-DD`.
 
 Exemplo:
 
 ```
-/dashboard/admin/?periodo=anual&escopo=organizacao&organizacao_id=1&metricas=num_users,num_eventos
+/dashboard/admin/?periodo=anual&escopo=organizacao&organizacao_id=1&metricas=num_users&metricas=num_eventos
 ```
 
 ## Exportação de métricas
@@ -26,7 +27,7 @@ Usuários root, admin e coordenador podem exportar as métricas atuais:
 /dashboard/export/?formato=pdf&periodo=mensal&escopo=global
 ```
 
-O arquivo gerado inclui `total` e `crescimento` de cada métrica.
+O arquivo gerado inclui `total` e a variação percentual calculada como `(valor_atual - valor_anterior) / max(valor_anterior, 1) * 100`.
 
 ## Configurações salvas
 
@@ -47,4 +48,4 @@ Exemplo de JSON armazenado:
 }
 ```
 
-O cache das métricas expira em 5 minutos. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
+O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<id>-<escopo>-<json dos filtros>`. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
