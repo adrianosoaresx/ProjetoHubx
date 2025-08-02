@@ -22,6 +22,9 @@
       {% if not is_owner %}
         <a href="#" class="text-red-600 hover:underline" aria-label="{% trans 'Sair do canal' %}">{% trans 'Sair' %}</a>
       {% endif %}
+      {% if is_admin %}
+        <button hx-get="{% url 'chat:exportar_modal' conversation.id %}" hx-target="#modal" class="text-blue-600 hover:underline" type="button">{% trans 'Exportar histórico' %}</button>
+      {% endif %}
     </div>
   </header>
 
@@ -48,6 +51,7 @@
     {{ form.conteudo|add_class:"flex-1 border rounded p-2" }}
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 focus:outline-none focus:ring" aria-label="{% trans 'Enviar mensagem' %}">{% trans "Enviar" %}</button>
   </form>
+  <div id="modal"></div>
   <script src="{% static 'chat/chat.js' %}"></script>
 </main>
 {% endblock %}

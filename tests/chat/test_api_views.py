@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from chat.models import ChatChannel, ChatMessage, ChatParticipant
+from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
 
 User = get_user_model()
 
@@ -107,40 +107,90 @@ def test_react_message(api_client: APIClient, admin_user):
     assert msg.reactions.get("👍") == 1
 
 
-def test_flag_message_hides(api_client: APIClient, admin_user):
+def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
+    from chat.metrics import (
+        chat_mensagens_ocultadas_total,
+        chat_mensagens_sinalizadas_total,
+    )
+
+    chat_mensagens_sinalizadas_total.labels(canal_tipo="privado")._value.set(0)
+    chat_mensagens_ocultadas_total._value.set(0)
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=admin_user)
     other1 = User.objects.create_user(email="o1@x.com", username="o1", password="x")
     other2 = User.objects.create_user(email="o2@x.com", username="o2", password="x")
-    ChatParticipant.objects.create(channel=conv, user=other1)
-    ChatParticipant.objects.create(channel=conv, user=other2)
+    other3 = User.objects.create_user(email="o3@x.com", username="o3", password="x")
+    for u in (other1, other2, other3):
+        ChatParticipant.objects.create(channel=conv, user=u)
     msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
     url = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg.pk})
-    api_client.force_authenticate(admin_user)
-    api_client.post(url)
     api_client.force_authenticate(other1)
-    api_client.post(url)
+    resp1 = api_client.post(url)
+    assert resp1.status_code == 200 and resp1.json()["flags"] == 1
+    dup = api_client.post(url)
+    assert dup.status_code == 409
     api_client.force_authenticate(other2)
+    api_client.post(url)
+    api_client.force_authenticate(other3)
     api_client.post(url)
     msg.refresh_from_db()
     assert msg.hidden_at is not None
+    assert chat_mensagens_sinalizadas_total.labels(canal_tipo="privado")._value.get() == 3
+    assert chat_mensagens_ocultadas_total._value.get() == 1
 
 
 def test_export_channel(api_client: APIClient, admin_user):
+    from chat.metrics import chat_exportacoes_total
+
+    chat_exportacoes_total.labels(formato="json")._value.set(0)
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
     ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:conversa_exportar", args=[conv.id]) + "?formato=json"
+    url = reverse("chat_api:chat-channel-export", args=[conv.id]) + "?formato=json"
     resp = api_client.get(url)
-    assert resp.status_code == 200
-    assert resp.json()["url"].endswith(".json")
+    assert resp.status_code == 202
+    rel = RelatorioChatExport.objects.get(channel=conv)
+    assert rel.status == "concluido"
+    assert chat_exportacoes_total.labels(formato="json")._value.get() == 1
 
 
 def test_export_requires_permission(api_client: APIClient, associado_user):
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=associado_user)
     api_client.force_authenticate(associado_user)
-    url = reverse("chat_api:conversa_exportar", args=[conv.id])
+    url = reverse("chat_api:chat-channel-export", args=[conv.id])
     resp = api_client.get(url)
     assert resp.status_code == 403
+
+
+def test_moderacao_endpoints(api_client: APIClient, admin_user):
+    conv = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    u1 = User.objects.create_user(email="u1@x.com", username="u1", password="x")
+    u2 = User.objects.create_user(email="u2@x.com", username="u2", password="x")
+    u3 = User.objects.create_user(email="u3@x.com", username="u3", password="x")
+    for u in (u1, u2, u3):
+        ChatParticipant.objects.create(channel=conv, user=u)
+    msg1 = ChatMessage.objects.create(channel=conv, remetente=u1, conteudo="oi")
+    msg2 = ChatMessage.objects.create(channel=conv, remetente=u1, conteudo="tchau")
+    url1 = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg1.pk})
+    url2 = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg2.pk})
+    for user in (u1, u2, u3):
+        api_client.force_authenticate(user)
+        api_client.post(url1)
+        api_client.post(url2)
+    api_client.force_authenticate(admin_user)
+    list_url = reverse("chat_api:chat-flags")
+    resp = api_client.get(list_url)
+    assert resp.status_code == 200
+    assert len(resp.json()) == 2
+    approve_url = reverse("chat_api:chat-moderacao-approve", args=[msg1.id])
+    resp_a = api_client.post(approve_url)
+    assert resp_a.status_code == 200
+    msg1.refresh_from_db()
+    assert msg1.hidden_at is None and msg1.flags.count() == 0
+    remove_url = reverse("chat_api:chat-moderacao-remove", args=[msg2.id])
+    resp_r = api_client.post(remove_url)
+    assert resp_r.status_code == 204
+    assert not ChatMessage.objects.filter(pk=msg2.pk).exists()

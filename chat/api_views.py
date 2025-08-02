@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import json
-from io import StringIO
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
+from django.db import models
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -18,8 +14,16 @@ from rest_framework.response import Response
 from core.permissions import IsModeratorUser
 
 from .api import add_reaction
-from .models import ChatChannel, ChatMessage, ChatMessageFlag, ChatModerationLog, ChatParticipant, RelatorioChatExport
-from .permissions import IsChannelAdminOrOwner, IsChannelParticipant
+from .models import (
+    ChatChannel,
+    ChatMessage,
+    ChatModerationLog,
+    ChatParticipant,
+    RelatorioChatExport,
+)
+from .permissions import IsChannelAdminOrOwner, IsChannelParticipant, IsModeratorPermission
+from .services import sinalizar_mensagem
+from .tasks import exportar_historico_chat
 from .serializers import ChatChannelSerializer, ChatMessageSerializer
 
 User = get_user_model()
@@ -41,7 +45,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         perms: list[type[permissions.BasePermission]] = [permissions.IsAuthenticated]
         if self.action in {"retrieve"}:
             perms.append(IsChannelParticipant)
-        if self.action in {"update", "partial_update", "add_participant", "remove_participant"}:
+        if self.action in {"update", "partial_update", "add_participant", "remove_participant", "export"}:
             perms.append(IsChannelAdminOrOwner)
         return [p() for p in perms]
 
@@ -90,6 +94,34 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
             user_ids = [user_ids]
         ChatParticipant.objects.filter(channel=channel, user__id__in=user_ids).delete()
         return Response({"removidos": user_ids})
+
+    @action(
+        detail=True,
+        methods=["get"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
+    )
+    def export(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        formato = request.query_params.get("formato", "json")
+        inicio = request.query_params.get("inicio")
+        fim = request.query_params.get("fim")
+        tipos = request.query_params.get("tipos")
+        tipos_list = tipos.split(",") if tipos else None
+        rel = RelatorioChatExport.objects.create(
+            channel=channel,
+            formato=formato,
+            gerado_por=request.user,
+            status="gerando",
+        )
+        exportar_historico_chat.delay(
+            channel.id,
+            formato,
+            inicio,
+            fim,
+            tipos_list,
+            rel.id,
+        )
+        return Response({"relatorio_id": str(rel.id)}, status=status.HTTP_202_ACCEPTED)
 
 
 class ChatMessagePagination(PageNumberPagination):
@@ -152,63 +184,52 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def flag(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
-        ChatMessageFlag.objects.get_or_create(message=msg, user=request.user)
-        return Response(status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=["post"], permission_classes=[IsModeratorUser])
-    def moderate(self, request: Request, channel_pk: str, pk: str) -> Response:
-        msg = self.get_object()
-        acao = request.data.get("acao")
-        if acao == "approve":
-            msg.hidden_at = None
-            msg.flags.all().delete()
-            msg.save(update_fields=["hidden_at", "updated_at"])
-            ChatModerationLog.objects.create(message=msg, action="approve", moderator=request.user)
-            return Response(self.get_serializer(msg).data)
-        if acao == "remove":
-            ChatModerationLog.objects.create(message=msg, action="remove", moderator=request.user)
-            msg.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response({"detail": "Ação inválida."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            total = sinalizar_mensagem(msg, request.user)
+        except ValueError:
+            return Response(status=status.HTTP_409_CONFLICT)
+        return Response({"flags": total})
 
 
-@api_view(["GET"])
-@permission_classes([IsModeratorUser])
-def exportar_conversa(request: Request, channel_id: str) -> Response:
-    formato = request.GET.get("formato", "json")
-    canal = get_object_or_404(ChatChannel, pk=channel_id)
-    mensagens = canal.messages.filter(hidden_at__isnull=True).select_related("remetente").order_by("timestamp")
-    data = [
-        {
-            "remetente": m.remetente_id,
-            "conteudo": m.conteudo,
-            "tipo": m.tipo,
-            "timestamp": m.timestamp.isoformat(),
-        }
-        for m in mensagens
-    ]
-    buffer = StringIO()
-    if formato == "csv":
-        import csv
+class ModeracaoViewSet(viewsets.ViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsModeratorPermission]
 
-        writer = (
-            csv.DictWriter(buffer, fieldnames=data[0].keys())
-            if data
-            else csv.DictWriter(buffer, fieldnames=["remetente", "conteudo", "tipo", "timestamp"])
+    def list(self, request: Request) -> Response:
+        msgs = (
+            ChatMessage.objects.filter(flags__isnull=False)
+            .annotate(flags_count=models.Count("flags"))
+            .select_related("remetente", "channel")
         )
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-        ext = "csv"
-        path = default_storage.save(f"chat/exports/{canal.id}.{ext}", ContentFile(buffer.getvalue()))
-    else:
-        json.dump(data, buffer)
-        ext = "json"
-        path = default_storage.save(f"chat/exports/{canal.id}.{ext}", ContentFile(buffer.getvalue().encode()))
-    rel = RelatorioChatExport.objects.create(
-        channel=canal,
-        formato=ext,
-        gerado_por=request.user,
-        arquivo_url=default_storage.url(path),
-    )
-    return Response({"url": rel.arquivo_url})
+        data = [
+            {
+                "id": str(m.id),
+                "conteudo": m.conteudo,
+                "remetente": m.remetente.username,
+                "canal": str(m.channel_id),
+                "timestamp": m.timestamp.isoformat(),
+                "flags": m.flags_count,
+                "hidden": bool(m.hidden_at),
+            }
+            for m in msgs
+        ]
+        return Response(data)
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request: Request, pk: str | None = None) -> Response:
+        msg = get_object_or_404(ChatMessage, pk=pk)
+        msg.hidden_at = None
+        msg.flags.all().delete()
+        msg.save(update_fields=["hidden_at", "updated_at"])
+        ChatModerationLog.objects.create(message=msg, action="approve", moderator=request.user)
+        return Response({"status": "approved"})
+
+    @action(detail=True, methods=["post"])
+    def remove(self, request: Request, pk: str | None = None) -> Response:
+        msg = get_object_or_404(ChatMessage, pk=pk)
+        ChatModerationLog.objects.create(message=msg, action="remove", moderator=request.user)
+        msg.notificacoes.all().delete()
+        msg.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+

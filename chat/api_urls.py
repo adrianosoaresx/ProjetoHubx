@@ -1,15 +1,20 @@
-from rest_framework_nested.routers import NestedDefaultRouter, DefaultRouter
 from django.urls import path
+from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
 
-from .api_views import ChatChannelViewSet, ChatMessageViewSet, exportar_conversa
+from .api_views import ChatChannelViewSet, ChatMessageViewSet, ModeracaoViewSet
 
 router = DefaultRouter()
 router.register(r"channels", ChatChannelViewSet, basename="chat-channel")
+router.register(r"moderacao/messages", ModeracaoViewSet, basename="chat-moderacao")
 
 channels_router = NestedDefaultRouter(router, r"channels", lookup="channel")
 channels_router.register(r"messages", ChatMessageViewSet, basename="chat-messages")
 
 urlpatterns = router.urls + channels_router.urls + [
-    path("channels/<uuid:channel_id>/exportar/", exportar_conversa, name="conversa_exportar"),
+    path(
+        "moderacao/flags/",
+        ModeracaoViewSet.as_view({"get": "list"}),
+        name="chat-flags",
+    ),
 ]
 

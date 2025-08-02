@@ -1,0 +1,21 @@
+<div class="bg-white p-4 border rounded">
+  <form hx-get="/api/chat/channels/{{ channel.id }}/export/" hx-target="#export-status" hx-swap="innerHTML">
+    <label class="block mb-2">Formato
+      <select name="formato" class="border rounded p-1">
+        <option value="json">JSON</option>
+        <option value="csv">CSV</option>
+      </select>
+    </label>
+    <label class="block mb-2">Início
+      <input type="date" name="inicio" class="border rounded p-1" />
+    </label>
+    <label class="block mb-2">Fim
+      <input type="date" name="fim" class="border rounded p-1" />
+    </label>
+    <label class="block mb-2">Tipos
+      <input type="text" name="tipos" placeholder="text,image,video,file" class="border rounded p-1" />
+    </label>
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Exportar</button>
+  </form>
+  <div id="export-status" class="mt-2"></div>
+</div>

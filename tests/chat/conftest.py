@@ -18,6 +18,12 @@ def media_root(tmp_path, settings):
     return tmp_path
 
 
+@pytest.fixture(autouse=True)
+def celery_eager(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.CELERY_TASK_EAGER_PROPAGATES = True
+
+
 @pytest.fixture
 def organizacao():
     return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")

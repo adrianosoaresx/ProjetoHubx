@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count, OuterRef, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -125,3 +125,23 @@ def message_partial(request, message_id):
     message = get_object_or_404(ChatMessage.objects.select_related("remetente"), pk=message_id)
     is_admin = message.channel.participants.filter(user=request.user, is_admin=True).exists()
     return render(request, "chat/partials/message.html", {"m": message, "is_admin": is_admin})
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def moderacao(request):
+    msgs = (
+        ChatMessage.objects.filter(flags__isnull=False)
+        .annotate(flags_count=Count("flags"))
+        .select_related("remetente", "channel")
+    )
+    return render(request, "chat/moderacao.html", {"mensagens": msgs})
+
+
+@login_required
+def exportar_modal(request, channel_id):
+    channel = get_object_or_404(ChatChannel, pk=channel_id, participants__user=request.user)
+    is_admin = channel.participants.filter(user=request.user, is_admin=True).exists()
+    if not is_admin:
+        return HttpResponse(status=403)
+    return render(request, "chat/partials/export_modal.html", {"channel": channel})

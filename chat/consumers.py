@@ -5,7 +5,7 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .api import notify_users
 from .models import ChatChannel, ChatMessage, ChatParticipant
-from .services import adicionar_reacao, enviar_mensagem
+from .services import adicionar_reacao, enviar_mensagem, sinalizar_mensagem
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -78,6 +78,28 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "reactions": msg.reactions,
             }
             await self.channel_layer.group_send(self.group_name, payload)
+        elif message_type == "flag":
+            msg_id = data.get("mensagem_id")
+            if not msg_id:
+                return
+            msg = await database_sync_to_async(ChatMessage.objects.get)(pk=msg_id)
+            try:
+                await database_sync_to_async(sinalizar_mensagem)(msg, user)
+            except ValueError:
+                return
+            if msg.hidden_at:
+                payload = {
+                    "type": "chat.message",
+                    "id": str(msg.id),
+                    "remetente": msg.remetente.username,
+                    "tipo": msg.tipo,
+                    "conteudo": msg.conteudo,
+                    "arquivo_url": msg.arquivo.url if msg.arquivo else None,
+                    "timestamp": msg.timestamp.isoformat(),
+                    "reactions": msg.reactions,
+                    "hidden_at": msg.hidden_at.isoformat(),
+                }
+                await self.channel_layer.group_send(self.group_name, payload)
 
     async def chat_message(self, event):
         await self.send_json(event)

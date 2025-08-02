@@ -12,5 +12,11 @@ urlpatterns = [
         views.message_partial,
         name="message_partial",
     ),
+    path("moderacao/", views.moderacao, name="moderacao"),
+    path(
+        "<uuid:channel_id>/exportar/",
+        views.exportar_modal,
+        name="exportar_modal",
+    ),
     path("<uuid:channel_id>/", views.conversation_detail, name="conversation_detail"),
 ]

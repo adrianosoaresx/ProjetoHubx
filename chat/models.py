@@ -127,19 +127,13 @@ class ChatMessageFlag(TimeStampedModel):
         verbose_name = "Sinalização"
         verbose_name_plural = "Sinalizações"
 
-    def save(self, *args, **kwargs) -> None:
-        super().save(*args, **kwargs)
-        total = self.message.flags.count()
-        if total >= 3 and not self.message.hidden_at:
-            self.message.hidden_at = timezone.now()
-            self.message.save(update_fields=["hidden_at", "updated_at"])
-
 
 class RelatorioChatExport(TimeStampedModel):
     channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
     gerado_por = models.ForeignKey(User, on_delete=models.CASCADE)
-    arquivo_url = models.URLField()
+    status = models.CharField(max_length=20, default="gerando")
+    arquivo_url = models.URLField(blank=True)
 
     class Meta:
         verbose_name = "Relatório de Exportação"

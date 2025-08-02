@@ -83,3 +83,15 @@ class IsMessageSenderOrAdmin(BasePermission):
         except ChatParticipant.DoesNotExist:  # pragma: no cover - defensive
             return False
         return participant.is_admin or participant.is_owner
+
+
+class IsModeratorPermission(BasePermission):
+    """Permite acesso a usuários moderadores."""
+
+    message = "Permissão negada"
+
+    def has_permission(self, request, view) -> bool:
+        return bool(request.user and request.user.is_staff)
+
+    def has_object_permission(self, request, view, obj) -> bool:  # pragma: no cover - same as has_permission
+        return self.has_permission(request, view)
