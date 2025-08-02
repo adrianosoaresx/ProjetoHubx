@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from validate_docbr import CNPJ
 
-from empresas.models import Empresa
+from empresas.models import Empresa, EmpresaChangeLog
 from empresas.factories import EmpresaFactory
 
 
@@ -72,3 +72,28 @@ def test_soft_delete_marks_deleted(client, nucleado_user):
     assert empresa.deleted
     resp = client.get(reverse("empresas:lista"))
     assert empresa.nome not in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_admin_can_list_deleted(client, admin_user):
+    emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
+    client.force_login(admin_user)
+    resp = client.get(reverse("empresas:lista"), {"mostrar_excluidas": "1"})
+    assert emp.nome in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_historico_view_access(client, admin_user, nucleado_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    EmpresaChangeLog.objects.create(
+        empresa=empresa,
+        usuario=nucleado_user,
+        campo_alterado="nome",
+        valor_antigo="X",
+        valor_novo="Y",
+    )
+    client.force_login(admin_user)
+    url = reverse("empresas:historico", args=[empresa.id])
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert "nome" in resp.content.decode()

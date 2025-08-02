@@ -1,6 +1,14 @@
 from django.db.models import Q
 
 from accounts.models import UserType
+
+"""Serviços auxiliares para o módulo de empresas.
+
+Este arquivo contém funções de busca e registro de alterações. Ao manter a
+lógica de busca isolada em um serviço garantimos melhor testabilidade e
+manutenção das views.
+"""
+
 from .models import Empresa, Tag, EmpresaChangeLog
 
 
@@ -16,12 +24,20 @@ FILTRO_CAMPOS_Q = [
 ]
 
 
-def filter_empresas(user, params):
-    qs = (
-        Empresa.objects.select_related("organizacao", "usuario")
-        .prefetch_related("tags")
-        .filter(deleted=False)
-    )
+def search_empresas(user, params):
+    """Aplica filtros a partir dos parâmetros de consulta.
+
+    Parâmetros aceitos: ``nome``, ``municipio``, ``estado``, ``tags``,
+    ``organizacao_id`` e ``q`` (busca textual). O parâmetro
+    ``mostrar_excluidas`` só é respeitado para administradores, exibindo
+    registros com ``deleted=True``.
+    """
+
+    qs = Empresa.objects.select_related("organizacao", "usuario").prefetch_related("tags")
+
+    mostrar_excluidas = params.get("mostrar_excluidas")
+    if not (mostrar_excluidas == "1" and user.user_type == UserType.ADMIN):
+        qs = qs.filter(deleted=False)
 
     if user.is_superuser:
         pass
@@ -62,6 +78,13 @@ def filter_empresas(user, params):
     return qs.distinct()
 
 
+# Backwards compatibility ----------------------------------------------------
+#
+# ``filter_empresas`` era o nome antigo do serviço de busca. Mantemos um alias
+# para evitar que importações existentes quebrem caso ainda utilizem esse nome.
+filter_empresas = search_empresas
+
+
 def list_all_tags():
     return Tag.objects.all()
 
@@ -84,8 +107,11 @@ def registrar_alteracoes(usuario, empresa, old_data):
         antigo = old_data.get(campo)
         novo = getattr(empresa, campo)
         if antigo != novo:
-            if campo == "cnpj" and antigo:
-                antigo = f"***{antigo[-4:]}"
+            if campo == "cnpj":
+                if antigo:
+                    antigo = f"***{antigo[-4:]}"
+                if novo:
+                    novo = f"***{str(novo)[-4:]}"
             EmpresaChangeLog.objects.create(
                 empresa=empresa,
                 usuario=usuario,

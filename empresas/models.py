@@ -55,6 +55,7 @@ class Empresa(TimeStampedModel):
             models.Index(fields=["cnpj"]),
             models.Index(fields=["municipio"]),
             models.Index(fields=["estado"]),
+            models.Index(fields=["deleted"]),
         ]
 
     def __str__(self) -> str:
