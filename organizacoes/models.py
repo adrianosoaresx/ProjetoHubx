@@ -31,8 +31,16 @@ class Organizacao(TimeStampedModel):
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="organizacoes_criadas",
+    )
 
     class Meta:
         verbose_name = "Organização"

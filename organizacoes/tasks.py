@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from celery import shared_task
 from django.dispatch import Signal, receiver
+from django.utils.translation import gettext_lazy as _
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -16,8 +17,16 @@ def enviar_email_membros(organizacao_id: int, acao: str) -> None:
     users = list(org.users.all())
     if not users:
         return
-    subject = f"Organização {org.nome} {acao}"
-    message = f"A organização {org.nome} foi {acao}."
+    traducoes = {
+        "created": _("criada"),
+        "updated": _("atualizada"),
+        "deleted": _("excluída"),
+        "inactivated": _("inativada"),
+        "reactivated": _("reativada"),
+    }
+    acao_txt = traducoes.get(acao, acao)
+    subject = _("Organização %(nome)s %(acao)s") % {"nome": org.nome, "acao": acao_txt}
+    message = _("A organização %(nome)s foi %(acao)s.") % {"nome": org.nome, "acao": acao_txt}
     for user in users:
         enviar_para_usuario(
             user,

@@ -7,6 +7,8 @@ from .tasks import organizacao_alterada
 
 
 class OrganizacaoSerializer(serializers.ModelSerializer):
+    created_by = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = Organizacao
         fields = [
@@ -26,34 +28,37 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "cover",
             "inativa",
             "inativada_em",
+            "created_by",
         ]
-        read_only_fields = ["inativada_em", "inativa"]
+        read_only_fields = ["inativada_em", "inativa", "created_by"]
 
     def create(self, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
-        instance = super().create(validated_data)
+        user = getattr(request, "user", None)
+        instance = Organizacao.objects.create(created_by=user, **validated_data)
         OrganizacaoLog.objects.create(
             organizacao=instance,
-            usuario=getattr(request, "user", None),
-            acao="criacao",
+            usuario=user,
+            acao="created",
             dados_antigos={},
             dados_novos=validated_data,
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="criacao")
+        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="created")
         return instance
 
     def update(self, instance: Organizacao, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
         old_data = {k: getattr(instance, k) for k in validated_data}
         instance = super().update(instance, validated_data)
+        user = getattr(request, "user", None)
         OrganizacaoLog.objects.create(
             organizacao=instance,
-            usuario=getattr(request, "user", None),
-            acao="atualizacao",
+            usuario=user,
+            acao="updated",
             dados_antigos=old_data,
             dados_novos=validated_data,
         )
-        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="atualizacao")
+        organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="updated")
         return instance
 
 

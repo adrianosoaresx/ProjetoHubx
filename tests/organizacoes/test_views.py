@@ -2,9 +2,14 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.text import slugify
 
 from accounts.models import User, UserType
+from agenda.models import Evento
+from empresas.models import Empresa
+from feed.models import Post
+from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -19,9 +24,7 @@ def faker_ptbr():
 
 @pytest.fixture(autouse=True)
 def no_celery(monkeypatch):
-    monkeypatch.setattr(
-        "organizacoes.tasks.enviar_email_membros.delay", lambda *a, **k: None
-    )
+    monkeypatch.setattr("organizacoes.tasks.enviar_email_membros.delay", lambda *a, **k: None)
 
 
 @pytest.fixture
@@ -130,7 +133,7 @@ def test_delete_view_superadmin(superadmin_user, organizacao):
     response = superadmin_user.post(url, follow=True)
     assert response.status_code == 200
     organizacao.refresh_from_db()
-    assert organizacao.deleted is True
+    assert organizacao.deleted is True and organizacao.deleted_at is not None
 
 
 def test_delete_view_denied_for_admin(admin_user, organizacao):
@@ -196,11 +199,15 @@ def test_ordering_by_nome(superadmin_user, faker_ptbr):
 
 def test_list_search(superadmin_user, faker_ptbr):
     org_a = Organizacao.objects.create(nome="Alpha Org", cnpj=faker_ptbr.cnpj(), slug="alpha-slug")
-    Organizacao.objects.create(nome="Beta Org", cnpj=faker_ptbr.cnpj(), slug="beta-slug")
-    url = reverse("organizacoes:list") + "?q=alpha-slug"
-    resp = superadmin_user.get(url)
+    org_b = Organizacao.objects.create(nome="Beta Org", cnpj=faker_ptbr.cnpj(), slug="beta-slug")
+    # search by slug
+    resp = superadmin_user.get(reverse("organizacoes:list") + "?q=alpha-slug")
     content = resp.content.decode()
-    assert org_a.nome in content and "Beta Org" not in content
+    assert org_a.nome in content and org_b.nome not in content
+    # search by name
+    resp2 = superadmin_user.get(reverse("organizacoes:list") + "?q=Beta")
+    content2 = resp2.content.decode()
+    assert org_b.nome in content2 and org_a.nome not in content2
 
 
 def test_list_pagination(superadmin_user, faker_ptbr):
@@ -227,7 +234,7 @@ def test_toggle_active_and_logs(superadmin_user, organizacao):
     organizacao.refresh_from_db()
     assert organizacao.inativa is True
     log = organizacao.logs.first()
-    assert log.acao == "inativada"
+    assert log.acao == "inactivated"
 
 
 def test_toggle_denied_for_admin(admin_user, organizacao):
@@ -253,3 +260,45 @@ def test_signal_emitted_on_create(monkeypatch, superadmin_user, faker_ptbr):
     data = {"nome": "Org", "cnpj": faker_ptbr.cnpj(), "slug": "org"}
     superadmin_user.post(url, data=data, follow=True)
     assert called.get("called") is True
+
+
+def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
+    user = User.objects.create_user(
+        username="u1",
+        email="u1@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=org,
+    )
+    Nucleo.objects.create(organizacao=org, nome="N1", slug="n1")
+    Empresa.objects.create(
+        organizacao=org,
+        usuario=user,
+        nome="E1",
+        cnpj=faker_ptbr.cnpj(),
+        tipo="",
+        municipio="Cidade",
+        estado="SC",
+    )
+    Post.objects.create(organizacao=org, autor=user, conteudo="p", tipo_feed="global")
+    Evento.objects.create(
+        organizacao=org,
+        coordenador=user,
+        titulo="Ev",
+        descricao="d",
+        data_inicio=timezone.now(),
+        data_fim=timezone.now(),
+        local="loc",
+        cidade="Cidade",
+        estado="SC",
+        cep="12345-000",
+        status=0,
+        publico_alvo=0,
+        numero_convidados=0,
+        numero_presentes=0,
+        contato_nome="c",
+    )
+    resp = superadmin_user.get(reverse("organizacoes:detail", args=[org.pk]))
+    content = resp.content.decode()
+    assert "Membros" in content and "Núcleos" in content and "Eventos" in content
