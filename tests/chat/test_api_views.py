@@ -64,7 +64,7 @@ def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_u
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     ChatParticipant.objects.create(channel=channel, user=coordenador_user)
     api_client.force_authenticate(admin_user)
-    list_url = reverse("chat_api:chat-messages-list", kwargs={"channel_pk": channel.pk})
+    list_url = f"/api/chat/channels/{channel.id}/messages/"
     resp = api_client.post(list_url, {"tipo": "text", "conteudo": "hi"})
     assert resp.status_code == 201
     msg = ChatMessage.objects.first()
@@ -77,7 +77,7 @@ def test_messages_permission_denied_for_non_participant(api_client: APIClient, a
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     api_client.force_authenticate(coordenador_user)
-    url = reverse("chat_api:chat-messages-list", kwargs={"channel_pk": channel.pk})
+    url = f"/api/chat/channels/{channel.id}/messages/"
     resp = api_client.get(url)
     assert resp.status_code == 403
 
@@ -88,7 +88,7 @@ def test_pin_message(api_client: APIClient, admin_user, coordenador_user):
     ChatParticipant.objects.create(channel=conv, user=coordenador_user)
     msg = ChatMessage.objects.create(channel=conv, remetente=coordenador_user, tipo="text", conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:chat-messages-pin", kwargs={"channel_pk": conv.pk, "pk": msg.pk})
+    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/pin/"
     resp = api_client.post(url)
     assert resp.status_code == 200
     msg.refresh_from_db()
@@ -100,7 +100,7 @@ def test_react_message(api_client: APIClient, admin_user):
     ChatParticipant.objects.create(channel=conv, user=admin_user)
     msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:chat-messages-react", kwargs={"channel_pk": conv.pk, "pk": msg.pk})
+    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/react/"
     resp = api_client.post(url, {"emoji": "👍"})
     assert resp.status_code == 200
     msg.refresh_from_db()
@@ -123,7 +123,7 @@ def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
     for u in (other1, other2, other3):
         ChatParticipant.objects.create(channel=conv, user=u)
     msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
-    url = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg.pk})
+    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/flag/"
     api_client.force_authenticate(other1)
     resp1 = api_client.post(url)
     assert resp1.status_code == 200 and resp1.json()["flags"] == 1
@@ -174,8 +174,8 @@ def test_moderacao_endpoints(api_client: APIClient, admin_user):
         ChatParticipant.objects.create(channel=conv, user=u)
     msg1 = ChatMessage.objects.create(channel=conv, remetente=u1, conteudo="oi")
     msg2 = ChatMessage.objects.create(channel=conv, remetente=u1, conteudo="tchau")
-    url1 = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg1.pk})
-    url2 = reverse("chat_api:chat-messages-flag", kwargs={"channel_pk": conv.pk, "pk": msg2.pk})
+    url1 = f"/api/chat/channels/{conv.id}/messages/{msg1.id}/flag/"
+    url2 = f"/api/chat/channels/{conv.id}/messages/{msg2.id}/flag/"
     for user in (u1, u2, u3):
         api_client.force_authenticate(user)
         api_client.post(url1)

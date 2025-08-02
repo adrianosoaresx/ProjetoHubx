@@ -146,6 +146,8 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsChannelParticipant]
     pagination_class = ChatMessagePagination
     http_method_names = ["get", "post", "head", "options"]
+    lookup_field = "id"
+    lookup_url_kwarg = "pk"
 
     def get_queryset(self):
         channel_id = self.kwargs["channel_pk"]
