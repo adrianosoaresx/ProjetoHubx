@@ -2,7 +2,7 @@ from django import forms
 from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
 
-from .models import ContatoEmpresa, Empresa, Tag
+from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, Tag
 
 
 class EmpresaForm(forms.ModelForm):
@@ -121,3 +121,9 @@ class TagSearchForm(forms.Form):
             }
         ),
     )
+
+
+class AvaliacaoForm(forms.ModelForm):
+    class Meta:
+        model = AvaliacaoEmpresa
+        fields = ["nota", "comentario"]

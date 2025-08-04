@@ -2,8 +2,8 @@ import pytest
 from django.urls import reverse
 from validate_docbr import CNPJ
 
-from empresas.models import Empresa, EmpresaChangeLog
 from empresas.factories import EmpresaFactory
+from empresas.models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
 
 
 @pytest.mark.django_db
@@ -72,6 +72,20 @@ def test_soft_delete_marks_deleted(client, nucleado_user):
     assert empresa.deleted
     resp = client.get(reverse("empresas:lista"))
     assert empresa.nome not in resp.content.decode()
+
+
+@pytest.mark.django_db
+def test_avaliacao_unica_e_media(client, nucleado_user, admin_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    client.force_login(nucleado_user)
+    url = reverse("empresas:avaliacao_criar", args=[empresa.pk])
+    resp = client.post(url, {"nota": 4, "comentario": "ok"})
+    assert resp.status_code in (302, 200)
+    # segunda tentativa deve redirecionar para edição
+    resp = client.post(url, {"nota": 5}, follow=True)
+    assert AvaliacaoEmpresa.objects.filter(empresa=empresa, usuario=nucleado_user).count() == 1
+    AvaliacaoEmpresa.objects.create(empresa=empresa, usuario=admin_user, nota=2)
+    assert empresa.media_avaliacoes() == 3
 
 
 @pytest.mark.django_db

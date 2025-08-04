@@ -1,6 +1,8 @@
 # Empresas
 
-Modúlo responsável pelo cadastro e gerenciamento de empresas.
+Módulo responsável pelo cadastro e gerenciamento de empresas. Todos os
+modelos utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`,
+fornecendo campos padronizados de criação/atualização e exclusão lógica.
 
 ## Rotas principais
 

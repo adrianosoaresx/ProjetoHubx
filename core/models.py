@@ -32,6 +32,14 @@ class SoftDeleteModel(models.Model):
             return
         super().delete(using=using, keep_parents=keep_parents)
 
+    def soft_delete(self) -> None:
+        """Atalho para executar a exclusão lógica."""
+        self.delete()
+
+    def hard_delete(self, using: str | None = None, keep_parents: bool = False) -> None:
+        """Remove definitivamente o registro."""
+        super().delete(using=using, keep_parents=keep_parents)
+
 
 class SoftDeleteManager(models.Manager):
     """Manager que retorna apenas objetos não deletados logicamente."""

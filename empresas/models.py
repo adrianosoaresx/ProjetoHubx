@@ -5,10 +5,10 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
+from django.db.models import Avg
 from validate_docbr import CNPJ
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
 
 class Tag(TimeStampedModel):
@@ -33,7 +33,7 @@ class Tag(TimeStampedModel):
         return self.nome
 
 
-class Empresa(TimeStampedModel):
+class Empresa(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="empresas")
     organizacao = models.ForeignKey("organizacoes.Organizacao", on_delete=models.CASCADE, related_name="empresas")
@@ -46,7 +46,9 @@ class Empresa(TimeStampedModel):
     descricao = models.TextField(blank=True)
     palavras_chave = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
-    deleted = models.BooleanField(default=False)
+
+    objects = models.Manager()
+    ativos = SoftDeleteManager()
 
     class Meta:
         ordering = ["nome"]
@@ -69,13 +71,13 @@ class Empresa(TimeStampedModel):
     # ------------------------------------------------------------------
     # Soft delete
     # ------------------------------------------------------------------
-    def soft_delete(self) -> None:
+    def soft_delete(self) -> None:  # pragma: no cover - simples
         """Marca o registro como excluído sem removê-lo do banco."""
-        self.deleted = True
-        self.save(update_fields=["deleted"])
+        super().soft_delete()
 
-    def delete(self, using=None, keep_parents=False):  # type: ignore[override]
-        self.soft_delete()
+    def media_avaliacoes(self) -> float:
+        """Retorna a média das avaliações da empresa."""
+        return self.avaliacoes.filter(deleted=False).aggregate(avg=Avg("nota"))["avg"] or 0
 
 
 class ContatoEmpresa(TimeStampedModel):
@@ -102,34 +104,37 @@ class ContatoEmpresa(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class EmpresaChangeLog(models.Model):
+class EmpresaChangeLog(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="logs")
-    usuario = models.ForeignKey(
-        get_user_model(), on_delete=models.SET_NULL, null=True, blank=True
-    )
+    usuario = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     campo_alterado = models.CharField(max_length=50)
     valor_antigo = models.TextField(blank=True)
     valor_novo = models.TextField(blank=True)
-    alterado_em = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()
+    ativos = SoftDeleteManager()
 
     class Meta:
-        ordering = ["-alterado_em"]
+        ordering = ["-created_at"]
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.empresa.nome} - {self.campo_alterado}"
 
 
-class AvaliacaoEmpresa(ExtTimeStampedModel):
+class AvaliacaoEmpresa(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="avaliacoes")
     usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     nota = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comentario = models.TextField(blank=True)
 
+    objects = models.Manager()
+    ativos = SoftDeleteManager()
+
     class Meta:
         unique_together = ("empresa", "usuario")
-        ordering = ["-created"]
+        ordering = ["-created_at"]
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.empresa.nome} - {self.usuario.email}"

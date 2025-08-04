@@ -64,6 +64,33 @@
     </div>
   {% endif %}
 
+  <div class="mt-8">
+    <h2 class="text-lg font-semibold text-neutral-900">Avaliações</h2>
+    <p class="text-sm text-neutral-600">Média: {{ media_avaliacoes|floatformat:1 }}/5</p>
+    {% if avaliacoes %}
+      <ul class="mt-2 space-y-2">
+        {% for avaliacao in avaliacoes %}
+          <li class="border border-neutral-200 rounded p-2">
+            <strong>{{ avaliacao.usuario.get_full_name|default:avaliacao.usuario.email }}</strong>
+            - {{ avaliacao.nota }}/5
+            {% if avaliacao.comentario %}
+              <p class="text-sm">{{ avaliacao.comentario }}</p>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-neutral-500">Nenhuma avaliação registrada.</p>
+    {% endif %}
+    {% if request.user.is_authenticated %}
+      {% if avaliacao_usuario %}
+        <a href="{% url 'empresas:avaliacao_editar' empresa.id %}" class="inline-block mt-2 text-primary-700 hover:underline">Editar avaliação</a>
+      {% else %}
+        <a href="{% url 'empresas:avaliacao_criar' empresa.id %}" class="inline-block mt-2 text-primary-700 hover:underline">Avaliar empresa</a>
+      {% endif %}
+    {% endif %}
+  </div>
+
   <div class="flex justify-end gap-3 mt-8">
     <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
     <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Histórico</a>
