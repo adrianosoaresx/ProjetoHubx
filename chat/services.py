@@ -3,15 +3,14 @@ from __future__ import annotations
 from typing import Iterable, Optional
 
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.utils import timezone
 
-from django.db import IntegrityError
-
-from .models import ChatChannel, ChatMessage, ChatMessageFlag, ChatParticipant
 from .metrics import (
     chat_mensagens_ocultadas_total,
     chat_mensagens_sinalizadas_total,
 )
+from .models import ChatChannel, ChatMessage, ChatMessageFlag, ChatParticipant
 
 User = get_user_model()
 
@@ -67,7 +66,6 @@ def enviar_mensagem(
         tipo=tipo,
         conteudo=conteudo,
         arquivo=arquivo,
-        timestamp=timezone.now(),
     )
     return msg
 
@@ -87,14 +85,12 @@ def sinalizar_mensagem(mensagem: ChatMessage, user: User) -> int:
     """
     try:
         ChatMessageFlag.objects.create(message=mensagem, user=user)
-        chat_mensagens_sinalizadas_total.labels(
-            canal_tipo=mensagem.channel.contexto_tipo
-        ).inc()
+        chat_mensagens_sinalizadas_total.labels(canal_tipo=mensagem.channel.contexto_tipo).inc()
     except IntegrityError:
         raise ValueError("Mensagem já sinalizada pelo usuário")
     total = mensagem.flags.count()
     if total >= 3 and not mensagem.hidden_at:
         mensagem.hidden_at = timezone.now()
-        mensagem.save(update_fields=["hidden_at", "updated_at"])
+        mensagem.save(update_fields=["hidden_at", "modified"])
         chat_mensagens_ocultadas_total.inc()
     return total

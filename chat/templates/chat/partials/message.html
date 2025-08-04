@@ -10,7 +10,7 @@
   <div class="flex-1">
     <header class="flex items-center gap-2 text-xs text-gray-500">
       <span class="font-semibold text-gray-700">{{ m.remetente.username }}</span>
-      <time datetime="{{ m.timestamp|date:'c' }}">{{ m.timestamp|date:"d/m/Y H:i" }}</time>
+      <time datetime="{{ m.created|date:'c' }}">{{ m.created|date:"d/m/Y H:i" }}</time>
       {% if m.pinned_at %}<span class="text-primary" aria-label="{% trans 'Mensagem fixada' %}">📌</span>{% endif %}
       {% if m.hidden_at %}<span class="text-red-500">{% trans "Oculta" %}</span>{% endif %}
     </header>

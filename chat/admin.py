@@ -5,12 +5,12 @@ from .models import ChatChannel, ChatMessage, ChatNotification, RelatorioChatExp
 
 @admin.register(ChatChannel)
 class ChatChannelAdmin(admin.ModelAdmin):
-    list_display = ["titulo", "created_at"]
+    list_display = ["titulo", "created"]
 
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ["remetente", "channel", "tipo", "pinned_at", "timestamp"]
+    list_display = ["remetente", "channel", "tipo", "pinned_at", "created"]
 
 
 @admin.register(ChatNotification)
@@ -20,4 +20,4 @@ class ChatNotificationAdmin(admin.ModelAdmin):
 
 @admin.register(RelatorioChatExport)
 class RelatorioChatExportAdmin(admin.ModelAdmin):
-    list_display = ["channel", "formato", "gerado_por", "created_at"]
+    list_display = ["channel", "formato", "gerado_por", "created"]

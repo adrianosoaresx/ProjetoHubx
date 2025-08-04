@@ -21,10 +21,10 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             "titulo",
             "descricao",
             "imagem",
-            "created_at",
-            "updated_at",
+            "created",
+            "modified",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "created", "modified"]
 
     def create(self, validated_data: dict[str, Any]) -> ChatChannel:
         request = self.context["request"]
@@ -44,7 +44,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: ChatChannel) -> dict[str, Any]:
         data = super().to_representation(instance)
         data["participantes"] = instance.participants.count()
-        last_msg = instance.messages.select_related("remetente").order_by("-timestamp").first()
+        last_msg = instance.messages.select_related("remetente").order_by("-created").first()
         if last_msg:
             data["ultima_mensagem"] = ChatMessageSerializer(last_msg, context=self.context).data
         return data
@@ -65,12 +65,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "reactions",
             "pinned_at",
             "hidden_at",
-            "timestamp",
+            "created",
         ]
         read_only_fields = [
             "id",
             "remetente",
-            "timestamp",
+            "created",
             "pinned_at",
             "hidden_at",
             "channel",
@@ -104,5 +104,5 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 class ChatNotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatNotification
-        fields = ["id", "usuario", "mensagem", "lido", "created_at"]
-        read_only_fields = ["id", "created_at"]
+        fields = ["id", "usuario", "mensagem", "lido", "created"]
+        read_only_fields = ["id", "created"]
