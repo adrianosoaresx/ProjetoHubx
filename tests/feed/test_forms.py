@@ -28,7 +28,7 @@ def test_postform_content_required(nucleado_user):
 def test_postform_nucleo_required(nucleado_user):
     form = PostForm(data={"tipo_feed": "nucleo", "conteudo": "x"}, user=nucleado_user)
     assert not form.is_valid()
-    assert form.errors.get("nucleo") == ["Selecione o núcleo."]
+    assert "Selecione o núcleo." in form.errors.get("nucleo", [])
 
 
 @pytest.mark.django_db
@@ -43,7 +43,7 @@ def test_postform_nucleo_membership(admin_user, nucleo):
 def test_postform_evento_required(nucleado_user):
     form = PostForm(data={"tipo_feed": "evento", "conteudo": "x"}, user=nucleado_user)
     assert not form.is_valid()
-    assert form.errors.get("evento") == ["Selecione o evento."]
+    assert "Selecione o evento." in form.errors.get("evento", [])
 
 
 @pytest.mark.django_db

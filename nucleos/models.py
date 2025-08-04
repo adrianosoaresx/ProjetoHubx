@@ -14,7 +14,7 @@ from core.models import SoftDeleteModel, TimeStampedModel
 User = get_user_model()
 
 
-class ParticipacaoNucleo(models.Model):
+class ParticipacaoNucleo(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participacoes")
     nucleo = models.ForeignKey("Nucleo", on_delete=models.CASCADE, related_name="participacoes")
     is_coordenador = models.BooleanField(default=False)
@@ -43,7 +43,6 @@ class ParticipacaoNucleo(models.Model):
         verbose_name_plural = "Participações nos Núcleos"
 
 
-
 class Nucleo(TimeStampedModel, SoftDeleteModel):
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
@@ -56,13 +55,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
-    membros = models.ManyToManyField(
-        User,
-        through="ParticipacaoNucleo",
-        through_fields=("nucleo", "user"),
-        related_name="nucleos",
-    )
-    data_criacao = models.DateField(auto_now_add=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
 
@@ -74,16 +66,17 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         return self.nome
 
     @property
-    def membros_aprovados(self):
-        """Retorna apenas os usuários com participação aprovada."""
-        return self.membros.filter(participacoes__status="aprovado")
+    def membros(self):
+        return User.objects.filter(participacoes__nucleo=self, participacoes__status="aprovado")
 
     @property
     def coordenadores(self):
-        return self.membros.filter(participacoes__status="aprovado", participacoes__is_coordenador=True)
+        return self.membros.filter(participacoes__is_coordenador=True)
 
     def soft_delete(self) -> None:
-        self.delete()
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=["deleted", "deleted_at"])
 
     def save(self, *args, **kwargs):
         if self.slug:
@@ -91,7 +84,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         super().save(*args, **kwargs)
 
 
-class CoordenadorSuplente(models.Model):
+class CoordenadorSuplente(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nucleo = models.ForeignKey(
         Nucleo,
@@ -103,8 +96,8 @@ class CoordenadorSuplente(models.Model):
         on_delete=models.CASCADE,
         related_name="suplencias",
     )
-    periodo_inicio = models.DateTimeField()
-    periodo_fim = models.DateTimeField()
+    inicio = models.DateTimeField()
+    fim = models.DateTimeField()
 
     class Meta:
         verbose_name = "Coordenador Suplente"

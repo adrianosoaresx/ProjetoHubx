@@ -82,8 +82,8 @@ def nucleado_user(db, organizacao):
 @pytest.fixture
 def nucleo(db, organizacao, coordenador_user, nucleado_user):
     n = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=nucleado_user, nucleo=n, is_coordenador=False)
-    ParticipacaoNucleo.objects.create(user=coordenador_user, nucleo=n, is_coordenador=True)
+    ParticipacaoNucleo.objects.create(user=nucleado_user, nucleo=n, is_coordenador=False, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=coordenador_user, nucleo=n, is_coordenador=True, status="aprovado")
     return n
 
 

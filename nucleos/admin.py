@@ -5,7 +5,7 @@ from .models import Nucleo, ParticipacaoNucleo
 
 @admin.register(Nucleo)
 class NucleoAdmin(admin.ModelAdmin):
-    list_display = ["nome", "organizacao", "data_criacao", "avatar", "cover"]
+    list_display = ["nome", "organizacao", "created_at", "avatar", "cover"]
 
 
 @admin.register(ParticipacaoNucleo)

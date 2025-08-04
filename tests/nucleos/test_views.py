@@ -79,7 +79,7 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
     )
     part.refresh_from_db()
     assert part.status == "aprovado"
-    assert list(nucleo.membros_aprovados) == [membro_user]
+    assert list(nucleo.membros) == [membro_user]
 
 
 def test_exportar_membros_csv(client, admin_user, organizacao):

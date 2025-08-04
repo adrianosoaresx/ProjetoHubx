@@ -24,7 +24,7 @@
           <p class="text-sm text-gray-500">{{ nucleo.slug }}</p>
         </div>
       </div>
-      <p class="text-sm mt-2">{% trans "Membros" %}: {{ nucleo.membros_aprovados.count }}</p>
+      <p class="text-sm mt-2">{% trans "Membros" %}: {{ nucleo.membros.count }}</p>
       <div class="mt-2">
         <a href="{% url 'nucleos:detail' nucleo.pk %}" class="text-blue-600">{% trans 'Detalhes' %}</a>
         {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' or request.user.user_type == 'root' %}

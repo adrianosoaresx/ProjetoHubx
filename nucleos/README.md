@@ -20,3 +20,9 @@ Permissões:
 - Coordenadores podem gerenciar membros e inativar núcleos.
 - Todas as views exigem autenticação.
 
+Modelos:
+
+- `Nucleo`, `ParticipacaoNucleo` e `CoordenadorSuplente` utilizam o mixin `TimeStampedModel`.
+- `Nucleo` também herda de `SoftDeleteModel`, permitindo exclusão lógica via `soft_delete()`.
+- Participações aprovadas podem ser acessadas pelo atributo `nucleo.membros` e coordenadores por `nucleo.coordenadores`.
+
