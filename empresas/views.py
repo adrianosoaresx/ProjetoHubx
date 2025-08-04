@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
@@ -17,9 +17,9 @@ from core.permissions import (
     pode_crud_empresa,
 )
 
-from .forms import ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
-from .models import ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
-from .services import LOG_FIELDS, list_all_tags, registrar_alteracoes, search_empresas
+from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
+from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
+from .services import list_all_tags, search_empresas
 
 
 class EmpresaListView(LoginRequiredMixin, ListView):
@@ -88,15 +88,30 @@ class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        old_data = {campo: getattr(form.instance, campo) for campo in LOG_FIELDS}
         try:
             response = super().form_valid(form)
         except IntegrityError:
             form.add_error("cnpj", _("Empresa com este CNPJ já existe."))
             return self.form_invalid(form)
-        registrar_alteracoes(self.request.user, self.object, old_data)
         messages.success(self.request, _("Empresa atualizada com sucesso."))
         return response
+
+
+class EmpresaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Empresa
+    template_name = "empresas/confirmar_remocao.html"
+    success_url = reverse_lazy("empresas:lista")
+
+    def test_func(self):
+        return pode_crud_empresa(self.request.user, self.get_object())
+
+    def delete(self, request, *args, **kwargs):  # type: ignore[override]
+        empresa = self.get_object()
+        empresa.soft_delete()
+        if request.headers.get("HX-Request"):
+            return JsonResponse({"message": "Empresa removida com sucesso."}, status=HTTP_204_NO_CONTENT)
+        messages.success(request, _("Empresa removida com sucesso."))
+        return redirect(self.success_url)
 
 
 class TagListView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView):
@@ -176,6 +191,44 @@ class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView
         return context
 
 
+class AvaliacaoCreateView(LoginRequiredMixin, CreateView):
+    model = AvaliacaoEmpresa
+    form_class = AvaliacaoForm
+    template_name = "empresas/avaliacao_form.html"
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        self.empresa = get_object_or_404(Empresa, pk=kwargs["empresa_id"])
+        if AvaliacaoEmpresa.objects.filter(empresa=self.empresa, usuario=request.user, deleted=False).exists():
+            return redirect("empresas:avaliacao_editar", empresa_id=self.empresa.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        form.instance.empresa = self.empresa
+        messages.success(self.request, _("Avaliação registrada com sucesso."))
+        return super().form_valid(form)
+
+    def get_success_url(self):  # type: ignore[override]
+        return reverse("empresas:detail", args=[self.empresa.pk])
+
+
+class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
+    model = AvaliacaoEmpresa
+    form_class = AvaliacaoForm
+    template_name = "empresas/avaliacao_form.html"
+
+    def get_object(self, queryset=None):  # type: ignore[override]
+        self.empresa = get_object_or_404(Empresa, pk=self.kwargs["empresa_id"])
+        return get_object_or_404(AvaliacaoEmpresa, empresa=self.empresa, usuario=self.request.user)
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Avaliação atualizada com sucesso."))
+        return super().form_valid(form)
+
+    def get_success_url(self):  # type: ignore[override]
+        return reverse("empresas:detail", args=[self.empresa.pk])
+
+
 # ------------------------------------------------------------------
 # DETALHAR
 # ------------------------------------------------------------------
@@ -190,11 +243,18 @@ def detalhes_empresa(request, pk):
         return HttpResponseForbidden()
     prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)
     serv_tags = empresa.tags.filter(categoria=Tag.Categoria.SERVICO)
+    avaliacoes = empresa.avaliacoes.filter(deleted=False).select_related("usuario")
+    avaliacao_usuario = None
+    if request.user.is_authenticated:
+        avaliacao_usuario = avaliacoes.filter(usuario=request.user).first()
     context = {
         "empresa": empresa,
         "empresa_tags": empresa.tags.all(),
         "prod_tags": prod_tags,
         "serv_tags": serv_tags,
+        "avaliacoes": avaliacoes,
+        "media_avaliacoes": empresa.media_avaliacoes(),
+        "avaliacao_usuario": avaliacao_usuario,
     }
     return render(request, "empresas/detail.htm", context)
 
@@ -202,23 +262,6 @@ def detalhes_empresa(request, pk):
 # ------------------------------------------------------------------
 # DELETAR
 # ------------------------------------------------------------------
-@login_required
-@no_superadmin_required
-def remover_empresa(request, pk):
-    empresa = get_object_or_404(Empresa, pk=pk)
-
-    if not pode_crud_empresa(request.user, empresa):
-        return HttpResponseForbidden("Usuário não autorizado a remover esta empresa.")
-
-    if request.method == "POST":
-        empresa.soft_delete()
-        if request.headers.get("HX-Request"):
-            return JsonResponse({"message": "Empresa removida com sucesso."}, status=204)
-        return redirect("empresas:lista")
-
-    return render(request, "empresas/confirmar_remocao.html", {"empresa": empresa})
-
-
 @login_required
 @no_superadmin_required
 def adicionar_contato(request, empresa_id):

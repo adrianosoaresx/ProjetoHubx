@@ -31,6 +31,10 @@
         {% endfor %}
       </select>
     </div>
+    <div>
+      <label for="q" class="block text-sm font-medium text-neutral-700">{% translate "Busca" %}</label>
+      <input type="text" id="q" name="q" value="{{ request.GET.q }}" class="w-full p-2 border rounded" />
+    </div>
     <div class="flex items-end">
       <button type="submit" class="w-full bg-primary-600 text-white p-2 rounded hover:bg-primary-700">{% translate "Filtrar" %}</button>
     </div>

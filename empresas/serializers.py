@@ -47,20 +47,9 @@ class EmpresaSerializer(serializers.ModelSerializer):
     def update(self, instance: Empresa, validated_data: dict) -> Empresa:
         request = self.context.get("request")
         tags_data = request.data.getlist("tags") if request else []
-        old_values = {field: getattr(instance, field) for field in validated_data}
         instance = super().update(instance, validated_data)
         if tags_data:
             instance.tags.set(Tag.objects.filter(pk__in=tags_data))
-        for field, old in old_values.items():
-            new = getattr(instance, field)
-            if old != new:
-                EmpresaChangeLog.objects.create(
-                    empresa=instance,
-                    usuario=getattr(request, "user", None),
-                    campo_alterado=field,
-                    valor_antigo=old,
-                    valor_novo=new,
-                )
         return instance
 
 
@@ -74,7 +63,7 @@ class EmpresaChangeLogSerializer(serializers.ModelSerializer):
             "campo_alterado",
             "valor_antigo",
             "valor_novo",
-            "alterado_em",
+            "created_at",
             "usuario_email",
         ]
 
@@ -91,7 +80,7 @@ class AvaliacaoEmpresaSerializer(serializers.ModelSerializer):
             "usuario_email",
             "nota",
             "comentario",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["empresa", "usuario", "created", "modified"]
+        read_only_fields = ["empresa", "usuario", "created_at", "updated_at"]

@@ -98,12 +98,26 @@ LOG_FIELDS = [
     "descricao",
     "palavras_chave",
     "logo",
+    "tags",
 ]
 
 
 def registrar_alteracoes(usuario, empresa, old_data):
     """Registra alterações nos campos relevantes."""
     for campo in LOG_FIELDS:
+        if campo == "tags":
+            antigo = ", ".join(old_data.get("tags", []))
+            novo_lista = list(empresa.tags.values_list("nome", flat=True))
+            novo = ", ".join(novo_lista)
+            if set(old_data.get("tags", [])) != set(novo_lista):
+                EmpresaChangeLog.objects.create(
+                    empresa=empresa,
+                    usuario=usuario,
+                    campo_alterado=campo,
+                    valor_antigo=antigo,
+                    valor_novo=novo,
+                )
+            continue
         antigo = old_data.get(campo)
         novo = getattr(empresa, campo)
         if antigo != novo:
