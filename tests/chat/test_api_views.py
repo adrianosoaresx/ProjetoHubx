@@ -68,7 +68,7 @@ def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_u
     resp = api_client.post(list_url, {"tipo": "text", "conteudo": "hi"})
     assert resp.status_code == 201
     msg = ChatMessage.objects.first()
-    resp = api_client.get(list_url, {"desde": msg.timestamp.isoformat()})
+    resp = api_client.get(list_url, {"desde": msg.created.isoformat()})
     assert resp.status_code == 200
     assert resp.json()["count"] >= 1
 
@@ -194,3 +194,4 @@ def test_moderacao_endpoints(api_client: APIClient, admin_user):
     resp_r = api_client.post(remove_url)
     assert resp_r.status_code == 204
     assert not ChatMessage.objects.filter(pk=msg2.pk).exists()
+    assert ChatMessage.all_objects.filter(pk=msg2.pk).exists()

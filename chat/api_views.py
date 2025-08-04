@@ -155,7 +155,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             ChatMessage.objects.filter(channel_id=channel_id)
             .select_related("remetente")
             .prefetch_related("lido_por")
-            .order_by("timestamp")
+            .order_by("created")
         )
 
     def perform_create(self, serializer: ChatMessageSerializer) -> None:
@@ -169,11 +169,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         if desde:
             dt = parse_datetime(desde)
             if dt:
-                queryset = queryset.filter(timestamp__gte=dt)
+                queryset = queryset.filter(created__gte=dt)
         if ate:
             dt = parse_datetime(ate)
             if dt:
-                queryset = queryset.filter(timestamp__lte=dt)
+                queryset = queryset.filter(created__lte=dt)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -223,7 +223,7 @@ class ModeracaoViewSet(viewsets.ViewSet):
                 "conteudo": m.conteudo,
                 "remetente": m.remetente.username,
                 "canal": str(m.channel_id),
-                "timestamp": m.timestamp.isoformat(),
+                "created": m.created.isoformat(),
                 "flags": m.flags_count,
                 "hidden": bool(m.hidden_at),
             }
@@ -236,7 +236,7 @@ class ModeracaoViewSet(viewsets.ViewSet):
         msg = get_object_or_404(ChatMessage, pk=pk)
         msg.hidden_at = None
         msg.flags.all().delete()
-        msg.save(update_fields=["hidden_at", "updated_at"])
+        msg.save(update_fields=["hidden_at", "modified"])
         ChatModerationLog.objects.create(message=msg, action="approve", moderator=request.user)
         return Response({"status": "approved"})
 
@@ -247,6 +247,3 @@ class ModeracaoViewSet(viewsets.ViewSet):
         msg.notificacoes.all().delete()
         msg.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-

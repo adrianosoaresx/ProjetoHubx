@@ -6,12 +6,19 @@ Celery e Django Channels.
 
 ## Entidades
 
-- **ChatChannel** – canal de conversa associado a um contexto (núcleo, evento,
-  organização ou privado).
+Todos os modelos utilizam `TimeStampedModel`, expondo os campos
+`created` e `modified`. Quando necessário, a exclusão lógica é feita
+com `SoftDeleteModel`, que adiciona `deleted` e `deleted_at`. Registros
+removidos podem ser acessados via `Model.all_objects` e restaurados
+definindo `deleted=False` e `deleted_at=None`.
+
+- **ChatChannel** – canal de conversa associado a um contexto (núcleo,
+  evento, organização ou privado). Possui exclusão lógica.
 - **ChatParticipant** – relação de usuários com o canal, indicando
   proprietários e administradores.
 - **ChatMessage** – mensagens enviadas no canal, com suporte a texto,
-  arquivos e reações.
+  arquivos e reações. Possui exclusão lógica e campos de moderação
+  como `hidden_at` e `pinned_at`.
 - **RelatorioChatExport** – registro de solicitações de exportação de
   histórico.
 
@@ -48,8 +55,8 @@ Authorization: Bearer <token>
 
 Parâmetros opcionais:
 
-- `desde=<timestamp>` – mensagens a partir de uma data/hora.
-- `ate=<timestamp>` – mensagens até uma data/hora.
+- `desde=<ISO8601>` – mensagens a partir de uma data/hora.
+- `ate=<ISO8601>` – mensagens até uma data/hora.
 
 ### Exportar histórico
 
@@ -89,5 +96,5 @@ reações, pins e moderação para todos os conectados.
 ## Exportação de histórico
 
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,
-`tipo`, `conteudo` e `timestamp`. No formato CSV, o cabeçalho segue a
+`tipo`, `conteudo` e `created`. No formato CSV, o cabeçalho segue a
 mesma estrutura. Mensagens ocultas por moderação são ignoradas.

@@ -17,7 +17,7 @@ User = get_user_model()
 
 @login_required
 def conversation_list(request):
-    last_msg = ChatMessage.objects.filter(channel=OuterRef("pk")).order_by("-timestamp")
+    last_msg = ChatMessage.objects.filter(channel=OuterRef("pk")).order_by("-created")
     unread = (
         ChatNotification.objects.filter(usuario=request.user, mensagem__channel=OuterRef("pk"), lido=False)
         .values("mensagem__channel")
@@ -29,7 +29,7 @@ def conversation_list(request):
         .prefetch_related("participants")
         .annotate(
             last_message_text=Subquery(last_msg.values("conteudo")[:1]),
-            last_message_at=Subquery(last_msg.values("timestamp")[:1]),
+            last_message_at=Subquery(last_msg.values("created")[:1]),
             unread_count=Subquery(unread),
         )
         .distinct()
