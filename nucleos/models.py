@@ -102,3 +102,26 @@ class CoordenadorSuplente(TimeStampedModel):
     class Meta:
         verbose_name = "Coordenador Suplente"
         verbose_name_plural = "Coordenadores Suplentes"
+
+
+class ConviteNucleo(models.Model):
+    token = models.CharField(max_length=36, unique=True, default=uuid.uuid4, editable=False)
+    email = models.EmailField()
+    papel = models.CharField(
+        max_length=20,
+        choices=[("membro", "Membro"), ("coordenador", "Coordenador")],
+    )
+    usado_em = models.DateTimeField(null=True, blank=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    nucleo = models.ForeignKey(Nucleo, on_delete=models.CASCADE)
+
+    def expirado(self) -> bool:
+        from django.conf import settings
+        from datetime import timedelta
+
+        dias = getattr(settings, "CONVITE_NUCLEO_EXPIRACAO_DIAS", 7)
+        return self.criado_em + timedelta(days=dias) < timezone.now()
+
+    class Meta:
+        verbose_name = "Convite para Núcleo"
+        verbose_name_plural = "Convites para Núcleos"

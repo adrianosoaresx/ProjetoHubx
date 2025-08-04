@@ -24,7 +24,8 @@
           {% for n in nucleos %}
             <option value="{{ n.id }}">{{ n.nome }}</option>
           {% endfor %}
-	@@ -28,21 +29,21 @@ <h1 class="text-2xl font-semibold mb-2">Relatórios</h1>
+        </select>
+      </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
@@ -42,7 +43,7 @@
   <div id="relatorio" class="mt-6"></div>
   <div class="mt-4 flex gap-4">
     <a href="#" id="export-csv" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar relatório em CSV') }}">{{ _('Exportar CSV') }}</a>
-    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar relatório em XLSX') }}">{{ _('Exportar XLSX') }}</a>
+    <a href="#" id="export-pdf" class="text-primary underline" hx-boost="false" aria-label="{{ _('Exportar relatório em PDF') }}">{{ _('Exportar PDF') }}</a>
   </div>
 </section>
 

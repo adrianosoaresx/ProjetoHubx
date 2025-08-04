@@ -7,16 +7,18 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
+from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo, ConviteNucleo
 from .serializers import (
     CoordenadorSuplenteSerializer,
     NucleoSerializer,
     ParticipacaoNucleoSerializer,
+    ConviteNucleoSerializer,
 )
 from .tasks import (
     notify_exportacao_membros,
@@ -32,6 +34,48 @@ class IsAdminOrCoordenador(IsAuthenticated):
             return False
         tipo = request.user.get_tipo_usuario
         return tipo in {"admin", "coordenador", "root"}
+
+
+class IsAdmin(IsAuthenticated):
+    def has_permission(self, request, view):
+        if not super().has_permission(request, view):
+            return False
+        tipo = request.user.get_tipo_usuario
+        return tipo in {"admin", "root"}
+
+
+class ConviteNucleoCreateAPIView(APIView):
+    permission_classes = [IsAdmin]
+
+    def post(self, request):
+        serializer = ConviteNucleoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        convite = ConviteNucleo.objects.create(**serializer.validated_data)
+        out = ConviteNucleoSerializer(convite)
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+class AceitarConviteAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        token = request.query_params.get("token")
+        convite = get_object_or_404(ConviteNucleo, token=token)
+        if convite.usado_em or convite.expirado():
+            return Response({"detail": _("Convite inválido ou expirado.")}, status=400)
+        if request.user.email.lower() != convite.email.lower():
+            return Response({"detail": _("Este convite não pertence a você.")}, status=403)
+        ParticipacaoNucleo.objects.get_or_create(
+            user=request.user,
+            nucleo=convite.nucleo,
+            defaults={
+                "status": "aprovado",
+                "is_coordenador": convite.papel == "coordenador",
+            },
+        )
+        convite.usado_em = timezone.now()
+        convite.save(update_fields=["usado_em"])
+        return Response({"detail": _("Convite aceito com sucesso.")})
 
 
 class NucleoViewSet(viewsets.ModelViewSet):
@@ -135,3 +179,52 @@ class NucleoViewSet(viewsets.ModelViewSet):
         response = HttpResponse(output.getvalue(), content_type="text/csv")
         response["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
         return response
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="relatorio",
+        permission_classes=[IsAdmin],
+    )
+    def relatorio(self, request):
+        formato = request.query_params.get("formato", "csv")
+        nucleos = Nucleo.objects.filter(deleted=False)
+        from agenda.models import Evento
+
+        dados = []
+        for n in nucleos:
+            membros = n.participacoes.filter(status="aprovado").count()
+            eventos = Evento.objects.filter(nucleo=n)
+            datas = ";".join(
+                e.data_inicio.isoformat() for e in eventos if getattr(e, "data_inicio", None)
+            )
+            dados.append([n.nome, membros, eventos.count(), datas])
+
+        if formato == "pdf":
+            from reportlab.pdfgen import canvas
+
+            buffer = io.BytesIO()
+            p = canvas.Canvas(buffer)
+            y = 800
+            p.drawString(50, y, "Relatório de Núcleos")
+            y -= 20
+            for row in dados:
+                p.drawString(
+                    50, y, f"{row[0]} - Membros: {row[1]} Eventos: {row[2]} Datas: {row[3]}"
+                )
+                y -= 20
+            p.showPage()
+            p.save()
+            buffer.seek(0)
+            resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+            resp["Content-Disposition"] = "attachment; filename=relatorio-nucleos.pdf"
+            return resp
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["Núcleo", "Membros", "Eventos", "Datas"])
+        for row in dados:
+            writer.writerow(row)
+        resp = HttpResponse(output.getvalue(), content_type="text/csv")
+        resp["Content-Disposition"] = "attachment; filename=relatorio-nucleos.csv"
+        return resp
