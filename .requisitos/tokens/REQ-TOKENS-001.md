@@ -7,14 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Tokens_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Tokens gerencia a criação, validação e expiração de tokens de acesso para diferentes perfis de usuário (admin, associado, nucleado, coordenador e convidado), assegurando segurança e rastreabilidade no Hubx.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Geração de tokens únicos para acesso a funcionalidades específicas.
   - Validação e expiração automática de tokens.
@@ -23,6 +25,7 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
 - **Exclui**:
   - Autenticação completa (delegado ao App Accounts).
   - Log de sessões e devices.
+
 
 ## 3. Requisitos Funcionais
 
@@ -51,6 +54,7 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
   - Prioridade: Alta
   - Critérios de Aceite: Regras de permissão aplicadas (root→admin, admin→associado/nucleado/coordenador, coordenador→convidado).
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -71,6 +75,7 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -93,13 +98,19 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
 1. Scheduler ou validação em uso detecta `data_expiracao < agora`.  
 2. Sistema atualiza `estado='expirado'`.
 
+
 ## 6. Regras de Negócio
+
+
 - Token pode ser usado apenas se `estado='novo'` e `data_expiracao > agora`.  
 - Após uso válido, `estado` muda para `usado`.  
 - Associação automática de `usuario`, `organizacao` e `nucleos` conforme `tipo_destino`.  
 - Perfis sem permissão para geração devem receber erro 403.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **TokenAcesso**  
@@ -110,9 +121,12 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
   - gerado_por: FK → User.id  
   - usuario: FK → User.id (opcional)  
   - organizacao: FK → Organizacao.id  
-  - nucleos: M2M → Nucleo.id (opcional)  
+  - nucleos: M2M → Nucleo.id (opcional)
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gerenciamento de Tokens
   Scenario: Gerar token para associado
@@ -126,17 +140,18 @@ Feature: Gerenciamento de Tokens
     Then retorna HTTP 409 Conflict
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: validação de `gerado_por` e `usuario`.  
 - **App Organizações/Núcleos**: validação de escopo.  
 - **Scheduler**: expiração automática de tokens.  
 - **Redis**: cache temporário de tokens para alta performance.  
 - **Sentry**: log de erros em geração/validação.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Tokens_Hubx.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Limitar a geração de tokens a no máximo 5 por usuário por dia. Requisições acima deste limite retornam erro 429.  
@@ -151,4 +166,4 @@ Feature: Gerenciamento de Tokens
 - Criar tabela `TokenUsoLog` com campos: id, token_codigo, usuario_id, acao (`geracao`,`validacao`,`uso`,`revogacao`), ip, timestamp.  
 
 ### Regras de Negócio Adicionais
-- Requisições de geração acima de 5 tokens/dia devem ser bloqueadas.  
+- Requisições de geração acima de 5 tokens/dia devem ser bloqueadas.

@@ -7,19 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source:
-  - Requisitos_Eventos_Hubx.pdf
-  - Requisitos_InscricaoEvento_Hubx.pdf
-  - Requisitos_MaterialDivulgacaoEvento_Hubx.pdf
-  - Requisitos_ParceriaEvento_Hubx.pdf
-  - Requisitos_BriefingEvento_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclusão de eventos; inscrições de usuários; materiais de divulgação; parcerias e patrocínios; e briefing de eventos.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - CRUD de eventos (título, descrição, datas, localizações).  
   - Gestão de inscrições: registro de presença, avaliação e pagamentos.  
@@ -29,6 +26,7 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 - **Exclui**:
   - Comunicação em tempo real (delegada a App Chat).  
   - Gestão de contas ou organizações (delegadas a Apps Accounts e Organizações).
+
 
 ## 3. Requisitos Funcionais
 
@@ -62,6 +60,7 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
   - Prioridade: Baixa  
   - Critérios de Aceite: Notas de 1 a 5 armazenadas; avaliação só pós‑evento.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**  
@@ -87,6 +86,7 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 
 - **RNF‑05**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑06**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -116,13 +116,19 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 1. Participante informa nota e feedback.  
 2. Sistema grava avaliação após data de fim.
 
+
 ## 6. Regras de Negócio
+
+
 - Inscrição única por usuário por evento.  
 - Avaliação permitida apenas após término do evento.  
 - Material e parceria vinculados obrigatoriamente a um evento.  
 - Briefing segue fluxo de estados: rascunho → orçamentado → aprovado/recusado.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Evento**  
@@ -160,7 +166,10 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
   - prazo_limite_resposta, recusado_por, recusado_em, motivo_recusa  
   - campos adicionais de briefing
 
+
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gestão de Eventos
   Scenario: Criar e inscrever usuário
@@ -169,17 +178,18 @@ Feature: Gestão de Eventos
     Then eventos e inscrições criados com sucesso
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts, Organizações, Núcleos**: validações de escopo.  
 - **Storage (S3)**: upload de mídia.  
 - **Celery**: processamento assíncrono (emails, relatórios).  
 - **Search Engine**: busca de eventos e materiais.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- PDF fontes originais de requisitos.
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑07** – Gerar código QR exclusivo para cada inscrição, para check‑in rápido no evento. QRCode deve expirar após uso.  
@@ -194,4 +204,4 @@ Feature: Gestão de Eventos
 ### Modelo de Dados Adicional
 - `InscricaoEvento`: adicionar `qrcode_url: URLField`, `check_in_realizado_em: datetime`.  
 - `Evento`: adicionar `orcamento_estimado: decimal`, `valor_gasto: decimal`, `participantes_maximo: integer`, `espera_habilitada: boolean`.  
-- `ParceriaEvento`: adicionar `avaliacao: integer`, `comentario: text`.  
+- `ParceriaEvento`: adicionar `avaliacao: integer`, `comentario: text`.

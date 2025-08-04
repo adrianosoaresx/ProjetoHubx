@@ -7,14 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Accounts_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hubx, incluindo registro, autenticação, gerenciamento de perfil, permissões e integrações externas.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Cadastro de usuário (email e senha)  
   - Autenticação (login/logout)  
@@ -22,7 +24,8 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - Edição de perfil (nome, CPF, email, avatar, capa, biografia e contatos)  
   - Gestão de permissões lógicas por tipo de usuário  
 - **Exclui**:
-  - Gestão de organizações, núcleos ou eventos  
+  - Gestão de organizações, núcleos ou eventos
+
 
 ## 3. Requisitos Funcionais
 
@@ -49,7 +52,8 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
 - **RF-05**  
   - Descrição: Validação de email único globalmente.  
   - Prioridade: Alta  
-  - Critérios de Aceite: Tentativa de usar email existente retorna erro.  
+  - Critérios de Aceite: Tentativa de usar email existente retorna erro.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -71,6 +75,7 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
 
 - **RNF-04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF-05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -94,12 +99,18 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
 3. Sistema valida e salva alterações.  
 4. **Cenário de Erro**: arquivo de imagem inválido → rejeitar.
 
+
 ## 6. Regras de Negócio
+
+
 - Email deve ser único e confirmado antes de ativar conta.  
 - Apenas usuários ativos podem autenticar.  
 - Perfis de usuário seguem lógica: root, admin, associado, nucleado, coordenador, convidado.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 - **Account**  
   - id: UUID  
@@ -127,9 +138,12 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - token: string  
   - user: FK → Account.id  
   - type: enum ('email_confirmation','password_reset')  
-  - expires_at: datetime  
+  - expires_at: datetime
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gerenciamento de contas
   Scenario: Usuário cria conta com sucesso
@@ -138,17 +152,18 @@ Feature: Gerenciamento de contas
     Then conta é criada e email de confirmação é enviado
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **Email Service**: envio de confirmação e reset (SMTP/Celery).  
 - **Cache (Redis)**: tokens de sessão e lockout de login.  
 - **OAuth2 / LDAP**: futuros métodos de login social.  
 - **Celery & RabbitMQ**: envio assíncrono de emails.  
 - **Sentry**: monitoramento de erros em produção.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Accounts_Hubx.pdf
 
-## 11. Requisitos Adicionais e Melhorias (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Confirmação de e‑mail deve ocorrer em até 24 horas após cadastro. Após expirar, o token é invalidado e o usuário deve solicitar nova confirmação.  

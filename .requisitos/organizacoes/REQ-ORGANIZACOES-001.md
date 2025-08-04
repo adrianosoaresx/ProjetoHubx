@@ -1,20 +1,22 @@
 ---
 id: REQ-ORGANIZACOES-001
-title: Requisitos Organizações Hubx Atualizado
+title: "Requisitos Organiza\xE7\xF5es Hubx Atualizado"
 module: Organizacoes
 status: Em vigor
 version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Organizacoes_Hubx_Atualizado.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hubx, incluindo criação, edição, remoção, visualização de detalhes e associação de usuários e recursos.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - CRUD completo de Organizações (nome, slug, descrição, avatar e capa).  
   - Listagem e busca por nome e slug.  
@@ -23,6 +25,7 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
 - **Exclui**:
   - Permissões de alto nível (delegado ao App Accounts).  
   - Gestão de recursos externos como faturamento.
+
 
 ## 3. Requisitos Funcionais
 
@@ -51,6 +54,7 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
   - Prioridade: Média
   - Critérios de Aceite: Endpoints especializados (`/api/organizacoes/<id>/associados/`, etc.).
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -71,6 +75,7 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -96,13 +101,19 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
 1. Usuário adiciona/remova núcleos, eventos, empresas ou posts.  
 2. Endpoints atualizam relacionamentos.
 
+
 ## 6. Regras de Negócio
+
+
 - Slug da organização deve ser único.  
 - Apenas usuários root podem criar e excluir organizações.  
 - Todos os demais recursos devem pertencer a uma organização.  
 - Organizações marcadas como `deleted` não aparecem em buscas.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Organizacao**  
@@ -116,7 +127,10 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
 - **Relacionamentos**  
   - organizacao é ForeignKey em: User, Nucleo, Evento, Empresa, Post, CategoriaForum, TopicoForum, etc.
 
+
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gestão de Organizações
   Scenario: Usuário root cria organização
@@ -130,17 +144,18 @@ Feature: Gestão de Organizações
     Then retorna organizações correspondentes
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: validação de usuário root.  
 - **App Núcleos, Eventos, Empresas, Feed, Discussão**: validação de escopo organizacional.  
 - **Storage S3**: armazenamento de imagens.  
 - **Celery**: processamento assíncrono de uploads.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Organizacoes_Hubx_Atualizado.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Enviar notificações aos membros quando ocorrerem alterações significativas (nome, avatar, cover ou exclusão).  
@@ -152,4 +167,4 @@ Feature: Gestão de Organizações
 
 ### Modelo de Dados Adicional
 - `Organizacao`: adicionar `inativa: boolean` e `inativada_em: datetime`.  
-- Nova entidade `OrganizacaoLog` com campos: id, organizacao_id, usuario_id, acao, dados_antigos, dados_novos.  
+- Nova entidade `OrganizacaoLog` com campos: id, organizacao_id, usuario_id, acao, dados_antigos, dados_novos.

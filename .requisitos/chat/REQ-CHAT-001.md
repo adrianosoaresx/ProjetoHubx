@@ -3,20 +3,20 @@ id: REQ-CHAT-001
 title: Requisitos do App Chat
 module: Chat
 status: Em vigor
-version: "1.0"
+version: '1.0'
 authors: []
-created: "2025-07-25"
-updated: "2025-07-25"
-source:
-  - requisitos_app_chat_hubx.pdf
-  - explicacao_modelo_chat.pdf
+created: '2025-07-25'
+updated: '2025-07-25'
 ---
 
 ## 1. Visão Geral
 
 O App Chat deve permitir comunicação em tempo real via WebSocket e interface visual entre usuários em diferentes contextos organizacionais (privado, núcleo, evento e organização), de forma modular e reutilizável.
 
+
 ## 2. Escopo
+
+
 - **Inclui**  
   - Chat privado (1:1) entre dois usuários do mesmo núcleo.  
   - Chat de núcleo: canal coletivo para membros de um núcleo.  
@@ -26,6 +26,7 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
 - **Exclui**  
   - Ferramentas de edição de mensagem além do básico.  
   - Armazenamento offline de histórico de chat.
+
 
 ## 3. Requisitos Funcionais
 
@@ -52,7 +53,8 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
 - **RF‑05**  
   - Descrição: Permissões extras para admins: fixar mensagens e exportar histórico.  
   - Prioridade: Baixa  
-  - Critérios de Aceite: Admin pode fixar mensagens e baixar histórico via endpoint.  
+  - Critérios de Aceite: Admin pode fixar mensagens e baixar histórico via endpoint.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -69,6 +71,7 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
 
 - **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -90,7 +93,17 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
 1. Admin solicita exportação de histórico de um canal.  
 2. Sistema gera arquivo JSON/CSV com todas as mensagens do canal.
 
-## 6. Modelo de Dados
+
+## 6. Regras de Negócio
+
+
+- Usuário deve estar autenticado e ter vínculo com o contexto.  
+- Apenas admins podem fixar mensagens e exportar histórico.
+
+
+## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **ChatChannel**  
@@ -110,13 +123,12 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
   - id: UUID  
   - usuario: FK → User.id  
   - mensagem: FK → Mensagem.id  
-  - lida: boolean  
+  - lida: boolean
 
-## 7. Regras de Negócio
-- Usuário deve estar autenticado e ter vínculo com o contexto.  
-- Apenas admins podem fixar mensagens e exportar histórico.  
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Chat em tempo real
   Scenario: Envio de mensagem de texto
@@ -125,7 +137,10 @@ Feature: Chat em tempo real
     Then todos no canal recebem "Olá, mundo!"
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **WebSocket**: consumers em `chat/consumers.py`.  
 - **Channels Redis**: camada de broadcast e grupo de canais.  
 - **Modelos**: `chat.models.ChatChannel`, `chat.models.Mensagem`, `chat.models.Notificacao`.  
@@ -133,11 +148,8 @@ Feature: Chat em tempo real
 - **Celery**: envio de notificações assíncronas.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- `requisitos_app_chat_hubx.pdf`  
-- `explicacao_modelo_chat.pdf`
 
-## 11. Requisitos Adicionais e Melhorias (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Mensagens podem ser fixadas por administradores e exibidas no topo do chat com indicação visual. Campo `pinned_at` registra quando a mensagem foi fixada.  

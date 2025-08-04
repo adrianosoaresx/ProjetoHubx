@@ -14,13 +14,6 @@
   - Versão: 1.0
   - Última atualização: 2025-07-25
 
-- **REQ-EXPLICACAO_MODELO_CHAT-001**
-  - Título: Explicacao Modelo Chat
-  - Módulo: Chat
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
 - **REQ-CONFIGURACOES_CONTA-001**
   - Título: Configuracoes Conta
   - Módulo: Configuracoes
@@ -30,13 +23,6 @@
 
 - **REQ-DASHBOARD-001**
   - Título: Dashboard
-  - Módulo: Dashboard
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
-
-- **REQ-ESTRUTURA_TECNICA_DASHBOARD-001**
-  - Título: Estrutura Tecnica Dashboard
   - Módulo: Dashboard
   - Status: Em vigor
   - Versão: 1.0
@@ -90,3 +76,17 @@
   - Status: Em vigor
   - Versão: 1.0
   - Última atualização: 2025-07-25
+
+- **REQ-FINANCEIRO-002**
+  - Título: Financeiro
+  - Módulo: Financeiro
+  - Status: Em vigor
+  - Versão: 1.0
+  - Última atualização: 2025-07-28
+
+- **REQ-NOTIFICACOES-001**
+  - Título: Notificacoes
+  - Módulo: Notificacoes
+  - Status: draft
+  - Versão: 1.0.0
+  - Última atualização: 2025-07-28

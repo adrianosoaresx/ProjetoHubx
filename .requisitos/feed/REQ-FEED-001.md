@@ -7,14 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Feed_Hubx_Atualizado.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Feed permite exibir e gerenciar publicações de texto e mídia, organizadas por tipo (global, usuário, núcleo ou evento), oferecendo filtragem, paginação e controle de permissões conforme o escopo associado.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:  
   - Listagem de posts por tipo_feed e filtros (organização, tags).  
   - Criação, edição e remoção de posts contendo texto, imagem ou PDF.  
@@ -23,6 +25,7 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 - **Exclui**:  
   - Chat em tempo real (delegado ao App Chat).  
   - Integração com serviços de faturamento.
+
 
 ## 3. Requisitos Funcionais
 
@@ -54,7 +57,8 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 - **RF‑06**  
   - Descrição: Fazer upload seguro de arquivos, armazenando em S3.  
   - Prioridade: Alta  
-  - Critérios de Aceite: URLs de upload/download válidos e protegidos.  
+  - Critérios de Aceite: URLs de upload/download válidos e protegidos.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -76,6 +80,7 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -102,13 +107,19 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 1. Usuário aplica filtros por tags, data ou organização.  
 2. Sistema retorna posts correspondentes aos critérios.
 
+
 ## 6. Regras de Negócio
+
+
 - Se `tipo_feed` = 'nucleo', campo `nucleo` é obrigatório.  
 - Se `tipo_feed` = 'evento', campo `evento` é obrigatório.  
 - `organizacao` é obrigatório para todos os posts.  
 - Posts marcados como `deleted` não aparecem no feed.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Post**  
@@ -120,9 +131,12 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
   - evento: FK → Evento.id (opcional)  
   - conteudo: TextField  
   - image: ImageField (S3)  
-  - pdf: FileField (S3)  
+  - pdf: FileField (S3)
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Feed de Publicações
   Scenario: Listar posts globais
@@ -136,7 +150,10 @@ Feature: Feed de Publicações
     Then retorna HTTP 201 e post aparece na listagem
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **Storage S3**: upload/download de arquivos.  
 - **App Accounts**: autenticação e contexto de usuário.  
 - **App Organizações**: validação de escopo de organização.  
@@ -145,10 +162,8 @@ Feature: Feed de Publicações
 - **Celery**: processar uploads e envio de notificações assíncronas.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Feed_Hubx_Atualizado.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑07** – Suportar upload de vídeos (MP4) com preview e reprodução embutida.  
@@ -163,4 +178,4 @@ Feature: Feed de Publicações
 
 ### Regras de Negócio Adicionais
 - Vídeos devem estar em formatos suportados (MP4, WEBM) e com tamanho máximo definido por configuração.  
-- Posts com conteúdo moderado ficam ocultos até aprovação.  
+- Posts com conteúdo moderado ficam ocultos até aprovação.

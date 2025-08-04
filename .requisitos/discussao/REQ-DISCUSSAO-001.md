@@ -7,15 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source:
-  - requisitos_app_forum_hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Discussão fornece um fórum colaborativo organizado por categorias, permitindo que usuários criem tópicos, respondam, votem e colaborem de forma estruturada dentro de organizações, núcleos e eventos.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Criação, edição e exclusão de categorias.
   - Publicação de tópicos com título e conteúdo.
@@ -26,6 +27,7 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 - **Exclui**:
   - Chat em tempo real (delegado ao App Chat).
   - Integração com redes sociais externas.
+
 
 ## 3. Requisitos Funcionais
 
@@ -54,6 +56,7 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - Prioridade: Média
   - Critérios de Aceite: Status do tópico atualizado e indicações visuais.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -74,6 +77,7 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -101,12 +105,18 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 1. Criador do tópico ou admin clica em “Marcar como Resolvido”.  
 2. Sistema define flag `resolved=true` e altera visualização.
 
+
 ## 6. Regras de Negócio
+
+
 - Cada usuário tem um único voto por item.  
 - Apenas criador ou admin pode marcar resolução.  
 - Respostas devem herdar contexto organizacional do tópico.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Categoria**  
@@ -134,9 +144,12 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - item_type: enum('topico','resposta')  
   - item_id: UUID  
   - user: FK → User.id  
-  - vote: integer (1 ou -1)  
+  - vote: integer (1 ou -1)
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Fórum de Discussão
   Scenario: Usuário cria tópico
@@ -150,17 +163,18 @@ Feature: Fórum de Discussão
     Then contagem de votos aumenta em 1
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **chat.models.User**: autenticação e contexto de usuário.  
 - **Organizacoes API**: para filtrar categorias por organização.  
 - **Celery**: notificações assíncronas de novos tópicos/respostas.  
 - **Search Engine**: índices para busca de tópicos/respostas.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- Documento fonte: requisitos_app_forum_hubx.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Permitir marcar uma resposta como “melhor resposta”, destacando‑a no topo do tópico.  
@@ -178,4 +192,4 @@ Feature: Fórum de Discussão
 
 ### Regras de Negócio Adicionais
 - Apenas o autor ou admin pode marcar “melhor resposta”.  
-- Edição limitada a 15 minutos após publicação.  
+- Edição limitada a 15 minutos após publicação.
