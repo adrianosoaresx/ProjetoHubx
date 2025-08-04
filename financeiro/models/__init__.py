@@ -170,3 +170,30 @@ class ImportacaoPagamentos(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.arquivo} ({self.total_processado})"
+
+
+class FinanceiroLog(TimeStampedModel):
+    """Registros de auditoria das ações financeiras."""
+
+    class Acao(models.TextChoices):
+        IMPORTAR = "importar", "Importar Pagamentos"
+        GERAR_COBRANCA = "gerar_cobranca", "Gerar Cobrança"
+        REPASSE = "repasse", "Repasse de Receita"
+        EDITAR_CENTRO = "editar_centro", "Editar Centro de Custo"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    acao = models.CharField(max_length=20, choices=Acao.choices)
+    dados_anteriores = models.JSONField(default=dict, blank=True)
+    dados_novos = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Log Financeiro"
+        verbose_name_plural = "Logs Financeiros"
+
+    def __str__(self) -> str:
+        usuario = self.usuario.email if self.usuario else "desconhecido"
+        return f"{self.get_acao_display()} - {usuario}"

@@ -4,7 +4,12 @@ import pytest
 from django.utils import timezone
 
 from accounts.factories import UserFactory
-from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from financeiro.models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    LancamentoFinanceiro,
+)
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from organizacoes.factories import OrganizacaoFactory
 
@@ -74,3 +79,15 @@ def test_serializer_vencimento_anterior_lancamento_error():
     )
     assert not serializer.is_valid()
     assert "Vencimento" in str(serializer.errors)
+
+
+def test_financeirolog_str():
+    user = UserFactory(email="log@example.com")
+    log = FinanceiroLog.objects.create(
+        usuario=user,
+        acao=FinanceiroLog.Acao.IMPORTAR,
+        dados_anteriores={},
+        dados_novos={}
+    )
+    assert "Importar Pagamentos" in str(log)
+    assert "log@example.com" in str(log)
