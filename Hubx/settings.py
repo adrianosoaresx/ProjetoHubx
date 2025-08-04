@@ -89,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "dashboard.middleware.DashboardTimingMiddleware",
 ]
 
 ROOT_URLCONF = "Hubx.urls"

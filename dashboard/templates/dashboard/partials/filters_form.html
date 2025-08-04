@@ -53,6 +53,8 @@
   <div class="flex gap-2 mt-4">
     <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Aplicar filtros' %}">{% trans 'Filtrar' %}</button>
     <a href="{% url 'dashboard:export' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Exportar métricas' %}">{% trans 'Exportar' %}</a>
-    <a href="{% url 'dashboard:config-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtros' %}">{% trans 'Salvar filtros' %}</a>
+    <a href="{% url 'dashboard:filter-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro rápido' %}">{% trans 'Salvar filtro' %}</a>
+    <a href="{% url 'dashboard:filters' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver filtros salvos' %}">{% trans 'Meus filtros' %}</a>
+    <a href="{% url 'dashboard:config-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar configuração' %}">{% trans 'Salvar configuração' %}</a>
   </div>
 </form>

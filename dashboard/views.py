@@ -6,10 +6,11 @@ from io import BytesIO
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from urllib.parse import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, ListView, TemplateView, View
 
@@ -21,8 +22,8 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
-from .forms import DashboardConfigForm
-from .models import DashboardConfig
+from .forms import DashboardConfigForm, DashboardFilterForm
+from .models import DashboardConfig, DashboardFilter
 from .services import DashboardMetricsService, DashboardService
 
 User = get_user_model()
@@ -30,6 +31,14 @@ User = get_user_model()
 
 class DashboardBaseView(LoginRequiredMixin, TemplateView):
     """Base view para calcular métricas."""
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except PermissionError:
+            return HttpResponseForbidden("Acesso negado")
+        except ValueError as exc:
+            return HttpResponseBadRequest(str(exc))
 
     def get_metrics(self):
         periodo = self.request.GET.get("periodo", "mensal")
@@ -171,6 +180,10 @@ def metrics_partial(request):
             request=request,
         )
         return HttpResponse(html)
+    except PermissionError:
+        return HttpResponse(status=403)
+    except ValueError:
+        return HttpResponse(status=400)
     except Exception:  # pragma: no cover - logado
         messages.error(request, _("Erro ao carregar métricas."))
         return HttpResponse(status=500)
@@ -269,36 +282,28 @@ class DashboardExportView(LoginRequiredMixin, View):
         if metricas_list:
             filters["metricas"] = metricas_list
 
-        metrics = DashboardMetricsService.get_metrics(
-            user,
-            periodo=periodo,
-            inicio=inicio,
-            fim=fim,
-            escopo=escopo,
-            **filters,
-        )
+        try:
+            metrics = DashboardMetricsService.get_metrics(
+                user,
+                periodo=periodo,
+                inicio=inicio,
+                fim=fim,
+                escopo=escopo,
+                **filters,
+            )
+        except PermissionError:
+            return HttpResponse(status=403)
+        except ValueError as exc:
+            return HttpResponse(str(exc), status=400)
 
         if formato == "pdf":
             try:
-                from reportlab.pdfgen import canvas
+                from weasyprint import HTML
             except Exception:
                 return HttpResponse(status=500)
-            buffer = BytesIO()
-            p = canvas.Canvas(buffer)
-            y = 800
-            p.drawString(50, y, "Métricas do Dashboard")
-            y -= 30
-            for key, data in metrics.items():
-                p.drawString(
-                    50,
-                    y,
-                    f"{key}: total={data['total']} variação={data['crescimento']:.2f}%",
-                )
-                y -= 20
-            p.showPage()
-            p.save()
-            buffer.seek(0)
-            resp = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+            html = render_to_string("dashboard/export_pdf.html", {"metrics": metrics})
+            pdf_bytes = HTML(string=html).write_pdf()
+            resp = HttpResponse(pdf_bytes, content_type="application/pdf")
             filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.pdf")
             resp["Content-Disposition"] = f"attachment; filename={filename}"
             return resp
@@ -378,3 +383,61 @@ class DashboardConfigApplyView(LoginRequiredMixin, View):
             f"{k}={','.join(v) if isinstance(v, list) else v}" for k, v in params.items()
         )
         return redirect(url)
+
+
+class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
+    form_class = DashboardFilterForm
+    template_name = "dashboard/filter_form.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:filters")
+
+    def form_valid(self, form):
+        filtros_data = {}
+        for key, value in self.request.GET.lists():
+            if key == "metricas":
+                filtros_data[key] = value
+            else:
+                filtros_data[key] = value[0]
+        self.object = form.save(self.request.user, filtros_data)
+        return redirect(self.get_success_url())
+
+
+class DashboardFilterListView(LoginRequiredMixin, ListView):
+    model = DashboardFilter
+    template_name = "dashboard/filter_list.html"
+
+    def get_queryset(self):
+        qs = DashboardFilter.objects.filter(user=self.request.user)
+        public_qs = DashboardFilter.objects.filter(publico=True).exclude(user=self.request.user)
+        if self.request.user.user_type == UserType.ROOT:
+            qs = qs | public_qs
+        else:
+            qs = qs | public_qs.filter(user__organizacao=self.request.user.organizacao)
+        return qs
+
+
+class DashboardFilterApplyView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        filtro = DashboardFilter.objects.filter(pk=pk).first()
+        if not filtro:
+            return HttpResponse(status=404)
+        if filtro.user != request.user:
+            if not filtro.publico:
+                return HttpResponse(status=403)
+            if (
+                request.user.user_type != UserType.ROOT
+                and filtro.user.organizacao_id != getattr(request.user, "organizacao_id", None)
+            ):
+                return HttpResponse(status=403)
+        url = reverse("dashboard:dashboard") + "?" + urlencode(filtro.filtros, doseq=True)
+        return redirect(url)
+
+
+class DashboardFilterDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        filtro = DashboardFilter.objects.filter(pk=pk, user=request.user).first()
+        if not filtro:
+            return HttpResponse(status=404)
+        filtro.delete()
+        return redirect("dashboard:filters")

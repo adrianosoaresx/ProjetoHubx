@@ -6,6 +6,7 @@ from datetime import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
@@ -38,9 +39,25 @@ class DashboardViewSet(viewsets.ViewSet):
         periodo = params.get("periodo", "mensal")
         inicio = params.get("inicio")
         fim = params.get("fim")
+        escopo = params.get("escopo", "auto")
         inicio_dt = datetime.fromisoformat(inicio) if inicio else None
         fim_dt = datetime.fromisoformat(fim) if fim else None
-        data = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt)
+        filters = {}
+        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
+            val = params.get(key)
+            if val:
+                filters[key] = val
+        metricas_list = params.getlist("metricas") if hasattr(params, "getlist") else params.get("metricas")
+        if metricas_list:
+            filters["metricas"] = metricas_list
+        try:
+            data = DashboardMetricsService.get_metrics(
+                request.user, periodo, inicio_dt, fim_dt, escopo=escopo, **filters
+            )
+        except PermissionError:
+            return Response({"detail": "Forbidden"}, status=403)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
         return Response(data)
 
     @action(detail=False, methods=["get"], permission_classes=[IsAdminOrCoordenador])
@@ -51,7 +68,12 @@ class DashboardViewSet(viewsets.ViewSet):
         fim = request.query_params.get("fim")
         inicio_dt = datetime.fromisoformat(inicio) if inicio else None
         fim_dt = datetime.fromisoformat(fim) if fim else None
-        data = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt)
+        try:
+            data = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt)
+        except PermissionError:
+            return Response({"detail": "Forbidden"}, status=403)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=400)
         if formato == "csv":
             output = io.StringIO()
             writer = csv.writer(output)
@@ -62,20 +84,13 @@ class DashboardViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=dashboard.csv"
             return response
         elif formato == "pdf":
-            from reportlab.lib.pagesizes import letter
-            from reportlab.pdfgen import canvas
-
-            buffer = io.BytesIO()
-            pdf = canvas.Canvas(buffer, pagesize=letter)
-            y = 750
-            pdf.drawString(50, y, "Métricas do Dashboard")
-            y -= 20
-            for key, value in data.items():
-                pdf.drawString(50, y, f"{key}: {value['total']} ({value['crescimento']:.1f}%)")
-                y -= 15
-            pdf.showPage()
-            pdf.save()
-            response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+            try:
+                from weasyprint import HTML
+            except Exception:
+                return Response({"detail": "PDF indisponível"}, status=500)
+            html = render_to_string("dashboard/export_pdf.html", {"metrics": data})
+            pdf_bytes = HTML(string=html).write_pdf()
+            response = HttpResponse(pdf_bytes, content_type="application/pdf")
             response["Content-Disposition"] = "attachment; filename=dashboard.pdf"
             return response
         return Response({"detail": _("Formato inválido.")}, status=400)
@@ -86,7 +101,13 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return DashboardFilter.objects.filter(user=self.request.user)
+        qs = DashboardFilter.objects.filter(user=self.request.user)
+        public_qs = DashboardFilter.objects.filter(publico=True).exclude(user=self.request.user)
+        if self.request.user.user_type == UserType.ROOT:
+            qs = qs | public_qs
+        else:
+            qs = qs | public_qs.filter(user__organizacao=self.request.user.organizacao)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

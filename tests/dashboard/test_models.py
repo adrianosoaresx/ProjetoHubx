@@ -11,6 +11,7 @@ def test_timestamp_fields(admin_user):
     filtro = DashboardFilter.objects.create(user=admin_user, nome="f1", filtros={})
     assert filtro.created is not None
     assert filtro.modified is not None
+    assert filtro.publico is False
 
 
 def test_soft_delete(admin_user):

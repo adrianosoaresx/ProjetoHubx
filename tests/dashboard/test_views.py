@@ -9,13 +9,13 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 from dashboard.services import DashboardMetricsService
-from dashboard.models import DashboardConfig
+from dashboard.models import DashboardConfig, DashboardFilter
 import pytest
 
 try:
-    import reportlab  # type: ignore
+    import weasyprint  # type: ignore
 except Exception:  # pragma: no cover - optional
-    reportlab = None
+    weasyprint = None
 from dashboard.views import (
     AdminDashboardView,
     ClienteDashboardView,
@@ -134,8 +134,8 @@ def test_export_view_csv(monkeypatch, client, admin_user):
 
 
 def test_export_view_pdf(monkeypatch, client, admin_user):
-    if reportlab is None:
-        pytest.skip("reportlab não instalado")
+    if weasyprint is None:
+        pytest.skip("weasyprint não instalado")
     client.force_login(admin_user)
 
     monkeypatch.setattr(
@@ -143,6 +143,7 @@ def test_export_view_pdf(monkeypatch, client, admin_user):
         "get_metrics",
         lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
     )
+    monkeypatch.setattr("weasyprint.HTML.write_pdf", lambda self: b"pdf")
 
     resp = client.get(reverse("dashboard:export"), {"formato": "pdf"})
     assert resp.status_code == 200
@@ -177,6 +178,22 @@ def test_config_save_and_apply(client, admin_user, gerente_user):
     assert cfg in resp.context["object_list"]
 
     resp = client.get(reverse("dashboard:config-apply", args=[cfg.pk]))
+    assert resp.status_code == 302
+    assert "metricas=num_users" in resp["Location"]
+
+
+def test_filter_save_and_apply(client, admin_user, gerente_user):
+    client.force_login(admin_user)
+    url = reverse("dashboard:filter-create") + "?periodo=mensal&escopo=auto&metricas=num_users"
+    resp = client.post(url, {"nome": "f1", "publico": True})
+    assert resp.status_code == 302
+    filtro = DashboardFilter.objects.get(nome="f1")
+
+    client.force_login(gerente_user)
+    resp = client.get(reverse("dashboard:filters"))
+    assert filtro in resp.context["object_list"]
+
+    resp = client.get(reverse("dashboard:filter-apply", args=[filtro.pk]))
     assert resp.status_code == 302
     assert "metricas=num_users" in resp["Location"]
 

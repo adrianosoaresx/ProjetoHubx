@@ -166,13 +166,16 @@ class DashboardMetricsService:
         **filters,
     ) -> Dict[str, Dict[str, float]]:
         """Return dashboard metrics, cached for 5 minutes."""
+        valid_periodos = {"mensal", "trimestral", "semestral", "anual"}
+        if periodo not in valid_periodos:
+            raise ValueError("Período inválido")
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
         cache_filters = {
             "periodo": periodo,
             "inicio": inicio.isoformat(),
             "fim": fim.isoformat(),
-            **filters,
+            **{k: str(v) for k, v in filters.items()},
         }
         cache_key = f"dashboard-{user.id}-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
         cached = cache.get(cache_key)
@@ -203,20 +206,22 @@ class DashboardMetricsService:
         elif escopo == "nucleo" and nucleo_id:
             nucleo = Nucleo.objects.filter(pk=nucleo_id).first()
             if not nucleo:
-                raise PermissionError("Núcleo inválido")
+                raise ValueError("Núcleo inválido")
             if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not nucleo.membros.filter(pk=user.pk).exists():
                 raise PermissionError("Acesso negado ao núcleo")
             organizacao_id = organizacao_id or nucleo.organizacao_id
         elif escopo == "evento" and evento_id:
             evento = Evento.objects.filter(pk=evento_id).first()
             if not evento:
-                raise PermissionError("Evento inválido")
+                raise ValueError("Evento inválido")
             if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not (
                 evento.coordenador_id == user.pk or evento.nucleo and evento.nucleo.membros.filter(pk=user.pk).exists()
             ):
                 raise PermissionError("Acesso negado ao evento")
             organizacao_id = organizacao_id or evento.organizacao_id
             nucleo_id = nucleo_id or evento.nucleo_id
+        elif escopo not in {"auto", "global", "organizacao", "nucleo", "evento"}:
+            raise ValueError("Escopo inválido")
 
         if organizacao_id:
             qs_users = qs_users.filter(organizacao_id=organizacao_id)

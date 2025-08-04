@@ -114,3 +114,15 @@ def test_get_metrics_cache_differentiates(admin_user):
     )
     metrics2 = DashboardMetricsService.get_metrics(admin_user, escopo="global")
     assert metrics1["num_users"]["total"] < metrics2["num_users"]["total"]
+
+
+def test_get_metrics_permission_denied(cliente_user, admin_user):
+    with pytest.raises(PermissionError):
+        DashboardMetricsService.get_metrics(
+            cliente_user, escopo="organizacao", organizacao_id=admin_user.organizacao_id
+        )
+
+
+def test_get_metrics_invalid_period(admin_user):
+    with pytest.raises(ValueError):
+        DashboardMetricsService.get_metrics(admin_user, periodo="xxx")
