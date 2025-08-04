@@ -21,6 +21,9 @@
 
       <div class="text-sm text-neutral-800">
         {{ post.conteudo|linebreaks }}
+        {% if post.moderacao and post.moderacao.status != 'aprovado' %}
+          <span class="ml-2 text-xs text-yellow-700">{{ post.moderacao.get_status_display }}</span>
+        {% endif %}
       </div>
 
       {% if post.pdf %}
@@ -36,6 +39,18 @@
       {% elif post.image %}
         <div class="feed-media">
           <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl shadow-sm max-w-full">
+        </div>
+      {% elif post.video %}
+        <div class="feed-media">
+          <video src="{{ post.video.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+        </div>
+      {% endif %}
+
+      {% if post.tags.all %}
+        <div class="flex flex-wrap gap-2 text-xs text-neutral-500">
+          {% for tag in post.tags.all %}
+            <span class="px-2 py-1 bg-neutral-100 rounded">{{ tag.nome }}</span>
+          {% endfor %}
         </div>
       {% endif %}
     </article>

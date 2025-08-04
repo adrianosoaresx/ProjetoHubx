@@ -107,4 +107,7 @@ def posts(admin_user, nucleado_user, nucleo, evento, organizacao):
     p4 = Post.objects.create(
         autor=nucleado_user, organizacao=organizacao, tipo_feed="evento", evento=evento, conteudo="e"
     )
+    for p in (p1, p2, p3, p4):
+        p.moderacao.status = "aprovado"
+        p.moderacao.save()
     return p1, p2, p3, p4
