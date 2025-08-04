@@ -68,6 +68,10 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
   - Descrição: Log de uso de tokens para auditoria.
   - Métrica/Meta: 100% dos eventos registrados.
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Gerar Token
@@ -96,6 +100,7 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
 - Perfis sem permissão para geração devem receber erro 403.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **TokenAcesso**  
   - codigo: string (PK, unique, não editável)  
@@ -106,7 +111,6 @@ O App Tokens gerencia a criação, validação e expiração de tokens de acesso
   - usuario: FK → User.id (opcional)  
   - organizacao: FK → Organizacao.id  
   - nucleos: M2M → Nucleo.id (opcional)  
-  - created_at, updated_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
@@ -140,7 +144,7 @@ Feature: Gerenciamento de Tokens
 - **RF‑08** – Permitir revogação manual de tokens, alterando estado para `revogado`.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑04** – Logs de uso e revogação devem ser criptografados e retidos por 1 ano para auditoria.  
+- **RNF‑06** – Logs de uso e revogação devem ser criptografados e retidos por 1 ano para auditoria.  
 
 ### Modelo de Dados Adicional
 - `TokenAcesso`: adicionar `ip_gerado: string`, `ip_utilizado: string`, `revogado_em: datetime`, `revogado_por: FK → User.id`.  

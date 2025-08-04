@@ -57,6 +57,10 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
   - Descrição: Garantia de relação 1:1 sem duplicatas.
   - Métrica/Meta: 0 falhas em testes de unicidade.
 
+
+- **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Configurar Notificações por Email
@@ -81,14 +85,13 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
 - Preferências independentes de permissões.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **ConfiguracoesConta**  
   - user: OneToOneField(User, on_delete=CASCADE, related_name='configuracoes')  
   - receber_notificacoes_email: BooleanField(default=True)  
   - receber_notificacoes_whatsapp: BooleanField(default=False)  
   - tema_escuro: BooleanField(default=False)  
-  - created_at: datetime  
-  - updated_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin

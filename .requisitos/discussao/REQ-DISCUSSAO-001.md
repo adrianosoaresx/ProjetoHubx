@@ -71,6 +71,10 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - Descrição: As ações de criação, edição e exclusão devem validar permissões.
   - Métrica/Meta: 0 acessos indevidos em testes de penetração.
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Gerenciar Categorias
@@ -103,6 +107,7 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
 - Respostas devem herdar contexto organizacional do tópico.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Categoria**  
   - id: UUID  
@@ -116,7 +121,6 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - autor: FK → User.id  
   - titulo: string  
   - conteudo: text  
-  - created_at, updated_at: datetime  
   - resolved: boolean  
 
 - **Resposta**  
@@ -124,7 +128,6 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - topico: FK → Topico.id  
   - autor: FK → User.id  
   - conteudo: text  
-  - created_at: datetime  
 
 - **Voto**  
   - id: UUID  
@@ -132,7 +135,6 @@ O App Discussão fornece um fórum colaborativo organizado por categorias, permi
   - item_id: UUID  
   - user: FK → User.id  
   - vote: integer (1 ou -1)  
-  - created_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
@@ -167,12 +169,12 @@ Feature: Fórum de Discussão
 - **RF‑09** – Permitir fechar e reabrir tópicos para novas respostas.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑04** – Prover campo “motivo de edição” para rastrear alterações.  
+- **RNF‑06** – Prover campo “motivo de edição” para rastrear alterações.  
 
 ### Modelo de Dados Adicional
 - `Topico`: adicionar `melhor_resposta: FK → Resposta.id (opcional)` e `tags: M2M → Tag`.  
 - `Resposta`: adicionar `editado_em: datetime`, `motivo_edicao: text`.  
-- Nova entidade `Tag`: `id`, `nome`, `created_at`.  
+- Nova entidade `Tag`: `id`, `nome`, ``.  
 
 ### Regras de Negócio Adicionais
 - Apenas o autor ou admin pode marcar “melhor resposta”.  

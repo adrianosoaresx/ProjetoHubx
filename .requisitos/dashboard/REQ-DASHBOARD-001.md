@@ -57,6 +57,10 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
   - Descrição: Código modular e estruturado para herança.  
   - Métrica/Meta: Cobertura ≥ 90 %  
 
+
+- **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Fluxo de Usuário / Caso de Uso
 ```mermaid
 flowchart TD
@@ -78,6 +82,7 @@ flowchart TD
   - **convidado**: sem acesso.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 Reaproveita modelos existentes:  
 - Usuário (`User`),  
 - Organização (`Organization`),  
@@ -109,5 +114,5 @@ Feature: Acesso ao Dashboard
 - **RF‑07** – Permitir que usuários salvem e compartilhem filtros e configurações de dashboards.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑03** – As consultas de métricas devem ser cacheadas com invalidação automática a cada 5 minutos.  
-- **RNF‑04** – O componente de visualização deve seguir princípios de acessibilidade (WCAG 2.1).  
+- **RNF‑05** – As consultas de métricas devem ser cacheadas com invalidação automática a cada 5 minutos.  
+- **RNF‑06** – O componente de visualização deve seguir princípios de acessibilidade (WCAG 2.1).  

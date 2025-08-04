@@ -98,6 +98,10 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - **Descrição**: Os logs devem permitir rastrear quem enviou, quando e por qual canal, atendendo requisitos da LGPD.
   - **Métrica/Meta**: Logs acessíveis por 5 anos.
 
+
+- **RNF‑07**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑08**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Enviar Notificação Individual
@@ -136,6 +140,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
 - Os registros de preferências e logs devem manter **integridade referencial** com o modelo de usuário (`settings.AUTH_USER_MODEL`); a exclusão de usuários deve ser protegida.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **NotificationTemplate**
   - `id`: UUID.
@@ -144,7 +149,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - `corpo`: texto com placeholders.
   - `canal`: enum ('email','push','whatsapp','todos').
   - `ativo`: boolean.
-  - `created_at`, `updated_at`: datetime.
+  - ``, ``: datetime.
 
 - **UserNotificationPreference**
   - `id`: UUID.
@@ -152,7 +157,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - `email`: boolean.
   - `push`: boolean.
   - `whatsapp`: boolean.
-  - `created_at`, `updated_at`: datetime.
+  - ``, ``: datetime.
 
 - **NotificationLog**
   - `id`: UUID.
@@ -162,7 +167,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - `status`: enum ('ENVIADA','FALHA').
   - `data_envio`: datetime.
   - `erro`: texto (opcional).
-  - `created_at`, `updated_at`: datetime.
+  - ``, ``: datetime.
 
 ## 8. Critérios de Aceite (Gherkin)
 
