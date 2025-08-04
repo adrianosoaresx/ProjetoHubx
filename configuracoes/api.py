@@ -6,14 +6,14 @@ from rest_framework.views import APIView
 
 from .models import ConfiguracaoConta
 from .serializers import ConfiguracaoContaSerializer
+from .services import get_configuracao_conta
 
 
 class ConfiguracaoContaAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self) -> ConfiguracaoConta:
-        obj, _ = ConfiguracaoConta.objects.get_or_create(user=self.request.user)
-        return obj
+        return get_configuracao_conta(self.request.user)
 
     def get(self, request):
         serializer = ConfiguracaoContaSerializer(self.get_object())

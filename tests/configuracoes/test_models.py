@@ -38,3 +38,16 @@ def test_sync_preferencias(admin_user):
     pref = admin_user.preferencias_notificacoes.get()
     assert pref.email is False
     assert pref.whatsapp is True
+
+
+def test_timestamps_e_soft_delete(admin_user):
+    config = admin_user.configuracao
+    assert config.created is not None
+    assert config.modified is not None
+
+    pk = config.pk
+    config.delete()
+    assert config.deleted is True
+    assert config.deleted_at is not None
+    assert not ConfiguracaoConta.objects.filter(pk=pk).exists()
+    assert ConfiguracaoConta.all_objects.filter(pk=pk).exists()
