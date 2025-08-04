@@ -249,6 +249,12 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     def __str__(self):
         return self.get_full_name() or self.username
 
+    @property
+    def nucleos(self):
+        from nucleos.models import Nucleo
+
+        return Nucleo.objects.filter(participacoes__user=self, participacoes__status="aprovado")
+
 
 class NotificationSettings(TimeStampedModel, SoftDeleteModel):
     """Preferências de notificação do usuário."""

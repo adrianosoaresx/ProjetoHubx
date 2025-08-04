@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import bleach
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
-import bleach
 
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 
@@ -38,12 +38,12 @@ class ParticipacaoDecisaoForm(forms.Form):
 class SuplenteForm(forms.ModelForm):
     class Meta:
         model = CoordenadorSuplente
-        fields = ["usuario", "periodo_inicio", "periodo_fim"]
+        fields = ["usuario", "inicio", "fim"]
 
     def clean(self):
         data = super().clean()
-        inicio = data.get("periodo_inicio")
-        fim = data.get("periodo_fim")
+        inicio = data.get("inicio")
+        fim = data.get("fim")
         if inicio and fim and inicio >= fim:
             raise forms.ValidationError(_("Período inválido"))
         return data

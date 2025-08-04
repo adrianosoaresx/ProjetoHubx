@@ -91,13 +91,13 @@ class NucleoViewSet(viewsets.ModelViewSet):
         serializer = CoordenadorSuplenteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        if data["periodo_inicio"] >= data["periodo_fim"]:
+        if data["inicio"] >= data["fim"]:
             return Response({"detail": _("Período inválido.")}, status=400)
         suplente = CoordenadorSuplente.objects.create(
             nucleo=nucleo,
             usuario=data["usuario"],
-            periodo_inicio=data["periodo_inicio"],
-            periodo_fim=data["periodo_fim"],
+            inicio=data["inicio"],
+            fim=data["fim"],
         )
         notify_suplente_designado.delay(nucleo.id, suplente.usuario.email)
         out = CoordenadorSuplenteSerializer(suplente)

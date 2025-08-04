@@ -12,7 +12,7 @@ from faker import Faker
 from accounts.models import UserType
 from agenda.models import Evento, InscricaoEvento
 from empresas.models import Empresa, Tag
-from nucleos.models import Nucleo
+from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 
 
@@ -96,7 +96,7 @@ class Command(BaseCommand):
             nucleos = nucleos_by_org[org]
             gerentes_org = [g for g in gerentes if g.organizacao == org]
             for nucleo, gerente in zip(nucleos, gerentes_org):
-                nucleo.membros.add(gerente)
+                ParticipacaoNucleo.objects.get_or_create(nucleo=nucleo, user=gerente, defaults={"status": "aprovado"})
 
         cdl_mulher_map = {org.id: Nucleo.objects.get(organizacao=org, nome="CDL Mulher") for org in orgs}
 
@@ -105,11 +105,11 @@ class Command(BaseCommand):
                 nucleo = cdl_mulher_map[cliente.organizacao_id]
             else:
                 nucleo = random.choice(nucleos_by_org[cliente.organizacao])
-            nucleo.membros.add(cliente)
+            ParticipacaoNucleo.objects.get_or_create(nucleo=nucleo, user=cliente, defaults={"status": "aprovado"})
 
         for admin in admins:
             nucleo = random.choice(nucleos_by_org[admin.organizacao])
-            nucleo.membros.add(admin)
+            ParticipacaoNucleo.objects.get_or_create(nucleo=nucleo, user=admin, defaults={"status": "aprovado"})
 
         # Cria tags de produtos e serviços
         tags_prod = []

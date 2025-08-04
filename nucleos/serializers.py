@@ -14,8 +14,8 @@ class CoordenadorSuplenteSerializer(serializers.ModelSerializer):
             "id",
             "usuario",
             "usuario_email",
-            "periodo_inicio",
-            "periodo_fim",
+            "inicio",
+            "fim",
         ]
 
 
@@ -55,9 +55,9 @@ class NucleoSerializer(serializers.ModelSerializer):
             "descricao",
             "avatar",
             "cover",
-            "data_criacao",
+            "created_at",
             "deleted",
             "deleted_at",
             "suplentes",
         ]
-        read_only_fields = ["deleted", "deleted_at", "data_criacao"]
+        read_only_fields = ["deleted", "deleted_at", "created_at"]

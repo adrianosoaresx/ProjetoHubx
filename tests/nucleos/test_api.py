@@ -7,7 +7,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import UserType
-from nucleos.models import Nucleo, ParticipacaoNucleo, CoordenadorSuplente
+from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from nucleos.tasks import expirar_solicitacoes_pendentes
 from organizacoes.models import Organizacao
 
@@ -108,8 +108,8 @@ def test_designar_suplente(api_client, admin_user, coord_user, organizacao):
     url = reverse("nucleos_api:nucleo-adicionar-suplente", args=[nucleo.pk])
     data = {
         "usuario": coord_user.pk,
-        "periodo_inicio": timezone.now(),
-        "periodo_fim": timezone.now() + timedelta(days=1),
+        "inicio": timezone.now(),
+        "fim": timezone.now() + timedelta(days=1),
     }
     resp = api_client.post(url, data)
     assert resp.status_code == 201

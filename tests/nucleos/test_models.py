@@ -65,14 +65,14 @@ def test_participacao_unique_constraint(organizacao, usuario):
         ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo)
 
 
-def test_membros_aprovados_property(organizacao, usuario):
+def test_membros_property(organizacao, usuario):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="pendente")
     u2 = get_user_model().objects.create_user(
         username="u2", email="u2@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
     )
     ParticipacaoNucleo.objects.create(user=u2, nucleo=nucleo, status="aprovado")
-    assert list(nucleo.membros_aprovados) == [u2]
+    assert list(nucleo.membros) == [u2]
 
 
 @pytest.mark.xfail(reason="Arquivos não são removidos ao deletar o núcleo")
