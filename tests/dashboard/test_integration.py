@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from django.core.cache import cache
 from django.urls import reverse
 
 from dashboard.services import DashboardService
@@ -9,6 +10,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_admin_view_invokes_service_methods(client, admin_user):
+    cache.clear()
     with patch.object(
         DashboardService,
         "calcular_crescimento",
