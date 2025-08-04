@@ -16,6 +16,9 @@ def test_form_fields():
         "frequencia_notificacoes_whatsapp",
         "idioma",
         "tema",
+        "hora_notificacao_diaria",
+        "hora_notificacao_semanal",
+        "dia_semana_notificacao",
     ]
 
 
@@ -28,6 +31,9 @@ def test_form_valid_data(admin_user):
         "frequencia_notificacoes_whatsapp": "semanal",
         "idioma": "en-US",
         "tema": "escuro",
+        "hora_notificacao_diaria": "08:00",
+        "hora_notificacao_semanal": "09:00",
+        "dia_semana_notificacao": 1,
     }
     form = ConfiguracaoContaForm(data=data, instance=config)
     assert form.is_valid()
@@ -50,6 +56,9 @@ def test_form_boolean_coercion(admin_user):
         "frequencia_notificacoes_whatsapp": "imediata",
         "idioma": "pt-BR",
         "tema": "claro",
+        "hora_notificacao_diaria": "08:00",
+        "hora_notificacao_semanal": "08:00",
+        "dia_semana_notificacao": 0,
     }
     form = ConfiguracaoContaForm(data=data, instance=config)
     assert form.is_valid()

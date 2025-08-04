@@ -118,6 +118,7 @@ types-requests==2.32.4.20250611
 typing_extensions==4.14.0
 tzdata==2025.2
 uritemplate==4.2.0
+twilio==9.2.3
 urllib3==2.5.0
 uvicorn==0.35.0
 validate_docbr==1.11.1
