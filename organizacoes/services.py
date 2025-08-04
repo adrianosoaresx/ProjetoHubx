@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict
+import uuid
 
 from django.db.models import Model
 
@@ -12,7 +13,9 @@ def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
     for field in org._meta.fields:
         name = field.name
         value = getattr(org, name)
-        if hasattr(value, "isoformat"):
+        if isinstance(value, uuid.UUID):
+            value = str(value)
+        elif hasattr(value, "isoformat"):
             value = value.isoformat()
         elif isinstance(value, Model):
             value = value.pk
@@ -26,13 +29,13 @@ def registrar_log(
     organizacao: Organizacao,
     usuario: Model | None,
     acao: str,
-    dados_antigos: Dict[str, Any],
+    dados_anteriores: Dict[str, Any],
     dados_novos: Dict[str, Any],
 ) -> None:
     OrganizacaoLog.objects.create(
         organizacao=organizacao,
         usuario=usuario,
         acao=acao,
-        dados_antigos=dados_antigos,
+        dados_anteriores=dados_anteriores,
         dados_novos=dados_novos,
     )

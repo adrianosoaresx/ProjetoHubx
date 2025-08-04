@@ -60,7 +60,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if estado:
             qs = qs.filter(estado__icontains=estado)
 
-        allowed_order = {"nome", "tipo", "cidade", "estado", "created"}
+        allowed_order = {"nome", "tipo", "cidade", "estado", "created_at"}
         if order not in allowed_order:
             order = "nome"
         return qs.order_by(order)
@@ -213,5 +213,5 @@ class OrganizacaoLogListView(SuperadminRequiredMixin, LoginRequiredMixin, ListVi
         return (
             OrganizacaoLog.objects.filter(organizacao_id=self.kwargs["pk"])
             .select_related("usuario")
-            .order_by("-created")
+            .order_by("-created_at")
         )

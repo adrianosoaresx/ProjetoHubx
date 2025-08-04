@@ -34,7 +34,7 @@
       <option value="nome" {% if request.GET.order == 'nome' or not request.GET.order %}selected{% endif %}>Nome</option>
       <option value="tipo" {% if request.GET.order == 'tipo' %}selected{% endif %}>Tipo</option>
       <option value="cidade" {% if request.GET.order == 'cidade' %}selected{% endif %}>Localização</option>
-      <option value="created" {% if request.GET.order == 'created' %}selected{% endif %}>Data</option>
+      <option value="created_at" {% if request.GET.order == 'created_at' %}selected{% endif %}>Data</option>
     </select>
     <div class="md:col-span-4 flex justify-end">
       <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">Filtrar</button>
@@ -70,7 +70,7 @@
             </td>
             <td class="px-4 py-2">{{ organizacao.get_tipo_display }}</td>
             <td class="px-4 py-2">{{ organizacao.cidade }}{% if organizacao.estado %}/{{ organizacao.estado }}{% endif %}</td>
-            <td class="px-4 py-2">{{ organizacao.created|date:'d/m/Y' }}</td>
+            <td class="px-4 py-2">{{ organizacao.created_at|date:'d/m/Y' }}</td>
             <td class="px-4 py-2 whitespace-nowrap flex gap-2">
               <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline">{% trans 'Visualizar' %}</a>
               {% if perms.organizacoes.change_organizacao %}
