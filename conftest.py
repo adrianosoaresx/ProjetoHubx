@@ -10,6 +10,8 @@ import threading
 if not django.apps.apps.ready:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
     django.setup()
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.CELERY_TASK_EAGER_PROPAGATES = True
 
 # Configurar logging para depuração
 logging.basicConfig(level=logging.DEBUG)

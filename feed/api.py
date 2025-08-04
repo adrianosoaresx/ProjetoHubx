@@ -3,8 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import permissions, serializers, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from .models import Comment, Like, ModeracaoPost, Post
 
@@ -83,11 +86,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = (
-            Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+            Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao")
             .prefetch_related("tags")
-            .filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
-            .distinct()
+            .exclude(moderacao__status="rejeitado")
         )
+        if not self.request.user.is_staff:
+            qs = qs.filter(
+                Q(moderacao__status="aprovado") | Q(autor=self.request.user)
+            )
+        qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
         if tipo_feed:
@@ -127,6 +134,22 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Post) -> None:
         instance.soft_delete()
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAdminUser])
+    def avaliar(self, request, pk=None):
+        post = self.get_object()
+        serializer = ModeracaoPostSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        moderacao, _ = ModeracaoPost.objects.update_or_create(
+            post=post,
+            defaults={
+                "status": serializer.validated_data["status"],
+                "motivo": serializer.validated_data.get("motivo", ""),
+                "avaliado_por": request.user,
+                "avaliado_em": timezone.now(),
+            },
+        )
+        return Response(ModeracaoPostSerializer(moderacao).data)
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -174,10 +197,10 @@ class ModeracaoPostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "post", "avaliado_por", "avaliado_em", "created_at", "updated_at"]
 
 
 class ModeracaoPostViewSet(viewsets.ModelViewSet):
     serializer_class = ModeracaoPostSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAdminUser]
     queryset = ModeracaoPost.objects.select_related("post", "avaliado_por").all()

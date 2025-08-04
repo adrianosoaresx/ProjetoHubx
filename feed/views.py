@@ -24,11 +24,18 @@ def meu_mural(request):
     """Exibe o mural pessoal do usuário com seus posts e posts globais."""
 
     posts = (
-        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao")
         .prefetch_related("likes", "comments")
-        .filter(Q(autor=request.user) | Q(tipo_feed="global", organizacao=request.user.organizacao))
         .filter(deleted=False)
-        .filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
+        .exclude(moderacao__status="rejeitado")
+        .filter(
+            Q(autor=request.user)
+            | Q(
+                tipo_feed="global",
+                organizacao=request.user.organizacao,
+                moderacao__status="aprovado",
+            )
+        )
         .order_by("-created_at")
         .distinct()
     )
@@ -51,17 +58,22 @@ class FeedListView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q", "").strip()
         user = self.request.user
 
-        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao").prefetch_related(
             "likes", "comments", "tags"
         )
-        qs = qs.filter(deleted=False).filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True)).distinct()
+        qs = qs.filter(deleted=False).exclude(moderacao__status="rejeitado")
+        if not user.is_staff:
+            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=user))
+        qs = qs.distinct()
 
         if tipo_feed == "usuario":
             qs = qs.filter(Q(autor=user) | Q(tipo_feed="global", organizacao=user.organizacao))
         elif tipo_feed == "nucleo":
             nucleo_id = self.request.GET.get("nucleo")
             qs = qs.filter(tipo_feed="nucleo", nucleo_id=nucleo_id)
-            if not user.nucleos.filter(id=nucleo_id).exists():
+            from nucleos.models import Nucleo
+
+            if not Nucleo.objects.filter(id=nucleo_id, participacoes__user=user).exists():
                 qs = qs.none()
         elif tipo_feed == "evento":
             evento_id = self.request.GET.get("evento")
@@ -136,9 +148,17 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
 
 
 class PostDetailView(LoginRequiredMixin, DetailView):
-    queryset = Post.objects.filter(deleted=False).filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
     template_name = "feed/post_detail.html"
     context_object_name = "post"
+
+    def get_queryset(self):
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao").prefetch_related(
+            "tags"
+        )
+        qs = qs.filter(deleted=False).exclude(moderacao__status="rejeitado")
+        if not self.request.user.is_staff:
+            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=self.request.user))
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

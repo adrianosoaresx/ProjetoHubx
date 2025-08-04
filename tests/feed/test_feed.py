@@ -34,33 +34,39 @@ class FeedPublicPrivateTests(TestCase):
         self.client.force_login(self.user)
 
     def test_global_post_appears_on_feed(self):
-        Post.objects.create(
+        post = Post.objects.create(
             autor=self.user,
             conteudo="global",
             tipo_feed="global",
             organizacao=self.org,
         )
+        post.moderacao.status = "aprovado"
+        post.moderacao.save()
         resp = self.client.get(reverse("feed:listar"))
         self.assertIn("global", resp.content.decode())
 
     def test_nucleo_post_hidden_on_feed(self):
-        Post.objects.create(
+        post = Post.objects.create(
             autor=self.user,
             conteudo="nucleo",
             tipo_feed="nucleo",
             organizacao=self.org,
         )
+        post.moderacao.status = "aprovado"
+        post.moderacao.save()
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context.get("posts", [])), 0)
 
     def test_nucleo_post_only_with_filter(self):
-        Post.objects.create(
+        post = Post.objects.create(
             autor=self.user,
             conteudo="nucleo",
             nucleo=self.nucleo,
             tipo_feed="nucleo",
             organizacao=self.org,
         )
+        post.moderacao.status = "aprovado"
+        post.moderacao.save()
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context.get("posts", [])), 0)
 
@@ -71,8 +77,11 @@ class FeedPublicPrivateTests(TestCase):
         self.assertEqual(len(posts), 0)
 
     def test_search_returns_matching_posts(self):
-        Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)
-        Post.objects.create(autor=self.user, conteudo="charlie delta", organizacao=self.org)
+        p1 = Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)
+        p2 = Post.objects.create(autor=self.user, conteudo="charlie delta", organizacao=self.org)
+        p1.moderacao.status = p2.moderacao.status = "aprovado"
+        p1.moderacao.save()
+        p2.moderacao.save()
         resp = self.client.get(reverse("feed:listar") + "?q=alpha")
         self.assertEqual(len(resp.context.get("posts", [])), 1)
         self.assertIn("alpha bravo", resp.content.decode())

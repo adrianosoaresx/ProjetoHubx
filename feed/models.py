@@ -39,7 +39,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
     conteudo = models.TextField(blank=True)
     image = models.ImageField(upload_to="uploads/", null=True, blank=True)
     pdf = models.FileField(upload_to="uploads/", null=True, blank=True)
-    video = models.FileField(upload_to="uploads/", null=True, blank=True)
+    video = models.FileField(upload_to="videos/", null=True, blank=True)
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
     evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
@@ -68,10 +68,17 @@ class Post(TimeStampedModel, SoftDeleteModel):
             raise ValidationError({"evento": "Evento é obrigatório"})
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
         super().save(*args, **kwargs)
+        moderacao, _created = ModeracaoPost.objects.get_or_create(post=self)
+        if is_new and _created:
+            # novo post começa pendente
+            pass
         banned = getattr(settings, "FEED_BAD_WORDS", [])
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
-            ModeracaoPost.objects.get_or_create(post=self)
+            if moderacao.status != "pendente":
+                moderacao.status = "pendente"
+                moderacao.save(update_fields=["status"])
 
 
 class Like(TimeStampedModel):
@@ -106,17 +113,17 @@ class ModeracaoPost(TimeStampedModel):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="moderacoes")
+    post = models.OneToOneField(
+        Post, on_delete=models.CASCADE, related_name="moderacao"
+    )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
     motivo = models.TextField(blank=True)
     avaliado_por = models.ForeignKey(
         User,
         null=True,
-        blank=True,
         on_delete=models.SET_NULL,
-        related_name="posts_avaliados",
     )
-    avaliado_em = models.DateTimeField(null=True, blank=True)
+    avaliado_em = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
         verbose_name = "Moderação de Post"
