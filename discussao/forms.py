@@ -17,6 +17,12 @@ class CategoriaDiscussaoForm(forms.ModelForm):
         }
 
 
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ["nome"]
+
+
 class TopicoDiscussaoForm(forms.ModelForm):
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all(),
@@ -26,11 +32,21 @@ class TopicoDiscussaoForm(forms.ModelForm):
 
     class Meta:
         model = TopicoDiscussao
-        fields = ["categoria", "titulo", "conteudo", "publico_alvo", "tags", "nucleo", "evento"]
+        fields = [
+            "categoria",
+            "titulo",
+            "conteudo",
+            "publico_alvo",
+            "tags",
+            "nucleo",
+            "evento",
+            "fechado",
+        ]
         widgets = {
             "categoria": forms.HiddenInput(),
             "nucleo": forms.HiddenInput(),
             "evento": forms.HiddenInput(),
+            "fechado": forms.HiddenInput(),
         }
 
     def clean_tags(self):
@@ -71,4 +87,5 @@ class TopicoDiscussaoForm(forms.ModelForm):
 class RespostaDiscussaoForm(forms.ModelForm):
     class Meta:
         model = RespostaDiscussao
-        fields = ["conteudo", "arquivo", "reply_to"]
+        fields = ["conteudo", "arquivo", "reply_to", "motivo_edicao"]
+        widgets = {"motivo_edicao": forms.Textarea(attrs={"rows": 2})}

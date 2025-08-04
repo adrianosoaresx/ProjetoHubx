@@ -5,9 +5,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Q
+from datetime import timedelta
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
 from django.views.generic import (
@@ -22,11 +23,12 @@ from django.views.generic import (
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin
 
-from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TopicoDiscussaoForm
+from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TagForm, TopicoDiscussaoForm
 from .models import (
     CategoriaDiscussao,
     InteracaoDiscussao,
     RespostaDiscussao,
+    Tag,
     TopicoDiscussao,
 )
 
@@ -106,6 +108,27 @@ class CategoriaDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
         return reverse("discussao:categorias")
 
 
+class TagListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+    model = Tag
+    template_name = "discussao/tags.html"
+    context_object_name = "tags"
+    paginate_by = 20
+
+
+class TagCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+    model = Tag
+    form_class = TagForm
+    template_name = "discussao/tag_form.html"
+    success_url = reverse_lazy("discussao:tags")
+
+
+class TagUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = Tag
+    form_class = TagForm
+    template_name = "discussao/tag_form.html"
+    success_url = reverse_lazy("discussao:tags")
+
+
 class TopicoListView(LoginRequiredMixin, ListView):
     model = TopicoDiscussao
     template_name = "discussao/topicos_list.html"
@@ -175,17 +198,26 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
             return render(
                 request,
                 "discussao/topico_detail.html",
-                {"comentarios": context["comentarios"], "partial": True, "user": request.user},
+                {
+                    "comentarios": context["comentarios"],
+                    "partial": True,
+                    "user": request.user,
+                    "topico": self.object,
+                },
             )
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         comentarios_qs = self.object.respostas.select_related("autor")
+        melhor = self.object.melhor_resposta
+        if melhor:
+            comentarios_qs = comentarios_qs.exclude(pk=melhor.pk)
         paginator = Paginator(comentarios_qs, self.paginate_by)
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         context["comentarios"] = comentarios
+        context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
@@ -227,6 +259,11 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         self.object = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
         if request.user != self.object.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return HttpResponseForbidden()
+        if timezone.now() - self.object.created > timedelta(minutes=15) and request.user.user_type not in {
+            UserType.ADMIN,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -261,13 +298,13 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        if self.topico.status == "fechado":
+        if self.topico.fechado:
             return HttpResponseForbidden()
         form.instance.autor = self.request.user
         form.instance.topico = self.topico
         response = super().form_valid(form)
         if self.request.headers.get("Hx-Request"):
-            context = {"comentario": self.object, "user": self.request.user}
+            context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
         return response
@@ -311,6 +348,11 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
         if request.user != self.object.autor and request.user.user_type not in {
             UserType.ADMIN,
             UserType.COORDENADOR,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
+        if timezone.now() - self.object.created > timedelta(minutes=15) and request.user.user_type not in {
+            UserType.ADMIN,
             UserType.ROOT,
         }:
             return HttpResponseForbidden()
@@ -363,8 +405,27 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
         if resposta_id:
             resposta = get_object_or_404(topico.respostas, pk=resposta_id)
             topico.melhor_resposta = resposta
-        topico.status = "fechado"
-        topico.save()
+            topico.save(update_fields=["melhor_resposta"])
+        return redirect(
+            "discussao:topico_detalhe",
+            categoria_slug=categoria.slug,
+            topico_slug=topico.slug,
+        )
+
+
+class TopicoToggleFechadoView(LoginRequiredMixin, View):
+    def post(self, request, categoria_slug, topico_slug):
+        categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
+        topico = get_object_or_404(TopicoDiscussao, categoria=categoria, slug=topico_slug)
+        if topico.fechado:
+            if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+                return HttpResponseForbidden()
+            topico.fechado = False
+        else:
+            if request.user != topico.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+                return HttpResponseForbidden()
+            topico.fechado = True
+        topico.save(update_fields=["fechado"])
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,

@@ -58,23 +58,26 @@ def test_edicao_apos_limite(api_client, categoria, associado_user, admin_user):
     assert topico.titulo == "Novo"
 
 
-def test_fechar_e_reabrir_topico(api_client, categoria, associado_user):
+def test_fechar_e_reabrir_topico(api_client, categoria, associado_user, admin_user):
     topico = create_topico(categoria, associado_user)
     api_client.force_authenticate(user=associado_user)
     close_url = reverse("discussao_api:topico-fechar", args=[topico.pk])
     resp = api_client.patch(close_url)
     assert resp.status_code == 200
     topico.refresh_from_db()
-    assert topico.status == "fechado"
+    assert topico.fechado is True
     # tentar responder deve falhar
     resp_url = reverse("discussao_api:resposta-list")
     response = api_client.post(resp_url, {"topico": topico.id, "conteudo": "c"})
     assert response.status_code == 403
     reopen_url = reverse("discussao_api:topico-reabrir", args=[topico.pk])
     resp2 = api_client.patch(reopen_url)
-    assert resp2.status_code == 200
+    assert resp2.status_code == 403
+    api_client.force_authenticate(user=admin_user)
+    resp3 = api_client.patch(reopen_url)
+    assert resp3.status_code == 200
     topico.refresh_from_db()
-    assert topico.status == "aberto"
+    assert topico.fechado is False
     response2 = api_client.post(resp_url, {"topico": topico.id, "conteudo": "c"})
     assert response2.status_code == 201
 

@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
+from freezegun import freeze_time
 
 from discussao.forms import RespostaDiscussaoForm
 from discussao.models import (
@@ -207,7 +208,7 @@ def test_topico_mark_resolved(client, admin_user, categoria, topico, nucleado_us
     resp_http = client.post(url, {"melhor_resposta": resp.id})
     assert resp_http.status_code == 302
     topico.refresh_from_db()
-    assert topico.status == "fechado" and topico.melhor_resposta == resp
+    assert topico.melhor_resposta == resp
 
 
 def test_topico_search(client, admin_user, categoria):
@@ -222,6 +223,35 @@ def test_topico_search(client, admin_user, categoria):
     resp = client.get(url)
     expected = TopicoDiscussao.objects.get(titulo="Teste A")
     assert list(resp.context["topicos"]) == [expected]
+
+
+def test_resposta_edicao_limite(client, nucleado_user, categoria, topico):
+    with freeze_time("2025-07-10 12:00:00"):
+        r = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="a")
+    client.force_login(nucleado_user)
+    url = reverse("discussao:resposta_editar", args=[r.id])
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = client.post(url, {"conteudo": "b"})
+    assert resp.status_code == 403
+
+
+def test_toggle_fechado(client, nucleado_user, admin_user, categoria):
+    top = TopicoDiscussao.objects.create(
+        categoria=categoria, titulo="T", conteudo="c", autor=nucleado_user, publico_alvo=0
+    )
+    url = reverse("discussao:topico_toggle_fechado", args=[categoria.slug, top.slug])
+    client.force_login(nucleado_user)
+    resp = client.post(url)
+    assert resp.status_code == 302
+    top.refresh_from_db()
+    assert top.fechado is True
+    resp2 = client.post(url)
+    assert resp2.status_code == 403
+    client.force_login(admin_user)
+    resp3 = client.post(url)
+    assert resp3.status_code == 302
+    top.refresh_from_db()
+    assert top.fechado is False
 
 
 def test_interacao_requires_login(client, categoria, topico):

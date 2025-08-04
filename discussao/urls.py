@@ -6,6 +6,9 @@ from .views import (
     CategoriaListView,
     CategoriaUpdateView,
     InteracaoView,
+    TagCreateView,
+    TagListView,
+    TagUpdateView,
     RespostaCreateView,
     RespostaDeleteView,
     RespostaUpdateView,
@@ -14,11 +17,15 @@ from .views import (
     TopicoDetailView,
     TopicoListView,
     TopicoMarkResolvedView,
+    TopicoToggleFechadoView,
     TopicoUpdateView,
 )
 
 urlpatterns = [
     path("", CategoriaListView.as_view(), name="categorias"),
+    path("tags/", TagListView.as_view(), name="tags"),
+    path("tags/novo/", TagCreateView.as_view(), name="tag_criar"),
+    path("tags/<uuid:pk>/editar/", TagUpdateView.as_view(), name="tag_editar"),
     path("categorias/novo/", CategoriaCreateView.as_view(), name="categoria_criar"),
     path("categorias/<slug:slug>/editar/", CategoriaUpdateView.as_view(), name="categoria_editar"),
     path("categorias/<slug:slug>/remover/", CategoriaDeleteView.as_view(), name="categoria_remover"),
@@ -58,6 +65,11 @@ urlpatterns = [
         "<slug:categoria_slug>/<slug:topico_slug>/resolver/",
         TopicoMarkResolvedView.as_view(),
         name="topico_resolver",
+    ),
+    path(
+        "<slug:categoria_slug>/<slug:topico_slug>/toggle-fechado/",
+        TopicoToggleFechadoView.as_view(),
+        name="topico_toggle_fechado",
     ),
     path(
         "interacao/<int:content_type_id>/<int:object_id>/<str:acao>/",
