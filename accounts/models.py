@@ -250,7 +250,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         return self.get_full_name() or self.username
 
 
-class NotificationSettings(TimeStampedModel):
+class NotificationSettings(TimeStampedModel, SoftDeleteModel):
     """Preferências de notificação do usuário."""
 
     user = models.OneToOneField(
@@ -275,7 +275,7 @@ class NotificationSettings(TimeStampedModel):
         return f"Notificações de {self.user}"
 
 
-class MediaTag(TimeStampedModel):
+class MediaTag(TimeStampedModel, SoftDeleteModel):
     """Tags para categorizar mídias dos usuários."""
 
     nome = models.CharField(max_length=50, unique=True)
@@ -288,7 +288,7 @@ class MediaTag(TimeStampedModel):
         return self.nome
 
 
-class UserMedia(TimeStampedModel):
+class UserMedia(TimeStampedModel, SoftDeleteModel):
     """Arquivos de mídia (imagens, vídeos, PDFs) enviados pelo usuário."""
 
     user = models.ForeignKey(
@@ -322,7 +322,7 @@ class UserMedia(TimeStampedModel):
         return f"{self.user.username} - {self.file.name}"
 
 
-class AccountToken(TimeStampedModel):
+class AccountToken(TimeStampedModel, SoftDeleteModel):
     class Tipo(models.TextChoices):
         EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
         PASSWORD_RESET = "password_reset", "Redefinição de Senha"
@@ -339,19 +339,18 @@ class AccountToken(TimeStampedModel):
         verbose_name_plural = "Tokens de Conta"
 
 
-class LoginAttempt(models.Model):
+class LoginAttempt(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
     email = models.EmailField()
     sucesso = models.BooleanField(default=False)
     ip = models.GenericIPAddressField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Tentativa de Login"
         verbose_name_plural = "Tentativas de Login"
 
 
-class SecurityEvent(models.Model):
+class SecurityEvent(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -359,7 +358,6 @@ class SecurityEvent(models.Model):
     )
     evento = models.CharField(max_length=50)
     ip = models.GenericIPAddressField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Evento de Segurança"

@@ -129,9 +129,9 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["delete"], url_path="me")
     def delete_me(self, request):
         user = request.user
-        user.deleted_at = timezone.now()
+        user.delete()
         user.exclusao_confirmada = True
-        user.save(update_fields=["deleted_at", "exclusao_confirmada"])
+        user.save(update_fields=["exclusao_confirmada"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
@@ -142,9 +142,10 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="me/cancel-delete")
     def cancel_delete(self, request):
         user = request.user
+        user.deleted = False
         user.deleted_at = None
         user.exclusao_confirmada = False
-        user.save(update_fields=["deleted_at", "exclusao_confirmada"])
+        user.save(update_fields=["deleted", "deleted_at", "exclusao_confirmada"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",

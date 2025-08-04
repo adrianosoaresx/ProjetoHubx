@@ -43,6 +43,7 @@ class ParticipacaoNucleo(models.Model):
         verbose_name_plural = "Participações nos Núcleos"
 
 
+
 class Nucleo(TimeStampedModel, SoftDeleteModel):
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
@@ -62,7 +63,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         related_name="nucleos",
     )
     data_criacao = models.DateField(auto_now_add=True)
-    deleted = models.BooleanField(default=False)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
 
@@ -84,14 +84,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
 
     def soft_delete(self) -> None:
         self.delete()
-
-    def delete(
-        self, using: str | None = None, keep_parents: bool = False, soft: bool = True
-    ) -> None:
-        if soft:
-            self.deleted = True
-            self.save(update_fields=["deleted"])
-        super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
     def save(self, *args, **kwargs):
         if self.slug:

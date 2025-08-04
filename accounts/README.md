@@ -1,0 +1,14 @@
+# Accounts App
+
+Todos os modelos deste app herdam de `TimeStampedModel` para os campos `created_at` e `updated_at` e utilizam `SoftDeleteModel` para exclusão lógica através dos campos `deleted` e `deleted_at`.
+
+Para criar um novo modelo:
+
+```python
+from core.models import TimeStampedModel, SoftDeleteModel
+
+class Exemplo(TimeStampedModel, SoftDeleteModel):
+    ...
+```
+
+A exclusão padrão é lógica, basta chamar `instance.delete()`. Para remover definitivamente, use `instance.delete(soft=False)`.
