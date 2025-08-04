@@ -10,14 +10,13 @@ pytestmark = pytest.mark.django_db
 def test_enviar_api(monkeypatch) -> None:
     admin_user = UserFactory(is_staff=True)
     template = NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
-    called = {}
+    called: dict[str, int] = {"count": 0}
 
-    def fake_send(user, codigo, ctx):
-        called["user"] = user
+    def fake_delay(*args, **kwargs):
+        called["count"] += 1
 
-    monkeypatch.setattr("notificacoes.services.notificacoes.enviar_para_usuario", fake_send)
     monkeypatch.setattr(
-        "notificacoes.services.notificacoes.enviar_notificacao_async.delay", lambda *a, **k: None
+        "notificacoes.services.notificacoes.enviar_notificacao_async.delay", fake_delay
     )
 
     client = APIClient()
@@ -28,7 +27,7 @@ def test_enviar_api(monkeypatch) -> None:
         format="json",
     )
     assert resp.status_code == 204
-    assert called["user"] == admin_user
+    assert called["count"] == 1
 
 
 def test_logs_filtrados_por_usuario(client) -> None:

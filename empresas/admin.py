@@ -30,7 +30,7 @@ class ContatoEmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(AvaliacaoEmpresa)
 class AvaliacaoEmpresaAdmin(admin.ModelAdmin):
-    list_display = ["empresa", "usuario", "nota", "created_at"]
+    list_display = ["empresa", "usuario", "nota", "created"]
     search_fields = ["empresa__nome", "usuario__email"]
     list_filter = ["nota"]
 

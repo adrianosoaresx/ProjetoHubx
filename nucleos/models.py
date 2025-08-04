@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 User = get_user_model()
 
@@ -43,7 +43,7 @@ class ParticipacaoNucleo(models.Model):
         verbose_name_plural = "Participações nos Núcleos"
 
 
-class Nucleo(TimeStampedModel):
+class Nucleo(TimeStampedModel, SoftDeleteModel):
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,
@@ -63,7 +63,6 @@ class Nucleo(TimeStampedModel):
     )
     data_criacao = models.DateField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
 
@@ -84,9 +83,15 @@ class Nucleo(TimeStampedModel):
         return self.membros.filter(participacoes__status="aprovado", participacoes__is_coordenador=True)
 
     def soft_delete(self) -> None:
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        self.save(update_fields=["deleted", "deleted_at"])
+        self.delete()
+
+    def delete(
+        self, using: str | None = None, keep_parents: bool = False, soft: bool = True
+    ) -> None:
+        if soft:
+            self.deleted = True
+            self.save(update_fields=["deleted"])
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
     def save(self, *args, **kwargs):
         if self.slug:

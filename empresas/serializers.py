@@ -91,7 +91,7 @@ class AvaliacaoEmpresaSerializer(serializers.ModelSerializer):
             "usuario_email",
             "nota",
             "comentario",
-            "created_at",
-            "updated_at",
+            "created",
+            "modified",
         ]
-        read_only_fields = ["empresa", "usuario", "created_at", "updated_at"]
+        read_only_fields = ["empresa", "usuario", "created", "modified"]

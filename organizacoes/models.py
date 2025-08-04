@@ -5,10 +5,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 
-class Organizacao(TimeStampedModel):
+class Organizacao(TimeStampedModel, SoftDeleteModel):
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)
@@ -32,7 +32,6 @@ class Organizacao(TimeStampedModel):
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -50,6 +49,14 @@ class Organizacao(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.nome
+
+    def delete(
+        self, using: str | None = None, keep_parents: bool = False, soft: bool = True
+    ) -> None:
+        if soft:
+            self.deleted = True
+            self.save(update_fields=["deleted"])
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
 
 class OrganizacaoLog(ExtTimeStampedModel):
