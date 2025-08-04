@@ -215,5 +215,5 @@ class OrganizacaoLogListView(SuperadminRequiredMixin, LoginRequiredMixin, ListVi
         return (
             OrganizacaoLog.objects.filter(organizacao_id=self.kwargs["pk"])
             .select_related("usuario")
-            .order_by("-created_at")
+            .order_by("-created")
         )

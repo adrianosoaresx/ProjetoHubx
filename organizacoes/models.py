@@ -3,6 +3,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
 
 from core.models import TimeStampedModel
 
@@ -51,7 +52,7 @@ class Organizacao(TimeStampedModel):
         return self.nome
 
 
-class OrganizacaoLog(models.Model):
+class OrganizacaoLog(ExtTimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
@@ -67,10 +68,9 @@ class OrganizacaoLog(models.Model):
     acao = models.CharField(max_length=50)
     dados_antigos = models.JSONField(default=dict, blank=True)
     dados_novos = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-created"]
 
     def __str__(self) -> str:
         return f"{self.organizacao} - {self.acao}"
