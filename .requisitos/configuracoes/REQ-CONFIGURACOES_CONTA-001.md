@@ -1,20 +1,22 @@
 ---
 id: REQ-CONFIGURACOES_CONTA-001
-title: Requisitos Configurações de Conta Hubx
+title: "Requisitos Configura\xE7\xF5es de Conta Hubx"
 module: Configuracoes_Conta
 status: Em vigor
 version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Configuracoes_Conta_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App de Configurações de Conta permite que cada usuário personalize suas preferências de notificação e aparência da interface de forma centralizada e persistente.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Gerenciamento de preferências de notificação (email, WhatsApp).  
   - Alternância de tema (claro/escuro).  
@@ -22,6 +24,7 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
 - **Exclui**:
   - Cadastro e autenticação (delegado a App Accounts).  
   - Configurações de organização, núcleo ou evento.
+
 
 ## 3. Requisitos Funcionais
 
@@ -45,6 +48,7 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
   - Prioridade: Alta
   - Critérios de Aceite: Após cadastro, existe instância Configurações_Conta.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -60,6 +64,7 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
 
 - **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -79,21 +84,30 @@ O App de Configurações de Conta permite que cada usuário personalize suas pre
 2. Interface muda para tema escuro/claro.  
 3. Configuração é salva para próximas sessões.
 
+
 ## 6. Regras de Negócio
+
+
 - Cada usuário deve possuir exatamente uma instância de Configurações_Conta.  
 - Instância criada automaticamente após registro.  
 - Preferências independentes de permissões.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **ConfiguracoesConta**  
   - user: OneToOneField(User, on_delete=CASCADE, related_name='configuracoes')  
   - receber_notificacoes_email: BooleanField(default=True)  
   - receber_notificacoes_whatsapp: BooleanField(default=False)  
-  - tema_escuro: BooleanField(default=False)  
+  - tema_escuro: BooleanField(default=False)
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Configurações de Conta
   Scenario: Usuário altera preferências de email
@@ -107,16 +121,17 @@ Feature: Configurações de Conta
     Then existe ConfiguracoesConta vinculada ao usuário
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: cria instância inicial de configurações.  
 - **Redis**: armazenamento de sessão opcional.  
 - **Celery**: dispara e‑mails de notificação conforme preferências.  
 - **Front‑end**: localStorage para tema (fallback).
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Configuracoes_Conta_Hubx.pdf
 
-## 11. Melhorias Sugeridas (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑05** – Permitir configurar frequência de notificações (imediata, diária, semanal) para cada canal.  

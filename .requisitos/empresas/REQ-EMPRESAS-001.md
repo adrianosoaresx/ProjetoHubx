@@ -7,14 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Empresas_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Empresas gerencia o cadastro, consulta, atualização e remoção de empresas vinculadas a organizações no sistema Hubx, permitindo pesquisa por tags, busca textual e controle de autoria.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Listagem e visualização de empresas com filtros por organização, município e tags.  
   - Cadastro de novas empresas (nome, CNPJ, tipo, localização, logo e descrição).  
@@ -24,6 +26,7 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 - **Exclui**:
   - Gerenciamento de usuários, órgãos governamentais ou processos externos.  
   - Integração com serviços de faturamento ou pagamento.
+
 
 ## 3. Requisitos Funcionais
 
@@ -52,6 +55,7 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
   - Prioridade: Média
   - Critérios de Aceite: Busca retorna empresas cujo nome ou tags correspondem ao termo.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -72,6 +76,7 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -98,12 +103,18 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 1. Usuário envia termo de busca e/ou tags.  
 2. Sistema filtra empresas e retorna resultados.
 
+
 ## 6. Regras de Negócio
+
+
 - CNPJ deve ser único em todo o sistema.  
 - Empresa deve estar vinculada a uma organização.  
 - Apenas usuário responsável ou admin pode editar/excluir.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Empresa**  
@@ -123,9 +134,12 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 - **Tag**  
   - id: UUID  
   - nome: string (unique)  
-  - categoria: enum('prod','serv')  
+  - categoria: enum('prod','serv')
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gestão de Empresas
   Scenario: Cadastro de empresa com CNPJ único
@@ -139,17 +153,18 @@ Feature: Gestão de Empresas
     Then retorna lista contendo empresas com essa tag
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: identificação do usuário responsável.  
 - **App Organizações**: validação de organização vinculada.  
 - **Search Engine**: Elasticsearch para busca avançada.  
 - **Storage (S3)**: armazenamento de logos de empresa.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Empresas_Hubx.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑06** – Implementar histórico de alterações de dados (quem alterou, quando e quais campos).  
@@ -163,4 +178,4 @@ Feature: Gestão de Empresas
 - Nova entidade `AvaliacaoEmpresa` com campos: id, empresa_id, usuario_id, nota (1–5), comentario.  
 
 ### Regras de Negócio Adicionais
-- Somente usuários autenticados podem avaliar empresas; um único usuário avalia uma empresa uma vez.  
+- Somente usuários autenticados podem avaliar empresas; um único usuário avalia uma empresa uma vez.

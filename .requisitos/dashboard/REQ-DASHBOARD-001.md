@@ -3,25 +3,26 @@ id: REQ-DASHBOARD-001
 title: Requisitos do App Dashboard
 module: Dashboard
 status: Em vigor
-version: "1.0"
+version: '1.0'
 authors: []
-created: "2025-07-25"
-updated: "2025-07-25"
-source:
-  - requisitos_dashboard_hubx.pdf
-  - estrutura_tecnica_dashboard.pdf
+created: '2025-07-25'
+updated: '2025-07-25'
 ---
 
 ## 1. Visão Geral
 
 Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas e tendências para diferentes tipos de usuários do sistema Hubx, podendo ser reutilizado e estendido por outros aplicativos.
 
+
 ## 2. Escopo
+
+
 - **Inclui**  
   - Painéis de estatísticas conforme perfil do usuário.  
   - Extensibilidade para apps de Núcleos, Eventos e Contas.  
 - **Exclui**  
   - Edição ou gerenciamento de dados através do dashboard.
+
 
 ## 3. Requisitos Funcionais
 
@@ -43,7 +44,8 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
 - **RF‑04**  
   - Descrição: Redirecionamento inteligente conforme tipo de usuário (root, admin etc.).  
   - Prioridade: Alta  
-  - Critérios de Aceite: Usuário redirecionado corretamente ao acessar `/dashboard`.  
+  - Critérios de Aceite: Usuário redirecionado corretamente ao acessar `/dashboard`.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -61,7 +63,10 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
 - **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
 
-## 5. Fluxo de Usuário / Caso de Uso
+
+## 5. Casos de Uso
+
+
 ```mermaid
 flowchart TD
     U[Usuário] -->|Acessa /dashboard| D[DashboardBaseView]
@@ -72,7 +77,10 @@ flowchart TD
 2. Sistema identifica perfil e redireciona à view apropriada.  
 3. Dashboard é renderizado com métricas e opções de filtro.
 
+
 ## 6. Regras de Negócio
+
+
 - Somente usuários autenticados podem acessar o dashboard.  
 - Perfis e acessos:  
   - **root**: métricas globais.  
@@ -81,7 +89,10 @@ flowchart TD
   - **associado/nucleado**: visão parcial conforme permissão.  
   - **convidado**: sem acesso.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 Reaproveita modelos existentes:  
 - Usuário (`User`),  
@@ -89,7 +100,10 @@ Reaproveita modelos existentes:
 - Núcleo (`Nucleo`),  
 - Evento (`Evento`).
 
+
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Acesso ao Dashboard
   Scenario: Usuário root acessa métricas globais
@@ -98,15 +112,15 @@ Feature: Acesso ao Dashboard
     Then vê métricas globais e filtros disponíveis
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - Serviços de métricas em `services/dashboard_metrics.py`.  
 - URLs e views em `urls.py` e `views/dashboard.py`.
 
-## 10. Anexos e Referências
-- `requisitos_dashboard_hubx.pdf`  
-- `estrutura_tecnica_dashboard.pdf`
 
-## 11. Melhorias Sugeridas (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑05** – Implementar função `get_variation(previous_value, current_value)` para calcular variação percentual: `(current_value − previous_value) / max(previous_value,1) * 100`.  
@@ -115,4 +129,4 @@ Feature: Acesso ao Dashboard
 
 ### Requisitos Não‑Funcionais Adicionais
 - **RNF‑05** – As consultas de métricas devem ser cacheadas com invalidação automática a cada 5 minutos.  
-- **RNF‑06** – O componente de visualização deve seguir princípios de acessibilidade (WCAG 2.1).  
+- **RNF‑06** – O componente de visualização deve seguir princípios de acessibilidade (WCAG 2.1).

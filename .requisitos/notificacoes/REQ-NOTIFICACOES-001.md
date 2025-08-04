@@ -1,13 +1,12 @@
 ---
 id: REQ-NOTIFICACOES-001
-title: Requisitos do Módulo de Notificações
+title: "Requisitos do M\xF3dulo de Notifica\xE7\xF5es"
 module: notificacoes
 status: draft
 version: 1.0.0
 authors: Time de Engenharia Hubx.space
 created: 2025-07-28
 updated: 2025-07-28
-source: Especificação de requisitos do sistema Hubx.space
 ---
 
 ## 1. Visão Geral
@@ -16,7 +15,10 @@ O módulo **Notificações** centraliza o envio de mensagens transacionais (como
 Atualmente, cada aplicação envia notificações por conta própria ou registra apenas logs【341912000934825†L9-L21】, o que fragmenta a lógica e dificulta a gestão de preferências e integrações externas.  
 Este documento descreve um novo app de notificações que padroniza templates, preferências, envio assíncrono, registro de logs e exposição de métricas.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Cadastro de modelos de mensagens com assunto e corpo parametrizáveis.
   - Armazenamento de preferências de notificação por usuário (e‑mail, push, WhatsApp).
@@ -28,6 +30,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - Interfaces de usuário para configurar preferências (serão tratadas pelo app de contas).
   - Campanhas de marketing ou newsletters; o foco são mensagens transacionais.
   - Armazenamento de mensagens recebidas; este app trata apenas de envio.
+
 
 ## 3. Requisitos Funcionais
 
@@ -66,6 +69,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - **Prioridade**: Alta.
   - **Critérios de Aceite**: Chamadas a partir de outros módulos devem funcionar sem necessidade de conhecer a implementação interna do app de notificações.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01 – Desempenho**
@@ -102,6 +106,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
 - **RNF‑07**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑08**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
 
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Enviar Notificação Individual
@@ -131,6 +136,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
 2. Filtra por usuário, template, canal ou período.
 3. Analisa se as mensagens foram enviadas com sucesso ou tiveram falhas.
 
+
 ## 6. Regras de Negócio
 
 - O sistema deve **respeitar as preferências do usuário**: nunca enviar mensagens por canais desativados; se todos os canais estiverem desativados, registrar falha no log.
@@ -139,7 +145,10 @@ Este documento descreve um novo app de notificações que padroniza templates, p
 - Os **logs de notificações são imutáveis**: uma vez gravados, não podem ser editados nem excluídos.
 - Os registros de preferências e logs devem manter **integridade referencial** com o modelo de usuário (`settings.AUTH_USER_MODEL`); a exclusão de usuários deve ser protegida.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **NotificationTemplate**
@@ -168,6 +177,7 @@ Este documento descreve um novo app de notificações que padroniza templates, p
   - `data_envio`: datetime.
   - `erro`: texto (opcional).
   - ``, ``: datetime.
+
 
 ## 8. Critérios de Aceite (Gherkin)
 
@@ -199,7 +209,8 @@ Feature: Enviar notificações
       And se todas falharem registra o log como FALHA com descrição do erro
 ```
 
-## 9. Dependências/Integrações
+
+## 9. Dependências / Integrações
 
 - **Celery** – utilizado para execução assíncrona das tasks de envio de notificação.
 - **Prometheus** – exposição de métricas via endpoint `/metrics` conforme padrão【805472933500524†L4-L10】.
@@ -207,9 +218,3 @@ Feature: Enviar notificações
 - **Serviços de e‑mail/push/WhatsApp** – integração via clientes específicos; hoje são stubs que apenas registram logs【341912000934825†L9-L21】, devendo ser implementados pela equipe de infraestrutura.
 - **Módulo Financeiro e demais módulos** – deverão utilizar `enviar_para_usuario` para enviar notificações de cobranças, inadimplência e outras comunicações【768480434653939†L9-L33】.
 - **Métricas** – integração com `services/metrics.py` para incrementar contadores de notificações.
-
-## 10. Anexos e Referências
-
-- Auditorias do módulo financeiro – mostram a necessidade de um subsistema de notificações real【341912000934825†L9-L21】【768480434653939†L9-L33】.
-- Código atual de notificações – `notifications_client.py` e `services/notificacoes.py` são stubs que ilustram a ausência de integração externa【341912000934825†L9-L21】.
-- Métricas Prometheus – exemplos de contadores no app financeiro【317521869546451†L29-L42】 e no módulo de métricas【805472933500524†L4-L10】.

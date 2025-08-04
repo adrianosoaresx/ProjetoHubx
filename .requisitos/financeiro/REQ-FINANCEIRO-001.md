@@ -7,14 +7,16 @@ version: '1.0'
 authors: []
 created: '2025-07-28'
 updated: '2025-07-28'
-source: Conversa com cliente
 ---
 
 ## 1. Visão Geral
 
 O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núcleos e eventos dentro de uma organização. Ele controla centros de custo, contas de associados, cobranças recorrentes e aportes, além de fornecer relatórios e dashboards com filtros por período, núcleo e evento.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - Registrar e consolidar pagamentos de mensalidades de associação e de núcleos, bem como ingressos de eventos, via importação de planilhas e lançamentos automáticos.
   - Gerenciamento de centros de custo para núcleos e eventos, incluindo vinculação de eventos a núcleos.
@@ -24,6 +26,7 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
 - **Exclui**:
   - Processamento de pagamentos (interação com gateways de boleto ou Pix) – será tratado pelo sistema de pagamentos.
   - Gestão de organizações, usuários ou núcleos (delegado a outros módulos).
+
 
 ## 3. Requisitos Funcionais
 
@@ -57,6 +60,7 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
   - **Prioridade**: Média
   - **Critérios de Aceite**: GET `/api/financeiro/inadimplencias/` retorna lançamentos pendentes; notificações são disparadas via tarefas agendadas.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -83,6 +87,7 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
 - **RNF‑05**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑06**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
 
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Importar Pagamentos
@@ -105,6 +110,7 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
 2. Sistema gera relatório com saldo, receitas, despesas, inadimplência e evolução de núcleos.
 3. Usuário exporta em CSV ou visualiza no dashboard.
 
+
 ## 6. Regras de Negócio
 
 - O sistema não aplica juros, multas ou suspensões por inadimplência; apenas notifica os associados.
@@ -114,7 +120,10 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
 - Apenas associados com status ativo podem receber cobranças e fazer pagamentos.
 - Lançamentos financeiros não podem ser excluídos; correções devem ser registradas como ajustes.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **CentroCusto**
@@ -141,7 +150,10 @@ O módulo Financeiro do Hubx centraliza a gestão de receitas e despesas de núc
   - status: enum('pendente','pago','cancelado')
   - descricao: text
 
+
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Importação de Pagamentos
   Scenario: Usuário financeiro importa planilha de mensalidades
@@ -162,13 +174,13 @@ Feature: Distribuição de Receitas
     Then valor é creditado no centro de custo do núcleo X
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: para gestão de usuários e identificação dos associados.
 - **App Núcleos**: para validar vínculos entre usuários e núcleos.
 - **App Eventos**: para cadastrar eventos e suas vinculações.
 - **Sistema de Pagamentos**: integração com gateways de boleto/Pix (em outro módulo).
 - **Sistema de Notificações**: envio de e-mails, mensagens no app e WhatsApp.
 - **Celery**: para tarefas agendadas (geração de cobranças, envios de avisos).
-
-## 10. Anexos e Referências
-- Conversas e instruções do cliente (sprint 2025-07-28).

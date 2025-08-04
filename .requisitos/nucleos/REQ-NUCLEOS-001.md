@@ -1,20 +1,22 @@
 ---
 id: REQ-NUCLEOS-001
-title: Requisitos Núcleos Hubx
-module: Núcleos
+title: "Requisitos N\xFAcleos Hubx"
+module: "N\xFAcleos"
 status: Em vigor
 version: '1.0'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
-source: Requisitos_Nucleos_Hubx.pdf
 ---
 
 ## 1. Visão Geral
 
 O App Núcleos gerencia a criação, edição, visualização e associação de usuários a núcleos dentro de uma organização, incluindo imagens de avatar e capa, e controle de membros e coordenadores.
 
+
 ## 2. Escopo
+
+
 - **Inclui**:
   - CRUD de núcleos (nome, descrição, avatar, capa).  
   - Listagem de núcleos por organização e por usuário.  
@@ -23,6 +25,7 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
 - **Exclui**:
   - Gestão de organizações (delegado ao App Organizações).  
   - Comunicação em tempo real (delegado ao App Chat).
+
 
 ## 3. Requisitos Funcionais
 
@@ -56,6 +59,7 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
   - Prioridade: Alta
   - Critérios de Aceite: Endpoints `/api/nucleos/<id>/coordenadores/`; somente admins.
 
+
 ## 4. Requisitos Não‑Funcionais
 
 - **RNF‑01**
@@ -76,6 +80,7 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
 
 - **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 
 ## 5. Casos de Uso
 
@@ -100,13 +105,19 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
 1. Admin seleciona usuários para coordenar núcleo.  
 2. Permissões de coordenação são atribuídas/removidas.
 
+
 ## 6. Regras de Negócio
+
+
 - Cada usuário só pode participar de núcleos da sua organização.  
 - Um usuário que participa de um núcleo deve ter `is_associado=True`.  
 - Coordenador é membro com flag `is_coordenador=True`.  
 - Soft delete preserva histórico de associações.
 
+
 ## 7. Modelo de Dados
+
+
 *Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Núcleo**  
@@ -122,9 +133,12 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
   - user: FK → User.id  
   - nucleo: FK → Núcleo.id  
   - is_coordenador: boolean  
-  - unique_together: (user, nucleo)  
+  - unique_together: (user, nucleo)
+
 
 ## 8. Critérios de Aceite (Gherkin)
+
+
 ```gherkin
 Feature: Gestão de Núcleos
   Scenario: Usuário adiciona membro ao núcleo
@@ -138,17 +152,18 @@ Feature: Gestão de Núcleos
     Then usuário ganha flag is_coordenador=True
 ```
 
+
 ## 9. Dependências / Integrações
+
+
 - **App Accounts**: validação de usuários participantes.  
 - **App Organizações**: validação de escopo organizacional.  
 - **Storage S3**: armazenamento de avatar e capa.  
 - **Celery**: processamento de upload de imagens.  
 - **Sentry**: monitoramento de erros.
 
-## 10. Anexos e Referências
-- Documento fonte: Requisitos_Nucleos_Hubx.pdf
 
-## 11. Melhorias e Extensões (Auditoria 2025‑07‑25)
+## 10. Requisitos Adicionais / Melhorias
 
 ### Requisitos Funcionais Adicionais
 - **RF‑07** – Implementar fluxo de solicitação de participação com estados `pendente`, `aprovado` e `recusado`. Coordenadores ou admins podem aprovar ou recusar.  
@@ -160,4 +175,4 @@ Feature: Gestão de Núcleos
 - Nova entidade `CoordenadorSuplente` com campos: id, nucleo_id, usuario_id, periodo_inicio, periodo_fim.  
 
 ### Regras de Negócio Adicionais
-- Solicitações pendentes expiram após 30 dias se não forem decididas.  
+- Solicitações pendentes expiram após 30 dias se não forem decididas.
