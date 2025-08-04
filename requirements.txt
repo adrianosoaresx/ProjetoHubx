@@ -7,6 +7,7 @@ autobahn==24.4.2
 Automat==25.4.16
 bandit==1.7.7
 billiard==4.2.1
+boto3==1.40.1
 black==24.4.2
 celery==5.5.3
 certifi==2025.7.14
@@ -29,6 +30,7 @@ Django==5.2.2
 django-appconf==1.1.0
 django-formtools==2.5.1
 django-model-utils==5.0.0
+django-extensions==4.1
 django-phonenumber-field==8.1.0
 django-select2==8.4.1
 django-stubs==5.2.2

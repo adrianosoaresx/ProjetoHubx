@@ -72,6 +72,6 @@ class OrganizacaoLogSerializer(serializers.ModelSerializer):
             "acao",
             "dados_antigos",
             "dados_novos",
-            "created_at",
+            "created",
             "usuario_email",
         ]
