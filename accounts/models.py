@@ -333,7 +333,7 @@ class AccountToken(TimeStampedModel, SoftDeleteModel):
         EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
         PASSWORD_RESET = "password_reset", "Redefinição de Senha"
 
-    codigo = models.CharField(max_length=64, unique=True, default=generate_secure_token)
+    codigo = models.CharField(max_length=64, unique=True, default=generate_secure_token, db_index=True)
     tipo = models.CharField(max_length=20, choices=Tipo.choices)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="account_tokens")
     expires_at = models.DateTimeField()

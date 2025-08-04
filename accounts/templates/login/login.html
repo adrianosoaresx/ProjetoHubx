@@ -22,6 +22,7 @@
         <input type="email" id="id_email" name="email"
                value="{{ form.email.value|default_if_none:'' }}"
                placeholder="Digite seu e-mail"
+               data-check-url="{% url 'accounts:check_2fa' %}"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                required>
         {% if form.email.errors %}
@@ -38,11 +39,11 @@
           <div class="text-red-600 text-xs mt-1">{{ form.password.errors }}</div>
         {% endif %}
       </div>
-      <div>
+      <div id="totp-field" style="display:none">
         <label for="id_totp" class="block mb-1 text-sm font-medium text-gray-700">TOTP</label>
         <input type="text" id="id_totp" name="totp"
                value="{{ form.totp.value|default_if_none:'' }}"
-               placeholder="Código 2FA (se habilitado)"
+               placeholder="Código 2FA"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
         {% if form.totp.errors %}
           <div class="text-red-600 text-xs mt-1">{{ form.totp.errors }}</div>
@@ -73,4 +74,14 @@
     </div>
   </div>
 </div>
+<script>
+  const emailInput = document.getElementById('id_email');
+  const totpField = document.getElementById('totp-field');
+  emailInput.addEventListener('blur', () => {
+    const url = emailInput.dataset.checkUrl + '?email=' + encodeURIComponent(emailInput.value);
+    fetch(url).then(r => r.json()).then(data => {
+      totpField.style.display = data.enabled ? 'block' : 'none';
+    });
+  });
+</script>
 {% endblock %}
