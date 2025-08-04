@@ -56,11 +56,15 @@
     <p class="text-sm text-gray-600 mb-4">
       A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.
     </p>
-    <button type="button"
-            class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition"
-            id="btn2FA">
-      Ativar Verificação em Duas Etapas
-    </button>
+    {% if request.user.two_factor_enabled %}
+      <p class="text-sm text-green-600 mb-4">2FA está ativado.</p>
+      <a href="{% url 'accounts:disable_2fa' %}"
+         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">Desativar 2FA</a>
+    {% else %}
+      <p class="text-sm text-red-600 mb-4">2FA não está ativado.</p>
+      <a href="{% url 'accounts:enable_2fa' %}"
+         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">Ativar 2FA</a>
+    {% endif %}
   </div>
 </div>
 

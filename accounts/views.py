@@ -1,10 +1,15 @@
 import os
 import uuid
+import base64
+from io import BytesIO
 
+import pyotp
+import qrcode
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
@@ -12,6 +17,7 @@ from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -117,6 +123,63 @@ def perfil_notificacoes(request):
         form = NotificacoesForm(instance=settings_obj)
 
     return render(request, "perfil/notificacoes.html", {"form": form})
+
+
+@login_required
+def enable_2fa(request):
+    if request.user.two_factor_enabled:
+        return redirect("accounts:seguranca")
+    secret = request.session.get("tmp_2fa_secret")
+    if not secret:
+        secret = pyotp.random_base32()
+        request.session["tmp_2fa_secret"] = secret
+    totp = pyotp.TOTP(secret)
+    otp_uri = totp.provisioning_uri(name=request.user.email, issuer_name="HubX")
+    img = qrcode.make(otp_uri)
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    if request.method == "POST":
+        code = request.POST.get("code")
+        if code and totp.verify(code):
+            user = request.user
+            user.two_factor_secret = secret
+            user.two_factor_enabled = True
+            user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+            del request.session["tmp_2fa_secret"]
+            messages.success(request, _("Verificação em duas etapas ativada."))
+            return redirect("accounts:seguranca")
+        messages.error(request, _("Código inválido."))
+    return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64})
+
+
+@login_required
+def disable_2fa(request):
+    if not request.user.two_factor_enabled:
+        return redirect("accounts:seguranca")
+    if request.method == "POST":
+        code = request.POST.get("code")
+        if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
+            user = request.user
+            user.two_factor_secret = ""
+            user.two_factor_enabled = False
+            user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+            messages.success(request, _("Verificação em duas etapas desativada."))
+            return redirect("accounts:seguranca")
+        messages.error(request, _("Código inválido."))
+    return render(request, "perfil/disable_2fa.html")
+
+
+def check_2fa(request):
+    email = request.GET.get("email")
+    enabled = False
+    if email:
+        try:
+            user = User.objects.get(email__iexact=email)
+            enabled = user.two_factor_enabled
+        except User.DoesNotExist:
+            pass
+    return JsonResponse({"enabled": enabled})
 
 
 @login_required
@@ -439,8 +502,14 @@ def senha(request):
         s1 = request.POST.get("senha")
         s2 = request.POST.get("confirmar_senha")
         if s1 and s1 == s2:
-            request.session["senha_hash"] = make_password(s1)
-            return redirect("accounts:foto")
+            try:
+                validate_password(s1)
+            except ValidationError as exc:
+                for msg in exc.messages:
+                    messages.error(request, msg)
+            else:
+                request.session["senha_hash"] = make_password(s1)
+                return redirect("accounts:foto")
     return render(request, "register/senha.html")
 
 
