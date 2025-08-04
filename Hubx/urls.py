@@ -80,6 +80,10 @@ urlpatterns = [
         "api/feed/",
         include(("feed.api_urls", "feed_api"), namespace="feed_api"),
     ),
+    path(
+        "api/agenda/",
+        include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
+    ),
 ]
 
 # Arquivos de mídia em desenvolvimento

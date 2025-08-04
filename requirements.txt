@@ -36,6 +36,7 @@ django-formtools==2.5.1
 django-model-utils==5.0.0
 django-phonenumber-field==8.1.0
 django-select2==8.4.1
+django-simple-history==3.4.0
 django-stubs==5.2.2
 django-stubs-ext==5.2.2
 django-tailwind==4.0.1
