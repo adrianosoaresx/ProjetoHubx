@@ -21,7 +21,12 @@ from .models import (
     ChatParticipant,
     RelatorioChatExport,
 )
-from .permissions import IsChannelAdminOrOwner, IsChannelParticipant, IsModeratorPermission
+from .permissions import (
+    IsChannelAdminOrOwner,
+    IsChannelParticipant,
+    IsMessageSenderOrAdmin,
+    IsModeratorPermission,
+)
 from .serializers import ChatChannelSerializer, ChatMessageSerializer
 from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
@@ -143,11 +148,23 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = ChatMessageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsChannelParticipant]
+    permission_classes: list[type[permissions.BasePermission]] = [
+        permissions.IsAuthenticated,
+        IsChannelParticipant,
+    ]
     pagination_class = ChatMessagePagination
-    http_method_names = ["get", "post", "head", "options"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
     lookup_field = "id"
     lookup_url_kwarg = "pk"
+
+    def get_permissions(self):
+        perms: list[type[permissions.BasePermission]] = [
+            permissions.IsAuthenticated,
+            IsChannelParticipant,
+        ]
+        if self.action in {"partial_update", "destroy"}:
+            perms.append(IsMessageSenderOrAdmin)
+        return [p() for p in perms]
 
     def get_queryset(self):
         channel_id = self.kwargs["channel_pk"]
@@ -181,7 +198,38 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"], permission_classes=[IsModeratorUser])
+    def partial_update(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
+        msg = self.get_object()
+        data = {k: v for k, v in request.data.items() if k in {"conteudo"}}
+        serializer = self.get_serializer(msg, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        previous = msg.conteudo
+        self.perform_update(serializer)
+        ChatModerationLog.objects.create(
+            message=msg,
+            action="edit",
+            moderator=request.user,
+            previous_content=previous,
+        )
+        return Response(serializer.data)
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
+        msg = self.get_object()
+        ChatModerationLog.objects.create(
+            message=msg,
+            action="remove",
+            moderator=request.user,
+            previous_content=msg.conteudo,
+        )
+        msg.notificacoes.all().delete()
+        msg.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
+    )
     def pin(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
         msg.pinned_at = timezone.now()
