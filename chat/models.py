@@ -146,11 +146,20 @@ class RelatorioChatExport(TimeStampedModel):
 
 
 class ChatModerationLog(TimeStampedModel):
-    ACTION_CHOICES = [("approve", "Aprovar"), ("remove", "Remover")]
+    ACTION_CHOICES = [
+        ("approve", "Aprovar"),
+        ("remove", "Remover"),
+        ("edit", "Editar"),
+    ]
 
-    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
+    message = models.ForeignKey(
+        ChatMessage, on_delete=models.CASCADE, related_name="moderations"
+    )
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
-    moderator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_moderations")
+    moderator = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="chat_moderations"
+    )
+    previous_content = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Log de Moderação"

@@ -107,6 +107,29 @@ def test_react_message(api_client: APIClient, admin_user):
     assert msg.reactions.get("👍") == 1
 
 
+def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_user):
+    conv = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    ChatParticipant.objects.create(channel=conv, user=coordenador_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="hi")
+    api_client.force_authenticate(admin_user)
+    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/"
+    resp = api_client.patch(url, {"conteudo": "editado"})
+    assert resp.status_code == 200
+    msg.refresh_from_db()
+    assert msg.conteudo == "editado"
+    # Other participant cannot edit
+    api_client.force_authenticate(coordenador_user)
+    resp2 = api_client.patch(url, {"conteudo": "x"})
+    assert resp2.status_code == 403
+    # Sender deletes
+    api_client.force_authenticate(admin_user)
+    del_resp = api_client.delete(url)
+    assert del_resp.status_code == 204
+    assert not ChatMessage.objects.filter(pk=msg.pk).exists()
+    assert ChatMessage.all_objects.filter(pk=msg.pk).exists()
+
+
 def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
     from chat.metrics import (
         chat_mensagens_ocultadas_total,
