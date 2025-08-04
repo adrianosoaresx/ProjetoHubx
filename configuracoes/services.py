@@ -16,7 +16,11 @@ def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
     key = CACHE_KEY.format(id=usuario.id)
     config = cache.get(key)
     if config is None:
-        config, _ = ConfiguracaoConta.objects.get_or_create(user_id=usuario.id, defaults={"user": usuario})
+        config, _ = ConfiguracaoConta.all_objects.get_or_create(user_id=usuario.id, defaults={"user": usuario})
+        if config.deleted:
+            config.deleted = False
+            config.deleted_at = None
+            config.save(update_fields=["deleted", "deleted_at"])
         cache.set(key, config)
     return config
 

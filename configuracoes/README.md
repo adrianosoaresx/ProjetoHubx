@@ -2,7 +2,10 @@
 
 Este aplicativo centraliza as preferências de cada usuário através do modelo
 `ConfiguracaoConta`. Cada usuário possui exatamente uma instância, criada
-automaticamente após o cadastro.
+automaticamente após o cadastro. O modelo herda de
+`django_extensions.db.models.TimeStampedModel`, fornecendo os campos
+`created` e `modified`, e de `core.models.SoftDeleteModel`, que adiciona
+`deleted` e `deleted_at` para exclusão lógica.
 
 ## Campos principais
 
@@ -29,3 +32,5 @@ atualizar_preferencias_usuario(
 
 As preferências são expostas na interface na aba **Preferências** dentro de
 `/configuracoes/` e também pela API em `configuracoes/api/`.
+Para consultar registros removidos logicamente utilize o manager
+`ConfiguracaoConta.all_objects`.

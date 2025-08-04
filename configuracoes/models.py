@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.db import models
-from model_utils.models import TimeStampedModel
+from django_extensions.db.models import TimeStampedModel
+
+from core.models import SoftDeleteManager, SoftDeleteModel
 
 NOTIFICACAO_FREQ_CHOICES = [
     ("imediata", "Imediata"),
@@ -21,7 +23,7 @@ TEMA_CHOICES = [
 ]
 
 
-class ConfiguracaoConta(TimeStampedModel):
+class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -43,10 +45,9 @@ class ConfiguracaoConta(TimeStampedModel):
     tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
     tema_escuro = models.BooleanField(default=False, help_text="Obsoleto; use 'tema'")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         ordering = ["-modified"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user"], name="configuracao_conta_user_unique"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
