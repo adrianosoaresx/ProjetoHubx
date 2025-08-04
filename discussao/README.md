@@ -2,6 +2,13 @@
 
 Este app provê fórum simples com categorias, tópicos e respostas.
 
+## Padrões de modelo
+
+Os modelos deste app herdam de `TimeStampedModel`, que disponibiliza os
+campos `created` e `modified`. `CategoriaDiscussao`, `TopicoDiscussao` e
+`RespostaDiscussao` também utilizam `core.models.SoftDeleteModel`, permitindo
+exclusão lógica através dos campos `deleted` e `deleted_at`.
+
 ## Endpoints principais
 
 | Método | Caminho | Descrição |

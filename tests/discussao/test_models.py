@@ -56,6 +56,14 @@ def test_resposta_editar_e_reply(topico, admin_user):
     assert filho in resp.respostas_filhas.all()
 
 
+def test_timestamp_and_softdelete(topico):
+    assert topico.created is not None
+    assert topico.modified is not None
+    topico.delete()
+    assert not TopicoDiscussao.objects.filter(pk=topico.pk).exists()
+    assert TopicoDiscussao.all_objects.filter(pk=topico.pk).exists()
+
+
 def test_interacao_unique_and_toggle(topico, admin_user):
     ct = ContentType.objects.get_for_model(topico)
     like, created = InteracaoDiscussao.objects.get_or_create(

@@ -10,10 +10,12 @@ from django.utils import timezone
 from django.utils.text import slugify
 from model_utils.models import TimeStampedModel
 
+from core.models import SoftDeleteManager, SoftDeleteModel
+
 # Create your models here.
 
 
-class CategoriaDiscussao(TimeStampedModel):
+class CategoriaDiscussao(TimeStampedModel, SoftDeleteModel):
     nome = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     descricao = models.TextField(blank=True)
@@ -37,6 +39,9 @@ class CategoriaDiscussao(TimeStampedModel):
         related_name="categorias_discussao",
     )
     icone = models.ImageField(upload_to="discussoes/icones/", null=True, blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ("nome", "organizacao", "nucleo", "evento")
@@ -63,7 +68,7 @@ class Tag(TimeStampedModel):
         return self.nome
 
 
-class TopicoDiscussao(TimeStampedModel):
+class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     categoria = models.ForeignKey(
         CategoriaDiscussao,
         on_delete=models.CASCADE,
@@ -108,6 +113,9 @@ class TopicoDiscussao(TimeStampedModel):
     )
     interacoes = GenericRelation("InteracaoDiscussao")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.titulo)
@@ -132,7 +140,7 @@ class TopicoDiscussao(TimeStampedModel):
         return self.interacoes.count()
 
 
-class RespostaDiscussao(TimeStampedModel):
+class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     topico = models.ForeignKey(
         TopicoDiscussao,
         on_delete=models.CASCADE,
@@ -157,6 +165,9 @@ class RespostaDiscussao(TimeStampedModel):
     motivo_edicao = models.TextField(null=True, blank=True)
     interacoes = GenericRelation("InteracaoDiscussao")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         ordering = ["created"]
         verbose_name = "Resposta de Discussão"
@@ -177,13 +188,12 @@ class RespostaDiscussao(TimeStampedModel):
         return self.interacoes.count()
 
 
-class InteracaoDiscussao(models.Model):
+class InteracaoDiscussao(TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
     valor = models.SmallIntegerField(choices=[(1, "Curtir"), (-1, "Não Curtir")], default=1)
-    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "content_type", "object_id")

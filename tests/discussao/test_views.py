@@ -127,6 +127,7 @@ def test_categoria_crud(client, admin_user, organizacao):
     resp = client.post(reverse("discussao:categoria_remover", args=[cat.slug]))
     assert resp.status_code == 302
     assert not CategoriaDiscussao.objects.filter(pk=cat.pk).exists()
+    assert CategoriaDiscussao.all_objects.filter(pk=cat.pk).exists()
 
 
 def test_topico_update_permission(client, admin_user, associado_user, categoria, topico):
@@ -152,6 +153,7 @@ def test_topico_delete_view(client, admin_user, associado_user, categoria, topic
     resp2 = client.post(reverse("discussao:topico_remover", args=[categoria.slug, topico.slug]))
     assert resp2.status_code == 302
     assert not TopicoDiscussao.objects.filter(pk=topico.pk).exists()
+    assert TopicoDiscussao.all_objects.filter(pk=topico.pk).exists()
 
 
 def test_resposta_create(client, nucleado_user, categoria, topico):
