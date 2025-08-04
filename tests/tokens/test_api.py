@@ -44,7 +44,7 @@ def test_revogar_token(api_client):
     admin = UserFactory(is_staff=True)
     api_client.force_authenticate(user=admin)
     token = TokenAcesso.objects.create(gerado_por=admin, tipo_destino=TokenAcesso.TipoUsuario.ADMIN)
-    url = reverse("tokens_api:token-revoke", args=[token.pk])
+    url = reverse("tokens_api:token-revogar", kwargs={"codigo": token.codigo})
     resp = api_client.post(url)
     assert resp.status_code == 200
     token.refresh_from_db()
