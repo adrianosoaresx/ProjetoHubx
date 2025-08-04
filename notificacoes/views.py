@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import csv  # pragma: no cover
-
 import csv
+import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -10,10 +9,19 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from .forms import NotificationTemplateForm, UserNotificationPreferenceForm
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
+from .models import (
+    Canal,
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -73,6 +81,7 @@ def list_logs(request):
         logs = logs.filter(template__codigo=template_codigo)
 
     if request.GET.get("export") == "csv":
+        logger.info("export_logs_view", extra={"user": request.user.id, "count": logs.count()})
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = "attachment; filename=logs.csv"
         writer = csv.writer(response)
@@ -115,4 +124,34 @@ def delete_template(request, codigo: str):
         template.delete()
         messages.success(request, _("Template excluído com sucesso."))
     return redirect("notificacoes:templates_list")
+
+
+@login_required
+@staff_member_required
+def metrics_dashboard(request):
+    logs = NotificationLog.objects.all()
+    inicio = request.GET.get("inicio")
+    fim = request.GET.get("fim")
+    if inicio:
+        logs = logs.filter(created__date__gte=inicio)
+    if fim:
+        logs = logs.filter(created__date__lte=fim)
+    total_por_canal = {
+        item["canal"]: item["total"]
+        for item in logs.values("canal").annotate(total=Count("id"))
+    }
+    falhas_por_canal = {
+        item["canal"]: item["total"]
+        for item in logs.filter(status=NotificationStatus.FALHA)
+        .values("canal")
+        .annotate(total=Count("id"))
+    }
+    context = {
+        "total_por_canal": total_por_canal,
+        "falhas_por_canal": falhas_por_canal,
+        "templates_ativos": NotificationTemplate.objects.filter(ativo=True).count(),
+        "templates_inativos": NotificationTemplate.objects.filter(ativo=False).count(),
+    }
+    logger.info("metrics_view", extra={"user": request.user.id})
+    return render(request, "notificacoes/metrics.html", context)
 

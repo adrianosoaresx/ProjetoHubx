@@ -9,7 +9,9 @@ from django.utils import timezone
 
 from .models import Canal, NotificationLog, NotificationStatus
 from .services import metrics
-from .services.notifications_client import send_email, send_push, send_whatsapp
+from .services.email_client import send_email
+from .services.push_client import send_push
+from .services.whatsapp_client import send_whatsapp
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
