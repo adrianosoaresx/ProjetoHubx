@@ -49,3 +49,15 @@ Exemplo de JSON armazenado:
 ```
 
 O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<id>-<escopo>-<json dos filtros>`. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
+
+## Modelos e persistência
+
+Os modelos deste app utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`.
+
+- `TimeStampedModel` fornece os campos automáticos `created` e `modified`.
+- `SoftDeleteModel` adiciona remoção lógica via `deleted` e `deleted_at`.
+
+O manager padrão (`objects`) retorna apenas registros não deletados. Para acessar
+todos os registros, inclusive os excluídos logicamente, utilize
+`Model.all_objects`. Isso é útil em interfaces administrativas ou para
+recuperação manual de dados.

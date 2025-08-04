@@ -5,13 +5,16 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
+from django_extensions.db.models import TimeStampedModel
 
 from accounts.models import UserType
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, SoftDeleteManager
 
 
-class DashboardFilter(TimeStampedModel):
+class DashboardFilter(SoftDeleteModel, TimeStampedModel):
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nome = models.CharField(max_length=100)
     filtros = models.JSONField()
@@ -20,12 +23,18 @@ class DashboardFilter(TimeStampedModel):
         return self.nome
 
 
-class DashboardConfig(ExtTimeStampedModel):
+class DashboardConfig(SoftDeleteModel, TimeStampedModel):
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nome = models.CharField(max_length=100)
     config = models.JSONField()
     publico = models.BooleanField(default=False)
+
+    class Meta:
+        get_latest_by = "modified"
 
     def clean(self):
         if self.publico and self.user_id and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
