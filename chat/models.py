@@ -4,14 +4,14 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils import timezone
+from django_extensions.db.models import TimeStampedModel
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteManager, SoftDeleteModel
 
 User = get_user_model()
 
 
-class ChatChannel(TimeStampedModel):
+class ChatChannel(TimeStampedModel, SoftDeleteModel):
     CONTEXT_CHOICES = [
         ("privado", "Privado"),
         ("nucleo", "Núcleo"),
@@ -26,6 +26,9 @@ class ChatChannel(TimeStampedModel):
     descricao = models.TextField(blank=True)
     imagem = models.ImageField(upload_to="chat/avatars/", null=True, blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     def __str__(self) -> str:
         return self.titulo or str(self.id)
 
@@ -39,7 +42,7 @@ class ChatChannel(TimeStampedModel):
         verbose_name_plural = "Canais de Chat"
 
 
-class ChatParticipant(models.Model):
+class ChatParticipant(TimeStampedModel):
     channel = models.ForeignKey(
         ChatChannel,
         on_delete=models.CASCADE,
@@ -59,7 +62,7 @@ class ChatParticipant(models.Model):
         verbose_name_plural = "Participantes"
 
 
-class ChatMessage(TimeStampedModel):
+class ChatMessage(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     channel = models.ForeignKey(
         ChatChannel,
@@ -85,13 +88,15 @@ class ChatMessage(TimeStampedModel):
     reactions = models.JSONField(default=dict, blank=True)
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
     hidden_at = models.DateTimeField(null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     def __str__(self) -> str:
         return f"{self.remetente} - {self.channel_id}"
 
     class Meta:
-        ordering = ["timestamp"]
+        ordering = ["created"]
         verbose_name = "Mensagem"
         verbose_name_plural = "Mensagens"
 

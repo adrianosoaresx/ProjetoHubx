@@ -58,6 +58,19 @@ def test_chat_message_creation(media_root, channel, admin_user):
     assert msg.remetente == admin_user
     msg.lido_por.add(admin_user)
     assert admin_user in msg.lido_por.all()
+    assert msg.created and msg.modified
+
+
+def test_soft_delete_models(channel, admin_user):
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text")
+    channel.delete()
+    msg.delete()
+    assert channel.deleted and channel.deleted_at is not None
+    assert msg.deleted and msg.deleted_at is not None
+    assert ChatChannel.objects.filter(pk=channel.pk).count() == 0
+    assert ChatChannel.all_objects.filter(pk=channel.pk).exists()
+    assert ChatMessage.objects.filter(pk=msg.pk).count() == 0
+    assert ChatMessage.all_objects.filter(pk=msg.pk).exists()
 
 
 @pytest.mark.xfail(reason="Arquivo não é removido ao deletar a mensagem")

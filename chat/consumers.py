@@ -56,7 +56,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "tipo": msg.tipo,
                 "conteudo": msg.conteudo,
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
-                "timestamp": msg.timestamp.isoformat(),
+                "created": msg.created.isoformat(),
                 "reactions": msg.reactions,
             }
             await self.channel_layer.group_send(self.group_name, payload)
@@ -74,7 +74,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "tipo": msg.tipo,
                 "conteudo": msg.conteudo,
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
-                "timestamp": msg.timestamp.isoformat(),
+                "created": msg.created.isoformat(),
                 "reactions": msg.reactions,
             }
             await self.channel_layer.group_send(self.group_name, payload)
@@ -95,7 +95,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "tipo": msg.tipo,
                     "conteudo": msg.conteudo,
                     "arquivo_url": msg.arquivo.url if msg.arquivo else None,
-                    "timestamp": msg.timestamp.isoformat(),
+                    "created": msg.created.isoformat(),
                     "reactions": msg.reactions,
                     "hidden_at": msg.hidden_at.isoformat(),
                 }

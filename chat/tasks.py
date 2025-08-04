@@ -41,9 +41,9 @@ def exportar_historico_chat(
     rel = RelatorioChatExport.objects.get(pk=relatorio_id)
     qs = channel.messages.filter(hidden_at__isnull=True).select_related("remetente")
     if inicio:
-        qs = qs.filter(timestamp__gte=inicio)
+        qs = qs.filter(created__gte=inicio)
     if fim:
-        qs = qs.filter(timestamp__lte=fim)
+        qs = qs.filter(created__lte=fim)
     if tipos:
         qs = qs.filter(tipo__in=tipos)
     data = [
@@ -51,10 +51,8 @@ def exportar_historico_chat(
             "id": str(m.id),
             "remetente": m.remetente.username,
             "tipo": m.tipo,
-            "conteudo": m.conteudo
-            if m.tipo == "text"
-            else (m.arquivo.url if m.arquivo else ""),
-            "timestamp": m.timestamp.isoformat(),
+            "conteudo": m.conteudo if m.tipo == "text" else (m.arquivo.url if m.arquivo else ""),
+            "created": m.created.isoformat(),
         }
         for m in qs
     ]
@@ -64,9 +62,7 @@ def exportar_historico_chat(
         from io import StringIO
 
         sio = StringIO()
-        writer = csv.DictWriter(
-            sio, fieldnames=["id", "remetente", "tipo", "conteudo", "timestamp"]
-        )
+        writer = csv.DictWriter(sio, fieldnames=["id", "remetente", "tipo", "conteudo", "created"])
         writer.writeheader()
         for row in data:
             writer.writerow(row)
@@ -76,7 +72,7 @@ def exportar_historico_chat(
     path = default_storage.save(filename, ContentFile(buffer.encode()))
     rel.arquivo_url = default_storage.url(path)
     rel.status = "concluido"
-    rel.save(update_fields=["arquivo_url", "status", "updated_at"])
+    rel.save(update_fields=["arquivo_url", "status", "modified"])
     chat_exportacoes_total.labels(formato=formato).inc()
     return rel.arquivo_url
 
@@ -86,7 +82,7 @@ def limpar_exports_antigos() -> None:
     """Remove arquivos de exportação com mais de 30 dias."""
 
     limite = timezone.now() - timedelta(days=30)
-    antigos = RelatorioChatExport.objects.filter(created_at__lt=limite)
+    antigos = RelatorioChatExport.objects.filter(created__lt=limite)
     for rel in antigos:
         if rel.arquivo_url:
             try:
