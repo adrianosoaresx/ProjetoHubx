@@ -11,4 +11,5 @@ urlpatterns = [
     path("templates/<slug:codigo>/excluir/", views.delete_template, name="template_delete"),
     path("logs/", views.list_logs, name="logs_list"),
     path("preferencias/", views.editar_preferencias, name="editar_preferencias"),
+    path("metrics/", views.metrics_dashboard, name="metrics_dashboard"),
 ]
