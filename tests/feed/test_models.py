@@ -1,4 +1,5 @@
 import pytest
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
 from feed.models import Comment, Like, Post
@@ -54,3 +55,27 @@ def test_soft_delete(admin_user, organizacao):
     post.soft_delete()
     post.refresh_from_db()
     assert post.deleted is True
+
+
+@pytest.mark.django_db
+def test_requires_nucleo(admin_user, organizacao):
+    post = Post(
+        autor=admin_user,
+        organizacao=organizacao,
+        tipo_feed="nucleo",
+        conteudo="x",
+    )
+    with pytest.raises(ValidationError):
+        post.full_clean()
+
+
+@pytest.mark.django_db
+def test_requires_evento(admin_user, organizacao):
+    post = Post(
+        autor=admin_user,
+        organizacao=organizacao,
+        tipo_feed="evento",
+        conteudo="y",
+    )
+    with pytest.raises(ValidationError):
+        post.full_clean()

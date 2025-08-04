@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
 User = get_user_model()
 
@@ -24,7 +24,7 @@ class Tag(TimeStampedModel):
         return self.nome
 
 
-class Post(TimeStampedModel):
+class Post(TimeStampedModel, SoftDeleteModel):
     TIPO_FEED_CHOICES = [
         ("global", "Feed Global"),
         ("usuario", "Mural do Usuário"),
@@ -43,7 +43,9 @@ class Post(TimeStampedModel):
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
     evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
-    deleted = models.BooleanField(default=False)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["-created_at"]
@@ -60,18 +62,16 @@ class Post(TimeStampedModel):
             max_size = getattr(settings, "FEED_VIDEO_MAX_SIZE", 50 * 1024 * 1024)
             if self.video.size > max_size:
                 raise ValidationError({"video": "Vídeo maior que o limite"})
+        if self.tipo_feed == "nucleo" and not self.nucleo:
+            raise ValidationError({"nucleo": "Núcleo é obrigatório"})
+        if self.tipo_feed == "evento" and not self.evento:
+            raise ValidationError({"evento": "Evento é obrigatório"})
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         banned = getattr(settings, "FEED_BAD_WORDS", [])
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
             ModeracaoPost.objects.get_or_create(post=self)
-
-    def soft_delete(self) -> None:
-        """Mark post as deleted without removing from the database."""
-        if not self.deleted:
-            self.deleted = True
-            self.save(update_fields=["deleted", "updated_at"])
 
 
 class Like(TimeStampedModel):
