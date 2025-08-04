@@ -173,9 +173,7 @@ class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView
     paginate_by = 10
 
     def test_func(self):
-        empresa = self.get_empresa()
-        user = self.request.user
-        return user.is_superuser or user == empresa.usuario or user.user_type == UserType.ADMIN
+        return self.request.user.is_staff
 
     def get_empresa(self):
         if not hasattr(self, "_empresa"):
@@ -183,7 +181,7 @@ class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView
         return self._empresa
 
     def get_queryset(self):
-        return self.get_empresa().logs.all()
+        return self.get_empresa().logs.filter(deleted=False)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
