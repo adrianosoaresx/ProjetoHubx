@@ -4,7 +4,11 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from accounts.models import User, UserType
-from organizacoes.models import Organizacao, OrganizacaoLog
+from organizacoes.models import (
+    Organizacao,
+    OrganizacaoAtividadeLog,
+    OrganizacaoChangeLog,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -72,7 +76,7 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
     assert org.inativa is False and org.inativada_em is None
-    assert OrganizacaoLog.objects.filter(organizacao=org, acao="inactivated").exists()
+    assert OrganizacaoAtividadeLog.objects.filter(organizacao=org, acao="inactivated").exists()
 
 
 def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
@@ -85,24 +89,54 @@ def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
     assert str(org1.id) in ids and str(org2.id) not in ids
 
 
-def test_logs_access_restricted(api_client, root_user, faker_ptbr):
+def test_history_access_restricted(api_client, root_user, faker_ptbr):
     other_user = User.objects.create_user(
         username="x",
         email="x@example.com",
         password="pass",
         user_type=UserType.ADMIN,
     )
+    org_admin = User.objects.create_user(
+        username="adm",
+        email="adm@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=None,
+    )
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="l")
-    OrganizacaoLog.objects.create(organizacao=org, acao="created", dados_anteriores={}, dados_novos={})
-    url = reverse("organizacoes_api:organizacao-logs", args=[org.pk])
+    org_admin.organizacao = org
+    org_admin.save()
+    OrganizacaoAtividadeLog.objects.create(organizacao=org, acao="created")
+    url = reverse("organizacoes_api:organizacao-history", args=[org.pk])
     # unauthorized
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_403_FORBIDDEN
-    # non-root denied
+    # non-admin of org denied
     auth(api_client, other_user)
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_403_FORBIDDEN
+    # admin of org allowed
+    auth(api_client, org_admin)
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
+    # root allowed
     auth(api_client, root_user)
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_200_OK
-    assert len(resp.data) == 1
+def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="c")
+    url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
+    resp = api_client.patch(url, {"nome": "Nova"}, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+    assert OrganizacaoChangeLog.objects.filter(organizacao=org, campo_alterado="nome").exists()
+
+
+def test_history_export_csv(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="csv")
+    OrganizacaoAtividadeLog.objects.create(organizacao=org, acao="created")
+    url = reverse("organizacoes_api:organizacao-history", args=[org.pk]) + "?export=csv"
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp["Content-Type"] == "text/csv"

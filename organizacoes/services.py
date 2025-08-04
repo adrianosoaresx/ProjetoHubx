@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Any, Dict
 import uuid
+import json
 
 from django.db.models import Model
 
-from .models import Organizacao, OrganizacaoLog
+from .models import Organizacao, OrganizacaoAtividadeLog
 
 
 def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
@@ -29,13 +30,17 @@ def registrar_log(
     organizacao: Organizacao,
     usuario: Model | None,
     acao: str,
-    dados_anteriores: Dict[str, Any],
-    dados_novos: Dict[str, Any],
+    dados_anteriores: Dict[str, Any] | None = None,
+    dados_novos: Dict[str, Any] | None = None,
 ) -> None:
-    OrganizacaoLog.objects.create(
+    detalhes = {}
+    if dados_anteriores is not None:
+        detalhes["antes"] = dados_anteriores
+    if dados_novos is not None:
+        detalhes["depois"] = dados_novos
+    OrganizacaoAtividadeLog.objects.create(
         organizacao=organizacao,
         usuario=usuario,
         acao=acao,
-        dados_anteriores=dados_anteriores,
-        dados_novos=dados_novos,
+        detalhes=json.dumps(detalhes) if detalhes else "",
     )

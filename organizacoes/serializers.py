@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import Organizacao, OrganizacaoLog
+from .models import (
+    Organizacao,
+    OrganizacaoAtividadeLog,
+    OrganizacaoChangeLog,
+)
 from .tasks import organizacao_alterada
 
 
@@ -36,42 +40,64 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = getattr(request, "user", None)
         instance = Organizacao.objects.create(created_by=user, **validated_data)
-        OrganizacaoLog.objects.create(
+        OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
             usuario=user,
             acao="created",
-            dados_anteriores={},
-            dados_novos=validated_data,
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="created")
         return instance
 
     def update(self, instance: Organizacao, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
-        old_data = {k: getattr(instance, k) for k in validated_data}
-        instance = super().update(instance, validated_data)
         user = getattr(request, "user", None)
-        OrganizacaoLog.objects.create(
+        campos_relevantes = ["nome", "tipo", "contato_nome"]
+        for campo in campos_relevantes:
+            if campo in validated_data:
+                antigo = getattr(instance, campo)
+                novo = validated_data[campo]
+                if antigo != novo:
+                    OrganizacaoChangeLog.objects.create(
+                        organizacao=instance,
+                        campo_alterado=campo,
+                        valor_antigo=str(antigo),
+                        valor_novo=str(novo),
+                        alterado_por=user,
+                    )
+        instance = super().update(instance, validated_data)
+        OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
             usuario=user,
             acao="updated",
-            dados_anteriores=old_data,
-            dados_novos=validated_data,
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="updated")
         return instance
 
 
-class OrganizacaoLogSerializer(serializers.ModelSerializer):
+class OrganizacaoChangeLogSerializer(serializers.ModelSerializer):
+    usuario_email = serializers.EmailField(source="alterado_por.email", default=None)
+
+    class Meta:
+        model = OrganizacaoChangeLog
+        fields = [
+            "id",
+            "campo_alterado",
+            "valor_antigo",
+            "valor_novo",
+            "alterado_em",
+            "usuario_email",
+        ]
+
+
+class OrganizacaoAtividadeLogSerializer(serializers.ModelSerializer):
     usuario_email = serializers.EmailField(source="usuario.email", default=None)
 
     class Meta:
-        model = OrganizacaoLog
+        model = OrganizacaoAtividadeLog
         fields = [
             "id",
             "acao",
-            "dados_anteriores",
-            "dados_novos",
-            "created_at",
+            "detalhes",
+            "data",
             "usuario_email",
         ]

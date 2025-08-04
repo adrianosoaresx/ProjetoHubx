@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.http import HttpResponseForbidden
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -25,7 +26,10 @@ from feed.models import Post
 from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
-from .models import Organizacao, OrganizacaoLog
+from .models import (
+    Organizacao,
+    OrganizacaoChangeLog,
+)
 from .services import registrar_log, serialize_organizacao
 from .tasks import organizacao_alterada
 
@@ -102,6 +106,15 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         nova = serialize_organizacao(self.object)
         dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
         dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
+        for campo in ["nome", "tipo", "contato_nome"]:
+            if campo in dif_antiga:
+                OrganizacaoChangeLog.objects.create(
+                    organizacao=self.object,
+                    campo_alterado=campo,
+                    valor_antigo=str(dif_antiga[campo]),
+                    valor_novo=str(dif_nova[campo]),
+                    alterado_por=self.request.user,
+                )
         registrar_log(
             self.object,
             self.request.user,
@@ -204,14 +217,61 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
         return redirect("organizacoes:detail", pk=org.pk)
 
 
-class OrganizacaoLogListView(SuperadminRequiredMixin, LoginRequiredMixin, ListView):
-    model = OrganizacaoLog
-    template_name = "organizacoes/logs.html"
-    paginate_by = 20
+class OrganizacaoHistoryView(LoginRequiredMixin, View):
+    template_name = "organizacoes/history.html"
 
-    def get_queryset(self):
-        return (
-            OrganizacaoLog.objects.filter(organizacao_id=self.kwargs["pk"])
-            .select_related("usuario")
-            .order_by("-created_at")
+    def get(self, request, pk, *args, **kwargs):
+        org = get_object_or_404(Organizacao, pk=pk)
+        user = request.user
+        if not (
+            user.is_superuser
+            or getattr(user, "user_type", None) == UserType.ROOT.value
+            or user.get_tipo_usuario == UserType.ROOT.value
+            or (
+                (user.get_tipo_usuario == UserType.ADMIN.value or getattr(user, "user_type", None) == UserType.ADMIN.value)
+                and getattr(user, "organizacao_id", None) == org.id
+            )
+        ):
+            return HttpResponseForbidden()
+        if request.GET.get("export") == "csv":
+            import csv
+            from django.http import HttpResponse
+
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
+            writer = csv.writer(response)
+            writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
+            for log in org.change_logs.all().order_by("-alterado_em"):
+                writer.writerow(
+                    [
+                        "change",
+                        log.campo_alterado,
+                        log.valor_antigo,
+                        log.valor_novo,
+                        getattr(log.alterado_por, "email", ""),
+                        log.alterado_em.isoformat(),
+                    ]
+                )
+            for log in org.atividade_logs.all().order_by("-data"):
+                writer.writerow(
+                    [
+                        "activity",
+                        log.acao,
+                        "",
+                        "",
+                        getattr(log.usuario, "email", ""),
+                        log.data.isoformat(),
+                    ]
+                )
+            return response
+        change_logs = org.change_logs.all().order_by("-alterado_em")[:10]
+        atividade_logs = org.atividade_logs.all().order_by("-data")[:10]
+        return render(
+            request,
+            self.template_name,
+            {
+                "organizacao": org,
+                "change_logs": change_logs,
+                "atividade_logs": atividade_logs,
+            },
         )

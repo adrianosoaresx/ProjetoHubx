@@ -233,7 +233,7 @@ def test_toggle_active_and_logs(superadmin_user, organizacao):
     assert resp.status_code == 200
     organizacao.refresh_from_db()
     assert organizacao.inativa is True
-    log = organizacao.logs.first()
+    log = organizacao.atividade_logs.first()
     assert log.acao == "inactivated"
 
 
@@ -244,9 +244,9 @@ def test_toggle_denied_for_admin(admin_user, organizacao):
 
 
 def test_logs_view_permission(superadmin_user, admin_user, organizacao):
-    url = reverse("organizacoes:logs", args=[organizacao.pk])
+    url = reverse("organizacoes:historico", args=[organizacao.pk])
     assert superadmin_user.get(url).status_code == 200
-    assert admin_user.get(url).status_code == 403
+    assert admin_user.get(url).status_code == 200
 
 
 def test_signal_emitted_on_create(monkeypatch, superadmin_user, faker_ptbr):
