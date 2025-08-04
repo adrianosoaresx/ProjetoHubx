@@ -21,16 +21,12 @@ class NotificationStatus(models.TextChoices):
     FALHA = "falha", _("Falha")
 
 
-class NotificationTemplate(models.Model):
-    id: models.UUIDField = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
+class NotificationTemplate(TimeStampedModel):
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
     assunto: models.CharField = models.CharField(max_length=200, verbose_name=_("Assunto"))
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
-    canal: models.CharField = models.CharField(
-        max_length=20, choices=Canal.choices, verbose_name=_("Canal")
-    )
+    canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
     ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
 
     class Meta:
@@ -42,10 +38,14 @@ class NotificationTemplate(models.Model):
         return self.codigo
 
 
-class UserNotificationPreference(models.Model):
-    id: models.UUIDField = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
+class Frequencia(models.TextChoices):
+    IMEDIATA = "imediata", _("Imediata")
+    DIARIA = "diaria", _("Diária")
+    SEMANAL = "semanal", _("Semanal")
+
+
+class UserNotificationPreference(TimeStampedModel):
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user: models.ForeignKey = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -54,6 +54,18 @@ class UserNotificationPreference(models.Model):
     email: models.BooleanField = models.BooleanField(default=True, verbose_name=_("E-mail"))
     push: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Push"))
     whatsapp: models.BooleanField = models.BooleanField(default=True, verbose_name=_("WhatsApp"))
+    frequencia_email: models.CharField = models.CharField(
+        max_length=20,
+        choices=Frequencia.choices,
+        default=Frequencia.IMEDIATA,
+        verbose_name=_("Frequência E-mail"),
+    )
+    frequencia_whatsapp: models.CharField = models.CharField(
+        max_length=20,
+        choices=Frequencia.choices,
+        default=Frequencia.IMEDIATA,
+        verbose_name=_("Frequência WhatsApp"),
+    )
 
     class Meta:
         verbose_name = _("Preferência de Notificação")
@@ -64,9 +76,7 @@ class UserNotificationPreference(models.Model):
 
 
 class NotificationLog(TimeStampedModel):
-    id: models.UUIDField = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False
-    )
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     destinatario: models.CharField = models.CharField(max_length=254, blank=True)
     template: models.ForeignKey = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
@@ -80,7 +90,16 @@ class NotificationLog(TimeStampedModel):
     class Meta:
         verbose_name = _("Log de Notificação")
         verbose_name_plural = _("Logs de Notificação")
-        unique_together = ("user", "template", "data_envio", "canal")
+        unique_together = ("user", "template", "canal", "created")
+
+    def save(self, *args, **kwargs):  # pragma: no cover - comportamento definido
+        if self.pk and NotificationLog.objects.filter(pk=self.pk).exists():
+            original = NotificationLog.objects.get(pk=self.pk)
+            imutaveis = ["user_id", "template_id", "canal", "destinatario"]
+            for campo in imutaveis:
+                if getattr(self, campo) != getattr(original, campo):
+                    raise PermissionError("NotificationLog é imutável")
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):  # pragma: no cover - comportamento definido
         raise PermissionError("NotificationLog é imutável")

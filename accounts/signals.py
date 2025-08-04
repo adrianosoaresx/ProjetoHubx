@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from configuracoes.models import ConfiguracaoConta
+from notificacoes.models import Frequencia, UserNotificationPreference
 
 from .models import NotificationSettings
 
@@ -16,6 +17,14 @@ def create_notification_settings(sender, instance, created, **kwargs):
         return
 
     NotificationSettings.objects.create(user=instance)
+    UserNotificationPreference.objects.create(
+        user=instance,
+        email=True,
+        push=True,
+        whatsapp=True,
+        frequencia_email=Frequencia.IMEDIATA,
+        frequencia_whatsapp=Frequencia.IMEDIATA,
+    )
     ConfiguracaoConta.objects.create(user=instance)
     if instance.user_type in {"root", "admin"}:
         instance.is_staff = True
