@@ -1,12 +1,12 @@
 # App de Notificações
 
-Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp.
+Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp. Todos os modelos usam chaves UUID e herdam `TimeStampedModel`.
 
 ## Modelos
 
-- `NotificationTemplate` – define mensagens para cada canal.
-- `UserNotificationPreference` – guarda preferências do usuário por canal.
-- `NotificationLog` – histórico de envios.
+- `NotificationTemplate` – define mensagens para cada canal e possui campos `created`/`modified`.
+- `UserNotificationPreference` – guarda preferências do usuário por canal e as frequências (`frequencia_email`, `frequencia_whatsapp`).
+- `NotificationLog` – histórico de envios com status imutável (`pendente`, `enviada`, `falha`).
 
 ## Uso
 
@@ -35,20 +35,16 @@ Exceções:
 
 Se todos os canais preferidos do usuário estiverem desabilitados, um `NotificationLog` é criado com status **FALHA** e nenhum envio é disparado.
 
-Templates básicos já estão cadastrados via migração, incluindo `password_reset`,
-`email_confirmation`, `cobranca_pendente` e `inadimplencia`. Outros códigos
-podem ser adicionados conforme a necessidade de novos avisos.
+### Endpoints REST
 
-## Configurações
+- `GET /api/notificacoes/templates/` – lista templates (staff cria/edita).
+- `GET/PUT /api/notificacoes/preferencias/` – preferências do usuário autenticado.
+- `GET /api/notificacoes/logs/` – histórico do próprio usuário.
+- `POST /api/notificacoes/enviar/` – dispara uma notificação com `user_id`, `template_codigo` e `contexto`.
 
-```python
-NOTIFICATIONS_EMAIL_API_URL = os.getenv("NOTIFICATIONS_EMAIL_API_URL", "")
-NOTIFICATIONS_EMAIL_API_KEY = os.getenv("NOTIFICATIONS_EMAIL_API_KEY", "")
-NOTIFICATIONS_PUSH_API_URL = os.getenv("NOTIFICATIONS_PUSH_API_URL", "")
-NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "")
-NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "")
-NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "")
-NOTIFICATIONS_ENABLED = True
-```
+### Métricas
 
-Para adicionar novos canais, crie funções em `notifications_client.py` e atualize `enviar_notificacao_async`.
+Métricas Prometheus disponíveis em `notificacoes.services.metrics`:
+`notificacoes_enviadas_total`, `notificacoes_falhadas_total` (por canal) e `templates_total`. Consulte o endpoint `/metrics`.
+
+> ⚠️ Envio via WhatsApp está em fase de testes e pode atuar apenas como _stub_.

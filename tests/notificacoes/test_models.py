@@ -1,8 +1,8 @@
 import pytest
 
-import pytest
 from accounts.factories import UserFactory
 from notificacoes.models import (
+    Frequencia,
     NotificationLog,
     NotificationStatus,
     NotificationTemplate,
@@ -37,7 +37,9 @@ def test_log_str() -> None:
 
 def test_preferencias_criadas_automaticamente() -> None:
     user = UserFactory()
-    assert UserNotificationPreference.objects.filter(user=user).exists()
+    pref = UserNotificationPreference.objects.get(user=user)
+    assert pref.frequencia_email == Frequencia.IMEDIATA
+    assert pref.frequencia_whatsapp == Frequencia.IMEDIATA
 
 
 def test_log_nao_pode_ser_deletado():
@@ -46,3 +48,22 @@ def test_log_nao_pode_ser_deletado():
     log = NotificationLog.objects.create(user=user, template=template, canal="email")
     with pytest.raises(PermissionError):
         log.delete()
+
+
+def test_log_nao_pode_ser_alterado():
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="b", assunto="b", corpo="b", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email")
+    log.canal = "push"
+    with pytest.raises(PermissionError):
+        log.save()
+
+
+def test_log_permite_atualizar_status():
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="c", assunto="c", corpo="c", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email")
+    log.status = NotificationStatus.ENVIADA
+    log.save()
+    log.refresh_from_db()
+    assert log.status == NotificationStatus.ENVIADA
