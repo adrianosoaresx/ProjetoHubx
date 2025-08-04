@@ -18,6 +18,7 @@ class DashboardFilter(SoftDeleteModel, TimeStampedModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nome = models.CharField(max_length=100)
     filtros = models.JSONField()
+    publico = models.BooleanField(default=False)
 
     def __str__(self) -> str:  # pragma: no cover - simple representation
         return self.nome

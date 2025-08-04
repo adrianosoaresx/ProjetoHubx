@@ -42,6 +42,19 @@ def test_export_csv(api_client: APIClient, admin_user) -> None:
     assert rows[0] == ["Métrica", "Total", "Crescimento"]
 
 
+def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
+    try:
+        import weasyprint  # noqa: F401
+    except Exception:
+        pytest.skip("weasyprint não instalado")
+    _auth(api_client, admin_user)
+    monkeypatch.setattr("weasyprint.HTML.write_pdf", lambda self: b"pdf")
+    url = reverse("dashboard_api:dashboard-export") + "?formato=pdf"
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    assert resp["Content-Type"] == "application/pdf"
+
+
 def test_filter_crud(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)
     url = reverse("dashboard_api:dashboard-filter-list")
@@ -60,6 +73,20 @@ def test_filter_crud(api_client: APIClient, admin_user) -> None:
     url_dashboard = reverse("dashboard_api:dashboard-list") + f"?filter_id={filtro_id}"
     resp = api_client.get(url_dashboard)
     assert resp.status_code == 200
+
+
+def test_dashboard_permission_error(api_client: APIClient, cliente_user, admin_user) -> None:
+    _auth(api_client, cliente_user)
+    url = reverse("dashboard_api:dashboard-list") + f"?escopo=organizacao&organizacao_id={admin_user.organizacao_id}"
+    resp = api_client.get(url)
+    assert resp.status_code == 403
+
+
+def test_dashboard_invalid_param(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    url = reverse("dashboard_api:dashboard-list") + "?periodo=foo"
+    resp = api_client.get(url)
+    assert resp.status_code == 400
 
 
 def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:

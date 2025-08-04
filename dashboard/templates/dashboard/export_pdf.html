@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Métricas do Dashboard</title>
+  <style>
+    body { font-family: sans-serif; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 4px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>Métricas do Dashboard</h1>
+  <table>
+    <thead>
+      <tr><th>Métrica</th><th>Total</th><th>Variação (%)</th></tr>
+    </thead>
+    <tbody>
+    {% for key, data in metrics.items %}
+      <tr>
+        <td>{{ key }}</td><td>{{ data.total }}</td><td>{{ data.crescimento|floatformat:2 }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

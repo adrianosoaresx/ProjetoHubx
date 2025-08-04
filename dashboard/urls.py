@@ -19,4 +19,8 @@ urlpatterns = [
     path("configs/", views.DashboardConfigListView.as_view(), name="configs"),
     path("configs/create/", views.DashboardConfigCreateView.as_view(), name="config-create"),
     path("configs/<uuid:pk>/apply/", views.DashboardConfigApplyView.as_view(), name="config-apply"),
+    path("filters/", views.DashboardFilterListView.as_view(), name="filters"),
+    path("filters/create/", views.DashboardFilterCreateView.as_view(), name="filter-create"),
+    path("filters/<int:pk>/apply/", views.DashboardFilterApplyView.as_view(), name="filter-apply"),
+    path("filters/<int:pk>/delete/", views.DashboardFilterDeleteView.as_view(), name="filter-delete"),
 ]
