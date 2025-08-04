@@ -197,3 +197,20 @@ class FinanceiroLog(TimeStampedModel):
     def __str__(self) -> str:
         usuario = self.usuario.email if self.usuario else "desconhecido"
         return f"{self.get_acao_display()} - {usuario}"
+
+
+class FinanceiroTaskLog(models.Model):
+    """Armazena o resultado das tarefas assíncronas do módulo financeiro."""
+
+    nome_tarefa = models.CharField(max_length=255)
+    executada_em = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20)
+    detalhes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-executada_em"]
+        verbose_name = "Log de Tarefa Financeira"
+        verbose_name_plural = "Logs de Tarefas Financeiras"
+
+    def __str__(self) -> str:
+        return f"{self.nome_tarefa} - {self.status}"

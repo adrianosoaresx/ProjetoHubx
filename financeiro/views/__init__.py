@@ -28,7 +28,7 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroTaskLog
 from ..permissions import (
     IsAssociadoReadOnly,
     IsCoordenador,
@@ -44,7 +44,7 @@ from ..serializers import (
 from ..services.cobrancas import _nucleos_do_usuario
 from ..services.distribuicao import repassar_receita_ingresso
 from ..services.importacao import ImportadorPagamentos
-from ..services.relatorios import gerar_relatorio
+from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
@@ -211,35 +211,41 @@ class FinanceiroViewSet(viewsets.ViewSet):
             cache.set(cache_key, result, 600)
 
         fmt = request.query_params.get("format")
-        if fmt in {"csv", "xlsx"}:
-            tmp = NamedTemporaryFile(delete=False, suffix=f".{fmt}")
-            if fmt == "csv":
-                import csv
+        if fmt == "csv":
+            import csv
 
-                writer = csv.writer(tmp)
-                writer.writerow(["Mês", "Receitas", "Despesas", "Saldo"])
-                for row in result["serie"]:
-                    writer.writerow([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
-                writer.writerow([])
-                writer.writerow(["Mês", "Pendentes", "Quitadas"])
-                for row in result["inadimplencia"]:
-                    writer.writerow([row["mes"], row["pendentes"], row["quitadas"]])
-            else:
-                if not Workbook:
-                    return Response({"detail": _("openpyxl não disponível")}, status=500)
-                wb = Workbook()
-                ws = wb.active
-                ws.append(["Mês", "Receitas", "Despesas", "Saldo"])
-                for row in result["serie"]:
-                    ws.append([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
-                ws.append([])
-                ws.append(["Mês", "Pendentes", "Quitadas"])
-                for row in result["inadimplencia"]:
-                    ws.append([row["mes"], row["pendentes"], row["quitadas"]])
-                wb.save(tmp.name)
+            tmp = NamedTemporaryFile(delete=False, suffix=".csv")
+            qs_csv = _base_queryset(centro_id, nucleo_id, inicio, fim)
+            writer = csv.writer(tmp)
+            writer.writerow(["data", "categoria", "valor", "status", "centro de custo"])
+            for lanc in qs_csv:
+                writer.writerow(
+                    [
+                        lanc.data_lancamento.date(),
+                        lanc.get_tipo_display(),
+                        float(lanc.valor),
+                        lanc.status,
+                        lanc.centro_custo.nome,
+                    ]
+                )
             tmp.close()
-            filename = f"relatorio.{fmt}"
-            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename)
+            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.csv")
+        if fmt == "xlsx":
+            if not Workbook:
+                return Response({"detail": _("openpyxl não disponível")}, status=500)
+            tmp = NamedTemporaryFile(delete=False, suffix=".xlsx")
+            wb = Workbook()
+            ws = wb.active
+            ws.append(["Mês", "Receitas", "Despesas", "Saldo"])
+            for row in result["serie"]:
+                ws.append([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
+            ws.append([])
+            ws.append(["Mês", "Pendentes", "Quitadas"])
+            for row in result["inadimplencia"]:
+                ws.append([row["mes"], row["pendentes"], row["quitadas"]])
+            wb.save(tmp.name)
+            tmp.close()
+            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.xlsx")
 
         return Response(result)
 
@@ -359,7 +365,11 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
 
 def _is_financeiro_or_admin(user) -> bool:
-    return user.is_authenticated and user.user_type == UserType.ADMIN
+    permitido = {UserType.ADMIN}
+    tipo_financeiro = getattr(UserType, "FINANCEIRO", None)
+    if tipo_financeiro:
+        permitido.add(tipo_financeiro)
+    return user.is_authenticated and user.user_type in permitido
 
 
 @login_required
@@ -402,3 +412,17 @@ def inadimplencias_view(request):
         "nucleos": list(nucleos),
     }
     return render(request, "financeiro/inadimplencias.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def task_logs_view(request):
+    logs = FinanceiroTaskLog.objects.all()
+    return render(request, "financeiro/task_logs.html", {"logs": logs})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def task_log_detail_view(request, pk):
+    log = get_object_or_404(FinanceiroTaskLog, pk=pk)
+    return render(request, "financeiro/task_log_detail.html", {"log": log})
