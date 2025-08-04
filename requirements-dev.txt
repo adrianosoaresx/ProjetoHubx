@@ -7,3 +7,4 @@ pre-commit>=3.6
 pytest-benchmark>=4.0
 prometheus-client==0.20.0
 bleach==6.2.0
+twilio==9.2.3

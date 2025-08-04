@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import timedelta
 
+import sentry_sdk
 from celery import shared_task
 from django.db import models
 from django.utils import timezone
+from twilio.base.exceptions import TwilioRestException  # type: ignore
+from twilio.rest import Client  # type: ignore
 
 from agenda.models import Evento
 from chat.models import ChatNotification
@@ -19,7 +23,8 @@ logger = logging.getLogger(__name__)
 
 def _send_for_frequency(frequency: str) -> None:
     delta = timedelta(days=1 if frequency == "diaria" else 7)
-    since = timezone.now() - delta
+    now = timezone.localtime()
+    since = now - delta
     configs = ConfiguracaoConta.objects.select_related("user").filter(
         (
             models.Q(frequencia_notificacoes_email=frequency, receber_notificacoes_email=True)
@@ -29,6 +34,17 @@ def _send_for_frequency(frequency: str) -> None:
             )
         )
     )
+    if frequency == "diaria":
+        configs = configs.filter(
+            hora_notificacao_diaria__hour=now.hour,
+            hora_notificacao_diaria__minute=now.minute,
+        )
+    else:
+        configs = configs.filter(
+            dia_semana_notificacao=now.weekday(),
+            hora_notificacao_semanal__hour=now.hour,
+            hora_notificacao_semanal__minute=now.minute,
+        )
     for config in configs:
         counts = {
             "chat": ChatNotification.objects.filter(usuario=config.user, created__gte=since, lido=False).count(),
@@ -44,8 +60,19 @@ def _send_for_frequency(frequency: str) -> None:
 
 
 def enviar_notificacao_whatsapp(user, contexto):
-    """Stub para envio via WhatsApp."""
-    logger.info("WhatsApp não implementado para %s: %s", user, contexto)
+    message = (
+        "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
+    )
+    try:
+        client = Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN"))
+        client.messages.create(
+            body=message,
+            from_=os.environ.get("TWILIO_WHATSAPP_FROM"),
+            to=f"whatsapp:{user.whatsapp}",
+        )
+    except TwilioRestException as exc:  # pragma: no cover - falha externa
+        sentry_sdk.capture_exception(exc)
+        logger.exception("Falha ao enviar WhatsApp", extra={"user": user.id})
 
 
 @shared_task

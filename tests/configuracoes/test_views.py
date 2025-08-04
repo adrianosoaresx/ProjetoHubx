@@ -37,6 +37,9 @@ def test_view_post_atualiza_preferencias(admin_client, admin_user):
         "frequencia_notificacoes_whatsapp": "semanal",
         "idioma": "pt-BR",
         "tema": "escuro",
+        "hora_notificacao_diaria": "08:00",
+        "hora_notificacao_semanal": "08:00",
+        "dia_semana_notificacao": 0,
         "tab": "preferencias",
     }
     resp = admin_client.post(url, data, HTTP_HX_REQUEST="true")

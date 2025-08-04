@@ -18,6 +18,9 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "frequencia_notificacoes_whatsapp",
             "idioma",
             "tema",
+            "hora_notificacao_diaria",
+            "hora_notificacao_semanal",
+            "dia_semana_notificacao",
         )
         widgets = {
             "receber_notificacoes_email": forms.CheckboxInput(),
@@ -26,10 +29,16 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "frequencia_notificacoes_whatsapp": forms.Select(),
             "idioma": forms.Select(),
             "tema": forms.Select(),
+            "hora_notificacao_diaria": forms.TimeInput(format="%H:%M"),
+            "hora_notificacao_semanal": forms.TimeInput(format="%H:%M"),
+            "dia_semana_notificacao": forms.Select(),
         }
         help_texts = {
             "frequencia_notificacoes_email": _("Aplicável apenas se notificações por e-mail estiverem ativas."),
             "frequencia_notificacoes_whatsapp": _("Aplicável apenas se notificações por WhatsApp estiverem ativas."),
+            "hora_notificacao_diaria": _("Horário para envio das notificações diárias."),
+            "hora_notificacao_semanal": _("Horário para envio das notificações semanais."),
+            "dia_semana_notificacao": _("Dia da semana para notificações semanais."),
         }
 
     def clean(self) -> dict[str, object]:

@@ -23,6 +23,10 @@ def test_configuracao_valores_padrao(admin_user):
     assert config.frequencia_notificacoes_whatsapp == "imediata"
     assert config.idioma == "pt-BR"
     assert config.tema == "claro"
+    assert config.hora_notificacao_diaria.strftime("%H:%M") == "08:00"
+    assert config.hora_notificacao_semanal.strftime("%H:%M") == "08:00"
+    assert config.dia_semana_notificacao == 0
+    assert not hasattr(config, "tema_escuro")
 
 
 def test_configuracao_unica_por_usuario(admin_user):

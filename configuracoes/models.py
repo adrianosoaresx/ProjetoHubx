@@ -1,5 +1,8 @@
+from datetime import time
+
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from core.models import SoftDeleteManager, SoftDeleteModel
@@ -20,6 +23,16 @@ TEMA_CHOICES = [
     ("claro", "Claro"),
     ("escuro", "Escuro"),
     ("automatico", "Automático"),
+]
+
+DIAS_SEMANA_CHOICES = [
+    (0, _("Segunda")),
+    (1, _("Terça")),
+    (2, _("Quarta")),
+    (3, _("Quinta")),
+    (4, _("Sexta")),
+    (5, _("Sábado")),
+    (6, _("Domingo")),
 ]
 
 
@@ -43,7 +56,19 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
     )
     idioma = models.CharField(max_length=5, choices=IDIOMA_CHOICES, default="pt-BR")
     tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
-    tema_escuro = models.BooleanField(default=False, help_text="Obsoleto; use 'tema'")
+    hora_notificacao_diaria = models.TimeField(
+        default=time(8, 0),
+        help_text=_("Horário para envio de notificações diárias"),
+    )
+    hora_notificacao_semanal = models.TimeField(
+        default=time(8, 0),
+        help_text=_("Horário para envio de notificações semanais"),
+    )
+    dia_semana_notificacao = models.PositiveSmallIntegerField(
+        choices=DIAS_SEMANA_CHOICES,
+        default=0,
+        help_text=_("Dia da semana para notificações semanais"),
+    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
