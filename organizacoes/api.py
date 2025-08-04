@@ -6,10 +6,14 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from core.permissions import IsRoot
+from core.permissions import IsRoot, IsOrgAdminOrSuperuser
 
-from .models import Organizacao, OrganizacaoLog
-from .serializers import OrganizacaoLogSerializer, OrganizacaoSerializer
+from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
+from .serializers import (
+    OrganizacaoAtividadeLogSerializer,
+    OrganizacaoChangeLogSerializer,
+    OrganizacaoSerializer,
+)
 from .tasks import organizacao_alterada
 
 
@@ -26,18 +30,18 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         return qs
 
     def get_permissions(self):
-        if self.action in {"create", "destroy", "partial_update", "update", "inativar", "reativar", "logs"}:
+        if self.action in {"create", "destroy", "partial_update", "update", "inativar", "reativar"}:
             self.permission_classes = [IsAuthenticated, IsRoot]
+        elif self.action in {"history"}:
+            self.permission_classes = [IsAuthenticated, IsOrgAdminOrSuperuser]
         return super().get_permissions()
 
     def perform_destroy(self, instance: Organizacao) -> None:
         instance.delete()
-        OrganizacaoLog.objects.create(
+        OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
             usuario=self.request.user,
             acao="deleted",
-            dados_anteriores={},
-            dados_novos={"deleted": True, "deleted_at": instance.deleted_at.isoformat()},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="deleted")
 
@@ -47,12 +51,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         organizacao.inativa = True
         organizacao.inativada_em = timezone.now()
         organizacao.save(update_fields=["inativa", "inativada_em"])
-        OrganizacaoLog.objects.create(
+        OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
             acao="inactivated",
-            dados_anteriores={},
-            dados_novos={"inativa": True, "inativada_em": organizacao.inativada_em.isoformat()},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inactivated")
         serializer = self.get_serializer(organizacao)
@@ -64,20 +66,50 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         organizacao.inativa = False
         organizacao.inativada_em = None
         organizacao.save(update_fields=["inativa", "inativada_em"])
-        OrganizacaoLog.objects.create(
+        OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
             acao="reactivated",
-            dados_anteriores={},
-            dados_novos={"inativa": False, "inativada_em": None},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
         serializer = self.get_serializer(organizacao)
         return Response(serializer.data)
-
-    @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated, IsRoot])
-    def logs(self, request, pk: str | None = None):
+    @action(detail=True, methods=["get"], url_path="history")
+    def history(self, request, pk: str | None = None):
         organizacao = self.get_object()
-        logs = organizacao.logs.all()
-        serializer = OrganizacaoLogSerializer(logs, many=True)
-        return Response(serializer.data)
+        if request.query_params.get("export") == "csv":
+            import csv
+            from django.http import HttpResponse
+
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+            writer = csv.writer(response)
+            writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
+            for log in organizacao.change_logs.all().order_by("-alterado_em"):
+                writer.writerow(
+                    [
+                        "change",
+                        log.campo_alterado,
+                        log.valor_antigo,
+                        log.valor_novo,
+                        getattr(log.alterado_por, "email", ""),
+                        log.alterado_em.isoformat(),
+                    ]
+                )
+            for log in organizacao.atividade_logs.all().order_by("-data"):
+                writer.writerow(
+                    [
+                        "activity",
+                        log.acao,
+                        "",
+                        "",
+                        getattr(log.usuario, "email", ""),
+                        log.data.isoformat(),
+                    ]
+                )
+            return response
+        change_logs = organizacao.change_logs.all().order_by("-alterado_em")[:10]
+        atividade_logs = organizacao.atividade_logs.all().order_by("-data")[:10]
+        change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
+        atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
+        return Response({"changes": change_ser.data, "activities": atividade_ser.data})

@@ -16,8 +16,8 @@ urlpatterns = [
         name="toggle",
     ),
     path(
-        "<uuid:pk>/logs/",
-        views.OrganizacaoLogListView.as_view(),
-        name="logs",
+        "<uuid:pk>/historico/",
+        views.OrganizacaoHistoryView.as_view(),
+        name="historico",
     ),
 ]

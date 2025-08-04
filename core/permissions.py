@@ -132,3 +132,26 @@ class IsModeratorUser(BasePermission):
     def has_permission(self, request, view) -> bool:
         tipo = getattr(request.user, "get_tipo_usuario", None)
         return tipo in {UserType.ROOT.value, UserType.ADMIN.value}
+
+
+class IsOrgAdminOrSuperuser(BasePermission):
+    """Permite acesso ao superusuário ou admin da organização."""
+
+    def has_permission(self, request, view) -> bool:
+        return request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj) -> bool:
+        user = request.user
+        if (
+            user.is_superuser
+            or getattr(user, "user_type", None) == UserType.ROOT.value
+            or user.get_tipo_usuario == UserType.ROOT.value
+        ):
+            return True
+        org_id = getattr(obj, "pk", None)
+        if org_id is None:
+            org_id = getattr(obj, "organizacao_id", None)
+        return (
+            user.get_tipo_usuario == UserType.ADMIN.value
+            and getattr(user, "organizacao_id", None) == org_id
+        )

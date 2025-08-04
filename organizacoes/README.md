@@ -9,9 +9,9 @@ Todas as entidades utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`, ga
 - **Listagem e busca**: campo único que aceita nome ou *slug*. Resultados paginados (10 por página) e filtrados para ocultar itens excluídos ou inativos.
 - **Criação e edição**: formulário inclui avatar e capa. O usuário autenticado é registrado como `created_by`. Slug é normalizado e validado para garantir unicidade.
 - **Exclusão lógica**: remover uma organização marca `deleted=True` e registra `deleted_at`; nenhuma linha é removida do banco.
-- **Inativar/Reativar**: superadmin pode alternar o status `inativa`. A ação é registrada com `OrganizacaoLog`.
+- **Inativar/Reativar**: superadmin pode alternar o status `inativa`. A ação é registrada com `OrganizacaoAtividadeLog`.
 - **Associações**: página de detalhes mostra usuários, núcleos, eventos, empresas e posts relacionados, com contadores e links rápidos.
-- **Logs e notificações**: todas as alterações geram entradas em `OrganizacaoLog` e disparam o sinal `organizacao_alterada` que notifica os membros.
+- **Logs e notificações**: alterações relevantes geram `OrganizacaoChangeLog` e ações geram `OrganizacaoAtividadeLog`; ambas disparam o sinal `organizacao_alterada` que notifica os membros.
 
 ## Sinal `organizacao_alterada`
 
@@ -31,4 +31,4 @@ O *payload* é consumido por `enviar_email_membros`, que encaminha mensagens aos
 
 ## Histórico
 
-A lista de alterações pode ser consultada em `/organizacoes/<id>/logs/` (somente superadmin). Os registros de `OrganizacaoLog` são imutáveis e preservam os dados anteriores e novos de cada ação.
+A lista de alterações pode ser consultada em `/organizacoes/<id>/historico/` (apenas admins da organização ou superusuários). Os registros de log são imutáveis e preservam os dados relevantes de cada ação.

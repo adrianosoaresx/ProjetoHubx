@@ -61,28 +61,60 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
         self.deleted_at = timezone.now()
         self.save(update_fields=["deleted", "deleted_at"])
 
-class OrganizacaoLog(TimeStampedModel):
+class OrganizacaoChangeLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
         on_delete=models.CASCADE,
-        related_name="logs",
+        related_name="change_logs",
     )
+    campo_alterado = models.CharField(max_length=100)
+    valor_antigo = models.TextField(blank=True, null=True)
+    valor_novo = models.TextField(blank=True, null=True)
+    alterado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    alterado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-alterado_em"]
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.organizacao} - {self.campo_alterado}"
+
+    def save(self, *args, **kwargs):  # type: ignore[override]
+        if not self._state.adding:
+            raise RuntimeError("Logs não podem ser modificados")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):  # type: ignore[override]
+        raise RuntimeError("Logs não podem ser removidos")
+
+
+class OrganizacaoAtividadeLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organizacao = models.ForeignKey(
+        Organizacao,
+        on_delete=models.CASCADE,
+        related_name="atividade_logs",
+    )
+    acao = models.CharField(max_length=50)
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
     )
-    acao = models.CharField(max_length=50)
-    dados_anteriores = models.JSONField(default=dict, blank=True)
-    dados_novos = models.JSONField(default=dict, blank=True)
+    data = models.DateTimeField(auto_now_add=True)
+    detalhes = models.TextField(blank=True)
 
     class Meta:
-        ordering = ["-created_at"]
-        get_latest_by = "created_at"
+        ordering = ["-data"]
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.organizacao} - {self.acao}"
 
     def save(self, *args, **kwargs):  # type: ignore[override]
