@@ -57,7 +57,7 @@ class CategoriaDiscussao(TimeStampedModel, SoftDeleteModel):
 
 class Tag(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    nome = models.CharField(max_length=50, unique=True)
+    nome = models.CharField(max_length=100, unique=True)
 
     class Meta:
         ordering = ["nome"]
@@ -93,11 +93,7 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
         related_name="topico_melhor_resposta",
     )
     tags = models.ManyToManyField("Tag", blank=True, related_name="topicos")
-    status = models.CharField(
-        max_length=7,
-        choices=[("aberto", "Aberto"), ("fechado", "Fechado")],
-        default="aberto",
-    )
+    fechado = models.BooleanField(default=False)
     numero_visualizacoes = models.PositiveIntegerField(default=0)
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",
@@ -162,7 +158,7 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     )
     editado = models.BooleanField(default=False)
     editado_em = models.DateTimeField(null=True, blank=True)
-    motivo_edicao = models.TextField(null=True, blank=True)
+    motivo_edicao = models.TextField(blank=True, default="")
     interacoes = GenericRelation("InteracaoDiscussao")
 
     objects = SoftDeleteManager()

@@ -84,6 +84,6 @@ def test_topico_form_validation(categoria, admin_user, nucleo, evento):
 
 def test_resposta_form_fields():
     form = RespostaDiscussaoForm()
-    assert list(form.fields) == ["conteudo", "arquivo", "reply_to"]
+    assert list(form.fields) == ["conteudo", "arquivo", "reply_to", "motivo_edicao"]
     form = RespostaDiscussaoForm(data={"conteudo": ""})
     assert not form.is_valid()

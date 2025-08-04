@@ -1,19 +1,6 @@
 {% if partial %}
   {% for comentario in comentarios %}
-  <article class="p-4 border-b border-neutral-200" id="coment-{{ comentario.id }}">
-    <header class="mb-2 flex items-center justify-between">
-      <div class="text-sm text-neutral-700">
-        {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"d/m/Y H:i" }}
-      </div>
-      {% if user == comentario.autor or user.get_tipo_usuario in ['admin','coordenador','root'] %}
-        <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
-          {% csrf_token %}
-          <button type="submit" class="text-red-600 text-xs">{% trans "Remover" %}</button>
-        </form>
-      {% endif %}
-    </header>
-    <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
-  </article>
+    {% include 'discussao/comentario_item.html' with comentario=comentario user=user topico=topico %}
   {% endfor %}
 {% else %}
 {% extends 'base.html' %}
@@ -33,8 +20,11 @@
   <div class="prose max-w-none mb-10">{{ topico.conteudo|linebreaks }}</div>
   <section aria-labelledby="comentarios" class="space-y-4">
     <h2 id="comentarios" class="text-xl font-semibold">{% trans "Coment\u00e1rios" %}</h2>
+    {% if melhor_resposta %}
+      {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True %}
+    {% endif %}
     <div id="lista-comentarios">
-      {% include 'discussao/topico_detail.html' with partial=True only %}
+      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user only %}
     </div>
     {% if comentarios.has_previous or comentarios.has_next %}
     <div class="flex justify-center gap-3 text-sm">
@@ -47,12 +37,25 @@
       {% endif %}
     </div>
     {% endif %}
+    {% if not topico.fechado %}
     <form method="post" hx-post="{% url 'discussao:resposta_criar' topico.categoria.slug topico.slug %}" hx-target="#lista-comentarios" hx-swap="beforeend" class="space-y-4 mt-6">
       {% csrf_token %}
       <label for="id_conteudo" class="block text-sm font-medium text-neutral-700">{% trans "Comentar" %}</label>
       <textarea name="conteudo" required class="form-textarea"></textarea>
       <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl">{% trans "Comentar" %}</button>
     </form>
+    {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
+      <form method="post" action="{% url 'discussao:topico_toggle_fechado' topico.categoria.slug topico.slug %}" class="mt-4">
+        {% csrf_token %}
+        <button type="submit" class="text-sm text-red-600">{% trans "Fechar tópico" %}</button>
+      </form>
+    {% endif %}
+    {% elif user.get_tipo_usuario in ['admin','root'] %}
+      <form method="post" action="{% url 'discussao:topico_toggle_fechado' topico.categoria.slug topico.slug %}">
+        {% csrf_token %}
+        <button type="submit" class="bg-primary-600 text-white font-semibold py-2 px-4 rounded-xl">{% trans "Reabrir tópico" %}</button>
+      </form>
+    {% endif %}
   </section>
 </article>
 {% endblock %}

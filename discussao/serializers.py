@@ -50,7 +50,7 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
             "autor_email",
             "publico_alvo",
             "tags",
-            "status",
+            "fechado",
             "melhor_resposta",
             "numero_visualizacoes",
             "created",

@@ -87,22 +87,19 @@ class TopicoViewSet(viewsets.ModelViewSet):
         }:
             return Response(status=403)
         with transaction.atomic():
-            topico.status = "fechado"
-            topico.save(update_fields=["status"])
+            topico.fechado = True
+            topico.save(update_fields=["fechado"])
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
     @action(detail=True, methods=["patch"], url_path="reabrir")
     def reabrir(self, request, pk=None):
         topico = self.get_object()
-        if request.user not in {topico.autor} and request.user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }:
+        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
             return Response(status=403)
         with transaction.atomic():
-            topico.status = "aberto"
-            topico.save(update_fields=["status"])
+            topico.fechado = False
+            topico.save(update_fields=["fechado"])
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -114,7 +111,7 @@ class RespostaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         topico = serializer.validated_data["topico"]
-        if topico.status == "fechado":
+        if topico.fechado:
             raise PermissionDenied("Tópico fechado para novas respostas.")
         serializer.save(autor=self.request.user)
 
