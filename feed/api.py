@@ -85,7 +85,6 @@ class PostViewSet(viewsets.ModelViewSet):
         qs = (
             Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
             .prefetch_related("tags")
-            .filter(deleted=False)
             .filter(Q(moderacoes__status="aprovado") | Q(moderacoes__isnull=True))
             .distinct()
         )
