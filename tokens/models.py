@@ -12,6 +12,35 @@ from django.utils.translation import gettext_lazy as _
 from core.fields import EncryptedCharField
 from core.models import TimeStampedModel
 
+User = get_user_model()
+
+
+class ApiToken(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="api_tokens",
+        null=True,
+        blank=True,
+    )
+    client_name = models.CharField(max_length=100, blank=True)
+    token_hash = models.CharField(max_length=64, unique=True)
+    scope = models.CharField(
+        max_length=20,
+        choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],
+    )
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def is_active(self):
+        return self.revoked_at is None and (self.expires_at is None or self.expires_at > timezone.now())
+
+    class Meta:
+        ordering = ["-created_at"]
+
 
 def generate_hex_uuid() -> str:
     return uuid.uuid4().hex
