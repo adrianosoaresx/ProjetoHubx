@@ -38,5 +38,6 @@ def send_confirmation_email(token_id: int) -> None:
 @shared_task
 def purge_soft_deleted() -> None:
     limit = timezone.now() - timezone.timedelta(days=30)
-    qs = User.objects.filter(deleted_at__lt=limit, exclusao_confirmada=True)
-    qs.delete()
+    qs = User.objects.filter(deleted=True, deleted_at__lt=limit, exclusao_confirmada=True)
+    for user in qs:
+        user.delete(soft=False)

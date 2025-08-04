@@ -19,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
             "tipo_usuario",
             "failed_login_attempts",
             "lock_expires_at",
+            "deleted",
             "deleted_at",
             "two_factor_enabled",
         ]

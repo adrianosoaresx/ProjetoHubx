@@ -31,7 +31,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
-    deleted = models.BooleanField(default=False)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
@@ -53,9 +52,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     def delete(
         self, using: str | None = None, keep_parents: bool = False, soft: bool = True
     ) -> None:
-        if soft:
-            self.deleted = True
-            self.save(update_fields=["deleted"])
         super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
 

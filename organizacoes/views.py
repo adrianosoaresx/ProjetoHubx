@@ -125,9 +125,7 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         antiga = serialize_organizacao(self.object)
-        self.object.deleted = True
-        self.object.deleted_at = timezone.now()
-        self.object.save(update_fields=["deleted", "deleted_at"])
+        self.object.delete()
         registrar_log(
             self.object,
             request.user,

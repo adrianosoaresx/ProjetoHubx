@@ -31,9 +31,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
 
     def perform_destroy(self, instance: Organizacao) -> None:
-        instance.deleted = True
-        instance.deleted_at = timezone.now()
-        instance.save(update_fields=["deleted", "deleted_at"])
+        instance.delete()
         OrganizacaoLog.objects.create(
             organizacao=instance,
             usuario=self.request.user,

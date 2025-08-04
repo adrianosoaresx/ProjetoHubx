@@ -40,9 +40,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_destroy(self, instance: Nucleo) -> None:
-        instance.deleted = True
-        instance.deleted_at = timezone.now()
-        instance.save(update_fields=["deleted", "deleted_at"])
+        instance.delete()
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def participacoes(self, request, pk: str | None = None):

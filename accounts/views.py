@@ -236,10 +236,10 @@ def excluir_conta(request):
             return redirect("accounts:excluir_conta")
         with transaction.atomic():
             user = request.user
-            user.deleted_at = timezone.now()
+            user.delete()
             user.exclusao_confirmada = True
             user.is_active = False
-            user.save(update_fields=["deleted_at", "exclusao_confirmada", "is_active"])
+            user.save(update_fields=["exclusao_confirmada", "is_active"])
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="conta_excluida",
@@ -366,7 +366,7 @@ def resend_confirmation(request):
                 user = User.objects.get(
                     email__iexact=email,
                     is_active=False,
-                    deleted_at__isnull=True,
+                    deleted=False,
                 )
             except User.DoesNotExist:
                 pass
