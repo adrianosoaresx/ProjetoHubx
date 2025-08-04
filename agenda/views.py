@@ -277,7 +277,7 @@ def evento_orcamento(request, pk: int):
         try:
             evento.orcamento_estimado = Decimal(request.POST.get("orcamento_estimado", 0))
             evento.valor_gasto = Decimal(request.POST.get("valor_gasto", 0))
-            evento.save(update_fields=["orcamento_estimado", "valor_gasto", "updated_at"])
+            evento.save(update_fields=["orcamento_estimado", "valor_gasto", "modified"])
         except (TypeError, InvalidOperation):
             return HttpResponse(status=400)
     data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
@@ -308,7 +308,7 @@ def avaliar_parceria(request, pk: int):
         except (TypeError, ValueError):
             return HttpResponse(status=400)
         parceria.comentario = request.POST.get("comentario", "")
-        parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
+        parceria.save(update_fields=["avaliacao", "comentario", "modified"])
     return JsonResponse({"avaliacao": parceria.avaliacao, "comentario": parceria.comentario})
 
 
@@ -319,7 +319,7 @@ def checkin_inscricao(request, pk: int):
         return HttpResponse(status=405)
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
     codigo = request.POST.get("codigo")
-    expected = f"inscricao:{inscricao.pk}:{int(inscricao.created_at.timestamp())}"
+    expected = f"inscricao:{inscricao.pk}:{int(inscricao.created.timestamp())}"
     if codigo != expected or inscricao.check_in_realizado_em:
         return HttpResponseForbidden("QR inválido ou já usado")
     inscricao.realizar_check_in()

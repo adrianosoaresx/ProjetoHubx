@@ -24,12 +24,17 @@ class SoftDeleteModel(models.Model):
     class Meta:
         abstract = True
 
-    def delete(
-        self, using: str | None = None, keep_parents: bool = False, soft: bool = True
-    ) -> None:
+    def delete(self, using: str | None = None, keep_parents: bool = False, soft: bool = True) -> None:
         if soft:
             self.deleted = True
             self.deleted_at = timezone.now()
             self.save(update_fields=["deleted", "deleted_at"])
             return
         super().delete(using=using, keep_parents=keep_parents)
+
+
+class SoftDeleteManager(models.Manager):
+    """Manager que retorna apenas objetos não deletados logicamente."""
+
+    def get_queryset(self) -> models.QuerySet:  # type: ignore[override]
+        return super().get_queryset().filter(deleted=False)

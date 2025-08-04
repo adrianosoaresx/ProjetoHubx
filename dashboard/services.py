@@ -116,7 +116,7 @@ class DashboardService:
         queryset,
         inicio: datetime,
         fim: datetime,
-        campo: str = "created_at",
+        campo: str = "created",
     ) -> Dict[str, float]:
         atual = queryset.filter(**{f"{campo}__gte": inicio, f"{campo}__lte": fim}).count()
         delta = fim - inicio
@@ -174,10 +174,7 @@ class DashboardMetricsService:
             "fim": fim.isoformat(),
             **filters,
         }
-        cache_key = (
-            f"dashboard-{user.id}-{escopo}-"
-            f"{json.dumps(cache_filters, sort_keys=True)}"
-        )
+        cache_key = f"dashboard-{user.id}-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
         cached = cache.get(cache_key)
         if cached:
             return cached
@@ -207,9 +204,7 @@ class DashboardMetricsService:
             nucleo = Nucleo.objects.filter(pk=nucleo_id).first()
             if not nucleo:
                 raise PermissionError("Núcleo inválido")
-            if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not nucleo.membros.filter(
-                pk=user.pk
-            ).exists():
+            if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not nucleo.membros.filter(pk=user.pk).exists():
                 raise PermissionError("Acesso negado ao núcleo")
             organizacao_id = organizacao_id or nucleo.organizacao_id
         elif escopo == "evento" and evento_id:
@@ -217,8 +212,7 @@ class DashboardMetricsService:
             if not evento:
                 raise PermissionError("Evento inválido")
             if user.user_type not in {UserType.ROOT, UserType.ADMIN} and not (
-                evento.coordenador_id == user.pk
-                or evento.nucleo and evento.nucleo.membros.filter(pk=user.pk).exists()
+                evento.coordenador_id == user.pk or evento.nucleo and evento.nucleo.membros.filter(pk=user.pk).exists()
             ):
                 raise PermissionError("Acesso negado ao evento")
             organizacao_id = organizacao_id or evento.organizacao_id
@@ -244,12 +238,12 @@ class DashboardMetricsService:
             qs_posts = qs_posts.filter(evento_id=evento_id)
 
         metrics = {
-            "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim),
-            "num_organizacoes": DashboardService.calcular_crescimento(qs_orgs, inicio, fim),
-            "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim),
-            "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim),
-            "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim),
-            "num_posts": DashboardService.calcular_crescimento(qs_posts, inicio, fim),
+            "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim, campo="created_at"),
+            "num_organizacoes": DashboardService.calcular_crescimento(qs_orgs, inicio, fim, campo="created_at"),
+            "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim, campo="created_at"),
+            "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim, campo="created_at"),
+            "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim, campo="created"),
+            "num_posts": DashboardService.calcular_crescimento(qs_posts, inicio, fim, campo="created_at"),
         }
 
         metricas = filters.get("metricas")
