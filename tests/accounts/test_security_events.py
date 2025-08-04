@@ -1,3 +1,4 @@
+import pyotp
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -17,6 +18,10 @@ def test_security_events_flow():
 
     # enable 2FA
     resp = client.post(reverse("accounts_api:account-enable-2fa"))
+    assert resp.status_code == 200
+    secret = resp.json()["secret"]
+    totp = pyotp.TOTP(secret).now()
+    resp = client.post(reverse("accounts_api:account-enable-2fa"), {"code": totp})
     assert resp.status_code == 200
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitado").exists()
 

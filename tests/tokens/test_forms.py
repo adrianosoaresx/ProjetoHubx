@@ -13,7 +13,7 @@ from tokens.forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-from tokens.models import CodigoAutenticacao, TokenAcesso, TOTPDevice
+from tokens.models import CodigoAutenticacao, TokenAcesso
 
 pytestmark = pytest.mark.django_db
 
@@ -110,8 +110,7 @@ def test_validar_codigo_autenticacao_form_expirado_bloqueado():
 
 
 def test_ativar_2fa_form():
-    user = UserFactory()
-    device = TOTPDevice.objects.create(usuario=user)
-    totp_code = pyotp.TOTP(device.secret).now()
-    form = Ativar2FAForm({"codigo_totp": totp_code}, device=device)
+    user = UserFactory(two_factor_secret=pyotp.random_base32())
+    totp_code = pyotp.TOTP(user.two_factor_secret).now()
+    form = Ativar2FAForm({"codigo_totp": totp_code}, user=user)
     assert form.is_valid()

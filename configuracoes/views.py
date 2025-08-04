@@ -9,7 +9,6 @@ from django.views.generic import View
 from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
 from configuracoes.forms import ConfiguracaoContaForm
 from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
-from tokens.models import TOTPDevice
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
@@ -38,7 +37,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         return form_class(data, files, instance=user)
 
     def get_two_factor_enabled(self) -> bool:
-        return TOTPDevice.objects.filter(usuario=self.request.user, confirmado=True).exists()
+        """Retorna se o usuário atual possui 2FA habilitado."""
+        return bool(self.request.user.two_factor_enabled)
 
     def get(self, request):
         tab = request.GET.get("tab", "informacoes")

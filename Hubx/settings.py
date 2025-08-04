@@ -138,6 +138,7 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
 ]
+# 12 rounds mantém o tempo de hash abaixo de ~300ms em máquinas modernas
 BCRYPT_ROUNDS = 12
 
 # Internationalization

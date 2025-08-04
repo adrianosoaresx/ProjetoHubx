@@ -101,17 +101,27 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="enable-2fa")
     def enable_2fa(self, request):
         user = request.user
-        secret = pyotp.random_base32()
-        user.two_factor_secret = secret
+        code = request.data.get("code")
+        if user.two_factor_enabled:
+            return Response({"detail": _("2FA já habilitado.")}, status=400)
+        if not user.two_factor_secret:
+            secret = pyotp.random_base32()
+            user.two_factor_secret = secret
+            user.save(update_fields=["two_factor_secret"])
+            otp_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=user.email, issuer_name="Hubx")
+            return Response({"otpauth_url": otp_uri, "secret": secret})
+        if not code:
+            return Response({"detail": _("Código obrigatório.")}, status=400)
+        if not pyotp.TOTP(user.two_factor_secret).verify(code):
+            return Response({"detail": _("Código inválido.")}, status=400)
         user.two_factor_enabled = True
-        user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+        user.save(update_fields=["two_factor_enabled"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_habilitado",
             ip=request.META.get("REMOTE_ADDR"),
         )
-        otp_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=user.email, issuer_name="Hubx")
-        return Response({"otpauth_url": otp_uri})
+        return Response({"detail": _("2FA habilitado.")})
 
     @action(detail=False, methods=["post"], url_path="disable-2fa")
     def disable_2fa(self, request):

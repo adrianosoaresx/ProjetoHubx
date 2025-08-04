@@ -6,7 +6,7 @@ from django.utils import timezone
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .models import CodigoAutenticacao, TokenAcesso, TOTPDevice
+from .models import CodigoAutenticacao, TokenAcesso
 
 User = get_user_model()
 
@@ -87,14 +87,14 @@ class ValidarCodigoAutenticacaoForm(forms.Form):
 class Ativar2FAForm(forms.Form):
     codigo_totp = forms.CharField(max_length=6)
 
-    def __init__(self, *args, device: TOTPDevice | None = None, **kwargs):
-        self.device = device
+    def __init__(self, *args, user: User | None = None, **kwargs):
+        self.user = user
         super().__init__(*args, **kwargs)
 
     def clean_codigo_totp(self):
         codigo = self.cleaned_data["codigo_totp"]
-        if not self.device:
-            raise forms.ValidationError("Dispositivo inválido")
-        if codigo != pyotp.TOTP(self.device.secret).now():
+        if not self.user or not self.user.two_factor_secret:
+            raise forms.ValidationError("Secret inválido")
+        if not pyotp.TOTP(self.user.two_factor_secret).verify(codigo):
             raise forms.ValidationError("Código inválido")
         return codigo
