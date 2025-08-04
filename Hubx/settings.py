@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "django_select2",
     "phonenumber_field",
     "channels",
+    "simple_history",
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "dashboard",
@@ -87,6 +88,7 @@ MIDDLEWARE = [
     "configuracoes.middleware.UserLocaleMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "Hubx.urls"

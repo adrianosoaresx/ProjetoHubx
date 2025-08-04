@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+from validate_docbr import CNPJ
+
+from .models import (
+    BriefingEvento,
+    Evento,
+    InscricaoEvento,
+    MaterialDivulgacaoEvento,
+    ParceriaEvento,
+)
+from .tasks import upload_material_divulgacao
+
+
+class EventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evento
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "organizacao",
+            "coordenador",
+            "created",
+            "modified",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        validated_data["organizacao"] = request.user.organizacao
+        validated_data["coordenador"] = request.user
+        return super().create(validated_data)
+
+
+class InscricaoEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InscricaoEvento
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "user",
+            "status",
+            "data_confirmacao",
+            "qrcode_url",
+            "check_in_realizado_em",
+            "posicao_espera",
+            "created",
+            "modified",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        evento = validated_data["evento"]
+        if evento.organizacao != request.user.organizacao:
+            raise PermissionDenied("Evento de outra organização")
+        if InscricaoEvento.objects.filter(user=request.user, evento=evento, deleted=False).exists():
+            raise serializers.ValidationError("Usuário já inscrito neste evento.")
+        validated_data["user"] = request.user
+        instance = super().create(validated_data)
+        instance.confirmar_inscricao()
+        return instance
+
+
+class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaterialDivulgacaoEvento
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "status",
+            "avaliado_por",
+            "avaliado_em",
+            "imagem_thumb",
+            "created",
+            "modified",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        evento = validated_data["evento"]
+        if evento.organizacao != request.user.organizacao:
+            raise PermissionDenied("Evento de outra organização")
+        instance = super().create(validated_data)
+        upload_material_divulgacao.delay(instance.pk)
+        return instance
+
+    def update(self, instance, validated_data):
+        if "arquivo" in validated_data:
+            upload_material_divulgacao.delay(instance.pk)
+        return super().update(instance, validated_data)
+
+
+class ParceriaEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ParceriaEvento
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "avaliacao",
+            "comentario",
+            "created",
+            "modified",
+        )
+
+    def validate_cnpj(self, value: str) -> str:
+        if not CNPJ().validate(value):
+            raise serializers.ValidationError("CNPJ inválido")
+        return value
+
+    def validate(self, attrs):
+        if attrs.get("data_fim") and attrs.get("data_inicio") and attrs["data_fim"] < attrs["data_inicio"]:
+            raise serializers.ValidationError({"data_fim": "Data final deve ser posterior à inicial"})
+        return attrs
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        evento = validated_data["evento"]
+        if evento.organizacao != request.user.organizacao:
+            raise PermissionDenied("Evento de outra organização")
+        return super().create(validated_data)
+
+
+class BriefingEventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BriefingEvento
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "status",
+            "orcamento_enviado_em",
+            "aprovado_em",
+            "recusado_em",
+            "avaliado_por",
+            "avaliado_em",
+            "created",
+            "modified",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        evento = validated_data["evento"]
+        if evento.organizacao != request.user.organizacao:
+            raise PermissionDenied("Evento de outra organização")
+        return super().create(validated_data)

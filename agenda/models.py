@@ -4,6 +4,7 @@ from io import BytesIO
 import uuid
 
 import qrcode
+import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -20,6 +21,9 @@ from django_extensions.db.models import TimeStampedModel
 from core.models import SoftDeleteManager, SoftDeleteModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
+from simple_history.models import HistoricalRecords
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -193,8 +197,28 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     def endereco_completo(self) -> str:
         return f"{self.local}, {self.cidade} - {self.estado}, {self.cep}"
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = Evento.all_objects.filter(pk=self.pk).first()
+            if old:
+                if old.orcamento_estimado != self.orcamento_estimado:
+                    logger.info(
+                        "orcamento_estimado alterado para evento %s de %s para %s",
+                        self.pk,
+                        old.orcamento_estimado,
+                        self.orcamento_estimado,
+                    )
+                if old.valor_gasto != self.valor_gasto:
+                    logger.info(
+                        "valor_gasto alterado para evento %s de %s para %s",
+                        self.pk,
+                        old.valor_gasto,
+                        self.valor_gasto,
+                    )
+        super().save(*args, **kwargs)
 
-class ParceriaEvento(TimeStampedModel):
+
+class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
     empresa = models.ForeignKey("empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias")
@@ -225,13 +249,17 @@ class ParceriaEvento(TimeStampedModel):
     )
     comentario = models.TextField(blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+    history = HistoricalRecords()
+
     class Meta:
         ordering = ["-data_inicio"]
         verbose_name = "Parceria de Evento"
         verbose_name_plural = "Parcerias de Eventos"
 
 
-class MaterialDivulgacaoEvento(TimeStampedModel):
+class MaterialDivulgacaoEvento(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     titulo = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
@@ -263,6 +291,10 @@ class MaterialDivulgacaoEvento(TimeStampedModel):
     avaliado_em = models.DateTimeField(null=True, blank=True)
     motivo_devolucao = models.TextField(blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+    history = HistoricalRecords()
+
     class Meta:
         verbose_name = "Material de Divulgação de Evento"
         verbose_name_plural = "Materiais de Divulgação de Eventos"
@@ -271,7 +303,7 @@ class MaterialDivulgacaoEvento(TimeStampedModel):
         return self.arquivo.url
 
 
-class BriefingEvento(TimeStampedModel):
+class BriefingEvento(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     objetivos = models.TextField()
     publico_alvo = models.TextField()
@@ -302,12 +334,16 @@ class BriefingEvento(TimeStampedModel):
     )
     avaliado_em = models.DateTimeField(null=True, blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+    history = HistoricalRecords()
+
     class Meta:
         verbose_name = "Briefing de Evento"
         ordering = ["evento"]
 
 
-class FeedbackNota(TimeStampedModel):
+class FeedbackNota(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(
         Evento,
         on_delete=models.CASCADE,
@@ -317,6 +353,10 @@ class FeedbackNota(TimeStampedModel):
     nota = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     comentario = models.TextField(blank=True)
     data_feedback = models.DateTimeField(auto_now_add=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = "Feedback de Nota"
