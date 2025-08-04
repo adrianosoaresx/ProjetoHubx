@@ -1,7 +1,12 @@
 from __future__ import annotations
 
-from django.contrib.auth import get_user_model
+import base64
+from io import BytesIO
+
+import pyotp
+import qrcode
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -18,7 +23,8 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-from .models import TokenAcesso, TOTPDevice
+from accounts.models import SecurityEvent
+from .models import TokenAcesso
 
 User = get_user_model()
 
@@ -142,26 +148,66 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
 
 
 class Ativar2FAView(LoginRequiredMixin, View):
+    template_name = "tokens/ativar_2fa.html"
+
+    def _get_qr_code(self, user):
+        otp_uri = pyotp.totp.TOTP(user.two_factor_secret).provisioning_uri(name=user.email, issuer_name="Hubx")
+        img = qrcode.make(otp_uri)
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        return base64.b64encode(buffer.getvalue()).decode()
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        if user.two_factor_enabled:
+            messages.info(request, _("2FA já está habilitado."))
+            return redirect("accounts:seguranca")
+        if not user.two_factor_secret:
+            user.two_factor_secret = pyotp.random_base32()
+            user.save(update_fields=["two_factor_secret"])
+        context = {
+            "form": Ativar2FAForm(),
+            "qr_code": self._get_qr_code(user),
+            "secret": user.two_factor_secret,
+        }
+        return render(request, self.template_name, context)
+
     def post(self, request, *args, **kwargs):
-        device, created = TOTPDevice.objects.get_or_create(usuario=request.user)
-        form = Ativar2FAForm(request.POST, device=device)
+        user = request.user
+        form = Ativar2FAForm(request.POST, user=user)
         if form.is_valid():
-            device.confirmado = True
-            device.save()
-            if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"success": _("2FA ativado")})
+            user.two_factor_enabled = True
+            user.save(update_fields=["two_factor_enabled"])
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_habilitado",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             messages.success(request, _("2FA ativado"))
-            return JsonResponse({"success": _("2FA ativado")})
-        if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
-        messages.error(request, form.errors.as_text())
-        return JsonResponse({"error": form.errors.as_text()}, status=400)
+            return redirect("accounts:seguranca")
+        context = {
+            "form": form,
+            "qr_code": self._get_qr_code(user),
+            "secret": user.two_factor_secret,
+        }
+        return render(request, self.template_name, context)
 
 
 class Desativar2FAView(LoginRequiredMixin, View):
+    template_name = "tokens/desativar_2fa.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
     def post(self, request, *args, **kwargs):
-        TOTPDevice.objects.filter(usuario=request.user).delete()
-        if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"success": _("2FA desativado")})
+        user = request.user
+        user.two_factor_enabled = False
+        user.two_factor_secret = None
+        user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="2fa_desabilitado",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         messages.success(request, _("2FA desativado"))
-        return JsonResponse({"success": _("2FA desativado")})
+        return redirect("accounts:seguranca")

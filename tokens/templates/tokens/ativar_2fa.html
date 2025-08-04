@@ -13,7 +13,7 @@
   {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
           {{ message }}
         </p>
       {% endfor %}
@@ -21,6 +21,12 @@
   {% endif %}
 
   <main>
+    {% if qr_code %}
+      <div class="flex flex-col items-center mb-4">
+        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="w-40 h-40" />
+        <p class="mt-2 text-sm font-mono">{{ secret }}</p>
+      </div>
+    {% endif %}
     <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
       {% csrf_token %}
       <div>

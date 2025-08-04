@@ -1,8 +1,12 @@
 import pytest
 from django.utils import timezone
 
+import pyotp
+import pytest
+from django.utils import timezone
+
 from accounts.factories import UserFactory
-from tokens.models import CodigoAutenticacao, TokenAcesso, TOTPDevice
+from tokens.models import CodigoAutenticacao, TokenAcesso
 
 pytestmark = pytest.mark.django_db
 
@@ -48,20 +52,7 @@ def test_codigo_autenticacao_is_expirado():
     assert valid.is_expirado() is False
 
 
-def test_totp_device_creation_and_totp():
-    user = UserFactory()
-    device = TOTPDevice(usuario=user)
-    device.save()
-    assert device.secret
-    totp = device.gerar_totp()
+def test_user_two_factor_secret_totp():
+    user = UserFactory(two_factor_secret=pyotp.random_base32(), two_factor_enabled=True)
+    totp = pyotp.TOTP(user.two_factor_secret).now()
     assert totp.isdigit() and len(totp) == 6
-
-
-def test_totp_device_confirmacao():
-    user = UserFactory()
-    device = TOTPDevice.objects.create(usuario=user)
-    assert device.confirmado is False
-    device.confirmado = True
-    device.save()
-    device.refresh_from_db()
-    assert device.confirmado is True

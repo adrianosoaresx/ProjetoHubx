@@ -6,7 +6,7 @@ from django.utils import timezone
 from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
-from tokens.models import CodigoAutenticacao, TokenAcesso, TOTPDevice
+from tokens.models import CodigoAutenticacao, TokenAcesso
 
 pytestmark = pytest.mark.django_db
 
@@ -87,13 +87,16 @@ def test_validar_codigo_autenticacao_view(client):
 def test_ativar_e_desativar_2fa_views(client):
     user = UserFactory()
     _login(client, user)
-    device = TOTPDevice.objects.create(usuario=user)
-    totp = pyotp.TOTP(device.secret).now()
-    resp = client.post(reverse("tokens:ativar_2fa"), {"codigo_totp": totp})
+    resp = client.get(reverse("tokens:ativar_2fa"))
     assert resp.status_code == 200
-    device.refresh_from_db()
-    assert device.confirmado is True
+    user.refresh_from_db()
+    totp = pyotp.TOTP(user.two_factor_secret).now()
+    resp = client.post(reverse("tokens:ativar_2fa"), {"codigo_totp": totp})
+    assert resp.status_code == 302
+    user.refresh_from_db()
+    assert user.two_factor_enabled is True
 
     resp = client.post(reverse("tokens:desativar_2fa"))
-    assert resp.status_code == 200
-    assert not TOTPDevice.objects.filter(usuario=user).exists()
+    assert resp.status_code == 302
+    user.refresh_from_db()
+    assert user.two_factor_enabled is False and user.two_factor_secret is None
