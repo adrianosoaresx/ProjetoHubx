@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
+from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo, ConviteNucleo
 
 
 class CoordenadorSuplenteSerializer(serializers.ModelSerializer):
@@ -61,3 +61,10 @@ class NucleoSerializer(serializers.ModelSerializer):
             "suplentes",
         ]
         read_only_fields = ["deleted", "deleted_at", "created_at"]
+
+
+class ConviteNucleoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConviteNucleo
+        fields = ["id", "token", "email", "papel", "nucleo", "usado_em", "criado_em"]
+        read_only_fields = ["id", "token", "usado_em", "criado_em"]
