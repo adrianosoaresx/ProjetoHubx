@@ -84,6 +84,10 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
   - Descrição: Logs e histórico de alterações para eventos, inscrições e briefings.  
   - Métrica/Meta: 100% dos eventos críticos registrados
 
+
+- **RNF‑05**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑06**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Criar Evento
@@ -119,6 +123,7 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
 - Briefing segue fluxo de estados: rascunho → orçamentado → aprovado/recusado.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Evento**  
   - id: UUID  
@@ -127,7 +132,6 @@ Gerenciar todo o ciclo de vida de Eventos no Hubx: criação, edição e exclus�
   - organizacao: FK → Organizacao.id  
   - nucleo: FK opcional → Nucleo.id  
   - status: enum('ativo','concluido','cancelado')  
-  - created_at, updated_at: datetime
 
 - **InscricaoEvento**  
   - user: FK → User.id  
@@ -184,8 +188,8 @@ Feature: Gestão de Eventos
 - **RF‑10** – Definir número máximo de participantes e lista de espera automática quando lotado.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑05** – Geração de QRCode deve ocorrer em ≤ 100 ms.  
-- **RNF‑06** – Processos de orçamento devem ser rastreados com logs auditáveis.  
+- **RNF‑07** – Geração de QRCode deve ocorrer em ≤ 100 ms.  
+- **RNF‑08** – Processos de orçamento devem ser rastreados com logs auditáveis.  
 
 ### Modelo de Dados Adicional
 - `InscricaoEvento`: adicionar `qrcode_url: URLField`, `check_in_realizado_em: datetime`.  

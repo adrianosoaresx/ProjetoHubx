@@ -68,6 +68,10 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
   - Descrição: Código testável e modular, seguindo DDD.
   - Métrica/Meta: Cobertura de testes ≥ 90 %.
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Listar Organizações
@@ -99,6 +103,7 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
 - Organizações marcadas como `deleted` não aparecem em buscas.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Organizacao**  
   - id: UUID  
@@ -107,8 +112,6 @@ O App Organizações gerencia o ciclo de vida de entidades organizacionais no Hu
   - descricao: text (opcional)  
   - avatar: ImageField (S3, opcional)  
   - cover: ImageField (S3, opcional)  
-  - created_at, updated_at: datetime  
-  - deleted: boolean (default false)
 
 - **Relacionamentos**  
   - organizacao é ForeignKey em: User, Nucleo, Evento, Empresa, Post, CategoriaForum, TopicoForum, etc.
@@ -145,8 +148,8 @@ Feature: Gestão de Organizações
 - **RF‑08** – Manter histórico de alterações com controle de versões.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑04** – Logs de alterações devem ser imutáveis e acessíveis apenas por usuários root.  
+- **RNF‑06** – Logs de alterações devem ser imutáveis e acessíveis apenas por usuários root.  
 
 ### Modelo de Dados Adicional
 - `Organizacao`: adicionar `inativa: boolean` e `inativada_em: datetime`.  
-- Nova entidade `OrganizacaoLog` com campos: id, organizacao_id, usuario_id, acao, dados_antigos, dados_novos, created_at.  
+- Nova entidade `OrganizacaoLog` com campos: id, organizacao_id, usuario_id, acao, dados_antigos, dados_novos.  

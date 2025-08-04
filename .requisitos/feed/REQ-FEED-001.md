@@ -73,6 +73,10 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
   - Descrição: Controle de acesso baseado em escopo e permissões  
   - Métrica/Meta: 0 acessos indevidos em testes de penetração  
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Listar Feed
@@ -105,6 +109,7 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 - Posts marcados como `deleted` não aparecem no feed.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Post**  
   - id: UUID  
@@ -116,8 +121,6 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
   - conteudo: TextField  
   - image: ImageField (S3)  
   - pdf: FileField (S3)  
-  - created_at, updated_at: datetime  
-  - deleted: boolean  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
@@ -155,7 +158,7 @@ Feature: Feed de Publicações
 
 ### Modelo de Dados Adicional
 - `Post`: adicionar `video: FileField` (opcional) e `tags: M2M → Tag`.  
-- Nova entidade `Tag` com campos: id, nome (único), created_at.  
+- Nova entidade `Tag` com campos: id, nome (único).  
 - Nova entidade `ModeracaoPost` com campos: id, post_id, status (`pendente`,`aprovado`,`rejeitado`), motivo, avaliado_por, avaliado_em.  
 
 ### Regras de Negócio Adicionais

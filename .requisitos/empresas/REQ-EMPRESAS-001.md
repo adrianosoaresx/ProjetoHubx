@@ -69,6 +69,10 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
   - Descrição: Código modular e documentado para fácil extensão.
   - Métrica/Meta: Cobertura de testes ≥ 90 %.
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Listar Empresas
@@ -100,6 +104,7 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
 - Apenas usuário responsável ou admin pode editar/excluir.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Empresa**  
   - id: UUID  
@@ -114,13 +119,11 @@ O App Empresas gerencia o cadastro, consulta, atualização e remoção de empre
   - descricao: TextField (opcional)  
   - palavras_chave: CharField  
   - tags: M2M → Tag  
-  - created_at, updated_at: datetime  
 
 - **Tag**  
   - id: UUID  
   - nome: string (unique)  
   - categoria: enum('prod','serv')  
-  - created_at, updated_at: datetime  
 
 ## 8. Critérios de Aceite (Gherkin)
 ```gherkin
@@ -153,11 +156,11 @@ Feature: Gestão de Empresas
 - **RF‑07** – Permitir avaliações e comentários sobre empresas (1–5 estrelas) para feedback.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑04** – O histórico deve estar disponível para consulta por admins e atender requisitos de LGPD.  
+- **RNF‑06** – O histórico deve estar disponível para consulta por admins e atender requisitos de LGPD.  
 
 ### Modelo de Dados Adicional
 - Nova entidade `EmpresaChangeLog` com campos: id, empresa_id, usuario_id, campo_alterado, valor_antigo, valor_novo, alterado_em.  
-- Nova entidade `AvaliacaoEmpresa` com campos: id, empresa_id, usuario_id, nota (1–5), comentario, created_at.  
+- Nova entidade `AvaliacaoEmpresa` com campos: id, empresa_id, usuario_id, nota (1–5), comentario.  
 
 ### Regras de Negócio Adicionais
 - Somente usuários autenticados podem avaliar empresas; um único usuário avalia uma empresa uma vez.  

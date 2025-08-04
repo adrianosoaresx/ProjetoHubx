@@ -68,6 +68,10 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
   - Descrição: Suportar 1000 cadastros por hora  
   - Métrica/Meta: escalonamento automático  
 
+
+- **RNF-04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF-05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Criar Conta
@@ -96,13 +100,13 @@ O App Accounts gerencia todo o ciclo de vida de contas de usuário no sistema Hu
 - Perfis de usuário seguem lógica: root, admin, associado, nucleado, coordenador, convidado.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 - **Account**  
   - id: UUID  
   - email: EmailField, único  
   - password_hash: string  
   - is_active: boolean  
   - last_login: datetime  
-  - created_at, updated_at: datetime  
 
 - **Profile**  
   - user: FK → Account.id  
@@ -153,13 +157,12 @@ Feature: Gerenciamento de contas
 - **RF‑09** – Suporte a autenticação em duas etapas (2FA) opcional com códigos TOTP.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑04** – Segurança reforçada: tokens de recuperação e confirmação devem ter entropia ≥ 128 bits e expirar em 24 horas.  
-- **RNF‑05** – Logs de tentativas de login e eventos de segurança devem ser armazenados com carimbo de data/hora e IP.  
+- **RNF-06** – Segurança reforçada: tokens de recuperação e confirmação devem ter entropia ≥ 128 bits e expirar em 24 horas.  
+- **RNF-07** – Logs de tentativas de login e eventos de segurança devem ser armazenados com carimbo de data/hora e IP.  
 
 ### Modelo de Dados Adicional
 - `failed_login_attempts: integer` – contador de falhas consecutivas.  
 - `lock_expires_at: datetime` – data/hora em que o bloqueio por falhas expira.  
-- `deleted_at: datetime` – marca soft delete da conta.  
 - `two_factor_enabled: boolean` – indica se 2FA está habilitado.  
 - `two_factor_secret: string` – chave secreta TOTP (criptografada).  
 

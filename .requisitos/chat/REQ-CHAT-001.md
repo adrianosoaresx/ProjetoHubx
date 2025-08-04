@@ -66,6 +66,10 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
   - Descrição: Código modular e documentado  
   - Métrica/Meta: Cobertura ≥ 90 %  
 
+
+- **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Comunicação em Tempo Real
@@ -87,12 +91,12 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
 2. Sistema gera arquivo JSON/CSV com todas as mensagens do canal.
 
 ## 6. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **ChatChannel**  
   - id: UUID  
   - tipo: enum('privado','nucleo','evento','organizacao')  
   - context_id: UUID  
-  - created_at: datetime  
 
 - **Mensagem**  
   - id: UUID  
@@ -107,7 +111,6 @@ O App Chat deve permitir comunicação em tempo real via WebSocket e interface v
   - usuario: FK → User.id  
   - mensagem: FK → Mensagem.id  
   - lida: boolean  
-  - created_at: datetime  
 
 ## 7. Regras de Negócio
 - Usuário deve estar autenticado e ter vínculo com o contexto.  
@@ -143,8 +146,8 @@ Feature: Chat em tempo real
 - **RF‑09** – Sistema de reação (emoji) nas mensagens para aumentar engajamento.  
 
 ### Requisitos Não‑Funcionais Adicionais
-- **RNF‑03** – Escalabilidade para suportar 10 000 conexões WebSocket simultâneas.  
-- **RNF‑04** – Históricos exportados devem incluir metadados (remetente, timestamp, tipo) e ser gerados em ≤ 500 ms.  
+- **RNF‑05** – Escalabilidade para suportar 10 000 conexões WebSocket simultâneas.  
+- **RNF‑06** – Históricos exportados devem incluir metadados (remetente, timestamp, tipo) e ser gerados em ≤ 500 ms.  
 
 ### Modelo de Dados Adicional
 - Em `Mensagem`, adicionar `pinned_at: datetime` (opcional) e `reactions: JSONField` (mapeamento emoji→contagem).  

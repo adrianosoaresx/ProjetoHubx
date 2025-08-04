@@ -73,6 +73,10 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
   - Descrição: Código modular e testável seguindo DDD e Clean Architecture.
   - Métrica/Meta: Cobertura de testes ≥ 90 %.
 
+
+- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
+- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
 ## 5. Casos de Uso
 
 ### UC‑01 – Criar Núcleo
@@ -103,6 +107,7 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
 - Soft delete preserva histórico de associações.
 
 ## 7. Modelo de Dados
+*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
 
 - **Núcleo**  
   - id: UUID  
@@ -111,7 +116,6 @@ O App Núcleos gerencia a criação, edição, visualização e associação de 
   - avatar: ImageField (S3)  
   - cover: ImageField (S3)  
   - organizacao: FK → Organizacao.id  
-  - created_at, updated_at: datetime  
 
 - **ParticipacaoNucleo**  
   - id: UUID  
