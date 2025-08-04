@@ -1,6 +1,6 @@
+import base64
 import os
 import uuid
-import base64
 from io import BytesIO
 
 import pyotp
@@ -9,9 +9,9 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -161,7 +161,7 @@ def disable_2fa(request):
         code = request.POST.get("code")
         if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
             user = request.user
-            user.two_factor_secret = ""
+            user.two_factor_secret = None
             user.two_factor_enabled = False
             user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
             messages.success(request, _("Verificação em duas etapas desativada."))

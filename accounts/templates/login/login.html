@@ -4,15 +4,15 @@
 {% block title %}Entrar - HubX{% endblock %}
 
 {% block content %}
-<div class="bg-muted min-h-screen flex items-center justify-center px-4">
-  <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto">
-    <h1 class="text-2xl font-bold text-center text-gray-900 mb-1">Bem-vindo de volta</h1>
+<main class="bg-muted min-h-screen flex items-center justify-center px-4">
+  <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto" role="dialog" aria-labelledby="login-title">
+    <h1 id="login-title" class="text-2xl font-bold text-center text-gray-900 mb-1">Bem-vindo de volta</h1>
     <p class="text-center text-sm text-gray-600 mb-6">
       Entre para acessar sua conta e conectar-se à sua rede
     </p>
 
     {% if form.non_field_errors %}
-      <div class="text-red-600 text-sm mb-4">{{ form.non_field_errors }}</div>
+      <div class="text-red-600 text-sm mb-4" role="alert">{{ form.non_field_errors }}</div>
     {% endif %}
 
     <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
@@ -24,9 +24,11 @@
                placeholder="Digite seu e-mail"
                data-check-url="{% url 'accounts:check_2fa' %}"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-               required>
+               required
+               aria-describedby="email-error"
+               {% if form.email.errors %}aria-invalid="true"{% endif %}>
         {% if form.email.errors %}
-          <div class="text-red-600 text-xs mt-1">{{ form.email.errors }}</div>
+          <div id="email-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.email.errors }}</div>
         {% endif %}
       </div>
       <div>
@@ -34,9 +36,11 @@
         <input type="password" id="id_password" name="password"
                placeholder="Digite sua senha"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-               required>
+               required
+               aria-describedby="password-error"
+               {% if form.password.errors %}aria-invalid="true"{% endif %}>
         {% if form.password.errors %}
-          <div class="text-red-600 text-xs mt-1">{{ form.password.errors }}</div>
+          <div id="password-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.password.errors }}</div>
         {% endif %}
       </div>
       <div id="totp-field" style="display:none">
@@ -44,9 +48,11 @@
         <input type="text" id="id_totp" name="totp"
                value="{{ form.totp.value|default_if_none:'' }}"
                placeholder="Código 2FA"
-               class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+               class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+               aria-describedby="totp-error"
+               {% if form.totp.errors %}aria-invalid="true"{% endif %}>
         {% if form.totp.errors %}
-          <div class="text-red-600 text-xs mt-1">{{ form.totp.errors }}</div>
+          <div id="totp-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.totp.errors }}</div>
         {% endif %}
       </div>
       <button type="submit"
@@ -73,7 +79,7 @@
       </a>
     </div>
   </div>
-</div>
+</main>
 <script>
   const emailInput = document.getElementById('id_email');
   const totpField = document.getElementById('totp-field');
