@@ -107,6 +107,27 @@ def test_avaliacao_unica(api_client, gerente_user):
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_listar_avaliacoes(api_client, gerente_user, admin_user):
+    api_client.force_authenticate(user=gerente_user)
+    empresa = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Avaliada",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+    )
+    AvaliacaoEmpresa.objects.create(empresa=empresa, usuario=gerente_user, nota=5)
+    AvaliacaoEmpresa.objects.create(
+        empresa=empresa, usuario=admin_user, nota=3, deleted=True
+    )
+    url = reverse("empresas_api:empresa-avaliacoes", args=[empresa.id])
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
+    assert len(resp.data) == 1
+
+
 def test_historico_restrito(api_client, gerente_user, admin_user):
     empresa = Empresa.objects.create(
         usuario=gerente_user,
@@ -125,7 +146,7 @@ def test_historico_restrito(api_client, gerente_user, admin_user):
         valor_novo="Novo",
     )
     url = reverse("empresas_api:empresa-historico", args=[empresa.id])
-    # unauthorized
+    api_client.force_authenticate(user=gerente_user)
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_403_FORBIDDEN
     api_client.force_authenticate(user=admin_user)

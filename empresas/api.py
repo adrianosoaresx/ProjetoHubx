@@ -70,7 +70,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if request.user.organizacao != empresa.organizacao:
             return Response({"detail": "Usuário não pertence à organização."}, status=403)
-        if AvaliacaoEmpresa.objects.filter(empresa=empresa, usuario=request.user).exists():
+        if AvaliacaoEmpresa.objects.filter(
+            empresa=empresa, usuario=request.user, deleted=False
+        ).exists():
             return Response({"detail": "Avaliação já registrada."}, status=400)
         serializer = AvaliacaoEmpresaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -87,15 +89,15 @@ class EmpresaViewSet(viewsets.ModelViewSet):
     @avaliacoes.mapping.get
     def listar_avaliacoes(self, request, pk: str | None = None):
         empresa = self.get_object()
-        avals = empresa.avaliacoes.select_related("usuario")
+        avals = empresa.avaliacoes.filter(deleted=False).select_related("usuario")
         serializer = AvaliacaoEmpresaSerializer(avals, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def historico(self, request, pk: str | None = None):
-        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+        if not request.user.is_staff:
             return Response(status=403)
         empresa = self.get_object()
-        logs = empresa.logs.select_related("usuario")
+        logs = empresa.logs.filter(deleted=False).select_related("usuario")
         serializer = EmpresaChangeLogSerializer(logs, many=True)
         return Response(serializer.data)

@@ -106,8 +106,11 @@ def test_historico_view_access(client, admin_user, nucleado_user):
         valor_antigo="X",
         valor_novo="Y",
     )
-    client.force_login(admin_user)
     url = reverse("empresas:historico", args=[empresa.id])
+    client.force_login(nucleado_user)
+    resp = client.get(url)
+    assert resp.status_code == 403
+    client.force_login(admin_user)
     resp = client.get(url)
     assert resp.status_code == 200
     assert "nome" in resp.content.decode()
