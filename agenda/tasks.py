@@ -19,4 +19,4 @@ def promover_lista_espera(evento_id: int) -> None:
         ins.status = "confirmada"
         ins.posicao_espera = None
         ins.data_confirmacao = timezone.now()
-        ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "updated_at"])
+        ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "modified"])

@@ -16,14 +16,15 @@ from django.core.validators import (
 from django.db import models
 from django.utils import timezone
 
-from core.models import TimeStampedModel
+from django_extensions.db.models import TimeStampedModel
+from core.models import SoftDeleteManager, SoftDeleteModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 User = get_user_model()
 
 
-class InscricaoEvento(TimeStampedModel):
+class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     STATUS_CHOICES = [
         ("pendente", "Pendente"),
         ("confirmada", "Confirmada"),
@@ -80,6 +81,9 @@ class InscricaoEvento(TimeStampedModel):
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
     posicao_espera = models.PositiveIntegerField(null=True, blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         unique_together = ("user", "evento")
 
@@ -95,28 +99,28 @@ class InscricaoEvento(TimeStampedModel):
                     or 0
                 )
                 self.posicao_espera = ultimo + 1
-                self.save(update_fields=["status", "posicao_espera", "updated_at"])
+                self.save(update_fields=["status", "posicao_espera", "modified"])
                 return
         self.status = "confirmada"
         self.data_confirmacao = timezone.now()
         if not self.qrcode_url:
             self.gerar_qrcode()
-        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "updated_at"])
+        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "modified"])
 
     def cancelar_inscricao(self) -> None:
         self.status = "cancelada"
         self.data_confirmacao = timezone.now()
-        self.save(update_fields=["status", "data_confirmacao", "updated_at"])
+        self.save(update_fields=["status", "data_confirmacao", "modified"])
 
     def realizar_check_in(self) -> None:
         if self.check_in_realizado_em:
             return
         self.check_in_realizado_em = timezone.now()
-        self.save(update_fields=["check_in_realizado_em", "updated_at"])
+        self.save(update_fields=["check_in_realizado_em", "modified"])
 
     def gerar_qrcode(self) -> None:
         """Gera um QRCode único e salva no armazenamento padrão."""
-        data = f"inscricao:{self.pk}:{self.created_at.timestamp()}"
+        data = f"inscricao:{self.pk}:{self.created.timestamp()}"
         img = qrcode.make(data)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
@@ -125,7 +129,7 @@ class InscricaoEvento(TimeStampedModel):
         self.qrcode_url = default_storage.url(path)
 
 
-class Evento(TimeStampedModel):
+class Evento(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     titulo = models.CharField(max_length=150)
     descricao = models.TextField()
@@ -172,6 +176,9 @@ class Evento(TimeStampedModel):
     cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
     briefing = models.TextField(blank=True, null=True)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         verbose_name = "Evento"
         verbose_name_plural = "Eventos"
@@ -187,7 +194,7 @@ class Evento(TimeStampedModel):
         return f"{self.local}, {self.cidade} - {self.estado}, {self.cep}"
 
 
-class ParceriaEvento(models.Model):
+class ParceriaEvento(TimeStampedModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
     empresa = models.ForeignKey("empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias")
@@ -224,7 +231,7 @@ class ParceriaEvento(models.Model):
         verbose_name_plural = "Parcerias de Eventos"
 
 
-class MaterialDivulgacaoEvento(models.Model):
+class MaterialDivulgacaoEvento(TimeStampedModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     titulo = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
@@ -264,7 +271,7 @@ class MaterialDivulgacaoEvento(models.Model):
         return self.arquivo.url
 
 
-class BriefingEvento(models.Model):
+class BriefingEvento(TimeStampedModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     objetivos = models.TextField()
     publico_alvo = models.TextField()
@@ -300,7 +307,7 @@ class BriefingEvento(models.Model):
         ordering = ["evento"]
 
 
-class FeedbackNota(models.Model):
+class FeedbackNota(TimeStampedModel):
     evento = models.ForeignKey(
         Evento,
         on_delete=models.CASCADE,

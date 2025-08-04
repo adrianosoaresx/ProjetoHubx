@@ -74,7 +74,7 @@ def test_get_period_range_default():
 def test_calcular_crescimento(evento):
     now = timezone.now()
     earlier = now - dt.timedelta(days=30)
-    Evento.objects.filter(id=evento.id).update(created_at=earlier)
+    Evento.objects.filter(id=evento.id).update(created=earlier)
     inicio = now.replace(day=1)
     fim = inicio + dt.timedelta(days=30)
     data = DashboardService.calcular_crescimento(Evento.objects.all(), inicio, fim)
