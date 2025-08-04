@@ -2,6 +2,8 @@
 
 Este app gerencia as organizações cadastradas na plataforma. Implementa CRUD completo com busca avançada, associações e histórico de alterações seguindo a arquitetura limpa.
 
+Todas as entidades utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`, garantindo campos padronizados de criação/atualização (`created_at`, `updated_at`) e exclusão lógica (`deleted`, `deleted_at`).
+
 ## Funcionalidades principais
 
 - **Listagem e busca**: campo único que aceita nome ou *slug*. Resultados paginados (10 por página) e filtrados para ocultar itens excluídos ou inativos.
@@ -29,4 +31,4 @@ O *payload* é consumido por `enviar_email_membros`, que encaminha mensagens aos
 
 ## Histórico
 
-A lista de alterações pode ser consultada em `/organizacoes/<id>/logs/` (somente superadmin).
+A lista de alterações pode ser consultada em `/organizacoes/<id>/logs/` (somente superadmin). Os registros de `OrganizacaoLog` são imutáveis e preservam os dados anteriores e novos de cada ação.

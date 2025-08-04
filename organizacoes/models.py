@@ -2,13 +2,14 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
 
 class Organizacao(TimeStampedModel, SoftDeleteModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255)
     cnpj = models.CharField(max_length=18, unique=True)
     descricao = models.TextField(blank=True)
@@ -54,8 +55,13 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     ) -> None:
         super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
+    def soft_delete(self) -> None:
+        """Marca a organização como deletada sem remover do banco."""
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=["deleted", "deleted_at"])
 
-class OrganizacaoLog(ExtTimeStampedModel):
+class OrganizacaoLog(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
@@ -69,11 +75,20 @@ class OrganizacaoLog(ExtTimeStampedModel):
         blank=True,
     )
     acao = models.CharField(max_length=50)
-    dados_antigos = models.JSONField(default=dict, blank=True)
+    dados_anteriores = models.JSONField(default=dict, blank=True)
     dados_novos = models.JSONField(default=dict, blank=True)
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
+        get_latest_by = "created_at"
 
     def __str__(self) -> str:
         return f"{self.organizacao} - {self.acao}"
+
+    def save(self, *args, **kwargs):  # type: ignore[override]
+        if not self._state.adding:
+            raise RuntimeError("Logs não podem ser modificados")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):  # type: ignore[override]
+        raise RuntimeError("Logs não podem ser removidos")

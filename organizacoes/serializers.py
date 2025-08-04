@@ -40,7 +40,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             organizacao=instance,
             usuario=user,
             acao="created",
-            dados_antigos={},
+            dados_anteriores={},
             dados_novos=validated_data,
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="created")
@@ -55,7 +55,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             organizacao=instance,
             usuario=user,
             acao="updated",
-            dados_antigos=old_data,
+            dados_anteriores=old_data,
             dados_novos=validated_data,
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="updated")
@@ -70,8 +70,8 @@ class OrganizacaoLogSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "acao",
-            "dados_antigos",
+            "dados_anteriores",
             "dados_novos",
-            "created",
+            "created_at",
             "usuario_email",
         ]

@@ -36,7 +36,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             organizacao=instance,
             usuario=self.request.user,
             acao="deleted",
-            dados_antigos={},
+            dados_anteriores={},
             dados_novos={"deleted": True, "deleted_at": instance.deleted_at.isoformat()},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=instance, acao="deleted")
@@ -51,7 +51,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             organizacao=organizacao,
             usuario=request.user,
             acao="inactivated",
-            dados_antigos={},
+            dados_anteriores={},
             dados_novos={"inativa": True, "inativada_em": organizacao.inativada_em.isoformat()},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inactivated")
@@ -68,7 +68,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             organizacao=organizacao,
             usuario=request.user,
             acao="reactivated",
-            dados_antigos={},
+            dados_anteriores={},
             dados_novos={"inativa": False, "inativada_em": None},
         )
         organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
