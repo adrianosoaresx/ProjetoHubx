@@ -171,6 +171,13 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "tokens.auth.ApiTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
+}
+
 # Valores padrão para mensalidades
 MENSALIDADE_ASSOCIACAO = Decimal("50.00")
 MENSALIDADE_NUCLEO = Decimal("30.00")
@@ -182,28 +189,20 @@ CELERY_BEAT_SCHEDULE = {
     "notificar_inadimplencia": {
         "task": "financeiro.tasks.notificar_inadimplencia.notificar_inadimplencia",
         "schedule": crontab(minute=0, hour=7),
-    }
+    },
+    "revogar_tokens_expirados": {
+        "task": "tokens.tasks.revogar_tokens_expirados",
+        "schedule": crontab(minute=0, hour=0),
+    },
 }
 
 # Notificações
 # Configurações de notificação – usar valores de ambiente quando definidos,
 # senão definir um valor fictício para evitar ImproperlyConfigured
-NOTIFICATIONS_EMAIL_API_URL = os.getenv(
-    "NOTIFICATIONS_EMAIL_API_URL", "https://stub-email.example"
-)
-NOTIFICATIONS_EMAIL_API_KEY = os.getenv(
-    "NOTIFICATIONS_EMAIL_API_KEY", "dummy-key-email"
-)
-NOTIFICATIONS_PUSH_API_URL = os.getenv(
-    "NOTIFICATIONS_PUSH_API_URL", "https://stub-push.example"
-)
-NOTIFICATIONS_PUSH_API_KEY = os.getenv(
-    "NOTIFICATIONS_PUSH_API_KEY", "dummy-key-push"
-)
-NOTIFICATIONS_WHATSAPP_API_URL = os.getenv(
-    "NOTIFICATIONS_WHATSAPP_API_URL", "https://stub-whatsapp.example"
-)
-NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv(
-    "NOTIFICATIONS_WHATSAPP_API_KEY", "dummy-key-whatsapp"
-)
+NOTIFICATIONS_EMAIL_API_URL = os.getenv("NOTIFICATIONS_EMAIL_API_URL", "https://stub-email.example")
+NOTIFICATIONS_EMAIL_API_KEY = os.getenv("NOTIFICATIONS_EMAIL_API_KEY", "dummy-key-email")
+NOTIFICATIONS_PUSH_API_URL = os.getenv("NOTIFICATIONS_PUSH_API_URL", "https://stub-push.example")
+NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "dummy-key-push")
+NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "https://stub-whatsapp.example")
+NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "dummy-key-whatsapp")
 NOTIFICATIONS_ENABLED = True
