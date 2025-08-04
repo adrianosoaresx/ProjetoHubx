@@ -107,11 +107,16 @@ class TokenViewSet(viewsets.GenericViewSet):
         out = self.get_serializer(token)
         return Response(out.data)
 
-    @action(detail=True, methods=["post"])
-    def revoke(self, request, pk: str | None = None):
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path=r"(?P<codigo>[^/]+)/revogar",
+        url_name="revogar",
+    )
+    def revogar(self, request, codigo: str | None = None):
         if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
             return Response(status=403)
-        token = self.get_object()
+        token = get_object_or_404(TokenAcesso, codigo=codigo)
         if token.estado == TokenAcesso.Estado.REVOGADO:
             return Response({"detail": _("Token já revogado.")}, status=status.HTTP_409_CONFLICT)
         now = timezone.now()
