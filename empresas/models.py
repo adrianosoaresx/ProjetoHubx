@@ -5,6 +5,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
+from django_extensions.db.models import TimeStampedModel as ExtTimeStampedModel
 from validate_docbr import CNPJ
 
 from core.models import TimeStampedModel
@@ -119,18 +120,16 @@ class EmpresaChangeLog(models.Model):
         return f"{self.empresa.nome} - {self.campo_alterado}"
 
 
-class AvaliacaoEmpresa(models.Model):
+class AvaliacaoEmpresa(ExtTimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="avaliacoes")
     usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     nota = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
     comentario = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("empresa", "usuario")
-        ordering = ["-created_at"]
+        ordering = ["-created"]
 
     def __str__(self) -> str:
         return f"{self.empresa.nome} - {self.usuario.email}"

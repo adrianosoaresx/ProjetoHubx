@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import EncryptedCharField, URLField
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 # ───────────────────────────────────────────────────────────────
 #  Validador de CPF simples (###.###.###-## ou ###########)
@@ -85,7 +85,7 @@ class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
         return self.get(email__iexact=email)
 
 
-class User(AbstractUser, TimeStampedModel):
+class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     """
     Modelo de usuário customizado.
     Herdamos de AbstractUser para manter toda a infraestrutura
@@ -160,7 +160,6 @@ class User(AbstractUser, TimeStampedModel):
 
     failed_login_attempts = models.PositiveSmallIntegerField(default=0)
     lock_expires_at = models.DateTimeField(null=True, blank=True)
-    deleted_at = models.DateTimeField(null=True, blank=True)
     exclusao_confirmada = models.BooleanField(default=False)
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = EncryptedCharField(max_length=128, blank=True, null=True)
