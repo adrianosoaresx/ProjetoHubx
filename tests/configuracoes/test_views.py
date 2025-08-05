@@ -51,7 +51,9 @@ def test_view_post_atualiza_preferencias(admin_client, admin_user):
     assert admin_user.configuracao.receber_notificacoes_email is False
     assert resp.cookies["tema"].value == "escuro"
     assert resp.cookies["django_language"].value == "pt-BR"
-    assert resp.headers["HX-Refresh"] == "true"
+    content = resp.content.decode()
+    assert 'const tema = "escuro"' in content
+    assert "localStorage.setItem('tema', tema)" in content
 
 
 try:
