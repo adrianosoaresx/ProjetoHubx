@@ -15,5 +15,7 @@ def sync_preferences(sender, instance, **kwargs) -> None:
         defaults={
             "email": instance.receber_notificacoes_email,
             "whatsapp": instance.receber_notificacoes_whatsapp,
+            "frequencia_email": instance.frequencia_notificacoes_email,
+            "frequencia_whatsapp": instance.frequencia_notificacoes_whatsapp,
         },
     )

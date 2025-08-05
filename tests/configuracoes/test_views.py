@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import pytest
+import pytest
 from django.test import override_settings
 from django.urls import reverse
+from pathlib import Path
 
 from accounts.forms import InformacoesPessoaisForm
 
@@ -52,7 +54,15 @@ def test_view_post_atualiza_preferencias(admin_client, admin_user):
     assert resp.headers["HX-Refresh"] == "true"
 
 
+try:
+    import pytest_benchmark  # noqa:F401
+    HAS_BENCH = True
+except Exception:  # pragma: no cover - dependencia opcional
+    HAS_BENCH = False
+
+
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+@pytest.mark.skipif(not HAS_BENCH, reason="pytest-benchmark não instalado")
 def test_view_benchmark(admin_client, benchmark):
     url = reverse("configuracoes")
 
@@ -65,3 +75,9 @@ def test_view_benchmark(admin_client, benchmark):
     data = stats.sorted_data
     p95 = data[int(len(data) * 0.95) - 1]
     assert p95 < 0.1
+
+
+def test_base_template_localstorage():
+    content = Path("templates/base.html").read_text()
+    assert "localStorage.setItem('tema'" in content
+    assert "localStorage.setItem('idioma'" in content
