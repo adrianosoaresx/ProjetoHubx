@@ -98,3 +98,11 @@ reações, pins e moderação para todos os conectados.
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,
 `tipo`, `conteudo` e `created`. No formato CSV, o cabeçalho segue a
 mesma estrutura. Mensagens ocultas por moderação são ignoradas.
+
+## Janela de chat flutuante
+
+O módulo expõe uma interface de conversa em janela flutuante.
+Para utilizá‑la, inclua o container com `id="chat-float-container"`
+e um link com `id="chat-link"` na página. O script `static/js/chat_modal.js`
+carrega a lista de usuários e as conversas via requisições assíncronas.
+Usuários não autenticados são redirecionados para a página de login.

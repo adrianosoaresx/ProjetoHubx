@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('chat-float-container');
     const usersUrl = '/chat/modal/users/';
     const roomUrlBase = '/chat/modal/room/';
+    const isAuthenticated = document.body.dataset.isAuthenticated === 'true';
 
     function executeScripts(el) {
         el.querySelectorAll('script').forEach(oldScript => {
@@ -73,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatLink) {
         chatLink.addEventListener('click', e => {
             e.preventDefault();
+            if (!isAuthenticated) {
+                const next = encodeURIComponent(window.location.pathname);
+                window.location.href = `/accounts/login/?next=${next}`;
+                return;
+            }
             openUserList();
         });
     }

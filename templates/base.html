@@ -15,7 +15,7 @@
   {% block extra_css %}{% endblock %}
 </head>
 
-<body class="min-h-full flex flex-col font-sans text-gray-800">
+<body class="min-h-full flex flex-col font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
 
   <!-- Navbar -->
   <header class="bg-white shadow">
