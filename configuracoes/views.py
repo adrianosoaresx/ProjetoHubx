@@ -87,6 +87,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "two_factor_enabled": self.get_two_factor_enabled(),
             "redes_conectadas": request.user.redes_sociais or {},
         }
+        if tab == "preferencias" and form.is_valid():
+            context["updated_preferences"] = True
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
@@ -97,9 +99,4 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             tema = form.instance.tema
             response.set_cookie("tema", tema)
             response.set_cookie("django_language", form.instance.idioma)
-            response.headers["HX-Refresh"] = "true"
-            messages.info(
-                request,
-                _("Preferências atualizadas. As mudanças serão aplicadas no próximo carregamento."),
-            )
         return response

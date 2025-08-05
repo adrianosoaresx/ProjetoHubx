@@ -76,3 +76,19 @@
     toggleFields();
   })();
 </script>
+{% if updated_preferences %}
+<script>
+  (function () {
+    const tema = "{{ preferencias_form.instance.tema }}";
+    const idioma = "{{ preferencias_form.instance.idioma }}";
+    localStorage.setItem('tema', tema);
+    document.cookie = `tema=${tema};path=/`;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = tema === 'automatico' ? (prefersDark ? 'escuro' : 'claro') : tema;
+    document.documentElement.classList.toggle('dark', theme === 'escuro');
+    localStorage.setItem('idioma', idioma);
+    document.cookie = `django_language=${idioma};path=/`;
+    document.documentElement.setAttribute('lang', idioma);
+  })();
+</script>
+{% endif %}
