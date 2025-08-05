@@ -44,6 +44,12 @@ def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user
         await communicator.send_json_to({"tipo": "reaction", "mensagem_id": str(msg.id), "emoji": "👍"})
         response2 = await communicator.receive_json_from()
         assert response2["reactions"]["👍"] == 1
+        await communicator.send_json_to({"tipo": "reaction", "mensagem_id": str(msg.id), "emoji": "👍"})
+        response3 = await communicator.receive_json_from()
+        assert response3["reactions"]["👍"] == 1
+        await communicator.send_json_to({"tipo": "reaction", "mensagem_id": str(msg.id), "emoji": "👍", "acao": "remove"})
+        response4 = await communicator.receive_json_from()
+        assert "👍" not in response4["reactions"]
         await communicator.disconnect()
 
     asyncio.run(inner())

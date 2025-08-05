@@ -45,7 +45,7 @@
         </button>
       {% endif %}
       <ul class="reactions flex gap-2 ml-2">
-        {% for emoji, count in m.reactions.items %}
+        {% for emoji, count in m.reaction_counts.items %}
           <li class="text-sm">{{ emoji }} <span class="count">{{ count }}</span></li>
         {% endfor %}
       </ul>

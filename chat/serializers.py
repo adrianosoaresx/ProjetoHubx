@@ -52,6 +52,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     remetente = serializers.PrimaryKeyRelatedField(read_only=True)
+    reactions = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatMessage
@@ -99,6 +100,9 @@ class ChatMessageSerializer(serializers.ModelSerializer):
                 url = request.build_absolute_uri(url)
             data["arquivo_url"] = url
         return data
+
+    def get_reactions(self, obj: ChatMessage) -> dict[str, int]:
+        return obj.reaction_counts()
 
 
 class ChatNotificationSerializer(serializers.ModelSerializer):
