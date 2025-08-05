@@ -12,3 +12,9 @@
   {% block chat_content %}{% endblock %}
 </section>
 {% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'chat/js/chat_socket.js' %}"></script>
+<script src="{% static 'chat/js/notifications_socket.js' %}"></script>
+{% endblock %}

@@ -4,9 +4,10 @@ import os
 import pytest
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from asgiref.sync import sync_to_async
 
 from chat.models import ChatMessage, ChatNotification
-from chat.services import criar_canal
+from chat.services import criar_canal, enviar_mensagem
 from Hubx.asgi import application
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
@@ -162,5 +163,33 @@ def test_notification_consumer_receives(admin_user, coordenador_user):
         await chat_comm.disconnect()
         await notif_comm.disconnect()
         assert await database_sync_to_async(ChatNotification.objects.count)() == 1
+
+    asyncio.run(inner())
+
+
+def test_react_endpoint_broadcasts(admin_user, coordenador_user, client):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    msg = enviar_mensagem(canal, admin_user, "text", "ola")
+    client.force_login(admin_user)
+
+    async def inner():
+        comm = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        comm.scope["user"] = coordenador_user
+        connected, _ = await comm.connect()
+        assert connected
+        await sync_to_async(client.post)(
+            f"/api/chat/channels/{canal.id}/messages/{msg.id}/react/",
+            {"emoji": "👍"},
+        )
+        event = await comm.receive_json_from()
+        assert event["reactions"]["👍"] == 1
+        await comm.disconnect()
 
     asyncio.run(inner())

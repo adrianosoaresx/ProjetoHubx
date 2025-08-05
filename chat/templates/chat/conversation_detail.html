@@ -40,6 +40,7 @@
 
     {% if pinned_messages %}
       <section id="pinned" class="mb-4 space-y-2" aria-label="{% trans 'Mensagens fixadas' %}">
+        <h3 class="flex items-center gap-1 text-sm font-semibold text-neutral-600"><span>📌</span>{% trans 'Mensagens fixadas' %}</h3>
         {% for m in pinned_messages %}
           {% include "chat/partials/message.html" with m=m %}
         {% endfor %}
@@ -63,12 +64,15 @@
     </form>
   </div>
   <div id="modal"></div>
-  <script src="{% static 'chat/js/chat_socket.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      if(window.HubXChatRoom){HubXChatRoom.init(document.getElementById('chat-container'));}
-    });
-  </script>
 </main>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.HubXChatRoom){HubXChatRoom.init(document.getElementById('chat-container'));}
+  });
+</script>
 {% endblock %}
 

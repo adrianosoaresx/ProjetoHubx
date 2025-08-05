@@ -17,8 +17,13 @@ chat_exportacoes_total = Counter(
     ["formato"],
 )
 
-chat_websocket_latency_seconds = Histogram(
-    "chat_websocket_latency_seconds",
+chat_message_latency_seconds = Histogram(
+    "chat_message_latency_seconds",
+    "Latência em segundos das mensagens enviadas pelo WebSocket",
+)
+
+chat_notification_latency_seconds = Histogram(
+    "chat_notification_latency_seconds",
     "Latência em segundos das notificações enviadas pelo WebSocket",
 )
 
