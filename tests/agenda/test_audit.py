@@ -3,8 +3,6 @@ from datetime import date, timedelta
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.forms.models import model_to_dict
-from django.test import RequestFactory
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -20,7 +18,6 @@ from agenda.models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from agenda.views import ParceriaEventoDeleteView
 
 pytestmark = pytest.mark.django_db
 
@@ -40,7 +37,7 @@ def _admin_user(organizacao):
     )
 
 
-def test_parceria_delete_gera_log() -> None:
+def test_parceria_delete_gera_log(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = _admin_user(org)
     evento = EventoFactory(organizacao=org, coordenador=user)
@@ -55,14 +52,14 @@ def test_parceria_delete_gera_log() -> None:
         data_fim=date.today() + timedelta(days=1),
         tipo_parceria="patrocinio",
     )
-    request = RequestFactory().post("/")
-    request.user = user
-    view = ParceriaEventoDeleteView()
-    view.request = request
-    view.kwargs = {"pk": parceria.pk}
-    view.delete(request, pk=parceria.pk)
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:parceria-detail", args=[parceria.pk])
+    api_client.delete(url)
     assert EventoLog.objects.filter(
-        evento=evento, usuario=user, acao="parceria_excluida"
+        evento=evento,
+        usuario=user,
+        acao="parceria_excluida",
+        detalhes__empresa=str(parceria.empresa_id),
     ).exists()
 
 

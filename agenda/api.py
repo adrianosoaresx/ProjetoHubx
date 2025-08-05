@@ -112,6 +112,12 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_destroy(self, instance: ParceriaEvento) -> None:
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=self.request.user,
+            acao="parceria_excluida",
+            detalhes={"empresa": str(instance.empresa_id)},
+        )
         instance.soft_delete()
 
     @action(detail=True, methods=["post"])
