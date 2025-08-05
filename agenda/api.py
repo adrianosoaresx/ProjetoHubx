@@ -5,11 +5,13 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from django.db.models import Q
 
 from accounts.models import UserType
 from .models import (
     BriefingEvento,
     Evento,
+    EventoLog,
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
@@ -35,9 +37,12 @@ class OrganizacaoFilterMixin:
         user = self.request.user
         if getattr(user, "user_type", None) == UserType.ROOT:
             return qs
-        if evento_field:
-            return qs.filter(**{f"{evento_field}__organizacao": user.organizacao})
-        return qs.filter(organizacao=user.organizacao)
+        prefix = f"{evento_field}__" if evento_field else ""
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(**{f"{prefix}organizacao": user.organizacao})
+        if nucleo_ids:
+            filtro |= Q(**{f"{prefix}nucleo__in": nucleo_ids})
+        return qs.filter(filtro)
 
 
 class EventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
@@ -135,7 +140,15 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         briefing = self.get_object()
         briefing.status = "orcamentado"
         briefing.orcamento_enviado_em = timezone.now()
-        briefing.save(update_fields=["status", "orcamento_enviado_em", "modified"])
+        prazo = request.data.get("prazo_limite_resposta")
+        if prazo:
+            briefing.prazo_limite_resposta = prazo
+        briefing.save(update_fields=["status", "orcamento_enviado_em", "prazo_limite_resposta", "modified"])
+        EventoLog.objects.create(
+            evento=briefing.evento,
+            usuario=request.user,
+            acao="briefing_orcamentado",
+        )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         return Response(self.get_serializer(briefing).data)
 
@@ -144,7 +157,13 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         briefing = self.get_object()
         briefing.status = "aprovado"
         briefing.aprovado_em = timezone.now()
-        briefing.save(update_fields=["status", "aprovado_em", "modified"])
+        briefing.coordenadora_aprovou = True
+        briefing.save(update_fields=["status", "aprovado_em", "coordenadora_aprovou", "modified"])
+        EventoLog.objects.create(
+            evento=briefing.evento,
+            usuario=request.user,
+            acao="briefing_aprovado",
+        )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         return Response(self.get_serializer(briefing).data)
 
@@ -154,6 +173,21 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         briefing.status = "recusado"
         briefing.motivo_recusa = request.data.get("motivo_recusa", "")
         briefing.recusado_em = timezone.now()
-        briefing.save(update_fields=["status", "motivo_recusa", "recusado_em", "modified"])
+        briefing.recusado_por = request.user
+        briefing.save(
+            update_fields=[
+                "status",
+                "motivo_recusa",
+                "recusado_em",
+                "recusado_por",
+                "modified",
+            ]
+        )
+        EventoLog.objects.create(
+            evento=briefing.evento,
+            usuario=request.user,
+            acao="briefing_recusado",
+            detalhes={"motivo_recusa": briefing.motivo_recusa},
+        )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         return Response(self.get_serializer(briefing).data)

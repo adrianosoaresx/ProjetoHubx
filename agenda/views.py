@@ -48,6 +48,7 @@ from .forms import (
 from .models import (
     BriefingEvento,
     Evento,
+    EventoLog,
     FeedbackNota,
     InscricaoEvento,
     MaterialDivulgacaoEvento,
@@ -60,9 +61,16 @@ User = get_user_model()
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
-    if request.user.user_type == UserType.ADMIN:
-        qs = qs.filter(organizacao=request.user.organizacao)
-    return qs
+    user = request.user
+    if not getattr(user, "is_authenticated", False):
+        return qs.none()
+    if user.user_type == UserType.ROOT:
+        return qs
+    nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+    filtro = Q(organizacao=user.organizacao)
+    if nucleo_ids:
+        filtro |= Q(nucleo__in=nucleo_ids)
+    return qs.filter(filtro)
 
 
 def calendario(request, ano: int | None = None, mes: int | None = None):
@@ -80,7 +88,10 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
 
     for dia in cal.itermonthdates(ano, mes):
         evs_dia = (
-            Evento.objects.filter(data_inicio__date=dia).select_related("organizacao").prefetch_related("inscricoes")
+            _queryset_por_organizacao(request)
+            .filter(data_inicio__date=dia)
+            .select_related("organizacao")
+            .prefetch_related("inscricoes")
         )
         dias.append(
             {
@@ -112,7 +123,8 @@ def lista_eventos(request, dia_iso):
         raise Http404("Data inválida") from exc
 
     eventos = (
-        Evento.objects.filter(data_inicio__date=dia)
+        _queryset_por_organizacao(request)
+        .filter(data_inicio__date=dia)
         .annotate(fim=F("data_fim"))
         .select_related("organizacao")
         .prefetch_related("inscricoes")
@@ -148,7 +160,13 @@ class EventoCreateView(
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
         messages.success(self.request, _("Evento criado com sucesso."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        EventoLog.objects.create(
+            evento=self.object,
+            usuario=self.request.user,
+            acao="evento_criado",
+        )
+        return response
 
 
 class EventoUpdateView(
@@ -170,7 +188,13 @@ class EventoUpdateView(
 
     def form_valid(self, form):  # pragma: no cover
         messages.success(self.request, _("Evento atualizado com sucesso."))  # pragma: no cover
-        return super().form_valid(form)  # pragma: no cover
+        response = super().form_valid(form)  # pragma: no cover
+        EventoLog.objects.create(
+            evento=self.object,
+            usuario=self.request.user,
+            acao="evento_atualizado",
+        )
+        return response
 
 
 class EventoDeleteView(
@@ -210,7 +234,7 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
     """Inscreve ou remove o usuário do evento."""
 
     def post(self, request, pk):  # pragma: no cover
-        evento = get_object_or_404(Evento, pk=pk)
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if request.user.user_type == UserType.ADMIN:
             messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
@@ -228,7 +252,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
     """Remove um inscrito do evento."""
 
     def post(self, request, pk, user_id):  # pragma: no cover
-        evento = get_object_or_404(Evento, pk=pk)
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if (
             request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}
             and evento.organizacao != request.user.organizacao
@@ -245,7 +269,7 @@ class EventoFeedbackView(LoginRequiredMixin, View):
     """Registra feedback pós-evento."""
 
     def post(self, request, pk):
-        evento = get_object_or_404(Evento, pk=pk)
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         usuario = request.user
 
         if not InscricaoEvento.objects.filter(user=usuario, evento=evento, status="confirmada").exists():
@@ -270,7 +294,12 @@ class EventoFeedbackView(LoginRequiredMixin, View):
                 "comentario": request.POST.get("comentario", ""),
             },
         )
-
+        EventoLog.objects.create(
+            evento=evento,
+            usuario=usuario,
+            acao="avaliacao_registrada",
+            detalhes={"nota": nota},
+        )
         messages.success(request, _("Feedback registrado com sucesso."))
         return redirect("agenda:evento_detalhe", pk=pk)
 
@@ -285,11 +314,8 @@ def eventos_por_dia(request):
 
 @login_required
 def evento_orcamento(request, pk: int):
-    evento = get_object_or_404(Evento, pk=pk)
-    if (
-        request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}
-        or evento.organizacao != request.user.organizacao
-    ):
+    evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+    if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
         return HttpResponseForbidden()
     if request.method == "POST":
         try:
@@ -304,9 +330,7 @@ def evento_orcamento(request, pk: int):
 
 @login_required
 def fila_espera(request, pk: int):
-    evento = get_object_or_404(Evento, pk=pk)
-    if evento.organizacao != request.user.organizacao:
-        return HttpResponseForbidden()
+    evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
     inscritos = list(
         evento.inscricoes.filter(status="pendente")
         .order_by("posicao_espera")
@@ -317,7 +341,13 @@ def fila_espera(request, pk: int):
 
 @login_required
 def avaliar_parceria(request, pk: int):
-    parceria = get_object_or_404(ParceriaEvento, pk=pk)
+    parceria = get_object_or_404(
+        ParceriaEvento.objects.filter(
+            Q(evento__organizacao=request.user.organizacao)
+            | Q(evento__nucleo__in=request.user.nucleos.values_list("id", flat=True))
+        ),
+        pk=pk,
+    )
     if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
         return HttpResponseForbidden()
     if request.method == "POST" and parceria.avaliacao is None:
@@ -351,6 +381,13 @@ class InscricaoEventoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = InscricaoEvento.objects.select_related("user", "evento")
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(Q(user__username__icontains=q) | Q(evento__titulo__icontains=q))
@@ -377,7 +414,11 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
         user = self.request.user
         qs = MaterialDivulgacaoEvento.objects.select_related("evento")
         if user.user_type != UserType.ROOT:
-            qs = qs.filter(evento__organizacao=user.organizacao)
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         if user.user_type not in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}:
             qs = qs.filter(status="aprovado")
         q = self.request.GET.get("q")
@@ -410,7 +451,11 @@ class ParceriaEventoListView(LoginRequiredMixin, ParceriaPermissionMixin, ListVi
         user = self.request.user
         qs = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo")
         if user.user_type != UserType.ROOT:
-            qs = qs.filter(evento__organizacao=user.organizacao)
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         nucleo = self.request.GET.get("nucleo")
         if nucleo:
             qs = qs.filter(nucleo_id=nucleo)
@@ -428,14 +473,13 @@ class ParceriaEventoCreateView(LoginRequiredMixin, ParceriaPermissionMixin, Crea
         user = self.request.user
         if user.user_type != UserType.ROOT:
             form.fields["evento"].queryset = Evento.objects.filter(
-                organizacao=user.organizacao
+                Q(organizacao=user.organizacao)
+                | Q(nucleo__in=user.nucleos.values_list("id", flat=True))
             )
             form.fields["empresa"].queryset = form.fields["empresa"].queryset.filter(
                 organizacao=user.organizacao
             )
-            form.fields["nucleo"].queryset = form.fields["nucleo"].queryset.filter(
-                organizacao=user.organizacao
-            )
+            form.fields["nucleo"].queryset = user.nucleos
         return form
 
     def form_valid(self, form):
@@ -457,7 +501,11 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, ParceriaPermissionMixin, Upda
         qs = ParceriaEvento.objects.all()
         user = self.request.user
         if user.user_type != UserType.ROOT:
-            qs = qs.filter(evento__organizacao=user.organizacao)
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         return qs
 
     def get_form(self, form_class=None):
@@ -473,7 +521,11 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, Dele
         qs = ParceriaEvento.objects.all()
         user = self.request.user
         if user.user_type != UserType.ROOT:
-            qs = qs.filter(evento__organizacao=user.organizacao)
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         return qs
 
 
@@ -483,7 +535,14 @@ class BriefingEventoListView(LoginRequiredMixin, ListView):
     context_object_name = "briefings"
 
     def get_queryset(self):
+        user = self.request.user
         qs = BriefingEvento.objects.select_related("evento")
+        if user.user_type != UserType.ROOT:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(evento__titulo__icontains=q)
@@ -500,6 +559,15 @@ class BriefingEventoCreateView(LoginRequiredMixin, CreateView):
         if BriefingEvento.objects.filter(evento=evento, deleted=False).exists():
             form.add_error("evento", _("Já existe briefing para este evento."))
             return self.form_invalid(form)
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            if not (
+                evento.organizacao == user.organizacao
+                or (evento.nucleo_id and evento.nucleo_id in nucleo_ids)
+            ):
+                form.add_error("evento", _("Evento de outra organização ou núcleo"))
+                return self.form_invalid(form)
         messages.success(self.request, _("Briefing criado com sucesso."))
         return super().form_valid(form)
 
@@ -509,6 +577,17 @@ class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
     form_class = BriefingEventoForm
     template_name = "agenda/briefing_form.html"
 
+    def get_queryset(self):
+        qs = BriefingEvento.objects.all()
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
+        return qs
+
 
 class BriefingEventoStatusView(LoginRequiredMixin, View):
     """Atualiza o status do briefing registrando avaliador e timestamps."""
@@ -516,27 +595,44 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
     def post(self, request, pk: int, status: str):
         if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
             return HttpResponseForbidden()
-        briefing = get_object_or_404(BriefingEvento, pk=pk)
+        briefing = get_object_or_404(
+            BriefingEvento.objects.filter(
+                Q(evento__organizacao=request.user.organizacao)
+                | Q(evento__nucleo__in=request.user.nucleos.values_list("id", flat=True))
+            ),
+            pk=pk,
+        )
         now = timezone.now()
         update_fields = ["status", "avaliado_por", "avaliado_em", "modified"]
         briefing.avaliado_por = request.user
         briefing.avaliado_em = now
+        detalhes = {}
         if status == "orcamentado":
             briefing.status = "orcamentado"
             briefing.orcamento_enviado_em = now
-            update_fields.append("orcamento_enviado_em")
+            briefing.prazo_limite_resposta = request.POST.get("prazo_limite_resposta") or briefing.prazo_limite_resposta
+            update_fields.extend(["orcamento_enviado_em", "prazo_limite_resposta"])
         elif status == "aprovado":
             briefing.status = "aprovado"
             briefing.aprovado_em = now
-            update_fields.append("aprovado_em")
+            briefing.coordenadora_aprovou = True
+            update_fields.extend(["aprovado_em", "coordenadora_aprovou"])
         elif status == "recusado":
             briefing.status = "recusado"
             briefing.recusado_em = now
+            briefing.recusado_por = request.user
             briefing.motivo_recusa = request.POST.get("motivo_recusa", "")
-            update_fields.extend(["recusado_em", "motivo_recusa"])
+            update_fields.extend(["recusado_em", "motivo_recusa", "recusado_por"])
+            detalhes["motivo_recusa"] = briefing.motivo_recusa
         else:
             return HttpResponseBadRequest()
         briefing.save(update_fields=update_fields)
+        EventoLog.objects.create(
+            evento=briefing.evento,
+            usuario=request.user,
+            acao=f"briefing_{status}",
+            detalhes=detalhes,
+        )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         messages.success(request, _("Status do briefing atualizado."))
         return redirect("agenda:briefing_list")

@@ -7,6 +7,7 @@ from validate_docbr import CNPJ
 from .models import (
     BriefingEvento,
     Evento,
+    EventoLog,
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
@@ -30,7 +31,19 @@ class EventoSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         validated_data["organizacao"] = request.user.organizacao
         validated_data["coordenador"] = request.user
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        EventoLog.objects.create(
+            evento=instance, usuario=request.user, acao="evento_criado"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        instance = super().update(instance, validated_data)
+        EventoLog.objects.create(
+            evento=instance, usuario=request.user, acao="evento_atualizado"
+        )
+        return instance
 
 
 class InscricaoEventoSerializer(serializers.ModelSerializer):
@@ -131,6 +144,9 @@ class BriefingEventoSerializer(serializers.ModelSerializer):
             "orcamento_enviado_em",
             "aprovado_em",
             "recusado_em",
+            "coordenadora_aprovou",
+            "recusado_por",
+            "prazo_limite_resposta",
             "avaliado_por",
             "avaliado_em",
             "created",
