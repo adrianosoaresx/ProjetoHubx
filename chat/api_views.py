@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.db import connection, models
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.files.storage import default_storage
 import mimetypes
+from django.contrib.postgres.search import SearchQuery, SearchVector
 
 from core.permissions import IsModeratorUser
 
@@ -273,8 +274,15 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         tipo = request.query_params.get("tipo")
         desde = request.query_params.get("desde")
         ate = request.query_params.get("ate")
+
         if termo:
-            queryset = queryset.filter(conteudo__icontains=termo)
+            if connection.vendor == "postgresql":
+                queryset = queryset.annotate(
+                    search=SearchVector("conteudo", config="portuguese")
+                ).filter(search=SearchQuery(termo))
+            else:
+                queryset = queryset.filter(conteudo__icontains=termo)
+
         if tipo:
             queryset = queryset.filter(tipo=tipo)
         if desde:
