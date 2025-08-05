@@ -1,5 +1,5 @@
 {% load i18n %}
-<div
+<aside
   id="user-list-modal"
   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
   role="dialog"
@@ -7,7 +7,13 @@
   hx-target="this"
   hx-swap="outerHTML"
 >
-  <div class="bg-white rounded-lg max-w-2xl w-full p-6" tabindex="-1">
+  <section class="relative bg-white rounded-lg max-w-2xl w-full p-6" tabindex="-1">
+    <button
+      type="button"
+      class="absolute top-2 right-2 text-neutral-500 hover:text-neutral-700"
+      onclick="fecharChat()"
+      aria-label="{% trans 'Fechar' %}"
+    >✕</button>
     <h3 class="text-lg font-semibold text-neutral-900 mb-4">{% trans "Escolha um usuário para conversar" %}</h3>
 
     <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -34,5 +40,5 @@
         <p class="text-neutral-500 text-sm">{% trans "Nenhum outro membro encontrado." %}</p>
       {% endfor %}
     </div>
-  </div>
-</div>
+  </section>
+</aside>

@@ -1,5 +1,5 @@
 {% load i18n %}
-<div
+<aside
   id="room-modal"
   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
   role="dialog"
@@ -7,9 +7,15 @@
   hx-target="this"
   hx-swap="outerHTML"
 >
-  <div class="bg-white rounded-lg max-w-lg w-full p-6 space-y-4" tabindex="-1">
+  <section id="chat-container" class="relative bg-white rounded-lg max-w-lg w-full p-6 space-y-4" tabindex="-1">
+    <button
+      type="button"
+      class="absolute top-2 right-2 text-neutral-500 hover:text-neutral-700"
+      onclick="fecharChat()"
+      aria-label="{% trans 'Fechar' %}"
+    >✕</button>
     <h2 class="text-lg font-semibold">{{ dest.get_full_name|default:dest.username }}</h2>
-    <ul class="space-y-2 max-h-96 overflow-y-auto" id="messages">
+    <ul class="space-y-2 max-h-96 overflow-y-auto" id="chat-messages">
       {% for m in messages %}
         <li class="border-b border-neutral-200 pb-2">
           <strong>{{ m.remetente.username }}:</strong>
@@ -21,5 +27,5 @@
         <li class="text-neutral-500">{% trans "Nenhuma mensagem." %}</li>
       {% endfor %}
     </ul>
-  </div>
-</div>
+  </section>
+</aside>
