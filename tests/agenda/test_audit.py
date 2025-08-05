@@ -59,6 +59,7 @@ def test_parceria_delete_gera_log(api_client: APIClient) -> None:
         evento=evento,
         usuario=user,
         acao="parceria_excluida",
+        detalhes__parceria=parceria.pk,
         detalhes__empresa=str(parceria.empresa_id),
     ).exists()
 
