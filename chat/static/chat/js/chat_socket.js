@@ -105,18 +105,20 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1"><button type="button" class="react-option" data-emoji="👍">👍</button><button type="button" class="react-option" data-emoji="😂">😂</button><button type="button" class="react-option" data-emoji="❤️">❤️</button><button type="button" class="react-option" data-emoji="😮">😮</button></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></div>`;
             if(id){ div.dataset.id = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
                 btn.classList.add('pin-toggle');
                 btn.textContent = pinned ? 'Desafixar' : 'Fixar';
+                btn.setAttribute('aria-label', pinned ? 'Desafixar mensagem' : 'Fixar mensagem');
                 btn.addEventListener('click', ()=>{
                     const action = div.classList.contains('pinned') ? 'unpin' : 'pin';
                     fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/${action}/`,{method:'POST',headers:{'X-CSRFToken':csrfToken}})
                         .then(r=>r.json()).then(data=>{
                             div.classList.toggle('pinned', !!data.pinned_at);
                             btn.textContent = data.pinned_at ? 'Desafixar' : 'Fixar';
+                            btn.setAttribute('aria-label', data.pinned_at ? 'Desafixar mensagem' : 'Fixar mensagem');
                         });
                 });
                 div.appendChild(btn);
@@ -125,6 +127,7 @@
                 const edit = document.createElement('button');
                 edit.className = 'edit-msg ml-2 text-xs text-blue-600';
                 edit.textContent = 'Editar';
+                edit.setAttribute('aria-label','Editar mensagem');
                 edit.addEventListener('click', ()=>{
                     const novo = prompt('Editar mensagem', conteudo);
                     if(!novo || novo === conteudo) return;
