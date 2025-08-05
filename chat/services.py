@@ -6,6 +6,9 @@ from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.utils import timezone
 
+from agenda.models import InscricaoEvento
+from nucleos.models import ParticipacaoNucleo
+
 from .metrics import (
     chat_mensagens_ocultadas_total,
     chat_mensagens_sinalizadas_total,
@@ -30,6 +33,11 @@ def criar_canal(
     ``contexto_tipo`` define o escopo da conversa. Validações
     adicionais de permissão serão implementadas futuramente.
     """
+    if contexto_tipo != "privado":
+        users = [criador] + list(participantes)
+        for u in users:
+            if not _usuario_no_contexto(u, contexto_tipo, contexto_id):
+                raise PermissionError("Usuário não pertence ao contexto informado")
     canal = ChatChannel.objects.create(
         contexto_tipo=contexto_tipo,
         contexto_id=contexto_id,
@@ -42,6 +50,21 @@ def criar_canal(
         if user != criador:
             ChatParticipant.objects.get_or_create(channel=canal, user=user)
     return canal
+
+
+def _usuario_no_contexto(user: User, contexto_tipo: str, contexto_id: Optional[str]) -> bool:
+    """Retorna ``True`` se o ``user`` pertence ao contexto especificado."""
+    if contexto_tipo == "organizacao":
+        return str(user.organizacao_id) == str(contexto_id)
+    if contexto_tipo == "nucleo":
+        return ParticipacaoNucleo.objects.filter(
+            user=user, nucleo_id=contexto_id, status="aprovado"
+        ).exists()
+    if contexto_tipo == "evento":
+        return InscricaoEvento.objects.filter(
+            user=user, evento_id=contexto_id, status="confirmada"
+        ).exists()
+    return True
 
 
 def enviar_mensagem(
