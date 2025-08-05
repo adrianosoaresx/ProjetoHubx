@@ -3,6 +3,7 @@ from __future__ import annotations
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
+from typing import Any, Dict
 
 from .models import (
     BriefingEvento,
@@ -39,9 +40,19 @@ class EventoSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context["request"]
+        old_instance = Evento.objects.get(pk=instance.pk)
         instance = super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
         EventoLog.objects.create(
-            evento=instance, usuario=request.user, acao="evento_atualizado"
+            evento=instance,
+            usuario=request.user,
+            acao="evento_atualizado",
+            detalhes=changes,
         )
         return instance
 
@@ -99,9 +110,24 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        request = self.context["request"]
+        old_instance = MaterialDivulgacaoEvento.objects.get(pk=instance.pk)
+        instance = super().update(instance, validated_data)
         if "arquivo" in validated_data:
             upload_material_divulgacao.delay(instance.pk)
-        return super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=request.user,
+            acao="material_atualizado",
+            detalhes=changes,
+        )
+        return instance
 
 
 class ParceriaEventoSerializer(serializers.ModelSerializer):
@@ -133,6 +159,24 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
             raise PermissionDenied("Evento de outra organização")
         return super().create(validated_data)
 
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        old_instance = ParceriaEvento.objects.get(pk=instance.pk)
+        instance = super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=request.user,
+            acao="parceria_atualizada",
+            detalhes=changes,
+        )
+        return instance
+
 
 class BriefingEventoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -159,3 +203,21 @@ class BriefingEventoSerializer(serializers.ModelSerializer):
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        old_instance = BriefingEvento.objects.get(pk=instance.pk)
+        instance = super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=request.user,
+            acao="briefing_atualizado",
+            detalhes=changes,
+        )
+        return instance
