@@ -25,6 +25,7 @@ from .models import (
     ChatChannel,
     ChatMessage,
     ChatModerationLog,
+    ChatMessageReaction,
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
@@ -194,12 +195,21 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         paginator = ChatMessagePagination()
         page = paginator.paginate_queryset(qs, request)
         serializer = ChatMessageSerializer(page, many=True, context={"request": request})
+        data = []
+        for obj, item in zip(page, serializer.data):
+            user_emojis = list(
+                ChatMessageReaction.objects.filter(message=obj, user=request.user).values_list(
+                    "emoji", flat=True
+                )
+            )
+            item["user_reactions"] = user_emojis
+            data.append(item)
         return Response(
             {
                 "count": paginator.page.paginator.count,
                 "next": paginator.get_next_link(),
                 "previous": paginator.get_previous_link(),
-                "messages": serializer.data,
+                "messages": data,
             }
         )
 
@@ -353,29 +363,41 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     def react(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
         emoji = request.data.get("emoji")
-        remover = request.data.get("remove")
-        if emoji:
-            if remover:
-                remove_reaction(msg, request.user, emoji)
-            else:
-                add_reaction(msg, request.user, emoji)
-            layer = get_channel_layer()
-            if layer:
-                async_to_sync(layer.group_send)(
-                    f"chat_{msg.channel_id}",
-                    {
-                        "type": "chat.message",
-                        "id": str(msg.id),
-                        "remetente": msg.remetente.username,
-                        "tipo": msg.tipo,
-                        "conteudo": msg.conteudo,
-                        "arquivo_url": msg.arquivo.url if msg.arquivo else None,
-                        "created": msg.created.isoformat(),
-                        "reactions": msg.reaction_counts(),
-                    },
-                )
+        if not emoji:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        exists = ChatMessageReaction.objects.filter(
+            message=msg, user=request.user, emoji=emoji
+        ).exists()
+        if exists:
+            remove_reaction(msg, request.user, emoji)
+        else:
+            add_reaction(msg, request.user, emoji)
+        user_emojis = list(
+            ChatMessageReaction.objects.filter(message=msg, user=request.user).values_list(
+                "emoji", flat=True
+            )
+        )
+        counts = msg.reaction_counts()
+        layer = get_channel_layer()
+        if layer:
+            async_to_sync(layer.group_send)(
+                f"chat_{msg.channel_id}",
+                {
+                    "type": "chat.message",
+                    "id": str(msg.id),
+                    "remetente": msg.remetente.username,
+                    "tipo": msg.tipo,
+                    "conteudo": msg.conteudo,
+                    "arquivo_url": msg.arquivo.url if msg.arquivo else None,
+                    "created": msg.created.isoformat(),
+                    "reactions": counts,
+                    "actor": request.user.username,
+                    "user_reactions": user_emojis,
+                },
+            )
         data = self.get_serializer(msg).data
-        data["reactions"] = msg.reaction_counts()
+        data["reactions"] = counts
+        data["user_reactions"] = user_emojis
         return Response(data)
 
     @action(detail=True, methods=["post"], throttle_classes=[FlagRateThrottle])

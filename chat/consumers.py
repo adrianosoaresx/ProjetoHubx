@@ -6,7 +6,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .api import notify_users
-from .models import ChatChannel, ChatMessage, ChatParticipant
+from .models import ChatChannel, ChatMessage, ChatMessageReaction, ChatParticipant
 from .services import (
     adicionar_reacao,
     remover_reacao,
@@ -79,12 +79,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             emoji = data.get("emoji")
             if not msg_id or not emoji:
                 return
-            acao = data.get("acao")
             msg = await database_sync_to_async(ChatMessage.objects.get)(pk=msg_id)
-            if acao == "remove":
+            exists = await database_sync_to_async(
+                ChatMessageReaction.objects.filter(message=msg, user=user, emoji=emoji).exists
+            )()
+            if exists:
                 await database_sync_to_async(remover_reacao)(msg, user, emoji)
             else:
                 await database_sync_to_async(adicionar_reacao)(msg, user, emoji)
+            user_emojis = await database_sync_to_async(
+                lambda: list(
+                    ChatMessageReaction.objects.filter(message=msg, user=user).values_list(
+                        "emoji", flat=True
+                    )
+                )
+            )()
             payload = {
                 "type": "chat.message",
                 "id": str(msg.id),
@@ -94,6 +103,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "created": msg.created.isoformat(),
                 "reactions": await database_sync_to_async(msg.reaction_counts)(),
+                "actor": user.username,
+                "user_reactions": user_emojis,
             }
             await self.channel_layer.group_send(self.group_name, payload)
         elif message_type == "flag":
