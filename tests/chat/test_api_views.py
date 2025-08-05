@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
@@ -85,6 +87,33 @@ def test_history_endpoint_returns_messages(api_client: APIClient, admin_user):
     assert resp.status_code == 200
     data = resp.json()
     assert len(data["messages"]) == 2
+
+
+def test_history_endpoint_filters_by_date(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    old_time = timezone.now() - timedelta(days=2)
+    old_msg = ChatMessage.objects.create(
+        channel=channel,
+        remetente=admin_user,
+        tipo="text",
+        conteudo="old",
+    )
+    ChatMessage.objects.filter(pk=old_msg.pk).update(created=old_time)
+    new_msg = ChatMessage.objects.create(
+        channel=channel,
+        remetente=admin_user,
+        tipo="text",
+        conteudo="new",
+    )
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
+    resp = api_client.get(url, {"inicio": new_msg.created.isoformat()})
+    assert resp.status_code == 200
+    data = resp.json()
+    ids = [m["id"] for m in data["messages"]]
+    assert str(new_msg.id) in ids
+    assert str(old_msg.id) not in ids
 
 
 def test_messages_permission_denied_for_non_participant(api_client: APIClient, admin_user, coordenador_user):
