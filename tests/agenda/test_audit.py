@@ -7,6 +7,7 @@ from django.forms.models import model_to_dict
 from django.test import RequestFactory
 from django.urls import reverse
 from rest_framework.test import APIClient
+from rest_framework import status
 
 from accounts.models import UserType
 from accounts.factories import UserFactory
@@ -103,9 +104,47 @@ def test_briefing_delete_gera_log(api_client: APIClient) -> None:
     assert EventoLog.objects.filter(
         evento=evento,
         usuario=user,
-        acao="material_excluido",
+        acao="briefing_excluido",
         detalhes__briefing=briefing.pk,
     ).exists()
+
+
+def test_evento_update_gera_log(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user, titulo="Antigo")
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:evento-detail", args=[evento.pk])
+    resp = api_client.patch(url, {"titulo": "Novo"}, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+    log = EventoLog.objects.get(evento=evento, acao="evento_atualizado")
+    assert log.detalhes["titulo"] == {"antes": "Antigo", "depois": "Novo"}
+
+
+def test_parceria_update_gera_log(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    empresa = EmpresaFactory(organizacao=org, usuario=user)
+    parceria = ParceriaEvento.objects.create(
+        evento=evento,
+        empresa=empresa,
+        cnpj="12345678000199",
+        contato="c",
+        representante_legal="r",
+        data_inicio=date.today(),
+        data_fim=date.today() + timedelta(days=1),
+        tipo_parceria="patrocinio",
+    )
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:parceria-detail", args=[parceria.pk])
+    resp = api_client.patch(url, {"tipo_parceria": "mentoria"}, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+    log = EventoLog.objects.get(evento=evento, acao="parceria_atualizada")
+    assert log.detalhes["tipo_parceria"] == {
+        "antes": "patrocinio",
+        "depois": "mentoria",
+    }
 
 
 def test_evento_list_performance(api_client: APIClient) -> None:

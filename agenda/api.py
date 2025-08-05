@@ -142,7 +142,7 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         EventoLog.objects.create(
             evento=instance.evento,
             usuario=self.request.user,
-            acao="material_excluido",
+            acao="briefing_excluido",
             detalhes={"briefing": instance.pk},
         )
         instance.soft_delete()
