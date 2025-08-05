@@ -20,7 +20,7 @@ from core.permissions import IsModeratorUser
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from .api import add_reaction
+from .api import add_reaction, remove_reaction
 from .models import (
     ChatChannel,
     ChatMessage,
@@ -353,8 +353,12 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     def react(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
         emoji = request.data.get("emoji")
+        remover = request.data.get("remove")
         if emoji:
-            add_reaction(msg, emoji)
+            if remover:
+                remove_reaction(msg, request.user, emoji)
+            else:
+                add_reaction(msg, request.user, emoji)
             layer = get_channel_layer()
             if layer:
                 async_to_sync(layer.group_send)(
@@ -367,10 +371,12 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                         "conteudo": msg.conteudo,
                         "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                         "created": msg.created.isoformat(),
-                        "reactions": msg.reactions,
+                        "reactions": msg.reaction_counts(),
                     },
                 )
-        return Response(self.get_serializer(msg).data)
+        data = self.get_serializer(msg).data
+        data["reactions"] = msg.reaction_counts()
+        return Response(data)
 
     @action(detail=True, methods=["post"], throttle_classes=[FlagRateThrottle])
     def flag(self, request: Request, channel_pk: str, pk: str) -> Response:

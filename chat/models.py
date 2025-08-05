@@ -85,7 +85,12 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
     conteudo = models.TextField(blank=True)
     arquivo = models.FileField(upload_to="chat/arquivos/", null=True, blank=True)
     pinned_at = models.DateTimeField(null=True, blank=True)
-    reactions = models.JSONField(default=dict, blank=True)
+    reactions = models.ManyToManyField(
+        User,
+        through="ChatMessageReaction",
+        related_name="message_reactions",
+        blank=True,
+    )
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
     hidden_at = models.DateTimeField(null=True, blank=True)
 
@@ -99,6 +104,32 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
         ordering = ["created"]
         verbose_name = "Mensagem"
         verbose_name_plural = "Mensagens"
+
+    def reaction_counts(self) -> dict[str, int]:
+        """Return a mapping of emoji to count of reactions."""
+        from django.db.models import Count
+
+        return dict(
+            self.reaction_details.values("emoji").annotate(c=Count("id")).values_list(
+                "emoji", "c"
+            )
+        )
+
+
+class ChatMessageReaction(models.Model):
+    message = models.ForeignKey(
+        ChatMessage, on_delete=models.CASCADE, related_name="reaction_details"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="chat_reactions"
+    )
+    emoji = models.CharField(max_length=32)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("message", "user", "emoji")
+        verbose_name = "Reação"
+        verbose_name_plural = "Reações"
 
 
 class ChatNotification(TimeStampedModel):

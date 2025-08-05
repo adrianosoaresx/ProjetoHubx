@@ -13,7 +13,13 @@ from .metrics import (
     chat_mensagens_ocultadas_total,
     chat_mensagens_sinalizadas_total,
 )
-from .models import ChatChannel, ChatMessage, ChatMessageFlag, ChatParticipant
+from .models import (
+    ChatChannel,
+    ChatMessage,
+    ChatMessageFlag,
+    ChatMessageReaction,
+    ChatParticipant,
+)
 
 User = get_user_model()
 
@@ -100,12 +106,21 @@ def enviar_mensagem(
     return msg
 
 
-def adicionar_reacao(mensagem: ChatMessage, emoji: str) -> None:
-    """Incrementa a contagem de ``emoji`` na mensagem."""
-    reactions = mensagem.reactions or {}
-    reactions[emoji] = reactions.get(emoji, 0) + 1
-    mensagem.reactions = reactions
-    mensagem.save(update_fields=["reactions"])
+def adicionar_reacao(mensagem: ChatMessage, user: User, emoji: str) -> None:
+    """Adiciona uma reação ``emoji`` à ``mensagem`` para ``user``.
+
+    Cada usuário pode reagir apenas uma vez por emoji.
+    """
+    ChatMessageReaction.objects.get_or_create(
+        message=mensagem, user=user, emoji=emoji
+    )
+
+
+def remover_reacao(mensagem: ChatMessage, user: User, emoji: str) -> None:
+    """Remove a reação ``emoji`` da ``mensagem`` para ``user`` se existir."""
+    ChatMessageReaction.objects.filter(
+        message=mensagem, user=user, emoji=emoji
+    ).delete()
 
 
 def sinalizar_mensagem(mensagem: ChatMessage, user: User) -> int:

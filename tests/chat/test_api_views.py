@@ -195,8 +195,13 @@ def test_react_message(api_client: APIClient, admin_user):
     url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/react/"
     resp = api_client.post(url, {"emoji": "👍"})
     assert resp.status_code == 200
-    msg.refresh_from_db()
-    assert msg.reactions.get("👍") == 1
+    assert resp.data["reactions"]["👍"] == 1
+    # segunda reação do mesmo usuário não duplica
+    resp = api_client.post(url, {"emoji": "👍"})
+    assert resp.data["reactions"]["👍"] == 1
+    # remover reação
+    resp = api_client.post(url, {"emoji": "👍", "remove": True})
+    assert "👍" not in resp.data["reactions"]
 
 
 def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_user):

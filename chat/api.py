@@ -7,7 +7,7 @@ import time
 import logging
 
 from .models import ChatChannel, ChatMessage, ChatNotification, ChatParticipant
-from .services import adicionar_reacao, enviar_mensagem
+from .services import adicionar_reacao, remover_reacao, enviar_mensagem
 from .metrics import chat_notification_latency_seconds
 
 User = get_user_model()
@@ -75,5 +75,9 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
         logger.info("chat notification %s sent in %.4fs", notif.id, duration)
 
 
-def add_reaction(message: ChatMessage, emoji: str) -> None:
-    adicionar_reacao(message, emoji)
+def add_reaction(message: ChatMessage, user: User, emoji: str) -> None:
+    adicionar_reacao(message, user, emoji)
+
+
+def remove_reaction(message: ChatMessage, user: User, emoji: str) -> None:
+    remover_reacao(message, user, emoji)

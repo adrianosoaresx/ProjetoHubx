@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from chat.models import ChatParticipant
-from chat.services import adicionar_reacao, criar_canal, enviar_mensagem
+from chat.services import adicionar_reacao, remover_reacao, criar_canal, enviar_mensagem
 from nucleos.models import ParticipacaoNucleo
 
 User = get_user_model()
@@ -94,7 +94,7 @@ def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user):
         enviar_mensagem(canal, admin_user, "image", conteudo="not-url")
 
 
-def test_adicionar_reacao_incrementa(admin_user, coordenador_user):
+def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
@@ -104,6 +104,9 @@ def test_adicionar_reacao_incrementa(admin_user, coordenador_user):
         participantes=[coordenador_user],
     )
     msg = enviar_mensagem(canal, admin_user, "text", conteudo="oi")
-    adicionar_reacao(msg, "👍")
-    msg.refresh_from_db()
-    assert msg.reactions["👍"] == 1
+    adicionar_reacao(msg, admin_user, "👍")
+    adicionar_reacao(msg, admin_user, "👍")  # segunda reação não duplica
+    adicionar_reacao(msg, coordenador_user, "👍")
+    assert msg.reaction_counts()["👍"] == 2
+    remover_reacao(msg, admin_user, "👍")
+    assert msg.reaction_counts()["👍"] == 1

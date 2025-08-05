@@ -7,7 +7,12 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .api import notify_users
 from .models import ChatChannel, ChatMessage, ChatParticipant
-from .services import adicionar_reacao, enviar_mensagem, sinalizar_mensagem
+from .services import (
+    adicionar_reacao,
+    remover_reacao,
+    enviar_mensagem,
+    sinalizar_mensagem,
+)
 from .metrics import chat_message_latency_seconds
 
 logger = logging.getLogger(__name__)
@@ -63,7 +68,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "conteudo": msg.conteudo,
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "created": msg.created.isoformat(),
-                "reactions": msg.reactions,
+                "reactions": msg.reaction_counts(),
             }
             await self.channel_layer.group_send(self.group_name, payload)
             duration = time.monotonic() - start
@@ -74,8 +79,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             emoji = data.get("emoji")
             if not msg_id or not emoji:
                 return
+            acao = data.get("acao")
             msg = await database_sync_to_async(ChatMessage.objects.get)(pk=msg_id)
-            await database_sync_to_async(adicionar_reacao)(msg, emoji)
+            if acao == "remove":
+                await database_sync_to_async(remover_reacao)(msg, user, emoji)
+            else:
+                await database_sync_to_async(adicionar_reacao)(msg, user, emoji)
             payload = {
                 "type": "chat.message",
                 "id": str(msg.id),
@@ -84,7 +93,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "conteudo": msg.conteudo,
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "created": msg.created.isoformat(),
-                "reactions": msg.reactions,
+                "reactions": await database_sync_to_async(msg.reaction_counts)(),
             }
             await self.channel_layer.group_send(self.group_name, payload)
         elif message_type == "flag":
@@ -105,7 +114,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "conteudo": msg.conteudo,
                     "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                     "created": msg.created.isoformat(),
-                    "reactions": msg.reactions,
+                    "reactions": msg.reaction_counts(),
                     "hidden_at": msg.hidden_at.isoformat(),
                 }
                 await self.channel_layer.group_send(self.group_name, payload)
