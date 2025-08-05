@@ -112,7 +112,21 @@
                 }
             });
             menu.addEventListener('keydown', e=>{
-                if(e.key === 'Escape'){ e.preventDefault(); closeMenu(); btn.focus(); }
+                const opts = Array.from(menu.querySelectorAll('.react-option'));
+                const idx = opts.indexOf(document.activeElement);
+                if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
+                    e.preventDefault();
+                    const next = opts[(idx + 1) % opts.length];
+                    next && next.focus();
+                } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
+                    e.preventDefault();
+                    const prev = opts[(idx - 1 + opts.length) % opts.length];
+                    prev && prev.focus();
+                } else if(e.key === 'Escape'){
+                    e.preventDefault();
+                    closeMenu();
+                    btn.focus();
+                }
             });
             menu.addEventListener('click', e=>{
                 const opt = e.target.closest('.react-option');
