@@ -6,7 +6,7 @@ from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
 from accounts.models import UserType
 from agenda.factories import EventoFactory
-from agenda.models import BriefingEvento
+from agenda.models import BriefingEvento, EventoLog
 
 
 @pytest.mark.django_db
@@ -30,4 +30,6 @@ def test_briefing_status_updates(client):
     assert briefing.avaliado_por == user
     assert briefing.avaliado_em is not None
     assert briefing.aprovado_em is not None
+    assert briefing.coordenadora_aprovou is True
+    assert EventoLog.objects.filter(evento=evento, acao="briefing_aprovado").exists()
     mock_delay.assert_called_once_with(briefing.pk, "aprovado")

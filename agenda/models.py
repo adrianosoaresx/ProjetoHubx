@@ -105,17 +105,32 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         if not self.qrcode_url:
             self.gerar_qrcode()
         self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "modified"])
+        EventoLog.objects.create(
+            evento=self.evento,
+            usuario=self.user,
+            acao="inscricao_confirmada",
+        )
 
     def cancelar_inscricao(self) -> None:
         self.status = "cancelada"
         self.data_confirmacao = timezone.now()
         self.save(update_fields=["status", "data_confirmacao", "modified"])
+        EventoLog.objects.create(
+            evento=self.evento,
+            usuario=self.user,
+            acao="inscricao_cancelada",
+        )
 
     def realizar_check_in(self) -> None:
         if self.check_in_realizado_em:
             return
         self.check_in_realizado_em = timezone.now()
         self.save(update_fields=["check_in_realizado_em", "modified"])
+        EventoLog.objects.create(
+            evento=self.evento,
+            usuario=self.user,
+            acao="check_in",
+        )
 
     def gerar_qrcode(self) -> None:
         """Gera um QRCode único e salva no armazenamento padrão."""
@@ -126,6 +141,18 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         filename = f"inscricoes/qrcodes/{self.pk}.png"
         path = default_storage.save(filename, ContentFile(buffer.getvalue()))
         self.qrcode_url = default_storage.url(path)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            old = InscricaoEvento.all_objects.filter(pk=self.pk).first()
+            if old and old.presente != self.presente:
+                EventoLog.objects.create(
+                    evento=self.evento,
+                    usuario=self.user,
+                    acao="presenca_alterada",
+                    detalhes={"presente": self.presente},
+                )
+        super().save(*args, **kwargs)
 
 
 class Evento(TimeStampedModel, SoftDeleteModel):
@@ -320,6 +347,15 @@ class BriefingEvento(TimeStampedModel, SoftDeleteModel):
     aprovado_em = models.DateTimeField(null=True, blank=True)
     recusado_em = models.DateTimeField(null=True, blank=True)
     motivo_recusa = models.TextField(blank=True)
+    coordenadora_aprovou = models.BooleanField(default=False)
+    recusado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="briefings_recusados",
+    )
+    prazo_limite_resposta = models.DateTimeField(null=True, blank=True)
     avaliado_por = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         null=True,
@@ -357,3 +393,23 @@ class FeedbackNota(TimeStampedModel, SoftDeleteModel):
         verbose_name = "Feedback de Nota"
         verbose_name_plural = "Feedbacks de Notas"
         unique_together = ("usuario", "evento")
+
+
+class EventoLog(TimeStampedModel, SoftDeleteModel):
+    evento = models.ForeignKey(
+        Evento, on_delete=models.CASCADE, related_name="logs"
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    acao = models.CharField(max_length=50)
+    detalhes = models.JSONField(default=dict, blank=True)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        ordering = ["-created"]
