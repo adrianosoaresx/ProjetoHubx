@@ -1,13 +1,13 @@
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
 from accounts.models import UserType
+from agenda.factories import EventoFactory
 from agenda.forms import MaterialDivulgacaoEventoForm
 from agenda.models import MaterialDivulgacaoEvento
-from agenda.factories import EventoFactory
 from organizacoes.factories import OrganizacaoFactory
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -31,12 +31,13 @@ def admin_user(organizacao):
 
 
 @pytest.fixture
-def cliente_user():
+def cliente_user(organizacao):
     return User.objects.create_user(
         username="cliente",
         email="cliente@example.com",
         password="pass",
         user_type=UserType.CONVIDADO,
+        organizacao=organizacao,
     )
 
 
@@ -89,3 +90,36 @@ def test_list_view_exibe_apenas_aprovados(client, cliente_user, admin_user):
     resp = client.get(reverse("agenda:material_list"))
     assert "Aprovado" in resp.content.decode()
     assert "Criado" not in resp.content.decode()
+
+
+def test_list_view_filtra_por_organizacao(client, admin_user, organizacao):
+    outra_org = OrganizacaoFactory()
+    outro_user = User.objects.create_user(
+        username="x",
+        email="x@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=outra_org,
+    )
+    evento1 = EventoFactory(organizacao=organizacao, coordenador=admin_user)
+    evento2 = EventoFactory(organizacao=outra_org, coordenador=outro_user)
+    file_ok = SimpleUploadedFile("ok.pdf", b"%PDF-1.4", content_type="application/pdf")
+    MaterialDivulgacaoEvento.objects.create(
+        evento=evento1,
+        titulo="Org1",
+        tipo="banner",
+        arquivo=file_ok,
+        status="aprovado",
+    )
+    MaterialDivulgacaoEvento.objects.create(
+        evento=evento2,
+        titulo="Org2",
+        tipo="banner",
+        arquivo=file_ok,
+        status="aprovado",
+    )
+    client.force_login(admin_user)
+    resp = client.get(reverse("agenda:material_list"))
+    html = resp.content.decode()
+    assert "Org1" in html
+    assert "Org2" not in html

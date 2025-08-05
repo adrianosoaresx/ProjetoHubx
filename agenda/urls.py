@@ -15,6 +15,10 @@ from .views import (
     EventoUpdateView,
     InscricaoEventoListView,
     MaterialDivulgacaoEventoListView,
+    ParceriaEventoCreateView,
+    ParceriaEventoDeleteView,
+    ParceriaEventoListView,
+    ParceriaEventoUpdateView,
 )
 
 app_name = "agenda"
@@ -54,6 +58,10 @@ urlpatterns = [
     path("eventos_por_dia/", views.eventos_por_dia, name="eventos_por_dia"),
     path("inscricoes/", InscricaoEventoListView.as_view(), name="inscricao_list"),
     path("materiais/", MaterialDivulgacaoEventoListView.as_view(), name="material_list"),
+    path("parcerias/", ParceriaEventoListView.as_view(), name="parceria_list"),
+    path("parceria/novo/", ParceriaEventoCreateView.as_view(), name="parceria_criar"),
+    path("parceria/<int:pk>/editar/", ParceriaEventoUpdateView.as_view(), name="parceria_editar"),
+    path("parceria/<int:pk>/excluir/", ParceriaEventoDeleteView.as_view(), name="parceria_excluir"),
     path("briefings/", BriefingEventoListView.as_view(), name="briefing_list"),
     path(
         "briefing/novo/",

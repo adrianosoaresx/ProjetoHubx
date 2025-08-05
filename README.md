@@ -204,6 +204,12 @@ npm run build
 ### Dashboard
 - **Dashboard**: Estatísticas de eventos, inscrições e interações.
 
+### Parcerias de Eventos
+- **CRUD Web**: gerenciamento de `ParceriaEvento` em `/agenda/parcerias/` com criação, edição e exclusão restritas a administradores e coordenadores.
+
+### Monitoramento de Desempenho
+- **Django‑Silk** disponível em `/silk/` para análise de tempo de resposta das listagens e APIs.
+
 ---
 
 ## 🔧 Configuração de Redis/Celery

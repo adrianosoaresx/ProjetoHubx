@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Parcerias" %} | Hubx{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto px-4 py-10">
+  <header class="mb-6">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Parcerias" %}</h1>
+  </header>
+
+  <main>
+    <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+      <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
+        <thead class="bg-neutral-50">
+          <tr>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Empresa" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Tipo" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-200">
+          {% for parceria in parcerias %}
+            <tr>
+              <td class="px-4 py-2">{{ parceria.empresa.nome }}</td>
+              <td class="px-4 py-2">{{ parceria.evento.titulo }}</td>
+              <td class="px-4 py-2">{{ parceria.get_tipo_parceria_display }}</td>
+              <td class="px-4 py-2 space-x-2">
+                <a href="{% url 'agenda:parceria_editar' parceria.pk %}" class="text-blue-600 hover:underline">{% trans "Editar" %}</a>
+                <a href="{% url 'agenda:parceria_excluir' parceria.pk %}" class="text-red-600 hover:underline">{% trans "Excluir" %}</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</section>
+{% endblock %}
