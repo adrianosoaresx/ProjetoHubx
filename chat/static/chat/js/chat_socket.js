@@ -65,7 +65,7 @@
                     body: JSON.stringify({conteudo: novo})
                 }).then(r=>r.ok?r.json():Promise.reject())
                   .then(data=>{
-                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions, data.user_reactions);
                   })
                   .finally(()=> editModal.close());
             });
@@ -76,7 +76,7 @@
             });
         }
 
-        function renderReactions(div, reactions){
+        function renderReactions(div, reactions, userReactions){
             const list = div.querySelector('.reactions');
             if(!list) return;
             list.innerHTML = '';
@@ -84,6 +84,9 @@
                 Object.entries(reactions).forEach(([emoji,count])=>{
                     const li = document.createElement('li');
                     li.className = 'text-sm';
+                    if(userReactions && userReactions.includes(emoji)){
+                        li.classList.add('font-bold');
+                    }
                     li.textContent = `${emoji} ${count}`;
                     list.appendChild(li);
                 });
@@ -91,20 +94,39 @@
         }
 
         function setupReactionMenu(div, id){
+            const btn = div.querySelector('.reaction-btn');
             const menu = div.querySelector('.reaction-menu');
-            if(!menu || !id) return;
-            div.addEventListener('mouseenter', ()=>menu.classList.remove('hidden'));
-            div.addEventListener('mouseleave', ()=>menu.classList.add('hidden'));
+            if(!btn || !menu || !id) return;
+            function closeMenu(){
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded','false');
+            }
+            btn.addEventListener('click', ()=>{
+                const hidden = menu.classList.toggle('hidden');
+                if(!hidden){
+                    btn.setAttribute('aria-expanded','true');
+                    const first = menu.querySelector('button');
+                    if(first){ first.focus(); }
+                }else{
+                    btn.setAttribute('aria-expanded','false');
+                }
+            });
+            menu.addEventListener('keydown', e=>{
+                if(e.key === 'Escape'){ e.preventDefault(); closeMenu(); btn.focus(); }
+            });
             menu.addEventListener('click', e=>{
-                const btn = e.target.closest('.react-option');
-                if(!btn) return;
-                const emoji = btn.dataset.emoji;
+                const opt = e.target.closest('.react-option');
+                if(!opt) return;
+                const emoji = opt.dataset.emoji;
                 fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/react/`,{
                     method:'POST',
                     headers:{'X-CSRFToken':csrfToken,'Content-Type':'application/json'},
                     body: JSON.stringify({emoji})
-                });
-                menu.classList.add('hidden');
+                }).then(r=>r.ok?r.json():Promise.reject())
+                  .then(data=>{
+                    renderReactions(div, data.reactions, data.user_reactions);
+                  });
+                closeMenu();
             });
         }
 
@@ -124,14 +146,14 @@
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
                 data.messages.forEach(m=>{
-                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions);
+                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions);
                     messages.appendChild(div);
                 });
                 scrollToBottom();
             });
         }
 
-        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions){
+        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions){
             const div = elem || document.createElement('article');
             div.className = 'message relative p-2';
             if(remetente === currentUser){ div.classList.add('self'); }
@@ -144,7 +166,7 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-label="Adicionar reação">😊</button><div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></div></div>`;
             if(id){ div.dataset.id = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
@@ -172,7 +194,7 @@
                 });
                 div.appendChild(edit);
             }
-            renderReactions(div,reactions);
+            renderReactions(div,reactions,userReactions);
             setupReactionMenu(div,id);
             return div;
         }
@@ -183,7 +205,7 @@
                 const idx = pending.findIndex(p=>p.tipo===data.tipo && p.conteudo===data.conteudo);
                 if(idx!==-1){
                     const placeholder = pending[idx];
-                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions);
                     placeholder.elem.classList.remove('pending');
                     pending.splice(idx,1);
                     scrollToBottom();
@@ -191,7 +213,14 @@
                 }
             }
             const existing = messages.querySelector(`[data-id="${data.id}"]`);
-            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions);
+            let userReactions = [];
+            if(existing){
+                userReactions = Array.from(existing.querySelectorAll('.reactions li.font-bold')).map(li=>li.textContent.split(' ')[0]);
+            }
+            if(data.actor && data.actor === currentUser){
+                userReactions = data.user_reactions || [];
+            }
+            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions, userReactions);
             if(!existing){
                 messages.appendChild(div);
                 scrollToBottom();
@@ -202,7 +231,7 @@
             e.preventDefault();
             const message = input.value.trim();
             if(message){
-                const div = renderMessage(currentUser, 'text', message, null, null, false, {});
+                const div = renderMessage(currentUser, 'text', message, null, null, false, {}, []);
                 div.classList.add('pending');
                 messages.appendChild(div);
                 pending.push({tipo:'text', conteudo:message, elem:div});
@@ -226,7 +255,7 @@
             fetch(uploadUrl,{method:'POST',body:formData,headers:{'X-CSRFToken':csrfToken}})
                 .then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
                 .then(data=>{
-                    const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{});
+                    const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, []);
                     div.classList.add('pending');
                     messages.appendChild(div);
                     pending.push({tipo:data.tipo,conteudo:data.url,elem:div});

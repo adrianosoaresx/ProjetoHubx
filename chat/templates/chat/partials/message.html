@@ -27,11 +27,20 @@
     </div>
     <div class="mt-2 flex items-center gap-2">
       <div class="reaction-container relative">
-        <div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1">
-          <button type="button" class="react-option" data-emoji="👍">👍</button>
-          <button type="button" class="react-option" data-emoji="😂">😂</button>
-          <button type="button" class="react-option" data-emoji="❤️">❤️</button>
-          <button type="button" class="react-option" data-emoji="😮">😮</button>
+        <button
+          type="button"
+          class="reaction-btn"
+          aria-haspopup="true"
+          aria-label="{% trans 'Adicionar reação' %}"
+        >😊</button>
+        <div
+          class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1"
+          role="menu"
+        >
+          <button type="button" class="react-option" data-emoji="👍" aria-label="{% trans 'Reagir com 👍' %}">👍</button>
+          <button type="button" class="react-option" data-emoji="😂" aria-label="{% trans 'Reagir com 😂' %}">😂</button>
+          <button type="button" class="react-option" data-emoji="❤️" aria-label="{% trans 'Reagir com ❤️' %}">❤️</button>
+          <button type="button" class="react-option" data-emoji="😮" aria-label="{% trans 'Reagir com 😮' %}">😮</button>
         </div>
       </div>
       {% if is_admin %}
