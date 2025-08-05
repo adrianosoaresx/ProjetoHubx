@@ -108,6 +108,10 @@ Administradores dos canais podem exportar o histórico acessando o botão *Expor
 
 O módulo expõe métricas Prometheus em `/metrics`, incluindo `chat_mensagens_sinalizadas_total`, `chat_mensagens_ocultadas_total` e `chat_exportacoes_total`.
 
+Para anexos existe o endpoint `POST /api/chat/upload/` que recebe o arquivo e retorna JSON com `{"tipo": tipo, "url": url}` a ser enviado pelo WebSocket. Notificações em tempo real podem ser recebidas conectando-se a `/ws/chat/notificacoes/`; cada evento inclui o título do canal e um resumo da mensagem, podendo ser marcado como lido via `POST /api/chat/notificacoes/<id>/ler/`.
+
+Uma métrica `chat_websocket_latency_seconds` registra a latência (p95) das notificações enviadas pelo WebSocket.
+
 ![Demonstração do chat](docs/chat-demo.png)
 
 Para que o WebSocket funcione:

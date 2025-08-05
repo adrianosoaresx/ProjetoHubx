@@ -6,6 +6,7 @@ from .api_views import (
     ChatMessageViewSet,
     ChatNotificationViewSet,
     ModeracaoViewSet,
+    UploadArquivoAPIView,
 )
 
 router = DefaultRouter()
@@ -63,5 +64,6 @@ urlpatterns = router.urls + [
         ModeracaoViewSet.as_view({"get": "list"}),
         name="chat-flags",
     ),
+    path("upload/", UploadArquivoAPIView.as_view(), name="chat-upload"),
 ]
 

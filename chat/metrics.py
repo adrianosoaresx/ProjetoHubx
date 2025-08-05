@@ -1,4 +1,4 @@
-from prometheus_client import Counter  # type: ignore
+from prometheus_client import Counter, Histogram  # type: ignore
 
 chat_mensagens_sinalizadas_total = Counter(
     "chat_mensagens_sinalizadas_total",
@@ -15,5 +15,10 @@ chat_exportacoes_total = Counter(
     "chat_exportacoes_total",
     "Total de exportacoes de historico de chat",
     ["formato"],
+)
+
+chat_websocket_latency_seconds = Histogram(
+    "chat_websocket_latency_seconds",
+    "Latência em segundos das notificações enviadas pelo WebSocket",
 )
 
