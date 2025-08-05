@@ -181,22 +181,34 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
     )
     def messages_history(self, request: Request, pk: str | None = None) -> Response:
         channel = self.get_object()
+        before = request.query_params.get("before")
         inicio = request.query_params.get("inicio")
         fim = request.query_params.get("fim")
-        qs = channel.messages.select_related("remetente").order_by("created")
-        if inicio:
-            dt = parse_datetime(inicio)
-            if dt:
-                qs = qs.filter(created__gte=dt)
-        if fim:
-            dt = parse_datetime(fim)
-            if dt:
-                qs = qs.filter(created__lte=dt)
-        paginator = ChatMessagePagination()
-        page = paginator.paginate_queryset(qs, request)
-        serializer = ChatMessageSerializer(page, many=True, context={"request": request})
+        qs = channel.messages.select_related("remetente").order_by("-created")
+        if before:
+            try:
+                ref_msg = channel.messages.get(pk=before)
+                qs = qs.filter(created__lt=ref_msg.created)
+            except ChatMessage.DoesNotExist:
+                pass
+        else:
+            if inicio:
+                dt = parse_datetime(inicio)
+                if dt:
+                    qs = qs.filter(created__gte=dt)
+            if fim:
+                dt = parse_datetime(fim)
+                if dt:
+                    qs = qs.filter(created__lte=dt)
+        limit = ChatMessagePagination.page_size + 1
+        items = list(qs[:limit])
+        has_more = len(items) == limit
+        if has_more:
+            items = items[:-1]
+        items.reverse()
+        serializer = ChatMessageSerializer(items, many=True, context={"request": request})
         data = []
-        for obj, item in zip(page, serializer.data):
+        for obj, item in zip(items, serializer.data):
             user_emojis = list(
                 ChatMessageReaction.objects.filter(message=obj, user=request.user).values_list(
                     "emoji", flat=True
@@ -204,14 +216,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
             )
             item["user_reactions"] = user_emojis
             data.append(item)
-        return Response(
-            {
-                "count": paginator.page.paginator.count,
-                "next": paginator.get_next_link(),
-                "previous": paginator.get_previous_link(),
-                "messages": data,
-            }
-        )
+        return Response({"messages": data, "has_more": has_more})
 
 
 class ChatMessagePagination(PageNumberPagination):

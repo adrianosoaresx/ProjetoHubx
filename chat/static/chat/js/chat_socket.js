@@ -41,6 +41,9 @@
         const editCancel = editModal ? editModal.querySelector('#edit-cancel') : null;
         const editForm = editModal ? editModal.querySelector('form') : null;
         let editState = {id:null, div:null, original:''};
+        let oldestId = null;
+        let historyEnd = false;
+        let historyLoading = false;
 
         if(editCancel){
             editCancel.addEventListener('click', ()=> editModal.close());
@@ -159,13 +162,50 @@
 
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
+                const frag = document.createDocumentFragment();
                 data.messages.forEach(m=>{
                     const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions);
-                    messages.appendChild(div);
+                    frag.appendChild(div);
                 });
+                messages.appendChild(frag);
+                if(data.messages.length){
+                    oldestId = data.messages[0].id;
+                }
+                historyEnd = !data.has_more;
                 scrollToBottom();
             });
         }
+
+        function loadPrevious(){
+            if(historyLoading || historyEnd || !historyUrl) return;
+            historyLoading = true;
+            const url = new URL(historyUrl, window.location.origin);
+            if(oldestId){ url.searchParams.set('before', oldestId); }
+            fetch(url).then(r=>r.json()).then(data=>{
+                if(data.messages.length){
+                    const first = messages.firstChild;
+                    const prevHeight = messages.scrollHeight;
+                    const frag = document.createDocumentFragment();
+                    data.messages.forEach(m=>{
+                        const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions);
+                        frag.appendChild(div);
+                    });
+                    messages.insertBefore(frag, first);
+                    oldestId = data.messages[0].id;
+                    const newHeight = messages.scrollHeight;
+                    messages.scrollTop = newHeight - prevHeight;
+                }else{
+                    historyEnd = true;
+                }
+                if(!data.has_more){ historyEnd = true; }
+            }).finally(()=>{ historyLoading = false; });
+        }
+
+        messages.addEventListener('scroll', ()=>{
+            if(messages.scrollTop === 0){
+                loadPrevious();
+            }
+        });
 
         function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions){
             const div = elem || document.createElement('article');
