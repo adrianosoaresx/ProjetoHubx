@@ -125,6 +125,41 @@ def test_messages_permission_denied_for_non_participant(api_client: APIClient, a
     assert resp.status_code == 403
 
 
+def test_search_messages_filters_and_permissions(
+    api_client: APIClient, admin_user, coordenador_user
+):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    other = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    ChatParticipant.objects.create(channel=other, user=coordenador_user)
+    msg = ChatMessage.objects.create(
+        channel=channel, remetente=admin_user, tipo="text", conteudo="hello world"
+    )
+    ChatMessage.objects.create(
+        channel=channel, remetente=admin_user, tipo="image", conteudo="hello img"
+    )
+    old = ChatMessage.objects.create(
+        channel=channel, remetente=admin_user, tipo="text", conteudo="hello old"
+    )
+    ChatMessage.objects.filter(pk=old.pk).update(created=timezone.now() - timedelta(days=2))
+    ChatMessage.objects.create(
+        channel=other, remetente=coordenador_user, tipo="text", conteudo="hello secret"
+    )
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
+    recent = timezone.now() - timedelta(hours=1)
+    resp = api_client.get(url, {"q": "hello", "tipo": "text", "desde": recent.isoformat()})
+    assert resp.status_code == 200
+    ids = [m["id"] for m in resp.json()["results"]]
+    assert str(msg.id) in ids
+    assert str(old.id) not in ids
+    assert len(ids) == 1
+
+    api_client.force_authenticate(coordenador_user)
+    resp2 = api_client.get(url, {"q": "hello"})
+    assert resp2.status_code == 403
+
+
 def test_pin_and_unpin_message(api_client: APIClient, admin_user, coordenador_user):
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)

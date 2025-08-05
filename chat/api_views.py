@@ -262,6 +262,33 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"], url_path="search")
+    def search(self, request: Request, channel_pk: str) -> Response:
+        """Busca mensagens por palavra-chave e filtros."""
+        queryset = self.get_queryset()
+        termo = request.query_params.get("q")
+        tipo = request.query_params.get("tipo")
+        desde = request.query_params.get("desde")
+        ate = request.query_params.get("ate")
+        if termo:
+            queryset = queryset.filter(conteudo__icontains=termo)
+        if tipo:
+            queryset = queryset.filter(tipo=tipo)
+        if desde:
+            dt = parse_datetime(desde)
+            if dt:
+                queryset = queryset.filter(created__gte=dt)
+        if ate:
+            dt = parse_datetime(ate)
+            if dt:
+                queryset = queryset.filter(created__lte=dt)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     def partial_update(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
         msg = self.get_object()
         data = {k: v for k, v in request.data.items() if k in {"conteudo"}}
