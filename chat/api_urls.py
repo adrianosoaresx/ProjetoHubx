@@ -27,6 +27,7 @@ chat_message_pin = ChatMessageViewSet.as_view({"post": "pin"})
 chat_message_unpin = ChatMessageViewSet.as_view({"post": "unpin"})
 chat_message_react = ChatMessageViewSet.as_view({"post": "react"})
 chat_message_flag = ChatMessageViewSet.as_view({"post": "flag"})
+chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
 
 urlpatterns = router.urls + [
     path(
@@ -58,6 +59,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/flag/",
         chat_message_flag,
         name="chat-channel-message-flag",
+    ),
+    path(
+        "channels/<uuid:channel_pk>/messages/search/",
+        chat_message_search,
+        name="chat-channel-message-search",
     ),
     path(
         "moderacao/flags/",
