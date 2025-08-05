@@ -41,6 +41,7 @@ from .serializers import (
 )
 from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
+from .throttles import UploadRateThrottle, FlagRateThrottle
 
 User = get_user_model()
 
@@ -49,6 +50,8 @@ class UploadArquivoAPIView(APIView):
     """Recebe upload de arquivo e retorna URL pública."""
 
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [UploadRateThrottle]
+
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         arquivo = request.FILES.get("file")
@@ -361,7 +364,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                 )
         return Response(self.get_serializer(msg).data)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True, methods=["post"], throttle_classes=[FlagRateThrottle])
     def flag(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
         try:

@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 import uuid
+import io
 from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
+from django.core.cache import cache
 from rest_framework.test import APIClient
+from rest_framework.settings import api_settings
 
 from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
 from chat.api import notify_users
+from chat.throttles import UploadRateThrottle
 
 User = get_user_model()
 
@@ -28,6 +32,7 @@ def test_list_channels_returns_only_participated(api_client: APIClient, admin_us
     c2 = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=c2, user=coordenador_user)
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = reverse("chat_api:chat-channel-list")
     resp = api_client.get(url)
     assert resp.status_code == 200
@@ -82,6 +87,7 @@ def test_history_endpoint_returns_messages(api_client: APIClient, admin_user):
     ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="a")
     ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="b")
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
     resp = api_client.get(url)
     assert resp.status_code == 200
@@ -107,6 +113,7 @@ def test_history_endpoint_filters_by_date(api_client: APIClient, admin_user):
         conteudo="new",
     )
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
     resp = api_client.get(url, {"inicio": new_msg.created.isoformat()})
     assert resp.status_code == 200
@@ -146,6 +153,7 @@ def test_search_messages_filters_and_permissions(
         channel=other, remetente=coordenador_user, tipo="text", conteudo="hello secret"
     )
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
     recent = timezone.now() - timedelta(hours=1)
     resp = api_client.get(url, {"q": "hello", "tipo": "text", "desde": recent.isoformat()})
@@ -183,6 +191,7 @@ def test_react_message(api_client: APIClient, admin_user):
     ChatParticipant.objects.create(channel=conv, user=admin_user)
     msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/react/"
     resp = api_client.post(url, {"emoji": "👍"})
     assert resp.status_code == 200
@@ -196,6 +205,7 @@ def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_
     ChatParticipant.objects.create(channel=conv, user=coordenador_user)
     msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="hi")
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/"
     resp = api_client.patch(url, {"conteudo": "editado"})
     assert resp.status_code == 200
@@ -274,6 +284,7 @@ def test_export_channel(api_client: APIClient, admin_user):
     ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
     ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="hi")
     api_client.force_authenticate(admin_user)
+    cache.clear()
     url = reverse("chat_api:chat-channel-export", args=[conv.id]) + "?formato=json"
     resp = api_client.get(url)
     assert resp.status_code == 202
@@ -322,3 +333,25 @@ def test_moderacao_endpoints(api_client: APIClient, admin_user):
     assert resp_r.status_code == 204
     assert not ChatMessage.objects.filter(pk=msg2.pk).exists()
     assert ChatMessage.all_objects.filter(pk=msg2.pk).exists()
+
+def test_upload_throttling(api_client: APIClient, admin_user):
+    api_client.force_authenticate(admin_user)
+    cache.clear()
+    url = reverse("chat_api:chat-upload")
+    original = api_settings.DEFAULT_THROTTLE_RATES.copy()
+    api_settings.DEFAULT_THROTTLE_RATES["chat_upload"] = "2/minute"
+    UploadRateThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
+    try:
+        for i in range(2):
+            file_obj = io.BytesIO(b"data")
+            file_obj.name = f"f{i}.txt"
+            resp = api_client.post(url, {"file": file_obj}, format="multipart")
+            assert resp.status_code == 200
+        file_obj = io.BytesIO(b"data")
+        file_obj.name = "f2.txt"
+        resp = api_client.post(url, {"file": file_obj}, format="multipart")
+        assert resp.status_code == 429
+    finally:
+        api_settings.DEFAULT_THROTTLE_RATES = original
+        UploadRateThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
+

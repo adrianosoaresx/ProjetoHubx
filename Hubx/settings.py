@@ -190,7 +190,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "tokens.auth.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
-    ]
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "chat_upload": "20/hour",
+        "chat_flag": "10/minute",
+    },
 }
 
 # Valores padrão para mensalidades
