@@ -121,6 +121,24 @@
                 });
                 div.appendChild(btn);
             }
+            if(id && (remetente === currentUser || isAdmin) && tipo === 'text'){
+                const edit = document.createElement('button');
+                edit.className = 'edit-msg ml-2 text-xs text-blue-600';
+                edit.textContent = 'Editar';
+                edit.addEventListener('click', ()=>{
+                    const novo = prompt('Editar mensagem', conteudo);
+                    if(!novo || novo === conteudo) return;
+                    fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/`,{
+                        method:'PATCH',
+                        headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+                        body: JSON.stringify({conteudo: novo})
+                    }).then(r=>r.ok?r.json():Promise.reject())
+                      .then(data=>{
+                        renderMessage(data.remetente, data.tipo, data.conteudo, div, data.id, data.pinned_at, data.reactions);
+                      });
+                });
+                div.appendChild(edit);
+            }
             renderReactions(div,reactions);
             setupReactionMenu(div,id);
             return div;

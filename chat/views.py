@@ -8,9 +8,9 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
 
-from .forms import NovaConversaForm, NovaMensagemForm
+from .forms import NovaConversaForm
 from .models import ChatChannel, ChatMessage, ChatNotification
-from .services import criar_canal, enviar_mensagem
+from .services import criar_canal
 
 User = get_user_model()
 
@@ -78,34 +78,12 @@ def conversation_detail(request, channel_id):
     )
     is_admin = conversation.participants.filter(user=request.user, is_admin=True).exists()
     is_owner = conversation.participants.filter(user=request.user, is_owner=True).exists()
-    if request.method == "POST":
-        form = NovaMensagemForm(request.POST, request.FILES)
-        if form.is_valid():
-            msg = enviar_mensagem(
-                canal=conversation,
-                remetente=request.user,
-                tipo=form.cleaned_data.get("tipo", "text"),
-                conteudo=form.cleaned_data.get("conteudo", ""),
-                arquivo=form.cleaned_data.get("arquivo"),
-            )
-            msg.lido_por.add(request.user)
-            if request.headers.get("HX-Request"):
-                return render(
-                    request,
-                    "chat/partials/message.html",
-                    {"m": msg, "is_admin": is_admin},
-                )
-            messages.success(request, _("Mensagem enviada."))
-            return redirect("chat:conversation_detail", channel_id=channel_id)
-        messages.error(request, _("Erro ao enviar mensagem."))
-        if request.headers.get("HX-Request"):
-            return HttpResponse(status=400)
-        return redirect("chat:conversation_detail", channel_id=channel_id)
-    else:
-        form = NovaMensagemForm()
     qs = conversation.messages.select_related("remetente").prefetch_related("lido_por")
     pinned = qs.filter(pinned_at__isnull=False)
     mensagens = qs.filter(pinned_at__isnull=True)
+    from django.urls import reverse
+
+    history_url = reverse("chat_api:chat-channel-messages-history", args=[conversation.id])
     return render(
         request,
         "chat/conversation_detail.html",
@@ -113,9 +91,9 @@ def conversation_detail(request, channel_id):
             "conversation": conversation,
             "messages": mensagens,
             "pinned_messages": pinned,
-            "form": form,
             "is_admin": is_admin,
             "is_owner": is_owner,
+            "history_url": history_url,
         },
     )
 

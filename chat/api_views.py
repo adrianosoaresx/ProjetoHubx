@@ -168,6 +168,37 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         )
         return Response({"relatorio_id": str(rel.id)}, status=status.HTTP_202_ACCEPTED)
 
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="messages/history",
+        permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
+    )
+    def messages_history(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        inicio = request.query_params.get("inicio")
+        fim = request.query_params.get("fim")
+        qs = channel.messages.select_related("remetente").order_by("created")
+        if inicio:
+            dt = parse_datetime(inicio)
+            if dt:
+                qs = qs.filter(created__gte=dt)
+        if fim:
+            dt = parse_datetime(fim)
+            if dt:
+                qs = qs.filter(created__lte=dt)
+        paginator = ChatMessagePagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = ChatMessageSerializer(page, many=True, context={"request": request})
+        return Response(
+            {
+                "count": paginator.page.paginator.count,
+                "next": paginator.get_next_link(),
+                "previous": paginator.get_previous_link(),
+                "messages": serializer.data,
+            }
+        )
+
 
 class ChatMessagePagination(PageNumberPagination):
     page_size = 20
