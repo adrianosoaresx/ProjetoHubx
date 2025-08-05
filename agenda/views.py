@@ -1,6 +1,7 @@
 import calendar
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
+from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -187,12 +188,23 @@ class EventoUpdateView(
         return _queryset_por_organizacao(self.request)
 
     def form_valid(self, form):  # pragma: no cover
+        """Registra log comparando campos alterados."""
+
+        old_obj = self.get_object()
+        detalhes: dict[str, dict[str, Any]] = {}
+        for field in form.changed_data:
+            before = getattr(old_obj, field)
+            after = form.cleaned_data.get(field)
+            if before != after:
+                detalhes[field] = {"antes": before, "depois": after}
+
         messages.success(self.request, _("Evento atualizado com sucesso."))  # pragma: no cover
         response = super().form_valid(form)  # pragma: no cover
         EventoLog.objects.create(
             evento=self.object,
             usuario=self.request.user,
             acao="evento_atualizado",
+            detalhes=detalhes,
         )
         return response
 
@@ -214,6 +226,13 @@ class EventoDeleteView(
         return _queryset_por_organizacao(self.request)
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
+        self.object = self.get_object()
+        EventoLog.objects.create(
+            evento=self.object,
+            usuario=request.user,
+            acao="evento_excluido",
+            detalhes={"titulo": self.object.titulo},
+        )
         messages.success(self.request, _("Evento removido."))  # pragma: no cover
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
@@ -511,6 +530,24 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, ParceriaPermissionMixin, Upda
     def get_form(self, form_class=None):
         return ParceriaEventoCreateView.get_form(self, form_class)
 
+    def form_valid(self, form):
+        """Registra alterações da parceria."""
+        old_obj = self.get_object()
+        detalhes: dict[str, dict[str, Any]] = {}
+        for field in form.changed_data:
+            before = getattr(old_obj, field)
+            after = form.cleaned_data.get(field)
+            if before != after:
+                detalhes[field] = {"antes": before, "depois": after}
+        response = super().form_valid(form)
+        EventoLog.objects.create(
+            evento=self.object.evento,
+            usuario=self.request.user,
+            acao="parceria_atualizada",
+            detalhes=detalhes,
+        )
+        return response
+
 
 class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
@@ -527,6 +564,16 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, Dele
                 filtro |= Q(evento__nucleo__in=nucleo_ids)
             qs = qs.filter(filtro)
         return qs
+
+    def delete(self, request, *args, **kwargs):  # pragma: no cover
+        self.object = self.get_object()
+        EventoLog.objects.create(
+            evento=self.object.evento,
+            usuario=request.user,
+            acao="parceria_excluida",
+            detalhes={"empresa": str(self.object.empresa_id)},
+        )
+        return super().delete(request, *args, **kwargs)
 
 
 class BriefingEventoListView(LoginRequiredMixin, ListView):
@@ -587,6 +634,23 @@ class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
                 filtro |= Q(evento__nucleo__in=nucleo_ids)
             qs = qs.filter(filtro)
         return qs
+
+    def form_valid(self, form):
+        old_obj = self.get_object()
+        detalhes: dict[str, dict[str, Any]] = {}
+        for field in form.changed_data:
+            before = getattr(old_obj, field)
+            after = form.cleaned_data.get(field)
+            if before != after:
+                detalhes[field] = {"antes": before, "depois": after}
+        response = super().form_valid(form)
+        EventoLog.objects.create(
+            evento=self.object.evento,
+            usuario=self.request.user,
+            acao="briefing_atualizado",
+            detalhes=detalhes,
+        )
+        return response
 
 
 class BriefingEventoStatusView(LoginRequiredMixin, View):

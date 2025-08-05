@@ -91,6 +91,12 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         return qs.order_by("-created")
 
     def perform_destroy(self, instance: MaterialDivulgacaoEvento) -> None:
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=self.request.user,
+            acao="material_excluido",
+            detalhes={"material": instance.pk},
+        )
         instance.soft_delete()
 
 
@@ -133,6 +139,12 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return qs
 
     def perform_destroy(self, instance: BriefingEvento) -> None:
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=self.request.user,
+            acao="material_excluido",
+            detalhes={"briefing": instance.pk},
+        )
         instance.soft_delete()
 
     @action(detail=True, methods=["post"])

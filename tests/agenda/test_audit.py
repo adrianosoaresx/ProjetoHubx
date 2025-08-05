@@ -1,0 +1,124 @@
+import time
+from datetime import date, timedelta
+
+import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.forms.models import model_to_dict
+from django.test import RequestFactory
+from django.urls import reverse
+from rest_framework.test import APIClient
+
+from accounts.models import UserType
+from accounts.factories import UserFactory
+from organizacoes.factories import OrganizacaoFactory
+from empresas.factories import EmpresaFactory
+from agenda.factories import EventoFactory
+from agenda.models import (
+    BriefingEvento,
+    EventoLog,
+    MaterialDivulgacaoEvento,
+    ParceriaEvento,
+)
+from agenda.views import ParceriaEventoDeleteView
+
+pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture
+def api_client() -> APIClient:
+    return APIClient()
+
+
+def _admin_user(organizacao):
+    return UserFactory(
+        organizacao=organizacao,
+        user_type=UserType.ADMIN,
+        is_superuser=True,
+        is_staff=True,
+        nucleo_obj=None,
+    )
+
+
+def test_parceria_delete_gera_log() -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    empresa = EmpresaFactory(organizacao=org, usuario=user)
+    parceria = ParceriaEvento.objects.create(
+        evento=evento,
+        empresa=empresa,
+        cnpj="12345678000199",
+        contato="c",
+        representante_legal="r",
+        data_inicio=date.today(),
+        data_fim=date.today() + timedelta(days=1),
+        tipo_parceria="patrocinio",
+    )
+    request = RequestFactory().post("/")
+    request.user = user
+    view = ParceriaEventoDeleteView()
+    view.request = request
+    view.kwargs = {"pk": parceria.pk}
+    view.delete(request, pk=parceria.pk)
+    assert EventoLog.objects.filter(
+        evento=evento, usuario=user, acao="parceria_excluida"
+    ).exists()
+
+
+def test_material_delete_gera_log(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    arquivo = SimpleUploadedFile("m.pdf", b"%PDF-1.4")
+    material = MaterialDivulgacaoEvento.objects.create(
+        evento=evento,
+        titulo="M",
+        tipo="banner",
+        arquivo=arquivo,
+    )
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:material-detail", args=[material.pk])
+    api_client.delete(url)
+    assert EventoLog.objects.filter(
+        evento=evento,
+        usuario=user,
+        acao="material_excluido",
+        detalhes__material=material.pk,
+    ).exists()
+
+
+def test_briefing_delete_gera_log(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    briefing = BriefingEvento.objects.create(
+        evento=evento,
+        objetivos="obj",
+        publico_alvo="pub",
+        requisitos_tecnicos="req",
+    )
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:briefing-detail", args=[briefing.pk])
+    api_client.delete(url)
+    assert EventoLog.objects.filter(
+        evento=evento,
+        usuario=user,
+        acao="material_excluido",
+        detalhes__briefing=briefing.pk,
+    ).exists()
+
+
+def test_evento_list_performance(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    EventoFactory.create_batch(5, organizacao=org, coordenador=user)
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:evento-list")
+    durations = []
+    for _ in range(20):
+        start = time.perf_counter()
+        api_client.get(url)
+        durations.append(time.perf_counter() - start)
+    durations.sort()
+    p95 = durations[int(len(durations) * 0.95) - 1]
+    assert p95 <= 0.3
