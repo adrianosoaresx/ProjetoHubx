@@ -1,10 +1,16 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .api_views import ChatChannelViewSet, ChatMessageViewSet, ModeracaoViewSet
+from .api_views import (
+    ChatChannelViewSet,
+    ChatMessageViewSet,
+    ChatNotificationViewSet,
+    ModeracaoViewSet,
+)
 
 router = DefaultRouter()
 router.register(r"channels", ChatChannelViewSet, basename="chat-channel")
+router.register(r"notificacoes", ChatNotificationViewSet, basename="chat-notificacao")
 router.register(r"moderacao/messages", ModeracaoViewSet, basename="chat-moderacao")
 
 chat_message_list = ChatMessageViewSet.as_view({"get": "list", "post": "create"})
@@ -17,6 +23,7 @@ chat_message_detail = ChatMessageViewSet.as_view(
     }
 )
 chat_message_pin = ChatMessageViewSet.as_view({"post": "pin"})
+chat_message_unpin = ChatMessageViewSet.as_view({"post": "unpin"})
 chat_message_react = ChatMessageViewSet.as_view({"post": "react"})
 chat_message_flag = ChatMessageViewSet.as_view({"post": "flag"})
 
@@ -35,6 +42,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/pin/",
         chat_message_pin,
         name="chat-channel-message-pin",
+    ),
+    path(
+        "channels/<uuid:channel_pk>/messages/<uuid:pk>/unpin/",
+        chat_message_unpin,
+        name="chat-channel-message-unpin",
     ),
     path(
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/react/",

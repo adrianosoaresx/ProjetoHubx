@@ -24,6 +24,11 @@ def celery_eager(settings):
     settings.CELERY_TASK_EAGER_PROPAGATES = True
 
 
+@pytest.fixture(autouse=True)
+def in_memory_channel_layer(settings):
+    settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
 @pytest.fixture
 def organizacao():
     return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")

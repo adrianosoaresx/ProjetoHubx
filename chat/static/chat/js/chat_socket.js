@@ -19,6 +19,7 @@
         const destinatarioId = container.dataset.destId;
         const currentUser = container.dataset.currentUser;
         const csrfToken = container.dataset.csrfToken;
+        const isAdmin = container.dataset.isAdmin === 'true';
         const uploadUrl = container.dataset.uploadUrl || '';
         const historyUrl = container.dataset.historyUrl || '';
         const scheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
@@ -42,17 +43,18 @@
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
                 data.messages.forEach(m=>{
-                    const div = renderMessage(m.remetente, m.tipo, m.conteudo);
+                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at);
                     messages.appendChild(div);
                 });
                 scrollToBottom();
             });
         }
 
-        function renderMessage(remetente,tipo,conteudo,elem){
+        function renderMessage(remetente,tipo,conteudo,elem,id,pinned){
             const div = elem || document.createElement('div');
             div.classList.add('message');
             if(remetente === currentUser){ div.classList.add('self'); }
+            if(pinned){ div.classList.add('pinned'); }
             let content = conteudo;
             if(tipo === 'image'){
                 content = `<img src="${conteudo}" alt="imagem" class="chat-media-thumb">`;
@@ -62,6 +64,23 @@
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
             div.innerHTML = '<strong>' + remetente + '</strong>: ' + content;
+            if(id){ div.dataset.id = id; }
+            if(isAdmin && id){
+                const btn = document.createElement('button');
+                btn.classList.add('pin-toggle');
+                btn.textContent = pinned ? 'Desafixar' : 'Fixar';
+                btn.addEventListener('click', ()=>{
+                    const action = div.classList.contains('pinned') ? 'unpin' : 'pin';
+                    fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/${action}/`,{
+                        method:'POST',
+                        headers:{'X-CSRFToken':csrfToken}
+                    }).then(r=>r.json()).then(data=>{
+                        div.classList.toggle('pinned', !!data.pinned_at);
+                        btn.textContent = data.pinned_at ? 'Desafixar' : 'Fixar';
+                    });
+                });
+                div.appendChild(btn);
+            }
             return div;
         }
 
@@ -78,7 +97,7 @@
                     return;
                 }
             }
-            const div = renderMessage(data.remetente, data.tipo, data.conteudo);
+            const div = renderMessage(data.remetente, data.tipo, data.conteudo, null, data.id, data.pinned_at);
             messages.appendChild(div);
             scrollToBottom();
         };

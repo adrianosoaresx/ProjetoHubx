@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 
 from .models import ChatChannel, ChatMessage, ChatNotification, ChatParticipant
@@ -36,9 +38,26 @@ def create_message(**kwargs):
 
 
 def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
-    """Cria ChatNotification para participantes do canal."""
-    for participant in ChatParticipant.objects.filter(channel=channel).exclude(user=message.remetente):
-        ChatNotification.objects.create(usuario=participant.user, mensagem=message)
+    """Cria ``ChatNotification`` e envia via WebSocket."""
+    layer = get_channel_layer()
+    participants = ChatParticipant.objects.filter(channel=channel).exclude(
+        user=message.remetente
+    ).select_related("user")
+    for participant in participants:
+        notif = ChatNotification.objects.create(usuario=participant.user, mensagem=message)
+        if layer:
+            async_to_sync(layer.group_send)(
+                f"notifications_{participant.user.id}",
+                {
+                    "type": "chat.notification",
+                    "id": str(notif.id),
+                    "mensagem_id": str(message.id),
+                    "canal_id": str(channel.id),
+                    "conteudo": message.conteudo,
+                    "tipo": message.tipo,
+                    "created": notif.created.isoformat(),
+                },
+            )
 
 
 def add_reaction(message: ChatMessage, emoji: str) -> None:
