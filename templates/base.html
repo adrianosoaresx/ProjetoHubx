@@ -5,7 +5,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function() {
+      const cookieTheme = (document.cookie.match(/(?:^|; )tema=([^;]+)/) || [])[1];
+      const themePref = localStorage.getItem('tema') || cookieTheme || 'automatico';
+      localStorage.setItem('tema', themePref);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = themePref === 'automatico' ? (prefersDark ? 'escuro' : 'claro') : themePref;
+      document.documentElement.classList.toggle('dark', theme === 'escuro');
 
+      const cookieLang = (document.cookie.match(/(?:^|; )django_language=([^;]+)/) || [])[1];
+      const langPref = localStorage.getItem('idioma') || cookieLang || '{{ LANGUAGE_CODE }}';
+      localStorage.setItem('idioma', langPref);
+      document.documentElement.setAttribute('lang', langPref);
+    })();
+  </script>
   <title>{% block title %}HubX{% endblock %}</title>
 
   <link rel="preconnect" href="https://rsms.me/">
@@ -111,6 +125,8 @@
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       function getThemePreference() {
+        const stored = localStorage.getItem('tema');
+        if (stored) return stored;
         const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
         return match ? match[1] : 'automatico';
       }
@@ -122,9 +138,11 @@
       function toggleTheme(theme) {
         if (theme === 'automatico') {
           document.cookie = 'tema=automatico;path=/';
+          localStorage.setItem('tema', 'automatico');
           applyTheme(mediaQuery.matches ? 'escuro' : 'claro');
         } else {
           document.cookie = `tema=${theme};path=/`;
+          localStorage.setItem('tema', theme);
           applyTheme(theme);
         }
       }
@@ -136,6 +154,10 @@
         }
       });
 
+      const themeMatch = document.cookie.match(/(?:^|; )tema=([^;]+)/);
+      if (themeMatch) {
+        localStorage.setItem('tema', themeMatch[1]);
+      }
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
         localStorage.setItem('idioma', langMatch[1]);

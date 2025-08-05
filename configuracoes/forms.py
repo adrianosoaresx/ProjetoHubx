@@ -29,8 +29,8 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "frequencia_notificacoes_whatsapp": forms.Select(),
             "idioma": forms.Select(),
             "tema": forms.Select(),
-            "hora_notificacao_diaria": forms.TimeInput(format="%H:%M"),
-            "hora_notificacao_semanal": forms.TimeInput(format="%H:%M"),
+            "hora_notificacao_diaria": forms.TimeInput(format="%H:%M", attrs={"type": "time"}),
+            "hora_notificacao_semanal": forms.TimeInput(format="%H:%M", attrs={"type": "time"}),
             "dia_semana_notificacao": forms.Select(),
         }
         help_texts = {
@@ -47,4 +47,16 @@ class ConfiguracaoContaForm(forms.ModelForm):
             data["frequencia_notificacoes_email"] = self.instance.frequencia_notificacoes_email
         if not data.get("receber_notificacoes_whatsapp"):
             data["frequencia_notificacoes_whatsapp"] = self.instance.frequencia_notificacoes_whatsapp
+
+        freq_email = data.get("frequencia_notificacoes_email")
+        freq_whats = data.get("frequencia_notificacoes_whatsapp")
+
+        if freq_email == "diaria" or freq_whats == "diaria":
+            if not data.get("hora_notificacao_diaria"):
+                self.add_error("hora_notificacao_diaria", _("Obrigatório para frequência diária."))
+        if freq_email == "semanal" or freq_whats == "semanal":
+            if not data.get("hora_notificacao_semanal"):
+                self.add_error("hora_notificacao_semanal", _("Obrigatório para frequência semanal."))
+            if data.get("dia_semana_notificacao") is None:
+                self.add_error("dia_semana_notificacao", _("Obrigatório para frequência semanal."))
         return data

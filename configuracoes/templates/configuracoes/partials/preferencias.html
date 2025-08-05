@@ -24,6 +24,27 @@
     {% endif %}
     <p class="text-xs text-gray-500">{% trans 'Funcionalidade de WhatsApp em desenvolvimento' %}</p>
   </div>
+  <div id="campo-hora-diaria" class="hidden">
+    <label for="{{ preferencias_form.hora_notificacao_diaria.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário diário' %}</label>
+    {{ preferencias_form.hora_notificacao_diaria|add_class:'form-input mt-1'|attr:'type:time' }}
+    {% if preferencias_form.hora_notificacao_diaria.help_text %}
+      <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_diaria.help_text }}</p>
+    {% endif %}
+  </div>
+  <div id="campo-hora-semanal" class="hidden">
+    <label for="{{ preferencias_form.hora_notificacao_semanal.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário semanal' %}</label>
+    {{ preferencias_form.hora_notificacao_semanal|add_class:'form-input mt-1'|attr:'type:time' }}
+    {% if preferencias_form.hora_notificacao_semanal.help_text %}
+      <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_semanal.help_text }}</p>
+    {% endif %}
+  </div>
+  <div id="campo-dia-semanal" class="hidden">
+    <label for="{{ preferencias_form.dia_semana_notificacao.id_for_label }}" class="block text-sm font-medium">{% trans 'Dia da semana' %}</label>
+    {{ preferencias_form.dia_semana_notificacao|add_class:'form-select mt-1' }}
+    {% if preferencias_form.dia_semana_notificacao.help_text %}
+      <p class="text-xs text-gray-500">{{ preferencias_form.dia_semana_notificacao.help_text }}</p>
+    {% endif %}
+  </div>
   <div>
     <label for="{{ preferencias_form.idioma.id_for_label }}" class="block text-sm font-medium">{% trans 'Idioma' %}</label>
     {{ preferencias_form.idioma|add_class:'form-select mt-1'|attr:'tabindex:0' }}
@@ -37,3 +58,21 @@
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="bg-primary text-white px-4 py-2 rounded-lg">{% trans 'Salvar Alterações' %}</button>
   </div>
 </form>
+<script>
+  (function() {
+    function toggleFields() {
+      const freqEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}').value;
+      const freqWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}').value;
+      const showDaily = freqEmail === 'diaria' || freqWhats === 'diaria';
+      const showWeekly = freqEmail === 'semanal' || freqWhats === 'semanal';
+      document.getElementById('campo-hora-diaria').classList.toggle('hidden', !showDaily);
+      document.getElementById('campo-hora-semanal').classList.toggle('hidden', !showWeekly);
+      document.getElementById('campo-dia-semanal').classList.toggle('hidden', !showWeekly);
+    }
+    const selEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}');
+    const selWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}');
+    selEmail.addEventListener('change', toggleFields);
+    selWhats.addEventListener('change', toggleFields);
+    toggleFields();
+  })();
+</script>

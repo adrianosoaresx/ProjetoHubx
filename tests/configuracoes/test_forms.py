@@ -66,3 +66,38 @@ def test_form_boolean_coercion(admin_user):
     config.refresh_from_db()
     assert config.receber_notificacoes_email is True
     assert config.receber_notificacoes_whatsapp is False
+
+
+def test_form_requires_daily_time(admin_user):
+    config = admin_user.configuracao
+    data = {
+        "receber_notificacoes_email": True,
+        "frequencia_notificacoes_email": "diaria",
+        "frequencia_notificacoes_whatsapp": "imediata",
+        "idioma": "pt-BR",
+        "tema": "claro",
+        "hora_notificacao_diaria": "",
+        "hora_notificacao_semanal": "08:00",
+        "dia_semana_notificacao": 0,
+    }
+    form = ConfiguracaoContaForm(data=data, instance=config)
+    assert not form.is_valid()
+    assert "hora_notificacao_diaria" in form.errors
+
+
+def test_form_requires_weekly_fields(admin_user):
+    config = admin_user.configuracao
+    data = {
+        "receber_notificacoes_email": True,
+        "frequencia_notificacoes_email": "semanal",
+        "frequencia_notificacoes_whatsapp": "imediata",
+        "idioma": "pt-BR",
+        "tema": "claro",
+        "hora_notificacao_diaria": "08:00",
+        "hora_notificacao_semanal": "",
+        "dia_semana_notificacao": "",
+    }
+    form = ConfiguracaoContaForm(data=data, instance=config)
+    assert not form.is_valid()
+    assert "hora_notificacao_semanal" in form.errors
+    assert "dia_semana_notificacao" in form.errors
