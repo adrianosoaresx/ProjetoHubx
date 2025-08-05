@@ -12,7 +12,7 @@
     data-csrf-token="{{ csrf_token }}"
     data-is-admin="{{ is_admin|yesno:'true,false' }}"
     data-upload-url="{% url 'chat_api:chat-upload' %}"
-    data-history-url=""
+    data-history-url="{{ history_url }}"
     class="flex flex-col h-full"
   >
     <header class="mb-4 flex items-center justify-between gap-3">

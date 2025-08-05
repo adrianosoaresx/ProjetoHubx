@@ -74,6 +74,19 @@ def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_u
     assert resp.json()["count"] >= 1
 
 
+def test_history_endpoint_returns_messages(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="a")
+    ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="b")
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["messages"]) == 2
+
+
 def test_messages_permission_denied_for_non_participant(api_client: APIClient, admin_user, coordenador_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
