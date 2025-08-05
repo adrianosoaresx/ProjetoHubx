@@ -15,6 +15,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
@@ -406,7 +407,7 @@ class EventoLog(TimeStampedModel, SoftDeleteModel):
         blank=True,
     )
     acao = models.CharField(max_length=50)
-    detalhes = models.JSONField(default=dict, blank=True)
+    detalhes = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
