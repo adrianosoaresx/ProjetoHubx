@@ -8,7 +8,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Q
-from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
@@ -27,7 +33,13 @@ from django.views.generic import (
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
-from .forms import BriefingEventoForm, EventoForm, InscricaoEventoForm, MaterialDivulgacaoEventoForm
+from .forms import (
+    BriefingEventoForm,
+    BriefingEventoCreateForm,
+    EventoForm,
+    InscricaoEventoForm,
+    MaterialDivulgacaoEventoForm,
+)
 from .models import (
     BriefingEvento,
     Evento,
@@ -36,6 +48,7 @@ from .models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
+from .tasks import notificar_briefing_status
 
 User = get_user_model()
 
@@ -384,7 +397,53 @@ class BriefingEventoListView(LoginRequiredMixin, ListView):
         return qs
 
 
+class BriefingEventoCreateView(LoginRequiredMixin, CreateView):
+    model = BriefingEvento
+    form_class = BriefingEventoCreateForm
+    template_name = "agenda/briefing_form.html"
+
+    def form_valid(self, form):
+        evento = form.cleaned_data.get("evento")
+        if BriefingEvento.objects.filter(evento=evento, deleted=False).exists():
+            form.add_error("evento", _("Já existe briefing para este evento."))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Briefing criado com sucesso."))
+        return super().form_valid(form)
+
+
 class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
     model = BriefingEvento
     form_class = BriefingEventoForm
     template_name = "agenda/briefing_form.html"
+
+
+class BriefingEventoStatusView(LoginRequiredMixin, View):
+    """Atualiza o status do briefing registrando avaliador e timestamps."""
+
+    def post(self, request, pk: int, status: str):
+        if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
+            return HttpResponseForbidden()
+        briefing = get_object_or_404(BriefingEvento, pk=pk)
+        now = timezone.now()
+        update_fields = ["status", "avaliado_por", "avaliado_em", "modified"]
+        briefing.avaliado_por = request.user
+        briefing.avaliado_em = now
+        if status == "orcamentado":
+            briefing.status = "orcamentado"
+            briefing.orcamento_enviado_em = now
+            update_fields.append("orcamento_enviado_em")
+        elif status == "aprovado":
+            briefing.status = "aprovado"
+            briefing.aprovado_em = now
+            update_fields.append("aprovado_em")
+        elif status == "recusado":
+            briefing.status = "recusado"
+            briefing.recusado_em = now
+            briefing.motivo_recusa = request.POST.get("motivo_recusa", "")
+            update_fields.extend(["recusado_em", "motivo_recusa"])
+        else:
+            return HttpResponseBadRequest()
+        briefing.save(update_fields=update_fields)
+        notificar_briefing_status.delay(briefing.pk, briefing.status)
+        messages.success(request, _("Status do briefing atualizado."))
+        return redirect("agenda:briefing_list")
