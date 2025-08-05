@@ -3,9 +3,11 @@ from __future__ import annotations
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
+import time
 
 from .models import ChatChannel, ChatMessage, ChatNotification, ChatParticipant
 from .services import adicionar_reacao, enviar_mensagem
+from .metrics import chat_websocket_latency_seconds
 
 User = get_user_model()
 
@@ -44,7 +46,11 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
         user=message.remetente
     ).select_related("user")
     for participant in participants:
+        start = time.monotonic()
         notif = ChatNotification.objects.create(usuario=participant.user, mensagem=message)
+        resumo = message.conteudo
+        if message.tipo != "text":
+            resumo = message.tipo
         if layer:
             async_to_sync(layer.group_send)(
                 f"notifications_{participant.user.id}",
@@ -53,11 +59,15 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
                     "id": str(notif.id),
                     "mensagem_id": str(message.id),
                     "canal_id": str(channel.id),
+                    "canal_titulo": channel.titulo,
+                    "canal_url": channel.get_absolute_url(),
                     "conteudo": message.conteudo,
                     "tipo": message.tipo,
+                    "resumo": resumo,
                     "created": notif.created.isoformat(),
                 },
             )
+        chat_websocket_latency_seconds.observe(time.monotonic() - start)
 
 
 def add_reaction(message: ChatMessage, emoji: str) -> None:

@@ -60,6 +60,16 @@ class NovaMensagemForm(forms.ModelForm):
         arquivo = cleaned.get("arquivo")
         if tipo == "text" and not conteudo:
             raise forms.ValidationError("Informe o conteúdo de texto")
-        if tipo in {"image", "video", "file"} and not arquivo:
-            raise forms.ValidationError("Envie o arquivo correspondente")
+        if tipo in {"image", "video", "file"}:
+            if not arquivo and not conteudo:
+                raise forms.ValidationError("Envie o arquivo correspondente ou informe uma URL")
+            if conteudo:
+                from django.core.exceptions import ValidationError as URLValidationError
+                from django.core.validators import URLValidator
+
+                validator = URLValidator()
+                try:
+                    validator(conteudo)
+                except URLValidationError as exc:
+                    raise forms.ValidationError("URL de arquivo inválida") from exc
         return cleaned

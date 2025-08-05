@@ -45,7 +45,9 @@ def exportar_historico_chat(
     if fim:
         qs = qs.filter(created__lte=fim)
     if tipos:
-        qs = qs.filter(tipo__in=tipos)
+        tipos = [t for t in tipos if t]
+        if tipos:
+            qs = qs.filter(tipo__in=tipos)
     data = [
         {
             "id": str(m.id),

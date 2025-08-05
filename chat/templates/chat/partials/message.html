@@ -1,5 +1,5 @@
 {% load i18n %}
-<article role="article" class="flex gap-2 p-2 rounded-lg bg-gray-50">
+<article role="article" class="flex gap-2 p-2 rounded-lg bg-gray-50 {% if m.pinned_at %}border-l-4 border-yellow-400 bg-yellow-50{% endif %} {% if m.hidden_at %}opacity-60{% endif %}" tabindex="0">
   <div class="flex-shrink-0">
     {% if m.remetente.profile.avatar %}
       <img src="{{ m.remetente.profile.avatar.url }}" alt="" class="w-8 h-8 rounded-full" />
