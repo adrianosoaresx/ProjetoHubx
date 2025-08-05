@@ -78,6 +78,22 @@ def test_enviar_mensagem_valida_participacao(admin_user, coordenador_user, assoc
         enviar_mensagem(canal, associado_user, "text", conteudo="ola")
 
 
+def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    url = "https://example.com/img.png"
+    msg = enviar_mensagem(canal, admin_user, "image", conteudo=url)
+    assert msg.conteudo == url and not msg.arquivo
+    with pytest.raises(ValueError):
+        enviar_mensagem(canal, admin_user, "image", conteudo="not-url")
+
+
 def test_adicionar_reacao_incrementa(admin_user, coordenador_user):
     canal = criar_canal(
         criador=admin_user,

@@ -113,7 +113,8 @@ O módulo expõe métricas Prometheus em `/metrics`, incluindo `chat_mensagens_s
 Para que o WebSocket funcione:
 
 1. Instale o pacote `daphne` (já listado em `requirements.txt`).
-2. Rode o servidor com:
+2. Execute um servidor Redis local em `localhost:6379`.
+3. Rode o servidor com:
 
 ```bash
 python manage.py runserver
@@ -136,6 +137,20 @@ CSRF_TRUSTED_ORIGINS = ["https://seu-dominio.com"]
 ```
 
 Certifique-se também de liberar o esquema `wss://` no servidor ou proxy reverso.
+
+### Tasks de exportação
+
+As exportações de histórico são processadas de forma assíncrona. Para
+acompanhar o progresso e gerar os arquivos é necessário executar um
+worker Celery apontando para o mesmo Redis:
+
+```bash
+celery -A Hubx worker -l INFO
+```
+
+Os arquivos gerados ficarão disponíveis em `media/chat_exports/` e o
+endpoint `/api/chat/channels/<id>/export/` aceita os parâmetros
+`inicio`, `fim` e `tipos` para filtrar o conteúdo exportado.
 
 ---
 

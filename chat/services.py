@@ -77,12 +77,19 @@ def enviar_mensagem(
     """Salva uma nova mensagem no canal.
 
     Verifica se ``remetente`` participa do canal e se o ``tipo``
-    requer um arquivo.
+    requer um arquivo ou URL válida.
     """
     if not ChatParticipant.objects.filter(channel=canal, user=remetente).exists():
         raise PermissionError("Usuário não participa do canal.")
     if tipo in {"image", "video", "file"} and not arquivo:
-        raise ValueError("Arquivo obrigatório para este tipo de mensagem.")
+        from django.core.validators import URLValidator
+        from django.core.exceptions import ValidationError
+
+        validator = URLValidator()
+        try:
+            validator(conteudo)
+        except ValidationError as exc:  # pragma: no cover - defensive
+            raise ValueError("Arquivo obrigatório ou URL de arquivo inválida") from exc
     msg = ChatMessage.objects.create(
         channel=canal,
         remetente=remetente,

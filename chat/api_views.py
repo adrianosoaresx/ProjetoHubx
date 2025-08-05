@@ -18,6 +18,7 @@ from .models import (
     ChatChannel,
     ChatMessage,
     ChatModerationLog,
+    ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
 )
@@ -27,7 +28,11 @@ from .permissions import (
     IsMessageSenderOrAdmin,
     IsModeratorPermission,
 )
-from .serializers import ChatChannelSerializer, ChatMessageSerializer
+from .serializers import (
+    ChatChannelSerializer,
+    ChatMessageSerializer,
+    ChatNotificationSerializer,
+)
 from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
 
@@ -236,6 +241,17 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         msg.save(update_fields=["pinned_at"])
         return Response(self.get_serializer(msg).data)
 
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
+    )
+    def unpin(self, request: Request, channel_pk: str, pk: str) -> Response:
+        msg = self.get_object()
+        msg.pinned_at = None
+        msg.save(update_fields=["pinned_at"])
+        return Response(self.get_serializer(msg).data)
+
     @action(detail=True, methods=["post"])
     def react(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()
@@ -252,6 +268,27 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response(status=status.HTTP_409_CONFLICT)
         return Response({"flags": total})
+
+
+class ChatNotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """Listagem e leitura de notificações de chat."""
+
+    serializer_class = ChatNotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return (
+            ChatNotification.objects.filter(usuario=self.request.user)
+            .select_related("mensagem", "usuario")
+            .order_by("-created")
+        )
+
+    @action(detail=True, methods=["post"])
+    def ler(self, request: Request, pk: str | None = None) -> Response:
+        notif = self.get_object()
+        notif.lido = True
+        notif.save(update_fields=["lido"])
+        return Response(self.get_serializer(notif).data)
 
 
 class ModeracaoViewSet(viewsets.ViewSet):

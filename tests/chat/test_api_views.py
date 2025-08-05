@@ -8,6 +8,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
+from chat.api import notify_users
 
 User = get_user_model()
 
@@ -82,17 +83,22 @@ def test_messages_permission_denied_for_non_participant(api_client: APIClient, a
     assert resp.status_code == 403
 
 
-def test_pin_message(api_client: APIClient, admin_user, coordenador_user):
+def test_pin_and_unpin_message(api_client: APIClient, admin_user, coordenador_user):
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
     ChatParticipant.objects.create(channel=conv, user=coordenador_user)
     msg = ChatMessage.objects.create(channel=conv, remetente=coordenador_user, tipo="text", conteudo="hi")
     api_client.force_authenticate(admin_user)
-    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/pin/"
-    resp = api_client.post(url)
+    pin_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/pin/"
+    resp = api_client.post(pin_url)
     assert resp.status_code == 200
     msg.refresh_from_db()
     assert msg.pinned_at is not None
+    unpin_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/unpin/"
+    resp2 = api_client.post(unpin_url)
+    assert resp2.status_code == 200
+    msg.refresh_from_db()
+    assert msg.pinned_at is None
 
 
 def test_react_message(api_client: APIClient, admin_user):
@@ -128,6 +134,11 @@ def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_
     assert del_resp.status_code == 204
     assert not ChatMessage.objects.filter(pk=msg.pk).exists()
     assert ChatMessage.all_objects.filter(pk=msg.pk).exists()
+    from chat.models import ChatModerationLog
+
+    logs = ChatModerationLog.objects.filter(message=msg)
+    assert logs.filter(action="edit").exists()
+    assert logs.filter(action="remove").exists()
 
 
 def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
@@ -160,6 +171,22 @@ def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
     assert msg.hidden_at is not None
     assert chat_mensagens_sinalizadas_total.labels(canal_tipo="privado")._value.get() == 3
     assert chat_mensagens_ocultadas_total._value.get() == 1
+
+
+def test_notifications_list_and_read(api_client: APIClient, admin_user, coordenador_user):
+    conv = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    ChatParticipant.objects.create(channel=conv, user=coordenador_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
+    notify_users(conv, msg)
+    api_client.force_authenticate(coordenador_user)
+    url = reverse("chat_api:chat-notificacao-list")
+    resp = api_client.get(url)
+    assert resp.status_code == 200 and resp.json()[0]["lido"] is False
+    notif_id = resp.json()[0]["id"]
+    read_url = reverse("chat_api:chat-notificacao-ler", args=[notif_id])
+    resp2 = api_client.post(read_url)
+    assert resp2.status_code == 200 and resp2.json()["lido"] is True
 
 
 def test_export_channel(api_client: APIClient, admin_user):
