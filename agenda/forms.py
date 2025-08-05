@@ -134,6 +134,13 @@ class BriefingEventoForm(forms.ModelForm):
         ]
 
 
+class BriefingEventoCreateForm(BriefingEventoForm):
+    """Formulário de criação que inclui o evento associado."""
+
+    class Meta(BriefingEventoForm.Meta):
+        fields = ["evento", *BriefingEventoForm.Meta.fields]
+
+
 class ParceriaEventoForm(forms.ModelForm):
     class Meta:
         model = ParceriaEvento
