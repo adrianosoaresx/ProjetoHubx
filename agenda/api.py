@@ -116,7 +116,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             evento=instance.evento,
             usuario=self.request.user,
             acao="parceria_excluida",
-            detalhes={"empresa": str(instance.empresa_id)},
+            detalhes={"parceria": instance.pk, "empresa": str(instance.empresa_id)},
         )
         instance.soft_delete()
 
