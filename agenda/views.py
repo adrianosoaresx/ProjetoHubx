@@ -5,7 +5,11 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Q
 from django.http import (
@@ -34,11 +38,12 @@ from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
 from .forms import (
-    BriefingEventoForm,
     BriefingEventoCreateForm,
+    BriefingEventoForm,
     EventoForm,
     InscricaoEventoForm,
     MaterialDivulgacaoEventoForm,
+    ParceriaEventoForm,
 )
 from .models import (
     BriefingEvento,
@@ -369,8 +374,11 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        user = self.request.user
         qs = MaterialDivulgacaoEvento.objects.select_related("evento")
-        if self.request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
+        if user.user_type != UserType.ROOT:
+            qs = qs.filter(evento__organizacao=user.organizacao)
+        if user.user_type not in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}:
             qs = qs.filter(status="aprovado")
         q = self.request.GET.get("q")
         if q:
@@ -382,6 +390,91 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
+
+
+class ParceriaPermissionMixin(UserPassesTestMixin):
+    def test_func(self) -> bool:  # pragma: no cover - simples
+        return self.request.user.user_type in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.ROOT,
+        }
+
+
+class ParceriaEventoListView(LoginRequiredMixin, ParceriaPermissionMixin, ListView):
+    model = ParceriaEvento
+    template_name = "agenda/parceria_list.html"
+    context_object_name = "parcerias"
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo")
+        if user.user_type != UserType.ROOT:
+            qs = qs.filter(evento__organizacao=user.organizacao)
+        nucleo = self.request.GET.get("nucleo")
+        if nucleo:
+            qs = qs.filter(nucleo_id=nucleo)
+        return qs.order_by("-data_inicio")
+
+
+class ParceriaEventoCreateView(LoginRequiredMixin, ParceriaPermissionMixin, CreateView):
+    model = ParceriaEvento
+    form_class = ParceriaEventoForm
+    template_name = "agenda/parceria_form.html"
+    success_url = reverse_lazy("agenda:parceria_list")
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            form.fields["evento"].queryset = Evento.objects.filter(
+                organizacao=user.organizacao
+            )
+            form.fields["empresa"].queryset = form.fields["empresa"].queryset.filter(
+                organizacao=user.organizacao
+            )
+            form.fields["nucleo"].queryset = form.fields["nucleo"].queryset.filter(
+                organizacao=user.organizacao
+            )
+        return form
+
+    def form_valid(self, form):
+        evento = form.cleaned_data["evento"]
+        user = self.request.user
+        if user.user_type != UserType.ROOT and evento.organizacao != user.organizacao:
+            form.add_error("evento", _("Evento de outra organização"))
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+
+class ParceriaEventoUpdateView(LoginRequiredMixin, ParceriaPermissionMixin, UpdateView):
+    model = ParceriaEvento
+    form_class = ParceriaEventoForm
+    template_name = "agenda/parceria_form.html"
+    success_url = reverse_lazy("agenda:parceria_list")
+
+    def get_queryset(self):
+        qs = ParceriaEvento.objects.all()
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            qs = qs.filter(evento__organizacao=user.organizacao)
+        return qs
+
+    def get_form(self, form_class=None):
+        return ParceriaEventoCreateView.get_form(self, form_class)
+
+
+class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, DeleteView):
+    model = ParceriaEvento
+    template_name = "agenda/parceria_confirm_delete.html"
+    success_url = reverse_lazy("agenda:parceria_list")
+
+    def get_queryset(self):
+        qs = ParceriaEvento.objects.all()
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            qs = qs.filter(evento__organizacao=user.organizacao)
+        return qs
 
 
 class BriefingEventoListView(LoginRequiredMixin, ListView):

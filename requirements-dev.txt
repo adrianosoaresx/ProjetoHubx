@@ -9,3 +9,4 @@ prometheus-client==0.20.0
 bleach==6.2.0
 twilio==9.2.3
 WeasyPrint==61.2
+django-silk==5.1.0

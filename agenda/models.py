@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from io import BytesIO
+import logging
 import uuid
+from io import BytesIO
 
 import qrcode
-import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -16,12 +16,12 @@ from django.core.validators import (
 )
 from django.db import models
 from django.utils import timezone
-
 from django_extensions.db.models import TimeStampedModel
+from simple_history.models import HistoricalRecords
+
 from core.models import SoftDeleteManager, SoftDeleteModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
-from simple_history.models import HistoricalRecords
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +57,6 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         default="pendente",
     )
     presente = models.BooleanField(default=False)
-    avaliacao = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        null=True,
-        blank=True,
-    )
     valor_pago = models.DecimalField(
         max_digits=8,
         decimal_places=2,

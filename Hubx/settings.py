@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "phonenumber_field",
     "channels",
     "simple_history",
+    "silk",
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "dashboard",
@@ -81,6 +82,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "silk.middleware.SilkyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
