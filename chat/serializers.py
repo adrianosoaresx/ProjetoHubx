@@ -102,7 +102,37 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatNotificationSerializer(serializers.ModelSerializer):
+    mensagem_conteudo = serializers.SerializerMethodField()
+    canal_url = serializers.SerializerMethodField()
+    canal_titulo = serializers.CharField(source="mensagem.channel.titulo", read_only=True)
+    mensagem_tipo = serializers.CharField(source="mensagem.tipo", read_only=True)
+    canal_id = serializers.CharField(source="mensagem.channel_id", read_only=True)
+
     class Meta:
         model = ChatNotification
-        fields = ["id", "usuario", "mensagem", "lido", "created"]
+        fields = [
+            "id",
+            "usuario",
+            "mensagem",
+            "mensagem_tipo",
+            "mensagem_conteudo",
+            "canal_id",
+            "canal_titulo",
+            "canal_url",
+            "lido",
+            "created",
+        ]
         read_only_fields = ["id", "created"]
+
+    def get_mensagem_conteudo(self, obj: ChatNotification) -> str:
+        msg = obj.mensagem
+        if msg.tipo == "text":
+            return msg.conteudo
+        return msg.conteudo or (msg.arquivo.url if msg.arquivo else "")
+
+    def get_canal_url(self, obj: ChatNotification) -> str:
+        request = self.context.get("request")
+        url = obj.mensagem.channel.get_absolute_url()
+        if request:
+            return request.build_absolute_uri(url)
+        return url

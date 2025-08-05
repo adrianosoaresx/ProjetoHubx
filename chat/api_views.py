@@ -10,6 +10,9 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.core.files.storage import default_storage
+import mimetypes
 
 from core.permissions import IsModeratorUser
 
@@ -37,6 +40,26 @@ from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
 
 User = get_user_model()
+
+
+class UploadArquivoAPIView(APIView):
+    """Recebe upload de arquivo e retorna URL pública."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        arquivo = request.FILES.get("file")
+        if not arquivo:
+            return Response({"erro": "Arquivo obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
+        path = default_storage.save(f"chat/uploads/{arquivo.name}", arquivo)
+        url = default_storage.url(path)
+        content_type = arquivo.content_type or mimetypes.guess_type(arquivo.name)[0] or ""
+        tipo = "file"
+        if content_type.startswith("image"):
+            tipo = "image"
+        elif content_type.startswith("video"):
+            tipo = "video"
+        return Response({"tipo": tipo, "url": url})
 
 
 class ChatChannelViewSet(viewsets.ModelViewSet):
@@ -122,8 +145,10 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         formato = request.query_params.get("formato", "json")
         inicio = request.query_params.get("inicio")
         fim = request.query_params.get("fim")
-        tipos = request.query_params.get("tipos")
-        tipos_list = tipos.split(",") if tipos else None
+        tipos_list = request.query_params.getlist("tipos")
+        if not tipos_list:
+            tipos = request.query_params.get("tipos")
+            tipos_list = tipos.split(",") if tipos else None
         rel = RelatorioChatExport.objects.create(
             channel=channel,
             formato=formato,
@@ -279,7 +304,7 @@ class ChatNotificationViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return (
             ChatNotification.objects.filter(usuario=self.request.user)
-            .select_related("mensagem", "usuario")
+            .select_related("mensagem", "mensagem__channel", "usuario")
             .order_by("-created")
         )
 
