@@ -39,6 +39,10 @@
             <span id="notif-count" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">0</span>
           </button>
           <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded shadow-lg" role="menu" aria-label="{% trans 'Notificações' %}">
+            <div class="p-2 border-b text-sm space-y-1">
+              <label class="flex items-center gap-1"><input type="checkbox" id="notif-sound" />{% trans 'Som' %}</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="notif-vibrate" />{% trans 'Vibração' %}</label>
+            </div>
             <ul id="notif-list" class="max-h-64 overflow-y-auto text-sm"></ul>
           </div>
         </div>
@@ -149,4 +153,5 @@
       window.getThemePreference = getThemePreference;
     })();
   </script>
+  {% block extra_js %}{% endblock %}
 </body></html>

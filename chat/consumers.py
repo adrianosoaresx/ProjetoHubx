@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+import logging
+import time
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .api import notify_users
 from .models import ChatChannel, ChatMessage, ChatParticipant
 from .services import adicionar_reacao, enviar_mensagem, sinalizar_mensagem
+from .metrics import chat_message_latency_seconds
+
+logger = logging.getLogger(__name__)
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -47,6 +52,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if message_type in {"text", "image", "video", "file"}:
             conteudo = data.get("conteudo", "")
             arquivo = None
+            start = time.monotonic()
             msg = await database_sync_to_async(enviar_mensagem)(self.channel, user, message_type, conteudo, arquivo)
             await database_sync_to_async(notify_users)(self.channel, msg)
             payload = {
@@ -60,6 +66,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "reactions": msg.reactions,
             }
             await self.channel_layer.group_send(self.group_name, payload)
+            duration = time.monotonic() - start
+            chat_message_latency_seconds.observe(duration)
+            logger.info("chat message %s sent in %.4fs", msg.id, duration)
         elif message_type == "reaction":
             msg_id = data.get("mensagem_id")
             emoji = data.get("emoji")

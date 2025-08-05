@@ -4,12 +4,15 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 import time
+import logging
 
 from .models import ChatChannel, ChatMessage, ChatNotification, ChatParticipant
 from .services import adicionar_reacao, enviar_mensagem
-from .metrics import chat_websocket_latency_seconds
+from .metrics import chat_notification_latency_seconds
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 def get_user(pk: int):
@@ -67,7 +70,9 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
                     "created": notif.created.isoformat(),
                 },
             )
-        chat_websocket_latency_seconds.observe(time.monotonic() - start)
+        duration = time.monotonic() - start
+        chat_notification_latency_seconds.observe(duration)
+        logger.info("chat notification %s sent in %.4fs", notif.id, duration)
 
 
 def add_reaction(message: ChatMessage, emoji: str) -> None:
