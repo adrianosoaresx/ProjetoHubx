@@ -36,6 +36,45 @@
         const form = container.querySelector('#chat-form');
         const fileInput = container.querySelector('#file-input');
         const uploadBtn = container.querySelector('#upload-btn');
+        const editModal = document.getElementById('edit-modal');
+        const editInput = editModal ? editModal.querySelector('#edit-input') : null;
+        const editCancel = editModal ? editModal.querySelector('#edit-cancel') : null;
+        const editForm = editModal ? editModal.querySelector('form') : null;
+        let editState = {id:null, div:null, original:''};
+
+        if(editCancel){
+            editCancel.addEventListener('click', ()=> editModal.close());
+        }
+
+        function openEditModal(div,id,content){
+            if(!editModal || !editInput) return;
+            editState = {id, div, original: content};
+            editInput.value = content;
+            editModal.showModal();
+            editInput.focus();
+        }
+
+        if(editForm && editInput){
+            editForm.addEventListener('submit', function(e){
+                e.preventDefault();
+                const novo = editInput.value.trim();
+                if(!novo || novo === editState.original){ editModal.close(); return; }
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${editState.id}/`,{
+                    method:'PATCH',
+                    headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+                    body: JSON.stringify({conteudo: novo})
+                }).then(r=>r.ok?r.json():Promise.reject())
+                  .then(data=>{
+                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions);
+                  })
+                  .finally(()=> editModal.close());
+            });
+            editInput.addEventListener('keydown', function(e){
+                if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+                    editForm.requestSubmit();
+                }
+            });
+        }
 
         function renderReactions(div, reactions){
             const list = div.querySelector('.reactions');
@@ -129,16 +168,7 @@
                 edit.textContent = 'Editar';
                 edit.setAttribute('aria-label','Editar mensagem');
                 edit.addEventListener('click', ()=>{
-                    const novo = prompt('Editar mensagem', conteudo);
-                    if(!novo || novo === conteudo) return;
-                    fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/`,{
-                        method:'PATCH',
-                        headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
-                        body: JSON.stringify({conteudo: novo})
-                    }).then(r=>r.ok?r.json():Promise.reject())
-                      .then(data=>{
-                        renderMessage(data.remetente, data.tipo, data.conteudo, div, data.id, data.pinned_at, data.reactions);
-                      });
+                    openEditModal(div, id, conteudo);
                 });
                 div.appendChild(edit);
             }

@@ -64,6 +64,16 @@
     </form>
   </div>
   <div id="modal"></div>
+  <dialog id="edit-modal" class="p-4 rounded max-w-md w-full">
+    <form method="dialog" class="space-y-2">
+      <label for="edit-input" class="sr-only">{% trans 'Editar mensagem' %}</label>
+      <textarea id="edit-input" class="w-full border rounded p-2" rows="3"></textarea>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="edit-cancel" class="px-3 py-1 border rounded" aria-label="{% trans 'Cancelar edição' %}">{% trans 'Cancelar' %}</button>
+        <button type="submit" id="edit-save" class="px-3 py-1 bg-primary text-white rounded" aria-label="{% trans 'Salvar mensagem editada' %}">{% trans 'Salvar' %}</button>
+      </div>
+    </form>
+  </dialog>
 </main>
 {% endblock %}
 
