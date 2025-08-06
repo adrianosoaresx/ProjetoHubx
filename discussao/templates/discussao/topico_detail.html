@@ -72,6 +72,21 @@
       </form>
     {% endif %}
   </section>
+  <script>
+    (function(){
+      const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(`${scheme}://${window.location.host}/ws/discussao/{{ topico.id }}/`);
+      ws.onmessage = function(e){
+        const data = JSON.parse(e.data);
+        if(data.event === 'nova_resposta'){
+          htmx.ajax('GET', window.location.href, {target:'#lista-comentarios', swap:'innerHTML'});
+        } else if(data.event === 'atualizacao_votos' && data.objeto === 'TopicoDiscussao'){
+          const el = document.getElementById('topic-score');
+          if(el){ el.innerText = data.score; }
+        }
+      };
+    })();
+  </script>
 </article>
 {% endblock %}
 {% endif %}
