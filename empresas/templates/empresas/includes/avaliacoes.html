@@ -1,0 +1,31 @@
+{% load i18n %}
+<div id="avaliacoes">
+  <h2 class="text-lg font-semibold text-neutral-900">{% trans "Avaliações" %}</h2>
+  <p class="text-sm text-neutral-600">
+    {% trans "Média" %}: {{ media_avaliacoes|floatformat:1 }}/5 - {{ avaliacoes|length }} {% trans "avaliações" %}
+  </p>
+  {% if request.user.is_authenticated %}
+  <form hx-post="{% if avaliacao_usuario %}{% url 'empresas:avaliacao_editar' empresa.id %}{% else %}{% url 'empresas:avaliacao_criar' empresa.id %}{% endif %}" hx-target="#avaliacoes" hx-swap="outerHTML" class="flex gap-1 mt-2">
+    {% csrf_token %}
+    {% for _ in '12345' %}
+      <button type="submit" name="nota" value="{{ forloop.counter }}" class="text-yellow-400" aria-label="{% trans 'Avaliar com' %} {{ forloop.counter }} {% trans 'estrelas' %}">
+        <i class="{% if avaliacao_usuario and forloop.counter <= avaliacao_usuario.nota %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+      </button>
+    {% endfor %}
+  </form>
+  {% endif %}
+  {% if avaliacoes %}
+    <ul class="mt-2 space-y-2">
+      {% for avaliacao in avaliacoes %}
+        <li class="border border-neutral-200 rounded p-2">
+          <strong>{{ avaliacao.usuario.get_full_name|default:avaliacao.usuario.email }}</strong> - {{ avaliacao.nota }}/5
+          {% if avaliacao.comentario %}
+            <p class="text-sm">{{ avaliacao.comentario }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-sm text-neutral-500">{% trans "Nenhuma avaliação registrada." %}</p>
+  {% endif %}
+</div>

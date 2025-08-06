@@ -203,8 +203,18 @@ class AvaliacaoCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.usuario = self.request.user
         form.instance.empresa = self.empresa
+        response = super().form_valid(form)
         messages.success(self.request, _("Avaliação registrada com sucesso."))
-        return super().form_valid(form)
+        if self.request.headers.get("HX-Request"):
+            avaliacoes = self.empresa.avaliacoes.filter(deleted=False).select_related("usuario")
+            context = {
+                "empresa": self.empresa,
+                "avaliacoes": avaliacoes,
+                "media_avaliacoes": self.empresa.media_avaliacoes(),
+                "avaliacao_usuario": avaliacoes.filter(usuario=self.request.user).first(),
+            }
+            return render(self.request, "empresas/includes/avaliacoes.html", context)
+        return response
 
     def get_success_url(self):  # type: ignore[override]
         return reverse("empresas:detail", args=[self.empresa.pk])
@@ -220,8 +230,18 @@ class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
         return get_object_or_404(AvaliacaoEmpresa, empresa=self.empresa, usuario=self.request.user)
 
     def form_valid(self, form):
+        response = super().form_valid(form)
         messages.success(self.request, _("Avaliação atualizada com sucesso."))
-        return super().form_valid(form)
+        if self.request.headers.get("HX-Request"):
+            avaliacoes = self.empresa.avaliacoes.filter(deleted=False).select_related("usuario")
+            context = {
+                "empresa": self.empresa,
+                "avaliacoes": avaliacoes,
+                "media_avaliacoes": self.empresa.media_avaliacoes(),
+                "avaliacao_usuario": avaliacoes.filter(usuario=self.request.user).first(),
+            }
+            return render(self.request, "empresas/includes/avaliacoes.html", context)
+        return response
 
     def get_success_url(self):  # type: ignore[override]
         return reverse("empresas:detail", args=[self.empresa.pk])

@@ -68,6 +68,19 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
         if not CNPJ().validate(self.cnpj):
             raise ValidationError({"cnpj": "CNPJ inválido"})
 
+    def get_contato_principal(self):
+        """Retorna o contato principal da empresa.
+
+        Se houver um contato marcado como ``principal=True`` ele é retornado,
+        caso contrário retorna o primeiro contato cadastrado ou ``None`` quando
+        não existirem contatos.
+        """
+
+        contato = self.contatos.filter(principal=True).first()
+        if not contato:
+            contato = self.contatos.first()
+        return contato
+
     # ------------------------------------------------------------------
     # Soft delete
     # ------------------------------------------------------------------

@@ -1,4 +1,7 @@
+import re
+
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
 
@@ -29,10 +32,16 @@ class EmpresaForm(forms.ModelForm):
         self.initial.setdefault("usuario", getattr(self.instance, "usuario", None))
 
     def clean_cnpj(self):
-        cnpj = self.cleaned_data["cnpj"]
+        cnpj = re.sub(r"\D", "", self.cleaned_data["cnpj"])
         if not CNPJ().validate(cnpj):
-            raise forms.ValidationError("CNPJ inválido")
-        return cnpj
+            raise forms.ValidationError(_("CNPJ inválido"))
+        mask = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}"
+        qs = Empresa.objects.filter(cnpj=mask)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError(_("Empresa com este CNPJ já existe."))
+        return mask
 
     def save(self, commit=True):
         instance = super().save(commit=False)
