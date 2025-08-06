@@ -1,0 +1,28 @@
+{% load i18n %}
+<form hx-post="/api/financeiro/aportes/" class="p-4 bg-white rounded shadow max-w-md" aria-live="assertive">
+  {% csrf_token %}
+  <div class="mb-2">
+    <label for="id_centro" class="block text-sm font-medium">{{ _('Centro de Custo') }}</label>
+    <select id="id_centro" name="centro_custo" class="border p-2 w-full">
+      {% for c in centros %}
+      <option value="{{ c.id }}">{{ c.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-2">
+    <label for="id_valor" class="block text-sm font-medium">{{ _('Valor') }}</label>
+    <input id="id_valor" type="number" step="0.01" name="valor" class="border p-2 w-full" required />
+  </div>
+  <div class="mb-2">
+    <span class="block text-sm font-medium">{{ _('Tipo') }}</span>
+    <label class="mr-4"><input type="radio" name="tipo" value="aporte_interno" checked /> {{ _('Interno') }}</label>
+    <label><input type="radio" name="tipo" value="aporte_externo" /> {{ _('Externo') }}</label>
+  </div>
+  <div class="mb-2">
+    <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
+    <textarea id="id_descricao" name="descricao" class="border p-2 w-full"></textarea>
+  </div>
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ _('Registrar') }}</button>
+  <div id="aportes-messages" class="mt-2 text-sm" aria-live="polite"></div>
+</form>
+

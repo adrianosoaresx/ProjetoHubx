@@ -247,7 +247,7 @@ MENSALIDADE_VENCIMENTO_DIA = 10
 
 CELERY_BEAT_SCHEDULE = {
     "notificar_inadimplencia": {
-        "task": "financeiro.tasks.notificar_inadimplencia.notificar_inadimplencia",
+        "task": "financeiro.tasks.inadimplencia.notificar_inadimplencia",
         "schedule": crontab(minute=0, hour=7),
     },
     "revogar_tokens_expirados": {

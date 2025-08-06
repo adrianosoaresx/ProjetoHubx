@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ _('Centros de Custo') }}{% endblock %}
+
+{% block content %}
+<main class="p-4 max-w-4xl mx-auto">
+  <h1 class="text-2xl font-semibold mb-4">{{ _('Centros de Custo') }}</h1>
+  <div class="mb-4">
+    <button id="novo-centro" class="bg-blue-600 text-white px-4 py-2 rounded" hx-get="/financeiro/centros/form/" hx-target="#modal">
+      {{ _('Novo Centro') }}
+    </button>
+  </div>
+  <div id="lista-centros" hx-get="/api/financeiro/centros/" hx-trigger="load" hx-target="this" aria-live="polite"></div>
+  <div id="modal" class="mt-4" aria-live="assertive"></div>
+</main>
+{% endblock %}
+
