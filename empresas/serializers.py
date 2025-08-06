@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, Tag
@@ -15,6 +14,7 @@ class TagSerializer(serializers.ModelSerializer):
 class EmpresaSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)
     usuario_email = serializers.EmailField(source="usuario.email", read_only=True)
+    favoritado = serializers.SerializerMethodField()
 
     class Meta:
         model = Empresa
@@ -32,9 +32,11 @@ class EmpresaSerializer(serializers.ModelSerializer):
             "descricao",
             "palavras_chave",
             "tags",
+            "versao",
+            "favoritado",
             "deleted",
         ]
-        read_only_fields = ["deleted"]
+        read_only_fields = ["deleted", "versao", "favoritado"]
 
     def create(self, validated_data: dict) -> Empresa:
         tags = validated_data.pop("tags", [])
@@ -49,6 +51,12 @@ class EmpresaSerializer(serializers.ModelSerializer):
         if tags is not None:
             instance.tags.set(tags)
         return instance
+
+    def get_favoritado(self, obj: Empresa) -> bool:
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.favoritos.filter(usuario=request.user, deleted=False).exists()
 
 
 class EmpresaChangeLogSerializer(serializers.ModelSerializer):

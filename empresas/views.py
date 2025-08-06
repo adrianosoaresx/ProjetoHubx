@@ -114,6 +114,15 @@ class EmpresaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return redirect(self.success_url)
 
 
+class FavoritoListView(LoginRequiredMixin, ListView):
+    model = Empresa
+    template_name = "empresas/favoritos.html"
+    context_object_name = "empresas"
+
+    def get_queryset(self):
+        return Empresa.objects.filter(favoritos__usuario=self.request.user, favoritos__deleted=False)
+
+
 class TagListView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequiredMixin, ListView):
     model = Tag
     template_name = "empresas/tags_list.html"
