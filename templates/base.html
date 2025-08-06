@@ -54,10 +54,20 @@
   <header class="bg-white shadow">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-primary">HubX</a>
-      <button id="menu-toggle" class="md:hidden text-gray-800">
+      <button
+        id="menu-toggle"
+        class="md:hidden text-gray-800"
+        aria-label="{% trans 'Abrir menu' %}"
+        aria-controls="menu"
+        aria-expanded="false"
+      >
         <i class="fas fa-bars"></i>
       </button>
-      <nav id="menu" class="hidden md:flex flex-col md:flex-row md:items-center gap-4 text-sm">
+      <nav
+        id="menu"
+        class="hidden md:flex flex-col md:flex-row md:items-center gap-4 text-sm"
+        aria-label="{% trans 'Menu principal' %}"
+      >
         {% if user.is_authenticated %}
         <a href="{% url 'accounts:perfil' %}" class="flex items-center hover:text-primary transition" aria-label="{% trans 'Perfil' %}">
           {% if user.avatar %}
@@ -186,6 +196,8 @@
       const menu = document.getElementById('menu');
       if (menuToggle && menu) {
         menuToggle.addEventListener('click', () => {
+          const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+          menuToggle.setAttribute('aria-expanded', String(!expanded));
           menu.classList.toggle('hidden');
         });
       }
