@@ -5,22 +5,12 @@ lógica de busca isolada em um serviço garantimos melhor testabilidade e
 manutenção das views.
 """
 
-from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db import connection
 
 from accounts.models import UserType
 
 from .models import Empresa, EmpresaChangeLog, Tag
-
-FILTRO_CAMPOS_Q = [
-    "nome__icontains",
-    "descricao__icontains",
-    "cnpj__icontains",
-    "municipio__icontains",
-    "estado__icontains",
-    "tipo__icontains",
-    "tags__nome__icontains",
-    "palavras_chave__icontains",
-]
 
 
 def search_empresas(user, params):
@@ -68,12 +58,17 @@ def search_empresas(user, params):
     if tags:
         qs = qs.filter(tags__in=tags)
     if q:
-        palavras_busca = [p.strip() for p in q.split() if p.strip()]
-        for palavra in palavras_busca:
-            q_obj = Q()
-            for campo in FILTRO_CAMPOS_Q:
-                q_obj |= Q(**{campo: palavra})
-            qs = qs.filter(q_obj)
+        if connection.vendor == "postgresql":
+            vector = (
+                SearchVector("nome", weight="A")
+                + SearchVector("descricao", weight="B")
+                + SearchVector("palavras_chave", weight="B")
+                + SearchVector("tags__nome", weight="C")
+            )
+            query = SearchQuery(q)
+            qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gt=0).order_by("-rank")
+        else:
+            qs = qs.filter(search_vector__icontains=q)
     return qs.distinct()
 
 
