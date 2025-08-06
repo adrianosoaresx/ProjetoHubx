@@ -1,0 +1,47 @@
+{% extends "chat/base_chat.html" %}
+{% load i18n %}
+
+{% block chat_content %}
+<h2 class="text-xl font-semibold mb-4">{% trans "Histórico de edições" %}</h2>
+<form method="get" class="mb-4 flex gap-2 items-end">
+  <div>
+    <label for="inicio" class="block text-sm">{% trans "Início" %}</label>
+    <input type="date" name="inicio" id="inicio" value="{{ request.GET.inicio }}" class="border px-2 py-1 rounded" />
+  </div>
+  <div>
+    <label for="fim" class="block text-sm">{% trans "Fim" %}</label>
+    <input type="date" name="fim" id="fim" value="{{ request.GET.fim }}" class="border px-2 py-1 rounded" />
+  </div>
+  <button type="submit" class="px-3 py-1 bg-primary text-white rounded">{% trans "Filtrar" %}</button>
+</form>
+<ul class="space-y-2">
+  {% for log in logs %}
+    <li class="p-2 border rounded">
+      <div class="text-sm text-gray-600">
+        <time datetime="{{ log.created|date:'c' }}">{{ log.created|date:'d/m/Y H:i' }}</time>
+        — {{ log.moderator.username }}
+      </div>
+      <div class="mt-1">
+        {{ log.previous_content|linebreaksbr }}
+      </div>
+    </li>
+  {% empty %}
+    <li>{% trans "Nenhum registro" %}</li>
+  {% endfor %}
+</ul>
+{% if logs.has_other_pages %}
+<div class="mt-4 flex justify-between items-center">
+  {% if logs.has_previous %}
+    <a href="?page={{ logs.previous_page_number }}" class="text-sm">{% trans "Anterior" %}</a>
+  {% else %}
+    <span></span>
+  {% endif %}
+  <span class="text-sm">{{ logs.number }}/{{ logs.paginator.num_pages }}</span>
+  {% if logs.has_next %}
+    <a href="?page={{ logs.next_page_number }}" class="text-sm">{% trans "Próxima" %}</a>
+  {% else %}
+    <span></span>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}Chat | HubX{% endblock %}
 
@@ -15,6 +15,18 @@
 
 {% block extra_js %}
 {{ block.super }}
+<script>
+window.chatTexts = {
+  addReaction: "{% trans 'Adicionar reação' %}",
+  reactWith: "{% trans 'Reagir com' %}",
+  pin: "{% trans 'Fixar' %}",
+  unpin: "{% trans 'Desafixar' %}",
+  pinMessage: "{% trans 'Fixar mensagem' %}",
+  unpinMessage: "{% trans 'Desafixar mensagem' %}",
+  edit: "{% trans 'Editar' %}",
+  uploadError: "{% trans 'Erro no upload' %}"
+};
+</script>
 <script src="{% static 'chat/js/chat_socket.js' %}"></script>
 <script src="{% static 'chat/js/notifications_socket.js' %}"></script>
 {% endblock %}

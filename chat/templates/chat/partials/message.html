@@ -64,6 +64,15 @@
         >
           📌
         </button>
+        <button
+          hx-get="{% url 'chat:historico_edicoes' m.channel_id %}?message={{ m.id }}"
+          hx-target="#modal"
+          class="text-xs text-neutral-600"
+          aria-label="{% trans 'Histórico de edições' %}"
+          type="button"
+        >
+          {% trans 'Histórico' %}
+        </button>
       {% endif %}
       <ul class="reactions flex gap-2 ml-2">
         {% for emoji, count in m.reaction_counts.items %}

@@ -79,6 +79,9 @@
             });
         }
 
+        const texts = window.chatTexts || {};
+        function t(key, fallback){ return texts[key] || fallback; }
+
         function renderReactions(div, reactions, userReactions){
             const list = div.querySelector('.reactions');
             if(!list) return;
@@ -222,20 +225,20 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="Adicionar reação">😊</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="😊" aria-label="Adicionar reação 😊">😊</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></li></ul></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">😊</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="😊" aria-label="${t('reactWith','Reagir com')} 😊">😊</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="😮" aria-label="${t('reactWith','Reagir com')} 😮">😮</button></li></ul></div>`;
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
                 btn.classList.add('pin-toggle');
-                btn.textContent = pinned ? 'Desafixar' : 'Fixar';
-                btn.setAttribute('aria-label', pinned ? 'Desafixar mensagem' : 'Fixar mensagem');
+                btn.textContent = pinned ? t('unpin','Desafixar') : t('pin','Fixar');
+                btn.setAttribute('aria-label', pinned ? t('unpinMessage','Desafixar mensagem') : t('pinMessage','Fixar mensagem'));
                 btn.addEventListener('click', ()=>{
                     const action = div.classList.contains('pinned') ? 'unpin' : 'pin';
                     fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/${action}/`,{method:'POST',headers:{'X-CSRFToken':csrfToken}})
                         .then(r=>r.json()).then(data=>{
                             div.classList.toggle('pinned', !!data.pinned_at);
-                            btn.textContent = data.pinned_at ? 'Desafixar' : 'Fixar';
-                            btn.setAttribute('aria-label', data.pinned_at ? 'Desafixar mensagem' : 'Fixar mensagem');
+                            btn.textContent = data.pinned_at ? t('unpin','Desafixar') : t('pin','Fixar');
+                            btn.setAttribute('aria-label', data.pinned_at ? t('unpinMessage','Desafixar mensagem') : t('pinMessage','Fixar mensagem'));
                         });
                 });
                 div.appendChild(btn);
@@ -243,8 +246,8 @@
             if(id && (remetente === currentUser || isAdmin) && tipo === 'text'){
                 const edit = document.createElement('button');
                 edit.className = 'edit-msg ml-2 text-xs text-blue-600';
-                edit.textContent = 'Editar';
-                edit.setAttribute('aria-label','Editar mensagem');
+                edit.textContent = t('edit','Editar');
+                edit.setAttribute('aria-label', t('edit','Editar mensagem'));
                 edit.addEventListener('click', ()=>{
                     openEditModal(div, id, conteudo);
                 });
@@ -318,7 +321,7 @@
                     scrollToBottom();
                     chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url}));
                 })
-                .catch(()=>{ alert('Erro no upload'); })
+                .catch(()=>{ alert(t('uploadError','Erro no upload')); })
                 .finally(()=>{
                     uploadBtn.disabled = false;
                     spin.remove();
