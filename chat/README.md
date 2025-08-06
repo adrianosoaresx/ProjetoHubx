@@ -106,3 +106,11 @@ Para utilizá‑la, inclua o container com `id="chat-float-container"`
 e um link com `id="chat-link"` na página. O script `static/js/chat_modal.js`
 carrega a lista de usuários e as conversas via requisições assíncronas.
 Usuários não autenticados são redirecionados para a página de login.
+## Busca e histórico
+
+- O template `conversation_detail.html` fornece um formulário com campo de busca, filtros de data e tipo de mensagem. Os resultados são carregados via `fetch` no endpoint `/api/chat/channels/<id>/messages/search/` e exibidos abaixo do campo em lista paginada.
+- O script `static/chat/js/chat_socket.js` implementa scroll infinito consultando `/messages/history?before=<id>` para carregar mensagens anteriores. O endpoint retorna lotes de 20 mensagens ordenadas decrescentemente e informa se há mais dados.
+
+## Acessibilidade
+
+Cada mensagem renderizada em `partials/message.html` inclui um botão de reação com menu acessível via teclado e atributos ARIA. As reações existentes ficam dentro de `<ul class="reactions">`, permitindo que o JavaScript atualize contagens em tempo real.
