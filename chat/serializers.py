@@ -53,6 +53,11 @@ class ChatChannelSerializer(serializers.ModelSerializer):
 class ChatMessageSerializer(serializers.ModelSerializer):
     remetente = serializers.PrimaryKeyRelatedField(read_only=True)
     reactions = serializers.SerializerMethodField()
+    reply_to = serializers.PrimaryKeyRelatedField(
+        queryset=ChatMessage.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = ChatMessage
@@ -63,6 +68,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "tipo",
             "conteudo",
             "arquivo",
+            "reply_to",
             "reactions",
             "pinned_at",
             "hidden_at",
@@ -83,12 +89,14 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         tipo = validated_data.get("tipo", "text")
         conteudo = validated_data.get("conteudo", "")
         arquivo = validated_data.get("arquivo")
+        reply_to = validated_data.get("reply_to")
         return enviar_mensagem(
             canal=channel,
             remetente=remetente,
             tipo=tipo,
             conteudo=conteudo,
             arquivo=arquivo,
+            reply_to=reply_to,
         )
 
     def to_representation(self, instance: ChatMessage) -> dict[str, Any]:
@@ -111,6 +119,9 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
     canal_titulo = serializers.CharField(source="mensagem.channel.titulo", read_only=True)
     mensagem_tipo = serializers.CharField(source="mensagem.tipo", read_only=True)
     canal_id = serializers.CharField(source="mensagem.channel_id", read_only=True)
+    reply_to = serializers.UUIDField(
+        source="mensagem.reply_to_id", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = ChatNotification
@@ -123,6 +134,7 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
             "canal_id",
             "canal_titulo",
             "canal_url",
+            "reply_to",
             "lido",
             "created",
         ]

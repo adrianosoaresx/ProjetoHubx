@@ -57,8 +57,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if message_type in {"text", "image", "video", "file"}:
             conteudo = data.get("conteudo", "")
             arquivo = None
+            reply_to_id = data.get("reply_to")
+            reply_to = None
+            if reply_to_id:
+                try:
+                    reply_to = await database_sync_to_async(ChatMessage.objects.get)(
+                        pk=reply_to_id
+                    )
+                except ChatMessage.DoesNotExist:
+                    reply_to = None
             start = time.monotonic()
-            msg = await database_sync_to_async(enviar_mensagem)(self.channel, user, message_type, conteudo, arquivo)
+            msg = await database_sync_to_async(enviar_mensagem)(
+                self.channel,
+                user,
+                message_type,
+                conteudo,
+                arquivo,
+                reply_to,
+            )
             await database_sync_to_async(notify_users)(self.channel, msg)
             payload = {
                 "type": "chat.message",
@@ -69,6 +85,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "created": msg.created.isoformat(),
                 "reactions": msg.reaction_counts(),
+                "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
             }
             await self.channel_layer.group_send(self.group_name, payload)
             duration = time.monotonic() - start
@@ -127,6 +144,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "created": msg.created.isoformat(),
                     "reactions": msg.reaction_counts(),
                     "hidden_at": msg.hidden_at.isoformat(),
+                    "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
                 }
                 await self.channel_layer.group_send(self.group_name, payload)
 

@@ -74,6 +74,32 @@ def test_consumer_send_file_url(admin_user, coordenador_user):
     asyncio.run(inner())
 
 
+def test_consumer_send_reply(admin_user, coordenador_user):
+    async def inner():
+        canal = await database_sync_to_async(criar_canal)(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=None,
+            titulo="Privado",
+            descricao="",
+            participantes=[coordenador_user],
+        )
+        communicator = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+        await communicator.send_json_to({"tipo": "text", "conteudo": "olá"})
+        first = await communicator.receive_json_from()
+        await communicator.send_json_to(
+            {"tipo": "text", "conteudo": "resposta", "reply_to": first["id"]}
+        )
+        second = await communicator.receive_json_from()
+        assert second["reply_to"] == first["id"]
+        await communicator.disconnect()
+
+    asyncio.run(inner())
+
+
 def test_consumer_rejects_non_participant(admin_user, associado_user):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(

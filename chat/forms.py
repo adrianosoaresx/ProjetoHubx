@@ -51,7 +51,8 @@ class NovaConversaForm(forms.ModelForm):
 class NovaMensagemForm(forms.ModelForm):
     class Meta:
         model = ChatMessage
-        fields = ["tipo", "conteudo", "arquivo"]
+        fields = ["tipo", "conteudo", "arquivo", "reply_to"]
+        widgets = {"reply_to": forms.HiddenInput()}
 
     def clean(self):
         cleaned = super().clean()

@@ -79,6 +79,7 @@ def enviar_mensagem(
     tipo: str,
     conteudo: str = "",
     arquivo=None,
+    reply_to: ChatMessage | None = None,
 ) -> ChatMessage:
     """Salva uma nova mensagem no canal.
 
@@ -96,12 +97,15 @@ def enviar_mensagem(
             validator(conteudo)
         except ValidationError as exc:  # pragma: no cover - defensive
             raise ValueError("Arquivo obrigatório ou URL de arquivo inválida") from exc
+    if reply_to and reply_to.channel_id != canal.id:
+        raise ValueError("Mensagem de referência deve ser do mesmo canal")
     msg = ChatMessage.objects.create(
         channel=canal,
         remetente=remetente,
         tipo=tipo,
         conteudo=conteudo,
         arquivo=arquivo,
+        reply_to=reply_to,
     )
     return msg
 

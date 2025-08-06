@@ -253,7 +253,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         channel_id = self.kwargs["channel_pk"]
         return (
             ChatMessage.objects.filter(channel_id=channel_id)
-            .select_related("remetente")
+            .select_related("remetente", "reply_to", "reply_to__remetente")
             .prefetch_related("lido_por")
             .order_by("created")
         )
@@ -398,6 +398,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                     "reactions": counts,
                     "actor": request.user.username,
                     "user_reactions": user_emojis,
+                    "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
                 },
             )
         data = self.get_serializer(msg).data

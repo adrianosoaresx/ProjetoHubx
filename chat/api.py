@@ -33,12 +33,16 @@ def create_message(**kwargs):
     tipo = kwargs.get("tipo", "text")
     conteudo = kwargs.get("conteudo", "")
     arquivo = kwargs.get("arquivo")
+    reply_to = kwargs.get("reply_to")
+    if not reply_to and kwargs.get("reply_to_id"):
+        reply_to = ChatMessage.objects.get(pk=kwargs["reply_to_id"])
     return enviar_mensagem(
         canal=channel,
         remetente=remetente,
         tipo=tipo,
         conteudo=conteudo,
         arquivo=arquivo,
+        reply_to=reply_to,
     )
 
 
@@ -67,6 +71,7 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
                     "conteudo": message.conteudo,
                     "tipo": message.tipo,
                     "resumo": resumo,
+                    "reply_to": str(message.reply_to_id) if message.reply_to_id else None,
                     "created": notif.created.isoformat(),
                 },
             )
