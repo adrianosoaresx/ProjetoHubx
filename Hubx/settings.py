@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "channels",
     "simple_history",
     "silk",
+    "storages",
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
     "dashboard",
@@ -171,6 +172,23 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 USER_MEDIA_MAX_SIZE = 50 * 1024 * 1024  # 50MB
 USER_MEDIA_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".mp4", ".webm"]
+
+if os.getenv("AWS_STORAGE_BUCKET_NAME"):
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-1")
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
+else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+
+FEED_IMAGE_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif"]
+FEED_PDF_ALLOWED_EXTS = [".pdf"]
+FEED_VIDEO_ALLOWED_EXTS = [".mp4", ".webm"]
+FEED_IMAGE_MAX_SIZE = 5 * 1024 * 1024
+FEED_PDF_MAX_SIZE = 10 * 1024 * 1024
+FEED_VIDEO_MAX_SIZE = 20 * 1024 * 1024
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
