@@ -126,3 +126,8 @@ def test_get_metrics_permission_denied(cliente_user, admin_user):
 def test_get_metrics_invalid_period(admin_user):
     with pytest.raises(ValueError):
         DashboardMetricsService.get_metrics(admin_user, periodo="xxx")
+
+
+def test_get_metrics_invalid_date(admin_user):
+    with pytest.raises(ValueError):
+        DashboardMetricsService.get_metrics(admin_user, inicio="bad-date")

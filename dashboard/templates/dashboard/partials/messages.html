@@ -1,0 +1,8 @@
+{% load i18n %}
+{% if messages %}
+<div id="messages" hx-swap-oob="true" class="mb-4">
+  {% for message in messages %}
+    <div class="bg-red-100 text-red-800 p-2 rounded" role="alert">{{ message }}</div>
+  {% endfor %}
+</div>
+{% endif %}

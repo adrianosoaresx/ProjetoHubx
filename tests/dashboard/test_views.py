@@ -50,7 +50,6 @@ def test_view_mixins():
     assert issubclass(ClienteDashboardView, ClienteRequiredMixin)
 
 
-
 def test_root_dashboard_view(client, root_user):
     client.force_login(root_user)
     resp = client.get(reverse("dashboard:root"))
@@ -118,6 +117,12 @@ def test_base_view_accepts_params(monkeypatch, client, admin_user):
     assert resp.context["chart_data"] == [1]
 
 
+def test_invalid_date_returns_400(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.get(reverse("dashboard:admin"), {"data_inicio": "xx"})
+    assert resp.status_code == 400
+
+
 def test_export_view_csv(monkeypatch, client, admin_user):
     client.force_login(admin_user)
 
@@ -166,9 +171,12 @@ def test_forbidden_dashboard_views(client, cliente_user):
 
 def test_config_save_and_apply(client, admin_user, gerente_user):
     client.force_login(admin_user)
-    url = reverse("dashboard:config-create") + "?periodo=mensal&escopo=organizacao&organizacao_id=" + str(
-        admin_user.organizacao_id
-    ) + "&metricas=num_users"
+    url = (
+        reverse("dashboard:config-create")
+        + "?periodo=mensal&escopo=organizacao&organizacao_id="
+        + str(admin_user.organizacao_id)
+        + "&metricas=num_users"
+    )
     resp = client.post(url, {"nome": "cfg", "publico": True})
     assert resp.status_code == 302
     cfg = DashboardConfig.objects.get(nome="cfg")
@@ -196,4 +204,3 @@ def test_filter_save_and_apply(client, admin_user, gerente_user):
     resp = client.get(reverse("dashboard:filter-apply", args=[filtro.pk]))
     assert resp.status_code == 302
     assert "metricas=num_users" in resp["Location"]
-

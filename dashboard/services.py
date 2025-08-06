@@ -169,6 +169,16 @@ class DashboardMetricsService:
         valid_periodos = {"mensal", "trimestral", "semestral", "anual"}
         if periodo not in valid_periodos:
             raise ValueError("Período inválido")
+        if isinstance(inicio, str):
+            try:
+                inicio = datetime.fromisoformat(inicio)
+            except ValueError:
+                raise ValueError("data_inicio inválida")
+        if isinstance(fim, str):
+            try:
+                fim = datetime.fromisoformat(fim)
+            except ValueError:
+                raise ValueError("data_fim inválida")
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
         cache_filters = {

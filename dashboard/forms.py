@@ -27,7 +27,8 @@ class DashboardFilterForm(forms.ModelForm):
     def save(self, user, filtros_data, commit: bool = True):
         instance: DashboardFilter = super().save(commit=False)
         instance.user = user
-        instance.filtros = filtros_data
+        allowed = {"metricas", "organizacao_id", "nucleo_id", "evento_id", "data_inicio", "data_fim"}
+        instance.filtros = {k: v for k, v in filtros_data.items() if k in allowed}
         if commit:
             instance.save()
         return instance
