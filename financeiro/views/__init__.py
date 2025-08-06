@@ -28,7 +28,12 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroTaskLog
+from ..models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroTaskLog,
+    LancamentoFinanceiro,
+)
 from ..permissions import (
     IsAssociadoReadOnly,
     IsCoordenador,
@@ -284,6 +289,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
             data.append(
                 {
                     "id": str(lanc.id),
+                    "centro": lanc.centro_custo.nome,
                     "conta": lanc.conta_associado.user.email if lanc.conta_associado else None,
                     "status": lanc.status,
                     "valor": float(lanc.valor),

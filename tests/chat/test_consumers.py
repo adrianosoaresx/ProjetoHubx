@@ -1,10 +1,10 @@
+import asyncio
 import os
 
-import os
 import pytest
+from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
-from asgiref.sync import sync_to_async
 
 from chat.models import ChatMessage, ChatNotification
 from chat.services import criar_canal, enviar_mensagem
@@ -18,9 +18,6 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture(autouse=True)
 def in_memory_channel_layer(settings):
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
-
-
-import asyncio
 
 
 def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user):
