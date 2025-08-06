@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Empresas Favoritas" %}{% endblock %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 py-10">
+  <header class="mb-4">
+    <h1 class="text-2xl font-bold text-neutral-900">{% translate "Empresas Favoritas" %}</h1>
+  </header>
+  <ul class="space-y-4" id="lista-favoritos">
+    {% for empresa in empresas %}
+      <li id="empresa-{{ empresa.id }}" class="p-4 bg-white rounded shadow">
+        <h2 class="text-lg font-semibold">{{ empresa.nome }}</h2>
+        <button
+          class="text-sm text-red-600 hover:underline"
+          hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+          hx-target="#empresa-{{ empresa.id }}"
+          hx-swap="outerHTML"
+        >{% translate "Remover" %}</button>
+      </li>
+    {% empty %}
+      <li class="text-neutral-600">{% translate "Nenhuma empresa favorita." %}</li>
+    {% endfor %}
+  </ul>
+</main>
+{% endblock %}

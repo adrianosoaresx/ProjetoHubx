@@ -21,9 +21,11 @@ def _store_old_data(sender, instance, **kwargs):
         old = sender.objects.get(pk=instance.pk)
         instance._old_data = {f: getattr(old, f) for f in LOG_FIELDS if f != "tags"}
         instance._old_tags = list(old.tags.values_list("nome", flat=True))
+        instance.versao = old.versao + 1
     else:
         instance._old_data = {f: None for f in LOG_FIELDS if f != "tags"}
         instance._old_tags = []
+        instance.versao = 1
 
 
 @receiver(post_save, sender=Empresa)

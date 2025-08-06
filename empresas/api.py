@@ -7,7 +7,8 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
+from .metrics import empresas_favoritos_total
+from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
 from .serializers import (
     AvaliacaoEmpresaSerializer,
     EmpresaChangeLogSerializer,
@@ -65,6 +66,30 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
             return Response(status=403)
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def favoritos(self, request):
+        empresas = self.get_queryset().filter(favoritos__usuario=request.user, favoritos__deleted=False)
+        serializer = self.get_serializer(empresas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def favoritar(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if request.user.organizacao != empresa.organizacao:
+            return Response(status=403)
+        FavoritoEmpresa.objects.get_or_create(usuario=request.user, empresa=empresa)
+        empresas_favoritos_total.labels(acao="adicionar").inc()
+        return Response(status=status.HTTP_201_CREATED)
+
+    @favoritar.mapping.delete
+    def desfavoritar(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        fav = FavoritoEmpresa.objects.filter(usuario=request.user, empresa=empresa, deleted=False).first()
+        if fav:
+            fav.soft_delete()
+        empresas_favoritos_total.labels(acao="remover").inc()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def avaliacoes(self, request, pk: str | None = None):

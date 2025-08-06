@@ -48,6 +48,7 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
     # Armazena texto concatenado para busca full-text simplificada.
     search_vector = models.TextField(blank=True, editable=False)
+    versao = models.PositiveIntegerField(default=1)
 
     objects = models.Manager()
     ativos = SoftDeleteManager()
@@ -155,3 +156,22 @@ class AvaliacaoEmpresa(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.empresa.nome} - {self.usuario.email}"
+
+
+class FavoritoEmpresa(TimeStampedModel, SoftDeleteModel):
+    """Registra empresas favoritas de cada usuário."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="favoritos_empresa")
+    empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="favoritos")
+
+    objects = models.Manager()
+    ativos = SoftDeleteManager()
+
+    class Meta:
+        unique_together = ("usuario", "empresa")
+        verbose_name = "Favorito da Empresa"
+        verbose_name_plural = "Favoritos das Empresas"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.usuario_id} -> {self.empresa_id}"

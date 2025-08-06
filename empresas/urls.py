@@ -24,4 +24,5 @@ urlpatterns = [
     path("contatos/<int:pk>/editar/", views.editar_contato, name="contato_editar"),
     path("contatos/<int:pk>/remover/", views.remover_contato, name="contato_remover"),
     path("<uuid:pk>/historico/", views.EmpresaChangeLogListView.as_view(), name="historico"),
+    path("favoritas/", views.FavoritoListView.as_view(), name="favoritas"),
 ]
