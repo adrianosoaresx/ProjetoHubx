@@ -6,6 +6,8 @@ pytest>=7.0
 pre-commit>=3.6
 pytest-benchmark>=4.0
 prometheus-client==0.20.0
+django-redis==5.4.0
+django-prometheus==2.3.1
 bleach==6.2.0
 twilio==9.2.3
 WeasyPrint==61.2
@@ -15,4 +17,5 @@ django-storages==1.14.2
 pytest-axe==1.1.6
 axe-core-python==0.1.0
 playwright==1.54.0
+psycopg2-binary==2.9.9
 

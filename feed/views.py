@@ -3,6 +3,9 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.cache import cache
+from django.db import connection
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -53,6 +56,33 @@ class FeedListView(LoginRequiredMixin, ListView):
     context_object_name = "posts"
     paginate_by = 15
 
+    cache_timeout = 60
+
+    def _cache_key(self, request) -> str:
+        params = request.GET
+        keys = [
+            str(request.user.pk),
+            *(params.get(k, "") for k in [
+                "tipo_feed",
+                "organizacao",
+                "nucleo",
+                "evento",
+                "tags",
+                "page",
+                "q",
+            ]),
+        ]
+        return "feed:list:" + ":".join(keys)
+
+    def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        key = self._cache_key(request)
+        cached = cache.get(key)
+        if cached:
+            return cached
+        response = super().dispatch(request, *args, **kwargs)
+        cache.set(key, response, self.cache_timeout)
+        return response
+
     def get_queryset(self):
         tipo_feed = self.request.GET.get("tipo_feed", "global")
         q = self.request.GET.get("q", "").strip()
@@ -84,7 +114,27 @@ class FeedListView(LoginRequiredMixin, ListView):
                 qs = qs.filter(organizacao=user.organizacao)
 
         if q:
-            qs = qs.filter(conteudo__icontains=q)
+            or_terms = [t.strip() for t in q.split("|") if t.strip()]
+            if connection.vendor == "postgresql":
+                query_parts = [" & ".join(term.split()) for term in or_terms]
+                query = SearchQuery(" | ".join(query_parts), config="portuguese")
+                vector = (
+                    SearchVector("conteudo", config="portuguese")
+                    + SearchVector("tags__nome", config="portuguese")
+                )
+                qs = (
+                    qs.annotate(search=vector, rank=SearchRank(vector, query))
+                    .filter(search=query)
+                    .order_by("-rank")
+                )
+            else:  # fallback para sqlite
+                or_query = Q()
+                for term in or_terms:
+                    sub = Q()
+                    for part in term.split():
+                        sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part)
+                    or_query |= sub
+                qs = qs.filter(or_query)
         tags_param = self.request.GET.get("tags")
         if tags_param:
             tag_names = [t.strip() for t in tags_param.split(",") if t.strip()]

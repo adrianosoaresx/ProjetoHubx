@@ -13,6 +13,10 @@ Endpoints under `/api/feed/` provide CRUD access to posts, comments, likes and m
 - `tags`: comma separated tag ids or names
 - `date_from` / `date_to`: ISO dates limiting creation date
 - `q`: full text search in content or tag names
+- `page`: pagination page
+
+Listings are cached for 60 seconds per usuário e parâmetros de busca. Qualquer criação,
+edição ou remoção de post limpa o cache automaticamente.
 
 Deleting a post performs a *soft delete* (`deleted=True`). Media URLs are exposed via
 `image_url`, `pdf_url` and `video_url` fields.
@@ -28,6 +32,19 @@ Uploads são enviados ao S3 com tentativas de reenvio em caso de falha.
 
 Posts contendo palavras proibidas são marcados para moderação e só aparecem
 após aprovação.
+
+### Busca
+
+O parâmetro `q` aceita múltiplos termos. Os termos separados por espaço usam o
+operador lógico **AND**. Para buscas com **OR**, separe termos com `|`. Em
+ambientes PostgreSQL a busca usa `SearchVector` com rank e ordenação por
+relevância.
+
+### Notificações
+
+Após a criação de um post, uma tarefa Celery envia notificações para usuários da
+mesma organização. Métricas Prometheus acompanham a quantidade de posts e
+notificações enviadas.
 
 ## Comments and Likes
 

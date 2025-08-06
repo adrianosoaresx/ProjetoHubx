@@ -87,6 +87,7 @@ urlpatterns = [
         "api/agenda/",
         include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
+    path("", include("django_prometheus.urls")),
 ]
 
 # Arquivos de mídia em desenvolvimento

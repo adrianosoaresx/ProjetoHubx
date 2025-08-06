@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
