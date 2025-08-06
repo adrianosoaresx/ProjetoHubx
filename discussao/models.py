@@ -5,12 +5,22 @@ import uuid
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
 from model_utils.models import TimeStampedModel
 
 from core.models import SoftDeleteManager, SoftDeleteModel
+
+
+class SearchVectorField(models.TextField):
+    def db_type(self, connection):  # type: ignore[override]
+        if connection.vendor == "postgresql":
+            from django.contrib.postgres.search import SearchVectorField as PGSearchVectorField
+
+            return PGSearchVectorField().db_type(connection)
+        return "text"
+
 
 # Create your models here.
 
@@ -109,6 +119,7 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
     )
     interacoes = GenericRelation("InteracaoDiscussao")
+    search_vector = SearchVectorField(blank=True, null=True, editable=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -116,7 +127,15 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.titulo)
+        if connection.vendor != "postgresql":
+            self.search_vector = f"{self.titulo} {self.conteudo}"
         super().save(*args, **kwargs)
+        if connection.vendor == "postgresql":
+            from django.contrib.postgres.search import SearchVector
+
+            type(self).objects.filter(pk=self.pk).update(
+                search_vector=SearchVector("titulo", weight="A") + SearchVector("conteudo", weight="B")
+            )
 
     class Meta:
         ordering = ["-created"]
@@ -161,6 +180,7 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     editado_em = models.DateTimeField(null=True, blank=True)
     motivo_edicao = models.TextField(blank=True, default="")
     interacoes = GenericRelation("InteracaoDiscussao")
+    search_vector = SearchVectorField(blank=True, null=True, editable=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -175,6 +195,17 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         self.editado = True
         self.editado_em = timezone.now()
         self.save()
+
+    def save(self, *args, **kwargs):  # type: ignore[override]
+        if connection.vendor != "postgresql":
+            self.search_vector = self.conteudo
+        super().save(*args, **kwargs)
+        if connection.vendor == "postgresql":
+            from django.contrib.postgres.search import SearchVector
+
+            type(self).objects.filter(pk=self.pk).update(
+                search_vector=SearchVector("conteudo")
+            )
 
     @property
     def score(self) -> int:

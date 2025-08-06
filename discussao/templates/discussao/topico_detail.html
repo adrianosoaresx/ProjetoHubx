@@ -7,7 +7,7 @@
 {% load i18n %}
 {% block title %}{{ topico.titulo }} | HubX{% endblock %}
 {% block content %}
-<article class="max-w-3xl mx-auto px-4 py-10">
+<article id="topico-container" class="max-w-3xl mx-auto px-4 py-10">
   <header class="mb-6 border-b border-neutral-200 pb-4">
     <h1 class="text-2xl font-bold text-neutral-900 mb-2">
       {{ topico.titulo }}
@@ -17,7 +17,7 @@
     </h1>
     <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:"d/m/Y H:i" }}</p>
     {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
-    <form method="post" action="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" class="mt-2">
+    <form method="post" hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-container" hx-swap="outerHTML" class="mt-2">
       {% csrf_token %}
       {% if topico.resolvido %}
       <button type="submit" class="text-sm text-green-600">{% trans "Desmarcar resolução" %}</button>
