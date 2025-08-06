@@ -37,16 +37,9 @@ from .forms import (
     EmailLoginForm,
     InformacoesPessoaisForm,
     MediaForm,
-    NotificacoesForm,
     RedesSociaisForm,
 )
-from .models import (
-    AccountToken,
-    NotificationSettings,
-    SecurityEvent,
-    UserMedia,
-    cpf_validator,
-)
+from .models import AccountToken, SecurityEvent, UserMedia, cpf_validator
 
 User = get_user_model()
 
@@ -111,18 +104,8 @@ def perfil_seguranca(request):
 
 @login_required
 def perfil_notificacoes(request):
-    settings_obj, _ = NotificationSettings.objects.get_or_create(user=request.user)
-
-    if request.method == "POST":
-        form = NotificacoesForm(request.POST, instance=settings_obj)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Preferências de notificação salvas.")
-            return redirect("accounts:notificacoes")
-    else:
-        form = NotificacoesForm(instance=settings_obj)
-
-    return render(request, "perfil/notificacoes.html", {"form": form})
+    """Redireciona para a aba de preferências centralizada em ConfiguracaoConta."""
+    return redirect("configuracoes")
 
 
 @login_required

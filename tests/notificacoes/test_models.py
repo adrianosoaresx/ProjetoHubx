@@ -1,12 +1,11 @@
 import pytest
 
 from accounts.factories import UserFactory
+from configuracoes.models import ConfiguracaoConta
 from notificacoes.models import (
-    Frequencia,
     NotificationLog,
     NotificationStatus,
     NotificationTemplate,
-    UserNotificationPreference,
 )
 
 pytestmark = pytest.mark.django_db
@@ -15,12 +14,6 @@ pytestmark = pytest.mark.django_db
 def test_template_str() -> None:
     template = NotificationTemplate.objects.create(codigo="welcome", assunto="Oi", corpo="{{ nome }}", canal="email")
     assert str(template) == "welcome"
-
-
-def test_preference_str() -> None:
-    user = UserFactory()
-    pref = UserNotificationPreference.objects.create(user=user)
-    assert f"{user}" in str(pref)
 
 
 def test_log_str() -> None:
@@ -35,11 +28,9 @@ def test_log_str() -> None:
     assert template.codigo in str(log)
 
 
-def test_preferencias_criadas_automaticamente() -> None:
+def test_configuracao_criada_automaticamente() -> None:
     user = UserFactory()
-    pref = UserNotificationPreference.objects.get(user=user)
-    assert pref.frequencia_email == Frequencia.IMEDIATA
-    assert pref.frequencia_whatsapp == Frequencia.IMEDIATA
+    assert ConfiguracaoConta.objects.filter(user=user).exists()
 
 
 def test_log_nao_pode_ser_deletado():

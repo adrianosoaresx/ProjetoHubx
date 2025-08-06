@@ -34,16 +34,6 @@ def test_configuracao_unica_por_usuario(admin_user):
         ConfiguracaoConta.objects.create(user=admin_user)
 
 
-def test_sync_preferencias(admin_user):
-    config = admin_user.configuracao
-    config.receber_notificacoes_email = False
-    config.receber_notificacoes_whatsapp = True
-    config.save()
-    pref = admin_user.preferencias_notificacoes.get()
-    assert pref.email is False
-    assert pref.whatsapp is True
-
-
 def test_timestamps_e_soft_delete(admin_user):
     config = admin_user.configuracao
     assert config.created is not None

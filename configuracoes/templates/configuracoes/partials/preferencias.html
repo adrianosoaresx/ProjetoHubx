@@ -48,7 +48,7 @@
   <div>
     <label for="{{ preferencias_form.idioma.id_for_label }}" class="block text-sm font-medium">{% trans 'Idioma' %}</label>
     {{ preferencias_form.idioma|add_class:'form-select mt-1'|attr:'tabindex:0' }}
-    <p class="text-xs text-gray-500">{% trans 'Idioma atual:' %} {{ LANGUAGE_CODE }}</p>
+    <p class="text-xs text-gray-500">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
   </div>
   <div>
     <label for="{{ preferencias_form.tema.id_for_label }}" class="block text-sm font-medium">{% trans 'Tema' %}</label>

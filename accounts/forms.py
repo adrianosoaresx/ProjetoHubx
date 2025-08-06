@@ -8,7 +8,7 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .models import AccountToken, NotificationSettings, UserMedia, cpf_validator
+from .models import AccountToken, UserMedia, cpf_validator
 from .tasks import send_confirmation_email
 
 User = get_user_model()
@@ -184,14 +184,6 @@ class RedesSociaisForm(forms.ModelForm):
             except json.JSONDecodeError as exc:
                 raise forms.ValidationError("JSON inválido") from exc
         return data
-
-
-class NotificacoesForm(forms.ModelForm):
-    class Meta:
-        model = NotificationSettings
-        exclude = ("user",)
-
-
 class MediaForm(forms.ModelForm):
     tags_field = forms.CharField(
         required=False,

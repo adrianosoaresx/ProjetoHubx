@@ -6,7 +6,9 @@ import sentry_sdk
 from celery import shared_task  # type: ignore
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
+from configuracoes.models import ConfiguracaoConta
 from .models import Canal, NotificationLog, NotificationStatus
 from .services import metrics
 from .services.email_client import send_email
@@ -64,3 +66,64 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
                 "erro": log.erro,
             },
         )
+
+
+def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora):
+    for canal in canais:
+        logs = NotificationLog.objects.filter(
+            user=config.user, canal=canal, status=NotificationStatus.PENDENTE
+        )
+        if not logs.exists():
+            continue
+        body = "\n".join(log.template.corpo for log in logs)
+        subject = _("Resumo de notificações")
+        if canal == Canal.EMAIL:
+            send_email(config.user, subject, body)
+        elif canal == Canal.WHATSAPP:
+            send_whatsapp(config.user, body)
+        logs.update(status=NotificationStatus.ENVIADA, data_envio=agora)
+
+
+@shared_task
+def enviar_relatorios_diarios() -> None:
+    agora = timezone.localtime()
+    hora = agora.time().replace(second=0, microsecond=0)
+    configs = ConfiguracaoConta.objects.select_related("user").filter(
+        hora_notificacao_diaria=hora
+    )
+    for config in configs:
+        canais: list[str] = []
+        if (
+            config.receber_notificacoes_email
+            and config.frequencia_notificacoes_email == "diaria"
+        ):
+            canais.append(Canal.EMAIL)
+        if (
+            config.receber_notificacoes_whatsapp
+            and config.frequencia_notificacoes_whatsapp == "diaria"
+        ):
+            canais.append(Canal.WHATSAPP)
+        _enviar_resumo(config, canais, agora)
+
+
+@shared_task
+def enviar_relatorios_semanais() -> None:
+    agora = timezone.localtime()
+    hora = agora.time().replace(second=0, microsecond=0)
+    weekday = agora.weekday()
+    configs = ConfiguracaoConta.objects.select_related("user").filter(
+        dia_semana_notificacao=weekday, hora_notificacao_semanal=hora
+    )
+    for config in configs:
+        canais: list[str] = []
+        if (
+            config.receber_notificacoes_email
+            and config.frequencia_notificacoes_email == "semanal"
+        ):
+            canais.append(Canal.EMAIL)
+        if (
+            config.receber_notificacoes_whatsapp
+            and config.frequencia_notificacoes_whatsapp == "semanal"
+        ):
+            canais.append(Canal.WHATSAPP)
+        _enviar_resumo(config, canais, agora)

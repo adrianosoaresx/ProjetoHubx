@@ -21,13 +21,14 @@ def test_enviar_notificacao_async_sucesso(settings, monkeypatch) -> None:
 
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
+    before = metrics.notificacoes_enviadas_total.labels(canal="email")._value.get()
     enviar_notificacao_async("Oi", "C", str(log.id))
 
     assert called.get("count") == 1
     log.refresh_from_db()
     assert log.status == NotificationStatus.ENVIADA
     assert log.data_envio is not None
-    assert metrics.notificacoes_enviadas_total.labels(canal="email")._value.get() == 1
+    assert metrics.notificacoes_enviadas_total.labels(canal="email")._value.get() == before + 1
 
 
 def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
@@ -41,13 +42,17 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
 
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
+    before_fail = metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
     with pytest.raises(RuntimeError):
         enviar_notificacao_async("Oi", "C", str(log.id))
 
     log.refresh_from_db()
     assert log.status == NotificationStatus.FALHA
     assert log.erro == "erro"
-    assert metrics.notificacoes_falhadas_total.labels(canal="email")._value.get() == 1
+    assert (
+        metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
+        == before_fail + 1
+    )
 
 
 def test_task_configuracao():

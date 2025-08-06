@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
-from .models import NotificationLog, NotificationTemplate, UserNotificationPreference
+from .models import NotificationLog, NotificationTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +34,6 @@ class NotificationTemplateAdmin(admin.ModelAdmin):
         if "delete_selected" in actions:
             del actions["delete_selected"]
         return actions
-
-
-@admin.register(UserNotificationPreference)
-class UserNotificationPreferenceAdmin(admin.ModelAdmin):
-    list_display = ("user", "email", "push", "whatsapp")
-    search_fields = ("user__email",)
-
 
 @admin.register(NotificationLog)
 class NotificationLogAdmin(admin.ModelAdmin):

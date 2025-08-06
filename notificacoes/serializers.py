@@ -2,22 +2,13 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import NotificationLog, NotificationTemplate, UserNotificationPreference
+from .models import NotificationLog, NotificationTemplate
 
 
 class NotificationTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationTemplate
         fields = ["id", "codigo", "assunto", "corpo", "canal", "ativo"]
-
-
-class UserNotificationPreferenceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserNotificationPreference
-        fields = ["id", "email", "push", "whatsapp"]
-        read_only_fields = ["id"]
-
-
 class NotificationLogSerializer(serializers.ModelSerializer):
     template_codigo = serializers.CharField(source="template.codigo", read_only=True)
 

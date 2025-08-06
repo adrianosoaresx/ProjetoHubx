@@ -6,6 +6,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
+from configuracoes.views import ConfiguracoesView
+
 urlpatterns = [
     # Django admin
     path("admin/", admin.site.urls),
@@ -29,6 +31,7 @@ urlpatterns = [
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
+    path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("select2/", include("django_select2.urls")),
     # APIs REST (subcaminhos específicos)

@@ -12,14 +12,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
-from .forms import NotificationTemplateForm, UserNotificationPreferenceForm
-from .models import (
-    Canal,
-    NotificationLog,
-    NotificationStatus,
-    NotificationTemplate,
-    UserNotificationPreference,
-)
+from .forms import NotificationTemplateForm
+from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -101,19 +95,6 @@ def list_logs(request):
     )
     return render(request, template_name, context)
 
-
-@login_required
-def editar_preferencias(request):
-    pref, _ = UserNotificationPreference.objects.get_or_create(user=request.user)
-    if request.method == "POST":
-        form = UserNotificationPreferenceForm(request.POST, instance=pref)
-        if form.is_valid():
-            form.save()
-            messages.success(request, _("Preferências salvas com sucesso."))
-            return redirect("notificacoes:editar_preferencias")
-    else:
-        form = UserNotificationPreferenceForm(instance=pref)
-    return render(request, "notificacoes/preferencias.html", {"form": form})
 @login_required
 @permission_required("notificacoes.delete_notificationtemplate", raise_exception=True)
 def delete_template(request, codigo: str):

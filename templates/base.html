@@ -6,18 +6,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
-    (function() {
-      const cookieTheme = (document.cookie.match(/(?:^|; )tema=([^;]+)/) || [])[1];
-      const themePref = localStorage.getItem('tema') || cookieTheme || 'automatico';
-      localStorage.setItem('tema', themePref);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = themePref === 'automatico' ? (prefersDark ? 'escuro' : 'claro') : themePref;
+    (function () {
+      let theme = localStorage.getItem('tema');
+      if (!theme) {
+        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
+        theme = match ? match[1] : null;
+      }
+      if (!theme || theme === 'automatico') {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+      }
       document.documentElement.classList.toggle('dark', theme === 'escuro');
 
-      const cookieLang = (document.cookie.match(/(?:^|; )django_language=([^;]+)/) || [])[1];
-      const langPref = localStorage.getItem('idioma') || cookieLang || '{{ LANGUAGE_CODE }}';
-      localStorage.setItem('idioma', langPref);
-      document.documentElement.setAttribute('lang', langPref);
+      const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
+      if (langMatch) {
+        document.documentElement.setAttribute('lang', langMatch[1]);
+      }
     })();
   </script>
   <title>{% block title %}HubX{% endblock %}</title>
