@@ -3,9 +3,27 @@
   <h2 class="text-xl font-semibold mb-4">{% trans "Notificações Recentes" %}</h2>
   <ul class="space-y-2">
     {% for log in notificacoes %}
-    <li class="p-4 bg-white rounded-lg shadow flex justify-between">
+    <li
+      id="notification-{{ log.id }}"
+      class="p-4 bg-white rounded-lg shadow flex justify-between items-center"
+    >
       <span>{{ log.template.assunto }}</span>
-      <time datetime="{{ log.data_envio|date:'c' }}" class="text-sm text-neutral-600">{{ log.data_envio|date:'d/m/Y H:i' }}</time>
+      <div class="flex items-center gap-2">
+        <time
+          datetime="{{ log.data_envio|date:'c' }}"
+          class="text-sm text-neutral-600"
+          >{{ log.data_envio|date:'d/m/Y H:i' }}</time
+        >
+        <button
+          hx-patch="{% url 'notificacoes_api:log-detail' log.id %}"
+          hx-target="#notification-{{ log.id }}"
+          hx-swap="outerHTML"
+          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+          class="text-sm text-blue-600 hover:underline"
+        >
+          {% trans "Marcar como lida" %}
+        </button>
+      </div>
     </li>
     {% empty %}
     <li class="p-4 bg-white rounded-lg shadow text-neutral-500">{% trans "Nenhuma notificação." %}</li>

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
-from rest_framework import permissions, status, viewsets
+from django.utils.translation import gettext_lazy as _
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,7 +23,7 @@ class NotificationTemplateViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser]
 
 
-class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
+class NotificationLogViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationLogSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -44,6 +45,12 @@ class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
         if fim:
             qs = qs.filter(data_envio__date__lte=fim)
         return qs
+
+    def partial_update(self, request, *args, **kwargs):
+        if request.data.get("status") != NotificationStatus.LIDA:
+            return Response({"detail": _("Status inválido")}, status=status.HTTP_400_BAD_REQUEST)
+        super().partial_update(request, *args, **kwargs)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
