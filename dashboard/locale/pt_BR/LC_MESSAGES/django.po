@@ -1,0 +1,20 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pt_BR\n"
+
+#: templates/dashboard/export_pdf.html:5 templates/dashboard/export_pdf.html:13
+msgid "Métricas do Dashboard"
+msgstr "Métricas do Dashboard"
+
+#: templates/dashboard/export_pdf.html:16
+msgid "Métrica"
+msgstr "Métrica"
+
+#: templates/dashboard/export_pdf.html:16
+msgid "Total"
+msgstr "Total"
+
+#: templates/dashboard/export_pdf.html:16
+msgid "Variação (%)"
+msgstr "Variação (%)"

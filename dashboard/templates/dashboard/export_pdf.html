@@ -1,8 +1,9 @@
 <!DOCTYPE html>
+{% load i18n %}
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <title>Métricas do Dashboard</title>
+  <title>{% trans "Métricas do Dashboard" %}</title>
   <style>
     body { font-family: sans-serif; }
     table { width: 100%; border-collapse: collapse; }
@@ -10,10 +11,10 @@
   </style>
 </head>
 <body>
-  <h1>Métricas do Dashboard</h1>
+  <h1>{% trans "Métricas do Dashboard" %}</h1>
   <table>
     <thead>
-      <tr><th>Métrica</th><th>Total</th><th>Variação (%)</th></tr>
+      <tr><th>{% trans "Métrica" %}</th><th>{% trans "Total" %}</th><th>{% trans "Variação (%)" %}</th></tr>
     </thead>
     <tbody>
     {% for key, data in metrics.items %}
