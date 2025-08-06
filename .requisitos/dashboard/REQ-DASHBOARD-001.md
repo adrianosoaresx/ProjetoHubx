@@ -41,10 +41,15 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
   - Prioridade: Média  
   - Critérios de Aceite: Percentual calculado conforme fórmula definida.  
 
-- **RF‑04**  
-  - Descrição: Redirecionamento inteligente conforme tipo de usuário (root, admin etc.).  
-  - Prioridade: Alta  
+- **RF‑04**
+  - Descrição: Redirecionamento inteligente conforme tipo de usuário (root, admin etc.).
+  - Prioridade: Alta
   - Critérios de Aceite: Usuário redirecionado corretamente ao acessar `/dashboard`.
+
+- **RF‑05**
+  - Descrição: Exibir métricas de inscrições confirmadas e lançamentos financeiros pendentes.
+  - Prioridade: Média
+  - Critérios de Aceite: Valores refletem dados da Agenda e do Financeiro.
 
 
 ## 4. Requisitos Não‑Funcionais
