@@ -154,6 +154,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+@method_decorator(cache_page(60), name="list")
 class RespostaViewSet(viewsets.ModelViewSet):
     queryset = RespostaDiscussao.objects.select_related("autor", "topico").all()
     serializer_class = RespostaDiscussaoSerializer
