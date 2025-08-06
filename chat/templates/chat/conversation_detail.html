@@ -38,6 +38,23 @@
       </div>
     </header>
 
+    <form id="search-form" data-channel="{{ conversation.id }}" class="mb-4 flex flex-wrap items-end gap-2" aria-label="{% trans 'Buscar mensagens' %}">
+      <label for="search-q" class="sr-only">{% trans 'Buscar mensagens' %}</label>
+      <input type="search" id="search-q" name="q" class="flex-1 border rounded p-2" placeholder="{% trans 'Buscar' %}" />
+      <input type="date" name="desde" class="border rounded p-2" />
+      <input type="date" name="ate" class="border rounded p-2" />
+      <select name="tipo" class="border rounded p-2">
+        <option value="">{% trans 'Todos' %}</option>
+        <option value="text">{% trans 'Texto' %}</option>
+        <option value="image">{% trans 'Imagem' %}</option>
+        <option value="video">{% trans 'Vídeo' %}</option>
+        <option value="file">{% trans 'Arquivo' %}</option>
+      </select>
+      <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
+    </form>
+    <p id="search-feedback" class="text-sm text-neutral-500 mb-2 hidden"></p>
+    <div id="search-results" class="mb-4 space-y-2"></div>
+
     {% if pinned_messages %}
       <section id="pinned" class="mb-4 space-y-2" aria-label="{% trans 'Mensagens fixadas' %}">
         <h3 class="flex items-center gap-1 text-sm font-semibold text-neutral-600"><span>📌</span>{% trans 'Mensagens fixadas' %}</h3>
@@ -82,6 +99,62 @@
 <script>
   document.addEventListener('DOMContentLoaded', function(){
     if(window.HubXChatRoom){HubXChatRoom.init(document.getElementById('chat-container'));}
+    const searchForm = document.getElementById('search-form');
+    const results = document.getElementById('search-results');
+    const feedback = document.getElementById('search-feedback');
+    let nextUrl = null;
+    function render(data, append){
+      if(!append){ results.innerHTML=''; }
+      if(data.results.length === 0 && !append){
+        feedback.textContent = '{% trans "Nenhum resultado encontrado." %}';
+        feedback.classList.remove('hidden');
+        nextUrl = null;
+        return;
+      }
+      feedback.classList.add('hidden');
+      const ul = append ? results.querySelector('ul') : document.createElement('ul');
+      if(!append){ ul.className = 'divide-y'; }
+      data.results.forEach(m=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<button type="button" class="w-full text-left p-2 hover:bg-neutral-100" data-id="${m.id}"><span class="font-semibold">${m.remetente}</span> <time class="text-xs text-neutral-500">${new Date(m.created).toLocaleString()}</time> - ${m.conteudo.substring(0,80)}</button>`;
+        ul.appendChild(li);
+      });
+      if(!append){ results.appendChild(ul); }
+      if(data.next){
+        nextUrl = data.next;
+        const more = document.createElement('button');
+        more.id = 'search-more';
+        more.className = 'text-blue-600 hover:underline mt-2';
+        more.textContent = '{% trans "Carregar mais" %}';
+        results.appendChild(more);
+      }else{
+        nextUrl = null;
+      }
+    }
+    searchForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const params = new URLSearchParams(new FormData(searchForm));
+      fetch(`/api/chat/channels/${searchForm.dataset.channel}/messages/search/?${params.toString()}`)
+        .then(r=>r.json())
+        .then(data=>render(data,false));
+    });
+    results.addEventListener('click', function(e){
+      const btn = e.target.closest('button[data-id]');
+      if(btn){
+        const id = btn.dataset.id;
+        const msg = document.querySelector(`[data-message-id="${id}"], [data-id="${id}"]`);
+        if(msg){
+          msg.classList.add('bg-yellow-100');
+          msg.scrollIntoView({behavior:'smooth', block:'center'});
+          setTimeout(()=>msg.classList.remove('bg-yellow-100'),2000);
+        }
+      } else if(e.target.id === 'search-more' && nextUrl){
+        fetch(nextUrl).then(r=>r.json()).then(data=>{
+          e.target.remove();
+          render(data,true);
+        });
+      }
+    });
   });
 </script>
 {% endblock %}

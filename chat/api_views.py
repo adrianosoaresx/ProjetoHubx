@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import mimetypes
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.core.files.storage import default_storage
 from django.db import connection, models
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -11,21 +17,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.core.files.storage import default_storage
-import mimetypes
-from django.contrib.postgres.search import SearchQuery, SearchVector
-
-from core.permissions import IsModeratorUser
-
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 
 from .api import add_reaction, remove_reaction
 from .models import (
     ChatChannel,
     ChatMessage,
-    ChatModerationLog,
     ChatMessageReaction,
+    ChatModerationLog,
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
@@ -43,7 +41,7 @@ from .serializers import (
 )
 from .services import sinalizar_mensagem
 from .tasks import exportar_historico_chat
-from .throttles import UploadRateThrottle, FlagRateThrottle
+from .throttles import FlagRateThrottle, UploadRateThrottle
 
 User = get_user_model()
 
@@ -186,26 +184,28 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         fim = request.query_params.get("fim")
         qs = channel.messages.select_related("remetente").order_by("-created")
         if before:
-            try:
-                ref_msg = channel.messages.get(pk=before)
-                qs = qs.filter(created__lt=ref_msg.created)
-            except ChatMessage.DoesNotExist:
-                pass
-        else:
-            if inicio:
-                dt = parse_datetime(inicio)
-                if dt:
-                    qs = qs.filter(created__gte=dt)
-            if fim:
-                dt = parse_datetime(fim)
-                if dt:
-                    qs = qs.filter(created__lte=dt)
+            dt = parse_datetime(before)
+            if dt:
+                qs = qs.filter(created__lt=dt)
+            else:
+                try:
+                    ref_msg = channel.messages.get(pk=before)
+                    qs = qs.filter(created__lt=ref_msg.created)
+                except ChatMessage.DoesNotExist:
+                    pass
+        if inicio and not before:
+            dt = parse_datetime(inicio)
+            if dt:
+                qs = qs.filter(created__gte=dt)
+        if fim and not before:
+            dt = parse_datetime(fim)
+            if dt:
+                qs = qs.filter(created__lte=dt)
         limit = ChatMessagePagination.page_size + 1
         items = list(qs[:limit])
         has_more = len(items) == limit
         if has_more:
             items = items[:-1]
-        items.reverse()
         serializer = ChatMessageSerializer(items, many=True, context={"request": request})
         data = []
         for obj, item in zip(items, serializer.data):
