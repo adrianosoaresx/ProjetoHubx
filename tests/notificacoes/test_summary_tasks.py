@@ -15,16 +15,17 @@ from notificacoes.tasks import enviar_relatorios_diarios, enviar_relatorios_sema
 pytestmark = pytest.mark.django_db
 
 
-def _criar_logs(user, canal, quantidade=2):
-    template = NotificationTemplate.objects.create(
-        codigo="t", assunto="a", corpo="msg", canal=canal
+def _criar_logs(user, canal, quantidade=2, offset_minutes=0):
+    template, _ = NotificationTemplate.objects.get_or_create(
+        codigo="t", defaults={"assunto": "a", "corpo": "msg", "canal": canal}
     )
+    base_time = timezone.now() + timezone.timedelta(minutes=offset_minutes)
     for i in range(quantidade):
         NotificationLog.objects.create(
             user=user,
             template=template,
             canal=canal,
-            created=timezone.now() + timezone.timedelta(seconds=i),
+            created=base_time + timezone.timedelta(seconds=i),
         )
 
 
@@ -45,6 +46,23 @@ def test_relatorio_diario_cria_historico(settings):
     assert all(
         log.status == NotificationStatus.ENVIADA
         for log in NotificationLog.objects.filter(user=user)
+    )
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+def test_relatorio_diario_nao_duplicado(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    user = UserFactory()
+    config = user.configuracao
+    config.frequencia_notificacoes_email = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    _criar_logs(user, Canal.EMAIL)
+    enviar_relatorios_diarios()
+    _criar_logs(user, Canal.EMAIL, offset_minutes=1)
+    enviar_relatorios_diarios()
+    assert (
+        HistoricoNotificacao.objects.filter(user=user, canal=Canal.EMAIL).count() == 1
     )
 
 
