@@ -206,3 +206,41 @@ def test_permissoes_edicao(api_client, gerente_user, nucleado_user, admin_user):
     api_client.force_authenticate(user=gerente_user)
     resp = api_client.delete(url)
     assert resp.status_code == status.HTTP_204_NO_CONTENT
+
+
+def test_restaurar_empresa(api_client, gerente_user):
+    empresa = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Del",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+        deleted=True,
+    )
+    api_client.force_authenticate(user=gerente_user)
+    url = reverse("empresas_api:empresa-restaurar", args=[empresa.id])
+    resp = api_client.post(url)
+    assert resp.status_code == status.HTTP_200_OK
+    empresa.refresh_from_db()
+    assert empresa.deleted is False
+    EmpresaChangeLog.objects.get(empresa=empresa, campo_alterado="deleted", valor_antigo="True", valor_novo="False")
+
+
+def test_purgar_empresa(api_client, gerente_user, admin_user):
+    empresa = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Del",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+        deleted=True,
+    )
+    api_client.force_authenticate(user=admin_user)
+    url = reverse("empresas_api:empresa-purgar", args=[empresa.id])
+    resp = api_client.delete(url)
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    assert not Empresa.objects.filter(id=empresa.id).exists()
