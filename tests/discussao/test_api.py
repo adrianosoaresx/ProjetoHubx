@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from django.urls import reverse
 from freezegun import freeze_time
@@ -86,11 +88,43 @@ def test_filtro_por_tags(api_client, categoria, associado_user):
     tag1 = Tag.objects.create(nome="django")
     tag2 = Tag.objects.create(nome="backend")
     topico1 = create_topico(categoria, associado_user, title="T1")
-    topico1.tags.add(tag1)
+    topico1.tags.add(tag1, tag2)
     topico2 = create_topico(categoria, associado_user, title="T2")
-    topico2.tags.add(tag2)
+    topico2.tags.add(tag1)
     api_client.force_authenticate(user=associado_user)
-    url = reverse("discussao_api:topico-list") + "?tags=django"
+    url = reverse("discussao_api:topico-list") + "?tags=django,backend"
     resp = api_client.get(url)
     ids = [t["id"] for t in resp.data]
     assert topico1.id in ids and topico2.id not in ids
+
+
+def test_busca_e_tags(api_client, categoria, associado_user):
+    tag1 = Tag.objects.create(nome="django")
+    tag2 = Tag.objects.create(nome="backend")
+    topico = create_topico(categoria, associado_user, title="Django ORM")
+    topico.tags.add(tag1, tag2)
+    RespostaDiscussao.objects.create(topico=topico, autor=associado_user, conteudo="uso do ORM")
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("discussao_api:topico-list") + "?search=ORM&tags=django,backend"
+    resp = api_client.get(url)
+    ids = [t["id"] for t in resp.data]
+    assert topico.id in ids
+
+
+def test_notificar_nova_resposta_task(api_client, categoria, associado_user):
+    topico = create_topico(categoria, associado_user)
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("discussao_api:resposta-list")
+    with patch("discussao.tasks.notificar_nova_resposta.delay") as mock_task:
+        api_client.post(url, {"topico": topico.id, "conteudo": "oi"})
+    mock_task.assert_called_once()
+
+
+def test_notificar_melhor_resposta_task(api_client, categoria, associado_user):
+    topico = create_topico(categoria, associado_user)
+    resposta = RespostaDiscussao.objects.create(topico=topico, autor=associado_user, conteudo="r")
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("discussao_api:topico-marcar-resolvido", args=[topico.pk])
+    with patch("discussao.tasks.notificar_melhor_resposta.delay") as mock_task:
+        api_client.post(url, {"resposta_id": resposta.id})
+    mock_task.assert_called_once_with(resposta.id)

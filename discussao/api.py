@@ -2,9 +2,13 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from django.db import transaction
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.db import connection, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -19,14 +23,17 @@ from .serializers import (
     TagSerializer,
     TopicoDiscussaoSerializer,
 )
+from .tasks import notificar_melhor_resposta, notificar_nova_resposta
 
 
+@method_decorator(cache_page(60), name="list")
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
 
 
+@method_decorator(cache_page(60), name="list")
 class TopicoViewSet(viewsets.ModelViewSet):
     queryset = (
         TopicoDiscussao.objects.select_related("categoria", "autor", "melhor_resposta")
@@ -41,7 +48,23 @@ class TopicoViewSet(viewsets.ModelViewSet):
         tags_param = self.request.query_params.get("tags")
         if tags_param:
             names = [t.strip() for t in tags_param.split(",") if t.strip()]
-            qs = qs.filter(tags__nome__in=names).distinct()
+            for name in names:
+                qs = qs.filter(tags__nome=name)
+            qs = qs.distinct()
+        search = self.request.query_params.get("search")
+        if search:
+            if connection.vendor == "postgresql":
+                vector = SearchVector("titulo", "conteudo", "respostas__conteudo")
+                query = SearchQuery(search)
+                qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gt=0).order_by(
+                    "-rank"
+                )
+            else:
+                qs = qs.filter(
+                    Q(titulo__icontains=search)
+                    | Q(conteudo__icontains=search)
+                    | Q(respostas__conteudo__icontains=search)
+                ).distinct()
         return qs
 
     def perform_create(self, serializer):
@@ -77,6 +100,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
             topico.melhor_resposta = resposta
             topico.resolvido = True
             topico.save(update_fields=["melhor_resposta", "resolvido"])
+        notificar_melhor_resposta.delay(resposta.id)
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -126,11 +150,32 @@ class RespostaViewSet(viewsets.ModelViewSet):
     serializer_class = RespostaDiscussaoSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        tags_param = self.request.query_params.get("tags")
+        if tags_param:
+            names = [t.strip() for t in tags_param.split(",") if t.strip()]
+            for name in names:
+                qs = qs.filter(topico__tags__nome=name)
+            qs = qs.distinct()
+        search = self.request.query_params.get("search")
+        if search:
+            if connection.vendor == "postgresql":
+                vector = SearchVector("conteudo")
+                query = SearchQuery(search)
+                qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gt=0).order_by(
+                    "-rank"
+                )
+            else:
+                qs = qs.filter(conteudo__icontains=search)
+        return qs
+
     def perform_create(self, serializer):
         topico = serializer.validated_data["topico"]
         if topico.fechado:
             raise PermissionDenied("Tópico fechado para novas respostas.")
-        serializer.save(autor=self.request.user)
+        resposta = serializer.save(autor=self.request.user)
+        notificar_nova_resposta.delay(resposta.id)
 
     def perform_update(self, serializer):
         if not self._can_edit(serializer.instance):

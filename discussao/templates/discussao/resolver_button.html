@@ -1,0 +1,13 @@
+{% load i18n %}
+{% if topico.resolvido %}
+  <form hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-resolver" hx-swap="outerHTML" hx-indicator="#resolver-indicator" hx-on:afterRequest="document.getElementById('resolved-badge').classList.toggle('hidden')">
+    {% csrf_token %}
+    <button type="submit" class="text-sm text-green-600" aria-label="{% trans 'Desmarcar resolução' %}">{% trans "Desmarcar resolução" %}</button>
+  </form>
+{% else %}
+  <form hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-resolver" hx-swap="outerHTML" hx-indicator="#resolver-indicator" hx-on:afterRequest="document.getElementById('resolved-badge').classList.toggle('hidden')">
+    {% csrf_token %}
+    <button type="submit" class="text-sm text-green-600" aria-label="{% trans 'Marcar como resolvido' %}">{% trans "Marcar como resolvido" %}</button>
+  </form>
+{% endif %}
+<span id="resolver-indicator" class="htmx-indicator text-xs">{% trans "Carregando..." %}</span>

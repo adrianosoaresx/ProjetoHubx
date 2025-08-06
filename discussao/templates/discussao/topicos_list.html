@@ -5,7 +5,7 @@
       <a href="{% url 'discussao:topico_detalhe' categoria.slug topico.slug %}" class="text-primary-600 hover:underline">{{ topico.titulo }}</a>
       <div class="mt-1 space-x-1">
         {% for tag in topico.tags.all %}
-        <a href="?tag={{ tag.nome }}" class="text-xs bg-neutral-100 px-2 py-0.5 rounded">{{ tag.nome }}</a>
+        <a hx-get="?tags={{ tag.nome }}" hx-target="#lista-topicos" hx-push-url="true" class="text-xs bg-neutral-100 px-2 py-0.5 rounded">{{ tag.nome }}</a>
         {% endfor %}
       </div>
     </td>
@@ -29,13 +29,16 @@
 {% block content %}
 <div class="max-w-6xl mx-auto px-4 py-10">
   <h1 class="text-2xl font-bold text-neutral-900 mb-6">{{ categoria.nome }}</h1>
-  <div class="mb-4 flex items-center gap-3">
-    <select name="ordenacao" id="ordenacao" class="form-select" hx-get="?" hx-target="#lista-topicos" hx-include="closest div">
+  <form id="filtros" class="mb-4 flex items-center gap-3" hx-get="?" hx-target="#lista-topicos" hx-push-url="true" hx-indicator="#lista-topicos-indicator" hx-trigger="change, keyup delay:500ms">
+    <input type="text" name="search" value="{{ request.GET.search }}" placeholder="{% trans 'Buscar' %}" class="form-input" />
+    <input type="text" name="tags" value="{{ tags|default:'' }}" placeholder="{% trans 'Tags (separadas por vírgula)' %}" class="form-input" />
+    <select name="ordenacao" class="form-select">
       <option value="recentes" {% if ordenacao == 'recentes' %}selected{% endif %}>{% trans "Mais recentes" %}</option>
       <option value="comentados" {% if ordenacao == 'comentados' %}selected{% endif %}>{% trans "Mais comentados" %}</option>
     </select>
     <a href="{% url 'discussao:topico_criar' categoria.slug %}" class="ml-auto bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl">{% trans "Novo T\u00f3pico" %}</a>
-  </div>
+    <div id="lista-topicos-indicator" class="htmx-indicator text-sm">{% trans "Carregando..." %}</div>
+  </form>
   <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
     <table class="min-w-full divide-y divide-neutral-200 text-sm">
       <thead class="bg-neutral-50">

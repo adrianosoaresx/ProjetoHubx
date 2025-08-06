@@ -5,7 +5,9 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.paginator import Paginator
+from django.db import connection
 from django.db.models import Count, Max, Q
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -32,6 +34,7 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .tasks import notificar_melhor_resposta, notificar_nova_resposta
 
 
 class CategoriaListView(LoginRequiredMixin, ListView):
@@ -151,25 +154,46 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 last_activity=Max("respostas__created"),
             )
         )
-        tag = self.request.GET.get("tag")
-        if tag:
-            qs = qs.filter(tags__nome=tag)
-        query = self.request.GET.get("q")
-        if query:
-            qs = qs.filter(
-                Q(titulo__icontains=query) | Q(conteudo__icontains=query) | Q(respostas__conteudo__icontains=query)
-            ).distinct()
-        if ordenacao == "comentados":
-            qs = qs.order_by("-num_comentarios")
+        tags_param = self.request.GET.get("tags")
+        if tags_param:
+            names = [t.strip() for t in tags_param.split(",") if t.strip()]
+            for name in names:
+                qs = qs.filter(tags__nome=name)
+            qs = qs.distinct()
+        search = self.request.GET.get("search") or self.request.GET.get("q")
+        if search:
+            if connection.vendor == "postgresql":
+                vector = SearchVector("titulo", "conteudo", "respostas__conteudo")
+                query = SearchQuery(search)
+                qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gt=0).order_by(
+                    "-rank"
+                )
+            else:
+                qs = qs.filter(
+                    Q(titulo__icontains=search)
+                    | Q(conteudo__icontains=search)
+                    | Q(respostas__conteudo__icontains=search)
+                ).distinct()
         else:
-            qs = qs.order_by("-created")
+            if ordenacao == "comentados":
+                qs = qs.order_by("-num_comentarios")
+            else:
+                qs = qs.order_by("-created")
         return qs
+
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+        if request.headers.get("Hx-Request"):
+            context["partial"] = True
+            return render(request, "discussao/topicos_list.html", context)
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categoria"] = self.categoria
         context["ordenacao"] = self.request.GET.get("ordenacao", "recentes")
-        context["tag"] = self.request.GET.get("tag")
+        context["tags"] = self.request.GET.get("tags")
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
@@ -304,6 +328,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         form.instance.autor = self.request.user
         form.instance.topico = self.topico
         response = super().form_valid(form)
+        notificar_nova_resposta.delay(self.object.id)
         if self.request.headers.get("Hx-Request"):
             context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
@@ -408,6 +433,7 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             topico.melhor_resposta = resposta
             topico.resolvido = True
             topico.save(update_fields=["melhor_resposta", "resolvido"])
+            notificar_melhor_resposta.delay(resposta.id)
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         elif topico.resolvido:
             topico.melhor_resposta = None
@@ -418,6 +444,8 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             topico.resolvido = True
             topico.save(update_fields=["resolvido"])
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
+        if request.headers.get("Hx-Request"):
+            return render(request, "discussao/resolver_button.html", {"topico": topico})
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,

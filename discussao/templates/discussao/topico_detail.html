@@ -11,20 +11,13 @@
   <header class="mb-6 border-b border-neutral-200 pb-4">
     <h1 class="text-2xl font-bold text-neutral-900 mb-2">
       {{ topico.titulo }}
-      {% if topico.resolvido %}
-      <span class="ml-2 px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">{% trans "Resolvido" %}</span>
-      {% endif %}
+      <span id="resolved-badge" class="ml-2 px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded {% if not topico.resolvido %}hidden{% endif %}">{% trans "Resolvido" %}</span>
     </h1>
     <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:"d/m/Y H:i" }}</p>
     {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
-    <form method="post" action="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" class="mt-2">
-      {% csrf_token %}
-      {% if topico.resolvido %}
-      <button type="submit" class="text-sm text-green-600">{% trans "Desmarcar resolução" %}</button>
-      {% else %}
-      <button type="submit" class="text-sm text-green-600">{% trans "Marcar como resolvido" %}</button>
-      {% endif %}
-    </form>
+    <div id="topico-resolver" class="mt-2">
+      {% include 'discussao/resolver_button.html' with topico=topico %}
+    </div>
     {% endif %}
     <div class="flex items-center space-x-1 mt-2">
       <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('topic-score').innerText = event.detail.xhr.responseJSON.score">&#9650;</button>
