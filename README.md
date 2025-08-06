@@ -16,6 +16,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
 - Serviço central de notificações assíncronas
+- Automação de inadimplências e API para lançamentos financeiros
 
 ### Limitações de Design
 

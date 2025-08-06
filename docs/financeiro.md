@@ -62,9 +62,10 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`POST /api/financeiro/importar-pagamentos/confirmar/`|Financeiro/Admin|Confirma importação assíncrona|
 |`POST /api/financeiro/importar-pagamentos/reprocessar/<token>/`|Financeiro/Admin|Reprocessa linhas corrigidas|
 |`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado (CSV/XLSX)|
+|`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
+|`PATCH /api/financeiro/lancamentos/<id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
 |`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências (CSV/XLSX)|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
-|`PATCH /api/financeiro/lancamentos/<id>/quitar/`|Financeiro/Admin|Marca lançamento como quitado|
 
 A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`, `data_lancamento`, `status` e pelo menos uma das colunas `conta_associado_id` ou `email`.
 ### Permissões

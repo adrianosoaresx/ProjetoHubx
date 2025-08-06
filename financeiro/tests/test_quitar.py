@@ -41,8 +41,8 @@ def test_quitar_lancamento(api_client):
         data_lancamento=timezone.now(),
         status=LancamentoFinanceiro.Status.PENDENTE,
     )
-    url = reverse("financeiro_api:financeiro-quitar", args=[lanc.id])
-    resp = api_client.patch(url)
+    url = reverse("financeiro_api:lancamento-detail", args=[lanc.id])
+    resp = api_client.patch(url, {"status": "pago"})
     assert resp.status_code == 200
     lanc.refresh_from_db()
     centro.refresh_from_db()

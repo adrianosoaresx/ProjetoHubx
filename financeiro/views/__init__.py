@@ -9,8 +9,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.files.storage import default_storage
-from django.db import transaction
-from django.db.models import F
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -47,7 +45,6 @@ from ..serializers import (
     ImportarPagamentosPreviewSerializer,
 )
 from ..services.cobrancas import _nucleos_do_usuario
-from ..services.distribuicao import repassar_receita_ingresso
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
@@ -347,27 +344,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
         lancamento = serializer.save()
         return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
 
-    @action(
-        detail=True,
-        methods=["patch"],
-        url_path="quitar",
-        permission_classes=[IsFinanceiroOrAdmin, IsNotRoot],
-    )
-    def quitar(self, request, pk=None):
-        lancamento = get_object_or_404(self._lancamentos_base(), pk=pk)
-        if lancamento.status == LancamentoFinanceiro.Status.PAGO:
-            return Response({"detail": _("Lançamento já quitado")}, status=400)
-        with transaction.atomic():
-            lancamento.status = LancamentoFinanceiro.Status.PAGO
-            lancamento.save(update_fields=["status"])
-            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
-            if lancamento.conta_associado_id:
-                ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
-                    saldo=F("saldo") + lancamento.valor
-                )
-            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
-                repassar_receita_ingresso(lancamento)
-        return Response({"detail": _("Lançamento quitado")})
 
 
 def _is_financeiro_or_admin(user) -> bool:

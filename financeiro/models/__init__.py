@@ -130,6 +130,10 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
                 fields=["centro_custo", "conta_associado", "tipo", "valor", "data_lancamento"],
                 name="idx_lanc_duplicidade",
             ),
+            models.Index(
+                fields=["centro_custo", "conta_associado", "status", "data_vencimento"],
+                name="idx_lanc_centro_conta_status_venc",
+            ),
         ]
 
     def __str__(self) -> str:

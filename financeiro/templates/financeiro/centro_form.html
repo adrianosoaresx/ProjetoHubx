@@ -1,0 +1,18 @@
+{% load i18n %}
+<form hx-post="/api/financeiro/centros/" hx-target="#lista-centros" class="p-4 bg-white rounded shadow max-w-md" aria-live="assertive">
+  {% csrf_token %}
+  <div class="mb-2">
+    <label for="id_nome" class="block text-sm font-medium">{{ _('Nome') }}</label>
+    <input id="id_nome" name="nome" class="border p-2 w-full" required />
+  </div>
+  <div class="mb-2">
+    <label for="id_tipo" class="block text-sm font-medium">{{ _('Tipo') }}</label>
+    <select id="id_tipo" name="tipo" class="border p-2 w-full">
+      <option value="organizacao">{{ _('Organização') }}</option>
+      <option value="nucleo">{{ _('Núcleo') }}</option>
+      <option value="evento">{{ _('Evento') }}</option>
+    </select>
+  </div>
+  <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
+</form>
+
