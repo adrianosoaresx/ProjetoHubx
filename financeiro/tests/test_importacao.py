@@ -1,5 +1,6 @@
 import csv
 import uuid
+from decimal import Decimal
 from io import BytesIO, StringIO
 
 import pytest
@@ -261,3 +262,33 @@ def test_negative_value_invalid(api_client, user):
     url = reverse("financeiro_api:financeiro-importar-pagamentos")
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 400
+
+
+def test_negative_value_despesa_valid(api_client, user, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    rows = [
+        [
+            str(centro.id),
+            str(conta.id),
+            "despesa",
+            "-15",
+            timezone.now().isoformat(),
+            timezone.now().isoformat(),
+            "pago",
+        ]
+    ]
+    csv_bytes = make_csv(rows)
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 201
+    token = resp.data["id"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    resp = api_client.post(confirm_url, {"id": token})
+    assert resp.status_code == 202
+    lanc = LancamentoFinanceiro.objects.get()
+    assert lanc.tipo == "despesa"
+    assert lanc.valor == Decimal("-15")

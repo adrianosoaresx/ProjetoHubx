@@ -84,10 +84,43 @@ def test_serializer_vencimento_anterior_lancamento_error():
 def test_financeirolog_str():
     user = UserFactory(email="log@example.com")
     log = FinanceiroLog.objects.create(
-        usuario=user,
-        acao=FinanceiroLog.Acao.IMPORTAR,
-        dados_anteriores={},
-        dados_novos={}
+        usuario=user, acao=FinanceiroLog.Acao.IMPORTAR, dados_anteriores={}, dados_novos={}
     )
     assert "Importar Pagamentos" in str(log)
     assert "log@example.com" in str(log)
+
+
+def test_lancamento_despesa_negativo():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
+    user = UserFactory()
+    conta = ContaAssociado.objects.create(user=user)
+    serializer = LancamentoFinanceiroSerializer(
+        data={
+            "centro_custo": str(centro.id),
+            "conta_associado": str(conta.id),
+            "tipo": LancamentoFinanceiro.Tipo.DESPESA,
+            "valor": "-30",
+            "data_lancamento": timezone.now(),
+            "status": LancamentoFinanceiro.Status.PAGO,
+        }
+    )
+    assert serializer.is_valid(), serializer.errors
+    lanc = serializer.save()
+    assert lanc.valor == Decimal("-30")
+
+
+def test_lancamento_negativo_outro_tipo():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
+    serializer = LancamentoFinanceiroSerializer(
+        data={
+            "centro_custo": str(centro.id),
+            "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+            "valor": "-10",
+            "data_lancamento": timezone.now(),
+            "status": LancamentoFinanceiro.Status.PENDENTE,
+        }
+    )
+    assert not serializer.is_valid()
+    assert "Valor negativo" in str(serializer.errors)

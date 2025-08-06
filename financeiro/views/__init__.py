@@ -177,9 +177,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         pf = request.query_params.get("periodo_final")
 
         def _parse(periodo: str | None) -> datetime | None:
-            if not periodo:
-                return None
-            if not periodo or not periodo.count("-") == 1:
+            if not periodo or periodo.count("-") != 1:
                 return None
             dt = parse_date(f"{periodo}-01")
             if dt:
@@ -201,7 +199,8 @@ class FinanceiroViewSet(viewsets.ViewSet):
             if not centro_id:
                 centro_id = centros_user
 
-        cache_key = f"rel:{centro_id}:{nucleo_id}:{pi}:{pf}"
+        cache_centro = "|".join(sorted(centro_id)) if isinstance(centro_id, list) else centro_id
+        cache_key = f"rel:{cache_centro}:{nucleo_id}:{pi}:{pf}"
         result = cache.get(cache_key)
         if result is None:
             result = gerar_relatorio(
@@ -343,7 +342,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
         return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
-
 
 
 def _is_financeiro_or_admin(user) -> bool:

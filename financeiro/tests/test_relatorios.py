@@ -27,7 +27,7 @@ def test_gera_serie_temporal(django_assert_num_queries):
     LancamentoFinanceiro.objects.create(
         centro_custo=centro,
         valor=-20,
-        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
+        tipo=LancamentoFinanceiro.Tipo.DESPESA,
         data_lancamento=timezone.now(),
         status=LancamentoFinanceiro.Status.PAGO,
     )

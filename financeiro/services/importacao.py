@@ -230,7 +230,7 @@ class ImportadorPagamentos:
         else:
             venc = data_lanc
         valor = Decimal(row["valor"])
-        if valor < 0 and row["tipo"] != "despesa":
+        if valor < 0 and row["tipo"] != LancamentoFinanceiro.Tipo.DESPESA:
             raise ValueError(_("Valor negativo não permitido para este tipo"))
         return {
             "centro_custo": centro,

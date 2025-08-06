@@ -75,11 +75,15 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        """Garante que o vencimento não seja anterior ao lançamento."""
+        """Valida vencimento e valores."""
         data_lanc = attrs.get("data_lancamento", timezone.now())
         venc = attrs.get("data_vencimento")
         if venc and venc < data_lanc:
             raise serializers.ValidationError(_("Vencimento não pode ser anterior à data de lançamento"))
+        valor = attrs.get("valor", getattr(self.instance, "valor", None))
+        tipo = attrs.get("tipo", getattr(self.instance, "tipo", None))
+        if valor is not None and valor < 0 and tipo != LancamentoFinanceiro.Tipo.DESPESA:
+            raise serializers.ValidationError({"valor": _("Valor negativo não permitido para este tipo")})
         return attrs
 
     def create(self, validated_data: dict[str, Any]) -> LancamentoFinanceiro:
