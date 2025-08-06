@@ -1,7 +1,7 @@
 {% load i18n %}
 <section class="mb-8" id="metrics">
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% for m in metrics_iter %}
+    {% for m in metricas_iter %}
       {% include "dashboard/partials/metric_card.html" with title=m.label value=m.data.total icon=m.icon id=m.key %}
     {% endfor %}
   </div>
