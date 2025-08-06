@@ -1,3 +1,4 @@
+import asyncio
 import pytest
 from django.utils import timezone
 from freezegun import freeze_time
@@ -11,6 +12,9 @@ from notificacoes.models import (
     NotificationTemplate,
 )
 from notificacoes.tasks import enviar_relatorios_diarios, enviar_relatorios_semanais
+from channels.testing import WebsocketCommunicator
+from Hubx.asgi import application
+from notificacoes.models import PushSubscription
 
 pytestmark = pytest.mark.django_db
 
@@ -79,6 +83,31 @@ def test_relatorio_diario_respeita_horario(settings):
     enviar_relatorios_diarios()
 
     assert HistoricoNotificacao.objects.count() == 0
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+def test_relatorio_diario_envia_push(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+    user = UserFactory()
+    config = user.configuracao
+    config.frequencia_notificacoes_push = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    PushSubscription.objects.create(user=user, token="t")
+    _criar_logs(user, Canal.PUSH)
+
+    async def inner():
+        communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
+        communicator.scope["user"] = user
+        connected, _ = await communicator.connect()
+        assert connected
+        await enviar_relatorios_diarios()
+        resp = await communicator.receive_json_from()
+        assert resp["canal"] == Canal.PUSH
+        await communicator.disconnect()
+
+    asyncio.run(inner())
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")

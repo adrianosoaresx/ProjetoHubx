@@ -14,6 +14,8 @@ def test_form_fields():
         "frequencia_notificacoes_email",
         "receber_notificacoes_whatsapp",
         "frequencia_notificacoes_whatsapp",
+        "receber_notificacoes_push",
+        "frequencia_notificacoes_push",
         "idioma",
         "tema",
         "hora_notificacao_diaria",
@@ -29,6 +31,8 @@ def test_form_valid_data(admin_user):
         "frequencia_notificacoes_email": "diaria",
         "receber_notificacoes_whatsapp": True,
         "frequencia_notificacoes_whatsapp": "semanal",
+        "receber_notificacoes_push": True,
+        "frequencia_notificacoes_push": "imediata",
         "idioma": "en-US",
         "tema": "escuro",
         "hora_notificacao_diaria": "08:00",
@@ -44,6 +48,8 @@ def test_form_valid_data(admin_user):
     assert config.frequencia_notificacoes_email == "imediata"
     assert config.receber_notificacoes_whatsapp is True
     assert config.frequencia_notificacoes_whatsapp == "semanal"
+    assert config.receber_notificacoes_push is True
+    assert config.frequencia_notificacoes_push == "imediata"
     assert config.idioma == "en-US"
     assert config.tema == "escuro"
 
@@ -54,6 +60,8 @@ def test_form_boolean_coercion(admin_user):
         "receber_notificacoes_email": "on",
         "frequencia_notificacoes_email": "imediata",
         "frequencia_notificacoes_whatsapp": "imediata",
+        "receber_notificacoes_push": "on",
+        "frequencia_notificacoes_push": "imediata",
         "idioma": "pt-BR",
         "tema": "claro",
         "hora_notificacao_diaria": "08:00",
@@ -66,6 +74,8 @@ def test_form_boolean_coercion(admin_user):
     config.refresh_from_db()
     assert config.receber_notificacoes_email is True
     assert config.receber_notificacoes_whatsapp is False
+    assert config.receber_notificacoes_push is True
+    assert config.receber_notificacoes_push is True
 
 
 def test_form_requires_daily_time(admin_user):
@@ -74,6 +84,8 @@ def test_form_requires_daily_time(admin_user):
         "receber_notificacoes_email": True,
         "frequencia_notificacoes_email": "diaria",
         "frequencia_notificacoes_whatsapp": "imediata",
+        "receber_notificacoes_push": True,
+        "frequencia_notificacoes_push": "imediata",
         "idioma": "pt-BR",
         "tema": "claro",
         "hora_notificacao_diaria": "",
@@ -89,8 +101,10 @@ def test_form_requires_weekly_fields(admin_user):
     config = admin_user.configuracao
     data = {
         "receber_notificacoes_email": True,
-        "frequencia_notificacoes_email": "semanal",
+        "frequencia_notificacoes_email": "imediata",
         "frequencia_notificacoes_whatsapp": "imediata",
+        "receber_notificacoes_push": True,
+        "frequencia_notificacoes_push": "semanal",
         "idioma": "pt-BR",
         "tema": "claro",
         "hora_notificacao_diaria": "08:00",

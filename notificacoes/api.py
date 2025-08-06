@@ -4,12 +4,14 @@ from django.contrib.auth import get_user_model
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
+from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, PushSubscription
 from .permissions import CanSendNotifications
 from .serializers import (
     NotificationLogSerializer,
     NotificationTemplateSerializer,
+    PushSubscriptionSerializer,
 )
 from .services.notificacoes import enviar_para_usuario
 
@@ -60,3 +62,22 @@ def enviar_view(request):
     except ValueError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PushSubscriptionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PushSubscriptionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        PushSubscription.objects.update_or_create(
+            user=request.user, token=serializer.validated_data["token"]
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def delete(self, request):
+        token = request.data.get("token")
+        if not token:
+            return Response({"detail": "token required"}, status=status.HTTP_400_BAD_REQUEST)
+        PushSubscription.objects.filter(user=request.user, token=token).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

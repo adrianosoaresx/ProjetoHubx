@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import NotificationLog, NotificationTemplate
+from .models import NotificationLog, NotificationTemplate, PushSubscription
 
 
 class NotificationTemplateSerializer(serializers.ModelSerializer):
@@ -25,3 +25,9 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "destinatario",
         ]
         read_only_fields = fields
+
+
+class PushSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PushSubscription
+        fields = ["token"]

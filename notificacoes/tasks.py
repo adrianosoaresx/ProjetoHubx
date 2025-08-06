@@ -4,7 +4,9 @@ import time
 
 import sentry_sdk
 import structlog
+from asgiref.sync import async_to_sync
 from celery import shared_task  # type: ignore
+from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -38,6 +40,23 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
             send_push(user, body)
         elif canal == Canal.WHATSAPP:
             send_whatsapp(user, body)
+        config = getattr(user, "configuracao", None)
+        if (
+            config
+            and config.receber_notificacoes_push
+            and config.frequencia_notificacoes_push == "imediata"
+        ):
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"notificacoes_{user.id}",
+                {
+                    "type": "notification.message",
+                    "titulo": subject,
+                    "mensagem": body,
+                    "canal": canal,
+                    "timestamp": timezone.now().isoformat(),
+                },
+            )
         log.status = NotificationStatus.ENVIADA
         metrics.notificacoes_enviadas_total.labels(canal=canal).inc()
     except Exception as exc:  # pragma: no cover - integração externa
@@ -90,6 +109,8 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             send_email(config.user, subject, body)
         elif canal == Canal.WHATSAPP:
             send_whatsapp(config.user, body)
+        elif canal == Canal.PUSH:
+            send_push(config.user, body)
         logs.update(status=NotificationStatus.ENVIADA, data_envio=agora)
         envio = agora.replace(second=0, microsecond=0)
         HistoricoNotificacao.objects.get_or_create(
@@ -98,6 +119,21 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             enviado_em=envio,
             defaults={"conteudo": mensagens},
         )
+        if (
+            config.receber_notificacoes_push
+            and config.frequencia_notificacoes_push == tipo
+        ):
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"notificacoes_{config.user.id}",
+                {
+                    "type": "notification.message",
+                    "titulo": subject,
+                    "mensagem": body,
+                    "canal": canal,
+                    "timestamp": envio.isoformat(),
+                },
+            )
         duration = time.perf_counter() - start
         metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(
             duration
@@ -130,6 +166,11 @@ def enviar_relatorios_diarios() -> None:
             and config.frequencia_notificacoes_whatsapp == "diaria"
         ):
             canais.append(Canal.WHATSAPP)
+        if (
+            config.receber_notificacoes_push
+            and config.frequencia_notificacoes_push == "diaria"
+        ):
+            canais.append(Canal.PUSH)
         _enviar_resumo(config, canais, agora, "diaria")
 
 
@@ -153,4 +194,9 @@ def enviar_relatorios_semanais() -> None:
             and config.frequencia_notificacoes_whatsapp == "semanal"
         ):
             canais.append(Canal.WHATSAPP)
+        if (
+            config.receber_notificacoes_push
+            and config.frequencia_notificacoes_push == "semanal"
+        ):
+            canais.append(Canal.PUSH)
         _enviar_resumo(config, canais, agora, "semanal")
