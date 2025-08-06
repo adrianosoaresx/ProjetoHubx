@@ -1,0 +1,10 @@
+groups:
+  - name: configuracoes
+    rules:
+      - alert: ConfiguracaoContaLatenciaAlta
+        expr: histogram_quantile(0.95, sum(rate(configuracao_conta_api_latency_seconds_bucket[5m])) by (le)) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência p95 do endpoint de configurações acima de 100ms"

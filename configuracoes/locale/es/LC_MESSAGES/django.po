@@ -3,208 +3,244 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-05 20:46-0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2025-08-06 10:38-0300\n"
+"PO-Revision-Date: 2025-08-06 10:38-0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language-Team: Spanish\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
-"1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
 #: forms.py:37
 msgid "Aplicável apenas se notificações por e-mail estiverem ativas."
-msgstr ""
+msgstr "Aplicable solo si las notificaciones por correo electrónico están activas."
 
 #: forms.py:38
 msgid "Aplicável apenas se notificações por WhatsApp estiverem ativas."
-msgstr ""
+msgstr "Aplicable solo si las notificaciones por WhatsApp están activas."
 
 #: forms.py:39
 msgid "Horário para envio das notificações diárias."
-msgstr ""
+msgstr "Horario para envío de notificaciones diarias."
 
 #: forms.py:40
 msgid "Horário para envio das notificações semanais."
-msgstr ""
+msgstr "Horario para envío de notificaciones semanales."
 
 #: forms.py:41
 msgid "Dia da semana para notificações semanais."
-msgstr ""
+msgstr "Día de la semana para notificaciones semanales."
 
 #: forms.py:56
 msgid "Obrigatório para frequência diária."
-msgstr ""
+msgstr "Obligatorio para frecuencia diaria."
 
 #: forms.py:59 forms.py:61
 msgid "Obrigatório para frequência semanal."
-msgstr ""
+msgstr "Obligatorio para frecuencia semanal."
+
+#: models.py:11
+msgid "Imediata"
+msgstr "Inmediata"
+
+#: models.py:12
+msgid "Diária"
+msgstr "Diaria"
+
+#: models.py:13
+msgid "Semanal"
+msgstr "Semanal"
+
+#: models.py:17
+msgid "Português"
+msgstr "Portugués"
+
+#: models.py:18
+msgid "English"
+msgstr "Inglés"
+
+#: models.py:19
+msgid "Español"
+msgstr "Español"
+
+#: models.py:23
+msgid "Claro"
+msgstr "Claro"
+
+#: models.py:24
+msgid "Escuro"
+msgstr "Oscuro"
+
+#: models.py:25
+msgid "Automático"
+msgstr "Automático"
 
 #: models.py:29
 msgid "Segunda"
-msgstr ""
+msgstr "Lunes"
 
 #: models.py:30
 msgid "Terça"
-msgstr ""
+msgstr "Martes"
 
 #: models.py:31
 msgid "Quarta"
-msgstr ""
+msgstr "Miércoles"
 
 #: models.py:32
 msgid "Quinta"
-msgstr ""
+msgstr "Jueves"
 
 #: models.py:33
 msgid "Sexta"
-msgstr ""
+msgstr "Viernes"
 
 #: models.py:34
 msgid "Sábado"
-msgstr ""
+msgstr "Sábado"
 
 #: models.py:35
 msgid "Domingo"
-msgstr ""
+msgstr "Domingo"
 
 #: models.py:61
 msgid "Horário para envio de notificações diárias"
-msgstr ""
+msgstr "Horario para envío de notificaciones diarias"
 
 #: models.py:65
 msgid "Horário para envio de notificações semanais"
-msgstr ""
+msgstr "Horario para envío de notificaciones semanales"
 
 #: models.py:70
 msgid "Dia da semana para notificações semanais"
-msgstr ""
+msgstr "Día de la semana para notificaciones semanales"
 
 #: templates/configuracoes/configuracoes.html:4
 msgid "Configurações da Conta"
-msgstr ""
+msgstr "Configuraciones de la cuenta"
 
 #: templates/configuracoes/configuracoes.html:8
 msgid "Configurações"
-msgstr ""
+msgstr "Configuraciones"
 
 #: templates/configuracoes/configuracoes.html:16
 msgid "Seções de Configuração"
-msgstr ""
+msgstr "Secciones de configuración"
 
 #: templates/configuracoes/configuracoes.html:17
 msgid "Informações Pessoais"
-msgstr ""
+msgstr "Información personal"
 
 #: templates/configuracoes/configuracoes.html:18
 msgid "Segurança"
-msgstr ""
+msgstr "Seguridad"
 
 #: templates/configuracoes/configuracoes.html:19
 msgid "Conexões Sociais"
-msgstr ""
+msgstr "Conexiones sociales"
 
 #: templates/configuracoes/configuracoes.html:20
 msgid "Preferências"
-msgstr ""
+msgstr "Preferencias"
 
 #: templates/configuracoes/partials/informacoes.html:15
 #: templates/configuracoes/partials/preferencias.html:58
 #: templates/configuracoes/partials/seguranca.html:27
 msgid "Salvar Alterações"
-msgstr ""
+msgstr "Guardar cambios"
 
 #: templates/configuracoes/partials/preferencias.html:9
 msgid "Receber notificações por e-mail"
-msgstr ""
+msgstr "Recibir notificaciones por correo electrónico"
 
 #: templates/configuracoes/partials/preferencias.html:19
 msgid "Receber notificações por WhatsApp"
-msgstr ""
+msgstr "Recibir notificaciones por WhatsApp"
 
 #: templates/configuracoes/partials/preferencias.html:25
 msgid "Funcionalidade de WhatsApp em desenvolvimento"
-msgstr ""
+msgstr "Funcionalidad de WhatsApp en desarrollo"
 
 #: templates/configuracoes/partials/preferencias.html:28
 msgid "Horário diário"
-msgstr ""
+msgstr "Horario diario"
 
 #: templates/configuracoes/partials/preferencias.html:35
 msgid "Horário semanal"
-msgstr ""
+msgstr "Horario semanal"
 
 #: templates/configuracoes/partials/preferencias.html:42
 msgid "Dia da semana"
-msgstr ""
+msgstr "Día de la semana"
 
 #: templates/configuracoes/partials/preferencias.html:49
 msgid "Idioma"
-msgstr ""
+msgstr "Idioma"
 
 #: templates/configuracoes/partials/preferencias.html:51
 #, python-format
 msgid "Idioma atual: %(LANGUAGE_CODE)s"
-msgstr ""
+msgstr "Idioma actual: %(LANGUAGE_CODE)s"
 
 #: templates/configuracoes/partials/preferencias.html:54
 msgid "Tema"
-msgstr ""
+msgstr "Tema"
 
 #: templates/configuracoes/partials/redes.html:3
 msgid "Contas conectadas"
-msgstr ""
+msgstr "Cuentas conectadas"
 
 #: templates/configuracoes/partials/redes.html:15
 msgid "Desconectar"
-msgstr ""
+msgstr "Desconectar"
 
 #: templates/configuracoes/partials/redes.html:22
 msgid "Nenhuma conta conectada."
-msgstr ""
+msgstr "Ninguna cuenta conectada."
 
 #: templates/configuracoes/partials/redes.html:26
 msgid "Conectar nova conta"
-msgstr ""
+msgstr "Conectar nueva cuenta"
 
 #: templates/configuracoes/partials/seguranca.html:34
 msgid "Autenticação em duas etapas"
-msgstr ""
+msgstr "Autenticación de dos factores"
 
 #: templates/configuracoes/partials/seguranca.html:38
 msgid "2FA está habilitado para sua conta."
-msgstr ""
+msgstr "El 2FA está habilitado para su cuenta."
 
 #: templates/configuracoes/partials/seguranca.html:44
 msgid "Desativar 2FA"
-msgstr ""
+msgstr "Desactivar 2FA"
 
 #: templates/configuracoes/partials/seguranca.html:48
 msgid "2FA não está habilitado."
-msgstr ""
+msgstr "El 2FA no está habilitado."
 
 #: templates/configuracoes/partials/seguranca.html:54
 msgid "Ativar 2FA"
-msgstr ""
+msgstr "Activar 2FA"
 
-#: views.py:67
+#: views.py:76
 msgid "Conta desconectada."
-msgstr ""
+msgstr "Cuenta desconectada."
 
-#: views.py:69
+#: views.py:78
 msgid "Rede social não encontrada."
-msgstr ""
+msgstr "Red social no encontrada."
 
-#: views.py:80
+#: views.py:89
 msgid "Alterações salvas com sucesso."
-msgstr ""
+msgstr "Cambios guardados con éxito."
 
-#: views.py:82
+#: views.py:91
 msgid "Corrija os erros abaixo."
-msgstr ""
+msgstr "Corrija los errores a continuación."
+
