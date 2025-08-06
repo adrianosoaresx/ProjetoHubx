@@ -3,15 +3,15 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
 from django.db.models import Count, OuterRef, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.translation import gettext_lazy as _
-from django.core.paginator import Paginator
 from django.utils.dateparse import parse_date
+from django.utils.translation import gettext_lazy as _
 
 from .forms import NovaConversaForm
-from .models import ChatChannel, ChatMessage, ChatNotification, ChatModerationLog
+from .models import ChatChannel, ChatMessage, ChatModerationLog, ChatNotification
 from .services import criar_canal
 
 User = get_user_model()
@@ -108,18 +108,15 @@ def message_partial(request, message_id):
 
 
 @login_required
-def historico_edicoes(request, channel_id):
-    channel = get_object_or_404(
-        ChatChannel, pk=channel_id, participants__user=request.user
-    )
-    is_admin = channel.participants.filter(
-        user=request.user, is_admin=True
-    ).exists() or request.user.is_staff
+def historico_edicoes(request, channel_id, message_id):
+    channel = get_object_or_404(ChatChannel, pk=channel_id, participants__user=request.user)
+    message = get_object_or_404(ChatMessage, pk=message_id, channel=channel)
+    is_admin = channel.participants.filter(user=request.user, is_admin=True).exists() or request.user.is_staff
     if not is_admin:
         return HttpResponse(status=403)
     logs = (
-        ChatModerationLog.objects.filter(message__channel=channel, action="edit")
-        .select_related("message", "moderator")
+        ChatModerationLog.objects.filter(message=message, action="edit")
+        .select_related("moderator")
         .order_by("-created")
     )
     inicio = request.GET.get("inicio")
@@ -137,7 +134,7 @@ def historico_edicoes(request, channel_id):
     return render(
         request,
         "chat/historico_edicoes.html",
-        {"channel": channel, "logs": page},
+        {"channel": channel, "message": message, "logs": page},
     )
 
 

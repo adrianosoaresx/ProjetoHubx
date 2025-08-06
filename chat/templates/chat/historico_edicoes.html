@@ -2,7 +2,8 @@
 {% load i18n %}
 
 {% block chat_content %}
-<h2 class="text-xl font-semibold mb-4">{% trans "Histórico de edições" %}</h2>
+<h2 class="text-xl font-semibold mb-2">{% trans "Histórico de edições" %}</h2>
+<p class="mb-4 text-sm text-gray-700">{{ message.conteudo|linebreaksbr }}</p>
 <form method="get" class="mb-4 flex gap-2 items-end">
   <div>
     <label for="inicio" class="block text-sm">{% trans "Início" %}</label>
@@ -24,6 +25,18 @@
       <div class="mt-1">
         {{ log.previous_content|linebreaksbr }}
       </div>
+      <form
+        method="post"
+        class="mt-2"
+        hx-post="/api/chat/channels/{{ channel.id }}/messages/{{ message.id }}/restore/"
+        hx-swap="none"
+      >
+        {% csrf_token %}
+        <input type="hidden" name="log_id" value="{{ log.id }}" />
+        <button type="submit" class="px-2 py-1 text-xs bg-primary text-white rounded">
+          {% trans "Restaurar" %}
+        </button>
+      </form>
     </li>
   {% empty %}
     <li>{% trans "Nenhum registro" %}</li>
