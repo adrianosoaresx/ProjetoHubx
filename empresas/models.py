@@ -53,6 +53,8 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
     descricao = models.TextField(blank=True)
     palavras_chave = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
+    validado_em = models.DateTimeField(null=True, blank=True)
+    fonte_validacao = models.CharField(max_length=50, blank=True, default="")
     # Armazena texto concatenado para busca full-text simplificada.
     search_vector = models.TextField(blank=True, editable=False)
     versao = models.PositiveIntegerField(default=1)

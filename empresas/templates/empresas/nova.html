@@ -26,6 +26,16 @@
         {{ form.cnpj|add_class:'w-full p-2 border rounded' }}
         {{ form.cnpj.errors }}
       </div>
+      <div>
+        <label for="{{ form.validado_em.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.validado_em.label }}</label>
+        {{ form.validado_em|add_class:'w-full p-2 border rounded bg-neutral-100' }}
+        {{ form.validado_em.errors }}
+      </div>
+      <div>
+        <label for="{{ form.fonte_validacao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.fonte_validacao.label }}</label>
+        {{ form.fonte_validacao|add_class:'w-full p-2 border rounded bg-neutral-100' }}
+        {{ form.fonte_validacao.errors }}
+      </div>
     </div>
     <div class="grid md:grid-cols-2 gap-6">
       <div>

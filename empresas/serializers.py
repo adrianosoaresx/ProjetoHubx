@@ -33,12 +33,20 @@ class EmpresaSerializer(serializers.ModelSerializer):
             "logo",
             "descricao",
             "palavras_chave",
+            "validado_em",
+            "fonte_validacao",
             "tags",
             "versao",
             "favoritado",
             "deleted",
         ]
-        read_only_fields = ["deleted", "versao", "favoritado"]
+        read_only_fields = [
+            "deleted",
+            "versao",
+            "favoritado",
+            "validado_em",
+            "fonte_validacao",
+        ]
 
     def create(self, validated_data: dict) -> Empresa:
         tags = validated_data.pop("tags", [])
