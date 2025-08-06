@@ -51,12 +51,13 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
             "publico_alvo",
             "tags",
             "fechado",
+            "resolvido",
             "melhor_resposta",
             "numero_visualizacoes",
             "created",
             "modified",
         ]
-        read_only_fields = ["autor", "numero_visualizacoes", "slug"]
+        read_only_fields = ["autor", "numero_visualizacoes", "slug", "resolvido"]
 
     def create(self, validated_data: dict) -> TopicoDiscussao:
         request = self.context.get("request")
