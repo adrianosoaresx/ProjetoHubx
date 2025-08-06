@@ -10,8 +10,32 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.utils import timezone
 
-from .metrics import chat_exportacoes_total
-from .models import ChatChannel, RelatorioChatExport
+from .metrics import (
+    chat_exportacoes_total,
+    chat_resumo_geracao_segundos,
+    chat_resumos_total,
+)
+from .models import ChatChannel, RelatorioChatExport, ResumoChat
+
+
+@shared_task
+def gerar_resumo_chat(canal_id: str, periodo: str) -> str:
+    inicio = timezone.now()
+    channel = ChatChannel.objects.get(pk=canal_id)
+    limite = timezone.now() - (timedelta(days=1) if periodo == "diario" else timedelta(days=7))
+    mensagens = channel.messages.filter(created__gte=limite, hidden_at__isnull=True, tipo="text").order_by("created")
+    texto = "\n".join(m.conteudo for m in mensagens)
+    resumo = texto[:500]
+    resumo_obj = ResumoChat.objects.create(
+        canal=channel,
+        periodo=periodo,
+        conteudo=resumo,
+        detalhes={"total_mensagens": mensagens.count()},
+    )
+    duracao = (timezone.now() - inicio).total_seconds()
+    chat_resumo_geracao_segundos.labels(periodo=periodo).observe(duracao)
+    chat_resumos_total.labels(periodo=periodo).inc()
+    return str(resumo_obj.id)
 
 
 @shared_task

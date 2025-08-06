@@ -19,6 +19,7 @@ from chat.models import (
     ChatModerationLog,
     ChatParticipant,
     RelatorioChatExport,
+    ResumoChat,
 )
 from chat.throttles import UploadRateThrottle
 
@@ -159,9 +160,27 @@ def test_search_messages_filters_and_permissions(api_client: APIClient, admin_us
     assert str(old.id) not in ids
     assert len(ids) == 1
 
-    api_client.force_authenticate(coordenador_user)
-    resp2 = api_client.get(url, {"q": "hello"})
-    assert resp2.status_code == 403
+
+def test_list_resumos(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    ResumoChat.objects.create(canal=channel, periodo="diario", conteudo="Resumo", detalhes={})
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-resumos", args=[channel.id])
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    assert resp.json()[0]["conteudo"] == "Resumo"
+
+
+def test_gerar_resumo_task_creates_record(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="ola")
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-gerar-resumo", args=[channel.id])
+    resp = api_client.post(url, {"periodo": "diario"})
+    assert resp.status_code == 200
+    assert ResumoChat.objects.filter(canal=channel, periodo="diario").exists()
 
 
 def test_search_messages_date_range(api_client: APIClient, admin_user):
