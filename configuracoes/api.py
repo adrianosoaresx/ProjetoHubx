@@ -5,18 +5,20 @@ import time
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 
 from . import metrics
-from .models import ConfiguracaoConta
 from .serializers import ConfiguracaoContaSerializer
 from .services import get_configuracao_conta
+from .models import ConfiguracaoConta
 
 
-class ConfiguracaoContaAPIView(APIView):
+class ConfiguracaoContaViewSet(ViewSet):
+    """ViewSet para leitura e atualização das preferências do usuário."""
+
     permission_classes = [IsAuthenticated]
 
-    def get_object(self) -> ConfiguracaoConta:
+    def _get_object(self) -> ConfiguracaoConta:
         return get_configuracao_conta(self.request.user)
 
     @extend_schema(
@@ -38,11 +40,13 @@ class ConfiguracaoContaAPIView(APIView):
             )
         ],
     )
-    def get(self, request):
+    def retrieve(self, request) -> Response:
         start = time.monotonic()
-        serializer = ConfiguracaoContaSerializer(self.get_object())
+        serializer = ConfiguracaoContaSerializer(self._get_object())
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="GET").observe(time.monotonic() - start)
+        metrics.config_api_latency_seconds.labels(method="GET").observe(
+            time.monotonic() - start
+        )
         return resp
 
     @extend_schema(
@@ -56,14 +60,16 @@ class ConfiguracaoContaAPIView(APIView):
             )
         ],
     )
-    def put(self, request):
+    def update(self, request) -> Response:
         start = time.monotonic()
-        obj = self.get_object()
+        obj = self._get_object()
         serializer = ConfiguracaoContaSerializer(obj, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="PUT").observe(time.monotonic() - start)
+        metrics.config_api_latency_seconds.labels(method="PUT").observe(
+            time.monotonic() - start
+        )
         return resp
 
     @extend_schema(
@@ -77,12 +83,16 @@ class ConfiguracaoContaAPIView(APIView):
             )
         ],
     )
-    def patch(self, request):
+    def partial_update(self, request) -> Response:
         start = time.monotonic()
-        obj = self.get_object()
-        serializer = ConfiguracaoContaSerializer(obj, data=request.data, partial=True)
+        obj = self._get_object()
+        serializer = ConfiguracaoContaSerializer(
+            obj, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="PATCH").observe(time.monotonic() - start)
+        metrics.config_api_latency_seconds.labels(method="PATCH").observe(
+            time.monotonic() - start
+        )
         return resp

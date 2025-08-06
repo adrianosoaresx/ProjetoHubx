@@ -22,7 +22,7 @@ def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
     if config is None:
         metrics.config_cache_misses_total.inc()
         try:
-            config, _ = ConfiguracaoConta.all_objects.get_or_create(
+            config, _ = ConfiguracaoConta.all_objects.select_related("user").get_or_create(
                 user_id=usuario.id, defaults={"user": usuario}
             )
             if config.deleted:

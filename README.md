@@ -342,3 +342,54 @@ Os valores padrão ficam em `Hubx/settings.py` e podem ser ajustados:
 
 Consulte `docs/financeiro.md` para detalhes.
 
+---
+
+## 📧 Preferências de Notificação
+
+As preferências de cada usuário podem ser consultadas e atualizadas via API.
+
+### Exemplo de requisição
+
+```
+GET /api/configuracoes/configuracoes-conta/
+```
+
+Resposta:
+
+```json
+{
+  "receber_notificacoes_email": true,
+  "frequencia_notificacoes_email": "imediata",
+  "receber_notificacoes_whatsapp": false,
+  "frequencia_notificacoes_whatsapp": "diaria",
+  "idioma": "pt-BR",
+  "tema": "claro",
+  "hora_notificacao_diaria": "08:00:00",
+  "hora_notificacao_semanal": "08:00:00",
+  "dia_semana_notificacao": 0
+}
+```
+
+Atualizações podem ser feitas com `PUT` ou `PATCH` no mesmo endpoint.
+
+### Histórico de notificações
+
+O usuário pode acompanhar suas mensagens enviadas em `/notificacoes/historico/`.
+
+### Métricas e logs das tarefas
+
+As tarefas Celery de notificações expõem métricas Prometheus como
+`notificacoes_enviadas_total`, `notificacoes_falhas_total` e
+`notificacao_task_duration_seconds`. Para coletá-las, execute o worker com o
+`PrometheusExporter` habilitado.
+
+### Esquema OpenAPI
+
+O esquema da API pode ser gerado com:
+
+```bash
+make openapi
+```
+
+O arquivo `openapi-schema.yml` será criado na raiz do projeto.
+

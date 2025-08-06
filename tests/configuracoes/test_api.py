@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import pytest
+import time
 from django.urls import reverse
 from rest_framework.test import APIClient
+
+from accounts.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -32,3 +35,29 @@ def test_requires_auth(api_client: APIClient):
     url = reverse("configuracoes_api:configuracoes-conta")
     resp = api_client.get(url)
     assert resp.status_code == 403
+
+
+def test_only_owner_updates(api_client: APIClient):
+    user1 = UserFactory()
+    user2 = UserFactory()
+    api_client.force_authenticate(user1)
+    url = reverse("configuracoes_api:configuracoes-conta")
+    resp = api_client.patch(url, {"tema": "escuro"})
+    assert resp.status_code == 200
+    user2.configuracao.refresh_from_db()
+    assert user2.configuracao.tema == "claro"
+
+
+def test_response_time_p95(api_client: APIClient, admin_user):
+    api_client.force_authenticate(admin_user)
+    url = reverse("configuracoes_api:configuracoes-conta")
+    timings: list[float] = []
+    for _ in range(5):
+        start = time.perf_counter()
+        resp = api_client.get(url)
+        assert resp.status_code == 200
+        timings.append(time.perf_counter() - start)
+    timings.sort()
+    p95_index = int(len(timings) * 0.95) - 1
+    p95 = timings[p95_index]
+    assert p95 <= 0.2
