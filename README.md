@@ -247,8 +247,23 @@ Para tarefas assíncronas, configure Redis e Celery:
 
 3. Inicie o worker:
    ```bash
-   celery -A Hubx worker --loglevel=info
+   celery -A Hubx worker -B --loglevel=info
    ```
+
+As tarefas `enviar_relatorios_diarios` e `enviar_relatorios_semanais` são agendadas via
+*Celery beat* utilizando `crontab`. O agendamento consulta os horários definidos
+em `ConfiguracaoConta`. Para registrar intervalos personalizados é possível
+utilizar o **django-celery-beat**, criando `PeriodicTask` com o `crontab`
+apropriado para cada combinação de dia e hora desejada.
+
+Variáveis de ambiente utilizadas para envio:
+
+```bash
+export NOTIFICATIONS_EMAIL_API_URL=https://example
+export NOTIFICATIONS_EMAIL_API_KEY=token
+export NOTIFICATIONS_WHATSAPP_API_URL=https://example
+export NOTIFICATIONS_WHATSAPP_API_KEY=token
+```
 
 ---
 
@@ -299,6 +314,8 @@ ProjetoHubx/
 make format    # corrige estilo automaticamente
 make vet       # verifica padrões, imports, etc.
 make test      # roda testes com pytest
+pytest tests/configuracoes/test_accessibility.py  # testa acessibilidade com axe-core
+pytest tests/notificacoes/test_summary_tasks.py   # testa integrações Celery
 make security  # roda análise de segurança com bandit
 make           # roda tudo acima
 

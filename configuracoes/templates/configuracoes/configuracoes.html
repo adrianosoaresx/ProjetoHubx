@@ -7,17 +7,17 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
   <h1 class="text-2xl font-bold mb-4">{% trans 'Configurações' %}</h1>
   {% if messages %}
-    <div class="mb-4 space-y-2">
+    <div class="mb-4 space-y-2" aria-live="polite">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
+        <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-600 text-white{% else %}bg-red-600 text-white{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
   {% endif %}
   <nav class="flex flex-wrap gap-4 border-b mb-4 text-sm" aria-label="{% trans 'Seções de Configuração' %}">
-    <button hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
+    <button hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
+    <button hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
+    <button hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
+    <button hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
   </nav>
   <div id="content" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
     {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
