@@ -5,21 +5,19 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db import connection
 from django.db.models import Count, Max, Q
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-    View,
-)
+from django.views.decorators.cache import cache_page
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
 
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin
@@ -32,8 +30,10 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .tasks import notificar_melhor_resposta, notificar_nova_resposta
 
 
+@method_decorator(cache_page(60), name="dispatch")
 class CategoriaListView(LoginRequiredMixin, ListView):
     model = CategoriaDiscussao
     template_name = "discussao/categorias.html"
@@ -130,6 +130,7 @@ class TagUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("discussao:tags")
 
 
+@method_decorator(cache_page(60), name="dispatch")
 class TopicoListView(LoginRequiredMixin, ListView):
     model = TopicoDiscussao
     template_name = "discussao/topicos_list.html"
@@ -151,14 +152,31 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 last_activity=Max("respostas__created"),
             )
         )
-        tag = self.request.GET.get("tag")
-        if tag:
-            qs = qs.filter(tags__nome=tag)
+        tags_param = self.request.GET.get("tags")
+        if tags_param:
+            names = [t.strip() for t in tags_param.split(",") if t.strip()]
+            for name in names:
+                qs = qs.filter(tags__nome=name)
         query = self.request.GET.get("q")
         if query:
-            qs = qs.filter(
-                Q(titulo__icontains=query) | Q(conteudo__icontains=query) | Q(respostas__conteudo__icontains=query)
-            ).distinct()
+            if connection.vendor == "postgresql":
+                vector = (
+                    SearchVector("titulo", weight="A")
+                    + SearchVector("conteudo", weight="B")
+                    + SearchVector("respostas__conteudo", weight="C")
+                )
+                search_query = SearchQuery(query)
+                qs = (
+                    qs.annotate(rank=SearchRank(vector, search_query))
+                    .filter(rank__gt=0)
+                    .order_by("-rank")
+                )
+            else:
+                qs = qs.filter(
+                    Q(titulo__icontains=query)
+                    | Q(conteudo__icontains=query)
+                    | Q(respostas__conteudo__icontains=query)
+                ).distinct()
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
         else:
@@ -243,6 +261,7 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
             form.instance.evento = self.categoria.evento
         response = super().form_valid(form)
         form.instance.tags.set(form.cleaned_data["tags"])
+        cache.clear()
         messages.success(self.request, gettext_lazy("Tópico criado com sucesso"))
         return response
 
@@ -268,6 +287,7 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
+        cache.clear()
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.object.slug])
 
 
@@ -284,6 +304,11 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse("discussao:topicos", args=[self.categoria.slug])
+
+    def delete(self, request, *args, **kwargs):  # type: ignore[override]
+        response = super().delete(request, *args, **kwargs)
+        cache.clear()
+        return response
 
 
 class RespostaCreateView(LoginRequiredMixin, CreateView):
@@ -304,6 +329,8 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         form.instance.autor = self.request.user
         form.instance.topico = self.topico
         response = super().form_valid(form)
+        notificar_nova_resposta.delay(self.object.id)
+        cache.clear()
         if self.request.headers.get("Hx-Request"):
             context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
@@ -330,6 +357,7 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
+        cache.clear()
         if request.headers.get("Hx-Request"):
             return HttpResponse("")
         messages.success(request, gettext_lazy("Coment\u00e1rio removido"))
@@ -362,7 +390,9 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         form.instance.editado = True
         form.instance.editado_em = timezone.now()
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        cache.clear()
+        return response
 
     def get_success_url(self):
         return reverse(
@@ -408,15 +438,19 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             topico.melhor_resposta = resposta
             topico.resolvido = True
             topico.save(update_fields=["melhor_resposta", "resolvido"])
+            notificar_melhor_resposta.delay(resposta.id)
+            cache.clear()
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         elif topico.resolvido:
             topico.melhor_resposta = None
             topico.resolvido = False
             topico.save(update_fields=["melhor_resposta", "resolvido"])
+            cache.clear()
             messages.success(request, gettext_lazy("Resolução removida"))
         else:
             topico.resolvido = True
             topico.save(update_fields=["resolvido"])
+            cache.clear()
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         return redirect(
             "discussao:topico_detalhe",
@@ -438,6 +472,7 @@ class TopicoToggleFechadoView(LoginRequiredMixin, View):
                 return HttpResponseForbidden()
             topico.fechado = True
         topico.save(update_fields=["fechado"])
+        cache.clear()
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,
