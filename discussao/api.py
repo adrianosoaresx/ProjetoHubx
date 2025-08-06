@@ -20,6 +20,7 @@ from accounts.models import UserType
 
 from .models import RespostaDiscussao, Tag, TopicoDiscussao
 from .serializers import RespostaDiscussaoSerializer, TagSerializer, TopicoDiscussaoSerializer
+from .services import marcar_resolucao, responder_topico
 from .tasks import notificar_melhor_resposta, notificar_nova_resposta
 
 
@@ -98,15 +99,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
         topico = self.get_object()
         resposta_id = request.data.get("resposta_id")
         resposta = get_object_or_404(topico.respostas, id=resposta_id)
-        if request.user not in {topico.autor} and request.user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }:
-            return Response(status=403)
-        with transaction.atomic():
-            topico.melhor_resposta = resposta
-            topico.resolvido = True
-            topico.save(update_fields=["melhor_resposta", "resolvido"])
+        marcar_resolucao(topico=topico, resposta=resposta, user=request.user)
         notificar_melhor_resposta.delay(resposta.id)
         cache.clear()
         serializer = self.get_serializer(topico)
@@ -173,10 +166,15 @@ class RespostaViewSet(viewsets.ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        topico = serializer.validated_data["topico"]
-        if topico.fechado:
-            raise PermissionDenied("Tópico fechado para novas respostas.")
-        resposta = serializer.save(autor=self.request.user)
+        data = serializer.validated_data
+        resposta = responder_topico(
+            topico=data["topico"],
+            autor=self.request.user,
+            conteudo=data["conteudo"],
+            reply_to=data.get("reply_to"),
+            arquivo=data.get("arquivo"),
+        )
+        serializer.instance = resposta
         notificar_nova_resposta.delay(resposta.id)
         cache.clear()
 

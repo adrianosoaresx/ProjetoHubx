@@ -29,6 +29,8 @@ exclusão lógica através dos campos `deleted` e `deleted_at`.
 - **UC-05** votar em tópicos e respostas.
 - **UC-06** marcar resolução e melhor resposta.
 - **UC-07** filtrar por tags e texto.
+- **UC-08** acompanhar atualizações em tempo real.
+- **UC-09** denunciar conteúdo para moderação.
 
 ## Regras de negócio
 
