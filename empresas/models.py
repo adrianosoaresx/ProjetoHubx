@@ -46,6 +46,8 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
     descricao = models.TextField(blank=True)
     palavras_chave = models.TextField(blank=True)
     tags = models.ManyToManyField(Tag, related_name="empresas", blank=True)
+    # Armazena texto concatenado para busca full-text simplificada.
+    search_vector = models.TextField(blank=True, editable=False)
 
     objects = models.Manager()
     ativos = SoftDeleteManager()
@@ -59,6 +61,7 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
             models.Index(fields=["municipio"]),
             models.Index(fields=["estado"]),
             models.Index(fields=["deleted"]),
+            models.Index(fields=["search_vector"]),
         ]
 
     def __str__(self) -> str:
