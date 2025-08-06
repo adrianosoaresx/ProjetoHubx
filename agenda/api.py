@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.db.models import Q
+from django.utils import timezone
 
 from accounts.models import UserType
 from .models import (
@@ -78,6 +79,24 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: InscricaoEvento) -> None:
         instance.soft_delete()
+
+    @action(detail=True, methods=["post"])
+    def avaliar(self, request, pk=None):
+        inscricao = self.get_object()
+        if inscricao.user != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if timezone.now() <= inscricao.evento.data_fim:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        try:
+            nota = int(request.data.get("nota"))
+        except (TypeError, ValueError):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if nota < 1 or nota > 5:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        inscricao.avaliacao = nota
+        inscricao.feedback = request.data.get("feedback", "")
+        inscricao.save(update_fields=["avaliacao", "feedback", "modified"])
+        return Response(self.get_serializer(inscricao).data, status=status.HTTP_200_OK)
 
 
 class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):

@@ -80,6 +80,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     qrcode_url = models.URLField(null=True, blank=True)
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
     posicao_espera = models.PositiveIntegerField(null=True, blank=True)
+    avaliacao = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    feedback = models.TextField(blank=True)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -397,9 +403,7 @@ class FeedbackNota(TimeStampedModel, SoftDeleteModel):
 
 
 class EventoLog(TimeStampedModel, SoftDeleteModel):
-    evento = models.ForeignKey(
-        Evento, on_delete=models.CASCADE, related_name="logs"
-    )
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="logs")
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
