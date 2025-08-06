@@ -1,24 +1,31 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
+
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from .api import notify_users
+from .metrics import chat_message_latency_seconds
 from .models import ChatChannel, ChatMessage, ChatMessageReaction, ChatParticipant
 from .services import (
     adicionar_reacao,
-    remover_reacao,
     enviar_mensagem,
+    remover_reacao,
     sinalizar_mensagem,
 )
-from .metrics import chat_message_latency_seconds
 
 logger = logging.getLogger(__name__)
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._last_typing_event = 0.0
+        self._typing_task: asyncio.Task | None = None
+
     async def connect(self):
         user = self.scope["user"]
         if not user or not user.is_authenticated:
@@ -147,9 +154,44 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
                 }
                 await self.channel_layer.group_send(self.group_name, payload)
+        elif message_type in {"typing_start", "typing_stop"}:
+            now = time.monotonic()
+            if now - self._last_typing_event < 1:
+                return
+            self._last_typing_event = now
+            action = "start" if message_type == "typing_start" else "stop"
+            payload = {
+                "type": "chat.typing",
+                "action": action,
+                "username": user.username,
+            }
+            await self.channel_layer.group_send(self.group_name, payload)
+            if action == "start":
+                if self._typing_task:
+                    self._typing_task.cancel()
+                self._typing_task = asyncio.create_task(self._clear_typing_after_delay())
+            else:
+                if self._typing_task:
+                    self._typing_task.cancel()
+                    self._typing_task = None
 
     async def chat_message(self, event):
         await self.send_json(event)
+
+    async def chat_typing(self, event):
+        await self.send_json(event)
+
+    async def _clear_typing_after_delay(self):
+        try:
+            await asyncio.sleep(3)
+        except asyncio.CancelledError:
+            return
+        payload = {
+            "type": "chat.typing",
+            "action": "stop",
+            "username": self.scope["user"].username,
+        }
+        await self.channel_layer.group_send(self.group_name, payload)
 
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):

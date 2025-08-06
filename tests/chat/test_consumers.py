@@ -219,3 +219,27 @@ def test_react_endpoint_broadcasts(admin_user, coordenador_user, client):
         await comm.disconnect()
 
     asyncio.run(inner())
+
+
+def test_typing_indicator_broadcasts_and_auto_stops(admin_user, coordenador_user):
+    async def inner():
+        canal = await database_sync_to_async(criar_canal)(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=None,
+            titulo="Privado",
+            descricao="",
+            participantes=[coordenador_user],
+        )
+        communicator = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+        await communicator.send_json_to({"tipo": "typing_start"})
+        start_event = await communicator.receive_json_from()
+        assert start_event["action"] == "start"
+        stop_event = await communicator.receive_json_from(timeout=4)
+        assert stop_event["action"] == "stop"
+        await communicator.disconnect()
+
+    asyncio.run(inner())
