@@ -163,13 +163,14 @@
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
                 const frag = document.createDocumentFragment();
-                data.messages.forEach(m=>{
+                const ordered = data.messages.slice().reverse();
+                ordered.forEach(m=>{
                     const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions);
                     frag.appendChild(div);
                 });
                 messages.appendChild(frag);
-                if(data.messages.length){
-                    oldestId = data.messages[0].id;
+                if(ordered.length){
+                    oldestId = ordered[0].id;
                 }
                 historyEnd = !data.has_more;
                 scrollToBottom();
@@ -186,12 +187,13 @@
                     const first = messages.firstChild;
                     const prevHeight = messages.scrollHeight;
                     const frag = document.createDocumentFragment();
-                    data.messages.forEach(m=>{
+                    const ordered = data.messages.slice().reverse();
+                    ordered.forEach(m=>{
                         const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions);
                         frag.appendChild(div);
                     });
                     messages.insertBefore(frag, first);
-                    oldestId = data.messages[0].id;
+                    oldestId = ordered[0].id;
                     const newHeight = messages.scrollHeight;
                     messages.scrollTop = newHeight - prevHeight;
                 }else{
@@ -202,7 +204,7 @@
         }
 
         messages.addEventListener('scroll', ()=>{
-            if(messages.scrollTop === 0){
+            if(messages.scrollTop < 50){
                 loadPrevious();
             }
         });
@@ -220,8 +222,8 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-label="Adicionar reação">😊</button><div class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></div></div>`;
-            if(id){ div.dataset.id = id; }
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="Adicionar reação">😊</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="😊" aria-label="Adicionar reação 😊">😊</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="Adicionar reação 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="Adicionar reação 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="Adicionar reação ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="😮" aria-label="Adicionar reação 😮">😮</button></li></ul></div>`;
+            if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
                 btn.classList.add('pin-toggle');

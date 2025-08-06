@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-import uuid
 import io
+import uuid
 from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
-from django.core.cache import cache
-from rest_framework.test import APIClient
 from rest_framework.settings import api_settings
+from rest_framework.test import APIClient
 
-from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
 from chat.api import notify_users
+from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
 from chat.throttles import UploadRateThrottle
 
 User = get_user_model()
@@ -166,6 +166,71 @@ def test_search_messages_filters_and_permissions(
     api_client.force_authenticate(coordenador_user)
     resp2 = api_client.get(url, {"q": "hello"})
     assert resp2.status_code == 403
+
+
+def test_search_messages_date_range(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    old_msg = ChatMessage.objects.create(
+        channel=channel, remetente=admin_user, tipo="text", conteudo="foo"
+    )
+    ChatMessage.objects.filter(pk=old_msg.pk).update(
+        created=timezone.now() - timedelta(days=5)
+    )
+    recent_msg = ChatMessage.objects.create(
+        channel=channel, remetente=admin_user, tipo="text", conteudo="foo bar"
+    )
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
+    params = {
+        "q": "foo",
+        "desde": (timezone.now() - timedelta(days=1)).isoformat(),
+        "ate": timezone.now().isoformat(),
+    }
+    resp = api_client.get(url, params)
+    assert resp.status_code == 200
+    ids = [m["id"] for m in resp.json()["results"]]
+    assert str(recent_msg.id) in ids
+    assert str(old_msg.id) not in ids
+
+
+def test_history_before_returns_previous_desc(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msgs = [
+        ChatMessage.objects.create(
+            channel=channel, remetente=admin_user, tipo="text", conteudo=f"m{i}"
+        )
+        for i in range(30)
+    ]
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
+    resp = api_client.get(url, {"before": str(msgs[-1].id)})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["messages"]) == 20
+    assert data["messages"][0]["id"] == str(msgs[-2].id)
+    assert data["messages"][-1]["id"] == str(msgs[9].id)
+    assert data["has_more"] is True
+
+
+def test_history_before_accepts_timestamp(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msgs = [
+        ChatMessage.objects.create(
+            channel=channel, remetente=admin_user, tipo="text", conteudo=f"t{i}"
+        )
+        for i in range(3)
+    ]
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
+    ts = msgs[-1].created.isoformat()
+    resp = api_client.get(url, {"before": ts})
+    assert resp.status_code == 200
+    ids = [m["id"] for m in resp.json()["messages"]]
+    assert str(msgs[-1].id) not in ids
+    assert str(msgs[-2].id) in ids
 
 
 def test_pin_and_unpin_message(api_client: APIClient, admin_user, coordenador_user):
