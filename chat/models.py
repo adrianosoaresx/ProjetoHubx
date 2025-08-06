@@ -115,6 +115,22 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
             )
         )
 
+    def restore_from_log(self, log: "ChatModerationLog", moderator: User) -> None:
+        """Restore message content from a moderation log.
+
+        Saves the previous content in a new moderation log entry so the
+        restoration itself is tracked for transparency.
+        """
+        previous = self.conteudo
+        self.conteudo = log.previous_content
+        self.save(update_fields=["conteudo"])
+        ChatModerationLog.objects.create(
+            message=self,
+            action="edit",
+            moderator=moderator,
+            previous_content=previous,
+        )
+
 
 class ChatMessageReaction(models.Model):
     message = models.ForeignKey(

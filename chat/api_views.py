@@ -405,6 +405,21 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         data["user_reactions"] = user_emojis
         return Response(data)
 
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
+    )
+    def restore(self, request: Request, channel_pk: str, pk: str) -> Response:
+        """Restore message content from a moderation log entry."""
+        msg = self.get_object()
+        log_id = request.data.get("log_id")
+        if not log_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        log = get_object_or_404(ChatModerationLog, pk=log_id, message=msg)
+        msg.restore_from_log(log, request.user)
+        return Response(self.get_serializer(msg).data)
+
     @action(detail=True, methods=["post"], throttle_classes=[FlagRateThrottle])
     def flag(self, request: Request, channel_pk: str, pk: str) -> Response:
         msg = self.get_object()

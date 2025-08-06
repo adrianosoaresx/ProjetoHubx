@@ -18,5 +18,10 @@ urlpatterns = [
         views.exportar_modal,
         name="exportar_modal",
     ),
+    path(
+        "<uuid:channel_id>/historico/",
+        views.historico_edicoes,
+        name="historico_edicoes",
+    ),
     path("<uuid:channel_id>/", views.conversation_detail, name="conversation_detail"),
 ]

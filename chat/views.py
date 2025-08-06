@@ -7,9 +7,11 @@ from django.db.models import Count, OuterRef, Subquery
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext_lazy as _
+from django.core.paginator import Paginator
+from django.utils.dateparse import parse_date
 
 from .forms import NovaConversaForm
-from .models import ChatChannel, ChatMessage, ChatNotification
+from .models import ChatChannel, ChatMessage, ChatNotification, ChatModerationLog
 from .services import criar_canal
 
 User = get_user_model()
@@ -103,6 +105,40 @@ def message_partial(request, message_id):
     message = get_object_or_404(ChatMessage.objects.select_related("remetente"), pk=message_id)
     is_admin = message.channel.participants.filter(user=request.user, is_admin=True).exists()
     return render(request, "chat/partials/message.html", {"m": message, "is_admin": is_admin})
+
+
+@login_required
+def historico_edicoes(request, channel_id):
+    channel = get_object_or_404(
+        ChatChannel, pk=channel_id, participants__user=request.user
+    )
+    is_admin = channel.participants.filter(
+        user=request.user, is_admin=True
+    ).exists() or request.user.is_staff
+    if not is_admin:
+        return HttpResponse(status=403)
+    logs = (
+        ChatModerationLog.objects.filter(message__channel=channel, action="edit")
+        .select_related("message", "moderator")
+        .order_by("-created")
+    )
+    inicio = request.GET.get("inicio")
+    fim = request.GET.get("fim")
+    if inicio:
+        dt = parse_date(inicio)
+        if dt:
+            logs = logs.filter(created__date__gte=dt)
+    if fim:
+        dt = parse_date(fim)
+        if dt:
+            logs = logs.filter(created__date__lte=dt)
+    paginator = Paginator(logs, 20)
+    page = paginator.get_page(request.GET.get("page"))
+    return render(
+        request,
+        "chat/historico_edicoes.html",
+        {"channel": channel, "logs": page},
+    )
 
 
 @login_required
