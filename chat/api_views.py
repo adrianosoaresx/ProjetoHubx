@@ -24,6 +24,7 @@ from .models import (
     ChatMessage,
     ChatMessageReaction,
     ChatModerationLog,
+    ChatFavorite,
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
@@ -342,6 +343,21 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         msg.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=["post", "delete"])
+    def favorite(self, request: Request, channel_pk: str, pk: str) -> Response:
+        """Adiciona ou remove uma mensagem dos favoritos do usuário."""
+        msg = self.get_object()
+        if request.method.lower() == "post":
+            if (
+                ChatFavorite.objects.filter(user=request.user).count()
+                >= 1000
+            ):
+                return Response(status=status.HTTP_409_CONFLICT)
+            ChatFavorite.objects.get_or_create(user=request.user, message=msg)
+            return Response(status=status.HTTP_201_CREATED)
+        ChatFavorite.objects.filter(user=request.user, message=msg).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True,
         methods=["post"],
@@ -450,6 +466,35 @@ class ChatNotificationViewSet(viewsets.ReadOnlyModelViewSet):
         notif.lido = True
         notif.save(update_fields=["lido"])
         return Response(self.get_serializer(notif).data)
+
+
+class ChatFavoriteViewSet(viewsets.ReadOnlyModelViewSet):
+    """Lista mensagens favoritas do usuário."""
+
+    serializer_class = ChatMessageSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = ChatMessagePagination
+
+    def get_queryset(self):
+        return (
+            ChatFavorite.objects.filter(user=self.request.user)
+            .select_related("message", "message__channel", "message__remetente")
+            .order_by("-created")
+        )
+
+    def list(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        items = page if page is not None else queryset
+        messages = [fav.message for fav in items]
+        serializer = self.get_serializer(messages, many=True)
+        grouped: dict[str, list[dict[str, object]]] = {}
+        for fav, data in zip(items, serializer.data):
+            channel_id = str(fav.message.channel_id)
+            grouped.setdefault(channel_id, []).append(data)
+        if page is not None:
+            return self.get_paginated_response(grouped)
+        return Response(grouped)
 
 
 class ModeracaoViewSet(viewsets.ViewSet):
