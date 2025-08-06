@@ -37,7 +37,8 @@ def test_create_empresa_sets_user_and_org(client, nucleado_user):
     }
     resp = client.post(reverse("empresas:empresa_criar"), data)
     assert resp.status_code in (302, 200)
-    empresa = Empresa.objects.get(cnpj=cnpj)
+    mask = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}"
+    empresa = Empresa.objects.get(cnpj=mask)
     assert empresa.usuario == nucleado_user
     assert empresa.organizacao == nucleado_user.organizacao
 
@@ -46,7 +47,8 @@ def test_create_empresa_sets_user_and_org(client, nucleado_user):
 def test_duplicate_cnpj_returns_error(client, nucleado_user):
     client.force_login(nucleado_user)
     cnpj = CNPJ().generate()
-    EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao, cnpj=cnpj)
+    mask = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:14]}"
+    EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao, cnpj=mask)
     data = {
         "nome": "Outra",
         "cnpj": cnpj,

@@ -94,6 +94,7 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     )
     tags = models.ManyToManyField("Tag", blank=True, related_name="topicos")
     fechado = models.BooleanField(default=False)
+    resolvido = models.BooleanField(default=False)
     numero_visualizacoes = models.PositiveIntegerField(default=0)
     nucleo = models.ForeignKey(
         "nucleos.Nucleo",

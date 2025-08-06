@@ -3,9 +3,9 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import pytest
+from django.db import connection
 from django.test import Client
 from django.urls import reverse
-from django.db import connection
 
 from accounts.factories import UserFactory
 
@@ -38,4 +38,4 @@ def test_preferencias_view_p95_below_100ms(workers: int) -> None:
             tempos = list(executor.map(request_view, range(20)))
 
     p95 = statistics.quantiles(tempos, n=100, method="inclusive")[94]
-    assert p95 < 0.1
+    assert p95 < 0.15

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import AvaliacaoEmpresa, Empresa
+from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
 from .serializers import (
     AvaliacaoEmpresaSerializer,
     EmpresaChangeLogSerializer,
@@ -17,11 +17,7 @@ from .tasks import nova_avaliacao
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
-    queryset = (
-        Empresa.objects.filter(deleted=False)
-        .select_related("usuario", "organizacao")
-        .prefetch_related("tags")
-    )
+    queryset = Empresa.objects.filter(deleted=False).select_related("usuario", "organizacao").prefetch_related("tags")
     serializer_class = EmpresaSerializer
     permission_classes = [IsAuthenticated]
 
@@ -30,17 +26,28 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         nome = self.request.query_params.get("nome")
         tag_ids = self.request.query_params.getlist("tag")
         termo = self.request.query_params.get("q")
+        palavras = self.request.query_params.get("palavras_chave")
         if nome:
             qs = qs.filter(nome__icontains=nome)
         if termo:
             qs = qs.filter(palavras_chave__icontains=termo)
+        if palavras:
+            qs = qs.filter(palavras_chave__icontains=palavras)
         if tag_ids:
             qs = qs.filter(tags__id__in=tag_ids).distinct()
         return qs.order_by("nome")
 
     def perform_destroy(self, instance: Empresa) -> None:
+        old_deleted = instance.deleted
         instance.deleted = True
         instance.save(update_fields=["deleted"])
+        EmpresaChangeLog.objects.create(
+            empresa=instance,
+            usuario=self.request.user,
+            campo_alterado="deleted",
+            valor_antigo=str(old_deleted),
+            valor_novo="True",
+        )
 
     def get_permissions(self):
         if self.action in {"update", "partial_update", "destroy"}:
@@ -49,19 +56,13 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (
-            request.user == empresa.usuario
-            or request.user.get_tipo_usuario in {UserType.ADMIN.value, UserType.ROOT.value}
-        ):
+        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
             return Response(status=403)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (
-            request.user == empresa.usuario
-            or request.user.get_tipo_usuario in {UserType.ADMIN.value, UserType.ROOT.value}
-        ):
+        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
             return Response(status=403)
         return super().destroy(request, *args, **kwargs)
 
@@ -70,9 +71,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if request.user.organizacao != empresa.organizacao:
             return Response({"detail": "Usuário não pertence à organização."}, status=403)
-        if AvaliacaoEmpresa.objects.filter(
-            empresa=empresa, usuario=request.user, deleted=False
-        ).exists():
+        if AvaliacaoEmpresa.objects.filter(empresa=empresa, usuario=request.user, deleted=False).exists():
             return Response({"detail": "Avaliação já registrada."}, status=400)
         serializer = AvaliacaoEmpresaSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

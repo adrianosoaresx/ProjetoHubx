@@ -15,8 +15,8 @@ import os
 from decimal import Decimal
 from pathlib import Path
 
-from celery.schedules import crontab
 import sentry_sdk
+from celery.schedules import crontab
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -230,6 +230,14 @@ CELERY_BEAT_SCHEDULE = {
     "revogar_tokens_expirados": {
         "task": "tokens.tasks.revogar_tokens_expirados",
         "schedule": crontab(minute=0, hour=0),
+    },
+    "enviar_relatorios_diarios": {
+        "task": "notificacoes.tasks.enviar_relatorios_diarios",
+        "schedule": crontab(minute="*"),
+    },
+    "enviar_relatorios_semanais": {
+        "task": "notificacoes.tasks.enviar_relatorios_semanais",
+        "schedule": crontab(minute="*"),
     },
 }
 

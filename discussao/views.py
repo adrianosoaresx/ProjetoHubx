@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db.models import Count, Max, Q
-from datetime import timedelta
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -405,7 +406,18 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
         if resposta_id:
             resposta = get_object_or_404(topico.respostas, pk=resposta_id)
             topico.melhor_resposta = resposta
-            topico.save(update_fields=["melhor_resposta"])
+            topico.resolvido = True
+            topico.save(update_fields=["melhor_resposta", "resolvido"])
+            messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
+        elif topico.resolvido:
+            topico.melhor_resposta = None
+            topico.resolvido = False
+            topico.save(update_fields=["melhor_resposta", "resolvido"])
+            messages.success(request, gettext_lazy("Resolução removida"))
+        else:
+            topico.resolvido = True
+            topico.save(update_fields=["resolvido"])
+            messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,

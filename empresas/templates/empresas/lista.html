@@ -3,6 +3,16 @@
 
 {% block title %}{% translate "Empresas" %}{% endblock %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>$(function(){ $('#tags').select2(); });</script>
+{% endblock %}
+
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10 space-y-6">
   <header class="flex items-center justify-between">
@@ -10,7 +20,7 @@
     <a href="{% url 'empresas:empresa_criar' %}" class="bg-primary-600 text-white px-4 py-2 rounded-md text-sm hover:bg-primary-700">{% translate "Nova Empresa" %}</a>
   </header>
 
-  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-table" hx-push-url="true" class="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-white border border-neutral-200 p-4 rounded-md">
+  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-table" hx-push-url="true" class="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white border border-neutral-200 p-4 rounded-md">
     <div>
       <label for="nome" class="block text-sm font-medium text-neutral-700">{% translate "Nome" %}</label>
       <input type="text" id="nome" name="nome" value="{{ request.GET.nome }}" class="w-full p-2 border rounded" />
@@ -25,11 +35,15 @@
     </div>
     <div>
       <label for="tags" class="block text-sm font-medium text-neutral-700">{% translate "Tags" %}</label>
-      <select id="tags" name="tags" multiple class="w-full p-2 border rounded">
+      <select id="tags" name="tags" multiple class="w-full p-2 border rounded select2">
         {% for tag in tags %}
           <option value="{{ tag.id }}" {% if tag.id|stringformat:'s' in selected_tags %}selected{% endif %}>{{ tag.nome }}</option>
         {% endfor %}
       </select>
+    </div>
+    <div>
+      <label for="palavras_chave" class="block text-sm font-medium text-neutral-700">{% translate "Palavras-chave" %}</label>
+      <input type="text" id="palavras_chave" name="palavras_chave" value="{{ request.GET.palavras_chave }}" class="w-full p-2 border rounded" />
     </div>
     <div>
       <label for="q" class="block text-sm font-medium text-neutral-700">{% translate "Busca" %}</label>
