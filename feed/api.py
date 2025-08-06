@@ -2,18 +2,22 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from django.db.models import Q
-from django.utils import timezone
 import boto3
 from django.conf import settings
-from django.core.files.storage import default_storage
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+from django.core.cache import cache
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.files.storage import default_storage
+from django.db import connection
+from django.db.models import Q
+from django.utils import timezone
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Comment, Like, ModeracaoPost, Post
+from .tasks import POSTS_CREATED, notify_new_post
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -103,6 +107,7 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
+    cache_timeout = 60
 
     def get_queryset(self):
         qs = (
@@ -146,11 +151,60 @@ class PostViewSet(viewsets.ModelViewSet):
                 pass
         q = params.get("q")
         if q:
-            qs = qs.filter(Q(conteudo__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+            or_terms = [t.strip() for t in q.split("|") if t.strip()]
+            if connection.vendor == "postgresql":
+                query_parts = [" & ".join(term.split()) for term in or_terms]
+                query = SearchQuery(" | ".join(query_parts), config="portuguese")
+                vector = (
+                    SearchVector("conteudo", config="portuguese")
+                    + SearchVector("tags__nome", config="portuguese")
+                )
+                return (
+                    qs.annotate(search=vector, rank=SearchRank(vector, query))
+                    .filter(search=query)
+                    .order_by("-rank")
+                )
+            or_query = Q()
+            for term in or_terms:
+                sub = Q()
+                for part in term.split():
+                    sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part)
+                or_query |= sub
+            return qs.filter(or_query)
         return qs.order_by("-created_at")
 
+    def _cache_key(self, request) -> str:
+        params = request.query_params
+        keys = [
+            str(request.user.pk),
+            *(params.get(k, "") for k in [
+                "tipo_feed",
+                "organizacao",
+                "nucleo",
+                "evento",
+                "tags",
+                "page",
+                "q",
+            ]),
+        ]
+        return "feed:api:" + ":".join(keys)
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        key = self._cache_key(request)
+        cached = cache.get(key)
+        if cached is not None:
+            return Response(cached)
+        response = super().list(request, *args, **kwargs)
+        cache.set(key, response.data, self.cache_timeout)
+        return response
+
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
-        serializer.save(autor=self.request.user, organizacao=self.request.user.organizacao)
+        post = serializer.save(autor=self.request.user, organizacao=self.request.user.organizacao)
+        POSTS_CREATED.inc()
+        if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+            notify_new_post(post.id)
+        else:
+            notify_new_post.delay(post.id)
 
     def perform_destroy(self, instance: Post) -> None:
         instance.soft_delete()

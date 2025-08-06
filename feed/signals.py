@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from django.db.models.signals import post_save
+from django.conf import settings
+from django.core.cache import cache
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from django.conf import settings
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import Comment, Like
+from .models import Comment, Like, Post
 from .tasks import notificar_autor_sobre_interacao
 
 
@@ -34,3 +35,9 @@ def notificar_comment(sender, instance, created, **kwargs):
             notificar_autor_sobre_interacao(instance.post_id, "comment")
         else:
             notificar_autor_sobre_interacao.delay(instance.post_id, "comment")
+
+
+@receiver([post_save, post_delete], sender=Post)
+def limpar_cache_feed(**_kwargs) -> None:
+    """Remove entradas de cache após alterações em posts."""
+    cache.clear()

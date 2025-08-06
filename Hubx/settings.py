@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
+    "django_prometheus",
     # ‑‑‑‑ Terceiros (third‑party) ‑‑‑‑
     "rest_framework",
     "rest_framework.authtoken",
@@ -91,6 +93,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "silk.middleware.SilkyMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -102,6 +105,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "dashboard.middleware.DashboardTimingMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "Hubx.urls"
@@ -140,6 +144,25 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
     }
 }
+
+CACHE_URL = os.getenv("CACHE_URL")
+if CACHE_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": CACHE_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+        }
+    }
+else:  # pragma: no cover - fallback para testes sem Redis
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "hubx",
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
