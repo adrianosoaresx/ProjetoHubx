@@ -7,7 +7,9 @@
     <legend class="sr-only">{% trans 'Notificações' %}</legend>
     <div>
       <label class="flex items-center gap-2">
-        {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por e-mail')|attr:'aria-checked:false' }}
+        {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
+          {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por e-mail')|attr:'aria-checked:'|add:email_checked }}
+        {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por e-mail' %}</span>
       </label>
       {{ preferencias_form.frequencia_notificacoes_email|add_class:'form-select mt-2' }}
@@ -17,7 +19,9 @@
     </div>
     <div>
       <label class="flex items-center gap-2">
-        {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por WhatsApp')|attr:'aria-checked:false' }}
+        {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
+          {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por WhatsApp')|attr:'aria-checked:'|add:whats_checked }}
+        {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por WhatsApp' %}</span>
       </label>
       {{ preferencias_form.frequencia_notificacoes_whatsapp|add_class:'form-select mt-2' }}
