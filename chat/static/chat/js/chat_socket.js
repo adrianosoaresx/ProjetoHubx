@@ -90,6 +90,7 @@
                 Object.entries(reactions).forEach(([emoji,count])=>{
                     const li = document.createElement('li');
                     li.className = 'text-sm';
+                    li.dataset.emoji = emoji;
                     if(userReactions && userReactions.includes(emoji)){
                         li.classList.add('font-bold');
                     }
@@ -102,6 +103,7 @@
         function setupReactionMenu(div, id){
             const btn = div.querySelector('.reaction-btn');
             const menu = div.querySelector('.reaction-menu');
+            const list = div.querySelector('.reactions');
             if(!btn || !menu || !id) return;
             function closeMenu(){
                 menu.classList.add('hidden');
@@ -148,6 +150,21 @@
                   });
                 closeMenu();
             });
+            if(list){
+                list.addEventListener('click', e=>{
+                    const li = e.target.closest('li');
+                    if(!li) return;
+                    const emoji = li.dataset.emoji;
+                    fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/react/`,{
+                        method:'POST',
+                        headers:{'X-CSRFToken':csrfToken,'Content-Type':'application/json'},
+                        body: JSON.stringify({emoji})
+                    }).then(r=>r.ok?r.json():Promise.reject())
+                      .then(data=>{
+                        renderReactions(div, data.reactions, data.user_reactions);
+                      });
+                });
+            }
         }
 
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
@@ -219,13 +236,13 @@
             if(pinned){ div.classList.add('pinned'); }
             let content = conteudo;
             if(tipo === 'image'){
-                content = `<img src="${conteudo}" alt="imagem" class="chat-media-thumb">`;
+                content = `<img src="${conteudo}" alt="imagem" class="w-full max-w-xs h-auto rounded">`;
             }else if(tipo === 'video'){
-                content = `<video src="${conteudo}" controls class="chat-media-thumb"></video>`;
+                content = `<video src="${conteudo}" controls class="w-full max-w-xs h-auto" aria-label="${t('videoPlayer','Player de vídeo')}"></video>`;
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">😊</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="😊" aria-label="${t('reactWith','Reagir com')} 😊">😊</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="😮" aria-label="${t('reactWith','Reagir com')} 😮">😮</button></li></ul></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li></ul></div>`;
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');

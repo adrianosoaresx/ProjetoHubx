@@ -63,3 +63,27 @@ def test_historico_edicoes_view(client, admin_user):
     resp = client.get(reverse("chat:historico_edicoes", args=[channel.id, msg.id]))
     assert resp.status_code == 200
     assert list(resp.context["logs"]) == [log]
+
+
+def test_historico_edicoes_requires_admin(client, admin_user, coordenador_user):
+    channel = ChatChannel.objects.create(titulo="H", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
+    ChatParticipant.objects.create(channel=channel, user=coordenador_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, conteudo="a")
+    client.force_login(coordenador_user)
+    resp = client.get(reverse("chat:historico_edicoes", args=[channel.id, msg.id]))
+    assert resp.status_code == 403
+
+
+def test_historico_edicoes_export_csv(client, admin_user):
+    channel = ChatChannel.objects.create(titulo="H", contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, conteudo="a")
+    ChatModerationLog.objects.create(message=msg, action="edit", moderator=admin_user, previous_content="b")
+    client.force_login(admin_user)
+    resp = client.get(
+        reverse("chat:historico_edicoes", args=[channel.id, msg.id]) + "?export=csv"
+    )
+    assert resp.status_code == 200
+    assert resp["Content-Type"] == "text/csv"
+    assert "b" in resp.content.decode()

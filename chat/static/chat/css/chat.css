@@ -199,15 +199,6 @@
     background: rgba(0, 255, 65, 0.2);
 }
 
-.chat-media-thumb {
-    max-width: 120px;
-    max-height: 120px;
-    width: 100%;
-    border-radius: 8px;
-    margin-top: 4px;
-    display: block;
-}
-
 .chat-file {
     background: #f5f5f5;
     padding: 6px 10px;
