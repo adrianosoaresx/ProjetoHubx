@@ -24,6 +24,39 @@
 
   <div hx-get="{% url 'dashboard:notificacoes-partial' %}" hx-trigger="load, every 10s" hx-target="#notifications" hx-swap="innerHTML"></div>
 
+  <section class="my-8" aria-labelledby="feed-metrics-title">
+    <h2 id="feed-metrics-title" class="text-xl font-semibold mb-4">{% trans "Métricas do Feed" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <canvas id="feed-type-chart" aria-label="{% trans 'Posts por tipo' %}" role="img"></canvas>
+      <canvas id="feed-tag-chart" aria-label="{% trans 'Top tags' %}" role="img"></canvas>
+      <canvas id="feed-author-chart" aria-label="{% trans 'Top autores' %}" role="img"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        fetch('{% url "dashboard_api:feed-metrics" %}')
+          .then(r => r.json())
+          .then(data => {
+            const tipoCtx = document.getElementById('feed-type-chart');
+            new Chart(tipoCtx, {
+              type: 'bar',
+              data: {labels: Object.keys(data.counts.posts_by_type), datasets: [{data: Object.values(data.counts.posts_by_type)}]},
+            });
+            const tagCtx = document.getElementById('feed-tag-chart');
+            new Chart(tagCtx, {
+              type: 'bar',
+              data: {labels: data.top_tags.map(t => t.tag), datasets: [{data: data.top_tags.map(t => t.total)}]},
+            });
+            const authorCtx = document.getElementById('feed-author-chart');
+            new Chart(authorCtx, {
+              type: 'bar',
+              data: {labels: data.top_authors.map(a => a.autor), datasets: [{data: data.top_authors.map(a => a.total)}]},
+            });
+          });
+      });
+    </script>
+  </section>
+
   <section class="mb-8">
     <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

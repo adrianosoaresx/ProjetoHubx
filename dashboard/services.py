@@ -12,13 +12,99 @@ from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatMessage
 from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
-from feed.models import Post
+from feed.models import Post, Tag
 from financeiro.models import LancamentoFinanceiro
 from notificacoes.models import NotificationLog
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 from .utils import get_variation
+
+
+def _apply_feed_filters(queryset, organizacao=None, data_inicio=None, data_fim=None):
+    """Aplicar filtros comuns para consultas do feed."""
+    if organizacao:
+        queryset = queryset.filter(organizacao_id=organizacao)
+    if data_inicio:
+        queryset = queryset.filter(created_at__gte=data_inicio)
+    if data_fim:
+        queryset = queryset.filter(created_at__lte=data_fim)
+    return queryset
+
+
+def get_feed_counts(
+    organizacao: Optional[int] = None,
+    data_inicio: Optional[datetime] = None,
+    data_fim: Optional[datetime] = None,
+):
+    """Retorna contagens agregadas de posts, curtidas e comentários."""
+    cache_key = f"feed-counts-{organizacao}-{data_inicio}-{data_fim}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    qs = _apply_feed_filters(Post.objects.all(), organizacao, data_inicio, data_fim)
+    aggregates = qs.aggregate(
+        total_posts=Count("id"),
+        total_likes=Count("likes", distinct=True),
+        total_comments=Count("comments", distinct=True),
+    )
+    by_type = qs.values("tipo_feed").annotate(total=Count("id")).order_by()
+    result = {
+        **aggregates,
+        "posts_by_type": {row["tipo_feed"]: row["total"] for row in by_type},
+    }
+    cache.set(cache_key, result, 300)
+    return result
+
+
+def get_top_tags(
+    organizacao: Optional[int] = None,
+    data_inicio: Optional[datetime] = None,
+    data_fim: Optional[datetime] = None,
+    limite: int = 5,
+):
+    """Retorna as tags mais utilizadas no feed."""
+    cache_key = f"feed-top-tags-{organizacao}-{data_inicio}-{data_fim}-{limite}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    posts = _apply_feed_filters(Post.objects.all(), organizacao, data_inicio, data_fim)
+    tags = (
+        Tag.objects.filter(posts__in=posts)
+        .annotate(total=Count("posts"))
+        .order_by("-total")[:limite]
+    )
+    result = [{"tag": t.nome, "total": t.total} for t in tags]
+    cache.set(cache_key, result, 300)
+    return result
+
+
+def get_top_authors(
+    organizacao: Optional[int] = None,
+    data_inicio: Optional[datetime] = None,
+    data_fim: Optional[datetime] = None,
+    limite: int = 5,
+):
+    """Retorna os autores com mais posts no período."""
+    cache_key = f"feed-top-authors-{organizacao}-{data_inicio}-{data_fim}-{limite}"
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    qs = _apply_feed_filters(Post.objects.select_related("autor"), organizacao, data_inicio, data_fim)
+    autores = (
+        qs.values("autor_id", "autor__username")
+        .annotate(total=Count("id"))
+        .order_by("-total")[:limite]
+    )
+    result = [
+        {"autor_id": a["autor_id"], "autor": a["autor__username"], "total": a["total"]}
+        for a in autores
+    ]
+    cache.set(cache_key, result, 300)
+    return result
 
 
 class DashboardService:
