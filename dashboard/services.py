@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 import json
+from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple
 
 from dateutil.relativedelta import relativedelta
@@ -118,11 +118,17 @@ class DashboardService:
         fim: datetime,
         campo: str = "created",
     ) -> Dict[str, float]:
-        atual = queryset.filter(**{f"{campo}__gte": inicio, f"{campo}__lte": fim}).count()
+        """Calcule crescimento utilizando uma única consulta."""
         delta = fim - inicio
         prev_inicio = inicio - delta
         prev_fim = inicio - timedelta(seconds=1)
-        anterior = queryset.filter(**{f"{campo}__gte": prev_inicio, f"{campo}__lte": prev_fim}).count()
+
+        aggregates = queryset.aggregate(
+            atual=Count("id", filter=Q(**{f"{campo}__gte": inicio, f"{campo}__lte": fim})),
+            anterior=Count("id", filter=Q(**{f"{campo}__gte": prev_inicio, f"{campo}__lte": prev_fim})),
+        )
+        atual = aggregates["atual"] or 0
+        anterior = aggregates["anterior"] or 0
         crescimento = get_variation(anterior, atual) if anterior else (100.0 if atual else 0.0)
         return {"total": atual, "crescimento": crescimento}
 
@@ -187,17 +193,10 @@ class DashboardMetricsService:
             "fim": fim.isoformat(),
             **{k: str(v) for k, v in filters.items()},
         }
-        cache_key = f"dashboard-{user.id}-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
+        cache_key = f"dashboard-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
         cached = cache.get(cache_key)
         if cached:
             return cached
-
-        qs_users = User.objects.all()
-        qs_orgs = Organizacao.objects.all()
-        qs_nucleos = Nucleo.objects.all()
-        qs_empresas = Empresa.objects.all()
-        qs_eventos = Evento.objects.all()
-        qs_posts = Post.objects.all()
 
         organizacao_id = filters.get("organizacao_id")
         nucleo_id = filters.get("nucleo_id")
@@ -233,37 +232,58 @@ class DashboardMetricsService:
         elif escopo not in {"auto", "global", "organizacao", "nucleo", "evento"}:
             raise ValueError("Escopo inválido")
 
-        if organizacao_id:
-            qs_users = qs_users.filter(organizacao_id=organizacao_id)
-            qs_orgs = qs_orgs.filter(pk=organizacao_id)
-            qs_nucleos = qs_nucleos.filter(organizacao_id=organizacao_id)
-            qs_empresas = qs_empresas.filter(usuario__organizacao_id=organizacao_id)
-            qs_eventos = qs_eventos.filter(organizacao_id=organizacao_id)
-            qs_posts = qs_posts.filter(organizacao_id=organizacao_id)
+        metricas = filters.get("metricas")
 
-        if nucleo_id:
-            qs_users = qs_users.filter(nucleos__id=nucleo_id)
-            qs_nucleos = qs_nucleos.filter(pk=nucleo_id)
-            qs_empresas = qs_empresas.filter(usuario__nucleos__id=nucleo_id)
-            qs_eventos = qs_eventos.filter(nucleo_id=nucleo_id)
-            qs_posts = qs_posts.filter(nucleo_id=nucleo_id)
-
-        if evento_id:
-            qs_eventos = qs_eventos.filter(pk=evento_id)
-            qs_posts = qs_posts.filter(evento_id=evento_id)
-
-        metrics = {
-            "num_users": DashboardService.calcular_crescimento(qs_users, inicio, fim, campo="created_at"),
-            "num_organizacoes": DashboardService.calcular_crescimento(qs_orgs, inicio, fim, campo="created_at"),
-            "num_nucleos": DashboardService.calcular_crescimento(qs_nucleos, inicio, fim, campo="created_at"),
-            "num_empresas": DashboardService.calcular_crescimento(qs_empresas, inicio, fim, campo="created_at"),
-            "num_eventos": DashboardService.calcular_crescimento(qs_eventos, inicio, fim, campo="created"),
-            "num_posts": DashboardService.calcular_crescimento(qs_posts, inicio, fim, campo="created_at"),
+        query_map = {
+            "num_users": (User.objects.all(), "created_at"),
+            "num_organizacoes": (Organizacao.objects.all(), "created_at"),
+            "num_nucleos": (Nucleo.objects.all(), "created_at"),
+            "num_empresas": (
+                Empresa.objects.select_related("usuario", "usuario__organizacao"),
+                "created_at",
+            ),
+            "num_eventos": (Evento.objects.select_related("nucleo"), "created"),
+            "num_posts": (
+                Post.objects.select_related("organizacao", "nucleo", "evento"),
+                "created_at",
+            ),
         }
 
-        metricas = filters.get("metricas")
         if metricas:
-            metrics = {k: v for k, v in metrics.items() if k in metricas}
+            query_map = {k: v for k, v in query_map.items() if k in metricas}
+
+        for name, (qs, campo) in list(query_map.items()):
+            if organizacao_id:
+                if name in {"num_users", "num_eventos", "num_posts"}:
+                    qs = qs.filter(organizacao_id=organizacao_id)
+                elif name == "num_organizacoes":
+                    qs = qs.filter(pk=organizacao_id)
+                elif name == "num_nucleos":
+                    qs = qs.filter(organizacao_id=organizacao_id)
+                elif name == "num_empresas":
+                    qs = qs.filter(usuario__organizacao_id=organizacao_id)
+            if nucleo_id:
+                if name == "num_users":
+                    qs = qs.filter(nucleos__id=nucleo_id)
+                if name == "num_nucleos":
+                    qs = qs.filter(pk=nucleo_id)
+                if name == "num_empresas":
+                    qs = qs.filter(usuario__nucleos__id=nucleo_id)
+                if name == "num_eventos":
+                    qs = qs.filter(nucleo_id=nucleo_id)
+                if name == "num_posts":
+                    qs = qs.filter(nucleo_id=nucleo_id)
+            if evento_id:
+                if name == "num_eventos":
+                    qs = qs.filter(pk=evento_id)
+                if name == "num_posts":
+                    qs = qs.filter(evento_id=evento_id)
+            query_map[name] = (qs, campo)
+
+        metrics = {
+            name: DashboardService.calcular_crescimento(qs, inicio, fim, campo=campo)
+            for name, (qs, campo) in query_map.items()
+        }
 
         cache.set(cache_key, metrics, 300)
         return metrics

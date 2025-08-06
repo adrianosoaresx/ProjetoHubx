@@ -48,7 +48,7 @@ Exemplo de JSON armazenado:
 }
 ```
 
-O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<id>-<escopo>-<json dos filtros>`. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
+O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<escopo>-<json dos filtros>`, permitindo reutilização entre usuários com o mesmo escopo e filtros. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
 
 ## Modelos e persistência
 

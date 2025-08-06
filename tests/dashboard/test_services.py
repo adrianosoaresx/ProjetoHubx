@@ -116,6 +116,19 @@ def test_get_metrics_cache_differentiates(admin_user):
     assert metrics1["num_users"]["total"] < metrics2["num_users"]["total"]
 
 
+def test_get_metrics_cache_shared_between_users(admin_user, django_assert_num_queries):
+    other = User.objects.create_user(
+        email="same@example.com",
+        username="same",
+        password="x",
+        user_type=UserType.ADMIN,
+        organizacao=admin_user.organizacao,
+    )
+    DashboardMetricsService.get_metrics(admin_user, escopo="organizacao", organizacao_id=admin_user.organizacao_id)
+    with django_assert_num_queries(0):
+        DashboardMetricsService.get_metrics(other, escopo="organizacao", organizacao_id=admin_user.organizacao_id)
+
+
 def test_get_metrics_permission_denied(cliente_user, admin_user):
     with pytest.raises(PermissionError):
         DashboardMetricsService.get_metrics(
