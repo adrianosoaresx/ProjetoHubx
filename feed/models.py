@@ -84,6 +84,17 @@ class Like(TimeStampedModel):
         verbose_name_plural = "Curtidas"
 
 
+class Flag(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="flags")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="flags")
+
+    class Meta:
+        unique_together = ("post", "user")
+        verbose_name = "Denúncia"
+        verbose_name_plural = "Denúncias"
+
+
 class Comment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")

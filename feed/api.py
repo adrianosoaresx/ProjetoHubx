@@ -6,7 +6,7 @@ import boto3
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
-from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.exceptions import ValidationError, ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
 from django.db.models import Q
@@ -17,7 +17,13 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from .models import Comment, Like, ModeracaoPost, Post
-from .tasks import POSTS_CREATED, notify_new_post
+from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
+from feed.application.denunciar_post import DenunciarPost
+
+
+class CanModerate(permissions.BasePermission):
+    def has_permission(self, request, view):  # pragma: no cover - simples
+        return request.user.has_perm("feed.change_moderacaopost")
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -209,8 +215,18 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance: Post) -> None:
         instance.soft_delete()
 
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAdminUser])
-    def avaliar(self, request, pk=None):
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def flag(self, request, pk=None):
+        post = self.get_object()
+        use_case = DenunciarPost()
+        try:
+            use_case.execute(post=post, user=request.user)
+        except ValidationError as e:
+            return Response({"detail": e.message}, status=400)
+        return Response(status=204)
+
+    @action(detail=True, methods=["post"], permission_classes=[CanModerate])
+    def moderate(self, request, pk=None):
         post = self.get_object()
         serializer = ModeracaoPostSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -223,6 +239,10 @@ class PostViewSet(viewsets.ModelViewSet):
                 "avaliado_em": timezone.now(),
             },
         )
+        if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+            notify_post_moderated(str(post.id), moderacao.status)
+        else:
+            notify_post_moderated.delay(str(post.id), moderacao.status)
         return Response(ModeracaoPostSerializer(moderacao).data)
 
 

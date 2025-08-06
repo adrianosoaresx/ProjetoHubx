@@ -49,3 +49,17 @@ def notify_new_post(post_id: str) -> None:
                 NOTIFICATIONS_SENT.inc()
             except Exception:  # pragma: no cover - melhor esforço
                 pass
+
+
+@shared_task
+def notify_post_moderated(post_id: str, status: str) -> None:
+    try:
+        post = Post.objects.get(id=post_id)
+    except Post.DoesNotExist:  # pragma: no cover - simples
+        return
+    try:
+        enviar_para_usuario(
+            post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status}
+        )
+    except Exception:  # pragma: no cover - melhor esforço
+        pass
