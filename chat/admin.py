@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .models import ChatChannel, ChatMessage, ChatNotification, RelatorioChatExport
+from .models import (
+    ChatChannel,
+    ChatMessage,
+    ChatNotification,
+    RelatorioChatExport,
+    ResumoChat,
+)
 
 
 @admin.register(ChatChannel)
@@ -21,3 +27,8 @@ class ChatNotificationAdmin(admin.ModelAdmin):
 @admin.register(RelatorioChatExport)
 class RelatorioChatExportAdmin(admin.ModelAdmin):
     list_display = ["channel", "formato", "gerado_por", "created"]
+
+
+@admin.register(ResumoChat)
+class ResumoChatAdmin(admin.ModelAdmin):
+    list_display = ["canal", "periodo", "gerado_em"]

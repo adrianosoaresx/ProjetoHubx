@@ -27,3 +27,15 @@ chat_notification_latency_seconds = Histogram(
     "Latência em segundos das notificações enviadas pelo WebSocket",
 )
 
+
+chat_resumos_total = Counter(
+    "chat_resumos_total",
+    "Total de resumos gerados",
+    ["periodo"],
+)
+
+chat_resumo_geracao_segundos = Histogram(
+    "chat_resumo_geracao_segundos",
+    "Tempo de geração de resumos em segundos",
+    ["periodo"],
+)

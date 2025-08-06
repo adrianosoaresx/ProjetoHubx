@@ -5,7 +5,7 @@ from typing import Any, Iterable
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import ChatChannel, ChatMessage, ChatNotification
+from .models import ChatChannel, ChatMessage, ChatNotification, ResumoChat
 from .services import criar_canal, enviar_mensagem
 
 User = get_user_model()
@@ -119,9 +119,7 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
     canal_titulo = serializers.CharField(source="mensagem.channel.titulo", read_only=True)
     mensagem_tipo = serializers.CharField(source="mensagem.tipo", read_only=True)
     canal_id = serializers.CharField(source="mensagem.channel_id", read_only=True)
-    reply_to = serializers.UUIDField(
-        source="mensagem.reply_to_id", read_only=True, allow_null=True
-    )
+    reply_to = serializers.UUIDField(source="mensagem.reply_to_id", read_only=True, allow_null=True)
 
     class Meta:
         model = ChatNotification
@@ -152,3 +150,9 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
         if request:
             return request.build_absolute_uri(url)
         return url
+
+
+class ResumoChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResumoChat
+        fields = ["id", "periodo", "conteudo", "gerado_em", "detalhes"]

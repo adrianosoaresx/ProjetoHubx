@@ -4,6 +4,7 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from core.models import SoftDeleteManager, SoftDeleteModel
@@ -116,11 +117,7 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
         """Return a mapping of emoji to count of reactions."""
         from django.db.models import Count
 
-        return dict(
-            self.reaction_details.values("emoji").annotate(c=Count("id")).values_list(
-                "emoji", "c"
-            )
-        )
+        return dict(self.reaction_details.values("emoji").annotate(c=Count("id")).values_list("emoji", "c"))
 
     def restore_from_log(self, log: "ChatModerationLog", moderator: User) -> None:
         """Restore message content from a moderation log.
@@ -140,12 +137,8 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
 
 
 class ChatMessageReaction(models.Model):
-    message = models.ForeignKey(
-        ChatMessage, on_delete=models.CASCADE, related_name="reaction_details"
-    )
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="chat_reactions"
-    )
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="reaction_details")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_reactions")
     emoji = models.CharField(max_length=32)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -190,12 +183,8 @@ class ChatMessageFlag(TimeStampedModel):
 class ChatFavorite(TimeStampedModel):
     """Marcações pessoais de mensagens favoritas."""
 
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="chat_favorites"
-    )
-    message = models.ForeignKey(
-        ChatMessage, on_delete=models.CASCADE, related_name="favorited_by"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_favorites")
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="favorited_by")
 
     class Meta:
         unique_together = ("user", "message")
@@ -223,15 +212,26 @@ class ChatModerationLog(TimeStampedModel):
         ("edit", "Editar"),
     ]
 
-    message = models.ForeignKey(
-        ChatMessage, on_delete=models.CASCADE, related_name="moderations"
-    )
+    message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
-    moderator = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="chat_moderations"
-    )
+    moderator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_moderations")
     previous_content = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Log de Moderação"
         verbose_name_plural = "Logs de Moderação"
+
+
+class ResumoChat(models.Model):
+    PERIODOS = [("diario", "Diário"), ("semanal", "Semanal")]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    canal = models.ForeignKey(ChatChannel, on_delete=models.CASCADE, related_name="resumos")
+    periodo = models.CharField(max_length=10, choices=PERIODOS)
+    conteudo = models.TextField()
+    gerado_em = models.DateTimeField(default=timezone.now)
+    detalhes = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        verbose_name = "Resumo de Chat"
+        verbose_name_plural = "Resumos de Chat"

@@ -21,10 +21,10 @@ from rest_framework.views import APIView
 from .api import add_reaction, remove_reaction
 from .models import (
     ChatChannel,
+    ChatFavorite,
     ChatMessage,
     ChatMessageReaction,
     ChatModerationLog,
-    ChatFavorite,
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
@@ -39,9 +39,10 @@ from .serializers import (
     ChatChannelSerializer,
     ChatMessageSerializer,
     ChatNotificationSerializer,
+    ResumoChatSerializer,
 )
 from .services import sinalizar_mensagem
-from .tasks import exportar_historico_chat
+from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
 
 User = get_user_model()
@@ -52,7 +53,6 @@ class UploadArquivoAPIView(APIView):
 
     permission_classes = [permissions.IsAuthenticated]
     throttle_classes = [UploadRateThrottle]
-
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         arquivo = request.FILES.get("file")
@@ -175,6 +175,34 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
+    )
+    def resumos(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        periodo = request.query_params.get("periodo")
+        qs = channel.resumos.all()
+        if periodo in {"diario", "semanal"}:
+            qs = qs.filter(periodo=periodo)
+        serializer = ResumoChatSerializer(qs, many=True)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
+        url_path="gerar-resumo",
+    )
+    def gerar_resumo(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        periodo = request.data.get("periodo") or request.query_params.get("periodo")
+        if periodo not in {"diario", "semanal"}:
+            return Response({"erro": "periodo inválido"}, status=status.HTTP_400_BAD_REQUEST)
+        gerar_resumo_chat.delay(str(channel.id), periodo)
+        return Response({"status": "agendado"})
+
+    @action(
+        detail=True,
+        methods=["get"],
         url_path="messages/history",
         permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
     )
@@ -211,9 +239,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         data = []
         for obj, item in zip(items, serializer.data):
             user_emojis = list(
-                ChatMessageReaction.objects.filter(message=obj, user=request.user).values_list(
-                    "emoji", flat=True
-                )
+                ChatMessageReaction.objects.filter(message=obj, user=request.user).values_list("emoji", flat=True)
             )
             item["user_reactions"] = user_emojis
             data.append(item)
@@ -293,9 +319,9 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
         if termo:
             if connection.vendor == "postgresql":
-                queryset = queryset.annotate(
-                    search=SearchVector("conteudo", config="portuguese")
-                ).filter(search=SearchQuery(termo))
+                queryset = queryset.annotate(search=SearchVector("conteudo", config="portuguese")).filter(
+                    search=SearchQuery(termo)
+                )
             else:
                 queryset = queryset.filter(conteudo__icontains=termo)
 
@@ -348,10 +374,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         """Adiciona ou remove uma mensagem dos favoritos do usuário."""
         msg = self.get_object()
         if request.method.lower() == "post":
-            if (
-                ChatFavorite.objects.filter(user=request.user).count()
-                >= 1000
-            ):
+            if ChatFavorite.objects.filter(user=request.user).count() >= 1000:
                 return Response(status=status.HTTP_409_CONFLICT)
             ChatFavorite.objects.get_or_create(user=request.user, message=msg)
             return Response(status=status.HTTP_201_CREATED)
@@ -386,17 +409,13 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         emoji = request.data.get("emoji")
         if not emoji:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        exists = ChatMessageReaction.objects.filter(
-            message=msg, user=request.user, emoji=emoji
-        ).exists()
+        exists = ChatMessageReaction.objects.filter(message=msg, user=request.user, emoji=emoji).exists()
         if exists:
             remove_reaction(msg, request.user, emoji)
         else:
             add_reaction(msg, request.user, emoji)
         user_emojis = list(
-            ChatMessageReaction.objects.filter(message=msg, user=request.user).values_list(
-                "emoji", flat=True
-            )
+            ChatMessageReaction.objects.filter(message=msg, user=request.user).values_list("emoji", flat=True)
         )
         counts = msg.reaction_counts()
         layer = get_channel_layer()
