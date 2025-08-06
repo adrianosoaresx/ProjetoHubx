@@ -65,7 +65,7 @@
           📌
         </button>
         <button
-          hx-get="{% url 'chat:historico_edicoes' m.channel_id %}?message={{ m.id }}"
+          hx-get="{% url 'chat:historico_edicoes' m.channel_id m.id %}"
           hx-target="#modal"
           class="text-xs text-neutral-600"
           aria-label="{% trans 'Histórico de edições' %}"

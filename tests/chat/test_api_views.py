@@ -13,7 +13,13 @@ from rest_framework.settings import api_settings
 from rest_framework.test import APIClient
 
 from chat.api import notify_users
-from chat.models import ChatChannel, ChatMessage, ChatParticipant, RelatorioChatExport
+from chat.models import (
+    ChatChannel,
+    ChatMessage,
+    ChatModerationLog,
+    ChatParticipant,
+    RelatorioChatExport,
+)
 from chat.throttles import UploadRateThrottle
 
 User = get_user_model()
@@ -132,26 +138,16 @@ def test_messages_permission_denied_for_non_participant(api_client: APIClient, a
     assert resp.status_code == 403
 
 
-def test_search_messages_filters_and_permissions(
-    api_client: APIClient, admin_user, coordenador_user
-):
+def test_search_messages_filters_and_permissions(api_client: APIClient, admin_user, coordenador_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     other = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     ChatParticipant.objects.create(channel=other, user=coordenador_user)
-    msg = ChatMessage.objects.create(
-        channel=channel, remetente=admin_user, tipo="text", conteudo="hello world"
-    )
-    ChatMessage.objects.create(
-        channel=channel, remetente=admin_user, tipo="image", conteudo="hello img"
-    )
-    old = ChatMessage.objects.create(
-        channel=channel, remetente=admin_user, tipo="text", conteudo="hello old"
-    )
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="hello world")
+    ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="image", conteudo="hello img")
+    old = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="hello old")
     ChatMessage.objects.filter(pk=old.pk).update(created=timezone.now() - timedelta(days=2))
-    ChatMessage.objects.create(
-        channel=other, remetente=coordenador_user, tipo="text", conteudo="hello secret"
-    )
+    ChatMessage.objects.create(channel=other, remetente=coordenador_user, tipo="text", conteudo="hello secret")
     api_client.force_authenticate(admin_user)
     cache.clear()
     url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
@@ -171,15 +167,9 @@ def test_search_messages_filters_and_permissions(
 def test_search_messages_date_range(api_client: APIClient, admin_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
-    old_msg = ChatMessage.objects.create(
-        channel=channel, remetente=admin_user, tipo="text", conteudo="foo"
-    )
-    ChatMessage.objects.filter(pk=old_msg.pk).update(
-        created=timezone.now() - timedelta(days=5)
-    )
-    recent_msg = ChatMessage.objects.create(
-        channel=channel, remetente=admin_user, tipo="text", conteudo="foo bar"
-    )
+    old_msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="foo")
+    ChatMessage.objects.filter(pk=old_msg.pk).update(created=timezone.now() - timedelta(days=5))
+    recent_msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="foo bar")
     api_client.force_authenticate(admin_user)
     url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
     params = {
@@ -198,9 +188,7 @@ def test_history_before_returns_previous_desc(api_client: APIClient, admin_user)
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     msgs = [
-        ChatMessage.objects.create(
-            channel=channel, remetente=admin_user, tipo="text", conteudo=f"m{i}"
-        )
+        ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo=f"m{i}")
         for i in range(30)
     ]
     api_client.force_authenticate(admin_user)
@@ -218,9 +206,7 @@ def test_history_before_accepts_timestamp(api_client: APIClient, admin_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     msgs = [
-        ChatMessage.objects.create(
-            channel=channel, remetente=admin_user, tipo="text", conteudo=f"t{i}"
-        )
+        ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo=f"t{i}")
         for i in range(3)
     ]
     api_client.force_authenticate(admin_user)
@@ -290,11 +276,26 @@ def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_
     assert del_resp.status_code == 204
     assert not ChatMessage.objects.filter(pk=msg.pk).exists()
     assert ChatMessage.all_objects.filter(pk=msg.pk).exists()
-    from chat.models import ChatModerationLog
-
     logs = ChatModerationLog.objects.filter(message=msg)
     assert logs.filter(action="edit").exists()
     assert logs.filter(action="remove").exists()
+
+
+def test_restore_message(api_client: APIClient, admin_user):
+    conv = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user, is_admin=True)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, conteudo="orig")
+    api_client.force_authenticate(admin_user)
+    # edit message to create log
+    edit_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/"
+    api_client.patch(edit_url, {"conteudo": "novo"})
+    log = ChatModerationLog.objects.filter(message=msg, action="edit").latest("created")
+    restore_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/restore/"
+    resp = api_client.post(restore_url, {"log_id": str(log.id)})
+    assert resp.status_code == 200
+    msg.refresh_from_db()
+    assert msg.conteudo == "orig"
+    assert ChatModerationLog.objects.filter(message=msg, action="edit").count() == 2
 
 
 def test_flag_message_hides_and_metrics(api_client: APIClient, admin_user):
@@ -403,6 +404,7 @@ def test_moderacao_endpoints(api_client: APIClient, admin_user):
     assert not ChatMessage.objects.filter(pk=msg2.pk).exists()
     assert ChatMessage.all_objects.filter(pk=msg2.pk).exists()
 
+
 def test_upload_throttling(api_client: APIClient, admin_user):
     api_client.force_authenticate(admin_user)
     cache.clear()
@@ -423,4 +425,3 @@ def test_upload_throttling(api_client: APIClient, admin_user):
     finally:
         api_settings.DEFAULT_THROTTLE_RATES = original
         UploadRateThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
-

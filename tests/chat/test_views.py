@@ -1,8 +1,7 @@
 import pytest
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
-from chat.models import ChatChannel, ChatParticipant, ChatMessage, ChatModerationLog
+from chat.models import ChatChannel, ChatMessage, ChatModerationLog, ChatParticipant
 
 pytestmark = pytest.mark.django_db
 
@@ -59,10 +58,8 @@ def test_historico_edicoes_view(client, admin_user):
     channel = ChatChannel.objects.create(titulo="H", contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
     msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, conteudo="a")
-    ChatModerationLog.objects.create(message=msg, action="edit", moderator=admin_user, previous_content="b")
+    log = ChatModerationLog.objects.create(message=msg, action="edit", moderator=admin_user, previous_content="b")
     client.force_login(admin_user)
-    resp = client.get(reverse("chat:historico_edicoes", args=[channel.id]))
+    resp = client.get(reverse("chat:historico_edicoes", args=[channel.id, msg.id]))
     assert resp.status_code == 200
-    assert "logs" in resp.context
-
-
+    assert list(resp.context["logs"]) == [log]

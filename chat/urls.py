@@ -19,7 +19,7 @@ urlpatterns = [
         name="exportar_modal",
     ),
     path(
-        "<uuid:channel_id>/historico/",
+        "<uuid:channel_id>/mensagens/<uuid:message_id>/historico/",
         views.historico_edicoes,
         name="historico_edicoes",
     ),

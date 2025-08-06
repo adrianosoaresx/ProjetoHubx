@@ -27,6 +27,7 @@ chat_message_pin = ChatMessageViewSet.as_view({"post": "pin"})
 chat_message_unpin = ChatMessageViewSet.as_view({"post": "unpin"})
 chat_message_react = ChatMessageViewSet.as_view({"post": "react"})
 chat_message_flag = ChatMessageViewSet.as_view({"post": "flag"})
+chat_message_restore = ChatMessageViewSet.as_view({"post": "restore"})
 chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
 
 urlpatterns = router.urls + [
@@ -56,6 +57,11 @@ urlpatterns = router.urls + [
         name="chat-channel-message-react",
     ),
     path(
+        "channels/<uuid:channel_pk>/messages/<uuid:pk>/restore/",
+        chat_message_restore,
+        name="chat-channel-message-restore",
+    ),
+    path(
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/flag/",
         chat_message_flag,
         name="chat-channel-message-flag",
@@ -72,4 +78,3 @@ urlpatterns = router.urls + [
     ),
     path("upload/", UploadArquivoAPIView.as_view(), name="chat-upload"),
 ]
-
