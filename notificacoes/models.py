@@ -19,6 +19,7 @@ class NotificationStatus(models.TextChoices):
     PENDENTE = "pendente", _("Pendente")
     ENVIADA = "enviada", _("Enviada")
     FALHA = "falha", _("Falha")
+    LIDA = "lida", _("Lida")
 
 
 class NotificationTemplate(TimeStampedModel):

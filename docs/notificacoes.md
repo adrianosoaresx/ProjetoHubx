@@ -41,6 +41,7 @@ Se todos os canais preferidos do usuário estiverem desabilitados, um `Notificat
 - `GET/PUT /api/notificacoes/preferencias/` – preferências do usuário autenticado.
 - `GET /api/notificacoes/logs/` – histórico do próprio usuário.
 - `POST /api/notificacoes/enviar/` – dispara uma notificação com `user_id`, `template_codigo` e `contexto`.
+- `PATCH /api/notificacoes/logs/<id>/` – marca uma notificação como lida.
 
 ### Métricas
 

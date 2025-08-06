@@ -2,7 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
-from notificacoes.models import NotificationLog, NotificationTemplate
+from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
 
 pytestmark = pytest.mark.django_db
 
@@ -39,3 +39,40 @@ def test_logs_filtrados_por_usuario(client) -> None:
     resp = client.get("/api/notificacoes/logs/")
     assert resp.status_code == 200
     assert len(resp.json()) == 1
+
+
+def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(
+        codigo="t", assunto="Oi", corpo="C", canal="email"
+    )
+    log = NotificationLog.objects.create(
+        user=user, template=template, canal="email", status=NotificationStatus.ENVIADA
+    )
+    client.force_login(user)
+    resp = client.patch(
+        f"/api/notificacoes/logs/{log.id}/",
+        {"status": NotificationStatus.LIDA},
+        format="json",
+    )
+    assert resp.status_code == 204
+    log.refresh_from_db()
+    assert log.status == NotificationStatus.LIDA
+
+
+def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
+    user1 = UserFactory()
+    user2 = UserFactory()
+    template = NotificationTemplate.objects.create(
+        codigo="t2", assunto="Oi", corpo="C", canal="email"
+    )
+    log = NotificationLog.objects.create(
+        user=user1, template=template, canal="email", status=NotificationStatus.ENVIADA
+    )
+    client.force_login(user2)
+    resp = client.patch(
+        f"/api/notificacoes/logs/{log.id}/",
+        {"status": NotificationStatus.LIDA},
+        format="json",
+    )
+    assert resp.status_code == 404

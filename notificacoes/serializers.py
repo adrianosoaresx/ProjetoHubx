@@ -11,6 +11,8 @@ class NotificationTemplateSerializer(serializers.ModelSerializer):
         fields = ["id", "codigo", "assunto", "corpo", "canal", "ativo"]
 class NotificationLogSerializer(serializers.ModelSerializer):
     template_codigo = serializers.CharField(source="template.codigo", read_only=True)
+    template_assunto = serializers.CharField(source="template.assunto", read_only=True)
+    template_corpo = serializers.CharField(source="template.corpo", read_only=True)
 
     class Meta:
         model = NotificationLog
@@ -18,13 +20,25 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "template_codigo",
+            "template_assunto",
+            "template_corpo",
             "canal",
             "status",
             "data_envio",
             "erro",
             "destinatario",
         ]
-        read_only_fields = fields
+        read_only_fields = [
+            "id",
+            "user",
+            "template_codigo",
+            "template_assunto",
+            "template_corpo",
+            "canal",
+            "data_envio",
+            "erro",
+            "destinatario",
+        ]
 
 
 class PushSubscriptionSerializer(serializers.ModelSerializer):

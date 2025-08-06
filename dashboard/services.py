@@ -14,7 +14,7 @@ from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
 from feed.models import Post, Tag
 from financeiro.models import LancamentoFinanceiro
-from notificacoes.models import NotificationLog
+from notificacoes.models import NotificationLog, NotificationStatus
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -285,7 +285,9 @@ class DashboardService:
 
     @staticmethod
     def ultimas_notificacoes(user: User, limit: int = 5):
-        qs = NotificationLog.objects.select_related("template")
+        qs = NotificationLog.objects.select_related("template").exclude(
+            status=NotificationStatus.LIDA
+        )
         if user.user_type not in {UserType.ROOT, UserType.ADMIN}:
             qs = qs.filter(user=user)
         return qs.order_by("-data_envio")[:limit]
