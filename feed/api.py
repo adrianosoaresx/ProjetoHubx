@@ -4,6 +4,10 @@ from datetime import datetime
 
 from django.db.models import Q
 from django.utils import timezone
+import boto3
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -47,13 +51,21 @@ class PostSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"evento": "Evento é obrigatório"})
         return attrs
 
+    def validate_conteudo(self, value: str | None) -> str | None:
+        if value and len(value) > 500:
+            raise serializers.ValidationError("Conteúdo deve ter no máximo 500 caracteres.")
+        return value
+
     def _handle_media(self, validated_data):
         from .services import upload_media
 
         for field in ["image", "pdf", "video"]:
             file = validated_data.get(field)
             if file:
-                validated_data[field] = upload_media(file)
+                try:
+                    validated_data[field] = upload_media(file)
+                except DjangoValidationError as e:
+                    raise serializers.ValidationError({field: e.messages}) from e
 
     def create(self, validated_data):
         self._handle_media(validated_data)
@@ -63,20 +75,28 @@ class PostSerializer(serializers.ModelSerializer):
         self._handle_media(validated_data)
         return super().update(instance, validated_data)
 
-    def get_image_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        if not obj.image:
+    def _generate_presigned(self, key: str | None) -> str | None:  # pragma: no cover - simples
+        if not key:
             return None
-        return obj.image if isinstance(obj.image, str) else obj.image.url
+        bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "")
+        if bucket:
+            client = boto3.client("s3")
+            return client.generate_presigned_url(
+                "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=3600
+            )
+        return default_storage.url(key)
+
+    def get_image_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
+        key = getattr(obj.image, "name", obj.image)
+        return self._generate_presigned(key)
 
     def get_pdf_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        if not obj.pdf:
-            return None
-        return obj.pdf if isinstance(obj.pdf, str) else obj.pdf.url
+        key = getattr(obj.pdf, "name", obj.pdf)
+        return self._generate_presigned(key)
 
     def get_video_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
-        if not obj.video:
-            return None
-        return obj.video if isinstance(obj.video, str) else obj.video.url
+        key = getattr(obj.video, "name", obj.video)
+        return self._generate_presigned(key)
 
 
 class PostViewSet(viewsets.ModelViewSet):

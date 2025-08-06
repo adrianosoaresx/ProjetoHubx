@@ -19,7 +19,7 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 
 - **Inclui**:  
   - Listagem de posts por tipo_feed e filtros (organização, tags).  
-  - Criação, edição e remoção de posts contendo texto, imagem ou PDF.  
+  - Criação, edição e remoção de posts contendo texto, imagem, PDF ou vídeo.
   - Upload e download de arquivos associados aos posts.  
   - Paginação e ordenação de publicações.  
 - **Exclui**:  
@@ -34,8 +34,8 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
   - Prioridade: Alta  
   - Critérios de Aceite: Retorna lista paginada via `GET /api/feed/?tipo_feed=<tipo>&...`.  
 
-- **RF‑02**  
-  - Descrição: Criar novo post com texto e mídia (imagem ou PDF).  
+- **RF‑02**
+  - Descrição: Criar novo post com texto e mídia (imagem, PDF ou vídeo).
   - Prioridade: Alta  
   - Critérios de Aceite: `POST /api/feed/` aceita `conteudo`, `tipo_feed`, `file`; retorna HTTP 201.  
 
@@ -112,9 +112,10 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
 
 
 - Se `tipo_feed` = 'nucleo', campo `nucleo` é obrigatório.  
-- Se `tipo_feed` = 'evento', campo `evento` é obrigatório.  
-- `organizacao` é obrigatório para todos os posts.  
+- Se `tipo_feed` = 'evento', campo `evento` é obrigatório.
+- `organizacao` é obrigatório para todos os posts.
 - Posts marcados como `deleted` não aparecem no feed.
+- Vídeos devem estar nos formatos MP4 ou WebM e ter até 20 MB.
 
 
 ## 7. Modelo de Dados
@@ -128,10 +129,11 @@ O App Feed permite exibir e gerenciar publicações de texto e mídia, organizad
   - organizacao: FK → Organizacao.id  
   - tipo_feed: enum('global','usuario','nucleo','evento')  
   - nucleo: FK → Nucleo.id (opcional)  
-  - evento: FK → Evento.id (opcional)  
-  - conteudo: TextField  
-  - image: ImageField (S3)  
+  - evento: FK → Evento.id (opcional)
+  - conteudo: TextField
+  - image: ImageField (S3)
   - pdf: FileField (S3)
+  - video: FileField (S3)
 
 
 ## 8. Critérios de Aceite (Gherkin)

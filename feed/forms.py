@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from .models import Comment, Like, Post, Tag
+from .services import upload_media
 
 User = get_user_model()
 
@@ -46,7 +48,10 @@ class PostForm(forms.ModelForm):
         if user:
             self.user = user
             self.fields["nucleo"].queryset = user.nucleos.all()
-            self.fields["evento"].queryset = user.eventos.all()
+            if hasattr(user, "eventos"):
+                self.fields["evento"].queryset = user.eventos.all()
+            else:
+                self.fields["evento"].queryset = self.fields["evento"].queryset.none()
         else:
             self.user = None
         self.fields["tags"].queryset = Tag.objects.all()
@@ -62,6 +67,14 @@ class PostForm(forms.ModelForm):
             raise forms.ValidationError("Envie apenas uma mídia por vez.")
         if not conteudo and not img and not pdf and not video:
             raise forms.ValidationError("Informe um conteúdo ou selecione uma mídia.")
+
+        for field in ["image", "pdf", "video"]:
+            file = cleaned_data.get(field)
+            if file:
+                try:
+                    cleaned_data[field] = upload_media(file)
+                except ValidationError as e:
+                    self.add_error(field, e.message)
 
         tipo_feed = cleaned_data.get("tipo_feed")
         nucleo = cleaned_data.get("nucleo")

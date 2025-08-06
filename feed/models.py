@@ -6,6 +6,7 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxLengthValidator
 from django.db import models
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
@@ -36,7 +37,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
     autor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     organizacao = models.ForeignKey("organizacoes.Organizacao", on_delete=models.CASCADE, related_name="posts")
     tipo_feed = models.CharField(max_length=10, choices=TIPO_FEED_CHOICES, default="global")
-    conteudo = models.TextField(blank=True)
+    conteudo = models.TextField(blank=True, validators=[MaxLengthValidator(500)])
     image = models.ImageField(upload_to="uploads/", null=True, blank=True)
     pdf = models.FileField(upload_to="uploads/", null=True, blank=True)
     video = models.FileField(upload_to="videos/", null=True, blank=True)
@@ -54,14 +55,6 @@ class Post(TimeStampedModel, SoftDeleteModel):
 
     def clean(self) -> None:
         super().clean()
-        if self.video:
-            ext = Path(self.video.name).suffix.lower()
-            allowed = getattr(settings, "FEED_VIDEO_ALLOWED_EXTS", [".mp4", ".webm"])
-            if ext not in allowed:
-                raise ValidationError({"video": "Formato de vídeo não suportado"})
-            max_size = getattr(settings, "FEED_VIDEO_MAX_SIZE", 50 * 1024 * 1024)
-            if self.video.size > max_size:
-                raise ValidationError({"video": "Vídeo maior que o limite"})
         if self.tipo_feed == "nucleo" and not self.nucleo:
             raise ValidationError({"nucleo": "Núcleo é obrigatório"})
         if self.tipo_feed == "evento" and not self.evento:

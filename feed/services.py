@@ -2,49 +2,41 @@ from __future__ import annotations
 
 import mimetypes
 import uuid
+from pathlib import Path
 from typing import IO
 
-import boto3
-from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 
 
 def upload_media(file: IO[bytes]) -> str:
-    """Upload media to S3 with simple retry logic.
+    """Valida e envia mídia para o storage configurado.
 
-    Returns the generated presigned URL.
+    Retorna apenas o caminho/chave gerado, sem URL assinada.
     """
-    content_type = getattr(file, "content_type", None) or mimetypes.guess_type(file.name)[0]
+
+    content_type = getattr(file, "content_type", "") or mimetypes.guess_type(file.name)[0] or ""
     size = getattr(file, "size", 0)
-    ext = (file.name or "").lower()
+    ext = Path(file.name).suffix.lower()
 
-    limits = {
-        "image": 5 * 1024 * 1024,
-        "video": 20 * 1024 * 1024,
-        "pdf": 10 * 1024 * 1024,
-    }
-    kind = "image"
-    if content_type:
-        if content_type.startswith("video/"):
-            kind = "video"
-        elif content_type == "application/pdf" or ext.endswith(".pdf"):
-            kind = "pdf"
-    if size > limits[kind]:
-        raise ValidationError("Arquivo maior que o permitido")
+    image_exts = getattr(settings, "FEED_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif"])
+    pdf_exts = getattr(settings, "FEED_PDF_ALLOWED_EXTS", [".pdf"])
+    video_exts = getattr(settings, "FEED_VIDEO_ALLOWED_EXTS", [".mp4", ".webm"])
 
-    bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "")
+    if ext in image_exts and content_type.startswith("image/"):
+        max_size = getattr(settings, "FEED_IMAGE_MAX_SIZE", 5 * 1024 * 1024)
+    elif ext in pdf_exts and content_type == "application/pdf":
+        max_size = getattr(settings, "FEED_PDF_MAX_SIZE", 10 * 1024 * 1024)
+    elif ext in video_exts and content_type.startswith("video/"):
+        max_size = getattr(settings, "FEED_VIDEO_MAX_SIZE", 20 * 1024 * 1024)
+    else:
+        raise ValidationError("Formato de arquivo não suportado")
+
+    if size > max_size:
+        raise ValidationError("Arquivo maior que o limite permitido")
+
     key = f"feed/{uuid.uuid4()}-{file.name}"
-    if bucket:
-        client = boto3.client("s3")
-        for attempt in range(3):
-            try:
-                file.seek(0)
-                client.upload_fileobj(file, bucket, key)
-                break
-            except ClientError:
-                if attempt == 2:
-                    raise
-        return client.generate_presigned_url("get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=3600)
-    # Sem S3 configurado, retorna caminho gerado
+    file.seek(0)
+    default_storage.save(key, file)
     return key
