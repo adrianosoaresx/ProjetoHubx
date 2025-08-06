@@ -22,6 +22,8 @@ class EmpresaForm(forms.ModelForm):
             "logo",
             "descricao",
             "palavras_chave",
+            "validado_em",
+            "fonte_validacao",
         ]
 
     def __init__(self, *args, **kwargs):
@@ -30,6 +32,8 @@ class EmpresaForm(forms.ModelForm):
             self.fields["tags_field"].initial = ", ".join(self.instance.tags.values_list("nome", flat=True))
         self.initial.setdefault("organizacao", getattr(self.instance, "organizacao", None))
         self.initial.setdefault("usuario", getattr(self.instance, "usuario", None))
+        self.fields["validado_em"].disabled = True
+        self.fields["fonte_validacao"].disabled = True
 
     def clean_cnpj(self):
         cnpj = re.sub(r"\D", "", self.cleaned_data["cnpj"])

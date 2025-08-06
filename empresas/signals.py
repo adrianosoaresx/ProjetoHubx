@@ -5,6 +5,7 @@ from django.dispatch import receiver
 
 from .models import Empresa
 from .services import LOG_FIELDS, registrar_alteracoes
+from .tasks import criar_post_empresa, validar_cnpj_empresa
 
 
 def _update_search_vector(instance: Empresa) -> None:
@@ -35,6 +36,9 @@ def _log_changes(sender, instance, created, **kwargs):
         old_data["tags"] = getattr(instance, "_old_tags", [])
         registrar_alteracoes(instance.usuario, instance, old_data)
     _update_search_vector(instance)
+    if created:
+        criar_post_empresa.delay(str(instance.id))
+        validar_cnpj_empresa.delay(str(instance.id))
 
 
 @receiver(m2m_changed, sender=Empresa.tags.through)
