@@ -11,6 +11,7 @@ from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from organizacoes.factories import OrganizacaoFactory
+from financeiro.models import CentroCusto, LancamentoFinanceiro
 
 pytestmark = pytest.mark.django_db
 
@@ -144,3 +145,24 @@ def test_get_metrics_invalid_period(admin_user):
 def test_get_metrics_invalid_date(admin_user):
     with pytest.raises(ValueError):
         DashboardMetricsService.get_metrics(admin_user, inicio="bad-date")
+
+
+def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
+    InscricaoEvento.objects.create(evento=evento, user=cliente_user, status="confirmada")
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user, metricas=["inscricoes_confirmadas"], escopo="organizacao", organizacao_id=evento.organizacao_id
+    )
+    assert metrics["inscricoes_confirmadas"]["total"] >= 1
+
+
+def test_get_metrics_lancamentos_pendentes(admin_user, organizacao):
+    centro = CentroCusto.objects.create(nome="c", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=organizacao)
+    LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
+        valor=10,
+    )
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user, metricas=["lancamentos_pendentes"], escopo="organizacao", organizacao_id=organizacao.id
+    )
+    assert metrics["lancamentos_pendentes"]["total"] >= 1

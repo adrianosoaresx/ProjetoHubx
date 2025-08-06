@@ -247,6 +247,16 @@ class DashboardMetricsService:
                 Post.objects.select_related("organizacao", "nucleo", "evento"),
                 "created_at",
             ),
+            "inscricoes_confirmadas": (
+                InscricaoEvento.objects.select_related("evento").filter(status="confirmada"),
+                "created",
+            ),
+            "lancamentos_pendentes": (
+                LancamentoFinanceiro.objects.select_related("centro_custo").filter(
+                    status=LancamentoFinanceiro.Status.PENDENTE
+                ),
+                "data_lancamento",
+            ),
         }
 
         if metricas:
@@ -262,6 +272,10 @@ class DashboardMetricsService:
                     qs = qs.filter(organizacao_id=organizacao_id)
                 elif name == "num_empresas":
                     qs = qs.filter(usuario__organizacao_id=organizacao_id)
+                elif name == "inscricoes_confirmadas":
+                    qs = qs.filter(evento__organizacao_id=organizacao_id)
+                elif name == "lancamentos_pendentes":
+                    qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
             if nucleo_id:
                 if name == "num_users":
                     qs = qs.filter(nucleos__id=nucleo_id)
@@ -273,11 +287,19 @@ class DashboardMetricsService:
                     qs = qs.filter(nucleo_id=nucleo_id)
                 if name == "num_posts":
                     qs = qs.filter(nucleo_id=nucleo_id)
+                if name == "inscricoes_confirmadas":
+                    qs = qs.filter(evento__nucleo_id=nucleo_id)
+                if name == "lancamentos_pendentes":
+                    qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
             if evento_id:
                 if name == "num_eventos":
                     qs = qs.filter(pk=evento_id)
                 if name == "num_posts":
                     qs = qs.filter(evento_id=evento_id)
+                if name == "inscricoes_confirmadas":
+                    qs = qs.filter(evento_id=evento_id)
+                if name == "lancamentos_pendentes":
+                    qs = qs.filter(centro_custo__evento_id=evento_id)
             query_map[name] = (qs, campo)
 
         metrics = {
