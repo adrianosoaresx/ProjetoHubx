@@ -14,7 +14,7 @@
       <form method="post" action="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}">
         {% csrf_token %}
         <input type="hidden" name="melhor_resposta" value="{{ comentario.id }}" />
-        <button type="submit" class="text-green-600 text-xs">{% trans "Marcar como melhor" %}</button>
+        <button type="submit" class="text-green-600 text-xs">{% trans "Marcar como resolvido" %}</button>
       </form>
     {% endif %}
     </div>

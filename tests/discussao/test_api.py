@@ -23,10 +23,10 @@ def create_topico(categoria, autor, title="T"):
     )
 
 
-def test_marcar_melhor_resposta_permission(api_client, categoria, admin_user, associado_user):
+def test_marcar_resolvido_permission(api_client, categoria, admin_user, associado_user):
     topico = create_topico(categoria, associado_user)
     resp = RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
-    url = reverse("discussao_api:topico-marcar-melhor-resposta", args=[topico.pk])
+    url = reverse("discussao_api:topico-marcar-resolvido", args=[topico.pk])
 
     api_client.force_authenticate(user=associado_user)
     response = api_client.post(url, {"resposta_id": resp.id})

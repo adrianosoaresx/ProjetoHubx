@@ -5,13 +5,14 @@ from datetime import timedelta
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+
 from .models import RespostaDiscussao, Tag, TopicoDiscussao
 from .serializers import (
     RespostaDiscussaoSerializer,
@@ -62,8 +63,8 @@ class TopicoViewSet(viewsets.ModelViewSet):
             UserType.ROOT.value,
         }
 
-    @action(detail=True, methods=["post"], url_path="marcar-melhor-resposta")
-    def marcar_melhor_resposta(self, request, pk=None):
+    @action(detail=True, methods=["post"], url_path="marcar-resolvido")
+    def marcar_resolvido(self, request, pk=None):
         topico = self.get_object()
         resposta_id = request.data.get("resposta_id")
         resposta = get_object_or_404(topico.respostas, id=resposta_id)
@@ -74,7 +75,23 @@ class TopicoViewSet(viewsets.ModelViewSet):
             return Response(status=403)
         with transaction.atomic():
             topico.melhor_resposta = resposta
-            topico.save(update_fields=["melhor_resposta"])
+            topico.resolvido = True
+            topico.save(update_fields=["melhor_resposta", "resolvido"])
+        serializer = self.get_serializer(topico)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="desmarcar-resolvido")
+    def desmarcar_resolvido(self, request, pk=None):
+        topico = self.get_object()
+        if request.user not in {topico.autor} and request.user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+        }:
+            return Response(status=403)
+        with transaction.atomic():
+            topico.melhor_resposta = None
+            topico.resolvido = False
+            topico.save(update_fields=["melhor_resposta", "resolvido"])
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
