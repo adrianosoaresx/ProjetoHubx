@@ -5,6 +5,7 @@
 
 {% block chat_content %}
 <main class="max-w-4xl mx-auto h-screen flex flex-col p-4">
+  <div id="i18n-data" data-i18n='{"noResults": "{{ _("Nenhum resultado encontrado.")|escapejs }}", "loadMore": "{{ _("Carregar mais")|escapejs }}", "clear": "{{ _("Limpar")|escapejs }}", "addReaction": "{{ _("Adicionar reação")|escapejs }}", "reactWith": "{{ _("Reagir com")|escapejs }}", "pin": "{{ _("Fixar")|escapejs }}", "unpin": "{{ _("Desafixar")|escapejs }}", "pinMessage": "{{ _("Fixar mensagem")|escapejs }}", "unpinMessage": "{{ _("Desafixar mensagem")|escapejs }}", "edit": "{{ _("Editar")|escapejs }}", "uploadError": "{{ _("Erro no upload")|escapejs }}", "videoPlayer": "{{ _("Player de vídeo")|escapejs }}"}'></div>
   <div
     id="chat-container"
     data-dest-id="{{ conversation.id }}"
@@ -40,19 +41,20 @@
 
     <form id="search-form" data-channel="{{ conversation.id }}" class="mb-4 flex flex-wrap items-end gap-2" aria-label="{% trans 'Buscar mensagens' %}">
       <label for="search-q" class="sr-only">{% trans 'Buscar mensagens' %}</label>
-      <input type="search" id="search-q" name="q" class="flex-1 border rounded p-2" placeholder="{% trans 'Buscar' %}" />
-      <input type="date" name="desde" class="border rounded p-2" />
-      <input type="date" name="ate" class="border rounded p-2" />
-      <select name="tipo" class="border rounded p-2">
+      <input type="search" id="search-q" name="q" class="w-full sm:flex-1 border rounded p-2" placeholder="{% trans 'Buscar' %}" />
+      <input type="date" name="desde" class="w-full sm:w-auto border rounded p-2" />
+      <input type="date" name="ate" class="w-full sm:w-auto border rounded p-2" />
+      <select name="tipo" class="w-full sm:w-auto border rounded p-2">
         <option value="">{% trans 'Todos' %}</option>
         <option value="text">{% trans 'Texto' %}</option>
         <option value="image">{% trans 'Imagem' %}</option>
         <option value="video">{% trans 'Vídeo' %}</option>
         <option value="file">{% trans 'Arquivo' %}</option>
       </select>
-      <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
+      <button type="submit" class="w-full sm:w-auto bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
+      <button type="button" id="search-clear" class="w-full sm:w-auto px-4 py-2 border rounded">{% trans 'Limpar' %}</button>
     </form>
-    <p id="search-feedback" class="text-sm text-neutral-500 mb-2 hidden"></p>
+    <p id="search-feedback" class="text-sm text-neutral-500 mb-2 hidden text-center"></p>
     <div id="search-results" class="mb-4 space-y-2"></div>
 
     {% if pinned_messages %}
@@ -99,14 +101,16 @@
 <script>
   document.addEventListener('DOMContentLoaded', function(){
     if(window.HubXChatRoom){HubXChatRoom.init(document.getElementById('chat-container'));}
+    const texts = window.chatTexts || {};
     const searchForm = document.getElementById('search-form');
     const results = document.getElementById('search-results');
     const feedback = document.getElementById('search-feedback');
+    const clearBtn = document.getElementById('search-clear');
     let nextUrl = null;
     function render(data, append){
       if(!append){ results.innerHTML=''; }
       if(data.results.length === 0 && !append){
-        feedback.textContent = '{% trans "Nenhum resultado encontrado." %}';
+        feedback.innerHTML = `<div class="text-center"><span class="block text-4xl">🔍</span>${texts.noResults || '{% trans "Nenhum resultado encontrado." %}'}</div>`;
         feedback.classList.remove('hidden');
         nextUrl = null;
         return;
@@ -125,7 +129,7 @@
         const more = document.createElement('button');
         more.id = 'search-more';
         more.className = 'text-blue-600 hover:underline mt-2';
-        more.textContent = '{% trans "Carregar mais" %}';
+        more.textContent = texts.loadMore || '{% trans "Carregar mais" %}';
         results.appendChild(more);
       }else{
         nextUrl = null;
@@ -137,6 +141,12 @@
       fetch(`/api/chat/channels/${searchForm.dataset.channel}/messages/search/?${params.toString()}`)
         .then(r=>r.json())
         .then(data=>render(data,false));
+    });
+    clearBtn.addEventListener('click', function(){
+      searchForm.reset();
+      results.innerHTML = '';
+      feedback.classList.add('hidden');
+      nextUrl = null;
     });
     results.addEventListener('click', function(e){
       const btn = e.target.closest('button[data-id]');

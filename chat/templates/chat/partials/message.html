@@ -18,9 +18,9 @@
       {% if m.tipo == 'text' %}
         <p>{{ m.conteudo|linebreaksbr }}</p>
       {% elif m.tipo == 'image' %}
-        <img src="{{ m.arquivo.url }}" alt="" class="max-w-xs rounded" />
+        <img src="{{ m.arquivo.url }}" alt="" class="w-full max-w-xs h-auto rounded" />
       {% elif m.tipo == 'video' %}
-        <video src="{{ m.arquivo.url }}" controls class="max-w-xs"></video>
+        <video src="{{ m.arquivo.url }}" controls class="w-full max-w-xs h-auto" aria-label="{% trans 'Player de vídeo' %}"></video>
       {% elif m.tipo == 'file' %}
         <a href="{{ m.arquivo.url }}" class="text-primary underline">{{ m.arquivo.name }}</a>
       {% endif %}
@@ -33,13 +33,16 @@
           aria-haspopup="true"
           aria-expanded="false"
           aria-label="{% trans 'Adicionar reação' %}"
-        >😊</button>
+        >🙂</button>
         <ul
           class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1"
           role="menu"
         >
           <li>
-            <button type="button" class="react-option" data-emoji="😊" aria-label="{% trans 'Reagir com 😊' %}">😊</button>
+            <button type="button" class="react-option" data-emoji="🙂" aria-label="{% trans 'Reagir com 🙂' %}">🙂</button>
+          </li>
+          <li>
+            <button type="button" class="react-option" data-emoji="❤️" aria-label="{% trans 'Reagir com ❤️' %}">❤️</button>
           </li>
           <li>
             <button type="button" class="react-option" data-emoji="👍" aria-label="{% trans 'Reagir com 👍' %}">👍</button>
@@ -48,10 +51,7 @@
             <button type="button" class="react-option" data-emoji="😂" aria-label="{% trans 'Reagir com 😂' %}">😂</button>
           </li>
           <li>
-            <button type="button" class="react-option" data-emoji="❤️" aria-label="{% trans 'Reagir com ❤️' %}">❤️</button>
-          </li>
-          <li>
-            <button type="button" class="react-option" data-emoji="😮" aria-label="{% trans 'Reagir com 😮' %}">😮</button>
+            <button type="button" class="react-option" data-emoji="🎉" aria-label="{% trans 'Reagir com 🎉' %}">🎉</button>
           </li>
         </ul>
       </div>

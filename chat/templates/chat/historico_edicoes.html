@@ -4,7 +4,7 @@
 {% block chat_content %}
 <h2 class="text-xl font-semibold mb-2">{% trans "Histórico de edições" %}</h2>
 <p class="mb-4 text-sm text-gray-700">{{ message.conteudo|linebreaksbr }}</p>
-<form method="get" class="mb-4 flex gap-2 items-end">
+<form method="get" class="mb-4 flex flex-wrap gap-2 items-end">
   <div>
     <label for="inicio" class="block text-sm">{% trans "Início" %}</label>
     <input type="date" name="inicio" id="inicio" value="{{ request.GET.inicio }}" class="border px-2 py-1 rounded" />
@@ -14,44 +14,50 @@
     <input type="date" name="fim" id="fim" value="{{ request.GET.fim }}" class="border px-2 py-1 rounded" />
   </div>
   <button type="submit" class="px-3 py-1 bg-primary text-white rounded">{% trans "Filtrar" %}</button>
+  <button type="submit" name="export" value="csv" class="px-3 py-1 border rounded">{% trans "Exportar CSV" %}</button>
 </form>
-<ul class="space-y-2">
-  {% for log in logs %}
-    <li class="p-2 border rounded">
-      <div class="text-sm text-gray-600">
-        <time datetime="{{ log.created|date:'c' }}">{{ log.created|date:'d/m/Y H:i' }}</time>
-        — {{ log.moderator.username }}
-      </div>
-      <div class="mt-1">
-        {{ log.previous_content|linebreaksbr }}
-      </div>
-      <form
-        method="post"
-        class="mt-2"
-        hx-post="/api/chat/channels/{{ channel.id }}/messages/{{ message.id }}/restore/"
-        hx-swap="none"
-      >
-        {% csrf_token %}
-        <input type="hidden" name="log_id" value="{{ log.id }}" />
-        <button type="submit" class="px-2 py-1 text-xs bg-primary text-white rounded">
-          {% trans "Restaurar" %}
-        </button>
-      </form>
-    </li>
-  {% empty %}
-    <li>{% trans "Nenhum registro" %}</li>
-  {% endfor %}
-</ul>
+<div class="overflow-x-auto">
+  <table class="min-w-full text-sm">
+    <thead>
+      <tr class="text-left">
+        <th class="px-2 py-1">{% trans "Data" %}</th>
+        <th class="px-2 py-1">{% trans "Moderador" %}</th>
+        <th class="px-2 py-1">{% trans "Conteúdo anterior" %}</th>
+        <th class="px-2 py-1">{% trans "Ações" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr class="border-t">
+        <td class="px-2 py-1"><time datetime="{{ log.created|date:'c' }}">{{ log.created|date:'d/m/Y H:i' }}</time></td>
+        <td class="px-2 py-1">{{ log.moderator.username }}</td>
+        <td class="px-2 py-1">{{ log.previous_content|linebreaksbr }}</td>
+        <td class="px-2 py-1">
+          <form method="post" hx-post="/api/chat/channels/{{ channel.id }}/messages/{{ message.id }}/restore/" hx-swap="none">
+            {% csrf_token %}
+            <input type="hidden" name="log_id" value="{{ log.id }}" />
+            <button type="submit" class="px-2 py-1 text-xs bg-primary text-white rounded">{% trans "Restaurar" %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="px-2 py-4 text-center text-neutral-500">{% trans "Nenhum registro" %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% if logs.has_other_pages %}
-<div class="mt-4 flex justify-between items-center">
+<div class="mt-4 flex justify-between items-center text-sm">
   {% if logs.has_previous %}
-    <a href="?page={{ logs.previous_page_number }}" class="text-sm">{% trans "Anterior" %}</a>
+    <a href="?page={{ logs.previous_page_number }}" class="text-blue-600 hover:underline">{% trans "Anterior" %}</a>
   {% else %}
     <span></span>
   {% endif %}
-  <span class="text-sm">{{ logs.number }}/{{ logs.paginator.num_pages }}</span>
+  <span>{{ logs.number }}/{{ logs.paginator.num_pages }}</span>
   {% if logs.has_next %}
-    <a href="?page={{ logs.next_page_number }}" class="text-sm">{% trans "Próxima" %}</a>
+    <a href="?page={{ logs.next_page_number }}" class="text-blue-600 hover:underline">{% trans "Próxima" %}</a>
   {% else %}
     <span></span>
   {% endif %}
