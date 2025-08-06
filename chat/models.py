@@ -84,6 +84,13 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
     tipo = models.CharField(max_length=10, choices=MESSAGE_TYPES, default="text")
     conteudo = models.TextField(blank=True)
     arquivo = models.FileField(upload_to="chat/arquivos/", null=True, blank=True)
+    reply_to = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="respostas",
+    )
     pinned_at = models.DateTimeField(null=True, blank=True)
     reactions = models.ManyToManyField(
         User,

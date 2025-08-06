@@ -94,6 +94,42 @@ def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user):
         enviar_mensagem(canal, admin_user, "image", conteudo="not-url")
 
 
+def test_enviar_mensagem_reply_to(admin_user, coordenador_user):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    msg1 = enviar_mensagem(canal, admin_user, "text", conteudo="oi")
+    msg2 = enviar_mensagem(canal, admin_user, "text", conteudo="ola", reply_to=msg1)
+    assert msg2.reply_to == msg1
+
+
+def test_enviar_mensagem_reply_to_invalid_channel(admin_user, coordenador_user):
+    canal1 = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    canal2 = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado2",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    msg1 = enviar_mensagem(canal1, admin_user, "text", conteudo="oi")
+    with pytest.raises(ValueError):
+        enviar_mensagem(canal2, admin_user, "text", conteudo="ola", reply_to=msg1)
+
+
 def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user):
     canal = criar_canal(
         criador=admin_user,
