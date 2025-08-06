@@ -9,15 +9,13 @@ pytestmark = pytest.mark.django_db
 
 def test_enviar_api(monkeypatch) -> None:
     admin_user = UserFactory(is_staff=True)
-    template = NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
+    NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
     called: dict[str, int] = {"count": 0}
 
     def fake_delay(*args, **kwargs):
         called["count"] += 1
 
-    monkeypatch.setattr(
-        "notificacoes.services.notificacoes.enviar_notificacao_async.delay", fake_delay
-    )
+    monkeypatch.setattr("notificacoes.services.notificacoes.enviar_notificacao_async.delay", fake_delay)
 
     client = APIClient()
     client.force_authenticate(user=admin_user)

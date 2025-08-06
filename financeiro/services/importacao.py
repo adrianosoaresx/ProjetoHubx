@@ -128,12 +128,17 @@ class ImportadorPagamentos:
         errors: list[str] = []
         total = 0
         batch: list[dict[str, Any]] = []
+        existing = set(
+            LancamentoFinanceiro.objects.values_list(
+                "centro_custo_id", "conta_associado_id", "tipo", "valor", "data_lancamento"
+            )
+        )
 
         def flush(chunk: list[dict[str, Any]]):
             to_create = []
             saldo_centro: dict[str, Decimal] = {}
             saldo_conta: dict[str, Decimal] = {}
-            seen: set[tuple[str | None, str, Decimal, Any, str]] = set()
+            seen: set[tuple[str | None, str, str, Decimal, Any]] = set()
             for item in chunk:
                 payload = {
                     "centro_custo": str(item["centro_custo"].id),
@@ -158,23 +163,14 @@ class ImportadorPagamentos:
                     data["valor"],
                     data["data_lancamento"],
                 )
-                if (
-                    key in seen
-                    or LancamentoFinanceiro.objects.filter(
-                        centro_custo=data["centro_custo"],
-                        conta_associado=data.get("conta_associado"),
-                        tipo=data["tipo"],
-                        valor=data["valor"],
-                        data_lancamento=data["data_lancamento"],
-                    ).exists()
-                ):
+                if key in seen or key in existing:
                     errors.append("Lançamento duplicado")
                     continue
                 seen.add(key)
+                existing.add(key)
                 if data["status"] == LancamentoFinanceiro.Status.PAGO:
                     cid = str(data["centro_custo"].id)
                     saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + data["valor"]
-                    conta = data.get("conta_associado")
                     if conta:
                         aid = str(conta.id)
                         saldo_conta[aid] = saldo_conta.get(aid, Decimal("0")) + data["valor"]

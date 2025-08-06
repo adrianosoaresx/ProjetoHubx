@@ -1,7 +1,3 @@
-from django.db.models import Q
-
-from accounts.models import UserType
-
 """Serviços auxiliares para o módulo de empresas.
 
 Este arquivo contém funções de busca e registro de alterações. Ao manter a
@@ -9,8 +5,11 @@ lógica de busca isolada em um serviço garantimos melhor testabilidade e
 manutenção das views.
 """
 
-from .models import Empresa, Tag, EmpresaChangeLog
+from django.db.models import Q
 
+from accounts.models import UserType
+
+from .models import Empresa, EmpresaChangeLog, Tag
 
 FILTRO_CAMPOS_Q = [
     "nome__icontains",

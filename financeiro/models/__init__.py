@@ -7,12 +7,12 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 """Modelos do módulo financeiro."""
 
 
-class CentroCusto(TimeStampedModel):
+class CentroCusto(TimeStampedModel, SoftDeleteModel):
     """Centro de custos para organizar movimentações financeiras."""
 
     class Tipo(models.TextChoices):
@@ -55,7 +55,7 @@ class CentroCusto(TimeStampedModel):
         return self.nome
 
 
-class ContaAssociado(TimeStampedModel):
+class ContaAssociado(TimeStampedModel, SoftDeleteModel):
     """Conta corrente vinculada a um usuário associado."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -76,7 +76,7 @@ class ContaAssociado(TimeStampedModel):
         return f"{self.user.email} (saldo: {self.saldo})"
 
 
-class LancamentoFinanceiro(TimeStampedModel):
+class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
     """Registro financeiro com data de vencimento para controle de inadimplência."""
 
     class Tipo(models.TextChoices):
@@ -126,6 +126,10 @@ class LancamentoFinanceiro(TimeStampedModel):
             models.Index(fields=["data_lancamento"], name="idx_lanc_dt_lanc"),
             models.Index(fields=["data_vencimento"], name="idx_lanc_dt_venc"),
             models.Index(fields=["status"], name="idx_lanc_status"),
+            models.Index(
+                fields=["centro_custo", "conta_associado", "tipo", "valor", "data_lancamento"],
+                name="idx_lanc_duplicidade",
+            ),
         ]
 
     def __str__(self) -> str:
@@ -153,7 +157,7 @@ class Aporte(LancamentoFinanceiro):
         super().save(*args, **kwargs)
 
 
-class ImportacaoPagamentos(TimeStampedModel):
+class ImportacaoPagamentos(TimeStampedModel, SoftDeleteModel):
     """Registro de importações de pagamentos em massa."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -172,7 +176,7 @@ class ImportacaoPagamentos(TimeStampedModel):
         return f"{self.arquivo} ({self.total_processado})"
 
 
-class FinanceiroLog(TimeStampedModel):
+class FinanceiroLog(TimeStampedModel, SoftDeleteModel):
     """Registros de auditoria das ações financeiras."""
 
     class Acao(models.TextChoices):
@@ -182,9 +186,7 @@ class FinanceiroLog(TimeStampedModel):
         EDITAR_CENTRO = "editar_centro", "Editar Centro de Custo"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     acao = models.CharField(max_length=20, choices=Acao.choices)
     dados_anteriores = models.JSONField(default=dict, blank=True)
     dados_novos = models.JSONField(default=dict, blank=True)
@@ -199,7 +201,7 @@ class FinanceiroLog(TimeStampedModel):
         return f"{self.get_acao_display()} - {usuario}"
 
 
-class FinanceiroTaskLog(models.Model):
+class FinanceiroTaskLog(TimeStampedModel, SoftDeleteModel):
     """Armazena o resultado das tarefas assíncronas do módulo financeiro."""
 
     nome_tarefa = models.CharField(max_length=255)
@@ -211,6 +213,7 @@ class FinanceiroTaskLog(models.Model):
         ordering = ["-executada_em"]
         verbose_name = "Log de Tarefa Financeira"
         verbose_name_plural = "Logs de Tarefas Financeiras"
+        indexes = [models.Index(fields=["nome_tarefa", "executada_em"], name="idx_task_nome_exec")]
 
     def __str__(self) -> str:
         return f"{self.nome_tarefa} - {self.status}"
