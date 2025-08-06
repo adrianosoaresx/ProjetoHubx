@@ -8,6 +8,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from dashboard.utils import get_variation
+from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
+from feed.factories import PostFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -101,4 +103,26 @@ def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:
     url = reverse("dashboard_api:dashboard-list")
     api_client.get(url)
     api_client.get(url)
-    assert calls["c"] == 6
+    assert calls["c"] == 10
+
+
+def test_dashboard_new_metrics(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
+    cat = CategoriaDiscussao.objects.create(nome="c", slug="c", organizacao=admin_user.organizacao)
+    topico = TopicoDiscussao.objects.create(
+        categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
+    )
+    RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
+    url = (
+        reverse("dashboard_api:dashboard-list")
+        + "?metricas=num_posts_feed_total&metricas=num_posts_feed_recent&metricas=num_topicos&metricas=num_respostas"
+        + f"&escopo=organizacao&organizacao_id={admin_user.organizacao_id}"
+    )
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["num_posts_feed_total"]["total"] == 1
+    assert data["num_posts_feed_recent"]["total"] == 1
+    assert data["num_topicos"]["total"] == 1
+    assert data["num_respostas"]["total"] == 1

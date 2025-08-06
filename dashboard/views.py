@@ -2,6 +2,7 @@ import csv
 import shutil
 from datetime import datetime
 from io import BytesIO
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -10,7 +11,6 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
-from urllib.parse import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, ListView, TemplateView, View
 
@@ -34,7 +34,10 @@ METRICAS_INFO = {
     "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
     "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
     "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
-    "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
+    "num_posts_feed_total": {"label": _("Posts (Total)"), "icon": "fa-newspaper"},
+    "num_posts_feed_recent": {"label": _("Posts (24h)"), "icon": "fa-clock"},
+    "num_topicos": {"label": _("Tópicos"), "icon": "fa-comments"},
+    "num_respostas": {"label": _("Respostas"), "icon": "fa-reply"},
 }
 
 
@@ -104,11 +107,11 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context["escopo"] = getattr(self, "escopo", "auto")
         context["filtros"] = getattr(self, "filters", {})
         metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
-        metricas = metricas or ["num_users", "num_eventos", "num_posts"]
+        metricas = metricas or ["num_users", "num_eventos", "num_posts_feed_total"]
         context["metricas_selecionadas"] = metricas
         context["chart_data"] = [metrics[m]["total"] for m in metricas if m in metrics]
         context["metricas_disponiveis"] = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
-        context["metrics_iter"] = [
+        context["metricas_iter"] = [
             {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
             for m in metricas
             if m in metrics
@@ -165,7 +168,7 @@ def metrics_partial(request):
     try:
         metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
         metrics = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
-        metrics_iter = [
+        metricas_iter = [
             {
                 "key": m,
                 "data": metrics[m],
@@ -177,7 +180,7 @@ def metrics_partial(request):
         ]
         html = render_to_string(
             "dashboard/partials/metrics_list.html",
-            {"metrics_iter": metrics_iter, "metricas_selecionadas": metricas},
+            {"metricas_iter": metricas_iter, "metricas_selecionadas": metricas},
             request=request,
         )
         return HttpResponse(html)

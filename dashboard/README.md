@@ -18,6 +18,13 @@ Exemplo:
 /dashboard/admin/?periodo=anual&escopo=organizacao&organizacao_id=1&metricas=num_users&metricas=num_eventos
 ```
 
+## Métricas disponíveis
+
+- `num_posts_feed_total`: total de posts no feed.
+- `num_posts_feed_recent`: posts criados nas últimas 24h.
+- `num_topicos`: total de tópicos de discussão.
+- `num_respostas`: total de respostas em tópicos.
+
 ## Exportação de métricas
 
 Usuários root, admin e coordenador podem exportar as métricas atuais:

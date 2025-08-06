@@ -71,11 +71,7 @@ def get_top_tags(
         return cached
 
     posts = _apply_feed_filters(Post.objects.all(), organizacao, data_inicio, data_fim)
-    tags = (
-        Tag.objects.filter(posts__in=posts)
-        .annotate(total=Count("posts"))
-        .order_by("-total")[:limite]
-    )
+    tags = Tag.objects.filter(posts__in=posts).annotate(total=Count("posts")).order_by("-total")[:limite]
     result = [{"tag": t.nome, "total": t.total} for t in tags]
     cache.set(cache_key, result, 300)
     return result
@@ -94,15 +90,8 @@ def get_top_authors(
         return cached
 
     qs = _apply_feed_filters(Post.objects.select_related("autor"), organizacao, data_inicio, data_fim)
-    autores = (
-        qs.values("autor_id", "autor__username")
-        .annotate(total=Count("id"))
-        .order_by("-total")[:limite]
-    )
-    result = [
-        {"autor_id": a["autor_id"], "autor": a["autor__username"], "total": a["total"]}
-        for a in autores
-    ]
+    autores = qs.values("autor_id", "autor__username").annotate(total=Count("id")).order_by("-total")[:limite]
+    result = [{"autor_id": a["autor_id"], "autor": a["autor__username"], "total": a["total"]} for a in autores]
     cache.set(cache_key, result, 300)
     return result
 
@@ -131,14 +120,83 @@ class DashboardService:
         return inscricoes
 
     @staticmethod
-    def calcular_topicos_respostas_forum() -> Dict[str, int]:
-        topicos = TopicoDiscussao.objects.count()
-        respostas = RespostaDiscussao.objects.count()
-        return {"topicos": topicos, "respostas": respostas}
+    def calcular_posts_feed(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        qs = Post.objects.select_related(
+            "autor__organizacao",
+            "organizacao",
+            "nucleo",
+            "evento",
+        )
+        if organizacao_id:
+            qs = qs.filter(organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(nucleo_id=nucleo_id)
+        if evento_id:
+            qs = qs.filter(evento_id=evento_id)
+        return qs.count()
 
     @staticmethod
-    def calcular_posts_feed() -> int:
-        return Post.objects.count()
+    def calcular_posts_feed_24h(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        desde = timezone.now() - timedelta(days=1)
+        qs = Post.objects.select_related(
+            "autor__organizacao",
+            "organizacao",
+            "nucleo",
+            "evento",
+        ).filter(created_at__gte=desde)
+        if organizacao_id:
+            qs = qs.filter(organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(nucleo_id=nucleo_id)
+        if evento_id:
+            qs = qs.filter(evento_id=evento_id)
+        return qs.count()
+
+    @staticmethod
+    def calcular_topicos_discussao(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        qs = TopicoDiscussao.objects.select_related(
+            "categoria__organizacao",
+            "nucleo",
+            "evento",
+        )
+        if organizacao_id:
+            qs = qs.filter(categoria__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(Q(nucleo_id=nucleo_id) | Q(categoria__nucleo_id=nucleo_id))
+        if evento_id:
+            qs = qs.filter(Q(evento_id=evento_id) | Q(categoria__evento_id=evento_id))
+        return qs.count()
+
+    @staticmethod
+    def calcular_respostas_discussao(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        qs = RespostaDiscussao.objects.select_related(
+            "topico__categoria__organizacao",
+            "topico__nucleo",
+            "topico__evento",
+        )
+        if organizacao_id:
+            qs = qs.filter(topico__categoria__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(Q(topico__nucleo_id=nucleo_id) | Q(topico__categoria__nucleo_id=nucleo_id))
+        if evento_id:
+            qs = qs.filter(Q(topico__evento_id=evento_id) | Q(topico__categoria__evento_id=evento_id))
+        return qs.count()
 
     @staticmethod
     def calcular_mensagens_chat() -> int:
@@ -329,9 +387,25 @@ class DashboardMetricsService:
                 "created_at",
             ),
             "num_eventos": (Evento.objects.select_related("nucleo"), "created"),
-            "num_posts": (
-                Post.objects.select_related("organizacao", "nucleo", "evento"),
+            "num_posts_feed_total": (
+                Post.objects.select_related("organizacao", "nucleo", "evento", "autor__organizacao"),
                 "created_at",
+            ),
+            "num_topicos": (
+                TopicoDiscussao.objects.select_related(
+                    "categoria__organizacao",
+                    "nucleo",
+                    "evento",
+                ),
+                "created",
+            ),
+            "num_respostas": (
+                RespostaDiscussao.objects.select_related(
+                    "topico__categoria__organizacao",
+                    "topico__nucleo",
+                    "topico__evento",
+                ),
+                "created",
             ),
             "inscricoes_confirmadas": (
                 InscricaoEvento.objects.select_related("evento").filter(status="confirmada"),
@@ -350,7 +424,7 @@ class DashboardMetricsService:
 
         for name, (qs, campo) in list(query_map.items()):
             if organizacao_id:
-                if name in {"num_users", "num_eventos", "num_posts"}:
+                if name in {"num_users", "num_eventos", "num_posts_feed_total"}:
                     qs = qs.filter(organizacao_id=organizacao_id)
                 elif name == "num_organizacoes":
                     qs = qs.filter(pk=organizacao_id)
@@ -362,6 +436,10 @@ class DashboardMetricsService:
                     qs = qs.filter(evento__organizacao_id=organizacao_id)
                 elif name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
+                elif name == "num_topicos":
+                    qs = qs.filter(categoria__organizacao_id=organizacao_id)
+                elif name == "num_respostas":
+                    qs = qs.filter(topico__categoria__organizacao_id=organizacao_id)
             if nucleo_id:
                 if name == "num_users":
                     qs = qs.filter(nucleos__id=nucleo_id)
@@ -371,27 +449,45 @@ class DashboardMetricsService:
                     qs = qs.filter(usuario__nucleos__id=nucleo_id)
                 if name == "num_eventos":
                     qs = qs.filter(nucleo_id=nucleo_id)
-                if name == "num_posts":
+                if name == "num_posts_feed_total":
                     qs = qs.filter(nucleo_id=nucleo_id)
                 if name == "inscricoes_confirmadas":
                     qs = qs.filter(evento__nucleo_id=nucleo_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
+                if name == "num_topicos":
+                    qs = qs.filter(Q(nucleo_id=nucleo_id) | Q(categoria__nucleo_id=nucleo_id))
+                if name == "num_respostas":
+                    qs = qs.filter(Q(topico__nucleo_id=nucleo_id) | Q(topico__categoria__nucleo_id=nucleo_id))
             if evento_id:
                 if name == "num_eventos":
                     qs = qs.filter(pk=evento_id)
-                if name == "num_posts":
+                if name == "num_posts_feed_total":
                     qs = qs.filter(evento_id=evento_id)
                 if name == "inscricoes_confirmadas":
                     qs = qs.filter(evento_id=evento_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__evento_id=evento_id)
+                if name == "num_topicos":
+                    qs = qs.filter(Q(evento_id=evento_id) | Q(categoria__evento_id=evento_id))
+                if name == "num_respostas":
+                    qs = qs.filter(Q(topico__evento_id=evento_id) | Q(topico__categoria__evento_id=evento_id))
             query_map[name] = (qs, campo)
 
         metrics = {
             name: DashboardService.calcular_crescimento(qs, inicio, fim, campo=campo)
             for name, (qs, campo) in query_map.items()
         }
+
+        if not metricas or "num_posts_feed_recent" in metricas:
+            metrics["num_posts_feed_recent"] = {
+                "total": DashboardService.calcular_posts_feed_24h(
+                    organizacao_id=organizacao_id,
+                    nucleo_id=nucleo_id,
+                    evento_id=evento_id,
+                ),
+                "crescimento": 0.0,
+            }
 
         cache.set(cache_key, metrics, 300)
         return metrics
