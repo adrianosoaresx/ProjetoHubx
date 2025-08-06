@@ -24,6 +24,13 @@ class Tag(TimeStampedModel):
         choices=Categoria.choices,
         default=Categoria.PRODUTO,
     )
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        related_name="children",
+        on_delete=models.SET_NULL,
+    )
 
     class Meta:
         verbose_name = "Tag"

@@ -6,9 +6,11 @@ from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
+    parent = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), allow_null=True, required=False)
+
     class Meta:
         model = Tag
-        fields = ["id", "nome", "categoria"]
+        fields = ["id", "nome", "categoria", "parent"]
 
 
 class EmpresaSerializer(serializers.ModelSerializer):

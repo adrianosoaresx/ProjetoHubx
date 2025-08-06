@@ -88,7 +88,7 @@ class ContatoEmpresaForm(forms.ModelForm):
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
-        fields = ["nome", "categoria"]
+        fields = ["nome", "categoria", "parent"]
 
 
 class EmpresaWidget(s2forms.ModelSelect2Widget):

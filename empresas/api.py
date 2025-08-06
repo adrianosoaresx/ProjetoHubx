@@ -7,7 +7,11 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .metrics import empresas_favoritos_total
+from .metrics import (
+    empresas_favoritos_total,
+    empresas_purgadas_total,
+    empresas_restauradas_total,
+)
 from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
 from .serializers import (
     AvaliacaoEmpresaSerializer,
@@ -18,12 +22,14 @@ from .tasks import nova_avaliacao
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
-    queryset = Empresa.objects.filter(deleted=False).select_related("usuario", "organizacao").prefetch_related("tags")
+    queryset = Empresa.objects.select_related("usuario", "organizacao").prefetch_related("tags")
     serializer_class = EmpresaSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = self.queryset
+        if getattr(self, "action", None) not in {"restaurar", "purgar"}:
+            qs = qs.filter(deleted=False)
         nome = self.request.query_params.get("nome")
         tag_ids = self.request.query_params.getlist("tag")
         termo = self.request.query_params.get("q")
@@ -125,3 +131,39 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         logs = empresa.logs.filter(deleted=False).select_related("usuario")
         serializer = EmpresaChangeLogSerializer(logs, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def restaurar(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if not empresa.deleted:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+            return Response(status=403)
+        empresa.undelete()
+        EmpresaChangeLog.objects.create(
+            empresa=empresa,
+            usuario=request.user,
+            campo_alterado="deleted",
+            valor_antigo="True",
+            valor_novo="False",
+        )
+        empresas_restauradas_total.inc()
+        return Response(status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["delete"], permission_classes=[IsAuthenticated])
+    def purgar(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if not empresa.deleted:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+            return Response(status=403)
+        EmpresaChangeLog.objects.create(
+            empresa=empresa,
+            usuario=request.user,
+            campo_alterado="purge",
+            valor_antigo="True",
+            valor_novo="deleted",
+        )
+        empresas_purgadas_total.inc()
+        empresa.hard_delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
