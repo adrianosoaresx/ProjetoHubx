@@ -5,6 +5,7 @@ from .api_views import (
     ChatChannelViewSet,
     ChatMessageViewSet,
     ChatNotificationViewSet,
+    ChatFavoriteViewSet,
     ModeracaoViewSet,
     UploadArquivoAPIView,
 )
@@ -13,6 +14,7 @@ router = DefaultRouter()
 router.register(r"channels", ChatChannelViewSet, basename="chat-channel")
 router.register(r"notificacoes", ChatNotificationViewSet, basename="chat-notificacao")
 router.register(r"moderacao/messages", ModeracaoViewSet, basename="chat-moderacao")
+router.register(r"favorites", ChatFavoriteViewSet, basename="chat-favorite")
 
 chat_message_list = ChatMessageViewSet.as_view({"get": "list", "post": "create"})
 chat_message_detail = ChatMessageViewSet.as_view(
@@ -29,6 +31,9 @@ chat_message_react = ChatMessageViewSet.as_view({"post": "react"})
 chat_message_flag = ChatMessageViewSet.as_view({"post": "flag"})
 chat_message_restore = ChatMessageViewSet.as_view({"post": "restore"})
 chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
+chat_message_favorite = ChatMessageViewSet.as_view(
+    {"post": "favorite", "delete": "favorite"}
+)
 
 urlpatterns = router.urls + [
     path(
@@ -65,6 +70,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/flag/",
         chat_message_flag,
         name="chat-channel-message-flag",
+    ),
+    path(
+        "channels/<uuid:channel_pk>/messages/<uuid:pk>/favorite/",
+        chat_message_favorite,
+        name="chat-channel-message-favorite",
     ),
     path(
         "channels/<uuid:channel_pk>/messages/search/",

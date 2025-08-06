@@ -187,6 +187,23 @@ class ChatMessageFlag(TimeStampedModel):
         verbose_name_plural = "Sinalizações"
 
 
+class ChatFavorite(TimeStampedModel):
+    """Marcações pessoais de mensagens favoritas."""
+
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="chat_favorites"
+    )
+    message = models.ForeignKey(
+        ChatMessage, on_delete=models.CASCADE, related_name="favorited_by"
+    )
+
+    class Meta:
+        unique_together = ("user", "message")
+        indexes = [models.Index(fields=["user", "message"])]
+        verbose_name = "Favorito"
+        verbose_name_plural = "Favoritos"
+
+
 class RelatorioChatExport(TimeStampedModel):
     channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
