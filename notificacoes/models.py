@@ -69,3 +69,22 @@ class NotificationLog(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.template.codigo} -> {self.user}"  # type: ignore[attr-defined]  # pragma: no cover
+
+
+class HistoricoNotificacao(TimeStampedModel):
+    """Registro de notificações agregadas enviadas aos usuários."""
+
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices)
+    conteudo: models.JSONField = models.JSONField(default=list)
+    enviado_em: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Histórico de Notificação")
+        verbose_name_plural = _("Históricos de Notificação")
+        ordering = ["-enviado_em"]
+        unique_together = ("user", "canal", "enviado_em")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.user} - {self.canal} - {self.enviado_em:%Y-%m-%d %H:%M}"

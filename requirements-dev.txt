@@ -11,3 +11,6 @@ twilio==9.2.3
 WeasyPrint==61.2
 django-silk==5.1.0
 sentry-sdk==2.34.1
+pytest-axe==1.1.6
+axe-core-python==0.1.0
+playwright==1.54.0
