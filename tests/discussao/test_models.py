@@ -7,6 +7,7 @@ from discussao.models import (
     CategoriaDiscussao,
     InteracaoDiscussao,
     RespostaDiscussao,
+    Tag,
     TopicoDiscussao,
 )
 
@@ -62,6 +63,13 @@ def test_timestamp_and_softdelete(topico):
     topico.delete()
     assert not TopicoDiscussao.objects.filter(pk=topico.pk).exists()
     assert TopicoDiscussao.all_objects.filter(pk=topico.pk).exists()
+
+
+def test_tag_soft_delete():
+    tag = Tag.objects.create(nome="python")
+    tag.delete()
+    assert not Tag.objects.filter(pk=tag.pk).exists()
+    assert Tag.all_objects.filter(pk=tag.pk).exists()
 
 
 def test_interacao_unique_and_toggle(topico, admin_user):

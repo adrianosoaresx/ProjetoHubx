@@ -55,7 +55,7 @@ class CategoriaDiscussao(TimeStampedModel, SoftDeleteModel):
         super().save(*args, **kwargs)
 
 
-class Tag(TimeStampedModel):
+class Tag(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=100, unique=True)
 
