@@ -28,6 +28,15 @@ from .services import DashboardMetricsService, DashboardService
 
 User = get_user_model()
 
+METRICAS_INFO = {
+    "num_users": {"label": _("Usuários"), "icon": "fa-users"},
+    "num_organizacoes": {"label": _("Organizações"), "icon": "fa-building"},
+    "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
+    "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
+    "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
+    "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
+}
+
 
 class DashboardBaseView(LoginRequiredMixin, TemplateView):
     """Base view para calcular métricas."""
@@ -36,8 +45,16 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         try:
             return super().get(request, *args, **kwargs)
         except PermissionError:
-            return HttpResponseForbidden("Acesso negado")
+            messages.error(request, _("Acesso negado"))
+            if request.headers.get("Hx-Request") == "true":
+                html = render_to_string("dashboard/partials/messages.html", request=request)
+                return HttpResponse(html, status=403)
+            return HttpResponseForbidden(_("Acesso negado"))
         except ValueError as exc:
+            messages.error(request, str(exc))
+            if request.headers.get("Hx-Request") == "true":
+                html = render_to_string("dashboard/partials/messages.html", request=request)
+                return HttpResponse(html, status=400)
             return HttpResponseBadRequest(str(exc))
 
     def get_metrics(self):
@@ -46,8 +63,14 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
         inicio_str = self.request.GET.get("data_inicio")
         fim_str = self.request.GET.get("data_fim")
-        inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
-        fim = datetime.fromisoformat(fim_str) if fim_str else None
+        try:
+            inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
+        except ValueError:
+            raise ValueError("data_inicio inválida")
+        try:
+            fim = datetime.fromisoformat(fim_str) if fim_str else None
+        except ValueError:
+            raise ValueError("data_fim inválida")
 
         filters: dict[str, object] = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
@@ -84,19 +107,9 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         metricas = metricas or ["num_users", "num_eventos", "num_posts"]
         context["metricas_selecionadas"] = metricas
         context["chart_data"] = [metrics[m]["total"] for m in metricas if m in metrics]
-        metricas_info = {
-            "num_users": {"label": _("Usuários"), "icon": "fa-users"},
-            "num_organizacoes": {"label": _("Organizações"), "icon": "fa-building"},
-            "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
-            "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
-            "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
-            "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
-        }
-        context["metricas_disponiveis"] = [
-            {"key": key, "label": data["label"]} for key, data in metricas_info.items()
-        ]
+        context["metricas_disponiveis"] = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
         context["metrics_iter"] = [
-            {"key": m, "data": metrics[m], "label": metricas_info[m]["label"], "icon": metricas_info[m]["icon"]}
+            {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
             for m in metricas
             if m in metrics
         ]
@@ -150,27 +163,15 @@ def metrics_partial(request):
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
     try:
-        metricas = request.GET.getlist("metricas") or [
-            "num_users",
-            "num_organizacoes",
-            "num_nucleos",
-            "num_empresas",
-            "num_eventos",
-            "num_posts",
-        ]
-        metrics = DashboardMetricsService.get_metrics(
-            request.user, metricas=metricas
-        )
-        info = {
-            "num_users": {"label": _("Usuários"), "icon": "fa-users"},
-            "num_organizacoes": {"label": _("Organizações"), "icon": "fa-building"},
-            "num_nucleos": {"label": _("Núcleos"), "icon": "fa-users-rectangle"},
-            "num_empresas": {"label": _("Empresas"), "icon": "fa-city"},
-            "num_eventos": {"label": _("Eventos"), "icon": "fa-calendar"},
-            "num_posts": {"label": _("Posts"), "icon": "fa-newspaper"},
-        }
+        metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
+        metrics = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
         metrics_iter = [
-            {"key": m, "data": metrics[m], "label": info[m]["label"], "icon": info[m]["icon"]}
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": METRICAS_INFO[m]["label"],
+                "icon": METRICAS_INFO[m]["icon"],
+            }
             for m in metricas
             if m in metrics
         ]
@@ -181,12 +182,17 @@ def metrics_partial(request):
         )
         return HttpResponse(html)
     except PermissionError:
-        return HttpResponse(status=403)
-    except ValueError:
-        return HttpResponse(status=400)
+        messages.error(request, _("Acesso negado"))
+        html = render_to_string("dashboard/partials/messages.html", request=request)
+        return HttpResponse(html, status=403)
+    except ValueError as exc:
+        messages.error(request, str(exc))
+        html = render_to_string("dashboard/partials/messages.html", request=request)
+        return HttpResponse(html, status=400)
     except Exception:  # pragma: no cover - logado
         messages.error(request, _("Erro ao carregar métricas."))
-        return HttpResponse(status=500)
+        html = render_to_string("dashboard/partials/messages.html", request=request)
+        return HttpResponse(html, status=500)
 
 
 def lancamentos_partial(request):
@@ -371,16 +377,17 @@ class DashboardConfigApplyView(LoginRequiredMixin, View):
         if cfg.user != request.user:
             if not cfg.publico:
                 return HttpResponse(status=403)
-            if (
-                request.user.user_type != UserType.ROOT
-                and cfg.user.organizacao_id != getattr(request.user, "organizacao_id", None)
+            if request.user.user_type != UserType.ROOT and cfg.user.organizacao_id != getattr(
+                request.user, "organizacao_id", None
             ):
                 return HttpResponse(status=403)
         params = cfg.config.copy()
         filters = params.pop("filters", {})
         params.update(filters)
-        url = reverse("dashboard:dashboard") + "?" + "&".join(
-            f"{k}={','.join(v) if isinstance(v, list) else v}" for k, v in params.items()
+        url = (
+            reverse("dashboard:dashboard")
+            + "?"
+            + "&".join(f"{k}={','.join(v) if isinstance(v, list) else v}" for k, v in params.items())
         )
         return redirect(url)
 
@@ -425,9 +432,8 @@ class DashboardFilterApplyView(LoginRequiredMixin, View):
         if filtro.user != request.user:
             if not filtro.publico:
                 return HttpResponse(status=403)
-            if (
-                request.user.user_type != UserType.ROOT
-                and filtro.user.organizacao_id != getattr(request.user, "organizacao_id", None)
+            if request.user.user_type != UserType.ROOT and filtro.user.organizacao_id != getattr(
+                request.user, "organizacao_id", None
             ):
                 return HttpResponse(status=403)
         url = reverse("dashboard:dashboard") + "?" + urlencode(filtro.filtros, doseq=True)
