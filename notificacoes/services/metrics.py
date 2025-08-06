@@ -1,5 +1,5 @@
 
-from prometheus_client import Counter, Gauge  # type: ignore
+from prometheus_client import Counter, Gauge, Histogram  # type: ignore
 
 notificacoes_enviadas_total = Counter(
     "notificacoes_enviadas_total",
@@ -7,10 +7,17 @@ notificacoes_enviadas_total = Counter(
     ["canal"],
 )
 
-notificacoes_falhadas_total = Counter(
-    "notificacoes_falhadas_total",
-    "Número de notificações falhadas",
+notificacoes_falhas_total = Counter(
+    "notificacoes_falhas_total",
+    "Número de notificações com falha",
     ["canal"],
+)
+
+notificacao_task_duration_seconds = Histogram(
+    "notificacao_task_duration_seconds",
+    "Duração das tarefas de notificação",
+    ["task"],
+    buckets=(0.1, 0.5, 1, 2, 5),
 )
 
 templates_total = Gauge("templates_total", "Total de templates ativos")

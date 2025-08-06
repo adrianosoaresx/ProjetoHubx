@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Histórico de Notificações' %} | HubX{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Histórico de Notificações' %}</h1>
+  </div>
+  <form method="get" class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4 sm:items-end">
+    <div>
+      <label for="inicio" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'De' %}</label>
+      <input type="date" name="inicio" id="inicio" value="{{ request.GET.inicio }}" class="form-input" hx-get="{% url 'notificacoes:historico' %}" hx-target="#tabela_historico" hx-include="closest form">
+    </div>
+    <div>
+      <label for="fim" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Até' %}</label>
+      <input type="date" name="fim" id="fim" value="{{ request.GET.fim }}" class="form-input" hx-get="{% url 'notificacoes:historico' %}" hx-target="#tabela_historico" hx-include="closest form">
+    </div>
+    <div>
+      <label for="canal" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Canal' %}</label>
+      <select name="canal" id="canal" class="form-select" hx-get="{% url 'notificacoes:historico' %}" hx-target="#tabela_historico" hx-include="closest form">
+        <option value="" {% if not request.GET.canal %}selected{% endif %}>{% trans 'Todos' %}</option>
+        <option value="email" {% if request.GET.canal == 'email' %}selected{% endif %}>E-mail</option>
+        <option value="push" {% if request.GET.canal == 'push' %}selected{% endif %}>Push</option>
+        <option value="whatsapp" {% if request.GET.canal == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+      </select>
+    </div>
+    <noscript><button type="submit" class="mt-2 sm:mt-0 bg-neutral-200 text-neutral-800 px-4 py-2 rounded-xl text-sm hover:bg-neutral-300">{% trans 'Filtrar' %}</button></noscript>
+  </form>
+  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+    <table class="min-w-full divide-y divide-neutral-200 text-sm">
+      <thead class="bg-neutral-50">
+        <tr>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Data' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Canal' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Conteúdo' %}</th>
+        </tr>
+      </thead>
+      <tbody id="tabela_historico" class="divide-y divide-neutral-200">
+        {% include 'notificacoes/historico_rows.html' %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mt-4 flex justify-center gap-3">
+    {% if historicos.has_previous %}
+      <a hx-get="?page={{ historicos.previous_page_number }}&{{ request.GET.urlencode }}" hx-target="#tabela_historico" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">{% trans 'Anterior' %}</a>
+    {% endif %}
+    <span class="px-3 py-1 text-sm">{% blocktrans %}Página {{ historicos.number }} de {{ historicos.paginator.num_pages }}{% endblocktrans %}</span>
+    {% if historicos.has_next %}
+      <a hx-get="?page={{ historicos.next_page_number }}&{{ request.GET.urlencode }}" hx-target="#tabela_historico" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">{% trans 'Próxima' %}</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

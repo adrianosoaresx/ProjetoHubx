@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import logging
+import time
 
 import sentry_sdk
+import structlog
 from celery import shared_task  # type: ignore
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -16,20 +17,19 @@ from .services.email_client import send_email
 from .services.push_client import send_push
 from .services.whatsapp_client import send_whatsapp
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 User = get_user_model()
 
 
 @shared_task(bind=True, max_retries=3)
 def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None:
+    start = time.perf_counter()
     log = NotificationLog.objects.get(id=log_id)
     user = log.user
     canal = log.canal
     template = log.template
     if log.status != NotificationStatus.PENDENTE:
-        logger.info(
-            "Log em estado inválido", extra={"log_id": str(log.id), "status": log.status}
-        )
+        logger.info("log_invalido", log_id=str(log.id), status=log.status)
         return
     try:
         if canal == Canal.EMAIL:
@@ -43,13 +43,15 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
     except Exception as exc:  # pragma: no cover - integração externa
         log.status = NotificationStatus.FALHA
         log.erro = str(exc)
-        metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
+        metrics.notificacoes_falhas_total.labels(canal=canal).inc()
         log.data_envio = timezone.now()
         log.save(update_fields=["status", "erro", "data_envio"])
         sentry_sdk.capture_exception(exc)
         logger.exception(
-            "Falha no envio de notificação",
-            extra={"user": user.id, "template": str(template.id), "canal": canal},
+            "falha_envio_notificacao",
+            user_id=user.id,
+            template=str(template.id),
+            canal=canal,
         )
         raise self.retry(exc=exc, countdown=2 ** self.request.retries)
     else:
@@ -57,20 +59,25 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         log.erro = None
         log.save(update_fields=["status", "data_envio", "erro"])
     finally:
+        duration = time.perf_counter() - start
+        metrics.notificacao_task_duration_seconds.labels(task="enviar_notificacao_async").observe(
+            duration
+        )
         logger.info(
             "notificacao_enviada",
-            extra={
-                "user": user.id,
-                "template": str(template.id),
-                "canal": canal,
-                "status": log.status,
-                "erro": log.erro,
-            },
+            user_id=user.id,
+            template=str(template.id),
+            canal=canal,
+            status=log.status,
+            erro=log.erro,
+            tipo_frequencia="imediata",
+            duration=duration,
         )
 
 
-def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora) -> None:
+def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: str) -> None:
     for canal in canais:
+        start = time.perf_counter()
         logs = NotificationLog.objects.filter(
             user=config.user, canal=canal, status=NotificationStatus.PENDENTE
         )
@@ -90,6 +97,17 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora) -> None:
             canal=canal,
             enviado_em=envio,
             defaults={"conteudo": mensagens},
+        )
+        duration = time.perf_counter() - start
+        metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(
+            duration
+        )
+        logger.info(
+            "resumo_enviado",
+            user_id=config.user.id,
+            canal=canal,
+            tipo_frequencia=tipo,
+            duration=duration,
         )
 
 
@@ -112,7 +130,7 @@ def enviar_relatorios_diarios() -> None:
             and config.frequencia_notificacoes_whatsapp == "diaria"
         ):
             canais.append(Canal.WHATSAPP)
-        _enviar_resumo(config, canais, agora)
+        _enviar_resumo(config, canais, agora, "diaria")
 
 
 @shared_task
@@ -135,4 +153,4 @@ def enviar_relatorios_semanais() -> None:
             and config.frequencia_notificacoes_whatsapp == "semanal"
         ):
             canais.append(Canal.WHATSAPP)
-        _enviar_resumo(config, canais, agora)
+        _enviar_resumo(config, canais, agora, "semanal")

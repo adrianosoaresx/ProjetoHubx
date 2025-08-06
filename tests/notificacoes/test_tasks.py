@@ -42,7 +42,7 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
 
     monkeypatch.setattr("notificacoes.tasks.send_email", fake_send)
 
-    before_fail = metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
+    before_fail = metrics.notificacoes_falhas_total.labels(canal="email")._value.get()
     with pytest.raises(RuntimeError):
         enviar_notificacao_async("Oi", "C", str(log.id))
 
@@ -50,7 +50,7 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
     assert log.status == NotificationStatus.FALHA
     assert log.erro == "erro"
     assert (
-        metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
+        metrics.notificacoes_falhas_total.labels(canal="email")._value.get()
         == before_fail + 1
     )
 

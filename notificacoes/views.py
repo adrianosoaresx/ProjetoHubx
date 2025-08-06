@@ -13,7 +13,7 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from .forms import NotificationTemplateForm
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
+from .models import Canal, HistoricoNotificacao, NotificationLog, NotificationStatus, NotificationTemplate
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +92,34 @@ def list_logs(request):
     context = {"logs": page_obj}
     template_name = (
         "notificacoes/logs_rows.html" if request.headers.get("HX-Request") else "notificacoes/logs_list.html"
+    )
+    return render(request, template_name, context)
+
+
+@login_required
+def historico_notificacoes(request):
+    historico = HistoricoNotificacao.objects.filter(user=request.user)
+    inicio = request.GET.get("inicio")
+    fim = request.GET.get("fim")
+    canal = request.GET.get("canal")
+    ordenacao = request.GET.get("ordenacao", "-enviado_em")
+
+    if inicio:
+        historico = historico.filter(enviado_em__date__gte=inicio)
+    if fim:
+        historico = historico.filter(enviado_em__date__lte=fim)
+    if canal in Canal.values:
+        historico = historico.filter(canal=canal)
+    if ordenacao in ["enviado_em", "-enviado_em"]:
+        historico = historico.order_by(ordenacao)
+
+    paginator = Paginator(historico, 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    context = {"historicos": page_obj}
+    template_name = (
+        "notificacoes/historico_rows.html"
+        if request.headers.get("HX-Request")
+        else "notificacoes/historico_list.html"
     )
     return render(request, template_name, context)
 

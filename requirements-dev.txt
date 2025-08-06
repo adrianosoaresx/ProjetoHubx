@@ -18,4 +18,5 @@ pytest-axe==1.1.6
 axe-core-python==0.1.0
 playwright==1.54.0
 psycopg2-binary==2.9.9
+structlog==24.2.0
 

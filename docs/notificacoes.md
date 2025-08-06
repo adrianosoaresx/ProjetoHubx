@@ -45,6 +45,8 @@ Se todos os canais preferidos do usuário estiverem desabilitados, um `Notificat
 ### Métricas
 
 Métricas Prometheus disponíveis em `notificacoes.services.metrics`:
-`notificacoes_enviadas_total`, `notificacoes_falhadas_total` (por canal) e `templates_total`. Consulte o endpoint `/metrics`.
+`notificacoes_enviadas_total`, `notificacoes_falhas_total` (por canal),
+`notificacao_task_duration_seconds` e `templates_total`. Consulte o endpoint
+`/metrics`.
 
 > ⚠️ Envio via WhatsApp está em fase de testes e pode atuar apenas como _stub_.
