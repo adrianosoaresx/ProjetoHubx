@@ -16,6 +16,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
 - Serviço central de notificações assíncronas
+- Notificações push em tempo real via WebSocket
 - Automação de inadimplências e API para lançamentos financeiros
 - Denúncia e moderação básica de posts do feed
 
@@ -362,6 +363,8 @@ Resposta:
   "frequencia_notificacoes_email": "imediata",
   "receber_notificacoes_whatsapp": false,
   "frequencia_notificacoes_whatsapp": "diaria",
+  "receber_notificacoes_push": true,
+  "frequencia_notificacoes_push": "imediata",
   "idioma": "pt-BR",
   "tema": "claro",
   "hora_notificacao_diaria": "08:00:00",
@@ -371,6 +374,30 @@ Resposta:
 ```
 
 Atualizações podem ser feitas com `PUT` ou `PATCH` no mesmo endpoint.
+
+Para receber notificações push em navegadores, registre o token do service worker:
+
+```bash
+curl -X POST -H "Authorization: Token <seu_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"token": "TOKEN_DO_BROWSER"}' \
+  http://localhost:8000/api/notificacoes/push-subscription/
+```
+
+Para remover a inscrição:
+
+```bash
+curl -X DELETE -H "Authorization: Token <seu_token>" \
+  -d '{"token": "TOKEN_DO_BROWSER"}' \
+  http://localhost:8000/api/notificacoes/push-subscription/
+```
+
+Mensagens em tempo real são enviadas pelo WebSocket em `/ws/notificacoes/`. É possível
+testar localmente com [wscat](https://github.com/websockets/wscat):
+
+```bash
+wscat -c ws://localhost:8000/ws/notificacoes/
+```
 
 ### Histórico de notificações
 

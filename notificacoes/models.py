@@ -88,3 +88,21 @@ class HistoricoNotificacao(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user} - {self.canal} - {self.enviado_em:%Y-%m-%d %H:%M}"
+
+
+class PushSubscription(TimeStampedModel):
+    """Armazena inscrições de navegadores para notificações push."""
+
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user: models.ForeignKey = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions"
+    )
+    token: models.CharField = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ("user", "token")
+        verbose_name = _("Inscrição Push")
+        verbose_name_plural = _("Inscrições Push")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.user} - {self.token}"
