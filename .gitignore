@@ -123,3 +123,5 @@ next-env.d.ts
 *.swp
 *.orig
 *~
+# Ignorar arquivos binários de tradução
+*.mo
