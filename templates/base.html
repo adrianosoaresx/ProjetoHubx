@@ -34,6 +34,22 @@
 
 <body class="min-h-full flex flex-col font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
 
+  {% if messages %}
+  <div id="messages" class="fixed top-4 right-4 space-y-2 z-50">
+    {% for message in messages %}
+      <div class="px-4 py-2 rounded shadow text-white {% if 'error' in message.tags %}bg-red-500{% elif 'success' in message.tags %}bg-green-500{% else %}bg-blue-500{% endif %}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+  <script>
+    setTimeout(() => {
+      const el = document.getElementById('messages');
+      if (el) { el.remove(); }
+    }, 4000);
+  </script>
+  {% endif %}
+
   <!-- Navbar -->
   <header class="bg-white shadow">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">

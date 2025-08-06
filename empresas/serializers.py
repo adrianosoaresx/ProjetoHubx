@@ -13,7 +13,7 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class EmpresaSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)
     usuario_email = serializers.EmailField(source="usuario.email", read_only=True)
 
     class Meta:
@@ -37,19 +37,17 @@ class EmpresaSerializer(serializers.ModelSerializer):
         read_only_fields = ["deleted"]
 
     def create(self, validated_data: dict) -> Empresa:
-        request = self.context.get("request")
-        tags_data = request.data.getlist("tags") if request else []
+        tags = validated_data.pop("tags", [])
         empresa = Empresa.objects.create(**validated_data)
-        if tags_data:
-            empresa.tags.set(Tag.objects.filter(pk__in=tags_data))
+        if tags:
+            empresa.tags.set(tags)
         return empresa
 
     def update(self, instance: Empresa, validated_data: dict) -> Empresa:
-        request = self.context.get("request")
-        tags_data = request.data.getlist("tags") if request else []
+        tags = validated_data.pop("tags", None)
         instance = super().update(instance, validated_data)
-        if tags_data:
-            instance.tags.set(Tag.objects.filter(pk__in=tags_data))
+        if tags is not None:
+            instance.tags.set(tags)
         return instance
 
 

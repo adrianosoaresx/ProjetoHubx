@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% block title %}{{ empresa.nome }} | Hubx{% endblock %}
 
 {% block content %}
@@ -22,9 +23,13 @@
   <div class="mt-6 space-y-1 text-sm text-neutral-800">
     <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
     <p><strong>Localização:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
-    {% if empresa.contato %}
-      <p><strong>Contato:</strong> {{ empresa.contato }}</p>
-    {% endif %}
+    {% with empresa.get_contato_principal as contato %}
+      {% if contato %}
+        <p><strong>{% trans "Contato" %}:</strong> {{ contato.nome }}</p>
+      {% else %}
+        <p><strong>{% trans "Contato" %}:</strong> {% trans "Nenhum contato cadastrado" %}</p>
+      {% endif %}
+    {% endwith %}
   </div>
 
   {% if empresa_tags %}
@@ -65,30 +70,7 @@
   {% endif %}
 
   <div class="mt-8">
-    <h2 class="text-lg font-semibold text-neutral-900">Avaliações</h2>
-    <p class="text-sm text-neutral-600">Média: {{ media_avaliacoes|floatformat:1 }}/5</p>
-    {% if avaliacoes %}
-      <ul class="mt-2 space-y-2">
-        {% for avaliacao in avaliacoes %}
-          <li class="border border-neutral-200 rounded p-2">
-            <strong>{{ avaliacao.usuario.get_full_name|default:avaliacao.usuario.email }}</strong>
-            - {{ avaliacao.nota }}/5
-            {% if avaliacao.comentario %}
-              <p class="text-sm">{{ avaliacao.comentario }}</p>
-            {% endif %}
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="text-sm text-neutral-500">Nenhuma avaliação registrada.</p>
-    {% endif %}
-    {% if request.user.is_authenticated %}
-      {% if avaliacao_usuario %}
-        <a href="{% url 'empresas:avaliacao_editar' empresa.id %}" class="inline-block mt-2 text-primary-700 hover:underline">Editar avaliação</a>
-      {% else %}
-        <a href="{% url 'empresas:avaliacao_criar' empresa.id %}" class="inline-block mt-2 text-primary-700 hover:underline">Avaliar empresa</a>
-      {% endif %}
-    {% endif %}
+    {% include "empresas/includes/avaliacoes.html" %}
   </div>
 
   <div class="flex justify-end gap-3 mt-8">
