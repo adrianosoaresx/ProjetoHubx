@@ -3,7 +3,7 @@ id: REQ-DASHBOARD-001
 title: Requisitos do App Dashboard
 module: Dashboard
 status: Em vigor
-version: '1.0'
+version: '1.1'
 authors: []
 created: '2025-07-25'
 updated: '2025-07-25'
@@ -51,6 +51,21 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
   - Prioridade: Média
   - Critérios de Aceite: Valores refletem dados da Agenda e do Financeiro.
 
+- **RF‑06**
+  - Descrição: Permitir que usuários admin/root criem múltiplos dashboards personalizáveis.
+  - Prioridade: Média
+  - Critérios de Aceite: Configurações serializadas em JSON com suporte a CRUD.
+
+- **RF‑07**
+  - Descrição: Integrar métricas de eventos e financeiras provenientes de Agenda e Financeiro.
+  - Prioridade: Alta
+  - Critérios de Aceite: Métricas respeitam escopo e permissões de acesso.
+
+- **RF‑08**
+  - Descrição: Disponibilizar atualizações em tempo real via WebSocket.
+  - Prioridade: Média
+  - Critérios de Aceite: Dashboards conectados recebem novas métricas sem recarregar a página.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -67,6 +82,16 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
 
 - **RNF‑03**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
 - **RNF‑04**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+
+- **RNF‑05**
+  - Categoria: Internacionalização
+  - Descrição: Suporte a português e inglês por meio de arquivos de tradução `django.po`.
+  - Métrica/Meta: Todas as strings renderizadas no dashboard devem utilizar `gettext`.
+
+- **RNF‑06**
+  - Categoria: Escalabilidade
+  - Descrição: Atualizações em tempo real devem utilizar canais WebSocket dedicados.
+  - Métrica/Meta: Impacto mínimo na latência (< 1 s) para distribuição de eventos.
 
 
 ## 5. Casos de Uso
@@ -92,7 +117,7 @@ flowchart TD
   - **admin**: métricas da organização.  
   - **coordenador**: métricas de núcleos/eventos que coordena.  
   - **associado/nucleado**: visão parcial conforme permissão.  
-  - **convidado**: sem acesso.
+ - **convidado**: sem acesso.
 
 
 ## 7. Modelo de Dados
@@ -115,6 +140,15 @@ Feature: Acesso ao Dashboard
     Given usuário autenticado com perfil "root"
     When acessa "/dashboard"
     Then vê métricas globais e filtros disponíveis
+```
+
+### Fluxo de Dados Entre Módulos
+
+```mermaid
+flowchart LR
+    A[Agenda] --> D[Dashboard]
+    F[Financeiro] --> D
+    D --> U[Usuário]
 ```
 
 
