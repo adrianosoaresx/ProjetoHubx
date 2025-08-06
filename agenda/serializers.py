@@ -17,6 +17,9 @@ from .tasks import upload_material_divulgacao
 
 
 class EventoSerializer(serializers.ModelSerializer):
+    nota_media = serializers.SerializerMethodField()
+    distribuicao_notas = serializers.SerializerMethodField()
+
     class Meta:
         model = Evento
         exclude = ("deleted", "deleted_at")
@@ -26,16 +29,28 @@ class EventoSerializer(serializers.ModelSerializer):
             "coordenador",
             "created",
             "modified",
+            "nota_media",
+            "distribuicao_notas",
         )
+
+    def get_nota_media(self, obj: Evento):
+        notas = obj.inscricoes.filter(avaliacao__isnull=False).values_list("avaliacao", flat=True)
+        if not notas:
+            return None
+        return round(sum(notas) / len(notas), 2)
+
+    def get_distribuicao_notas(self, obj: Evento):
+        dist = {str(i): 0 for i in range(1, 6)}
+        for nota in obj.inscricoes.filter(avaliacao__isnull=False).values_list("avaliacao", flat=True):
+            dist[str(nota)] += 1
+        return dist
 
     def create(self, validated_data):
         request = self.context["request"]
         validated_data["organizacao"] = request.user.organizacao
         validated_data["coordenador"] = request.user
         instance = super().create(validated_data)
-        EventoLog.objects.create(
-            evento=instance, usuario=request.user, acao="evento_criado"
-        )
+        EventoLog.objects.create(evento=instance, usuario=request.user, acao="evento_criado")
         return instance
 
     def update(self, instance, validated_data):
@@ -69,6 +84,8 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             "qrcode_url",
             "check_in_realizado_em",
             "posicao_espera",
+            "avaliacao",
+            "feedback",
             "created",
             "modified",
         )
