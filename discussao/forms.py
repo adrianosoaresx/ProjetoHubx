@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 
-from .models import CategoriaDiscussao, RespostaDiscussao, Tag, TopicoDiscussao
+from .models import CategoriaDiscussao, Denuncia, RespostaDiscussao, Tag, TopicoDiscussao
 
 
 class CategoriaDiscussaoForm(forms.ModelForm):
@@ -89,3 +90,11 @@ class RespostaDiscussaoForm(forms.ModelForm):
         model = RespostaDiscussao
         fields = ["conteudo", "arquivo", "reply_to", "motivo_edicao"]
         widgets = {"motivo_edicao": forms.Textarea(attrs={"rows": 2})}
+
+
+class DenunciaForm(forms.ModelForm):
+    class Meta:
+        model = Denuncia
+        fields = ["motivo"]
+        widgets = {"motivo": forms.Textarea(attrs={"rows": 3})}
+        labels = {"motivo": _("Motivo")}

@@ -74,4 +74,25 @@
   </section>
 </article>
 {% endblock %}
+{% block extra_js %}
+<script>
+  const socket = new WebSocket(`ws://${window.location.host}/ws/discussao/{{ topico.id }}/`);
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    if (data.evento === 'nova_resposta') {
+      const lista = document.getElementById('lista-comentarios');
+      if (lista) {
+        lista.insertAdjacentHTML('beforeend', `<div>${data.conteudo}</div>`);
+      }
+    } else if (data.evento === 'atualizacao_votos') {
+      const score = document.getElementById('topic-score');
+      if (score) { score.innerText = data.score; }
+    } else if (data.evento === 'resolucao') {
+      if (data.resolvido) {
+        location.reload();
+      }
+    }
+  };
+</script>
+{% endblock %}
 {% endif %}

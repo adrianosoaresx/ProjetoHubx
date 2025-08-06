@@ -233,3 +233,81 @@ class InteracaoDiscussao(TimeStampedModel):
     @tipo.setter
     def tipo(self, value: str) -> None:
         self.valor = 1 if value == "like" else -1
+
+
+class Denuncia(TimeStampedModel):
+    """Denúncia de conteúdo para moderação."""
+
+    class Status(models.TextChoices):
+        PENDENTE = "pendente", "Pendente"
+        REVISADO = "revisado", "Revisado"
+        REJEITADO = "rejeitado", "Rejeitado"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    motivo = models.TextField()
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDENTE
+    )
+    log = models.ForeignKey(
+        "DiscussionModerationLog",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="denuncias",
+    )
+
+    class Meta:
+        unique_together = ("user", "content_type", "object_id")
+        verbose_name = "Denúncia"
+        verbose_name_plural = "Denúncias"
+
+    def aprovar(self, moderator, notes: str = ""):
+        log = DiscussionModerationLog.objects.create(
+            content_object=self.content_object,
+            action="approve",
+            moderator=moderator,
+            notes=notes,
+        )
+        self.status = self.Status.REVISADO
+        self.log = log
+        self.save(update_fields=["status", "log"])
+        return log
+
+    def rejeitar(self, moderator, notes: str = ""):
+        log = DiscussionModerationLog.objects.create(
+            content_object=self.content_object,
+            action="reject",
+            moderator=moderator,
+            notes=notes,
+        )
+        self.status = self.Status.REJEITADO
+        self.log = log
+        self.save(update_fields=["status", "log"])
+        return log
+
+
+class DiscussionModerationLog(TimeStampedModel):
+    ACTION_CHOICES = [
+        ("approve", "Aprovar"),
+        ("reject", "Rejeitar"),
+        ("remove", "Remover"),
+    ]
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    moderator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="discussion_moderations",
+    )
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Log de Moderação"
+        verbose_name_plural = "Logs de Moderação"
