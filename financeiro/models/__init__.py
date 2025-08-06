@@ -85,6 +85,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
         INGRESSO_EVENTO = "ingresso_evento", "Ingresso Evento"
         APORTE_INTERNO = "aporte_interno", "Aporte Interno"
         APORTE_EXTERNO = "aporte_externo", "Aporte Externo"
+        DESPESA = "despesa", "Despesa"
 
     class Status(models.TextChoices):
         PENDENTE = "pendente", "Pendente"
