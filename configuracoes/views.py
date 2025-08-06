@@ -1,9 +1,14 @@
+from typing import Any
+
+from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import AbstractBaseUser
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
 from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
@@ -21,13 +26,17 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         "preferencias": ConfiguracaoContaForm,
     }
 
-    def get_user(self):
+    def get_user(self) -> AbstractBaseUser:
         if not hasattr(self, "_user_cache"):
             User = get_user_model()
-            self._user_cache = User.objects.select_related("configuracao").get(pk=self.request.user.pk)
+            self._user_cache = User.objects.select_related("configuracao").get(
+                pk=self.request.user.pk
+            )
         return self._user_cache
 
-    def get_form(self, tab: str, data=None, files=None):
+    def get_form(
+        self, tab: str, data: dict[str, Any] | None = None, files: Any | None = None
+    ) -> forms.Form:
         user = self.get_user()
         form_class = self.form_classes[tab]
         if form_class is PasswordChangeForm:
@@ -40,7 +49,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """Retorna se o usuário atual possui 2FA habilitado."""
         return bool(self.request.user.two_factor_enabled)
 
-    def get(self, request):
+    def get(self, request: HttpRequest) -> HttpResponse:
         tab = request.GET.get("tab", "informacoes")
         context = {
             f"{tab}_form": self.get_form(tab),
@@ -55,7 +64,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         )
         return render(request, template, context)
 
-    def post(self, request):
+    def post(self, request: HttpRequest) -> HttpResponse:
         tab = request.GET.get("tab", request.POST.get("tab", "informacoes"))
         if tab == "redes" and request.POST.get("action") == "disconnect":
             redes = request.user.redes_sociais or {}

@@ -60,3 +60,18 @@ Resposta:
 
 Use `PATCH /configuracoes/api/` para atualizar campos específicos. Consulte a
 documentação OpenAPI gerada para exemplos completos.
+
+## Testes e traduções
+
+Para executar a suíte de testes deste app:
+
+```bash
+pytest tests/configuracoes -q
+```
+
+Para gerar e compilar as traduções (inglês e espanhol):
+
+```bash
+python manage.py makemessages -l en -l es
+python manage.py compilemessages
+```

@@ -8,21 +8,21 @@ from django_extensions.db.models import TimeStampedModel
 from core.models import SoftDeleteManager, SoftDeleteModel
 
 NOTIFICACAO_FREQ_CHOICES = [
-    ("imediata", "Imediata"),
-    ("diaria", "Diária"),
-    ("semanal", "Semanal"),
+    ("imediata", _("Imediata")),
+    ("diaria", _("Diária")),
+    ("semanal", _("Semanal")),
 ]
 
 IDIOMA_CHOICES = [
-    ("pt-BR", "Português"),
-    ("en-US", "English"),
-    ("es-ES", "Español"),
+    ("pt-BR", _("Português")),
+    ("en-US", _("English")),
+    ("es-ES", _("Español")),
 ]
 
 TEMA_CHOICES = [
-    ("claro", "Claro"),
-    ("escuro", "Escuro"),
-    ("automatico", "Automático"),
+    ("claro", _("Claro")),
+    ("escuro", _("Escuro")),
+    ("automatico", _("Automático")),
 ]
 
 DIAS_SEMANA_CHOICES = [
