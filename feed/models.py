@@ -95,6 +95,17 @@ class Flag(TimeStampedModel):
         verbose_name_plural = "Denúncias"
 
 
+class Bookmark(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookmarks")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="bookmarks")
+
+    class Meta:
+        unique_together = ("user", "post")
+        verbose_name = "Bookmark"
+        verbose_name_plural = "Bookmarks"
+
+
 class Comment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")

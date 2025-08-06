@@ -6,19 +6,21 @@ import boto3
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
-from django.core.exceptions import ValidationError, ValidationError as DjangoValidationError
+from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
-from .models import Comment, Like, ModeracaoPost, Post
-from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 from feed.application.denunciar_post import DenunciarPost
+
+from .models import Bookmark, Comment, Like, ModeracaoPost, Post
+from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
 
 class CanModerate(permissions.BasePermission):
@@ -216,6 +218,15 @@ class PostViewSet(viewsets.ModelViewSet):
         instance.soft_delete()
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def bookmark(self, request, pk=None):
+        post = self.get_object()
+        bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
+        if not created:
+            bookmark.delete()
+            return Response({"bookmarked": False}, status=status.HTTP_200_OK)
+        return Response({"bookmarked": True}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def flag(self, request, pk=None):
         post = self.get_object()
         use_case = DenunciarPost()
@@ -276,6 +287,23 @@ class LikeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
         serializer.save(user=self.request.user)
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    post = PostSerializer(read_only=True)
+
+    class Meta:
+        model = Bookmark
+        fields = ["id", "post", "created_at", "updated_at"]
+        read_only_fields = ["id", "post", "created_at", "updated_at"]
+
+
+class BookmarkViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = BookmarkSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):  # pragma: no cover - simples
+        return Bookmark.objects.filter(user=self.request.user).select_related("post")
 
 
 class ModeracaoPostSerializer(serializers.ModelSerializer):
