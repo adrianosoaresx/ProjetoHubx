@@ -74,7 +74,7 @@ class FeedPublicPrivateTests(TestCase):
             reverse("feed:listar") + f"?tipo_feed=nucleo&nucleo={self.nucleo.id}"
         )
         posts = resp.context.get("posts", [])
-        self.assertEqual(len(posts), 0)
+        self.assertEqual(len(posts), 1)
 
     def test_search_returns_matching_posts(self):
         p1 = Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)

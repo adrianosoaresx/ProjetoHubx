@@ -7,7 +7,8 @@ from django.conf import settings
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
-from ..models import Canal, NotificationLog, NotificationTemplate, UserNotificationPreference
+from configuracoes.services import get_configuracao_conta
+from ..models import Canal, NotificationLog, NotificationTemplate
 from ..tasks import enviar_notificacao_async
 
 logger = logging.getLogger(__name__)
@@ -37,14 +38,14 @@ def enviar_para_usuario(user: Any, template_codigo: str, context: dict[str, Any]
 
     subject, body = render_template(template, context)
 
-    prefs, _created = UserNotificationPreference.objects.get_or_create(user=user)
+    prefs = get_configuracao_conta(user)
 
     canais: list[str] = []
-    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.email:
+    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.receber_notificacoes_email:
         canais.append(Canal.EMAIL)
-    if template.canal in {Canal.PUSH, Canal.TODOS} and prefs.push:
+    if template.canal in {Canal.PUSH, Canal.TODOS}:
         canais.append(Canal.PUSH)
-    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.whatsapp:
+    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.receber_notificacoes_whatsapp:
         canais.append(Canal.WHATSAPP)
 
     if not canais:

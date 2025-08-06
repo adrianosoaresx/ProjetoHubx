@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .forms import CustomUserChangeForm, CustomUserCreationForm
-from .models import MediaTag, NotificationSettings, User, UserMedia
+from .models import MediaTag, User, UserMedia
 
 
 @admin.register(User)
@@ -52,12 +52,6 @@ class UserAdmin(BaseUserAdmin):
         if request.user.is_superuser:
             return qs
         return qs
-
-
-@admin.register(NotificationSettings)
-class NotificationSettingsAdmin(admin.ModelAdmin):
-    list_display = ["user", "email_conexoes", "sistema_conexoes"]
-
 
 @admin.register(UserMedia)
 class UserMediaAdmin(admin.ModelAdmin):

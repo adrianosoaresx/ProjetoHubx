@@ -33,10 +33,10 @@
          class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'seguranca' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
          role="tab"
          aria-selected="{% if request.resolver_match.url_name == 'seguranca' %}true{% else %}false{% endif %}">Segurança</a>
-      <a href="{% url 'accounts:notificacoes' %}"
-         class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'notificacoes' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
+      <a href="{% url 'configuracoes' %}?tab=preferencias"
+         class="px-3 py-2 -mb-px border-b-2 border-transparent hover:text-primary"
          role="tab"
-         aria-selected="{% if request.resolver_match.url_name == 'notificacoes' %}true{% else %}false{% endif %}">Notificações</a>
+         aria-selected="false">Notificações</a>
     </nav>
 
     <!-- Bloco dinâmico para subpáginas -->

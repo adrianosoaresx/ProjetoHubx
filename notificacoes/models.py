@@ -38,43 +38,6 @@ class NotificationTemplate(TimeStampedModel):
         return self.codigo
 
 
-class Frequencia(models.TextChoices):
-    IMEDIATA = "imediata", _("Imediata")
-    DIARIA = "diaria", _("Diária")
-    SEMANAL = "semanal", _("Semanal")
-
-
-class UserNotificationPreference(TimeStampedModel):
-    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user: models.ForeignKey = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="preferencias_notificacoes",
-    )
-    email: models.BooleanField = models.BooleanField(default=True, verbose_name=_("E-mail"))
-    push: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Push"))
-    whatsapp: models.BooleanField = models.BooleanField(default=True, verbose_name=_("WhatsApp"))
-    frequencia_email: models.CharField = models.CharField(
-        max_length=20,
-        choices=Frequencia.choices,
-        default=Frequencia.IMEDIATA,
-        verbose_name=_("Frequência E-mail"),
-    )
-    frequencia_whatsapp: models.CharField = models.CharField(
-        max_length=20,
-        choices=Frequencia.choices,
-        default=Frequencia.IMEDIATA,
-        verbose_name=_("Frequência WhatsApp"),
-    )
-
-    class Meta:
-        verbose_name = _("Preferência de Notificação")
-        verbose_name_plural = _("Preferências de Notificação")
-
-    def __str__(self) -> str:  # pragma: no cover - simples
-        return f"Preferências de {self.user}"
-
-
 class NotificationLog(TimeStampedModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

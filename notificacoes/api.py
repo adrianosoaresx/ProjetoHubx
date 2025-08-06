@@ -5,12 +5,11 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, UserNotificationPreference
+from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
 from .permissions import CanSendNotifications
 from .serializers import (
     NotificationLogSerializer,
     NotificationTemplateSerializer,
-    UserNotificationPreferenceSerializer,
 )
 from .services.notificacoes import enviar_para_usuario
 
@@ -19,20 +18,6 @@ class NotificationTemplateViewSet(viewsets.ModelViewSet):
     queryset = NotificationTemplate.objects.all()
     serializer_class = NotificationTemplateSerializer
     permission_classes = [permissions.IsAdminUser]
-
-
-class UserNotificationPreferenceViewSet(viewsets.ModelViewSet):
-    serializer_class = UserNotificationPreferenceSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return UserNotificationPreference.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):  # pragma: no cover - criação explícita
-        serializer.save(user=self.request.user)
-
-    def perform_update(self, serializer):  # pragma: no cover - atualização simples
-        serializer.save(user=self.request.user)
 
 
 class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):

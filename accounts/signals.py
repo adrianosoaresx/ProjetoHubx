@@ -3,28 +3,16 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from configuracoes.models import ConfiguracaoConta
-from notificacoes.models import Frequencia, UserNotificationPreference
-
-from .models import NotificationSettings
 
 User = get_user_model()
 
 
 @receiver(post_save, sender=User)
-def create_notification_settings(sender, instance, created, **kwargs):
-    """Cria configuracoes padrao para novos usuarios."""
+def create_configuracao_conta(sender, instance, created, **kwargs):
+    """Cria configuração padrão para novos usuários."""
     if not created:
         return
 
-    NotificationSettings.objects.create(user=instance)
-    UserNotificationPreference.objects.create(
-        user=instance,
-        email=True,
-        push=True,
-        whatsapp=True,
-        frequencia_email=Frequencia.IMEDIATA,
-        frequencia_whatsapp=Frequencia.IMEDIATA,
-    )
     ConfiguracaoConta.objects.create(user=instance)
     if instance.user_type in {"root", "admin"}:
         instance.is_staff = True
