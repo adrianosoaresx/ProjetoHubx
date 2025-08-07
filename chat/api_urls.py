@@ -5,10 +5,12 @@ from .api_views import (
     AtualizarChavePublicaView,
     ChatChannelCategoryViewSet,
     ChatChannelViewSet,
+    ChatAttachmentViewSet,
     ChatFavoriteViewSet,
     ChatMessageViewSet,
     ChatNotificationViewSet,
     ChavePublicaView,
+    ChatMetricsAPIView,
     ModeracaoViewSet,
     UploadArquivoAPIView,
     UserChatPreferenceView,
@@ -20,6 +22,7 @@ router.register(r"categorias", ChatChannelCategoryViewSet, basename="chat-catego
 router.register(r"notificacoes", ChatNotificationViewSet, basename="chat-notificacao")
 router.register(r"moderacao/messages", ModeracaoViewSet, basename="chat-moderacao")
 router.register(r"favorites", ChatFavoriteViewSet, basename="chat-favorite")
+router.register(r"attachments", ChatAttachmentViewSet, basename="chat-attachment")
 
 chat_message_list = ChatMessageViewSet.as_view({"get": "list", "post": "create"})
 chat_message_detail = ChatMessageViewSet.as_view(
@@ -109,4 +112,5 @@ urlpatterns = router.urls + [
         name="chat-user-public-key-update",
     ),
     path("preferencias/", UserChatPreferenceView.as_view(), name="chat-preferences"),
+    path("metrics/", ChatMetricsAPIView.as_view(), name="chat-metrics"),
 ]

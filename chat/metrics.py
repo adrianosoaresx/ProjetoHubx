@@ -55,3 +55,13 @@ chat_mensagens_removidas_retencao_total = Counter(
     "chat_mensagens_removidas_retencao_total",
     "Total de mensagens removidas pela política de retenção",
 )
+
+chat_attachments_total = Counter(
+    "chat_attachments_total",
+    "Total de anexos enviados",
+)
+
+chat_categories_total = Counter(
+    "chat_categories_total",
+    "Total de categorias criadas",
+)
