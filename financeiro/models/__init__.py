@@ -86,6 +86,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
         APORTE_INTERNO = "aporte_interno", "Aporte Interno"
         APORTE_EXTERNO = "aporte_externo", "Aporte Externo"
         DESPESA = "despesa", "Despesa"
+        AJUSTE = "ajuste", "Ajuste"
 
     class Status(models.TextChoices):
         PENDENTE = "pendente", "Pendente"
@@ -115,6 +116,10 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE)
     descricao = models.TextField(blank=True)
     ultima_notificacao = models.DateTimeField(null=True, blank=True)
+    lancamento_original = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="ajustes"
+    )
+    ajustado = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-data_lancamento"]
@@ -193,7 +198,9 @@ class FinanceiroLog(TimeStampedModel, SoftDeleteModel):
 
     class Acao(models.TextChoices):
         IMPORTAR = "importar", "Importar Pagamentos"
-        GERAR_COBRANCA = "gerar_cobranca", "Gerar Cobrança"
+        CRIAR_COBRANCA = "criar_cobranca", "Criar Cobrança"
+        DISTRIBUIR_RECEITA = "distribuir_receita", "Distribuir Receita"
+        AJUSTE_LANCAMENTO = "ajuste_lancamento", "Ajuste de Lançamento"
         REPASSE = "repasse", "Repasse de Receita"
         EDITAR_CENTRO = "editar_centro", "Editar Centro de Custo"
         EDITAR_LANCAMENTO = "editar_lancamento", "Editar Lançamento"
