@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import io
+import logging
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -26,6 +27,8 @@ from .tasks import (
     notify_participacao_recusada,
     notify_suplente_designado,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class IsAdminOrCoordenador(IsAuthenticated):
@@ -85,6 +88,92 @@ class NucleoViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Nucleo) -> None:
         instance.delete()
+
+    @action(detail=True, methods=["post"], url_path="solicitar", permission_classes=[IsAuthenticated])
+    def solicitar(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        participacao, created = ParticipacaoNucleo.objects.get_or_create(
+            user=request.user, nucleo=nucleo
+        )
+        if not created:
+            if participacao.status == "pendente":
+                return Response({"detail": _("Já solicitado.")}, status=400)
+            if participacao.status == "aprovado":
+                return Response({"detail": _("Já membro do núcleo.")}, status=400)
+            participacao.status = "pendente"
+            participacao.data_solicitacao = timezone.now()
+            participacao.data_decisao = None
+            participacao.decidido_por = None
+            participacao.justificativa = ""
+            participacao.deleted = False
+            participacao.deleted_at = None
+            participacao.save(
+                update_fields=[
+                    "status",
+                    "data_solicitacao",
+                    "data_decisao",
+                    "decidido_por",
+                    "justificativa",
+                    "deleted",
+                    "deleted_at",
+                ]
+            )
+        serializer = ParticipacaoNucleoSerializer(participacao)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="membros/(?P<user_id>[^/.]+)/aprovar",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def aprovar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
+        )
+        if participacao.status != "pendente":
+            return Response({"detail": _("Solicitação já decidida.")}, status=400)
+        participacao.status = "aprovado"
+        participacao.data_decisao = timezone.now()
+        participacao.decidido_por = request.user
+        participacao.justificativa = ""
+        participacao.save(
+            update_fields=["status", "data_decisao", "decidido_por", "justificativa"]
+        )
+        logger.info("Participação aprovada", extra={"participacao_id": participacao.id, "decidido_por": request.user.id})
+        notify_participacao_aprovada.delay(participacao.id)
+        serializer = ParticipacaoNucleoSerializer(participacao)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="membros/(?P<user_id>[^/.]+)/recusar",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def recusar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
+        )
+        if participacao.status != "pendente":
+            return Response({"detail": _("Solicitação já decidida.")}, status=400)
+        justificativa = request.data.get("justificativa", "")
+        participacao.status = "recusado"
+        participacao.data_decisao = timezone.now()
+        participacao.decidido_por = request.user
+        participacao.justificativa = justificativa
+        participacao.save(
+            update_fields=["status", "data_decisao", "decidido_por", "justificativa"]
+        )
+        logger.info(
+            "Participação recusada",
+            extra={"participacao_id": participacao.id, "decidido_por": request.user.id},
+        )
+        notify_participacao_recusada.delay(participacao.id)
+        serializer = ParticipacaoNucleoSerializer(participacao)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def participacoes(self, request, pk: str | None = None):
