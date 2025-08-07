@@ -170,3 +170,18 @@ variável `PROMETHEUS_PORT` definida (padrão 8001). Acesse
 `http://localhost:8001/` para visualizar os contadores
 `importacao_pagamentos_total`, `notificacoes_total` e `cobrancas_total`.
 
+Novas métricas de observabilidade:
+
+- `financeiro_importacoes_total` – importações iniciadas.
+- `financeiro_importacoes_erros_total` – importações com erros.
+- `financeiro_relatorios_total` – relatórios e consultas de inadimplências.
+- `financeiro_tasks_total` – execuções de tarefas Celery.
+
+## Logs de Auditoria
+
+`GET /api/financeiro/logs/` – lista de ações registradas. Filtros: `acao`,
+`usuario`, `inicio`, `fim`.
+
+`GET /api/financeiro/task-logs/` – histórico de tarefas Celery. Filtros:
+`nome_tarefa`, `status`, `inicio`, `fim`.
+

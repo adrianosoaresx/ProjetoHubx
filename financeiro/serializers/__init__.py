@@ -7,7 +7,14 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, ImportacaoPagamentos
+from ..models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    FinanceiroTaskLog,
+    LancamentoFinanceiro,
+    ImportacaoPagamentos,
+)
 from ..services.distribuicao import repassar_receita_ingresso
 
 
@@ -205,5 +212,36 @@ class ImportacaoPagamentosSerializer(serializers.ModelSerializer):
             "total_processado",
             "erros",
             "status",
+        ]
+        read_only_fields = fields
+
+
+class FinanceiroLogSerializer(serializers.ModelSerializer):
+    """Serializador para registros de auditoria."""
+
+    class Meta:
+        model = FinanceiroLog
+        fields = [
+            "id",
+            "usuario",
+            "acao",
+            "dados_anteriores",
+            "dados_novos",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class FinanceiroTaskLogSerializer(serializers.ModelSerializer):
+    """Serializador para logs de tarefas."""
+
+    class Meta:
+        model = FinanceiroTaskLog
+        fields = [
+            "id",
+            "nome_tarefa",
+            "executada_em",
+            "status",
+            "detalhes",
         ]
         read_only_fields = fields

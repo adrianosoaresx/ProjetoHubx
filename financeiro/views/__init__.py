@@ -25,6 +25,7 @@ from ..models import (
     CentroCusto,
     ContaAssociado,
     FinanceiroTaskLog,
+    FinanceiroLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
 )
@@ -44,6 +45,8 @@ from ..services.cobrancas import _nucleos_do_usuario
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..services.exportacao import exportar_para_arquivo
+from ..services import metrics
+from ..services.auditoria import log_financeiro
 from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
@@ -93,6 +96,36 @@ class CentroCustoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(nucleo_id=user.nucleo_id)
         return qs
 
+    # registra logs de auditoria
+    def perform_create(self, serializer):
+        centro = serializer.save()
+        log_financeiro(
+            FinanceiroLog.Acao.EDITAR_CENTRO,
+            self.request.user,
+            {},
+            {"id": str(centro.id), "nome": centro.nome},
+        )
+
+    def perform_update(self, serializer):
+        antes = {"id": str(serializer.instance.id), "nome": serializer.instance.nome}
+        centro = serializer.save()
+        log_financeiro(
+            FinanceiroLog.Acao.EDITAR_CENTRO,
+            self.request.user,
+            antes,
+            {"id": str(centro.id), "nome": centro.nome},
+        )
+
+    def perform_destroy(self, instance):  # type: ignore[override]
+        antes = {"id": str(instance.id), "nome": instance.nome}
+        super().perform_destroy(instance)
+        log_financeiro(
+            FinanceiroLog.Acao.EDITAR_CENTRO,
+            self.request.user,
+            antes,
+            {},
+        )
+
 
 class FinanceiroViewSet(viewsets.ViewSet):
     """Endpoints auxiliares do módulo financeiro."""
@@ -129,6 +162,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos")
     def importar_pagamentos(self, request):
+        metrics.financeiro_importacoes_total.inc()
         serializer = ImportarPagamentosPreviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         file = serializer.validated_data["file"]
@@ -161,6 +195,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos/confirmar")
     def confirmar_importacao(self, request):
+        metrics.financeiro_importacoes_total.inc()
         serializer = ImportarPagamentosConfirmacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uid = serializer.validated_data["id"]
@@ -172,6 +207,12 @@ class FinanceiroViewSet(viewsets.ViewSet):
             return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
         importar_pagamentos_async.delay(file_path, str(request.user.id), str(importacao_id))
+        log_financeiro(
+            FinanceiroLog.Acao.IMPORTAR,
+            request.user,
+            {"arquivo": file_path, "status": "iniciado"},
+            {"importacao_id": str(importacao_id)},
+        )
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
             arquivo=file_path,
             usuario=request.user,
@@ -199,6 +240,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
+        metrics.financeiro_relatorios_total.inc()
         params = request.query_params
         centro_id: str | list[str] | None = params.getlist("centro") or params.get("centro")
         nucleo_id = params.get("nucleo")
@@ -264,6 +306,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
+        metrics.financeiro_relatorios_total.inc()
         params = request.query_params
         centro_id = params.get("centro")
         nucleo_id = params.get("nucleo")
