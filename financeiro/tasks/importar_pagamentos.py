@@ -7,6 +7,8 @@ from celery import shared_task  # type: ignore
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+from notificacoes.services.notificacoes import enviar_para_usuario
+
 from ..models import FinanceiroLog, FinanceiroTaskLog, ImportacaoPagamentos
 from ..services import metrics
 from ..services.auditoria import log_financeiro
@@ -54,6 +56,11 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
             {"arquivo": file_path, "total": total, "erros": errors},
             {"status": status_model},
         )
+        if user:
+            try:  # pragma: no branch - falha externa
+                enviar_para_usuario(user, "importacao_pagamentos", {"total": total})
+            except Exception as exc:  # pragma: no cover - integração externa
+                logger.error("Falha ao notificar importação: %s", exc)
     except Exception as exc:  # pragma: no cover - exceção inesperada
         logger.exception("Erro na importação de pagamentos: %s", exc)
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
