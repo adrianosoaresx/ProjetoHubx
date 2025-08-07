@@ -8,6 +8,7 @@ from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
 from configuracoes.services import get_configuracao_conta
+
 from ..models import Canal, NotificationLog, NotificationTemplate
 from ..tasks import enviar_notificacao_async
 
@@ -58,4 +59,12 @@ def enviar_para_usuario(user: Any, template_codigo: str, context: dict[str, Any]
             canal=canal,
             destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
         )
-        enviar_notificacao_async.delay(subject, body, str(log.id))
+        enviar_imediato = False
+        if canal == Canal.EMAIL:
+            enviar_imediato = prefs.frequencia_notificacoes_email == "imediata"
+        elif canal == Canal.WHATSAPP:
+            enviar_imediato = prefs.frequencia_notificacoes_whatsapp == "imediata"
+        elif canal == Canal.PUSH:
+            enviar_imediato = prefs.frequencia_notificacoes_push == "imediata"
+        if enviar_imediato:
+            enviar_notificacao_async.delay(subject, body, str(log.id))
