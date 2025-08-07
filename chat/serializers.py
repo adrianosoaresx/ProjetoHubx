@@ -12,6 +12,8 @@ User = get_user_model()
 
 
 class ChatChannelSerializer(serializers.ModelSerializer):
+    e2ee_habilitado = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = ChatChannel
         fields = [
@@ -21,10 +23,11 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             "titulo",
             "descricao",
             "imagem",
+            "e2ee_habilitado",
             "created",
             "modified",
         ]
-        read_only_fields = ["id", "created", "modified"]
+        read_only_fields = ["id", "created", "modified", "e2ee_habilitado"]
 
     def create(self, validated_data: dict[str, Any]) -> ChatChannel:
         request = self.context["request"]
@@ -32,6 +35,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
         if isinstance(participantes_ids, str):  # pragma: no cover - defensive
             participantes_ids = [participantes_ids]
         participantes: Iterable[User] = User.objects.filter(id__in=participantes_ids)
+        e2ee_habilitado = bool(self.initial_data.get("e2ee_habilitado", False))
         return criar_canal(
             criador=request.user,
             contexto_tipo=validated_data.get("contexto_tipo"),
@@ -39,6 +43,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             titulo=validated_data.get("titulo"),
             descricao=validated_data.get("descricao"),
             participantes=participantes,
+            e2ee_habilitado=e2ee_habilitado,
         )
 
     def to_representation(self, instance: ChatChannel) -> dict[str, Any]:
@@ -58,6 +63,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    conteudo_cifrado = serializers.CharField(read_only=True, allow_blank=True)
 
     class Meta:
         model = ChatMessage
@@ -67,6 +73,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "remetente",
             "tipo",
             "conteudo",
+            "conteudo_cifrado",
             "arquivo",
             "reply_to",
             "reactions",
@@ -90,6 +97,16 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         conteudo = validated_data.get("conteudo", "")
         arquivo = validated_data.get("arquivo")
         reply_to = validated_data.get("reply_to")
+        if channel.e2ee_habilitado:
+            return enviar_mensagem(
+                canal=channel,
+                remetente=remetente,
+                tipo=tipo,
+                conteudo="",
+                arquivo=arquivo,
+                reply_to=reply_to,
+                conteudo_cifrado=conteudo,
+            )
         return enviar_mensagem(
             canal=channel,
             remetente=remetente,
@@ -107,6 +124,9 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             if request:
                 url = request.build_absolute_uri(url)
             data["arquivo_url"] = url
+        if instance.channel.e2ee_habilitado:
+            data["conteudo_cifrado"] = instance.conteudo_cifrado
+            data["conteudo"] = ""
         return data
 
     def get_reactions(self, obj: ChatMessage) -> dict[str, int]:
@@ -140,6 +160,8 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
 
     def get_mensagem_conteudo(self, obj: ChatNotification) -> str:
         msg = obj.mensagem
+        if msg.channel.e2ee_habilitado:
+            return msg.conteudo_cifrado
         if msg.tipo == "text":
             return msg.conteudo
         return msg.conteudo or (msg.arquivo.url if msg.arquivo else "")

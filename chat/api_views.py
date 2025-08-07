@@ -105,6 +105,26 @@ class UploadArquivoAPIView(APIView):
         )
 
 
+class ChavePublicaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, pk: int, *args, **kwargs) -> Response:
+        user = get_object_or_404(User, pk=pk)
+        return Response({"chave_publica": user.chave_publica or ""})
+
+
+class AtualizarChavePublicaView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        chave = request.data.get("chave_publica")
+        if not chave:
+            return Response({"erro": "chave_publica obrigatória"}, status=status.HTTP_400_BAD_REQUEST)
+        request.user.chave_publica = chave
+        request.user.save(update_fields=["chave_publica"])
+        return Response({"chave_publica": chave})
+
+
 class ChatChannelViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciamento de canais de chat.
 

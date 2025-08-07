@@ -35,6 +35,7 @@ def criar_canal(
     descricao: Optional[str],
     participantes: Iterable[User],
     imagem=None,
+    e2ee_habilitado: bool = False,
 ) -> ChatChannel:
     """Cria um ``ChatChannel`` e adiciona participantes.
 
@@ -53,6 +54,7 @@ def criar_canal(
         titulo=titulo or "",
         descricao=descricao or "",
         imagem=imagem,
+        e2ee_habilitado=e2ee_habilitado,
     )
     ChatParticipant.objects.create(channel=canal, user=criador, is_owner=True, is_admin=True)
     for user in participantes:
@@ -83,6 +85,7 @@ def enviar_mensagem(
     conteudo: str = "",
     arquivo=None,
     reply_to: ChatMessage | None = None,
+    conteudo_cifrado: str = "",
 ) -> ChatMessage:
     """Salva uma nova mensagem no canal.
 
@@ -107,6 +110,7 @@ def enviar_mensagem(
         remetente=remetente,
         tipo=tipo,
         conteudo=conteudo,
+        conteudo_cifrado=conteudo_cifrado,
         arquivo=arquivo,
         reply_to=reply_to,
     )

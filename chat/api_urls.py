@@ -2,10 +2,12 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .api_views import (
+    AtualizarChavePublicaView,
     ChatChannelViewSet,
     ChatFavoriteViewSet,
     ChatMessageViewSet,
     ChatNotificationViewSet,
+    ChavePublicaView,
     ModeracaoViewSet,
     UploadArquivoAPIView,
 )
@@ -93,4 +95,10 @@ urlpatterns = router.urls + [
         name="chat-flags",
     ),
     path("upload/", UploadArquivoAPIView.as_view(), name="chat-upload"),
+    path("usuarios/<int:pk>/chave-publica/", ChavePublicaView.as_view(), name="chat-user-public-key"),
+    path(
+        "usuarios/chave-publica/",
+        AtualizarChavePublicaView.as_view(),
+        name="chat-user-public-key-update",
+    ),
 ]

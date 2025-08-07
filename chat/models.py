@@ -26,6 +26,7 @@ class ChatChannel(TimeStampedModel, SoftDeleteModel):
     titulo = models.CharField(max_length=200, null=True, blank=True)
     descricao = models.TextField(blank=True)
     imagem = models.ImageField(upload_to="chat/avatars/", null=True, blank=True)
+    e2ee_habilitado = models.BooleanField(default=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -84,6 +85,7 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
 
     tipo = models.CharField(max_length=10, choices=MESSAGE_TYPES, default="text")
     conteudo = models.TextField(blank=True)
+    conteudo_cifrado = models.TextField(blank=True)
     arquivo = models.FileField(upload_to="chat/arquivos/", null=True, blank=True)
     reply_to = models.ForeignKey(
         "self",
