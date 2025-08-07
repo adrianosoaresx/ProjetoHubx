@@ -1,0 +1,56 @@
+[
+  {
+    "model": "configuracoes.configuracaoconta",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "receber_notificacoes_email": true,
+      "frequencia_notificacoes_email": "imediata",
+      "receber_notificacoes_whatsapp": false,
+      "frequencia_notificacoes_whatsapp": "imediata",
+      "receber_notificacoes_push": true,
+      "frequencia_notificacoes_push": "imediata",
+      "idioma": "pt-BR",
+      "tema": "claro",
+      "hora_notificacao_diaria": "08:00:00",
+      "hora_notificacao_semanal": "08:00:00",
+      "dia_semana_notificacao": 0
+    }
+  },
+  {
+    "model": "configuracoes.configuracaoconta",
+    "pk": 2,
+    "fields": {
+      "user": 2,
+      "receber_notificacoes_email": true,
+      "frequencia_notificacoes_email": "diaria",
+      "receber_notificacoes_whatsapp": true,
+      "frequencia_notificacoes_whatsapp": "semanal",
+      "receber_notificacoes_push": false,
+      "frequencia_notificacoes_push": "imediata",
+      "idioma": "en-US",
+      "tema": "escuro",
+      "hora_notificacao_diaria": "09:30:00",
+      "hora_notificacao_semanal": "10:00:00",
+      "dia_semana_notificacao": 2
+    }
+  },
+  {
+    "model": "configuracoes.configuracaoconta",
+    "pk": 3,
+    "fields": {
+      "user": 3,
+      "receber_notificacoes_email": false,
+      "frequencia_notificacoes_email": "semanal",
+      "receber_notificacoes_whatsapp": true,
+      "frequencia_notificacoes_whatsapp": "diaria",
+      "receber_notificacoes_push": true,
+      "frequencia_notificacoes_push": "semanal",
+      "idioma": "es-ES",
+      "tema": "automatico",
+      "hora_notificacao_diaria": "07:00:00",
+      "hora_notificacao_semanal": "11:00:00",
+      "dia_semana_notificacao": 5
+    }
+  }
+]
