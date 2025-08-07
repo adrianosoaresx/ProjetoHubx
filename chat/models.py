@@ -12,6 +12,21 @@ from core.models import SoftDeleteManager, SoftDeleteModel
 User = get_user_model()
 
 
+class ChatChannelCategory(TimeStampedModel):
+    """Categoria para organização de canais de chat."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nome = models.CharField(max_length=100, unique=True)
+    descricao = models.TextField(blank=True)
+
+    def __str__(self) -> str:  # pragma: no cover - simple
+        return self.nome
+
+    class Meta:
+        verbose_name = "Categoria de Canal"
+        verbose_name_plural = "Categorias de Canal"
+
+
 class ChatChannel(TimeStampedModel, SoftDeleteModel):
     CONTEXT_CHOICES = [
         ("privado", "Privado"),
@@ -31,6 +46,13 @@ class ChatChannel(TimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
         help_text="Quantidade de dias para manter mensagens antes da remoção automática",
+    )
+    categoria = models.ForeignKey(
+        ChatChannelCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="channels",
     )
 
     objects = SoftDeleteManager()

@@ -5,14 +5,30 @@ from typing import Any, Iterable
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from .models import ChatChannel, ChatMessage, ChatNotification, ResumoChat
+from .models import (
+    ChatChannel,
+    ChatChannelCategory,
+    ChatMessage,
+    ChatNotification,
+    ResumoChat,
+)
 from .services import criar_canal, enviar_mensagem
 
 User = get_user_model()
 
 
+class ChatChannelCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatChannelCategory
+        fields = ["id", "nome", "descricao", "created", "modified"]
+        read_only_fields = ["id", "created", "modified"]
+
+
 class ChatChannelSerializer(serializers.ModelSerializer):
     e2ee_habilitado = serializers.BooleanField(read_only=True)
+    categoria = serializers.PrimaryKeyRelatedField(
+        queryset=ChatChannelCategory.objects.all(), required=False, allow_null=True
+    )
 
     class Meta:
         model = ChatChannel
@@ -25,6 +41,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             "imagem",
             "e2ee_habilitado",
             "retencao_dias",
+            "categoria",
             "created",
             "modified",
         ]
@@ -37,7 +54,8 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             participantes_ids = [participantes_ids]
         participantes: Iterable[User] = User.objects.filter(id__in=participantes_ids)
         e2ee_habilitado = bool(self.initial_data.get("e2ee_habilitado", False))
-        return criar_canal(
+        categoria = validated_data.pop("categoria", None)
+        canal = criar_canal(
             criador=request.user,
             contexto_tipo=validated_data.get("contexto_tipo"),
             contexto_id=validated_data.get("contexto_id"),
@@ -46,6 +64,10 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             participantes=participantes,
             e2ee_habilitado=e2ee_habilitado,
         )
+        if categoria:
+            canal.categoria = categoria
+            canal.save(update_fields=["categoria"])
+        return canal
 
     def to_representation(self, instance: ChatChannel) -> dict[str, Any]:
         data = super().to_representation(instance)
