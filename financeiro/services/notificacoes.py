@@ -7,6 +7,7 @@ from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
+from ..models import LancamentoFinanceiro
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,14 @@ def enviar_cobranca(user: Any, lancamento: Any) -> None:
         "link_pagamento": "#",
     }
     try:
-        enviar_para_usuario(user, "financeiro_nova_cobranca", context)
+        tipo = getattr(lancamento, "tipo", "")
+        if tipo == LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO:
+            template = "mensalidade_associacao"
+        elif tipo == LancamentoFinanceiro.Tipo.MENSALIDADE_NUCLEO:
+            template = "mensalidade_nucleo"
+        else:  # fallback genérico
+            template = "financeiro_nova_cobranca"
+        enviar_para_usuario(user, template, context)
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar cobrança: %s", exc)
 
@@ -35,7 +43,7 @@ def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
     try:
         enviar_para_usuario(
             user,
-            "inadimplencia",
+            "aviso_inadimplencia",
             {"assunto": str(assunto), "corpo": str(corpo)},
         )
     except Exception as exc:  # pragma: no cover - integração externa
@@ -58,3 +66,16 @@ def enviar_ajuste(user: Any, lancamento: Any, delta: Any) -> None:
         enviar_para_usuario(user, "financeiro_ajuste_lancamento", context)
     except Exception as exc:  # pragma: no cover
         logger.error("Falha ao enviar ajuste: %s", exc)
+
+
+def enviar_aporte(user: Any, lancamento: Any) -> None:
+    """Notifica recebimento de aporte."""
+    context = {
+        "nome": getattr(user, "first_name", ""),
+        "valor": lancamento.valor,
+        "descricao": getattr(lancamento, "descricao", ""),
+    }
+    try:
+        enviar_para_usuario(user, "aporte_recebido", context)
+    except Exception as exc:  # pragma: no cover - integração externa
+        logger.error("Falha ao enviar aporte: %s", exc)

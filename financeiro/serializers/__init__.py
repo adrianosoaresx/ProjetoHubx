@@ -16,6 +16,7 @@ from ..models import (
     ImportacaoPagamentos,
 )
 from ..services.distribuicao import repassar_receita_ingresso
+from ..services.notificacoes import enviar_aporte
 
 
 class CentroCustoSerializer(serializers.ModelSerializer):
@@ -178,6 +179,11 @@ class AporteSerializer(serializers.ModelSerializer):
                 conta = ContaAssociado.objects.select_related(None).get(pk=lancamento.conta_associado_id)
                 conta.saldo += lancamento.valor
                 conta.save(update_fields=["saldo"])
+        if lancamento.conta_associado:
+            try:
+                enviar_aporte(lancamento.conta_associado.user, lancamento)
+            except Exception:  # pragma: no cover - integração externa
+                pass
         return lancamento
 
 
