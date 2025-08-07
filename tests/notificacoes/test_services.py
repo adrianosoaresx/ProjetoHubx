@@ -1,8 +1,6 @@
 import pytest
 
 from accounts.factories import UserFactory
-import pytest
-from accounts.factories import UserFactory
 from configuracoes.models import ConfiguracaoConta
 from configuracoes.services import atualizar_preferencias_usuario
 from notificacoes.models import NotificationLog, NotificationTemplate
@@ -39,6 +37,30 @@ def test_enviar_para_usuario(monkeypatch) -> None:
     assert called.get("count") == 1
     assert log.status == "pendente"
     assert log.destinatario.startswith(user.email[:2])
+
+
+def test_enviar_para_usuario_agrupado(monkeypatch) -> None:
+    """Não envia imediatamente quando configurado para resumo diário."""
+    user = UserFactory()
+    NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
+    config = ConfiguracaoConta.objects.get(user=user)
+    config.frequencia_notificacoes_email = "diaria"
+    config.save(update_fields=["frequencia_notificacoes_email"])
+    called = {}
+
+    def fake_delay(*args, **kwargs):
+        called["count"] = called.get("count", 0) + 1
+
+    monkeypatch.setattr(
+        "notificacoes.services.notificacoes.enviar_notificacao_async.delay",
+        fake_delay,
+    )
+
+    svc.enviar_para_usuario(user, "t", {})
+
+    log = NotificationLog.objects.get()
+    assert called.get("count", 0) == 0
+    assert log.status == "pendente"
 
 
 def test_enviar_sem_canais() -> None:
