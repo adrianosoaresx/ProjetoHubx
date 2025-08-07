@@ -133,7 +133,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
             ),
             models.Index(
                 fields=["centro_custo", "conta_associado", "status", "data_vencimento"],
-                name="idx_lanc_centro_conta_status_venc",
+                name="idx_lanc_cc_status_venc",
             ),
         ]
 
@@ -182,6 +182,7 @@ class ImportacaoPagamentos(TimeStampedModel, SoftDeleteModel):
         ordering = ["-data_importacao"]
         verbose_name = "Importação de Pagamentos"
         verbose_name_plural = "Importações de Pagamentos"
+        indexes = [models.Index(fields=["data_importacao"], name="idx_importacao_data")]
 
     def __str__(self) -> str:
         return f"{self.arquivo} ({self.total_processado})"
@@ -195,6 +196,7 @@ class FinanceiroLog(TimeStampedModel, SoftDeleteModel):
         GERAR_COBRANCA = "gerar_cobranca", "Gerar Cobrança"
         REPASSE = "repasse", "Repasse de Receita"
         EDITAR_CENTRO = "editar_centro", "Editar Centro de Custo"
+        EDITAR_LANCAMENTO = "editar_lancamento", "Editar Lançamento"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)

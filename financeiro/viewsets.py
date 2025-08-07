@@ -15,10 +15,23 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import CentroCusto, ContaAssociado, ImportacaoPagamentos, LancamentoFinanceiro
+from .models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    FinanceiroTaskLog,
+    ImportacaoPagamentos,
+    LancamentoFinanceiro,
+)
 from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin, IsNotRoot
-from .serializers import ImportacaoPagamentosSerializer, LancamentoFinanceiroSerializer
+from .serializers import (
+    FinanceiroLogSerializer,
+    FinanceiroTaskLogSerializer,
+    ImportacaoPagamentosSerializer,
+    LancamentoFinanceiroSerializer,
+)
 from .services.distribuicao import repassar_receita_ingresso
+from .services.auditoria import log_financeiro
 from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -87,6 +100,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        antigo = {"status": lancamento.status}
         with transaction.atomic():
             lancamento.status = novo_status
             lancamento.save(update_fields=["status"])
@@ -100,7 +114,12 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
                     )
                 if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
                     repassar_receita_ingresso(lancamento)
-
+        log_financeiro(
+            FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+            request.user,
+            antigo,
+            {"status": novo_status, "id": str(lancamento.id)},
+        )
         serializer = self.get_serializer(lancamento)
         return Response(serializer.data)
 
@@ -138,10 +157,66 @@ class ImportacaoPagamentosViewSet(mixins.ListModelMixin, mixins.RetrieveModelMix
         return qs
 
 
+class FinanceiroLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Consulta dos logs de auditoria do módulo financeiro."""
+
+    serializer_class = FinanceiroLogSerializer
+    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
+
+    class _Pagination(PageNumberPagination):
+        page_size = 20
+
+    pagination_class = _Pagination
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = FinanceiroLog.objects.select_related("usuario")
+        params = self.request.query_params
+        if acao := params.get("acao"):
+            qs = qs.filter(acao=acao)
+        if usuario := params.get("usuario"):
+            qs = qs.filter(usuario_id=usuario)
+        if inicio := params.get("inicio"):
+            if dt := parse_date(inicio):
+                qs = qs.filter(created_at__date__gte=dt)
+        if fim := params.get("fim"):
+            if dt := parse_date(fim):
+                qs = qs.filter(created_at__date__lt=dt)
+        return qs
+
+
+class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Consulta dos logs de tarefas assíncronas."""
+
+    serializer_class = FinanceiroTaskLogSerializer
+    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
+
+    class _Pagination(PageNumberPagination):
+        page_size = 20
+
+    pagination_class = _Pagination
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = FinanceiroTaskLog.objects.all()
+        params = self.request.query_params
+        if nome := params.get("nome_tarefa"):
+            qs = qs.filter(nome_tarefa=nome)
+        if status_param := params.get("status"):
+            qs = qs.filter(status=status_param)
+        if inicio := params.get("inicio"):
+            if dt := parse_date(inicio):
+                qs = qs.filter(executada_em__date__gte=dt)
+        if fim := params.get("fim"):
+            if dt := parse_date(fim):
+                qs = qs.filter(executada_em__date__lt=dt)
+        return qs
+
+
 __all__ = [
     "CentroCustoViewSet",
     "FinanceiroViewSet",
     "LancamentoFinanceiroViewSet",
     "ImportacaoPagamentosViewSet",
+    "FinanceiroLogViewSet",
+    "FinanceiroTaskLogViewSet",
 ]
 

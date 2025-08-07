@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.exceptions import NotAuthenticated
 
 from accounts.models import UserType
 
@@ -9,14 +10,18 @@ class IsFinanceiroOrAdmin(BasePermission):
     """Allow access only to financial staff or admins."""
 
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
-        return request.user.is_authenticated and request.user.user_type == UserType.ADMIN
+        if not request.user.is_authenticated:
+            raise NotAuthenticated()
+        return request.user.user_type == UserType.ADMIN
 
 
 class IsNotRoot(BasePermission):
     """Negates access for root users."""
 
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
-        return request.user.is_authenticated and request.user.user_type != UserType.ROOT
+        if not request.user.is_authenticated:
+            return True
+        return request.user.user_type != UserType.ROOT
 
 
 class IsCoordenador(BasePermission):
