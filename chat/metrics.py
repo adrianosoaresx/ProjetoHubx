@@ -50,3 +50,8 @@ chat_tarefas_criadas_total = Counter(
     "chat_tarefas_criadas_total",
     "Total de tarefas criadas a partir de mensagens",
 )
+
+chat_mensagens_removidas_retencao_total = Counter(
+    "chat_mensagens_removidas_retencao_total",
+    "Total de mensagens removidas pela política de retenção",
+)

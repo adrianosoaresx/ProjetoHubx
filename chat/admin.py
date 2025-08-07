@@ -12,7 +12,7 @@ from .models import (
 
 @admin.register(ChatChannel)
 class ChatChannelAdmin(admin.ModelAdmin):
-    list_display = ["titulo", "created"]
+    list_display = ["titulo", "retencao_dias", "created"]
 
 
 @admin.register(ChatMessage)

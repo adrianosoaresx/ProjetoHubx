@@ -24,6 +24,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             "descricao",
             "imagem",
             "e2ee_habilitado",
+            "retencao_dias",
             "created",
             "modified",
         ]
@@ -53,6 +54,16 @@ class ChatChannelSerializer(serializers.ModelSerializer):
         if last_msg:
             data["ultima_mensagem"] = ChatMessageSerializer(last_msg, context=self.context).data
         return data
+
+
+class ChatRetentionSerializer(serializers.Serializer):
+    """Serializer para configuração de política de retenção."""
+
+    retencao_dias = serializers.IntegerField(
+        min_value=1,
+        max_value=365,
+        allow_null=True,
+    )
 
 
 class ChatMessageSerializer(serializers.ModelSerializer):

@@ -27,6 +27,11 @@ class ChatChannel(TimeStampedModel, SoftDeleteModel):
     descricao = models.TextField(blank=True)
     imagem = models.ImageField(upload_to="chat/avatars/", null=True, blank=True)
     e2ee_habilitado = models.BooleanField(default=False)
+    retencao_dias = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Quantidade de dias para manter mensagens antes da remoção automática",
+    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -237,6 +242,7 @@ class ChatModerationLog(TimeStampedModel):
         ("remove", "Remover"),
         ("edit", "Editar"),
         ("create_item", "Criar item"),
+        ("retencao", "Retenção"),
     ]
 
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
