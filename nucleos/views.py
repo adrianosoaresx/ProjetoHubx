@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -132,7 +132,15 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         if self.request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
             ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
             ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
+        part = nucleo.participacoes.filter(user=self.request.user).first()
+        ctx["mostrar_solicitar"] = not part or part.status == "recusado"
         return ctx
+
+
+class SolicitarParticipacaoModalView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, inativa=False)
+        return render(request, "nucleos/solicitar_modal.html", {"nucleo": nucleo})
 
 
 class ParticipacaoCreateView(LoginRequiredMixin, View):

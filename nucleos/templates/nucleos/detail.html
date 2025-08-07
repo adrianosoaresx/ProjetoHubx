@@ -65,13 +65,11 @@
     {% endif %}
   </div>
 
-  {% if request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-  <div class="mt-4">
-    <form hx-post="{% url 'nucleos_api:nucleo-solicitar' object.pk %}" hx-on="htmx:afterRequest: this.outerHTML='<p class=\'text-green-600\'>{% trans 'Solicitação enviada' %}</p>'">
-      {% csrf_token %}
-      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Solicitar participação' %}</button>
-    </form>
-  </div>
-  {% endif %}
-</section>
-{% endblock %}
+    {% if mostrar_solicitar and request.user.user_type not in ('admin','coordenador') %}
+    <div class="mt-4">
+      <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+    </div>
+    {% endif %}
+    <div id="modal"></div>
+  </section>
+  {% endblock %}
