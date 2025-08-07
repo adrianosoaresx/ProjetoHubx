@@ -13,16 +13,16 @@ logger = logging.getLogger(__name__)
 
 
 def enviar_cobranca(user: Any, lancamento: Any) -> None:
-    """Envia notificação de cobrança a um usuário."""
+    """Envia notificação de nova cobrança a um usuário."""
 
-    assunto = _("Cobrança pendente")
-    corpo = _("Existe um lançamento pendente de pagamento.")
+    context = {
+        "nome": getattr(user, "first_name", ""),
+        "valor": lancamento.valor,
+        "vencimento": lancamento.data_vencimento,
+        "link_pagamento": "#",
+    }
     try:
-        enviar_para_usuario(
-            user,
-            "cobranca_pendente",
-            {"assunto": str(assunto), "corpo": str(corpo)},
-        )
+        enviar_para_usuario(user, "financeiro_nova_cobranca", context)
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar cobrança: %s", exc)
 
@@ -40,3 +40,21 @@ def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
         )
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar inadimplência: %s", exc)
+
+
+def enviar_distribuicao(user: Any, evento: Any, valor: Any) -> None:
+    """Notifica sobre distribuição de receita de evento."""
+    context = {"nome": getattr(user, "first_name", ""), "evento": evento.titulo, "valor": valor}
+    try:
+        enviar_para_usuario(user, "financeiro_distribuicao_receita", context)
+    except Exception as exc:  # pragma: no cover
+        logger.error("Falha ao enviar distribuição: %s", exc)
+
+
+def enviar_ajuste(user: Any, lancamento: Any, delta: Any) -> None:
+    """Notifica ajuste de lançamento."""
+    context = {"nome": getattr(user, "first_name", ""), "valor": delta, "lancamento": lancamento.id}
+    try:
+        enviar_para_usuario(user, "financeiro_ajuste_lancamento", context)
+    except Exception as exc:  # pragma: no cover
+        logger.error("Falha ao enviar ajuste: %s", exc)

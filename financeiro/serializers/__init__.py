@@ -77,6 +77,8 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             "data_vencimento",
             "status",
             "descricao",
+            "lancamento_original",
+            "ajustado",
             "created_at",
             "updated_at",
         ]

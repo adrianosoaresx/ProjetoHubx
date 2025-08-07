@@ -31,7 +31,24 @@ Para cada associado ativo é criado um lançamento pendente em seu respectivo ce
 de custo. Caso ele participe de núcleos aprovados, é gerada também a cobrança de
 mensalidade de cada núcleo correspondente. Após a criação, o sistema envia
 notificações por e-mail e no aplicativo usando o app `notificacoes` com o
-template `cobranca_pendente`.
+template `financeiro_nova_cobranca`.
+
+## Distribuição de Receitas de Eventos
+
+A função `distribuir_receita_evento(evento_id, valor, conta_associado)` aloca as
+receitas de ingressos. Quando o evento pertence a um núcleo, todo o valor é
+creditado ao centro de custo do núcleo. Sem vínculo, o valor é dividido 50/50
+entre o centro do evento e o da organização. As operações são registradas no
+`FinanceiroLog` com a ação `distribuir_receita` e notificações são enviadas aos
+coordenadores ou organizadores.
+
+## Ajustes de Lançamentos
+
+Lançamentos pagos podem ser ajustados via `POST
+/api/financeiro/lancamentos/<id>/ajustar/`. O serviço cria um lançamento do tipo
+`ajuste` com a diferença de valores, marca o original como ajustado e atualiza os
+saldos. A requisição deve conter `valor_corrigido` e `descricao_motivo` e é
+restrita a usuários financeiros ou administradores.
 
 ## Registro de Aportes
 

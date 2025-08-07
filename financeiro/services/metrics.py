@@ -18,6 +18,9 @@ notificacoes_inadimplencia_total = Counter(
 cobrancas_total = Counter(
     "cobrancas_total", "Número total de cobranças geradas"
 )
+financeiro_cobrancas_total = Counter(
+    "financeiro_cobrancas_total", "Cobranças recorrentes criadas"
+)
 
 # Novas métricas de observabilidade do módulo financeiro
 financeiro_importacoes_total = Counter(

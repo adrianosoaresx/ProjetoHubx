@@ -8,6 +8,7 @@ from django.db.models import SET_NULL
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from decimal import Decimal
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
@@ -57,6 +58,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
     inativa = models.BooleanField(default=False)
     inativada_em = models.DateTimeField(null=True, blank=True)
+    mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
         verbose_name = "Núcleo"

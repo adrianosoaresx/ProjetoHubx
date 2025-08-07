@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from calendar import monthrange
 from datetime import datetime
+from decimal import Decimal
 
 from django.db import transaction
 from django.db.models import F
@@ -12,6 +13,7 @@ from rest_framework import mixins, status, viewsets
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from accounts.models import UserType
 
@@ -32,6 +34,7 @@ from .serializers import (
 )
 from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
+from .services.ajustes import ajustar_lancamento
 from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -41,7 +44,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
     serializer_class = LancamentoFinanceiroSerializer
 
     def get_permissions(self):  # type: ignore[override]
-        if self.action in {"partial_update"}:
+        if self.action in {"partial_update", "ajustar"}:
             self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
         else:
             self.permission_classes = [
@@ -120,6 +123,19 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             antigo,
             {"status": novo_status, "id": str(lancamento.id)},
         )
+        serializer = self.get_serializer(lancamento)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def ajustar(self, request, *args, **kwargs):
+        """Realiza ajuste em um lançamento."""
+        lancamento = self.get_object()
+        valor = request.data.get("valor_corrigido")
+        descricao = request.data.get("descricao_motivo", "")
+        try:
+            ajustar_lancamento(lancamento.id, Decimal(str(valor)), descricao, request.user)
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(lancamento)
         return Response(serializer.data)
 
