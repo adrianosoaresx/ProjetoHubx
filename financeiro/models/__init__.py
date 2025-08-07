@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from core.fields import EncryptedCharField, URLField
 from core.models import SoftDeleteModel, TimeStampedModel
 
 """Modelos do módulo financeiro."""
@@ -237,3 +238,64 @@ class FinanceiroTaskLog(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.nome_tarefa} - {self.status}"
+
+
+class IntegracaoConfig(TimeStampedModel):
+    """Configurações de provedores externos."""
+
+    class Tipo(models.TextChoices):
+        ERP = "erp", "ERP"
+        CONTABILIDADE = "contabilidade", "Contabilidade"
+        GATEWAY = "gateway", "Gateway de Pagamento"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    nome = models.CharField(max_length=255)
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    base_url = URLField(max_length=255)
+    credenciais_encrypted = EncryptedCharField(max_length=512, blank=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "Configuração de Integração"
+        verbose_name_plural = "Configurações de Integração"
+
+    def __str__(self) -> str:  # pragma: no cover - simples representação
+        return self.nome
+
+
+class IntegracaoIdempotency(models.Model):
+    """Armazena chaves de idempotência utilizadas nas integrações."""
+
+    idempotency_key = models.CharField(max_length=255, unique=True)
+    provedor = models.CharField(max_length=100)
+    recurso = models.CharField(max_length=100)
+    status = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Idempotência de Integração"
+        verbose_name_plural = "Idempotências de Integração"
+
+
+class IntegracaoLog(models.Model):
+    """Registra as chamadas realizadas aos provedores externos."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    provedor = models.CharField(max_length=100)
+    acao = models.CharField(max_length=100)
+    payload_in = models.JSONField(default=dict, blank=True)
+    payload_out = models.JSONField(default=dict, blank=True)
+    status = models.CharField(max_length=50)
+    duracao_ms = models.PositiveIntegerField(default=0)
+    erro = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Log de Integração"
+        verbose_name_plural = "Logs de Integração"
+
+    def __str__(self) -> str:  # pragma: no cover - simples representação
+        return f"{self.provedor} - {self.acao}"
