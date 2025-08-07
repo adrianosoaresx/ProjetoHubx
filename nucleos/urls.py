@@ -10,6 +10,11 @@ urlpatterns = [
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
     path("<int:pk>/editar/", views.NucleoUpdateView.as_view(), name="update"),
     path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
+    path(
+        "<int:pk>/solicitar/confirmar/",
+        views.SolicitarParticipacaoModalView.as_view(),
+        name="solicitar_modal",
+    ),
     path("<int:pk>/participar/", views.ParticipacaoCreateView.as_view(), name="participacao_solicitar"),
     path(
         "<int:pk>/participacao/<int:participacao_id>/decidir/",
