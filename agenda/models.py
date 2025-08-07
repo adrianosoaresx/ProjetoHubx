@@ -25,6 +25,7 @@ from simple_history.models import HistoricalRecords
 from core.models import SoftDeleteManager, SoftDeleteModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
+from chat.models import ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -289,7 +290,6 @@ class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
-    history = HistoricalRecords()
 
     class Meta:
         ordering = ["-data_inicio"]
@@ -331,7 +331,6 @@ class MaterialDivulgacaoEvento(TimeStampedModel, SoftDeleteModel):
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
-    history = HistoricalRecords()
 
     class Meta:
         verbose_name = "Material de Divulgação de Evento"
@@ -383,7 +382,6 @@ class BriefingEvento(TimeStampedModel, SoftDeleteModel):
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
-    history = HistoricalRecords()
 
     class Meta:
         verbose_name = "Briefing de Evento"
@@ -409,6 +407,67 @@ class FeedbackNota(TimeStampedModel, SoftDeleteModel):
         verbose_name = "Feedback de Nota"
         verbose_name_plural = "Feedbacks de Notas"
         unique_together = ("usuario", "evento")
+
+
+class Tarefa(TimeStampedModel, SoftDeleteModel):
+    """Tarefas simples relacionadas a mensagens do chat."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    titulo = models.CharField(max_length=150)
+    descricao = models.TextField(blank=True)
+    data_inicio = models.DateTimeField()
+    data_fim = models.DateTimeField()
+    responsavel = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="tarefas_criadas",
+    )
+    organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
+    nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
+    mensagem_origem = models.ForeignKey(
+        ChatMessage,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="tarefas",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=[("pendente", "Pendente"), ("concluida", "Concluída")],
+        default="pendente",
+    )
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+
+        return reverse("agenda:tarefa_detalhe", args=[self.pk])
+
+    class Meta:
+        verbose_name = "Tarefa"
+        verbose_name_plural = "Tarefas"
+
+
+class TarefaLog(TimeStampedModel, SoftDeleteModel):
+    tarefa = models.ForeignKey(Tarefa, on_delete=models.CASCADE, related_name="logs")
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    acao = models.CharField(max_length=50)
+    detalhes = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        ordering = ["-created"]
+        verbose_name = "Log de Tarefa"
+        verbose_name_plural = "Logs de Tarefa"
 
 
 class EventoLog(TimeStampedModel, SoftDeleteModel):

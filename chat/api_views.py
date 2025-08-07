@@ -26,6 +26,7 @@ from .api import add_reaction, remove_reaction
 from .models import (
     ChatAttachment,
     ChatChannel,
+    ChatChannelCategory,
     ChatFavorite,
     ChatMessage,
     ChatMessageReaction,
@@ -41,6 +42,7 @@ from .permissions import (
     IsModeratorPermission,
 )
 from .serializers import (
+    ChatChannelCategorySerializer,
     ChatChannelSerializer,
     ChatMessageSerializer,
     ChatNotificationSerializer,
@@ -52,6 +54,27 @@ from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
 
 User = get_user_model()
+
+
+class ChatChannelCategoryViewSet(viewsets.ModelViewSet):
+    """Administração de categorias de canais."""
+
+    serializer_class = ChatChannelCategorySerializer
+    queryset = ChatChannelCategory.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):  # pragma: no cover - simple
+        perms: list[type[permissions.BasePermission]] = [permissions.IsAuthenticated]
+        if self.action in {"create", "partial_update", "destroy"}:
+            perms.append(permissions.IsAdminUser)
+        return [p() for p in perms]
+
+    def get_queryset(self):  # pragma: no cover - simple filtering
+        qs = super().get_queryset()
+        nome = self.request.query_params.get("nome")
+        if nome:
+            qs = qs.filter(nome__icontains=nome)
+        return qs.order_by("nome")
 
 
 class UploadArquivoAPIView(APIView):
@@ -143,7 +166,10 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         qs = ChatChannel.objects.all()
         if self.action == "list":
             qs = qs.filter(participants__user=user)
-        return qs.select_related().prefetch_related("participants__user").distinct()
+            categoria = self.request.query_params.get("categoria")
+            if categoria:
+                qs = qs.filter(categoria_id=categoria)
+        return qs.select_related("categoria").prefetch_related("participants__user").distinct()
 
     def get_permissions(self):
         perms: list[type[permissions.BasePermission]] = [permissions.IsAuthenticated]
@@ -177,7 +203,11 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
         instance = self.get_object()
-        data = {k: v for k, v in request.data.items() if k in {"titulo", "descricao", "imagem"}}
+        data = {
+            k: v
+            for k, v in request.data.items()
+            if k in {"titulo", "descricao", "imagem", "categoria"}
+        }
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -470,7 +500,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         except (ValueError, NotImplementedError) as exc:
             return Response({"erro": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        link = reverse("agenda:evento_detalhe", args=[item.pk]) if request.data.get("tipo") == "evento" else ""
+        link = ""
+        if request.data.get("tipo") == "evento":
+            link = reverse("agenda:evento_detalhe", args=[item.pk])
+        elif request.data.get("tipo") == "tarefa":
+            link = reverse("agenda:tarefa_detalhe", args=[item.pk])
         return Response(
             {"id": str(item.pk), "titulo": item.titulo, "link": link},
             status=status.HTTP_201_CREATED,

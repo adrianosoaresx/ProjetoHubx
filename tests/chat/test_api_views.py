@@ -487,6 +487,54 @@ def test_criar_item_evento_dados_invalidos(api_client: APIClient, admin_user):
     assert resp.status_code == 400
 
 
+def test_criar_item_tarefa(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="x")
+    perm = Permission.objects.get(codename="add_tarefa")
+    admin_user.user_permissions.add(perm)
+    api_client.force_authenticate(admin_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    inicio = timezone.now()
+    fim = inicio + timedelta(hours=1)
+    resp = api_client.post(
+        url,
+        {
+            "tipo": "tarefa",
+            "titulo": "Tarefa",
+            "inicio": inicio.isoformat(),
+            "fim": fim.isoformat(),
+        },
+    )
+    assert resp.status_code == 201
+    from agenda.models import Tarefa
+
+    tarefa = Tarefa.objects.get(mensagem_origem=msg)
+    assert tarefa.titulo == "Tarefa"
+    assert ChatModerationLog.objects.filter(message=msg, action="create_item").exists()
+
+
+def test_criar_item_tarefa_sem_permissao(api_client: APIClient, associado_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=associado_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=associado_user, tipo="text", conteudo="x")
+    api_client.force_authenticate(associado_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    resp = api_client.post(url, {"tipo": "tarefa", "titulo": "A"})
+    assert resp.status_code == 403
+
+
+def test_criar_item_tarefa_dados_invalidos(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="x")
+    perm = Permission.objects.get(codename="add_tarefa")
+    admin_user.user_permissions.add(perm)
+    api_client.force_authenticate(admin_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    resp = api_client.post(url, {"tipo": "tarefa", "titulo": ""})
+    assert resp.status_code == 400
+
 def test_upload_throttling(api_client: APIClient, admin_user):
     api_client.force_authenticate(admin_user)
     cache.clear()

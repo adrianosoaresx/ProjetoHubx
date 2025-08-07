@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BriefingEvento, Evento, InscricaoEvento, MaterialDivulgacaoEvento, ParceriaEvento
+from .models import BriefingEvento, Evento, InscricaoEvento, MaterialDivulgacaoEvento, ParceriaEvento, Tarefa
 
 
 @admin.register(Evento)
@@ -26,3 +26,8 @@ class MaterialDivulgacaoEventoAdmin(admin.ModelAdmin):
 @admin.register(BriefingEvento)
 class BriefingEventoAdmin(admin.ModelAdmin):
     list_display = ["evento", "objetivos"]
+
+
+@admin.register(Tarefa)
+class TarefaAdmin(admin.ModelAdmin):
+    list_display = ["titulo", "data_inicio", "data_fim", "status"]

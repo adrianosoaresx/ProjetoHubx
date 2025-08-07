@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     AtualizarChavePublicaView,
+    ChatChannelCategoryViewSet,
     ChatChannelViewSet,
     ChatFavoriteViewSet,
     ChatMessageViewSet,
@@ -14,6 +15,7 @@ from .api_views import (
 
 router = DefaultRouter()
 router.register(r"channels", ChatChannelViewSet, basename="chat-channel")
+router.register(r"categorias", ChatChannelCategoryViewSet, basename="chat-categoria")
 router.register(r"notificacoes", ChatNotificationViewSet, basename="chat-notificacao")
 router.register(r"moderacao/messages", ModeracaoViewSet, basename="chat-moderacao")
 router.register(r"favorites", ChatFavoriteViewSet, basename="chat-favorite")

@@ -51,6 +51,8 @@ from .models import (
     Evento,
     EventoLog,
     FeedbackNota,
+    Tarefa,
+    TarefaLog,
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
@@ -247,6 +249,22 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
             .select_related("organizacao")
             .prefetch_related("inscricoes", "feedbacks")
         )
+
+
+class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
+    model = Tarefa
+    template_name = "agenda/tarefa_detail.html"
+
+    def get_queryset(self):
+        qs = Tarefa.objects.select_related("organizacao")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            return qs
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(organizacao=user.organizacao)
+        if nucleo_ids:
+            filtro |= Q(nucleo__in=nucleo_ids)
+        return qs.filter(filtro)
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
