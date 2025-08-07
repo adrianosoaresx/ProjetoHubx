@@ -91,19 +91,26 @@ class HistoricoNotificacao(TimeStampedModel):
         return f"{self.user} - {self.canal} - {self.enviado_em:%Y-%m-%d %H:%M}"
 
 
-class PushSubscription(TimeStampedModel):
-    """Armazena inscrições de navegadores para notificações push."""
+class PushSubscription(models.Model):
+    """Armazena inscrições de navegadores para notificações Web Push."""
 
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user: models.ForeignKey = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="push_subscriptions"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="push_subscriptions",
     )
-    token: models.CharField = models.CharField(max_length=255)
+    device_id: models.CharField = models.CharField(max_length=255)
+    endpoint: models.CharField = models.CharField(max_length=500)
+    p256dh: models.CharField = models.CharField(max_length=255)
+    auth: models.CharField = models.CharField(max_length=255)
+    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
+    active: models.BooleanField = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ("user", "token")
+        unique_together = ("user", "device_id")
         verbose_name = _("Inscrição Push")
         verbose_name_plural = _("Inscrições Push")
 
     def __str__(self) -> str:  # pragma: no cover - simples
-        return f"{self.user} - {self.token}"
+        return f"{self.user} - {self.device_id}"

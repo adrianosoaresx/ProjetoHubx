@@ -44,4 +44,13 @@ class NotificationLogSerializer(serializers.ModelSerializer):
 class PushSubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PushSubscription
-        fields = ["token"]
+        fields = [
+            "id",
+            "device_id",
+            "endpoint",
+            "p256dh",
+            "auth",
+            "active",
+            "created_at",
+        ]
+        read_only_fields = ["id", "active", "created_at"]

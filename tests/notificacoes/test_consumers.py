@@ -4,9 +4,8 @@ import pytest
 from channels.testing import WebsocketCommunicator
 
 from Hubx.asgi import application
-from notificacoes.models import PushSubscription
+from notificacoes.models import Canal, NotificationLog, NotificationTemplate, PushSubscription
 from notificacoes.tasks import enviar_notificacao_async
-from notificacoes.models import NotificationLog, NotificationTemplate, Canal
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -19,7 +18,13 @@ def in_memory_channel_layer(settings):
 def test_consumer_receives_message(admin_user, monkeypatch):
     async def inner():
         monkeypatch.setattr("notificacoes.tasks.send_push", lambda u, m: None)
-        PushSubscription.objects.create(user=admin_user, token="t")
+        PushSubscription.objects.create(
+            user=admin_user,
+            device_id="d1",
+            endpoint="https://example.com",
+            p256dh="p",
+            auth="a",
+        )
         communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
         communicator.scope["user"] = admin_user
         connected, _ = await communicator.connect()

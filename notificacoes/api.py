@@ -5,7 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, PushSubscription
 from .permissions import CanSendNotifications
@@ -71,20 +70,39 @@ def enviar_view(request):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PushSubscriptionView(APIView):
+
+class PushSubscriptionViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
+    def get_queryset(self):
+        return PushSubscription.objects.filter(user=self.request.user)
+
+    def list(self, request):
+        queryset = self.get_queryset().filter(active=True)
+        serializer = PushSubscriptionSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request):
         serializer = PushSubscriptionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        PushSubscription.objects.update_or_create(
-            user=request.user, token=serializer.validated_data["token"]
+        subscription, created = PushSubscription.objects.update_or_create(
+            user=request.user,
+            device_id=serializer.validated_data["device_id"],
+            defaults={
+                "endpoint": serializer.validated_data["endpoint"],
+                "p256dh": serializer.validated_data["p256dh"],
+                "auth": serializer.validated_data["auth"],
+                "active": True,
+            },
         )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(PushSubscriptionSerializer(subscription).data, status=status_code)
 
-    def delete(self, request):
-        token = request.data.get("token")
-        if not token:
-            return Response({"detail": "token required"}, status=status.HTTP_400_BAD_REQUEST)
-        PushSubscription.objects.filter(user=request.user, token=token).delete()
+    def destroy(self, request, pk=None):
+        try:
+            subscription = self.get_queryset().get(pk=pk)
+        except PushSubscription.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        subscription.active = False
+        subscription.save(update_fields=["active"])
         return Response(status=status.HTTP_204_NO_CONTENT)
