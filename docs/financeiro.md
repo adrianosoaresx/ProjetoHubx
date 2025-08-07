@@ -99,6 +99,29 @@ Resposta:
 }
 ```
 
+## Interface Web
+
+### Importar Pagamentos
+
+1. Acesse **Financeiro → Importar**.
+2. Escolha um arquivo `.csv` ou `.xlsx` e selecione **Pré-visualizar**. O envio é feito via HTMX e a pré-visualização aparece abaixo do formulário.
+3. Erros de validação são exibidos na região de mensagens. Quando não houver problemas, o botão **Confirmar Importação** é habilitado.
+4. Ao confirmar, a tarefa roda em segundo plano. Futuras integrações com o módulo de Notificações avisarão sobre erros encontrados.
+
+### Centros de Custo
+
+1. Em **Financeiro → Centros de Custo** use o botão **Novo Centro** para abrir o formulário no modal.
+2. Preencha nome, tipo e vínculos com organização, núcleo ou evento e salve. A tabela é atualizada automaticamente.
+3. Utilize as ações **Editar** ou **Excluir** de cada linha para gerenciar registros existentes.
+
+### Relatórios
+
+1. Acesse **Financeiro → Relatórios**.
+2. Defina filtros de centro, núcleo e período e clique em **Gerar Relatório** para obter o saldo e a série temporal.
+3. Use **Exportar CSV** ou **Exportar XLSX** para baixar os dados com os filtros aplicados.
+
+> **Nota:** Todos os formulários utilizam rótulos associados, suporte a teclado e regiões `aria-live` para mensagens, atendendo às diretrizes WCAG 2.1 AA.
+
 ## Inadimplências
 
 `GET /api/financeiro/inadimplencias/`
