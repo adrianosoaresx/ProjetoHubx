@@ -246,6 +246,7 @@ class ChatAttachment(TimeStampedModel, SoftDeleteModel):
         verbose_name = "Anexo"
         verbose_name_plural = "Anexos"
 
+
 class RelatorioChatExport(TimeStampedModel):
     channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
@@ -290,3 +291,24 @@ class ResumoChat(models.Model):
     class Meta:
         verbose_name = "Resumo de Chat"
         verbose_name_plural = "Resumos de Chat"
+
+
+class UserChatPreference(TimeStampedModel):
+    """Preferências de uso do chat por usuário."""
+
+    THEME_CHOICES = [("claro", "Claro"), ("escuro", "Escuro")]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="chat_preference",
+    )
+    tema = models.CharField(max_length=10, choices=THEME_CHOICES, default="claro")
+    buscas_salvas = models.JSONField(default=list, blank=True)
+    resumo_diario = models.BooleanField(default=False)
+    resumo_semanal = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Preferência de Chat"
+        verbose_name_plural = "Preferências de Chat"

@@ -11,6 +11,7 @@ from .api_views import (
     ChavePublicaView,
     ModeracaoViewSet,
     UploadArquivoAPIView,
+    UserChatPreferenceView,
 )
 
 router = DefaultRouter()
@@ -35,9 +36,7 @@ chat_message_react = ChatMessageViewSet.as_view({"post": "react"})
 chat_message_flag = ChatMessageViewSet.as_view({"post": "flag"})
 chat_message_restore = ChatMessageViewSet.as_view({"post": "restore"})
 chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
-chat_message_favorite = ChatMessageViewSet.as_view(
-    {"post": "favorite", "delete": "favorite"}
-)
+chat_message_favorite = ChatMessageViewSet.as_view({"post": "favorite", "delete": "favorite"})
 chat_message_create_item = ChatMessageViewSet.as_view({"post": "criar_item"})
 chat_channel_config_retencao = ChatChannelViewSet.as_view({"patch": "config_retencao"})
 
@@ -109,4 +108,5 @@ urlpatterns = router.urls + [
         AtualizarChavePublicaView.as_view(),
         name="chat-user-public-key-update",
     ),
+    path("preferencias/", UserChatPreferenceView.as_view(), name="chat-preferences"),
 ]

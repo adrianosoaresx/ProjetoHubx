@@ -70,27 +70,37 @@ def _auth(client, user):
     client.force_authenticate(user=user)
 
 
-def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizacao):
+def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizacao, django_user_model):
     nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+
     _auth(api_client, outro_user)
-    url = reverse("nucleos_api:nucleo-participacoes", args=[nucleo.pk])
+    url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
     resp = api_client.post(url)
     assert resp.status_code == 201
-    participacao_id = resp.data["id"]
 
     _auth(api_client, admin_user)
-    url_decidir = reverse(
-        "nucleos_api:nucleo-decidir-participacao",
-        args=[nucleo.pk, participacao_id],
+    url_aprovar = reverse(
+        "nucleos_api:nucleo-aprovar-membro", args=[nucleo.pk, outro_user.pk]
     )
-    resp = api_client.patch(url_decidir, {"acao": "approve"})
+    resp = api_client.post(url_aprovar)
     assert resp.status_code == 200
-    p = ParticipacaoNucleo.objects.get(pk=participacao_id)
+    p = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=outro_user)
     assert p.status == "aprovado" and p.decidido_por == admin_user
 
-    # second request to reject should fail
-    resp = api_client.patch(url_decidir, {"acao": "reject"})
-    assert resp.status_code == 400
+    novo = django_user_model.objects.create_user(
+        username="novo", email="novo@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
+    )
+    _auth(api_client, novo)
+    resp = api_client.post(url)
+    assert resp.status_code == 201
+    _auth(api_client, admin_user)
+    url_recusar = reverse(
+        "nucleos_api:nucleo-recusar-membro", args=[nucleo.pk, novo.pk]
+    )
+    resp = api_client.post(url_recusar, {"justificativa": "motivo"})
+    assert resp.status_code == 200
+    p2 = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=novo)
+    assert p2.status == "recusado" and p2.justificativa == "motivo"
 
 
 def test_expiracao_automatica(api_client, outro_user, organizacao):
@@ -99,7 +109,7 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
     ParticipacaoNucleo.objects.filter(pk=part.pk).update(data_solicitacao=timezone.now() - timedelta(days=31))
     expirar_solicitacoes_pendentes()
     part.refresh_from_db()
-    assert part.status == "recusado"
+    assert part.status == "recusado" and part.justificativa == "expiração automática"
 
 
 def test_designar_suplente(api_client, admin_user, coord_user, organizacao):

@@ -262,9 +262,15 @@ CELERY_BEAT_SCHEDULE = {
         "task": "notificacoes.tasks.enviar_relatorios_semanais",
         "schedule": crontab(minute="*"),
     },
+
     "gerar_cobrancas_mensais": {
         "task": "financeiro.tasks.cobrancas.gerar_cobrancas_mensais",
         "schedule": crontab(minute=0, hour=0, day_of_month=1),
+
+    "expirar_solicitacoes_pendentes": {
+        "task": "nucleos.tasks.expirar_solicitacoes_pendentes",
+        "schedule": crontab(minute=0, hour=0),
+
     },
 }
 
