@@ -22,5 +22,7 @@ def test_search_form_contains_field():
 
 
 def test_suplente_form_date_validation():
-    form = SuplenteForm(data={"usuario": None, "inicio": "2024-01-02", "fim": "2024-01-01"})
+    form = SuplenteForm(
+        data={"usuario": None, "periodo_inicio": "2024-01-02", "periodo_fim": "2024-01-01"}
+    )
     assert not form.is_valid()

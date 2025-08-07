@@ -56,8 +56,35 @@
   </table>
   {% endif %}
 
-  <div class="mt-6">
-    <a href="{% url 'nucleos:exportar_membros' object.pk %}" class="text-blue-600">{% trans 'Exportar membros (CSV)' %}</a>
+  {% if suplentes %}
+  <h2 class="mt-6 font-semibold">{% trans 'Suplentes' %}</h2>
+  <ul>
+    {% for s in suplentes %}
+    <li>
+      {{ s.usuario.get_full_name|default:s.usuario.username }} -
+      {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }} -
+      {% if s.ativo %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}
+      {% if request.user.user_type in ('admin','coordenador') %}
+      <form method="post" action="{% url 'nucleos:suplente_remover' object.pk s.id %}" class="inline">
+        {% csrf_token %}
+        <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if request.user.user_type in ('admin','coordenador') %}
+  <div class="mt-4">
+    <a href="{% url 'nucleos:suplente_adicionar' object.pk %}" class="text-blue-600">{% trans 'Adicionar Suplente' %}</a>
+  </div>
+  {% endif %}
+
+  <div class="mt-6 space-x-2">
+    <div class="inline-block relative">
+      <button class="text-blue-600" hx-get="{% url 'nucleos:exportar_membros' object.pk %}?formato=csv" hx-trigger="click" hx-swap="none">{% trans 'Exportar CSV' %}</button>
+      <button class="text-blue-600" hx-get="{% url 'nucleos:exportar_membros' object.pk %}?formato=xls" hx-trigger="click" hx-swap="none">{% trans 'Exportar XLS' %}</button>
+    </div>
     {% if request.user.user_type in ('admin','coordenador','root') %}
     <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
       <button class="ml-2 text-orange-600">{% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}</button>

@@ -1,5 +1,6 @@
 import csv
 from datetime import timedelta
+import csv
 
 import pytest
 from django.urls import reverse
@@ -112,27 +113,98 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
     assert part.status == "recusado" and part.justificativa == "expiração automática"
 
 
-def test_designar_suplente(api_client, admin_user, coord_user, organizacao):
+def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(
+        user=coord_user, nucleo=nucleo, status="aprovado"
+    )
     _auth(api_client, admin_user)
-    url = reverse("nucleos_api:nucleo-adicionar-suplente", args=[nucleo.pk])
+    url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
     data = {
         "usuario": coord_user.pk,
-        "inicio": timezone.now(),
-        "fim": timezone.now() + timedelta(days=1),
+        "periodo_inicio": timezone.now(),
+        "periodo_fim": timezone.now() + timedelta(days=1),
     }
     resp = api_client.post(url, data)
     assert resp.status_code == 201
-    assert CoordenadorSuplente.objects.filter(nucleo=nucleo, usuario=coord_user).exists()
+    suplente_id = resp.data["id"]
+    resp = api_client.get(url)
+    assert resp.status_code == 200 and resp.data[0]["status"] == "ativo"
+    url_del = reverse("nucleos_api:nucleo-remover-suplente", args=[nucleo.pk, suplente_id])
+    resp = api_client.delete(url_del)
+    assert resp.status_code == 204
+    assert not CoordenadorSuplente.objects.filter(id=suplente_id).exists()
+
+
+def test_suplente_validations(api_client, admin_user, coord_user, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N5", slug="n5", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(
+        user=coord_user, nucleo=nucleo, status="aprovado"
+    )
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
+    now = timezone.now()
+    data = {
+        "usuario": coord_user.pk,
+        "periodo_inicio": now,
+        "periodo_fim": now + timedelta(days=2),
+    }
+    assert api_client.post(url, data).status_code == 201
+    # Overlap
+    assert api_client.post(url, data).status_code == 400
+    # Not member
+    data["usuario"] = outro_user.pk
+    resp = api_client.post(url, data)
+    assert resp.status_code == 400
 
 
 def test_exportar_membros(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N4", slug="n4", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="aprovado")
     _auth(api_client, admin_user)
+    # designa suplente
+    url_supl = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
+    api_client.post(
+        url_supl,
+        {
+            "usuario": outro_user.pk,
+            "periodo_inicio": timezone.now(),
+            "periodo_fim": timezone.now() + timedelta(days=1),
+        },
+    )
     url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
-    resp = api_client.get(url)
+    resp = api_client.get(url + "?formato=csv")
     assert resp.status_code == 200
     rows = list(csv.reader(resp.content.decode().splitlines()))
-    assert rows[0] == ["Nome", "Email", "Status", "Função"]
-    assert outro_user.email in rows[1]
+    assert rows[0] == [
+        "Nome",
+        "Email",
+        "Status",
+        "is_coordenador",
+        "is_suplente",
+        "data_ingresso",
+    ]
+    assert "True" in rows[1] or "False" in rows[1]
+    resp = api_client.get(url + "?formato=xls")
+    assert resp.status_code == 200
+    assert (
+        resp["Content-Type"]
+        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+def test_permission_denied(api_client, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N6", slug="n6", organizacao=organizacao)
+    _auth(api_client, outro_user)
+    url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
+    resp = api_client.post(
+        url,
+        {
+            "usuario": outro_user.pk,
+            "periodo_inicio": timezone.now(),
+            "periodo_fim": timezone.now() + timedelta(days=1),
+        },
+    )
+    assert resp.status_code == 403
+    export_url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
+    assert api_client.get(export_url).status_code == 403

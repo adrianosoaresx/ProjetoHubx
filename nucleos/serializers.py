@@ -7,6 +7,7 @@ from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo, ConviteNucl
 
 class CoordenadorSuplenteSerializer(serializers.ModelSerializer):
     usuario_email = serializers.EmailField(source="usuario.email", read_only=True)
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = CoordenadorSuplente
@@ -14,9 +15,13 @@ class CoordenadorSuplenteSerializer(serializers.ModelSerializer):
             "id",
             "usuario",
             "usuario_email",
-            "inicio",
-            "fim",
+            "periodo_inicio",
+            "periodo_fim",
+            "status",
         ]
+
+    def get_status(self, obj: CoordenadorSuplente) -> str:
+        return "ativo" if obj.ativo else "inativo"
 
 
 class ParticipacaoNucleoSerializer(serializers.ModelSerializer):

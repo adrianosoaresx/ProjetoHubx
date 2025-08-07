@@ -38,12 +38,12 @@ class ParticipacaoDecisaoForm(forms.Form):
 class SuplenteForm(forms.ModelForm):
     class Meta:
         model = CoordenadorSuplente
-        fields = ["usuario", "inicio", "fim"]
+        fields = ["usuario", "periodo_inicio", "periodo_fim"]
 
     def clean(self):
         data = super().clean()
-        inicio = data.get("inicio")
-        fim = data.get("fim")
+        inicio = data.get("periodo_inicio")
+        fim = data.get("periodo_fim")
         if inicio and fim and inicio >= fim:
             raise forms.ValidationError(_("Período inválido"))
         return data
