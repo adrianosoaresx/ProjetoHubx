@@ -8,6 +8,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.settings import api_settings
@@ -16,6 +17,7 @@ from rest_framework.test import APIClient
 from agenda.models import Evento
 from chat.api import notify_users
 from chat.models import (
+    ChatAttachment,
     ChatChannel,
     ChatMessage,
     ChatModerationLog,
@@ -48,6 +50,18 @@ def test_list_channels_returns_only_participated(api_client: APIClient, admin_us
     ids = [item["id"] for item in resp.json()]
     assert str(c1.id) in ids
     assert str(c2.id) not in ids
+
+
+def test_upload_endpoint_saves_metadata(api_client: APIClient, admin_user):
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-upload")
+    file = SimpleUploadedFile("teste.pdf", b"%PDF-1.4", content_type="application/pdf")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["mime_type"] == "application/pdf"
+    assert data["tamanho"] == file.size
+    assert ChatAttachment.objects.filter(id=data["id"]).exists()
 
 
 def test_create_channel_requires_permission(api_client: APIClient, associado_user):

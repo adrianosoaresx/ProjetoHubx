@@ -193,6 +193,30 @@ class ChatFavorite(TimeStampedModel):
         verbose_name_plural = "Favoritos"
 
 
+class ChatAttachment(TimeStampedModel, SoftDeleteModel):
+    """Metadados de arquivos enviados no chat."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    mensagem = models.ForeignKey(
+        ChatMessage,
+        on_delete=models.CASCADE,
+        related_name="attachments",
+        null=True,
+        blank=True,
+    )
+    arquivo = models.FileField(upload_to="chat/attachments/")
+    mime_type = models.CharField(max_length=100, blank=True)
+    tamanho = models.PositiveIntegerField(default=0)
+    thumb_url = models.URLField(blank=True)
+    preview_ready = models.BooleanField(default=False)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        verbose_name = "Anexo"
+        verbose_name_plural = "Anexos"
+
 class RelatorioChatExport(TimeStampedModel):
     channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
