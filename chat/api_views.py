@@ -470,7 +470,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         except (ValueError, NotImplementedError) as exc:
             return Response({"erro": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        link = reverse("agenda:evento_detalhe", args=[item.pk]) if request.data.get("tipo") == "evento" else ""
+        link = ""
+        if request.data.get("tipo") == "evento":
+            link = reverse("agenda:evento_detalhe", args=[item.pk])
+        elif request.data.get("tipo") == "tarefa":
+            link = reverse("agenda:tarefa_detalhe", args=[item.pk])
         return Response(
             {"id": str(item.pk), "titulo": item.titulo, "link": link},
             status=status.HTTP_201_CREATED,
