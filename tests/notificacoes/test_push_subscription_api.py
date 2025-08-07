@@ -6,13 +6,25 @@ from notificacoes.models import PushSubscription
 pytestmark = pytest.mark.django_db
 
 
-def test_register_and_delete_push_subscription(admin_user):
+def test_crud_push_subscription(admin_user):
     client = APIClient()
     client.force_authenticate(admin_user)
-    url = "/api/notificacoes/push-subscription/"
-    resp = client.post(url, {"token": "abc"})
+    url = "/api/notificacoes/push/subscriptions/"
+    data = {
+        "device_id": "dev1",
+        "endpoint": "https://example.com/ep",
+        "p256dh": "p",
+        "auth": "a",
+    }
+    resp = client.post(url, data)
+    assert resp.status_code in {200, 201}
+    sub_id = resp.data["id"]
+    assert PushSubscription.objects.filter(id=sub_id, active=True).exists()
+
+    resp = client.get(url)
+    assert resp.status_code == 200
+    assert len(resp.json()) == 1
+
+    resp = client.delete(f"{url}{sub_id}/")
     assert resp.status_code == 204
-    assert PushSubscription.objects.filter(user=admin_user, token="abc").exists()
-    resp = client.delete(url, {"token": "abc"})
-    assert resp.status_code == 204
-    assert not PushSubscription.objects.filter(token="abc").exists()
+    assert PushSubscription.objects.filter(id=sub_id, active=False).exists()

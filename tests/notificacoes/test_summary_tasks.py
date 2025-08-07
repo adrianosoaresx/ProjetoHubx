@@ -1,20 +1,21 @@
 import asyncio
+
 import pytest
+from channels.testing import WebsocketCommunicator
 from django.utils import timezone
 from freezegun import freeze_time
 
 from accounts.factories import UserFactory
+from Hubx.asgi import application
 from notificacoes.models import (
     Canal,
     HistoricoNotificacao,
     NotificationLog,
     NotificationStatus,
     NotificationTemplate,
+    PushSubscription,
 )
 from notificacoes.tasks import enviar_relatorios_diarios, enviar_relatorios_semanais
-from channels.testing import WebsocketCommunicator
-from Hubx.asgi import application
-from notificacoes.models import PushSubscription
 
 pytestmark = pytest.mark.django_db
 
@@ -94,7 +95,13 @@ def test_relatorio_diario_envia_push(settings):
     config.frequencia_notificacoes_push = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    PushSubscription.objects.create(user=user, token="t")
+    PushSubscription.objects.create(
+        user=user,
+        device_id="d1",
+        endpoint="https://example.com",
+        p256dh="p",
+        auth="a",
+    )
     _criar_logs(user, Canal.PUSH)
 
     async def inner():
