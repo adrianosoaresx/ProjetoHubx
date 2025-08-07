@@ -39,3 +39,14 @@ chat_resumo_geracao_segundos = Histogram(
     "Tempo de geração de resumos em segundos",
     ["periodo"],
 )
+
+# Contadores para criação de itens a partir de mensagens
+chat_eventos_criados_total = Counter(
+    "chat_eventos_criados_total",
+    "Total de eventos criados a partir de mensagens",
+)
+
+chat_tarefas_criadas_total = Counter(
+    "chat_tarefas_criadas_total",
+    "Total de tarefas criadas a partir de mensagens",
+)

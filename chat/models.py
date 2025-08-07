@@ -210,10 +210,11 @@ class ChatModerationLog(TimeStampedModel):
         ("approve", "Aprovar"),
         ("remove", "Remover"),
         ("edit", "Editar"),
+        ("create_item", "Criar item"),
     ]
 
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
-    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
     moderator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_moderations")
     previous_content = models.TextField(blank=True)
 

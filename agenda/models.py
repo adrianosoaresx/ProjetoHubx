@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# ruff: noqa: I001
+
 import logging
 import uuid
 from io import BytesIO
@@ -208,6 +210,13 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     avatar = models.ImageField(upload_to="eventos/avatars/", null=True, blank=True)
     cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
     briefing = models.TextField(blank=True, null=True)
+    mensagem_origem = models.ForeignKey(
+        "chat.ChatMessage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="eventos_criados",
+    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()

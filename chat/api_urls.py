@@ -3,9 +3,9 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     ChatChannelViewSet,
+    ChatFavoriteViewSet,
     ChatMessageViewSet,
     ChatNotificationViewSet,
-    ChatFavoriteViewSet,
     ModeracaoViewSet,
     UploadArquivoAPIView,
 )
@@ -34,6 +34,7 @@ chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
 chat_message_favorite = ChatMessageViewSet.as_view(
     {"post": "favorite", "delete": "favorite"}
 )
+chat_message_create_item = ChatMessageViewSet.as_view({"post": "criar_item"})
 
 urlpatterns = router.urls + [
     path(
@@ -75,6 +76,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/favorite/",
         chat_message_favorite,
         name="chat-channel-message-favorite",
+    ),
+    path(
+        "channels/<uuid:channel_pk>/messages/<uuid:pk>/criar-item/",
+        chat_message_create_item,
+        name="chat-channel-message-criar-item",
     ),
     path(
         "channels/<uuid:channel_pk>/messages/search/",

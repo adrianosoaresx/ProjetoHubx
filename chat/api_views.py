@@ -9,6 +9,7 @@ from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.files.storage import default_storage
 from django.db import connection, models
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework import permissions, status, viewsets
@@ -41,7 +42,7 @@ from .serializers import (
     ChatNotificationSerializer,
     ResumoChatSerializer,
 )
-from .services import sinalizar_mensagem
+from .services import criar_item_de_mensagem, sinalizar_mensagem
 from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
 
@@ -368,6 +369,35 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         msg.notificacoes.all().delete()
         msg.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
+    )
+    def criar_item(self, request: Request, channel_pk: str, pk: str) -> Response:
+        msg = self.get_object()
+        inicio = parse_datetime(request.data.get("inicio")) if request.data.get("inicio") else None
+        fim = parse_datetime(request.data.get("fim")) if request.data.get("fim") else None
+        try:
+            item = criar_item_de_mensagem(
+                mensagem=msg,
+                usuario=request.user,
+                tipo=request.data.get("tipo", ""),
+                titulo=request.data.get("titulo", ""),
+                descricao=request.data.get("descricao"),
+                inicio=inicio,
+                fim=fim,
+            )
+        except PermissionError:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        except (ValueError, NotImplementedError) as exc:
+            return Response({"erro": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        link = reverse("agenda:evento_detalhe", args=[item.pk]) if request.data.get("tipo") == "evento" else ""
+        return Response(
+            {"id": str(item.pk), "titulo": item.titulo, "link": link},
+            status=status.HTTP_201_CREATED,
+        )
 
     @action(detail=True, methods=["post", "delete"])
     def favorite(self, request: Request, channel_pk: str, pk: str) -> Response:

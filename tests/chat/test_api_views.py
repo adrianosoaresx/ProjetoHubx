@@ -6,12 +6,14 @@ from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.core.cache import cache
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.settings import api_settings
 from rest_framework.test import APIClient
 
+from agenda.models import Evento
 from chat.api import notify_users
 from chat.models import (
     ChatChannel,
@@ -422,6 +424,53 @@ def test_moderacao_endpoints(api_client: APIClient, admin_user):
     assert resp_r.status_code == 204
     assert not ChatMessage.objects.filter(pk=msg2.pk).exists()
     assert ChatMessage.all_objects.filter(pk=msg2.pk).exists()
+
+
+def test_criar_item_evento(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="x")
+    perm = Permission.objects.get(codename="add_evento")
+    admin_user.user_permissions.add(perm)
+    api_client.force_authenticate(admin_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    inicio = timezone.now()
+    fim = inicio + timedelta(hours=1)
+    resp = api_client.post(
+        url,
+        {
+            "tipo": "evento",
+            "titulo": "Reunião",
+            "inicio": inicio.isoformat(),
+            "fim": fim.isoformat(),
+        },
+    )
+    assert resp.status_code == 201
+    evento = Evento.objects.get(mensagem_origem=msg)
+    assert evento.titulo == "Reunião"
+    assert ChatModerationLog.objects.filter(message=msg, action="create_item").exists()
+
+
+def test_criar_item_evento_sem_permissao(api_client: APIClient, associado_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=associado_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=associado_user, tipo="text", conteudo="x")
+    api_client.force_authenticate(associado_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    resp = api_client.post(url, {"tipo": "evento", "titulo": "A"})
+    assert resp.status_code == 403
+
+
+def test_criar_item_evento_dados_invalidos(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="x")
+    perm = Permission.objects.get(codename="add_evento")
+    admin_user.user_permissions.add(perm)
+    api_client.force_authenticate(admin_user)
+    url = f"/api/chat/channels/{channel.id}/messages/{msg.id}/criar-item/"
+    resp = api_client.post(url, {"tipo": "evento", "titulo": ""})
+    assert resp.status_code == 400
 
 
 def test_upload_throttling(api_client: APIClient, admin_user):
