@@ -1,12 +1,14 @@
 import os
 
 import pytest
+from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
+from django.utils import timezone
 
 from accounts.models import UserType
-from nucleos.models import Nucleo, ParticipacaoNucleo
+from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -73,6 +75,19 @@ def test_membros_property(organizacao, usuario):
     )
     ParticipacaoNucleo.objects.create(user=u2, nucleo=nucleo, status="aprovado")
     assert list(nucleo.membros) == [u2]
+
+
+def test_suplente_ativo(organizacao, usuario):
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="aprovado")
+    now = timezone.now()
+    suplente = CoordenadorSuplente.objects.create(
+        nucleo=nucleo,
+        usuario=usuario,
+        periodo_inicio=now - timedelta(days=1),
+        periodo_fim=now + timedelta(days=1),
+    )
+    assert suplente.ativo
 
 
 @pytest.mark.xfail(reason="Arquivos não são removidos ao deletar o núcleo")

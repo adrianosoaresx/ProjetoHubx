@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import io
 import logging
+import tablib
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -215,22 +216,39 @@ class NucleoViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=["post"],
-        url_path="coordenadores-suplentes",
+        methods=["get", "post"],
+        url_path="suplentes",
         permission_classes=[IsAdminOrCoordenador],
     )
-    def adicionar_suplente(self, request, pk: str | None = None):
+    def suplentes(self, request, pk: str | None = None):
         nucleo = self.get_object()
+        if request.method == "GET":
+            qs = nucleo.coordenadores_suplentes.all()
+            serializer = CoordenadorSuplenteSerializer(qs, many=True)
+            return Response(serializer.data)
         serializer = CoordenadorSuplenteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        if data["inicio"] >= data["fim"]:
+        if data["periodo_inicio"] >= data["periodo_fim"]:
             return Response({"detail": _("Período inválido.")}, status=400)
+        if not ParticipacaoNucleo.objects.filter(
+            nucleo=nucleo, user=data["usuario"], status="aprovado"
+        ).exists():
+            return Response({"detail": _("Usuário não é membro do núcleo.")}, status=400)
+        overlap = CoordenadorSuplente.objects.filter(
+            nucleo=nucleo,
+            usuario=data["usuario"],
+            deleted=False,
+            periodo_inicio__lt=data["periodo_fim"],
+            periodo_fim__gt=data["periodo_inicio"],
+        ).exists()
+        if overlap:
+            return Response({"detail": _("Usuário já é suplente no período informado.")}, status=400)
         suplente = CoordenadorSuplente.objects.create(
             nucleo=nucleo,
             usuario=data["usuario"],
-            inicio=data["inicio"],
-            fim=data["fim"],
+            periodo_inicio=data["periodo_inicio"],
+            periodo_fim=data["periodo_fim"],
         )
         notify_suplente_designado.delay(nucleo.id, suplente.usuario.email)
         out = CoordenadorSuplenteSerializer(suplente)
@@ -239,7 +257,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["delete"],
-        url_path="coordenadores-suplentes/(?P<suplente_id>[^/.]+)",
+        url_path="suplentes/(?P<suplente_id>[^/.]+)",
         permission_classes=[IsAdminOrCoordenador],
     )
     def remover_suplente(self, request, pk: str | None = None, suplente_id: str | None = None):
@@ -251,23 +269,61 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
-        url_path="exportar-membros",
+        url_path="membros/exportar",
         permission_classes=[IsAdminOrCoordenador],
     )
     def exportar_membros(self, request, pk: str | None = None):
         nucleo = self.get_object()
+        formato = request.query_params.get("formato", "csv")
         membros = nucleo.participacoes.select_related("user").all()
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["Nome", "Email", "Status", "Função"])
+        now = timezone.now()
+        suplentes = set(
+            CoordenadorSuplente.objects.filter(
+                nucleo=nucleo,
+                periodo_inicio__lte=now,
+                periodo_fim__gte=now,
+                deleted=False,
+            ).values_list("usuario_id", flat=True)
+        )
+        data = tablib.Dataset(
+            headers=[
+                "Nome",
+                "Email",
+                "Status",
+                "is_coordenador",
+                "is_suplente",
+                "data_ingresso",
+            ]
+        )
         for p in membros:
-            funcao = _("Coordenador") if p.is_coordenador else _("Membro")
             nome = p.user.get_full_name() or p.user.username
-            writer.writerow([nome, p.user.email, p.status, funcao])
+            data.append(
+                [
+                    nome,
+                    p.user.email,
+                    p.status,
+                    p.is_coordenador,
+                    p.user_id in suplentes,
+                    (p.data_decisao or p.data_solicitacao).isoformat(),
+                ]
+            )
         notify_exportacao_membros.delay(nucleo.id)
-        response = HttpResponse(output.getvalue(), content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
-        return response
+        logger.info(
+            "Exportação de membros",
+            extra={"nucleo_id": nucleo.id, "user_id": request.user.id, "formato": formato},
+        )
+        if formato == "xls":
+            resp = HttpResponse(
+                data.export("xlsx"),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            resp["Content-Disposition"] = (
+                f"attachment; filename=nucleo-{nucleo.id}-membros.xlsx"
+            )
+            return resp
+        resp = HttpResponse(data.export("csv"), content_type="text/csv")
+        resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
+        return resp
 
     @action(
         detail=False,

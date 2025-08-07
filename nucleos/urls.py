@@ -42,7 +42,7 @@ urlpatterns = [
         name="suplente_remover",
     ),
     path(
-        "<int:pk>/exportar-membros/",
+        "<int:pk>/membros/exportar/",
         views.ExportarMembrosView.as_view(),
         name="exportar_membros",
     ),

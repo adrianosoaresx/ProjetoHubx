@@ -87,7 +87,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         super().save(*args, **kwargs)
 
 
-class CoordenadorSuplente(TimeStampedModel):
+class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nucleo = models.ForeignKey(
         Nucleo,
@@ -99,12 +99,17 @@ class CoordenadorSuplente(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="suplencias",
     )
-    inicio = models.DateTimeField()
-    fim = models.DateTimeField()
+    periodo_inicio = models.DateTimeField()
+    periodo_fim = models.DateTimeField()
 
     class Meta:
         verbose_name = "Coordenador Suplente"
         verbose_name_plural = "Coordenadores Suplentes"
+
+    @property
+    def ativo(self) -> bool:
+        now = timezone.now()
+        return self.periodo_inicio <= now <= self.periodo_fim
 
 
 class ConviteNucleo(models.Model):

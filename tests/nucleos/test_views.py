@@ -4,8 +4,10 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+import csv
+
 from accounts.models import UserType
-from nucleos.models import Nucleo, ParticipacaoNucleo
+from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
@@ -84,13 +86,22 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
 
 def test_exportar_membros_csv(client, admin_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="aprovado", is_coordenador=True)
+    ParticipacaoNucleo.objects.create(
+        user=admin_user, nucleo=nucleo, status="aprovado", is_coordenador=True
+    )
     client.force_login(admin_user)
     resp = client.get(reverse("nucleos:exportar_membros", args=[nucleo.pk]))
     assert resp.status_code == 200
     reader = csv.reader(resp.content.decode().splitlines())
     rows = list(reader)
-    assert rows[0] == ["Nome", "Email", "Status", "Função"]
+    assert rows[0] == [
+        "Nome",
+        "Email",
+        "Status",
+        "is_coordenador",
+        "is_suplente",
+        "data_ingresso",
+    ]
 
 
 def test_toggle_active(client, admin_user, organizacao):
