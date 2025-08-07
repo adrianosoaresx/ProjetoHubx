@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import (
+    ChatAttachment,
     ChatChannel,
     ChatMessage,
     ChatNotification,
@@ -17,6 +18,11 @@ class ChatChannelAdmin(admin.ModelAdmin):
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
     list_display = ["remetente", "channel", "tipo", "pinned_at", "created"]
+
+
+@admin.register(ChatAttachment)
+class ChatAttachmentAdmin(admin.ModelAdmin):
+    list_display = ["id", "mime_type", "tamanho", "preview_ready", "created"]
 
 
 @admin.register(ChatNotification)

@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import mimetypes
+from io import BytesIO
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import connection, models
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from PIL import Image
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -21,6 +24,7 @@ from rest_framework.views import APIView
 
 from .api import add_reaction, remove_reaction
 from .models import (
+    ChatAttachment,
     ChatChannel,
     ChatFavorite,
     ChatMessage,
@@ -59,15 +63,46 @@ class UploadArquivoAPIView(APIView):
         arquivo = request.FILES.get("file")
         if not arquivo:
             return Response({"erro": "Arquivo obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
-        path = default_storage.save(f"chat/uploads/{arquivo.name}", arquivo)
-        url = default_storage.url(path)
         content_type = arquivo.content_type or mimetypes.guess_type(arquivo.name)[0] or ""
+        attachment = ChatAttachment(
+            mime_type=content_type,
+            tamanho=arquivo.size,
+        )
+        attachment.arquivo.save(arquivo.name, arquivo)
+        url = default_storage.url(attachment.arquivo.name)
+
+        thumb_url = ""
+        if content_type.startswith("image"):
+            try:
+                attachment.arquivo.open()
+                img = Image.open(attachment.arquivo)
+                img.thumbnail((256, 256))
+                thumb_io = BytesIO()
+                img.save(thumb_io, format=img.format or "PNG")
+                thumb_path = f"chat/thumbs/{attachment.arquivo.name.rsplit('/', 1)[-1]}"
+                default_storage.save(thumb_path, ContentFile(thumb_io.getvalue()))
+                thumb_url = default_storage.url(thumb_path)
+                attachment.thumb_url = thumb_url
+            except Exception:  # pragma: no cover - fallback se Pillow falhar
+                thumb_url = ""
+
+        attachment.save()
+
         tipo = "file"
         if content_type.startswith("image"):
             tipo = "image"
         elif content_type.startswith("video"):
             tipo = "video"
-        return Response({"tipo": tipo, "url": url})
+        return Response(
+            {
+                "id": str(attachment.id),
+                "tipo": tipo,
+                "url": url,
+                "mime_type": content_type,
+                "tamanho": attachment.tamanho,
+                "thumb_url": thumb_url,
+            }
+        )
 
 
 class ChatChannelViewSet(viewsets.ModelViewSet):
