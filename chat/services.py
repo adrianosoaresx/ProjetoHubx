@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Iterable, Optional
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.utils import timezone
 
-from agenda.models import InscricaoEvento
+from agenda.models import Evento, EventoLog, InscricaoEvento
 from nucleos.models import ParticipacaoNucleo
 
 from .metrics import (
+    chat_eventos_criados_total,
     chat_mensagens_ocultadas_total,
     chat_mensagens_sinalizadas_total,
 )
@@ -18,6 +20,7 @@ from .models import (
     ChatMessage,
     ChatMessageFlag,
     ChatMessageReaction,
+    ChatModerationLog,
     ChatParticipant,
 )
 
@@ -89,8 +92,8 @@ def enviar_mensagem(
     if not ChatParticipant.objects.filter(channel=canal, user=remetente).exists():
         raise PermissionError("Usuário não participa do canal.")
     if tipo in {"image", "video", "file"} and not arquivo:
-        from django.core.validators import URLValidator
         from django.core.exceptions import ValidationError
+        from django.core.validators import URLValidator
 
         validator = URLValidator()
         try:
@@ -143,3 +146,55 @@ def sinalizar_mensagem(mensagem: ChatMessage, user: User) -> int:
         mensagem.save(update_fields=["hidden_at", "modified"])
         chat_mensagens_ocultadas_total.inc()
     return total
+
+
+def criar_item_de_mensagem(
+    mensagem: ChatMessage,
+    usuario: User,
+    *,
+    tipo: str,
+    titulo: str,
+    descricao: str | None = None,
+    inicio: datetime,
+    fim: datetime,
+):
+    """Cria um item de agenda a partir de uma mensagem.
+
+    Atualmente suporta apenas criação de eventos simples. Campos não
+    fornecidos pelo payload recebem valores padrão para permitir a
+    criação de um ``Evento`` mínimo.
+    """
+
+    if tipo != "evento":
+        raise NotImplementedError("Criação de tarefas não disponível")
+    if not usuario.has_perm("agenda.add_evento"):
+        raise PermissionError("Usuário sem permissão")
+    if not titulo or not inicio or not fim:
+        raise ValueError("Dados obrigatórios ausentes")
+    evento = Evento.objects.create(
+        titulo=titulo,
+        descricao=descricao or "",
+        data_inicio=inicio,
+        data_fim=fim,
+        local="A definir",
+        cidade="Cidade",
+        estado="SC",
+        cep="00000-000",
+        coordenador=usuario,
+        organizacao=usuario.organizacao,
+        nucleo_id=mensagem.channel.contexto_id
+        if mensagem.channel.contexto_tipo == "nucleo"
+        else None,
+        status=0,
+        publico_alvo=0,
+        numero_convidados=0,
+        numero_presentes=0,
+        contato_nome=usuario.get_full_name() or usuario.username,
+        mensagem_origem=mensagem,
+    )
+    EventoLog.objects.create(evento=evento, usuario=usuario, acao="criado_via_chat")
+    ChatModerationLog.objects.create(
+        message=mensagem, action="create_item", moderator=usuario
+    )
+    chat_eventos_criados_total.inc()
+    return evento
