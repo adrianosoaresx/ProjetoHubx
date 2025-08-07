@@ -32,6 +32,7 @@ def create_message(**kwargs):
         remetente = User.objects.get(pk=kwargs["remetente_id"])
     tipo = kwargs.get("tipo", "text")
     conteudo = kwargs.get("conteudo", "")
+    conteudo_cifrado = kwargs.get("conteudo_cifrado", "")
     arquivo = kwargs.get("arquivo")
     reply_to = kwargs.get("reply_to")
     if not reply_to and kwargs.get("reply_to_id"):
@@ -43,6 +44,7 @@ def create_message(**kwargs):
         conteudo=conteudo,
         arquivo=arquivo,
         reply_to=reply_to,
+        conteudo_cifrado=conteudo_cifrado,
     )
 
 
@@ -56,7 +58,9 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
         start = time.monotonic()
         notif = ChatNotification.objects.create(usuario=participant.user, mensagem=message)
         resumo = message.conteudo
-        if message.tipo != "text":
+        if channel.e2ee_habilitado:
+            resumo = ""
+        elif message.tipo != "text":
             resumo = message.tipo
         if layer:
             async_to_sync(layer.group_send)(
@@ -68,7 +72,8 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
                     "canal_id": str(channel.id),
                     "canal_titulo": channel.titulo,
                     "canal_url": channel.get_absolute_url(),
-                    "conteudo": message.conteudo,
+                    "conteudo": message.conteudo if not channel.e2ee_habilitado else "",
+                    "conteudo_cifrado": message.conteudo_cifrado if channel.e2ee_habilitado else "",
                     "tipo": message.tipo,
                     "resumo": resumo,
                     "reply_to": str(message.reply_to_id) if message.reply_to_id else None,

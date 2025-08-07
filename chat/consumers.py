@@ -74,26 +74,40 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 except ChatMessage.DoesNotExist:
                     reply_to = None
             start = time.monotonic()
-            msg = await database_sync_to_async(enviar_mensagem)(
-                self.channel,
-                user,
-                message_type,
-                conteudo,
-                arquivo,
-                reply_to,
-            )
+            if self.channel.e2ee_habilitado:
+                msg = await database_sync_to_async(enviar_mensagem)(
+                    self.channel,
+                    user,
+                    message_type,
+                    "",
+                    arquivo,
+                    reply_to,
+                    conteudo,
+                )
+            else:
+                msg = await database_sync_to_async(enviar_mensagem)(
+                    self.channel,
+                    user,
+                    message_type,
+                    conteudo,
+                    arquivo,
+                    reply_to,
+                )
             await database_sync_to_async(notify_users)(self.channel, msg)
             payload = {
                 "type": "chat.message",
                 "id": str(msg.id),
                 "remetente": user.username,
                 "tipo": msg.tipo,
-                "conteudo": msg.conteudo,
                 "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                 "created": msg.created.isoformat(),
                 "reactions": msg.reaction_counts(),
                 "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
             }
+            if self.channel.e2ee_habilitado:
+                payload["conteudo_cifrado"] = msg.conteudo_cifrado
+            else:
+                payload["conteudo"] = msg.conteudo
             await self.channel_layer.group_send(self.group_name, payload)
             duration = time.monotonic() - start
             chat_message_latency_seconds.observe(duration)

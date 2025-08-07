@@ -157,6 +157,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     perfil_publico = models.BooleanField(default=True)
     mostrar_email = models.BooleanField(default=True)
     mostrar_telefone = models.BooleanField(default=False)
+    chave_publica = models.TextField("Chave pública", blank=True, null=True)
 
     failed_login_attempts = models.PositiveSmallIntegerField(default=0)
     lock_expires_at = models.DateTimeField(null=True, blank=True)
