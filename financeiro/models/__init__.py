@@ -133,7 +133,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
             ),
             models.Index(
                 fields=["centro_custo", "conta_associado", "status", "data_vencimento"],
-                name="idx_lanc_centro_conta_status_venc",
+                name="idx_lanc_cc_status_venc",
             ),
         ]
 
