@@ -4,6 +4,14 @@ import csv
 import io
 import logging
 import tablib
+from django.core.cache import cache
+from rest_framework.pagination import PageNumberPagination
+from services.nucleos_metrics import (
+    get_total_membros,
+    get_total_suplentes,
+    get_membros_por_status,
+    get_taxa_participacao,
+)
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -30,6 +38,11 @@ from .tasks import (
 )
 
 logger = logging.getLogger(__name__)
+class NucleoPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
 
 
 class IsAdminOrCoordenador(IsAuthenticated):
@@ -83,9 +96,36 @@ class AceitarConviteAPIView(APIView):
 
 
 class NucleoViewSet(viewsets.ModelViewSet):
-    queryset = Nucleo.objects.filter(deleted=False)
     serializer_class = NucleoSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = NucleoPagination
+    def get_queryset(self):
+        return (
+            Nucleo.objects.filter(deleted=False)
+            .select_related("organizacao")
+            .prefetch_related("coordenadores_suplentes")
+        )
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        org = request.query_params.get("organizacao")
+        if org:
+            queryset = queryset.filter(organizacao_id=org)
+        page_number = request.query_params.get("page", "1")
+        page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
+        cache_key = f"nucleos_list_{org}_{page_number}_{page_size}"
+        data = cache.get(cache_key)
+        if data is not None:
+            resp = Response(data)
+            resp["X-Cache"] = "HIT"
+            return resp
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        response = self.get_paginated_response(serializer.data)
+        cache.set(cache_key, response.data, 300)
+        response["X-Cache"] = "MISS"
+        return response
+
+
 
     def perform_destroy(self, instance: Nucleo) -> None:
         instance.delete()
@@ -266,6 +306,25 @@ class NucleoViewSet(viewsets.ModelViewSet):
         suplente.delete()
         return Response(status=204)
 
+    @action(detail=True, methods=["get"], url_path="membros", permission_classes=[IsAdminOrCoordenador])
+    def membros(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        page_number = request.query_params.get("page", "1")
+        page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
+        cache_key = f"nucleo_{nucleo.id}_membros_{page_number}_{page_size}"
+        data = cache.get(cache_key)
+        if data is not None:
+            resp = Response(data)
+            resp["X-Cache"] = "HIT"
+            return resp
+        qs = nucleo.participacoes.select_related("user").filter(deleted=False)
+        page = self.paginate_queryset(qs)
+        serializer = ParticipacaoNucleoSerializer(page, many=True)
+        response = self.get_paginated_response(serializer.data)
+        cache.set(cache_key, response.data, 300)
+        response["X-Cache"] = "MISS"
+        return response
+
     @action(
         detail=True,
         methods=["get"],
@@ -324,6 +383,27 @@ class NucleoViewSet(viewsets.ModelViewSet):
         resp = HttpResponse(data.export("csv"), content_type="text/csv")
         resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
         return resp
+
+    @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
+    def metrics(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        cache_key = f"nucleo_{nucleo.id}_metrics"
+        data = cache.get(cache_key)
+        from_cache = True
+        if data is None:
+            from_cache = False
+            data = {
+                "total_membros": get_total_membros(nucleo.id),
+                "total_suplentes": get_total_suplentes(nucleo.id),
+                "taxa_participacao": get_taxa_participacao(nucleo.organizacao_id),
+            }
+            if request.user.get_tipo_usuario in {"admin", "coordenador", "root"}:
+                data["membros_por_status"] = get_membros_por_status(nucleo.id)
+            cache.set(cache_key, data, 300)
+        response = Response(data)
+        response["X-Cache"] = "HIT" if from_cache else "MISS"
+        logger.info("metrics accessed", extra={"nucleo_id": nucleo.id, "user_id": request.user.id})
+        return response
 
     @action(
         detail=False,
