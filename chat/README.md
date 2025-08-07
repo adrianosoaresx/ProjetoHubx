@@ -98,6 +98,7 @@ reações, pins e moderação para todos os conectados.
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,
 `tipo`, `conteudo` e `created`. No formato CSV, o cabeçalho segue a
 mesma estrutura. Mensagens ocultas por moderação são ignoradas.
+Mensagens removidas pela política de retenção não são incluídas nas exportações.
 
 ## Janela de chat flutuante
 

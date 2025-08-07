@@ -6,16 +6,50 @@ from datetime import timedelta
 from typing import Sequence
 
 from celery import shared_task  # type: ignore
+from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.utils import timezone
 
 from .metrics import (
     chat_exportacoes_total,
+    chat_mensagens_removidas_retencao_total,
     chat_resumo_geracao_segundos,
     chat_resumos_total,
 )
-from .models import ChatChannel, RelatorioChatExport, ResumoChat
+from .models import ChatAttachment, ChatChannel, ChatModerationLog, RelatorioChatExport, ResumoChat
+
+User = get_user_model()
+
+
+@shared_task
+def aplicar_politica_retencao() -> None:
+    """Aplica a política de retenção de mensagens por canal."""
+
+    agora = timezone.now()
+    for canal in ChatChannel.objects.filter(retencao_dias__isnull=False):
+        limite = agora - timedelta(days=canal.retencao_dias or 0)
+        mensagens = list(canal.messages.filter(created__lt=limite))
+        if not mensagens:
+            continue
+        ids = [m.id for m in mensagens]
+        for msg in mensagens:
+            msg.delete()
+        for att in ChatAttachment.objects.filter(mensagem_id__in=ids):
+            att.delete()
+        chat_mensagens_removidas_retencao_total.inc(len(ids))
+        moderator = canal.participants.filter(is_admin=True).first()
+        user = moderator.user if moderator else User.objects.filter(is_staff=True).first()
+        if user:
+            logs = [
+                ChatModerationLog(
+                    message_id=mid,
+                    action="retencao",
+                    moderator=user,
+                )
+                for mid in ids
+            ]
+            ChatModerationLog.objects.bulk_create(logs)
 
 
 @shared_task

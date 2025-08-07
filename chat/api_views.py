@@ -44,6 +44,7 @@ from .serializers import (
     ChatChannelSerializer,
     ChatMessageSerializer,
     ChatNotificationSerializer,
+    ChatRetentionSerializer,
     ResumoChatSerializer,
 )
 from .services import criar_item_de_mensagem, sinalizar_mensagem
@@ -148,7 +149,14 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         perms: list[type[permissions.BasePermission]] = [permissions.IsAuthenticated]
         if self.action in {"retrieve"}:
             perms.append(IsChannelParticipant)
-        if self.action in {"update", "partial_update", "add_participant", "remove_participant", "export"}:
+        if self.action in {
+            "update",
+            "partial_update",
+            "add_participant",
+            "remove_participant",
+            "export",
+            "config_retencao",
+        }:
             perms.append(IsChannelAdminOrOwner)
         return [p() for p in perms]
 
@@ -197,6 +205,20 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
             user_ids = [user_ids]
         ChatParticipant.objects.filter(channel=channel, user__id__in=user_ids).delete()
         return Response({"removidos": user_ids})
+
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="config-retencao",
+        permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
+    )
+    def config_retencao(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        serializer = ChatRetentionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        channel.retencao_dias = serializer.validated_data["retencao_dias"]
+        channel.save(update_fields=["retencao_dias"])
+        return Response({"retencao_dias": channel.retencao_dias})
 
     @action(
         detail=True,

@@ -37,6 +37,7 @@ chat_message_favorite = ChatMessageViewSet.as_view(
     {"post": "favorite", "delete": "favorite"}
 )
 chat_message_create_item = ChatMessageViewSet.as_view({"post": "criar_item"})
+chat_channel_config_retencao = ChatChannelViewSet.as_view({"patch": "config_retencao"})
 
 urlpatterns = router.urls + [
     path(
@@ -83,6 +84,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/criar-item/",
         chat_message_create_item,
         name="chat-channel-message-criar-item",
+    ),
+    path(
+        "canais/<uuid:pk>/config-retencao/",
+        chat_channel_config_retencao,
+        name="chat-channel-config-retencao",
     ),
     path(
         "channels/<uuid:channel_pk>/messages/search/",
