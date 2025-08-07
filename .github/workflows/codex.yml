@@ -1,0 +1,50 @@
+name: Codex CI (mínimo)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      PYTHONUNBUFFERED: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      DJANGO_SETTINGS_MODULE: "config.settings"  # ajuste se necessário
+      # Se precisar no futuro: DJANGO_SECRET_KEY, DATABASE_URL etc. via Secrets
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements.txt
+
+      - name: Show versions
+        run: |
+          python -V
+          pip -V
+
+      - name: Upgrade pip/setuptools/wheel
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install runtime deps
+        run: |
+          pip install --no-cache-dir -r requirements.txt
+
+      # Checks básicos do Django (não toca DB). Remova "|| true" se quiser falhar o job em WARNING.
+      - name: Django checks
+        run: |
+          python manage.py check --deploy --fail-level WARNING || true
+
+      # Opcional: se quiser verificar import do projeto (falha rápido se faltar var de ambiente)
+      - name: Import sanity check (opcional)
+        run: |
+          python -c "import os; import django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE')); django.setup(); print('OK')"
