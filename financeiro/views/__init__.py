@@ -434,3 +434,10 @@ def task_logs_view(request):
 def task_log_detail_view(request, pk):
     log = get_object_or_404(FinanceiroTaskLog, pk=pk)
     return render(request, "financeiro/task_log_detail.html", {"log": log})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def forecast_view(request):
+    """Tela com previsão financeira."""
+    return render(request, "financeiro/forecast.html")
