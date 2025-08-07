@@ -41,6 +41,18 @@ def test_logs_filtrados_por_usuario(client) -> None:
     assert len(resp.json()) == 1
 
 
+def test_logs_incluem_campo_created(client) -> None:
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="t3", assunto="Oi", corpo="C", canal="email")
+    NotificationLog.objects.create(user=user, template=template, canal="email")
+
+    client.force_login(user)
+    resp = client.get("/api/notificacoes/logs/")
+    assert resp.status_code == 200
+    primeiro = resp.json()[0]
+    assert "created" in primeiro
+
+
 def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
     user = UserFactory()
     template = NotificationTemplate.objects.create(
