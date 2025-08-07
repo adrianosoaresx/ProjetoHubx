@@ -61,6 +61,18 @@ Resposta:
 Use `PATCH /configuracoes/api/` para atualizar campos específicos. Consulte a
 documentação OpenAPI gerada para exemplos completos.
 
+## Fixtures de exemplo
+
+Para demonstrar diferentes combinações de preferências é possível carregar os
+dados de `configuracoes/fixtures/configuracoes_exemplo.json`:
+
+```bash
+python manage.py loaddata configuracoes/fixtures/configuracoes_exemplo.json
+```
+
+Isso criará alguns registros de `ConfiguracaoConta` com valores variados para
+testes e desenvolvimento.
+
 ## Testes e traduções
 
 Para executar a suíte de testes deste app:
