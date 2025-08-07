@@ -4,16 +4,18 @@ from calendar import monthrange
 from datetime import datetime
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import F
+from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 from accounts.models import UserType
 
@@ -35,6 +37,7 @@ from .serializers import (
 from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
+from .services.forecast import calcular_previsao
 from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -200,6 +203,81 @@ class FinanceiroLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vie
         return qs
 
 
+class FinanceiroForecastViewSet(viewsets.ViewSet):
+    """Fornece previsões financeiras agregadas."""
+
+    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
+
+    def list(self, request):  # type: ignore[override]
+        params = request.query_params
+        escopo = params.get("escopo")
+        id_ref = params.get("id")
+        if not escopo or not id_ref:
+            return Response({"detail": _("Parâmetros obrigatórios")}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            periodos = int(params.get("periodos", 6))
+        except ValueError:
+            return Response({"detail": _("periodos inválido")}, status=status.HTTP_400_BAD_REQUEST)
+        if periodos < 1 or periodos > 12:
+            return Response({"detail": _("periodos inválido")}, status=status.HTTP_400_BAD_REQUEST)
+        crescimento = float(params.get("crescimento_receita", 0))
+        reducao = float(params.get("reducao_despesa", 0))
+        cache_key = f"fin:forecast:{escopo}:{id_ref}:{periodos}:{crescimento}:{reducao}"
+        data = cache.get(cache_key)
+        if not data:
+            try:
+                data = calcular_previsao(
+                    escopo,
+                    id_ref,
+                    periodos,
+                    crescimento,
+                    reducao,
+                )
+            except ValueError:
+                return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
+            cache.set(cache_key, data, 6 * 3600)
+
+        fmt = params.get("format")
+        if fmt == "csv":
+            import csv
+            from io import StringIO
+
+            buffer = StringIO()
+            writer = csv.writer(buffer)
+            writer.writerow(["mes", "receita", "despesa", "saldo"])
+            for item in data["historico"] + data["previsao"]:
+                writer.writerow([item["mes"], item["receita"], item["despesa"], item["saldo"]])
+            resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
+            resp["Content-Disposition"] = 'attachment; filename="forecast.csv"'
+            return resp
+        if fmt == "xlsx":
+            from io import BytesIO
+            from openpyxl import Workbook
+
+            wb = Workbook()
+            ws = wb.active
+            ws.append(["mes", "receita", "despesa", "saldo"])
+            for item in data["historico"] + data["previsao"]:
+                ws.append([item["mes"], item["receita"], item["despesa"], item["saldo"]])
+            stream = BytesIO()
+            wb.save(stream)
+            stream.seek(0)
+            return FileResponse(stream, as_attachment=True, filename="forecast.xlsx")
+
+        payload = {
+            "historico": data["historico"],
+            "previsao": data["previsao"],
+            "parametros": {
+                "escopo": escopo,
+                "id": id_ref,
+                "periodos": periodos,
+                "crescimento_receita": crescimento,
+                "reducao_despesa": reducao,
+            },
+        }
+        return Response(payload)
+
+
 class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """Consulta dos logs de tarefas assíncronas."""
 
@@ -233,6 +311,7 @@ __all__ = [
     "LancamentoFinanceiroViewSet",
     "ImportacaoPagamentosViewSet",
     "FinanceiroLogViewSet",
+    "FinanceiroForecastViewSet",
     "FinanceiroTaskLogViewSet",
 ]
 

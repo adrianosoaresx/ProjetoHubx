@@ -1,0 +1,47 @@
+{% load i18n %}
+<div class="container mx-auto p-4" hx-boost="true">
+  <form id="filters" class="space-y-4" hx-get="{% url 'financeiro_api:forecast-list' %}" hx-target="#forecast-result" hx-trigger="change,submit">
+    <div>
+      <label for="escopo" class="block text-sm font-medium">{% trans "Escopo" %}</label>
+      <select name="escopo" id="escopo" class="mt-1 w-full border p-2 rounded">
+        <option value="organizacao">{% trans "Organização" %}</option>
+        <option value="nucleo">{% trans "Núcleo" %}</option>
+        <option value="centro">{% trans "Centro" %}</option>
+        <option value="evento">{% trans "Evento" %}</option>
+      </select>
+    </div>
+    <div>
+      <label for="ref" class="block text-sm font-medium">{% trans "Referência" %}</label>
+      <input type="text" name="id" id="ref" class="mt-1 w-full border p-2 rounded" />
+    </div>
+    <div>
+      <label for="periodos" class="block text-sm font-medium">{% trans "Meses" %}</label>
+      <input type="number" name="periodos" id="periodos" value="6" min="1" max="12" class="mt-1 w-full border p-2 rounded" />
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label for="crescimento" class="block text-sm font-medium">{% trans "Crescimento Receita (%)" %}</label>
+        <input type="range" name="crescimento_receita" id="crescimento" min="0" max="100" value="0" class="w-full" />
+      </div>
+      <div>
+        <label for="reducao" class="block text-sm font-medium">{% trans "Redução Despesa (%)" %}</label>
+        <input type="range" name="reducao_despesa" id="reducao" min="0" max="100" value="0" class="w-full" />
+      </div>
+    </div>
+    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{% trans "Atualizar" %}</button>
+  </form>
+  <div id="forecast-result" class="mt-6">
+    <!-- gráfico e tabela serão inseridos aqui -->
+  </div>
+  <div class="mt-4 space-x-2">
+    <a href="#" onclick="exportData('csv');return false;" class="bg-gray-200 px-3 py-1 rounded">{% trans "Exportar CSV" %}</a>
+    <a href="#" onclick="exportData('xlsx');return false;" class="bg-gray-200 px-3 py-1 rounded">{% trans "Exportar XLSX" %}</a>
+  </div>
+</div>
+<script>
+function exportData(fmt){
+  const form = document.getElementById('filters');
+  const params = new URLSearchParams(new FormData(form));
+  window.location = '{% url 'financeiro_api:forecast-list' %}?'+params.toString()+'&format='+fmt;
+}
+</script>
