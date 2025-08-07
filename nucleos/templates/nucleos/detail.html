@@ -37,18 +37,23 @@
 
   {% if membros_pendentes %}
   <h2 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h2>
-  <ul>
+  <table class="w-full text-left" id="pendentes">
+    <thead>
+      <tr><th>{% trans 'Usuário' %}</th><th>{% trans 'Solicitado em' %}</th><th></th></tr>
+    </thead>
+    <tbody>
     {% for part in membros_pendentes %}
-    <li>{{ part.user.get_full_name|default:part.user.username }}
-      <form method="post" action="{% url 'nucleos:participacao_decidir' object.pk part.pk %}" class="inline">{% csrf_token %}
-        <input type="hidden" name="acao" value="approve"><button class="text-sm text-green-600">{% trans 'Aprovar' %}</button>
-      </form>
-      <form method="post" action="{% url 'nucleos:participacao_decidir' object.pk part.pk %}" class="inline">{% csrf_token %}
-        <input type="hidden" name="acao" value="reject"><button class="text-sm text-red-600">{% trans 'Recusar' %}</button>
-      </form>
-    </li>
+      <tr id="pendente-{{ part.id }}">
+        <td>{{ part.user.get_full_name|default:part.user.username }}</td>
+        <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
+        <td class="space-x-2">
+          <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}">{% trans 'Aprovar' %}</button>
+          <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}">{% trans 'Recusar' %}</button>
+        </td>
+      </tr>
     {% endfor %}
-  </ul>
+    </tbody>
+  </table>
   {% endif %}
 
   <div class="mt-6">
@@ -61,9 +66,12 @@
   </div>
 
   {% if request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-  <form method="post" action="{% url 'nucleos:participacao_solicitar' object.pk %}" class="mt-4">{% csrf_token %}
-    <button class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Solicitar participação' %}</button>
-  </form>
+  <div class="mt-4">
+    <form hx-post="{% url 'nucleos_api:nucleo-solicitar' object.pk %}" hx-on="htmx:afterRequest: this.outerHTML='<p class=\'text-green-600\'>{% trans 'Solicitação enviada' %}</p>'">
+      {% csrf_token %}
+      <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Solicitar participação' %}</button>
+    </form>
+  </div>
   {% endif %}
 </section>
 {% endblock %}

@@ -34,12 +34,14 @@ class ParticipacaoNucleoSerializer(serializers.ModelSerializer):
             "data_solicitacao",
             "data_decisao",
             "decidido_por",
+            "justificativa",
         ]
         read_only_fields = [
             "status",
             "data_solicitacao",
             "data_decisao",
             "decidido_por",
+            "justificativa",
         ]
 
 

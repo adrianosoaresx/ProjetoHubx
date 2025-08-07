@@ -61,5 +61,6 @@ def expirar_solicitacoes_pendentes() -> None:
     for p in pendentes:
         p.status = "recusado"
         p.data_decisao = timezone.now()
-        p.save(update_fields=["status", "data_decisao"])
+        p.justificativa = "expiração automática"
+        p.save(update_fields=["status", "data_decisao", "justificativa"])
         notify_participacao_recusada.delay(p.id)

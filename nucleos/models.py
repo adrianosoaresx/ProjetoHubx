@@ -14,7 +14,7 @@ from core.models import SoftDeleteModel, TimeStampedModel
 User = get_user_model()
 
 
-class ParticipacaoNucleo(TimeStampedModel):
+class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participacoes")
     nucleo = models.ForeignKey("Nucleo", on_delete=models.CASCADE, related_name="participacoes")
     is_coordenador = models.BooleanField(default=False)
@@ -36,6 +36,7 @@ class ParticipacaoNucleo(TimeStampedModel):
         blank=True,
         related_name="decisoes_participacao",
     )
+    justificativa = models.TextField(blank=True)
 
     class Meta:
         unique_together = ("user", "nucleo")
