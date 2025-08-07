@@ -10,7 +10,6 @@ on:
       - '.editorconfig'
   workflow_dispatch:
 
-# Evita gastar runner à toa em pushes em sequência
 concurrency:
   group: codex-${{ github.ref }}
   cancel-in-progress: true
@@ -23,7 +22,7 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      DJANGO_SETTINGS_MODULE: "config.settings"  # ajuste se necessário
+      DJANGO_SETTINGS_MODULE: "config.settings" # ajuste se necessário
 
     steps:
       - name: Checkout
@@ -41,7 +40,35 @@ jobs:
           python -V
           pip -V
 
-      - name: Aquecer instalador (evita erros de wheels/compilação)
+      # === Sanity check de variáveis *antes* de instalar dependências ===
+      - name: Validar variáveis de ambiente obrigatórias
+        shell: bash
+        run: |
+          REQUIRED_VARS=(
+            DJANGO_SECRET_KEY
+            DJANGO_SETTINGS_MODULE
+            ALLOWED_HOSTS
+            CSRF_TRUSTED_ORIGINS
+            DATABASE_URL
+            REDIS_URL
+          )
+          missing=0
+          echo "Verificando variáveis obrigatórias..."
+          for var in "${REQUIRED_VARS[@]}"; do
+            if [ -z "${!var:-}" ]; then
+              echo "❌ Faltando: $var"
+              missing=1
+            else
+              # Não expõe valores; apenas confirma presença
+              echo "✅ $var definido"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Uma ou mais variáveis obrigatórias estão ausentes. Configure-as em Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Aquecer instalador (pip/setuptools/wheel)
         run: |
           python -m pip install --upgrade pip setuptools wheel
 
