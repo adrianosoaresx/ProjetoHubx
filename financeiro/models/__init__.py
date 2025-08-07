@@ -171,6 +171,12 @@ class ImportacaoPagamentos(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     total_processado = models.PositiveIntegerField(default=0)
     erros = models.JSONField(default=list, blank=True)
+    class Status(models.TextChoices):
+        PROCESSANDO = "processando", "Em processamento"
+        CONCLUIDO = "concluido", "Concluído"
+        ERRO = "erro", "Erro"
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PROCESSANDO)
 
     class Meta:
         ordering = ["-data_importacao"]

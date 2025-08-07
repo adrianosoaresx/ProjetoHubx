@@ -99,10 +99,11 @@ def test_preview_and_confirm(api_client, user, settings):
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 201
     token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
     assert len(resp.data["preview"]) == 2
 
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
-    resp = api_client.post(confirm_url, {"id": token})
+    resp = api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     assert resp.status_code == 202
     assert LancamentoFinanceiro.objects.count() == 2
     centro.refresh_from_db()
@@ -162,9 +163,10 @@ def test_reprocessar_erros(api_client, user, settings):
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 201
     token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
     token_erros = resp.data["token_erros"]
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
-    api_client.post(confirm_url, {"id": token})
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     err_url = reverse("financeiro_api:financeiro-reprocessar-erros", args=[token_erros])
     # corrige arquivo apenas com linha válida
     corrected = make_csv(
@@ -207,11 +209,12 @@ def test_metrics_increment(api_client, user, settings):
     url = reverse("financeiro_api:financeiro-importar-pagamentos")
     resp = api_client.post(url, {"file": file}, format="multipart")
     token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
     from financeiro.services import metrics
 
     before = metrics.importacao_pagamentos_total._value.get()
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
-    api_client.post(confirm_url, {"id": token})
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     assert metrics.importacao_pagamentos_total._value.get() == before + 1
 
 
@@ -234,8 +237,9 @@ def test_ignore_duplicate_lines(api_client, user, settings):
     url = reverse("financeiro_api:financeiro-importar-pagamentos")
     resp = api_client.post(url, {"file": file}, format="multipart")
     token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
-    api_client.post(confirm_url, {"id": token})
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     assert LancamentoFinanceiro.objects.count() == 1
     log = ImportacaoPagamentos.objects.latest("data_importacao")
     assert log.total_processado == 1
@@ -286,8 +290,9 @@ def test_negative_value_despesa_valid(api_client, user, settings):
     resp = api_client.post(url, {"file": file}, format="multipart")
     assert resp.status_code == 201
     token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
-    resp = api_client.post(confirm_url, {"id": token})
+    resp = api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     assert resp.status_code == 202
     lanc = LancamentoFinanceiro.objects.get()
     assert lanc.tipo == "despesa"

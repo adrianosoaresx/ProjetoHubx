@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, ImportacaoPagamentos
 from ..services.distribuicao import repassar_receita_ingresso
 
 
@@ -189,3 +189,21 @@ class ImportarPagamentosConfirmacaoSerializer(serializers.Serializer):
     """Valida o token de confirmação da importação."""
 
     id = serializers.CharField()
+    importacao_id = serializers.UUIDField()
+
+
+class ImportacaoPagamentosSerializer(serializers.ModelSerializer):
+    """Serializador para ``ImportacaoPagamentos``."""
+
+    class Meta:
+        model = ImportacaoPagamentos
+        fields = [
+            "id",
+            "arquivo",
+            "data_importacao",
+            "usuario",
+            "total_processado",
+            "erros",
+            "status",
+        ]
+        read_only_fields = fields
