@@ -27,6 +27,7 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
             ("recusado", _("Recusado")),
         ],
         default="pendente",
+        db_index=True,
     )
     data_solicitacao = models.DateTimeField(auto_now_add=True)
     data_decisao = models.DateTimeField(null=True, blank=True)
@@ -99,8 +100,8 @@ class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="suplencias",
     )
-    periodo_inicio = models.DateTimeField()
-    periodo_fim = models.DateTimeField()
+    periodo_inicio = models.DateTimeField(db_index=True)
+    periodo_fim = models.DateTimeField(db_index=True)
 
     class Meta:
         verbose_name = "Coordenador Suplente"

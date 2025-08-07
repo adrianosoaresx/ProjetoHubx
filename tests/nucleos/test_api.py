@@ -208,3 +208,15 @@ def test_permission_denied(api_client, outro_user, organizacao):
     assert resp.status_code == 403
     export_url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
     assert api_client.get(export_url).status_code == 403
+
+def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user):
+    nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="aprovado")
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    assert resp["X-Cache"] == "MISS"
+    assert resp.data["total_membros"] == 1
+    resp2 = api_client.get(url)
+    assert resp2["X-Cache"] == "HIT"
