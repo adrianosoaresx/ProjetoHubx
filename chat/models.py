@@ -130,6 +130,7 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
     )
     lido_por = models.ManyToManyField(User, related_name="mensagens_lidas", blank=True)
     hidden_at = models.DateTimeField(null=True, blank=True)
+    is_spam = models.BooleanField(default=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -267,6 +268,7 @@ class ChatModerationLog(TimeStampedModel):
         ("edit", "Editar"),
         ("create_item", "Criar item"),
         ("retencao", "Retenção"),
+        ("spam", "Spam"),
     ]
 
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="moderations")
