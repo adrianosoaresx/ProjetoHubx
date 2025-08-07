@@ -24,6 +24,7 @@ from .models import (
     ChatModerationLog,
     ChatParticipant,
 )
+from .spam import SpamDetector
 
 User = get_user_model()
 
@@ -106,6 +107,8 @@ def enviar_mensagem(
             raise ValueError("Arquivo obrigatório ou URL de arquivo inválida") from exc
     if reply_to and reply_to.channel_id != canal.id:
         raise ValueError("Mensagem de referência deve ser do mesmo canal")
+    detector = SpamDetector()
+    is_spam = detector.is_spam(remetente, canal, conteudo)
     msg = ChatMessage.objects.create(
         channel=canal,
         remetente=remetente,
@@ -114,7 +117,15 @@ def enviar_mensagem(
         conteudo_cifrado=conteudo_cifrado,
         arquivo=arquivo,
         reply_to=reply_to,
+        is_spam=is_spam,
     )
+    if is_spam:
+        ChatModerationLog.objects.create(
+            message=msg,
+            action="spam",
+            moderator=remetente,
+            previous_content="",
+        )
     return msg
 
 
