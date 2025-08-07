@@ -11,6 +11,7 @@ from .models import (
     ChatMessage,
     ChatNotification,
     ResumoChat,
+    UserChatPreference,
 )
 from .services import criar_canal, enviar_mensagem
 
@@ -211,3 +212,18 @@ class ResumoChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResumoChat
         fields = ["id", "periodo", "conteudo", "gerado_em", "detalhes"]
+
+
+class UserChatPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChatPreference
+        fields = [
+            "id",
+            "tema",
+            "buscas_salvas",
+            "resumo_diario",
+            "resumo_semanal",
+            "created",
+            "modified",
+        ]
+        read_only_fields = ["id", "created", "modified"]

@@ -34,6 +34,7 @@ from .models import (
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
+    UserChatPreference,
 )
 from .permissions import (
     IsChannelAdminOrOwner,
@@ -48,6 +49,7 @@ from .serializers import (
     ChatNotificationSerializer,
     ChatRetentionSerializer,
     ResumoChatSerializer,
+    UserChatPreferenceSerializer,
 )
 from .services import criar_item_de_mensagem, sinalizar_mensagem
 from .tasks import exportar_historico_chat, gerar_resumo_chat
@@ -149,6 +151,28 @@ class AtualizarChavePublicaView(APIView):
         return Response({"chave_publica": chave})
 
 
+class UserChatPreferenceView(APIView):
+    """Retorna e atualiza preferências do usuário autenticado."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self, request: Request) -> UserChatPreference:
+        prefs, _ = UserChatPreference.objects.get_or_create(user=request.user)
+        return prefs
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        prefs = self.get_object(request)
+        serializer = UserChatPreferenceSerializer(prefs)
+        return Response(serializer.data)
+
+    def patch(self, request: Request, *args, **kwargs) -> Response:
+        prefs = self.get_object(request)
+        serializer = UserChatPreferenceSerializer(prefs, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
 class ChatChannelViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciamento de canais de chat.
 
@@ -203,11 +227,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
 
     def partial_update(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
         instance = self.get_object()
-        data = {
-            k: v
-            for k, v in request.data.items()
-            if k in {"titulo", "descricao", "imagem", "categoria"}
-        }
+        data = {k: v for k, v in request.data.items() if k in {"titulo", "descricao", "imagem", "categoria"}}
         serializer = self.get_serializer(instance, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
