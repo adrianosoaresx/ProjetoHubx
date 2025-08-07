@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def importar_pagamentos_async(file_path: str, user_id: str) -> None:
+def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) -> None:
     """Importa pagamentos de forma assíncrona."""
     logger.info("Iniciando importação de pagamentos %s", file_path)
     inicio = timezone.now()
@@ -29,17 +29,24 @@ def importar_pagamentos_async(file_path: str, user_id: str) -> None:
             logger.error("Erros na importação: %s", errors)
         else:
             log_path.write_text("ok", encoding="utf-8")
-        ImportacaoPagamentos.objects.create(
+        status_model = (
+            ImportacaoPagamentos.Status.ERRO if errors else ImportacaoPagamentos.Status.CONCLUIDO
+        )
+        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
             arquivo=file_path,
             usuario_id=user_id,
             total_processado=total,
             erros=errors,
+            status=status_model,
         )
         elapsed = (timezone.now() - inicio).total_seconds()
         logger.info("Importação concluída: %s registros em %.2fs", total, elapsed)
         metrics.importacao_pagamentos_total.inc(total)
     except Exception as exc:  # pragma: no cover - exceção inesperada
         logger.exception("Erro na importação de pagamentos: %s", exc)
+        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
+            erros=[str(exc)], status=ImportacaoPagamentos.Status.ERRO
+        )
         status = "erro"
         detalhes = str(exc)
         raise

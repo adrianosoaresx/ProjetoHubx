@@ -61,6 +61,8 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação; retorna `token_erros` quando houver rejeições|
 |`POST /api/financeiro/importar-pagamentos/confirmar/`|Financeiro/Admin|Confirma importação assíncrona|
 |`POST /api/financeiro/importar-pagamentos/reprocessar/<token>/`|Financeiro/Admin|Reprocessa linhas corrigidas|
+|`GET /api/financeiro/importacoes/`|Financeiro/Admin|Lista importações com filtros e paginação|
+|`GET /api/financeiro/importacoes/<uuid:id>/`|Financeiro/Admin|Detalha uma importação específica|
 |`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado (CSV/XLSX)|
 |`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
 |`PATCH /api/financeiro/lancamentos/<id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
@@ -68,6 +70,28 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 
 A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`, `data_lancamento`, `status` e pelo menos uma das colunas `conta_associado_id` ou `email`.
+
+## Importações de Pagamentos
+
+`GET /api/financeiro/importacoes/`
+
+Parâmetros opcionais: `usuario`, `arquivo`, `periodo_inicial`, `periodo_final`.
+
+Exemplo:
+
+```http
+GET /api/financeiro/importacoes/?usuario=<id>&periodo_inicial=2024-01
+```
+
+Retorna itens paginados com `arquivo`, `total_processado`, `erros` e `status`.
+
+```mermaid
+flowchart LR
+    upload[Upload] --> previa[Prévia]
+    previa --> confirm[Confirmação]
+    confirm --> worker[Processamento assíncrono]
+    worker --> registro[ImportacaoPagamentos]
+```
 ### Permissões
 - Importação de pagamentos, geração de cobranças e relatórios completos: apenas administradores financeiros (root não possui acesso).
 - Relatórios por núcleo: admin ou coordenador do núcleo.
@@ -84,6 +108,7 @@ Parâmetros opcionais:
 - `nucleo`: ID do núcleo
 - `periodo_inicial`: `YYYY-MM`
 - `periodo_final`: `YYYY-MM`
+- `tipo`: `receitas`, `despesas` ou ambos
 
 Resposta:
 

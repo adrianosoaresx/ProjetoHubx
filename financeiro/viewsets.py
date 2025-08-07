@@ -9,16 +9,17 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, status, viewsets
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import CentroCusto, ContaAssociado, LancamentoFinanceiro
-from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin
-from .serializers import LancamentoFinanceiroSerializer
+from .models import CentroCusto, ContaAssociado, ImportacaoPagamentos, LancamentoFinanceiro
+from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin, IsNotRoot
+from .serializers import ImportacaoPagamentosSerializer, LancamentoFinanceiroSerializer
 from .services.distribuicao import repassar_receita_ingresso
-from .views import CentroCustoViewSet, FinanceiroViewSet
+from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
 class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
@@ -104,9 +105,43 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
         return Response(serializer.data)
 
 
+class ImportacaoPagamentosViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Listagem de registros de importações de pagamentos."""
+
+    serializer_class = ImportacaoPagamentosSerializer
+    permission_classes = [IsAuthenticated, IsNotRoot]
+    class _Pagination(PageNumberPagination):
+        page_size = 10
+
+    pagination_class = _Pagination
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = ImportacaoPagamentos.objects.select_related("usuario").all()
+        user = self.request.user
+        permitido = {UserType.ADMIN}
+        tipo_fin = getattr(UserType, "FINANCEIRO", None)
+        if tipo_fin:
+            permitido.add(tipo_fin)
+        if user.user_type not in permitido:
+            qs = qs.filter(usuario=user)
+        params = self.request.query_params
+        if usuario := params.get("usuario"):
+            qs = qs.filter(usuario_id=usuario)
+        if arquivo := params.get("arquivo"):
+            qs = qs.filter(arquivo__icontains=arquivo)
+        inicio = parse_periodo(params.get("periodo_inicial"))
+        fim = parse_periodo(params.get("periodo_final"))
+        if inicio:
+            qs = qs.filter(data_importacao__gte=inicio)
+        if fim:
+            qs = qs.filter(data_importacao__lt=fim)
+        return qs
+
+
 __all__ = [
     "CentroCustoViewSet",
     "FinanceiroViewSet",
     "LancamentoFinanceiroViewSet",
+    "ImportacaoPagamentosViewSet",
 ]
 

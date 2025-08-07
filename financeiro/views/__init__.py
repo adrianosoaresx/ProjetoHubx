@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -11,13 +10,9 @@ from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
-
-try:
-    from openpyxl import Workbook
-except Exception:  # pragma: no cover - opcional
-    Workbook = None  # type: ignore
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -30,6 +25,7 @@ from ..models import (
     CentroCusto,
     ContaAssociado,
     FinanceiroTaskLog,
+    ImportacaoPagamentos,
     LancamentoFinanceiro,
 )
 from ..permissions import (
@@ -47,7 +43,23 @@ from ..serializers import (
 from ..services.cobrancas import _nucleos_do_usuario
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
+from ..services.exportacao import exportar_para_arquivo
 from ..tasks.importar_pagamentos import importar_pagamentos_async
+
+
+def parse_periodo(periodo: str | None) -> datetime | None:
+    """Converte ``YYYY-MM`` em :class:`datetime`.
+
+    Levanta ``ValidationError`` se o formato for inválido.
+    """
+    if not periodo:
+        return None
+    if periodo.count("-") != 1:
+        raise ValidationError("Formato deve ser YYYY-MM")
+    dt = parse_date(f"{periodo}-01")
+    if not dt:
+        raise ValidationError("Formato deve ser YYYY-MM")
+    return datetime(dt.year, dt.month, 1)
 
 
 class AportePermission(IsAuthenticated):
@@ -123,11 +135,21 @@ class FinanceiroViewSet(viewsets.ViewSet):
         uid = uuid.uuid4().hex
         saved = default_storage.save(f"importacoes/{uid}_{file.name}", file)
         full_path = default_storage.path(saved)
+        import_obj = ImportacaoPagamentos.objects.create(
+            arquivo=saved,
+            usuario=request.user,
+            data_importacao=timezone.now(),
+        )
         service = ImportadorPagamentos(full_path)
         result = service.preview()
         if result.errors and not result.preview:
             return Response({"erros": result.errors}, status=status.HTTP_400_BAD_REQUEST)
-        payload = {"id": uid, "preview": result.preview, "erros": result.errors}
+        payload = {
+            "id": uid,
+            "importacao_id": str(import_obj.id),
+            "preview": result.preview,
+            "erros": result.errors,
+        }
         if result.errors_file:
             payload["token_erros"] = Path(result.errors_file).stem.replace(".errors", "")
         return Response(payload, status=status.HTTP_201_CREATED)
@@ -142,13 +164,19 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer = ImportarPagamentosConfirmacaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         uid = serializer.validated_data["id"]
+        importacao_id = serializer.validated_data["importacao_id"]
         # encontra arquivo salvo
         media_path = Path(settings.MEDIA_ROOT) / "importacoes"
         files = [f for f in media_path.glob(f"{uid}_*") if not f.name.endswith(".errors.csv")]
         if not files:
             return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
-        importar_pagamentos_async.delay(file_path, str(request.user.id))
+        importar_pagamentos_async.delay(file_path, str(request.user.id), str(importacao_id))
+        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
+            arquivo=file_path,
+            usuario=request.user,
+            status=ImportacaoPagamentos.Status.PROCESSANDO,
+        )
         return Response({"detail": _("Importação iniciada")}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos/reprocessar/(?P<token>[\w-]+)")
@@ -171,36 +199,32 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):
-        centro_id = request.query_params.get("centro")
-        nucleo_id = request.query_params.get("nucleo")
-        pi = request.query_params.get("periodo_inicial")
-        pf = request.query_params.get("periodo_final")
-
-        def _parse(periodo: str | None) -> datetime | None:
-            if not periodo or periodo.count("-") != 1:
-                return None
-            dt = parse_date(f"{periodo}-01")
-            if dt:
-                return datetime(dt.year, dt.month, 1)
-            return None
-
-        inicio = _parse(pi)
-        fim = _parse(pf)
-        if pf and not fim:
-            return Response({"detail": _("periodo_final inválido")}, status=400)
-        if pi and not inicio:
-            return Response({"detail": _("periodo_inicial inválido")}, status=400)
+        params = request.query_params
+        centro_id: str | list[str] | None = params.getlist("centro") or params.get("centro")
+        nucleo_id = params.get("nucleo")
+        try:
+            inicio = parse_periodo(params.get("periodo_inicial"))
+            fim = parse_periodo(params.get("periodo_final"))
+        except ValidationError as exc:
+            return Response({"detail": str(exc)}, status=400)
 
         user = request.user
         if user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             centros_user = [str(c.id) for c in _nucleos_do_usuario(user)]
-            if centro_id and centro_id not in centros_user:
-                return Response({"detail": _("Sem permissão")}, status=403)
-            if not centro_id:
-                centro_id = centros_user
+            if isinstance(centro_id, list):
+                if not set(centro_id).issubset(set(centros_user)):
+                    return Response({"detail": _("Sem permissão")}, status=403)
+                if not centro_id:
+                    centro_id = centros_user
+            else:
+                if centro_id and centro_id not in centros_user:
+                    return Response({"detail": _("Sem permissão")}, status=403)
+                if not centro_id:
+                    centro_id = centros_user
 
+        tipo = params.get("tipo")
         cache_centro = "|".join(sorted(centro_id)) if isinstance(centro_id, list) else centro_id
-        cache_key = f"rel:{cache_centro}:{nucleo_id}:{pi}:{pf}"
+        cache_key = f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}"
         result = cache.get(cache_key)
         if result is None:
             result = gerar_relatorio(
@@ -208,65 +232,46 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 nucleo=nucleo_id,
                 periodo_inicial=inicio,
                 periodo_final=fim,
+                tipo=tipo,
             )
             cache.set(cache_key, result, 600)
 
-        fmt = request.query_params.get("format")
-        if fmt == "csv":
-            import csv
-
-            tmp = NamedTemporaryFile(delete=False, suffix=".csv")
+        fmt = params.get("format")
+        if fmt in {"csv", "xlsx"}:
             qs_csv = _base_queryset(centro_id, nucleo_id, inicio, fim)
-            writer = csv.writer(tmp)
-            writer.writerow(["data", "categoria", "valor", "status", "centro de custo"])
-            for lanc in qs_csv:
-                writer.writerow(
-                    [
-                        lanc.data_lancamento.date(),
-                        lanc.get_tipo_display(),
-                        float(lanc.valor),
-                        lanc.status,
-                        lanc.centro_custo.nome,
-                    ]
-                )
-            tmp.close()
-            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.csv")
-        if fmt == "xlsx":
-            if not Workbook:
+            if tipo == "receitas":
+                qs_csv = qs_csv.filter(valor__gt=0)
+            elif tipo == "despesas":
+                qs_csv = qs_csv.filter(valor__lt=0)
+            linhas = [
+                [
+                    lanc.data_lancamento.date(),
+                    lanc.get_tipo_display(),
+                    float(lanc.valor),
+                    lanc.status,
+                    lanc.centro_custo.nome,
+                ]
+                for lanc in qs_csv
+            ]
+            headers = ["data", "categoria", "valor", "status", "centro de custo"]
+            try:
+                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
+            except RuntimeError:
                 return Response({"detail": _("openpyxl não disponível")}, status=500)
-            tmp = NamedTemporaryFile(delete=False, suffix=".xlsx")
-            wb = Workbook()
-            ws = wb.active
-            ws.append(["Mês", "Receitas", "Despesas", "Saldo"])
-            for row in result["serie"]:
-                ws.append([row["mes"], row["receitas"], row["despesas"], row["saldo"]])
-            ws.append([])
-            ws.append(["Mês", "Pendentes", "Quitadas"])
-            for row in result["inadimplencia"]:
-                ws.append([row["mes"], row["pendentes"], row["quitadas"]])
-            wb.save(tmp.name)
-            tmp.close()
-            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="relatorio.xlsx")
+            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=f"relatorio.{fmt}")
 
         return Response(result)
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
-        centro_id = request.query_params.get("centro")
-        nucleo_id = request.query_params.get("nucleo")
-        pi = request.query_params.get("periodo_inicial")
-        pf = request.query_params.get("periodo_final")
-
-        def _parse(periodo: str | None) -> datetime | None:
-            if not periodo or periodo.count("-") != 1:
-                return None
-            dt = parse_date(f"{periodo}-01")
-            if dt:
-                return datetime(dt.year, dt.month, 1)
-            return None
-
-        inicio = _parse(pi)
-        fim = _parse(pf)
+        params = request.query_params
+        centro_id = params.get("centro")
+        nucleo_id = params.get("nucleo")
+        try:
+            inicio = parse_periodo(params.get("periodo_inicial"))
+            fim = parse_periodo(params.get("periodo_final"))
+        except ValidationError as exc:
+            return Response({"detail": str(exc)}, status=400)
 
         qs = self._lancamentos_base().filter(status=LancamentoFinanceiro.Status.PENDENTE)
         if centro_id:
@@ -293,46 +298,26 @@ class FinanceiroViewSet(viewsets.ViewSet):
                     "dias_atraso": dias_atraso,
                 }
             )
-        fmt = request.query_params.get("format")
+        fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
-            tmp = NamedTemporaryFile(delete=False, suffix=f".{fmt}")
-            if fmt == "csv":
-                import csv
-
-                writer = csv.writer(tmp)
-                writer.writerow(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
-                for item in data:
-                    writer.writerow(
-                        [
-                            item["id"],
-                            item["conta"],
-                            item["status"],
-                            item["valor"],
-                            item["data_vencimento"],
-                            item["dias_atraso"],
-                        ]
-                    )
-            else:
-                if not Workbook:
-                    return Response({"detail": _("openpyxl não disponível")}, status=500)
-                wb = Workbook()
-                ws = wb.active
-                ws.append(["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"])
-                for item in data:
-                    ws.append(
-                        [
-                            item["id"],
-                            item["conta"],
-                            item["status"],
-                            item["valor"],
-                            item["data_vencimento"],
-                            item["dias_atraso"],
-                        ]
-                    )
-                wb.save(tmp.name)
-            tmp.close()
+            headers = ["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"]
+            linhas = [
+                [
+                    item["id"],
+                    item["conta"],
+                    item["status"],
+                    item["valor"],
+                    item["data_vencimento"],
+                    item["dias_atraso"],
+                ]
+                for item in data
+            ]
+            try:
+                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
+            except RuntimeError:
+                return Response({"detail": _("openpyxl não disponível")}, status=500)
             filename = f"inadimplencias.{fmt}"
-            return FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename)
+            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=filename)
 
         return Response(data)
 
