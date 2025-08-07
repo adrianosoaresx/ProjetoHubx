@@ -1,50 +1,59 @@
-name: Codex CI (mínimo)
+name: Codex Setup
 
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.editorconfig'
   workflow_dispatch:
 
+# Evita gastar runner à toa em pushes em sequência
+concurrency:
+  group: codex-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     env:
       PYTHONUNBUFFERED: "1"
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
       DJANGO_SETTINGS_MODULE: "config.settings"  # ajuste se necessário
-      # Se precisar no futuro: DJANGO_SECRET_KEY, DATABASE_URL etc. via Secrets
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Setup Python (com cache do pip)
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: "pip"
           cache-dependency-path: requirements.txt
 
-      - name: Show versions
+      - name: Mostrar versões
         run: |
           python -V
           pip -V
 
-      - name: Upgrade pip/setuptools/wheel
+      - name: Aquecer instalador (evita erros de wheels/compilação)
         run: |
           python -m pip install --upgrade pip setuptools wheel
 
-      - name: Install runtime deps
+      - name: Instalar dependências (runtime)
         run: |
-          pip install --no-cache-dir -r requirements.txt
+          pip install -r requirements.txt
 
-      # Checks básicos do Django (não toca DB). Remova "|| true" se quiser falhar o job em WARNING.
-      - name: Django checks
+      - name: Sanity check do Django (sem tocar DB)
         run: |
+          python -c "import os, django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE')); django.setup(); print('✅ Django import OK')"
           python manage.py check --deploy --fail-level WARNING || true
 
-      # Opcional: se quiser verificar import do projeto (falha rápido se faltar var de ambiente)
-      - name: Import sanity check (opcional)
+      - name: Resumo de pacotes instalados
         run: |
-          python -c "import os; import django; os.environ.setdefault('DJANGO_SETTINGS_MODULE', os.getenv('DJANGO_SETTINGS_MODULE')); django.setup(); print('OK')"
+          pip list --format=columns
