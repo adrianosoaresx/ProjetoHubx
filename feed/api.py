@@ -18,6 +18,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from feed.application.denunciar_post import DenunciarPost
+from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
 from .models import Bookmark, Comment, Like, ModeracaoPost, Post
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
@@ -81,11 +82,21 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         self._handle_media(validated_data)
-        return super().create(validated_data)
+        decision = pre_analise(validated_data.get("conteudo", ""))
+        if decision == "rejeitado":
+            raise serializers.ValidationError({"conteudo": "Conteúdo não permitido."})
+        post = super().create(validated_data)
+        aplicar_decisao(post, decision)
+        return post
 
     def update(self, instance, validated_data):
         self._handle_media(validated_data)
-        return super().update(instance, validated_data)
+        decision = pre_analise(validated_data.get("conteudo", instance.conteudo or ""))
+        if decision == "rejeitado":
+            raise serializers.ValidationError({"conteudo": "Conteúdo não permitido."})
+        post = super().update(instance, validated_data)
+        aplicar_decisao(post, decision)
+        return post
 
     def _generate_presigned(self, key: str | None) -> str | None:  # pragma: no cover - simples
         if not key:

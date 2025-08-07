@@ -4,6 +4,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
+from feed.application.moderar_ai import aplicar_decisao, pre_analise
+
 from .models import Comment, Like, Post, Tag
 from .services import upload_media
 
@@ -82,12 +84,24 @@ class PostForm(forms.ModelForm):
 
         if tipo_feed == "nucleo" and not nucleo:
             self.add_error("nucleo", "Selecione o núcleo.")
-        if tipo_feed == "nucleo" and self.user and nucleo and nucleo not in self.user.nucleos.all():
+        if (
+            tipo_feed == "nucleo" and self.user and nucleo and nucleo not in self.user.nucleos.all()
+        ):
             self.add_error("nucleo", "Usuário não é membro do núcleo.")
         if tipo_feed == "evento" and not evento:
             self.add_error("evento", "Selecione o evento.")
 
+        decision = pre_analise(conteudo or "")
+        self._ai_decision = decision
+        if decision == "rejeitado":
+            raise forms.ValidationError("Conteúdo não permitido.")
+
         return cleaned_data
+
+    def save(self, commit: bool = True):  # type: ignore[override]
+        post = super().save(commit)
+        aplicar_decisao(post, getattr(self, "_ai_decision", "aceito"))
+        return post
 
 
 class CommentForm(forms.ModelForm):
