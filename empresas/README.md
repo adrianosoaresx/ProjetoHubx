@@ -26,3 +26,13 @@ Exemplos:
 Cada alteração relevante gera um registro no histórico, acessível somente por administradores e pelo proprietário da empresa. CNPJs são mascarados exibindo apenas os quatro últimos dígitos.
 
 Usuários autenticados podem avaliar uma empresa com nota de 1 a 5. O proprietário recebe notificação quando uma nova avaliação é criada.
+
+## Arquitetura
+
+```mermaid
+graph TD
+    Empresa -->|possui| ContatoEmpresa
+    Empresa -->|usa| Tag
+    Empresa -->|recebe| AvaliacaoEmpresa
+    AvaliacaoEmpresa -->|gera| Post
+```

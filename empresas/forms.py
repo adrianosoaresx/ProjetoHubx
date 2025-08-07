@@ -8,6 +8,11 @@ from validate_docbr import CNPJ
 from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, Tag
 
 
+def sanitize_tag_name(name: str) -> str:
+    """Remove caracteres potencialmente perigosos de nomes de tags."""
+    return re.sub(r"[^\w\s-]", "", name).strip()
+
+
 class EmpresaForm(forms.ModelForm):
     tags_field = forms.CharField(required=False, label="Tags")
 
@@ -57,7 +62,10 @@ class EmpresaForm(forms.ModelForm):
         tags_names = [tag.strip() for tag in self.cleaned_data.get("tags_field", "").split(",") if tag.strip()]
         tags = []
         for name in tags_names:
-            tag, _ = Tag.objects.get_or_create(nome=name)
+            clean_name = sanitize_tag_name(name)
+            if not clean_name:
+                continue
+            tag, _ = Tag.objects.get_or_create(nome=clean_name)
             tags.append(tag)
         if commit:
             instance.tags.set(tags)
