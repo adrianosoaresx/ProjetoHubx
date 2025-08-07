@@ -22,6 +22,19 @@ from .models import ChatAttachment, ChatChannel, ChatModerationLog, RelatorioCha
 User = get_user_model()
 
 
+def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external service
+    try:
+        import clamd  # type: ignore
+
+        cd = clamd.ClamdNetworkSocket()
+        result = cd.scan(path)
+        if result:
+            return any(status == "FOUND" for _, (status, _) in result.items())
+    except Exception:
+        return False
+    return False
+
+
 @shared_task
 def aplicar_politica_retencao() -> None:
     """Aplica a política de retenção de mensagens por canal."""
@@ -50,6 +63,19 @@ def aplicar_politica_retencao() -> None:
                 for mid in ids
             ]
             ChatModerationLog.objects.bulk_create(logs)
+
+
+@shared_task
+def scan_existing_attachments() -> None:
+    """Escaneia anexos antigos em busca de malware."""
+
+    for att in ChatAttachment.objects.filter(infected=False):
+        try:
+            if _scan_file(att.arquivo.path):
+                att.infected = True
+                att.save(update_fields=["infected"])
+        except Exception:
+            continue
 
 
 @shared_task

@@ -8,6 +8,7 @@ from rest_framework import serializers
 from .models import (
     ChatChannel,
     ChatChannelCategory,
+    ChatAttachment,
     ChatMessage,
     ChatNotification,
     ResumoChat,
@@ -77,6 +78,37 @@ class ChatChannelSerializer(serializers.ModelSerializer):
         if last_msg:
             data["ultima_mensagem"] = ChatMessageSerializer(last_msg, context=self.context).data
         return data
+
+
+class ChatAttachmentSerializer(serializers.ModelSerializer):
+    filename = serializers.SerializerMethodField()
+    preview_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ChatAttachment
+        fields = [
+            "id",
+            "filename",
+            "mime_type",
+            "tamanho",
+            "thumb_url",
+            "preview_url",
+            "infected",
+            "created",
+        ]
+        read_only_fields = fields
+
+    def get_filename(self, obj: ChatAttachment) -> str:
+        return obj.arquivo.name.rsplit("/", 1)[-1]
+
+    def get_preview_url(self, obj: ChatAttachment) -> str:
+        if not obj.infected and obj.preview_ready:
+            request = self.context.get("request")
+            url = obj.arquivo.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return ""
 
 
 class ChatRetentionSerializer(serializers.Serializer):

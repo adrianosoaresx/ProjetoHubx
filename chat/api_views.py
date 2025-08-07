@@ -10,12 +10,13 @@ from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import connection, models
+from django.db.models.functions import TruncDay, TruncMonth
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from PIL import Image
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
@@ -45,6 +46,7 @@ from .permissions import (
 from .serializers import (
     ChatChannelCategorySerializer,
     ChatChannelSerializer,
+    ChatAttachmentSerializer,
     ChatMessageSerializer,
     ChatNotificationSerializer,
     ChatRetentionSerializer,
@@ -54,8 +56,22 @@ from .serializers import (
 from .services import criar_item_de_mensagem, sinalizar_mensagem
 from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
+from .metrics import chat_attachments_total, chat_categories_total
 
 User = get_user_model()
+
+
+def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external service
+    try:
+        import clamd  # type: ignore
+
+        cd = clamd.ClamdNetworkSocket()
+        result = cd.scan(path)
+        if result:
+            return any(status == "FOUND" for _, (status, _) in result.items())
+    except Exception:
+        return False
+    return False
 
 
 class ChatChannelCategoryViewSet(viewsets.ModelViewSet):
@@ -77,6 +93,12 @@ class ChatChannelCategoryViewSet(viewsets.ModelViewSet):
         if nome:
             qs = qs.filter(nome__icontains=nome)
         return qs.order_by("nome")
+
+    def create(self, request: Request, *args, **kwargs) -> Response:  # pragma: no cover - simple
+        resp = super().create(request, *args, **kwargs)
+        if resp.status_code == status.HTTP_201_CREATED:
+            chat_categories_total.inc()
+        return resp
 
 
 class UploadArquivoAPIView(APIView):
@@ -112,7 +134,12 @@ class UploadArquivoAPIView(APIView):
             except Exception:  # pragma: no cover - fallback se Pillow falhar
                 thumb_url = ""
 
+        infected = _scan_file(attachment.arquivo.path)
+        attachment.infected = infected
+        if content_type.startswith("image") and not infected:
+            attachment.preview_ready = True
         attachment.save()
+        chat_attachments_total.inc()
 
         tipo = "file"
         if content_type.startswith("image"):
@@ -123,10 +150,11 @@ class UploadArquivoAPIView(APIView):
             {
                 "id": str(attachment.id),
                 "tipo": tipo,
-                "url": url,
+                "url": url if not infected else "",
                 "mime_type": content_type,
                 "tamanho": attachment.tamanho,
-                "thumb_url": thumb_url,
+                "thumb_url": thumb_url if not infected else "",
+                "infected": infected,
             }
         )
 
@@ -256,6 +284,15 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         ChatParticipant.objects.filter(channel=channel, user__id__in=user_ids).delete()
         return Response({"removidos": user_ids})
 
+    @action(detail=True, methods=["get"], permission_classes=[permissions.IsAuthenticated, IsChannelParticipant])
+    def attachments(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        qs = ChatAttachment.objects.filter(mensagem__channel=channel)
+        if not ChatParticipant.objects.filter(channel=channel, user=request.user, is_admin=True).exists():
+            qs = qs.filter(infected=False)
+        serializer = ChatAttachmentSerializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
+
     @action(
         detail=True,
         methods=["patch"],
@@ -372,6 +409,20 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
             item["user_reactions"] = user_emojis
             data.append(item)
         return Response({"messages": data, "has_more": has_more})
+
+
+class ChatAttachmentViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = ChatAttachment.objects.select_related("mensagem__channel")
+    serializer_class = ChatAttachmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def destroy(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]
+        attachment = self.get_object()
+        channel = attachment.mensagem.channel if attachment.mensagem else None
+        if not channel or not IsChannelAdminOrOwner().has_object_permission(request, self, channel):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        attachment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ChatMessagePagination(PageNumberPagination):
@@ -718,3 +769,94 @@ class ModeracaoViewSet(viewsets.ViewSet):
         msg.notificacoes.all().delete()
         msg.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChatMetricsAPIView(APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request: Request) -> Response:
+        inicio = request.query_params.get("inicio")
+        fim = request.query_params.get("fim")
+        categoria = request.query_params.get("categoria")
+        canal = request.query_params.get("canal")
+        periodo = request.query_params.get("periodo", "dia")
+        trunc = TruncDay if periodo == "dia" else TruncMonth
+
+        msgs = ChatMessage.objects.all()
+        if canal:
+            msgs = msgs.filter(channel_id=canal)
+        if categoria:
+            msgs = msgs.filter(channel__categoria_id=categoria)
+        if inicio:
+            dt = parse_datetime(inicio)
+            if dt:
+                msgs = msgs.filter(created__gte=dt)
+        if fim:
+            dt = parse_datetime(fim)
+            if dt:
+                msgs = msgs.filter(created__lte=dt)
+
+        msg_agg = (
+            msgs.annotate(p=trunc("created"))
+            .values("p")
+            .annotate(
+                total_mensagens=models.Count("id"),
+                mensagens_text=models.Count("id", filter=models.Q(tipo="text")),
+                mensagens_image=models.Count("id", filter=models.Q(tipo="image")),
+                mensagens_video=models.Count("id", filter=models.Q(tipo="video")),
+                mensagens_file=models.Count("id", filter=models.Q(tipo="file")),
+                total_reacoes=models.Count("reaction_details"),
+                mensagens_sinalizadas=models.Count("flags"),
+                mensagens_ocultadas=models.Count("id", filter=models.Q(hidden_at__isnull=False)),
+            )
+        )
+
+        att_qs = ChatAttachment.objects.filter(mensagem__in=msgs)
+        att_agg = (
+            att_qs.annotate(p=trunc("created"))
+            .values("p")
+            .annotate(
+                total_anexos=models.Count("id"),
+                tamanho_total_anexos=models.Sum("tamanho"),
+            )
+        )
+
+        data: dict[str, dict[str, int]] = {}
+        for item in msg_agg:
+            key = item["p"].date() if periodo == "dia" else item["p"].strftime("%Y-%m")
+            data[key] = {
+                "total_mensagens": item["total_mensagens"],
+                "mensagens_text": item["mensagens_text"],
+                "mensagens_image": item["mensagens_image"],
+                "mensagens_video": item["mensagens_video"],
+                "mensagens_file": item["mensagens_file"],
+                "total_reacoes": item["total_reacoes"],
+                "mensagens_sinalizadas": item["mensagens_sinalizadas"],
+                "mensagens_ocultadas": item["mensagens_ocultadas"],
+            }
+        for item in att_agg:
+            key = item["p"].date() if periodo == "dia" else item["p"].strftime("%Y-%m")
+            data.setdefault(key, {})["total_anexos"] = item["total_anexos"]
+            data.setdefault(key, {})["tamanho_total_anexos"] = item["tamanho_total_anexos"] or 0
+
+        results = []
+        for key in sorted(data):
+            val = data[key]
+            results.append(
+                {
+                    "periodo": str(key),
+                    "total_mensagens": val.get("total_mensagens", 0),
+                    "mensagens_por_tipo": {
+                        "text": val.get("mensagens_text", 0),
+                        "image": val.get("mensagens_image", 0),
+                        "video": val.get("mensagens_video", 0),
+                        "file": val.get("mensagens_file", 0),
+                    },
+                    "total_reacoes": val.get("total_reacoes", 0),
+                    "mensagens_sinalizadas": val.get("mensagens_sinalizadas", 0),
+                    "mensagens_ocultadas": val.get("mensagens_ocultadas", 0),
+                    "total_anexos": val.get("total_anexos", 0),
+                    "tamanho_total_anexos": val.get("tamanho_total_anexos", 0),
+                }
+            )
+        return Response({"resultados": results})

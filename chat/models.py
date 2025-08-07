@@ -238,6 +238,7 @@ class ChatAttachment(TimeStampedModel, SoftDeleteModel):
     tamanho = models.PositiveIntegerField(default=0)
     thumb_url = models.URLField(blank=True)
     preview_ready = models.BooleanField(default=False)
+    infected = models.BooleanField(default=False)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
