@@ -24,6 +24,25 @@ class Tag(TimeStampedModel):
         return self.nome
 
 
+class FeedPluginConfig(TimeStampedModel):
+    """Configuração de plugins para organizações."""
+
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="feed_plugins",
+    )
+    module_path = models.CharField(max_length=255)
+    frequency = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Configuração de Plugin"
+        verbose_name_plural = "Configurações de Plugins"
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return f"{self.organizacao}: {self.module_path}"
+
+
 class Post(TimeStampedModel, SoftDeleteModel):
     TIPO_FEED_CHOICES = [
         ("global", "Feed Global"),
