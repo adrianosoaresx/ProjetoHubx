@@ -6,11 +6,14 @@ from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from rest_framework.views import APIView
 
 from . import metrics
 from .serializers import ConfiguracaoContaSerializer
 from .services import get_configuracao_conta
 from .models import ConfiguracaoConta
+from notificacoes.models import NotificationTemplate, Canal
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 
 class ConfiguracaoContaViewSet(ViewSet):
@@ -96,3 +99,28 @@ class ConfiguracaoContaViewSet(ViewSet):
             time.monotonic() - start
         )
         return resp
+
+
+class TestarNotificacaoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        tipo = request.data.get("tipo", Canal.EMAIL)
+        escopo_tipo = request.data.get("escopo_tipo")
+        escopo_id = request.data.get("escopo_id")
+        template, _ = NotificationTemplate.objects.get_or_create(
+            codigo=f"teste_{tipo}",
+            defaults={
+                "assunto": "Teste",
+                "corpo": "Mensagem de teste",
+                "canal": tipo,
+            },
+        )
+        enviar_para_usuario(
+            request.user,
+            template.codigo,
+            {},
+            escopo_tipo=escopo_tipo,
+            escopo_id=escopo_id,
+        )
+        return Response({"detail": "enviado"})

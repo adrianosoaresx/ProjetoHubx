@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .api import ConfiguracaoContaViewSet
+from .api import ConfiguracaoContaViewSet, TestarNotificacaoView
 
 configuracao_conta = ConfiguracaoContaViewSet.as_view(
     {
@@ -12,4 +12,5 @@ configuracao_conta = ConfiguracaoContaViewSet.as_view(
 
 urlpatterns = [
     path("configuracoes-conta/", configuracao_conta, name="configuracoes-conta"),
+    path("testar/", TestarNotificacaoView.as_view(), name="configuracoes-testar"),
 ]

@@ -2,8 +2,29 @@ from __future__ import annotations
 
 from django.middleware.locale import LocaleMiddleware
 from django.utils import translation
+import threading
 
 from configuracoes.services import get_configuracao_conta
+
+_local = threading.local()
+
+
+def get_request_info() -> tuple[str | None, str | None]:
+    request = getattr(_local, "request", None)
+    if not request:
+        return None, None
+    return request.META.get("REMOTE_ADDR"), request.META.get("HTTP_USER_AGENT", "")
+
+
+class RequestInfoMiddleware:
+    """Armazena informações da requisição em thread local para uso em sinais."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        _local.request = request
+        return self.get_response(request)
 
 
 class UserLocaleMiddleware(LocaleMiddleware):

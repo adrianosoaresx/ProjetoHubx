@@ -13,6 +13,7 @@ django.setup()  # Deve vir antes de qualquer importação que acesse models
 import chat.routing  # Agora é seguro importar  # noqa: E402
 import discussao.routing  # noqa: E402
 import notificacoes.routing  # noqa: E402
+import configuracoes.routing  # noqa: E402
 
 application = ProtocolTypeRouter(
     {
@@ -22,6 +23,7 @@ application = ProtocolTypeRouter(
                 chat.routing.websocket_urlpatterns
                 + notificacoes.routing.websocket_urlpatterns
                 + discussao.routing.websocket_urlpatterns
+                + configuracoes.routing.websocket_urlpatterns
             )
         ),
     }
