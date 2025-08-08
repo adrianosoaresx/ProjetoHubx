@@ -200,6 +200,9 @@ MEDIA_ROOT = BASE_DIR / "media"
 USER_MEDIA_MAX_SIZE = 50 * 1024 * 1024  # 50MB
 USER_MEDIA_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".mp4", ".webm"]
 
+ORGANIZACOES_MAX_IMAGE_SIZE = 5 * 1024 * 1024
+ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"]
+
 if os.getenv("AWS_STORAGE_BUCKET_NAME"):
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -268,16 +271,13 @@ CELERY_BEAT_SCHEDULE = {
         "task": "notificacoes.tasks.enviar_relatorios_semanais",
         "schedule": crontab(minute="*"),
     },
-
     "gerar_cobrancas_mensais": {
         "task": "financeiro.tasks.cobrancas.gerar_cobrancas_mensais",
         "schedule": crontab(minute=0, hour=0, day_of_month=1),
     },
-
     "expirar_solicitacoes_pendentes": {
         "task": "nucleos.tasks.expirar_solicitacoes_pendentes",
         "schedule": crontab(minute=0, hour=0),
-
     },
     "cleanup_audit_logs": {
         "task": "audit.tasks.cleanup_old_logs",

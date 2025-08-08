@@ -60,9 +60,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if tipo:
             qs = qs.filter(tipo=tipo)
         if cidade:
-            qs = qs.filter(cidade__icontains=cidade)
+            qs = qs.filter(cidade=cidade)
         if estado:
-            qs = qs.filter(estado__icontains=estado)
+            qs = qs.filter(estado=estado)
 
         allowed_order = {"nome", "tipo", "cidade", "estado", "created_at"}
         if order not in allowed_order:
@@ -72,6 +72,20 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tipos"] = Organizacao._meta.get_field("tipo").choices
+        context["cidades"] = (
+            Organizacao.objects.filter(deleted=False)
+            .exclude(cidade="")
+            .values_list("cidade", flat=True)
+            .distinct()
+            .order_by("cidade")
+        )
+        context["estados"] = (
+            Organizacao.objects.filter(deleted=False)
+            .exclude(estado="")
+            .values_list("estado", flat=True)
+            .distinct()
+            .order_by("estado")
+        )
         return context
 
 
@@ -106,7 +120,14 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         nova = serialize_organizacao(self.object)
         dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
         dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
-        for campo in ["nome", "tipo", "contato_nome"]:
+        for campo in [
+            "nome",
+            "tipo",
+            "slug",
+            "cnpj",
+            "contato_nome",
+            "contato_email",
+        ]:
             if campo in dif_antiga:
                 OrganizacaoChangeLog.objects.create(
                     organizacao=self.object,
@@ -228,7 +249,10 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             or getattr(user, "user_type", None) == UserType.ROOT.value
             or user.get_tipo_usuario == UserType.ROOT.value
             or (
-                (user.get_tipo_usuario == UserType.ADMIN.value or getattr(user, "user_type", None) == UserType.ADMIN.value)
+                (
+                    user.get_tipo_usuario == UserType.ADMIN.value
+                    or getattr(user, "user_type", None) == UserType.ADMIN.value
+                )
                 and getattr(user, "organizacao_id", None) == org.id
             )
         ):

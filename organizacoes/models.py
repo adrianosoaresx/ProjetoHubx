@@ -1,11 +1,14 @@
+import os
 import uuid
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
+from .utils import validate_cnpj
 
 
 class Organizacao(TimeStampedModel, SoftDeleteModel):
@@ -51,9 +54,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     def __str__(self) -> str:
         return self.nome
 
-    def delete(
-        self, using: str | None = None, keep_parents: bool = False, soft: bool = True
-    ) -> None:
+    def delete(self, using: str | None = None, keep_parents: bool = False, soft: bool = True) -> None:
         super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
     def soft_delete(self) -> None:
@@ -61,6 +62,21 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
         self.deleted = True
         self.deleted_at = timezone.now()
         self.save(update_fields=["deleted", "deleted_at"])
+
+    def clean(self) -> None:  # type: ignore[override]
+        super().clean()
+        self.cnpj = validate_cnpj(self.cnpj)
+        allowed_exts = {f".{ext.lower()}" for ext in settings.ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS}
+        max_size = settings.ORGANIZACOES_MAX_IMAGE_SIZE
+        for field in ["avatar", "cover"]:
+            file = getattr(self, field)
+            if file:
+                ext = os.path.splitext(file.name)[1].lower()
+                if ext not in allowed_exts:
+                    raise ValidationError({field: _("Formato de imagem não suportado.")})
+                if file.size > max_size:
+                    raise ValidationError({field: _("Imagem excede o tamanho máximo permitido.")})
+
 
 class OrganizacaoChangeLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

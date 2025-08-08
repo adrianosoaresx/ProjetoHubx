@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from django.utils import timezone
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from accounts.models import UserType
 from core.permissions import IsRoot, IsOrgAdminOrSuperuser
 
 from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
@@ -23,16 +26,43 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by("nome")
+        qs = super().get_queryset()
+        user = self.request.user
+        if (
+            user.is_superuser
+            or user.get_tipo_usuario == UserType.ROOT.value
+            or getattr(user, "user_type", None) == UserType.ROOT.value
+        ):
+            pass
+        elif user.get_tipo_usuario == UserType.ADMIN.value or getattr(user, "user_type", None) == UserType.ADMIN.value:
+            qs = qs.filter(pk=getattr(user, "organizacao_id", None))
+        else:
+            raise PermissionDenied
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         inativa = self.request.query_params.get("inativa")
         if inativa is not None:
             qs = qs.filter(inativa=inativa.lower() == "true")
+        ordering = self.request.query_params.get("ordering")
+        allowed = {"nome", "tipo", "cidade", "estado", "created_at"}
+        if ordering and ordering.lstrip("-") in allowed:
+            qs = qs.order_by(ordering)
+        else:
+            qs = qs.order_by("nome")
         return qs
 
     def get_permissions(self):
-        if self.action in {"create", "destroy", "partial_update", "update", "inativar", "reativar"}:
+        if self.action in {
+            "create",
+            "destroy",
+            "partial_update",
+            "update",
+            "inativar",
+            "reativar",
+        }:
             self.permission_classes = [IsAuthenticated, IsRoot]
-        elif self.action in {"history"}:
+        elif self.action in {"history", "list", "retrieve"}:
             self.permission_classes = [IsAuthenticated, IsOrgAdminOrSuperuser]
         return super().get_permissions()
 
@@ -74,6 +104,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
         serializer = self.get_serializer(organizacao)
         return Response(serializer.data)
+
     @action(detail=True, methods=["get"], url_path="history")
     def history(self, request, pk: str | None = None):
         organizacao = self.get_object()

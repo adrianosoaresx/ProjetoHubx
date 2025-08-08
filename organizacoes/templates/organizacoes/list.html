@@ -21,7 +21,7 @@
     </a>
   </div>
 
-  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-4 gap-2">
+  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-5 gap-2">
     <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por nome ou slug' %}" class="w-full p-2 border rounded-lg" />
     <select name="tipo" class="w-full p-2 border rounded-lg">
       <option value="">Tipo</option>
@@ -29,14 +29,25 @@
         <option value="{{ value }}" {% if request.GET.tipo == value %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
-    <input type="text" name="cidade" value="{{ request.GET.cidade }}" placeholder="Cidade" class="w-full p-2 border rounded-lg" />
+    <select name="cidade" class="w-full p-2 border rounded-lg">
+      <option value="">Cidade</option>
+      {% for c in cidades %}
+        <option value="{{ c }}" {% if request.GET.cidade == c %}selected{% endif %}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <select name="estado" class="w-full p-2 border rounded-lg">
+      <option value="">Estado</option>
+      {% for e in estados %}
+        <option value="{{ e }}" {% if request.GET.estado == e %}selected{% endif %}>{{ e }}</option>
+      {% endfor %}
+    </select>
     <select name="order" class="w-full p-2 border rounded-lg">
       <option value="nome" {% if request.GET.order == 'nome' or not request.GET.order %}selected{% endif %}>Nome</option>
       <option value="tipo" {% if request.GET.order == 'tipo' %}selected{% endif %}>Tipo</option>
       <option value="cidade" {% if request.GET.order == 'cidade' %}selected{% endif %}>Localização</option>
       <option value="created_at" {% if request.GET.order == 'created_at' %}selected{% endif %}>Data</option>
     </select>
-    <div class="md:col-span-4 flex justify-end">
+    <div class="md:col-span-5 flex justify-end">
       <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">Filtrar</button>
     </div>
   </form>
@@ -46,11 +57,11 @@
       <table class="min-w-full bg-white border border-neutral-200 rounded-2xl shadow-sm">
         <thead class="bg-neutral-50">
           <tr>
-            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Nome</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Tipo</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Cidade/Estado</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Data de Criação</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Ações</th>
+            <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Nome</th>
+            <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Tipo</th>
+            <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Cidade/Estado</th>
+            <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Data de Criação</th>
+            <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">Ações</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-200">
@@ -66,25 +77,30 @@
                   {% endif %}
                 </div>
                 <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
+                {% if organizacao.inativa %}
+                  <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">Inativa</span>
+                {% endif %}
               </div>
             </td>
             <td class="px-4 py-2">{{ organizacao.get_tipo_display }}</td>
             <td class="px-4 py-2">{{ organizacao.cidade }}{% if organizacao.estado %}/{{ organizacao.estado }}{% endif %}</td>
             <td class="px-4 py-2">{{ organizacao.created_at|date:'d/m/Y' }}</td>
             <td class="px-4 py-2 whitespace-nowrap flex gap-2">
-              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline">{% trans 'Visualizar' %}</a>
+              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
               {% if perms.organizacoes.change_organizacao %}
-              <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline">{% trans 'Editar' %}</a>
+              <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
               {% endif %}
               {% if perms.organizacoes.delete_organizacao %}
-              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline">{% trans 'Remover' %}</a>
+              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
               {% endif %}
               {% if request.user.user_type == 'root' %}
-                <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}">
+                <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
                   {% csrf_token %}
-                  <button type="submit" class="text-neutral-700 hover:underline">
-                    {% if organizacao.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
-                  </button>
+                  {% if organizacao.inativa %}
+                    <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Reativar' %}">{% trans 'Reativar' %}</button>
+                  {% else %}
+                    <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Inativar' %}">{% trans 'Inativar' %}</button>
+                  {% endif %}
                 </form>
               {% endif %}
             </td>
@@ -95,11 +111,11 @@
     </div>
     <div class="mt-6 flex justify-center gap-2">
       {% if page_obj.has_previous %}
-        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Anterior</a>
+        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="Anterior">Anterior</a>
       {% endif %}
       <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded">Próxima</a>
+        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="Próxima">Próxima</a>
       {% endif %}
     </div>
   {% else %}

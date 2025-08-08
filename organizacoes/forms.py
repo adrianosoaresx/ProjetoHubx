@@ -2,6 +2,7 @@ from django import forms
 from django.utils.text import slugify
 
 from .models import Organizacao
+from .utils import validate_cnpj
 
 
 class OrganizacaoForm(forms.ModelForm):
@@ -31,15 +32,22 @@ class OrganizacaoForm(forms.ModelForm):
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
 
     def clean_cnpj(self):
-        cnpj = self.cleaned_data.get("cnpj")
+        cnpj = validate_cnpj(self.cleaned_data.get("cnpj"))
         if Organizacao.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
             raise forms.ValidationError("Uma organização com este CNPJ já existe.")
         return cnpj
 
     def clean_slug(self):
         slug = self.cleaned_data.get("slug")
-        if slug:
+        nome = self.cleaned_data.get("nome")
+        if not slug:
+            slug = slugify(nome)
+        else:
             slug = slugify(slug)
-            if Organizacao.objects.exclude(pk=self.instance.pk).filter(slug=slug).exists():
-                raise forms.ValidationError("Este slug já está em uso.")
+        base = slug
+        counter = 2
+        qs = Organizacao.objects.exclude(pk=self.instance.pk)
+        while qs.filter(slug=slug).exists():
+            slug = f"{base}-{counter}"
+            counter += 1
         return slug

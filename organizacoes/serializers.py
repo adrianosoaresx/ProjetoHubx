@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.utils.text import slugify
 from rest_framework import serializers
 
 from .models import (
@@ -8,6 +9,7 @@ from .models import (
     OrganizacaoChangeLog,
 )
 from .tasks import organizacao_alterada
+from .utils import validate_cnpj
 
 
 class OrganizacaoSerializer(serializers.ModelSerializer):
@@ -39,7 +41,19 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
     def create(self, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
         user = getattr(request, "user", None)
-        instance = Organizacao.objects.create(created_by=user, **validated_data)
+        slug = validated_data.get("slug")
+        nome = validated_data.get("nome")
+        slug = slugify(slug or nome)
+        base = slug
+        counter = 2
+        while Organizacao.objects.filter(slug=slug).exists():
+            slug = f"{base}-{counter}"
+            counter += 1
+        validated_data["slug"] = slug
+        validated_data["cnpj"] = validate_cnpj(validated_data.get("cnpj"))
+        instance = Organizacao(created_by=user, **validated_data)
+        instance.full_clean()
+        instance.save()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
             usuario=user,
@@ -51,7 +65,26 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
     def update(self, instance: Organizacao, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
         user = getattr(request, "user", None)
-        campos_relevantes = ["nome", "tipo", "contato_nome"]
+        if "cnpj" in validated_data:
+            validated_data["cnpj"] = validate_cnpj(validated_data["cnpj"])
+        if "slug" in validated_data or "nome" in validated_data:
+            slug = validated_data.get("slug")
+            nome = validated_data.get("nome", instance.nome)
+            slug = slugify(slug or nome)
+            base = slug
+            counter = 2
+            while Organizacao.objects.exclude(pk=instance.pk).filter(slug=slug).exists():
+                slug = f"{base}-{counter}"
+                counter += 1
+            validated_data["slug"] = slug
+        campos_relevantes = [
+            "nome",
+            "tipo",
+            "slug",
+            "cnpj",
+            "contato_nome",
+            "contato_email",
+        ]
         for campo in campos_relevantes:
             if campo in validated_data:
                 antigo = getattr(instance, campo)
@@ -64,7 +97,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
                         valor_novo=str(novo),
                         alterado_por=user,
                     )
-        instance = super().update(instance, validated_data)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.full_clean()
+        instance.save()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=instance,
             usuario=user,

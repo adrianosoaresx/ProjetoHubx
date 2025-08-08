@@ -49,18 +49,15 @@ def _no_celery(monkeypatch):
     monkeypatch.setattr("organizacoes.tasks.enviar_email_membros.delay", lambda *a, **k: None)
 
 
-def test_create_slug_unique(api_client, root_user, faker_ptbr):
+def test_create_slug_auto_increment(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
-    data = {
-        "nome": "Org",
-        "cnpj": faker_ptbr.cnpj(),
-        "slug": "org",
-    }
     url = reverse("organizacoes_api:organizacao-list")
+    data = {"nome": "Org", "cnpj": faker_ptbr.cnpj()}
     resp1 = api_client.post(url, data)
     assert resp1.status_code == status.HTTP_201_CREATED
-    resp2 = api_client.post(url, {**data, "cnpj": faker_ptbr.cnpj()})
-    assert resp2.status_code == status.HTTP_400_BAD_REQUEST
+    resp2 = api_client.post(url, {"nome": "Org", "cnpj": faker_ptbr.cnpj()})
+    assert resp2.status_code == status.HTTP_201_CREATED
+    assert resp2.data["slug"] == "org-2"
 
 
 def test_inativar_reativar(api_client, root_user, faker_ptbr):
@@ -87,6 +84,32 @@ def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
     resp = api_client.get(url)
     ids = [o["id"] for o in resp.data]
     assert str(org1.id) in ids and str(org2.id) not in ids
+
+
+def test_list_permissions(api_client, faker_ptbr, root_user):
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
+    user_common = User.objects.create_user(
+        username="u",
+        email="u@example.com",
+        password="pass",
+    )
+    admin_user = User.objects.create_user(
+        username="a",
+        email="a@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=org,
+    )
+    url = reverse("organizacoes_api:organizacao-list")
+    auth(api_client, user_common)
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_403_FORBIDDEN
+    auth(api_client, admin_user)
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK and len(resp.data) == 1
+    auth(api_client, root_user)
+    resp = api_client.get(url)
+    assert resp.status_code == status.HTTP_200_OK
 
 
 def test_history_access_restricted(api_client, root_user, faker_ptbr):
@@ -123,6 +146,8 @@ def test_history_access_restricted(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_200_OK
+
+
 def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="c")
@@ -130,6 +155,25 @@ def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
     assert resp.status_code == status.HTTP_200_OK
     assert OrganizacaoChangeLog.objects.filter(organizacao=org, campo_alterado="nome").exists()
+
+
+def test_search_and_ordering(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    o1 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b", cidade="X")
+    o2 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="a", cidade="Y")
+    url = reverse("organizacoes_api:organizacao-list")
+    resp = api_client.get(url + "?search=a")
+    ids = [o["id"] for o in resp.data]
+    assert str(o2.id) in ids and str(o1.id) not in ids
+    resp = api_client.get(url + "?ordering=cidade")
+    assert [r["id"] for r in resp.data] == [str(o1.id), str(o2.id)]
+
+
+def test_invalid_cnpj_api(api_client, root_user):
+    auth(api_client, root_user)
+    url = reverse("organizacoes_api:organizacao-list")
+    resp = api_client.post(url, {"nome": "Org", "cnpj": "123"})
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_history_export_csv(api_client, root_user, faker_ptbr):
