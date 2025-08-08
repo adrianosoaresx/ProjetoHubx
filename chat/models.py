@@ -281,6 +281,23 @@ class ChatModerationLog(TimeStampedModel):
         verbose_name_plural = "Logs de Moderação"
 
 
+class TrendingTopic(models.Model):
+    canal = models.ForeignKey(
+        ChatChannel,
+        on_delete=models.CASCADE,
+        related_name="trending_topics",
+    )
+    palavra = models.CharField(max_length=100)
+    frequencia = models.PositiveIntegerField()
+    periodo_inicio = models.DateTimeField()
+    periodo_fim = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-frequencia"]
+        verbose_name = "Tópico em Alta"
+        verbose_name_plural = "Tópicos em Alta"
+
+
 class ResumoChat(models.Model):
     PERIODOS = [("diario", "Diário"), ("semanal", "Semanal")]
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+from datetime import timedelta
 from io import BytesIO
 
 from asgiref.sync import async_to_sync
@@ -16,7 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from PIL import Image
-from rest_framework import permissions, status, viewsets, mixins
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
@@ -24,6 +25,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .api import add_reaction, remove_reaction
+from .metrics import chat_attachments_total, chat_categories_total
 from .models import (
     ChatAttachment,
     ChatChannel,
@@ -35,6 +37,7 @@ from .models import (
     ChatNotification,
     ChatParticipant,
     RelatorioChatExport,
+    TrendingTopic,
     UserChatPreference,
 )
 from .permissions import (
@@ -44,19 +47,19 @@ from .permissions import (
     IsModeratorPermission,
 )
 from .serializers import (
+    ChatAttachmentSerializer,
     ChatChannelCategorySerializer,
     ChatChannelSerializer,
-    ChatAttachmentSerializer,
     ChatMessageSerializer,
     ChatNotificationSerializer,
     ChatRetentionSerializer,
     ResumoChatSerializer,
+    TrendingTopicSerializer,
     UserChatPreferenceSerializer,
 )
 from .services import criar_item_de_mensagem, sinalizar_mensagem
 from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
-from .metrics import chat_attachments_total, chat_categories_total
 
 User = get_user_model()
 
@@ -860,3 +863,18 @@ class ChatMetricsAPIView(APIView):
                 }
             )
         return Response({"resultados": results})
+
+
+class TrendingTopicsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        canal_id = request.query_params.get("canal")
+        dias = int(request.query_params.get("dias", 7))
+        qs = TrendingTopic.objects.all()
+        if canal_id:
+            qs = qs.filter(canal_id=canal_id)
+        inicio = timezone.now() - timedelta(days=dias)
+        qs = qs.filter(periodo_fim__gte=inicio).order_by("-frequencia")[:10]
+        serializer = TrendingTopicSerializer(qs, many=True)
+        return Response(serializer.data)
