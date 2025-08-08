@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="p-4 bg-white rounded shadow max-w-md" id="convites-modal">
+  <h2 class="text-lg font-semibold mb-2">{% trans 'Convites do núcleo' %}</h2>
+  <p class="text-sm text-gray-600">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
+  <form class="mt-2 flex flex-col gap-2" hx-post="{% url 'nucleos_api:nucleo-convites' nucleo.pk %}" hx-target="#convites-list" hx-swap="afterbegin">
+    {% csrf_token %}
+    <input type="email" name="email" class="border rounded px-2 py-1" placeholder="email@example.com" required />
+    <select name="papel" class="border rounded px-2 py-1">
+      <option value="membro">{% trans 'Membro' %}</option>
+      <option value="coordenador">{% trans 'Coordenador' %}</option>
+    </select>
+    <div class="flex justify-end gap-2">
+      <button type="button" class="px-3 py-1 border rounded" hx-on="click: document.getElementById('convites-modal').remove()">{% trans 'Fechar' %}</button>
+      <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Enviar convite' %}</button>
+    </div>
+  </form>
+  <ul id="convites-list" class="mt-4 space-y-2">
+    {% for c in convites %}
+    <li id="convite-{{ c.id }}" class="flex justify-between items-center">
+      <span>{{ c.email }} - {{ c.papel }}</span>
+      <button class="text-red-600" hx-delete="{% url 'nucleos_api:nucleo-revogar-convite' nucleo.pk c.id %}" hx-target="#convite-{{ c.id }}" hx-swap="outerHTML">{% trans 'Revogar' %}</button>
+    </li>
+    {% empty %}
+    <li class="text-sm text-gray-500">{% trans 'Nenhum convite pendente.' %}</li>
+    {% endfor %}
+  </ul>
+</div>

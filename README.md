@@ -224,6 +224,13 @@ npm run build
 - **Feed**: Suporte a tipos de feed (`global`, `usuario`, `nucleo`, `evento`).
 - **Discussões**: Categorias e tópicos com respostas e interações.
 
+### Núcleos: Convites, Suspensão e Feed
+- **Convites de Núcleo**: admins geram convites com `POST /api/nucleos/<id>/convites/` e revogam com `DELETE /api/nucleos/<id>/convites/<convite_id>/`, respeitando a quota diária.
+- **Suspensão de Membros**: coordenadores podem suspender ou reativar participantes (`POST /api/nucleos/<id>/membros/<user_id>/suspender` / `.../reativar`).
+- **Membro Status**: consulta de papel e suspensão em `GET /api/nucleos/<id>/membro-status/`.
+- **Feed do Núcleo**: membros ativos podem publicar via `POST /api/nucleos/<id>/posts/`.
+
+
 ### Dashboard
 - **Dashboard**: Estatísticas de eventos, inscrições e interações.
 

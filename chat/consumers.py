@@ -7,6 +7,8 @@ import time
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
+from services.nucleos import user_belongs_to_nucleo
+
 from .api import notify_users
 from .metrics import chat_message_latency_seconds
 from .models import ChatChannel, ChatMessage, ChatMessageReaction, ChatParticipant
@@ -37,18 +39,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         except ChatChannel.DoesNotExist:
             await self.close()
             return
+        if channel.contexto_tipo == "nucleo":
+            participa, info, suspenso = await database_sync_to_async(user_belongs_to_nucleo)(
+                user, channel.contexto_id
+            )
+            if not participa or not info.endswith("ativo") or suspenso:
+                await self.close()
+                return
+        elif channel.contexto_tipo in {"evento", "organizacao"}:
+            attr = f"{channel.contexto_tipo}_id"
+            if getattr(user, attr, None) != channel.contexto_id:
+                await self.close()
+                return
         is_participant = await database_sync_to_async(
             ChatParticipant.objects.filter(channel=channel, user=user).exists
         )()
-        if not is_participant:
-            if channel.contexto_tipo in {"nucleo", "evento", "organizacao"}:
-                attr = f"{channel.contexto_tipo}_id"
-                if getattr(user, attr, None) != channel.contexto_id:
-                    await self.close()
-                    return
-            else:
-                await self.close()
-                return
+        if not is_participant and channel.contexto_tipo not in {"nucleo", "evento", "organizacao"}:
+            await self.close()
+            return
         self.channel = channel
         self.group_name = f"chat_{channel.id}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
@@ -93,7 +101,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     arquivo,
                     reply_to,
                 )
-            await database_sync_to_async(notify_users)(self.channel, msg)
             payload = {
                 "type": "chat.message",
                 "id": str(msg.id),
@@ -109,6 +116,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 payload["conteudo"] = msg.conteudo
             await self.channel_layer.group_send(self.group_name, payload)
+            asyncio.create_task(
+                database_sync_to_async(notify_users)(self.channel, msg)
+            )
             duration = time.monotonic() - start
             chat_message_latency_seconds.observe(duration)
             logger.info("chat message %s sent in %.4fs", msg.id, duration)

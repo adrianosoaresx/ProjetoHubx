@@ -70,8 +70,8 @@ def _usuario_no_contexto(user: User, contexto_tipo: str, contexto_id: Optional[s
     if contexto_tipo == "organizacao":
         return str(user.organizacao_id) == str(contexto_id)
     if contexto_tipo == "nucleo":
-        participa, info = user_belongs_to_nucleo(user, contexto_id)
-        return participa and info.endswith("ativo")
+        participa, info, suspenso = user_belongs_to_nucleo(user, contexto_id)
+        return participa and info.endswith("ativo") and not suspenso
     if contexto_tipo == "evento":
         return InscricaoEvento.objects.filter(
             user=user, evento_id=contexto_id, status="confirmada"

@@ -5,10 +5,12 @@ import pytest
 from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from django.utils import timezone
 
 from chat.models import ChatMessage, ChatNotification
 from chat.services import criar_canal, enviar_mensagem
 from Hubx.asgi import application
+from nucleos.models import ParticipacaoNucleo
 
 os.environ.setdefault("DJANGO_ALLOW_ASYNC_UNSAFE", "true")
 
@@ -240,6 +242,31 @@ def test_typing_indicator_broadcasts_and_auto_stops(admin_user, coordenador_user
         assert start_event["action"] == "start"
         stop_event = await communicator.receive_json_from(timeout=4)
         assert stop_event["action"] == "stop"
+        await communicator.disconnect()
+
+    asyncio.run(inner())
+
+
+def test_consumer_blocks_suspended_member(coordenador_user, nucleo):
+    async def inner():
+        part = await database_sync_to_async(ParticipacaoNucleo.objects.create)(
+            user=coordenador_user, nucleo=nucleo, status="ativo"
+        )
+        canal = await database_sync_to_async(criar_canal)(
+            criador=coordenador_user,
+            contexto_tipo="nucleo",
+            contexto_id=nucleo.id,
+            titulo="Privado",
+            descricao="",
+            participantes=[],
+        )
+        part.status_suspensao = True
+        part.data_suspensao = timezone.now()
+        await database_sync_to_async(part.save)()
+        communicator = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        communicator.scope["user"] = coordenador_user
+        connected, _ = await communicator.connect()
+        assert connected is False
         await communicator.disconnect()
 
     asyncio.run(inner())
