@@ -9,11 +9,16 @@ from configuracoes.services import get_configuracao_conta
 _local = threading.local()
 
 
-def get_request_info() -> tuple[str | None, str | None]:
+def get_request_info() -> tuple[str | None, str | None, str]:
     request = getattr(_local, "request", None)
     if not request:
-        return None, None
-    return request.META.get("REMOTE_ADDR"), request.META.get("HTTP_USER_AGENT", "")
+        return None, None, "import"
+    fonte = "API" if request.path.startswith("/api/") else "UI"
+    return (
+        request.META.get("REMOTE_ADDR"),
+        request.META.get("HTTP_USER_AGENT", ""),
+        fonte,
+    )
 
 
 class RequestInfoMiddleware:

@@ -7,10 +7,7 @@ from django.conf import settings
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
-from configuracoes.services import (
-    get_configuracao_conta,
-    get_configuracao_contextual,
-)
+from configuracoes.services import get_user_preferences
 
 from ..models import Canal, NotificationLog, NotificationTemplate
 from ..tasks import enviar_notificacao_async
@@ -48,14 +45,7 @@ def enviar_para_usuario(
 
     subject, body = render_template(template, context)
 
-    prefs = get_configuracao_conta(user)
-    if escopo_tipo and escopo_id:
-        ctx = get_configuracao_contextual(user, escopo_tipo, escopo_id)
-        if ctx:
-            prefs.frequencia_notificacoes_email = ctx.frequencia_notificacoes_email
-            prefs.frequencia_notificacoes_whatsapp = ctx.frequencia_notificacoes_whatsapp
-            prefs.idioma = ctx.idioma
-            prefs.tema = ctx.tema
+    prefs = get_user_preferences(user, escopo_tipo, escopo_id)
 
     canais: list[str] = []
     if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.receber_notificacoes_email:
