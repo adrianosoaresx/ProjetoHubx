@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from copy import deepcopy
 from typing import Any
 
 import sentry_sdk
@@ -49,6 +50,23 @@ def get_configuracao_contextual(
         )
     except ConfiguracaoContextual.DoesNotExist:
         return None
+
+
+def get_user_preferences(
+    usuario: User, escopo_tipo: str | None = None, escopo_id: str | None = None
+) -> ConfiguracaoConta:
+    """Resolve preferências do usuário considerando escopo contextual."""
+    prefs = deepcopy(get_configuracao_conta(usuario))
+    if escopo_tipo and escopo_id:
+        ctx = get_configuracao_contextual(usuario, escopo_tipo, escopo_id)
+        if ctx:
+            prefs.frequencia_notificacoes_email = ctx.frequencia_notificacoes_email
+            prefs.frequencia_notificacoes_whatsapp = (
+                ctx.frequencia_notificacoes_whatsapp
+            )
+            prefs.idioma = ctx.idioma
+            prefs.tema = ctx.tema
+    return prefs
 
 
 def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> ConfiguracaoConta:

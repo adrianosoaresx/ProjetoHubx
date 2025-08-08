@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from . import metrics
 from .serializers import ConfiguracaoContaSerializer
-from .services import get_configuracao_conta
+from .services import get_configuracao_conta, get_user_preferences
 from .models import ConfiguracaoConta
 from notificacoes.models import NotificationTemplate, Canal
 from notificacoes.services.notificacoes import enviar_para_usuario
@@ -105,15 +105,22 @@ class TestarNotificacaoView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        tipo = request.data.get("tipo", Canal.EMAIL)
+        canal = request.data.get("canal", Canal.EMAIL)
         escopo_tipo = request.data.get("escopo_tipo")
         escopo_id = request.data.get("escopo_id")
+        prefs = get_user_preferences(request.user, escopo_tipo, escopo_id)
+        if canal == Canal.EMAIL and not prefs.receber_notificacoes_email:
+            return Response({"detail": "canal desabilitado"}, status=400)
+        if canal == Canal.WHATSAPP and not prefs.receber_notificacoes_whatsapp:
+            return Response({"detail": "canal desabilitado"}, status=400)
+        if canal == Canal.PUSH and not prefs.receber_notificacoes_push:
+            return Response({"detail": "canal desabilitado"}, status=400)
         template, _ = NotificationTemplate.objects.get_or_create(
-            codigo=f"teste_{tipo}",
+            codigo=f"teste_{canal}",
             defaults={
                 "assunto": "Teste",
                 "corpo": "Mensagem de teste",
-                "canal": tipo,
+                "canal": canal,
             },
         )
         enviar_para_usuario(

@@ -85,7 +85,7 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
         constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
 
 
-class ConfiguracaoContextual(TimeStampedModel):
+class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
     """Preferências específicas por escopo para um usuário."""
 
     class Escopo(models.TextChoices):
@@ -113,6 +113,9 @@ class ConfiguracaoContextual(TimeStampedModel):
     idioma = models.CharField(max_length=5, default="pt-BR")
     tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         ordering = ["-modified"]
         constraints = [
@@ -132,7 +135,12 @@ class ConfiguracaoContaLog(models.Model):
     valor_novo = models.TextField(null=True, blank=True)
     ip = EncryptedCharField(max_length=45, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
+    fonte = models.CharField(
+        max_length=10,
+        choices=[("UI", "UI"), ("API", "API"), ("import", "import")],
+        default="UI",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]

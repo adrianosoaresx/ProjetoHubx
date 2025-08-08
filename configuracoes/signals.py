@@ -50,7 +50,7 @@ def capture_old_values(sender, instance, **kwargs):
 def log_changes(sender, instance, created, **kwargs):
     fields = CONTA_FIELDS if sender is ConfiguracaoConta else CONTEXT_FIELDS
     old_values = getattr(instance, "_old_values", {})
-    ip, agent = get_request_info()
+    ip, agent, fonte = get_request_info()
     changes: dict[str, object] = {}
     for field in fields:
         old = old_values.get(field)
@@ -63,6 +63,7 @@ def log_changes(sender, instance, created, **kwargs):
                 valor_novo=new,
                 ip=ip,
                 user_agent=agent,
+                fonte=fonte,
             )
             changes[field] = new
     if changes:
