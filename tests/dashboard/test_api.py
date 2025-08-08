@@ -6,10 +6,12 @@ import pytest
 from django.core.cache import cache
 from django.urls import reverse
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from dashboard.utils import get_variation
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
+from dashboard.services import DashboardMetricsService
 
 pytestmark = pytest.mark.django_db
 
@@ -55,6 +57,22 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
     resp = api_client.get(url)
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/pdf"
+
+
+def test_export_xlsx(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    url = reverse("dashboard_api:dashboard-export") + "?formato=xlsx"
+    with patch.object(
+        DashboardMetricsService,
+        "get_metrics",
+        return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+    ):
+        resp = api_client.get(url)
+    assert resp.status_code == 200
+    assert (
+        resp["Content-Type"]
+        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 def test_filter_crud(api_client: APIClient, admin_user) -> None:

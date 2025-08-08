@@ -14,6 +14,7 @@ from .models import (
     ParceriaEvento,
 )
 from .tasks import upload_material_divulgacao
+from dashboard.services import check_achievements
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -100,6 +101,7 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
         validated_data["user"] = request.user
         instance = super().create(validated_data)
         instance.confirmar_inscricao()
+        check_achievements(request.user)
         return instance
 
 
