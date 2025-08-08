@@ -146,9 +146,7 @@ class ModeracaoPost(TimeStampedModel):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.OneToOneField(
-        Post, on_delete=models.CASCADE, related_name="moderacao"
-    )
+    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name="moderacao")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
     motivo = models.TextField(blank=True)
     avaliado_por = models.ForeignKey(
@@ -161,3 +159,36 @@ class ModeracaoPost(TimeStampedModel):
     class Meta:
         verbose_name = "Moderação de Post"
         verbose_name_plural = "Moderações de Posts"
+
+
+class Reacao(TimeStampedModel):
+    """Registra curtidas e compartilhamentos em posts."""
+
+    class Tipo(models.TextChoices):
+        CURTIDA = "like", "Curtida"
+        COMPARTILHAMENTO = "share", "Compartilhamento"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reacoes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reacoes")
+    vote = models.CharField(max_length=20, choices=Tipo.choices)
+
+    class Meta:
+        unique_together = ("post", "user", "vote")
+        verbose_name = "Reação"
+        verbose_name_plural = "Reações"
+
+
+class PostView(TimeStampedModel):
+    """Registra tempos de leitura de posts."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="visualizacoes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="visualizacoes")
+    opened_at = models.DateTimeField()
+    closed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-opened_at"]
+        verbose_name = "Visualização de Post"
+        verbose_name_plural = "Visualizações de Posts"
