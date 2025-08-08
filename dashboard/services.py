@@ -4,7 +4,7 @@ from typing import Dict, Optional, Tuple
 
 from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
-from django.db.models import Avg, Count, Q, Sum
+from django.db.models import Avg, Count, F, Q, Sum
 from django.utils import timezone
 
 from accounts.models import User, UserType
@@ -12,11 +12,13 @@ from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatMessage
 from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
-from feed.models import Post, Tag
+from feed.models import Post, PostView, Reacao, Tag
 from financeiro.models import LancamentoFinanceiro
 from notificacoes.models import NotificationLog, NotificationStatus
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
+from tokens.models import TokenAcesso as InviteToken
+from tokens.models import TokenUsoLog as UserToken
 
 from .utils import get_variation
 from .models import Achievement, UserAchievement, DashboardConfig
@@ -223,6 +225,106 @@ class DashboardService:
         return qs.count()
 
     @staticmethod
+    def calcular_reacoes_feed(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+        data_inicio: Optional[datetime] = None,
+        data_fim: Optional[datetime] = None,
+    ) -> dict[str, int]:
+        qs = Reacao.objects.select_related("post")
+        if data_inicio:
+            qs = qs.filter(created_at__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(created_at__lte=data_fim)
+        if organizacao_id:
+            qs = qs.filter(post__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(post__nucleo_id=nucleo_id)
+        if evento_id:
+            qs = qs.filter(post__evento_id=evento_id)
+        return {
+            "curtidas": qs.filter(vote=Reacao.Tipo.CURTIDA).count(),
+            "compartilhamentos": qs.filter(vote=Reacao.Tipo.COMPARTILHAMENTO).count(),
+        }
+
+    @staticmethod
+    def calcular_tempo_medio_leitura(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+        data_inicio: Optional[datetime] = None,
+        data_fim: Optional[datetime] = None,
+    ) -> float:
+        qs = PostView.objects.select_related("post")
+        if data_inicio:
+            qs = qs.filter(opened_at__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(closed_at__lte=data_fim)
+        if organizacao_id:
+            qs = qs.filter(post__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(post__nucleo_id=nucleo_id)
+        if evento_id:
+            qs = qs.filter(post__evento_id=evento_id)
+        avg = qs.aggregate(dur=Avg(F("closed_at") - F("opened_at")))["dur"]
+        return float(avg.total_seconds()) if avg else 0.0
+
+    @staticmethod
+    def posts_populares_24h(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+        limite: int = 5,
+    ) -> list[dict[str, object]]:
+        desde = timezone.now() - timedelta(days=1)
+        qs = Reacao.objects.select_related("post").filter(vote=Reacao.Tipo.CURTIDA, created_at__gte=desde)
+        if organizacao_id:
+            qs = qs.filter(post__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(post__nucleo_id=nucleo_id)
+        if evento_id:
+            qs = qs.filter(post__evento_id=evento_id)
+        top = qs.values("post_id").annotate(total=Count("id")).order_by("-total")[:limite]
+        return [{"post_id": str(item["post_id"]), "likes": item["total"]} for item in top]
+
+    @staticmethod
+    def contar_tokens_gerados(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        data_inicio: Optional[datetime] = None,
+        data_fim: Optional[datetime] = None,
+    ) -> int:
+        qs = InviteToken.objects.all()
+        if data_inicio:
+            qs = qs.filter(created_at__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(created_at__lte=data_fim)
+        if organizacao_id:
+            qs = qs.filter(organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(nucleos__id=nucleo_id)
+        return qs.count()
+
+    @staticmethod
+    def contar_tokens_consumidos(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        data_inicio: Optional[datetime] = None,
+        data_fim: Optional[datetime] = None,
+    ) -> int:
+        qs = UserToken.objects.filter(acao=UserToken.Acao.USO).select_related("token")
+        if data_inicio:
+            qs = qs.filter(timestamp__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(timestamp__lte=data_fim)
+        if organizacao_id:
+            qs = qs.filter(token__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(token__nucleos__id=nucleo_id)
+        return qs.count()
+
+    @staticmethod
     def calcular_valores_eventos() -> Dict[str, float]:
         valores = {
             "valor_arrecadado": InscricaoEvento.objects.aggregate(Sum("valor_pago"))["valor_pago__sum"],
@@ -305,9 +407,7 @@ class DashboardService:
 
     @staticmethod
     def ultimas_notificacoes(user: User, limit: int = 5):
-        qs = NotificationLog.objects.select_related("template").exclude(
-            status=NotificationStatus.LIDA
-        )
+        qs = NotificationLog.objects.select_related("template").exclude(status=NotificationStatus.LIDA)
         if user.user_type not in {UserType.ROOT, UserType.ADMIN}:
             qs = qs.filter(user=user)
         return qs.order_by("-data_envio")[:limit]
@@ -539,6 +639,66 @@ class DashboardMetricsService:
                     organizacao_id=organizacao_id,
                     nucleo_id=nucleo_id,
                     evento_id=evento_id,
+                ),
+                "crescimento": 0.0,
+            }
+
+        if not metricas or {"total_curtidas", "total_compartilhamentos"} & set(metricas or []):
+            reacoes = DashboardService.calcular_reacoes_feed(
+                organizacao_id=organizacao_id,
+                nucleo_id=nucleo_id,
+                evento_id=evento_id,
+                data_inicio=inicio,
+                data_fim=fim,
+            )
+            if not metricas or "total_curtidas" in metricas:
+                metrics["total_curtidas"] = {"total": reacoes["curtidas"], "crescimento": 0.0}
+            if not metricas or "total_compartilhamentos" in metricas:
+                metrics["total_compartilhamentos"] = {
+                    "total": reacoes["compartilhamentos"],
+                    "crescimento": 0.0,
+                }
+
+        if not metricas or "tempo_medio_leitura" in metricas:
+            metrics["tempo_medio_leitura"] = {
+                "total": DashboardService.calcular_tempo_medio_leitura(
+                    organizacao_id=organizacao_id,
+                    nucleo_id=nucleo_id,
+                    evento_id=evento_id,
+                    data_inicio=inicio,
+                    data_fim=fim,
+                ),
+                "crescimento": 0.0,
+            }
+
+        if not metricas or "posts_populares_24h" in metricas:
+            metrics["posts_populares_24h"] = {
+                "total": DashboardService.posts_populares_24h(
+                    organizacao_id=organizacao_id,
+                    nucleo_id=nucleo_id,
+                    evento_id=evento_id,
+                ),
+                "crescimento": 0.0,
+            }
+
+        if not metricas or "tokens_gerados" in metricas:
+            metrics["tokens_gerados"] = {
+                "total": DashboardService.contar_tokens_gerados(
+                    organizacao_id=organizacao_id,
+                    nucleo_id=nucleo_id,
+                    data_inicio=inicio,
+                    data_fim=fim,
+                ),
+                "crescimento": 0.0,
+            }
+
+        if not metricas or "tokens_consumidos" in metricas:
+            metrics["tokens_consumidos"] = {
+                "total": DashboardService.contar_tokens_consumidos(
+                    organizacao_id=organizacao_id,
+                    nucleo_id=nucleo_id,
+                    data_inicio=inicio,
+                    data_fim=fim,
                 ),
                 "crescimento": 0.0,
             }
