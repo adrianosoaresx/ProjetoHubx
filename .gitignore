@@ -125,3 +125,7 @@ next-env.d.ts
 *~
 # Ignorar arquivos binários de tradução
 *.mo
+# Ignorar arquivos binários de imagem 
+*.png
+*.jpg
+*.webp
