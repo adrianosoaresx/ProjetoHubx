@@ -4,6 +4,8 @@ import csv
 import io
 from datetime import datetime
 
+from openpyxl import Workbook
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -16,7 +18,7 @@ from accounts.models import UserType
 
 from .models import DashboardFilter
 from .serializers import DashboardFilterSerializer
-from .services import DashboardMetricsService
+from .services import DashboardMetricsService, check_achievements
 
 
 class IsAdminOrCoordenador(permissions.IsAuthenticated):
@@ -93,6 +95,21 @@ class DashboardViewSet(viewsets.ViewSet):
             response = HttpResponse(pdf_bytes, content_type="application/pdf")
             response["Content-Disposition"] = "attachment; filename=dashboard.pdf"
             return response
+        elif formato == "xlsx":
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Métricas"
+            ws.append(["Métrica", "Total", "Crescimento"])
+            for key, value in data.items():
+                ws.append([key, value["total"], value["crescimento"]])
+            output = io.BytesIO()
+            wb.save(output)
+            response = HttpResponse(
+                output.getvalue(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            response["Content-Disposition"] = "attachment; filename=dashboard.xlsx"
+            return response
         return Response({"detail": _("Formato inválido.")}, status=400)
 
 
@@ -111,3 +128,4 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        check_achievements(self.request.user)

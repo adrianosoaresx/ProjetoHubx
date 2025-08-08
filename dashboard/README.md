@@ -43,6 +43,8 @@ Usuários root, admin e coordenador podem exportar as métricas atuais:
 ```
 /dashboard/export/?formato=csv
 /dashboard/export/?formato=pdf&periodo=mensal&escopo=global
+/dashboard/export/?formato=xlsx
+/dashboard/export/?formato=png
 ```
 
 O arquivo gerado inclui `total` e a variação percentual calculada como `(valor_atual - valor_anterior) / max(valor_anterior, 1) * 100`.
@@ -67,6 +69,10 @@ Exemplo de JSON armazenado:
 ```
 
 O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<escopo>-<json dos filtros>`, permitindo reutilização entre usuários com o mesmo escopo e filtros. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
+
+## Conquistas
+
+O dashboard possui um sistema de conquistas que registra marcos como 100 inscrições em eventos ou a criação de 5 dashboards personalizados. As conquistas disponíveis e o progresso do usuário podem ser visualizados em `/dashboard/achievements/`.
 
 ## Modelos e persistência
 
