@@ -79,3 +79,19 @@ O manager padrão (`objects`) retorna apenas registros não deletados. Para aces
 todos os registros, inclusive os excluídos logicamente, utilize
 `Model.all_objects`. Isso é útil em interfaces administrativas ou para
 recuperação manual de dados.
+
+## Logs de auditoria
+
+Todas as ações sensíveis do dashboard são registradas no modelo `AuditLog`,
+incluindo criação de filtros, compartilhamento de configurações e exportação de
+métricas. Os registros armazenam o usuário responsável, o tipo de ação, o objeto
+afetado, um hash SHA-256 do IP e metadados sanitizados.
+
+Superadministradores podem consultar os logs via API REST:
+
+```
+/api/audit/logs/?user_id=1&action=EXPORT_CSV&date_from=2025-01-01
+```
+
+Os dados são retidos por `AUDIT_LOG_RETENTION_YEARS` (padrão de 5 anos) e uma
+tarefa semanal do Celery remove registros mais antigos.

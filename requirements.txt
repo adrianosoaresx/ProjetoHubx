@@ -24,6 +24,7 @@ django-formtools==2.5.1
 django-model-utils==5.0.0
 django-phonenumber-field==8.1.0
 django-prometheus==2.4.1
+django-silk==5.2.0
 django-select2==8.4.1
 django-simple-history==3.10.1
 django-storages==1.14.6
@@ -48,6 +49,9 @@ tzdata==2025.2
 typing_extensions==4.14.0
 sqlparse==0.5.3
 packaging==25.0
+phonenumbers==8.13.38
+validate-docbr==1.10.0
+bleach==6.1.0
 
 # AWS / Storage
 boto3==1.40.1
