@@ -62,3 +62,11 @@ de acordo com o usuário atual. As configurações são armazenadas em
 `FeedPluginConfig` e carregadas dinamicamente em tempo de execução.
 
 Veja mais detalhes em [`docs/feed_plugins.md`](../docs/feed_plugins.md).
+
+## Rate limiting
+
+Requisições aos endpoints de posts são limitadas por usuário. Os limites
+podem ser ajustados através das configurações `FEED_RATE_LIMIT_POST` e
+`FEED_RATE_LIMIT_READ`. Cada organização possui ainda um campo
+`rate_limit_multiplier` que permite multiplicar esses valores para usuários
+ligados a ela.
