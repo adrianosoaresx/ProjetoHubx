@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     "configuracoes",
     "financeiro.apps.FinanceiroConfig",
     "notificacoes.apps.NotificacoesConfig",
+    "audit",
 ]
 
 MIDDLEWARE = [
@@ -107,6 +108,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "dashboard.middleware.DashboardTimingMiddleware",
+    "audit.middleware.AuditMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
@@ -277,6 +279,10 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=0, hour=0),
 
     },
+    "cleanup_audit_logs": {
+        "task": "audit.tasks.cleanup_old_logs",
+        "schedule": crontab(minute=0, hour=0, day_of_week="sun"),
+    },
 }
 
 # Notificações
@@ -293,3 +299,5 @@ NOTIFICATIONS_ENABLED = True
 SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
 RATELIMIT_VIEW = "feed.api.ratelimit_exceeded"
 RATELIMIT_CACHE = "default"
+
+AUDIT_LOG_RETENTION_YEARS = int(os.getenv("AUDIT_LOG_RETENTION_YEARS", "5"))

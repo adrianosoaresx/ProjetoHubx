@@ -66,6 +66,11 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
   - Prioridade: Média
   - Critérios de Aceite: Dashboards conectados recebem novas métricas sem recarregar a página.
 
+- **RF‑09**
+  - Descrição: Registrar ações de usuários em logs de auditoria imutáveis.
+  - Prioridade: Alta
+  - Critérios de Aceite: Criação de filtros, exportações e compartilhamentos ficam armazenados e apenas superadmins podem consultar.
+
 
 ## 4. Requisitos Não‑Funcionais
 
@@ -92,6 +97,11 @@ Oferecer visualizações dinâmicas e personalizadas de métricas, estatísticas
   - Categoria: Escalabilidade
   - Descrição: Atualizações em tempo real devem utilizar canais WebSocket dedicados.
   - Métrica/Meta: Impacto mínimo na latência (< 1 s) para distribuição de eventos.
+
+- **RNF‑07**
+  - Categoria: Segurança
+  - Descrição: Logs de auditoria devem ser retidos por 5 anos com IP anonimizado por hash.
+  - Métrica/Meta: Tarefa periódica remove registros mais antigos que o período definido em `AUDIT_LOG_RETENTION_YEARS`.
 
 
 ## 5. Casos de Uso

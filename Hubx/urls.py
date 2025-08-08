@@ -53,6 +53,10 @@ urlpatterns = [
         include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
     ),
     path(
+        "api/audit/",
+        include(("audit.api_urls", "audit_api"), namespace="audit_api"),
+    ),
+    path(
         "api/tokens/",
         include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
     ),

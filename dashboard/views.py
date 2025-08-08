@@ -1,7 +1,6 @@
 import csv
 import shutil
 from datetime import datetime
-from io import BytesIO
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -15,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, ListView, TemplateView, View
 
 from accounts.models import UserType
+from audit.services import hash_ip, log_audit
 from core.permissions import (
     AdminRequiredMixin,
     ClienteRequiredMixin,
@@ -315,6 +315,15 @@ class DashboardExportView(LoginRequiredMixin, View):
             resp = HttpResponse(pdf_bytes, content_type="application/pdf")
             filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.pdf")
             resp["Content-Disposition"] = f"attachment; filename={filename}"
+            log_audit(
+                user=request.user,
+                action="EXPORT_PDF",
+                object_type="DashboardMetrics",
+                object_id="",
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                status="SUCCESS",
+                metadata={"formato": formato, **filters},
+            )
             return resp
 
         # default csv
@@ -325,6 +334,15 @@ class DashboardExportView(LoginRequiredMixin, View):
         writer.writerow(["Métrica", "Valor", "Variação (%)"])
         for key, data in metrics.items():
             writer.writerow([key, data["total"], data["crescimento"]])
+        log_audit(
+            user=request.user,
+            action="EXPORT_CSV",
+            object_type="DashboardMetrics",
+            object_id="",
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata={"formato": formato, **filters},
+        )
         return resp
 
 
@@ -355,6 +373,16 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
         if metricas_list:
             config_data["filters"]["metricas"] = metricas_list
         self.object = form.save(self.request.user, config_data)
+        action = "SHARE_DASHBOARD" if self.object.publico else "CREATE_CONFIG"
+        log_audit(
+            user=self.request.user,
+            action=action,
+            object_type="DashboardConfig",
+            object_id=str(self.object.pk),
+            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata=config_data,
+        )
         return redirect(self.get_success_url())
 
 
@@ -410,6 +438,15 @@ class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
             else:
                 filtros_data[key] = value[0]
         self.object = form.save(self.request.user, filtros_data)
+        log_audit(
+            user=self.request.user,
+            action="CREATE_FILTER",
+            object_type="DashboardFilter",
+            object_id=str(self.object.pk),
+            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata=filtros_data,
+        )
         return redirect(self.get_success_url())
 
 
