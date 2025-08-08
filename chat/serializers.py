@@ -6,12 +6,13 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from .models import (
+    ChatAttachment,
     ChatChannel,
     ChatChannelCategory,
-    ChatAttachment,
     ChatMessage,
     ChatNotification,
     ResumoChat,
+    TrendingTopic,
     UserChatPreference,
 )
 from .services import criar_canal, enviar_mensagem
@@ -197,6 +198,19 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
     def get_reactions(self, obj: ChatMessage) -> dict[str, int]:
         return obj.reaction_counts()
+
+
+class TrendingTopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrendingTopic
+        fields = [
+            "palavra",
+            "frequencia",
+            "periodo_inicio",
+            "periodo_fim",
+            "canal",
+        ]
+        read_only_fields = fields
 
 
 class ChatNotificationSerializer(serializers.ModelSerializer):

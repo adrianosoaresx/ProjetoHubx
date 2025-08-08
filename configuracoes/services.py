@@ -9,7 +9,7 @@ from django.core.cache import cache
 from accounts.models import User
 
 from . import metrics
-from .models import ConfiguracaoConta
+from .models import ConfiguracaoConta, ConfiguracaoContextual
 
 CACHE_KEY = "configuracao_conta:{id}"
 
@@ -37,6 +37,18 @@ def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
         metrics.config_cache_hits_total.inc()
     metrics.config_get_latency_seconds.observe(time.monotonic() - start)
     return config
+
+
+def get_configuracao_contextual(
+    usuario: User, escopo_tipo: str, escopo_id: str
+) -> ConfiguracaoContextual | None:
+    """Retorna configurações específicas de um escopo, se existirem."""
+    try:
+        return ConfiguracaoContextual.objects.get(
+            user=usuario, escopo_tipo=escopo_tipo, escopo_id=escopo_id
+        )
+    except ConfiguracaoContextual.DoesNotExist:
+        return None
 
 
 def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> ConfiguracaoConta:

@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
+from core.fields import EncryptedCharField
 from core.models import SoftDeleteManager, SoftDeleteModel
 
 NOTIFICACAO_FREQ_CHOICES = [
@@ -82,3 +83,56 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
     class Meta:
         ordering = ["-modified"]
         constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
+
+
+class ConfiguracaoContextual(TimeStampedModel):
+    """Preferências específicas por escopo para um usuário."""
+
+    class Escopo(models.TextChoices):
+        ORGANIZACAO = "organizacao", _("Organização")
+        NUCLEO = "nucleo", _("Núcleo")
+        EVENTO = "evento", _("Evento")
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="configuracoes_contextuais",
+    )
+    escopo_tipo = models.CharField(max_length=20, choices=Escopo.choices)
+    escopo_id = models.UUIDField()
+    frequencia_notificacoes_email = models.CharField(
+        max_length=8,
+        choices=NOTIFICACAO_FREQ_CHOICES,
+        default="imediata",
+    )
+    frequencia_notificacoes_whatsapp = models.CharField(
+        max_length=8,
+        choices=NOTIFICACAO_FREQ_CHOICES,
+        default="imediata",
+    )
+    idioma = models.CharField(max_length=5, default="pt-BR")
+    tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
+
+    class Meta:
+        ordering = ["-modified"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "escopo_tipo", "escopo_id"],
+                name="config_contextual_user_scope_unique",
+            )
+        ]
+
+
+class ConfiguracaoContaLog(models.Model):
+    """Registro de alterações nas configurações de conta."""
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    campo = models.CharField(max_length=50)
+    valor_antigo = models.TextField(null=True, blank=True)
+    valor_novo = models.TextField(null=True, blank=True)
+    ip = EncryptedCharField(max_length=45, null=True, blank=True)
+    user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]

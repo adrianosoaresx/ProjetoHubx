@@ -3,15 +3,16 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     AtualizarChavePublicaView,
+    ChatAttachmentViewSet,
     ChatChannelCategoryViewSet,
     ChatChannelViewSet,
-    ChatAttachmentViewSet,
     ChatFavoriteViewSet,
     ChatMessageViewSet,
+    ChatMetricsAPIView,
     ChatNotificationViewSet,
     ChavePublicaView,
-    ChatMetricsAPIView,
     ModeracaoViewSet,
+    TrendingTopicsAPIView,
     UploadArquivoAPIView,
     UserChatPreferenceView,
 )
@@ -113,4 +114,5 @@ urlpatterns = router.urls + [
     ),
     path("preferencias/", UserChatPreferenceView.as_view(), name="chat-preferences"),
     path("metrics/", ChatMetricsAPIView.as_view(), name="chat-metrics"),
+    path("trending/", TrendingTopicsAPIView.as_view(), name="chat-trending"),
 ]

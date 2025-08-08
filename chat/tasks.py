@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import csv
 import json
+import re
+from collections import Counter
 from datetime import timedelta
 from typing import Sequence
 
@@ -17,7 +19,14 @@ from .metrics import (
     chat_resumo_geracao_segundos,
     chat_resumos_total,
 )
-from .models import ChatAttachment, ChatChannel, ChatModerationLog, RelatorioChatExport, ResumoChat
+from .models import (
+    ChatAttachment,
+    ChatChannel,
+    ChatModerationLog,
+    RelatorioChatExport,
+    ResumoChat,
+    TrendingTopic,
+)
 
 User = get_user_model()
 
@@ -176,3 +185,54 @@ def limpar_exports_antigos() -> None:
             except Exception:
                 pass
         rel.delete()
+
+
+@shared_task
+def calcular_trending_topics(canal_id: str, dias: int = 7) -> list[tuple[str, int]]:
+    """Calcula palavras mais frequentes em mensagens recentes de um canal."""
+
+    channel = ChatChannel.objects.get(pk=canal_id)
+    inicio = timezone.now() - timedelta(days=dias)
+    mensagens = channel.messages.filter(
+        created__gte=inicio, hidden_at__isnull=True, tipo="text"
+    )
+    counter: Counter[str] = Counter()
+    stop_words = {
+        "de",
+        "a",
+        "o",
+        "que",
+        "e",
+        "do",
+        "da",
+        "em",
+        "um",
+        "para",
+        "com",
+        "na",
+        "no",
+        "os",
+        "se",
+        "por",
+        "não",
+    }
+    for msg in mensagens:
+        palavras = re.findall(r"[\wÀ-ÿ]+", msg.conteudo.lower())
+        for palavra in palavras:
+            if len(palavra) < 3 or palavra in stop_words:
+                continue
+            counter[palavra] += 1
+
+    periodo_fim = timezone.now()
+    TrendingTopic.objects.filter(canal=channel, periodo_inicio__gte=inicio).delete()
+    topics = []
+    for palavra, freq in counter.most_common(10):
+        TrendingTopic.objects.create(
+            canal=channel,
+            palavra=palavra,
+            frequencia=freq,
+            periodo_inicio=inicio,
+            periodo_fim=periodo_fim,
+        )
+        topics.append((palavra, freq))
+    return topics
