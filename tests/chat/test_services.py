@@ -30,10 +30,10 @@ def test_criar_canal_valida_contexto_nucleo(
 ):
     """Garante que apenas usuários do núcleo informado participem."""
     ParticipacaoNucleo.objects.create(
-        user=coordenador_user, nucleo=nucleo, status="aprovado"
+        user=coordenador_user, nucleo=nucleo, status="ativo"
     )
     ParticipacaoNucleo.objects.create(
-        user=admin_user, nucleo=nucleo, status="aprovado"
+        user=admin_user, nucleo=nucleo, status="ativo"
     )
     criar_canal(
         criador=coordenador_user,

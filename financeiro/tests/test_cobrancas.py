@@ -35,7 +35,7 @@ def test_cobranca_nucleo(settings):
     centro_nucleo = CentroCusto.objects.create(nome="N", tipo="nucleo", nucleo=nucleo)
     user = UserFactory()
     ContaAssociado.objects.create(user=user)
-    ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="ativo")
 
     gerar_cobrancas_mensais()
     tipos = LancamentoFinanceiro.objects.values_list("tipo", flat=True)

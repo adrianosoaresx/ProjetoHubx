@@ -36,7 +36,7 @@ def _nucleos_do_usuario(user) -> Iterable[tuple[CentroCusto, Decimal]]:
         return []
     result: list[tuple[CentroCusto, Decimal]] = []
     for part in participacoes.all():
-        if part.status != "aprovado":
+        if part.status != "ativo":
             continue
         nucleo = part.nucleo
         centro = nucleo.centros_custo.filter(tipo=CentroCusto.Tipo.NUCLEO).order_by("created_at").first()
@@ -57,7 +57,7 @@ def gerar_cobrancas() -> None:
         qs = qs.prefetch_related(
             Prefetch(
                 "user__participacoes",
-                queryset=ParticipacaoNucleo.objects.select_related("nucleo").filter(status="aprovado"),
+                queryset=ParticipacaoNucleo.objects.select_related("nucleo").filter(status="ativo"),
             )
         )
 

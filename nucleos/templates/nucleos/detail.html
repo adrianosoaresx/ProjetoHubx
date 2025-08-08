@@ -18,12 +18,12 @@
 
   <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
   <ul>
-    {% for part in membros_aprovados %}
-    <li>{{ part.user.get_full_name|default:part.user.username }}{% if part.is_coordenador %} - {% trans 'Coordenador' %}{% endif %}
+    {% for part in membros_ativos %}
+    <li>{{ part.user.get_full_name|default:part.user.username }}{% if part.papel == 'coordenador' %} - {% trans 'Coordenador' %}{% endif %}
       {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
       <form method="post" action="{% url 'nucleos:membro_role' object.pk part.pk %}" class="inline">{% csrf_token %}
-        <input type="hidden" name="is_coordenador" value="{% if part.is_coordenador %}False{% else %}True{% endif %}">
-        <button class="text-sm text-blue-600">{% if part.is_coordenador %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}</button>
+        <input type="hidden" name="papel" value="{% if part.papel == 'coordenador' %}membro{% else %}coordenador{% endif %}">
+        <button class="text-sm text-blue-600">{% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}</button>
       </form>
       <form method="post" action="{% url 'nucleos:membro_remover' object.pk part.pk %}" class="inline">{% csrf_token %}
         <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
@@ -87,7 +87,7 @@
     </div>
     {% if request.user.user_type in ('admin','coordenador','root') %}
     <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
-      <button class="ml-2 text-orange-600">{% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}</button>
+      <button class="ml-2 text-orange-600">{% if object.ativo %}{% trans 'Inativar' %}{% else %}{% trans 'Reativar' %}{% endif %}</button>
     </form>
     {% endif %}
   </div>

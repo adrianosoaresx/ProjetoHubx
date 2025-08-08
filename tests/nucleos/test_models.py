@@ -22,7 +22,7 @@ def media_root(tmp_path, settings):
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -73,13 +73,13 @@ def test_membros_property(organizacao, usuario):
     u2 = get_user_model().objects.create_user(
         username="u2", email="u2@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
     )
-    ParticipacaoNucleo.objects.create(user=u2, nucleo=nucleo, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=u2, nucleo=nucleo, status="ativo")
     assert list(nucleo.membros) == [u2]
 
 
 def test_suplente_ativo(organizacao, usuario):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="ativo")
     now = timezone.now()
     suplente = CoordenadorSuplente.objects.create(
         nucleo=nucleo,
@@ -88,6 +88,14 @@ def test_suplente_ativo(organizacao, usuario):
         periodo_fim=now + timedelta(days=1),
     )
     assert suplente.ativo
+
+
+def test_slug_unico_por_organizacao(organizacao):
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    Nucleo.objects.create(nome="N1", slug="igual", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", slug="igual", organizacao=outra)
+    with pytest.raises(IntegrityError):
+        Nucleo.objects.create(nome="N3", slug="igual", organizacao=organizacao)
 
 
 @pytest.mark.xfail(reason="Arquivos não são removidos ao deletar o núcleo")

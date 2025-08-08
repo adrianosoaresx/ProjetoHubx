@@ -18,14 +18,19 @@ User = get_user_model()
 class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participacoes")
     nucleo = models.ForeignKey("Nucleo", on_delete=models.CASCADE, related_name="participacoes")
-    is_coordenador = models.BooleanField(default=False)
+
+    PAPEL_CHOICES = [("membro", _("Membro")), ("coordenador", _("Coordenador"))]
+    papel = models.CharField(max_length=20, choices=PAPEL_CHOICES, default="membro")
+
+    STATUS_CHOICES = [
+        ("pendente", _("Pendente")),
+        ("ativo", _("Ativo")),
+        ("inativo", _("Inativo")),
+        ("suspenso", _("Suspenso")),
+    ]
     status = models.CharField(
-        max_length=10,
-        choices=[
-            ("pendente", _("Pendente")),
-            ("aprovado", _("Aprovado")),
-            ("recusado", _("Recusado")),
-        ],
+        max_length=20,
+        choices=STATUS_CHOICES,
         default="pendente",
         db_index=True,
     )
@@ -54,15 +59,15 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         db_column="organizacao",
     )
     nome = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True, default=uuid.uuid4)
+    slug = models.SlugField(max_length=255, blank=True)
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
-    inativa = models.BooleanField(default=False)
-    inativada_em = models.DateTimeField(null=True, blank=True)
+    ativo = models.BooleanField(default=True)
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
+        unique_together = ("organizacao", "slug")
         verbose_name = "Núcleo"
         verbose_name_plural = "Núcleos"
 
@@ -71,11 +76,13 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
 
     @property
     def membros(self):
-        return User.objects.filter(participacoes__nucleo=self, participacoes__status="aprovado")
+        return User.objects.filter(
+            participacoes__nucleo=self, participacoes__status="ativo"
+        )
 
     @property
     def coordenadores(self):
-        return self.membros.filter(participacoes__is_coordenador=True)
+        return self.membros.filter(participacoes__papel="coordenador")
 
     def soft_delete(self) -> None:
         self.deleted = True
@@ -83,7 +90,9 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         self.save(update_fields=["deleted", "deleted_at"])
 
     def save(self, *args, **kwargs):
-        if self.slug:
+        if not self.slug:
+            self.slug = slugify(self.nome)
+        else:
             self.slug = slugify(self.slug)
         super().save(*args, **kwargs)
 

@@ -141,7 +141,7 @@ def create_users(orgs, nucleos):
             cpf=cpf.generate(),
         )
         ConfiguracaoConta.objects.create(user=coord)
-        ParticipacaoNucleo.objects.create(user=coord, nucleo=nucleo_org, is_coordenador=True)
+        ParticipacaoNucleo.objects.create(user=coord, nucleo=nucleo_org, papel="coordenador", status="ativo")
         users.append(coord)
         creds.append((coord.username, coord.email, "1234Hubx!"))
 

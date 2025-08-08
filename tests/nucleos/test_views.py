@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -80,14 +80,14 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
         data={"acao": "approve"},
     )
     part.refresh_from_db()
-    assert part.status == "aprovado"
+    assert part.status == "ativo"
     assert list(nucleo.membros) == [membro_user]
 
 
 def test_exportar_membros_csv(client, admin_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(
-        user=admin_user, nucleo=nucleo, status="aprovado", is_coordenador=True
+        user=admin_user, nucleo=nucleo, status="ativo", papel="coordenador"
     )
     client.force_login(admin_user)
     resp = client.get(reverse("nucleos:exportar_membros", args=[nucleo.pk]))
@@ -98,7 +98,7 @@ def test_exportar_membros_csv(client, admin_user, organizacao):
         "Nome",
         "Email",
         "Status",
-        "is_coordenador",
+        "papel",
         "is_suplente",
         "data_ingresso",
     ]
@@ -110,4 +110,4 @@ def test_toggle_active(client, admin_user, organizacao):
     resp = client.post(reverse("nucleos:toggle_active", args=[nucleo.pk]))
     assert resp.status_code == 302
     nucleo.refresh_from_db()
-    assert nucleo.inativa is True
+    assert nucleo.ativo is False
