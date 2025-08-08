@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.views import serve as static_serve
 from django.urls import include, path
 from django.views.generic import RedirectView
 
@@ -94,3 +95,7 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [path("silk/", include("silk.urls", namespace="silk"))]
+    urlpatterns += [
+        path("service-worker.js", static_serve, kwargs={"path": "service-worker.js"}),
+        path("manifest.json", static_serve, kwargs={"path": "manifest.json"}),
+    ]
