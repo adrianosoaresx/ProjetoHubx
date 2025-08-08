@@ -324,6 +324,28 @@ class DashboardService:
             qs = qs.filter(organizacao=user.organizacao)
         return qs.order_by("data_inicio")[:limit]
 
+    @staticmethod
+    def medias_globais(metricas: Optional[list[str]] = None, por: str = "organizacao"):
+        query_map = {
+            "num_users": User.objects.all(),
+            "num_organizacoes": Organizacao.objects.all(),
+            "num_nucleos": Nucleo.objects.all(),
+            "num_empresas": Empresa.objects.select_related("usuario", "usuario__organizacao"),
+            "num_eventos": Evento.objects.select_related("nucleo"),
+            "num_posts_feed_total": Post.objects.all(),
+            "num_mensagens_chat": ChatMessage.objects.all(),
+            "num_topicos": TopicoDiscussao.objects.all(),
+            "num_respostas": RespostaDiscussao.objects.all(),
+        }
+        if metricas:
+            query_map = {k: v for k, v in query_map.items() if k in metricas}
+        divisor = Organizacao.objects.count() if por == "organizacao" else Nucleo.objects.count()
+        divisor = divisor or 1
+        medias = {}
+        for name, qs in query_map.items():
+            medias[name] = qs.count() / divisor
+        return medias
+
 
 class DashboardMetricsService:
     @staticmethod
