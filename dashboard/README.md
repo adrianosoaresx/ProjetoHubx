@@ -68,6 +68,19 @@ Exemplo de JSON armazenado:
 
 O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<escopo>-<json dos filtros>`, permitindo reutilização entre usuários com o mesmo escopo e filtros. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
 
+## Layouts personalizáveis
+
+Administradores podem criar diferentes disposições de widgets:
+
+1. Acesse `/dashboard/layouts/` e clique em **Novo Layout**.
+2. Arraste os cards para organizar e o script salvará a ordem automaticamente via HTMX.
+3. Layouts podem ser marcados como públicos para compartilhar com outros administradores.
+
+## Comparativos e benchmarking
+
+O endpoint `/api/dashboard/comparativo/` retorna os valores atuais da organização e as médias globais anonimizadas.
+Nos templates há um botão para habilitar o gráfico comparativo utilizando Chart.js.
+
 ## Modelos e persistência
 
 Os modelos deste app utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`.
