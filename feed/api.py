@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
+import re
+from math import ceil
 
 import boto3
 from django.conf import settings
@@ -12,6 +14,8 @@ from django.core.files.storage import default_storage
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django_ratelimit.core import is_ratelimited
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -122,11 +126,49 @@ class PostSerializer(serializers.ModelSerializer):
         return self._generate_presigned(key)
 
 
+def _rate_with_multiplier(base: str, multiplier: float) -> str:
+    match = re.match(r"(\d+)/(\w+)", base)
+    if not match:
+        return base
+    count, period = match.groups()
+    count = max(1, ceil(int(count) * multiplier))
+    return f"{count}/{period}"
+
+
+def _post_rate(group, request) -> str:  # pragma: no cover - simples
+    mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
+    return _rate_with_multiplier(settings.FEED_RATE_LIMIT_POST, mult)
+
+
+def _read_rate(group, request) -> str:  # pragma: no cover - simples
+    mult = getattr(getattr(request.user, "organizacao", None), "rate_limit_multiplier", 1)
+    return _rate_with_multiplier(settings.FEED_RATE_LIMIT_READ, mult)
+
+
+def ratelimit_exceeded(request, exception):  # pragma: no cover - simples
+    return Response(
+        {"detail": _("Limite de requisições excedido.")},
+        status=status.HTTP_429_TOO_MANY_REQUESTS,
+    )
+
+
 class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
     cache_timeout = 60
+
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        if is_ratelimited(
+            request,
+            group="feed_posts_create",
+            key="user",
+            rate=_post_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
+        return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = (
@@ -209,6 +251,15 @@ class PostViewSet(viewsets.ModelViewSet):
         return "feed:api:" + ":".join(keys)
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
+        if is_ratelimited(
+            request,
+            group="feed_posts_list",
+            key="user",
+            rate=_read_rate(None, request),
+            method="GET",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
         key = self._cache_key(request)
         cached = cache.get(key)
         if cached is not None:

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "django_prometheus",
     # ‑‑‑‑ Terceiros (third‑party) ‑‑‑‑
+    "django_ratelimit",
     "rest_framework",
     "rest_framework.authtoken",
     "widget_tweaks",
@@ -213,6 +214,8 @@ FEED_VIDEO_ALLOWED_EXTS = [".mp4", ".webm"]
 FEED_IMAGE_MAX_SIZE = 5 * 1024 * 1024
 FEED_PDF_MAX_SIZE = 10 * 1024 * 1024
 FEED_VIDEO_MAX_SIZE = 20 * 1024 * 1024
+FEED_RATE_LIMIT_POST = os.getenv("FEED_RATE_LIMIT_POST", "20/m")
+FEED_RATE_LIMIT_READ = os.getenv("FEED_RATE_LIMIT_READ", "100/m")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
@@ -286,3 +289,7 @@ NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "dummy-key-
 NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "https://stub-whatsapp.example")
 NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "dummy-key-whatsapp")
 NOTIFICATIONS_ENABLED = True
+
+SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
+RATELIMIT_VIEW = "feed.api.ratelimit_exceeded"
+RATELIMIT_CACHE = "default"
