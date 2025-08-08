@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-import csv
-import io
-import tablib
 import logging
 
+import tablib
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -136,8 +136,16 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         if self.request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
             ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
             ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
+            ctx["convites_pendentes"] = nucleo.convitenucleo_set.filter(usado_em__isnull=True).count()
+            limite = getattr(settings, "CONVITE_NUCLEO_DIARIO_LIMITE", 5)
+            cache_key = f"convites_nucleo:{self.request.user.id}:{timezone.now().date()}"
+            count = cache.get(cache_key, 0)
+            ctx["convites_restantes"] = max(limite - count, 0)
         part = nucleo.participacoes.filter(user=self.request.user).first()
         ctx["mostrar_solicitar"] = not part or part.status == "inativo"
+        ctx["pode_postar"] = bool(
+            part and part.status == "ativo" and not part.status_suspensao
+        )
         return ctx
 
 
@@ -145,6 +153,27 @@ class SolicitarParticipacaoModalView(LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, ativo=True)
         return render(request, "nucleos/solicitar_modal.html", {"nucleo": nucleo})
+
+
+class PostarFeedModalView(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, ativo=True)
+        return render(request, "nucleos/postar_modal.html", {"nucleo": nucleo})
+
+
+class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False, ativo=True)
+        convites = nucleo.convitenucleo_set.filter(usado_em__isnull=True)
+        limite = getattr(settings, "CONVITE_NUCLEO_DIARIO_LIMITE", 5)
+        cache_key = f"convites_nucleo:{request.user.id}:{timezone.now().date()}"
+        count = cache.get(cache_key, 0)
+        restantes = max(limite - count, 0)
+        return render(
+            request,
+            "nucleos/convites_modal.html",
+            {"nucleo": nucleo, "convites": convites, "convites_restantes": restantes},
+        )
 
 
 class ParticipacaoCreateView(LoginRequiredMixin, View):

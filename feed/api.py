@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime
 import re
+from datetime import datetime
 from math import ceil
 
 import boto3
@@ -125,6 +125,22 @@ class PostSerializer(serializers.ModelSerializer):
         key = getattr(obj.video, "name", obj.video)
         return self._generate_presigned(key)
 
+
+class NucleoPostSerializer(PostSerializer):
+    """Serializer específico para posts de núcleo."""
+
+    class Meta(PostSerializer.Meta):
+        fields = [
+            f
+            for f in PostSerializer.Meta.fields
+            if f not in {"tipo_feed", "nucleo", "evento"}
+        ]
+        read_only_fields = PostSerializer.Meta.read_only_fields
+
+    def validate(self, attrs):
+        attrs["tipo_feed"] = "nucleo"
+        attrs["nucleo"] = self.context["nucleo"]
+        return super().validate(attrs)
 
 def _rate_with_multiplier(base: str, multiplier: float) -> str:
     match = re.match(r"(\d+)/(\w+)", base)

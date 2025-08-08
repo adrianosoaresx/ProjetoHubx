@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -8,7 +9,6 @@ from django.db.models import SET_NULL
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-from decimal import Decimal
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
@@ -26,7 +26,6 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
         ("pendente", _("Pendente")),
         ("ativo", _("Ativo")),
         ("inativo", _("Inativo")),
-        ("suspenso", _("Suspenso")),
     ]
     status = models.CharField(
         max_length=20,
@@ -34,6 +33,8 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
         default="pendente",
         db_index=True,
     )
+    status_suspensao = models.BooleanField(default=False)
+    data_suspensao = models.DateTimeField(null=True, blank=True)
     data_solicitacao = models.DateTimeField(auto_now_add=True)
     data_decisao = models.DateTimeField(null=True, blank=True)
     decidido_por = models.ForeignKey(
@@ -67,7 +68,9 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
-        unique_together = ("organizacao", "slug")
+        constraints = [
+            models.UniqueConstraint(fields=("organizacao", "slug"), name="uniq_org_slug")
+        ]
         verbose_name = "Núcleo"
         verbose_name_plural = "Núcleos"
 
@@ -124,18 +127,31 @@ class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
 
 class ConviteNucleo(models.Model):
     token = models.CharField(max_length=36, unique=True, default=uuid.uuid4, editable=False)
+    token_obj = models.ForeignKey(
+        "tokens.TokenAcesso",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="convites_nucleo",
+        db_column="token_id",
+    )
     email = models.EmailField()
     papel = models.CharField(
         max_length=20,
         choices=[("membro", "Membro"), ("coordenador", "Coordenador")],
     )
+    limite_uso_diario = models.PositiveSmallIntegerField(default=1)
+    data_expiracao = models.DateTimeField(null=True, blank=True)
     usado_em = models.DateTimeField(null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.CASCADE)
 
     def expirado(self) -> bool:
-        from django.conf import settings
+        if self.data_expiracao:
+            return self.data_expiracao < timezone.now()
         from datetime import timedelta
+
+        from django.conf import settings
 
         dias = getattr(settings, "CONVITE_NUCLEO_EXPIRACAO_DIAS", 7)
         return self.criado_em + timedelta(days=dias) < timezone.now()

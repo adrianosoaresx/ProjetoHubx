@@ -3,33 +3,39 @@ from __future__ import annotations
 import csv
 import io
 import logging
+
 import tablib
 from django.core.cache import cache
-from rest_framework.pagination import PageNumberPagination
-from services.nucleos_metrics import (
-    get_total_membros,
-    get_total_suplentes,
-    get_membros_por_status,
-    get_taxa_participacao,
-)
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo, ConviteNucleo
+from feed.api import NucleoPostSerializer
+from financeiro import atualizar_cobranca
+from services.nucleos import user_belongs_to_nucleo
+from services.nucleos_metrics import (
+    get_membros_por_status,
+    get_taxa_participacao,
+    get_total_membros,
+    get_total_suplentes,
+)
+
+from .metrics import convites_usados_total, membros_suspensos_total
+from .models import ConviteNucleo, CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from .serializers import (
+    ConviteNucleoSerializer,
     CoordenadorSuplenteSerializer,
     NucleoSerializer,
     ParticipacaoNucleoSerializer,
-    ConviteNucleoSerializer,
 )
+from .services import gerar_convite_nucleo
 from .tasks import (
     notify_exportacao_membros,
     notify_participacao_aprovada,
@@ -77,17 +83,6 @@ class IsAdmin(IsAuthenticated):
         return self.has_permission(request, view)
 
 
-class ConviteNucleoCreateAPIView(APIView):
-    permission_classes = [IsAdmin]
-
-    def post(self, request):
-        serializer = ConviteNucleoSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        convite = ConviteNucleo.objects.create(**serializer.validated_data)
-        out = ConviteNucleoSerializer(convite)
-        return Response(out.data, status=status.HTTP_201_CREATED)
-
-
 class AceitarConviteAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -108,6 +103,15 @@ class AceitarConviteAPIView(APIView):
         )
         convite.usado_em = timezone.now()
         convite.save(update_fields=["usado_em"])
+        convites_usados_total.inc()
+        logger.info(
+            "convite_usado",
+            extra={
+                "convite_id": str(convite.pk),
+                "nucleo_id": str(convite.nucleo_id),  # type: ignore[attr-defined]
+                "user_id": str(request.user.pk),
+            },
+        )
         return Response({"detail": _("Convite aceito com sucesso.")})
 
 
@@ -145,6 +149,77 @@ class NucleoViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Nucleo) -> None:
         instance.delete()
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="convites",
+        permission_classes=[IsAdmin],
+    )
+    def convites(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        data = request.data.copy()
+        data["nucleo"] = nucleo.pk
+        serializer = ConviteNucleoSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            convite = gerar_convite_nucleo(
+                request.user,
+                nucleo,
+                serializer.validated_data["email"],
+                serializer.validated_data["papel"],
+            )
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        out = ConviteNucleoSerializer(convite)
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="convites/(?P<convite_id>[^/.]+)",
+        permission_classes=[IsAdmin],
+    )
+    def revogar_convite(
+        self, request, pk: str | None = None, convite_id: str | None = None
+    ):
+        nucleo = self.get_object()
+        convite = get_object_or_404(ConviteNucleo, pk=convite_id, nucleo=nucleo)
+        agora = timezone.now()
+        convite.data_expiracao = agora
+        convite.usado_em = agora
+        convite.save(update_fields=["data_expiracao", "usado_em"])
+        logger.info(
+            "convite_revogado",
+            extra={
+                "convite_id": str(convite.pk),
+                "nucleo_id": str(nucleo.pk),
+                "user_id": str(request.user.pk),
+            },
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="posts", permission_classes=[IsAuthenticated])
+    def posts(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        eh_membro = ParticipacaoNucleo.objects.filter(
+            user=request.user,
+            nucleo=nucleo,
+            status="ativo",
+            status_suspensao=False,
+        ).exists()
+        if not eh_membro:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer = NucleoPostSerializer(
+            data=request.data,
+            context={"nucleo": nucleo},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(
+            autor=request.user,
+            organizacao=nucleo.organizacao,
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="solicitar", permission_classes=[IsAuthenticated])
     def solicitar(self, request, pk: str | None = None):
@@ -231,6 +306,78 @@ class NucleoViewSet(viewsets.ModelViewSet):
         notify_participacao_recusada.delay(participacao.id)
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="membros/(?P<user_id>[^/.]+)/suspender",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def suspender_membro(self, request, pk: str | None = None, user_id: str | None = None):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
+        )
+        if participacao.status_suspensao:
+            return Response({"detail": _("Membro já suspenso.")}, status=400)
+        participacao.status_suspensao = True
+        participacao.data_suspensao = timezone.now()
+        participacao.save(update_fields=["status_suspensao", "data_suspensao"])
+        atualizar_cobranca(nucleo.id, participacao.user_id, "inativo")
+        membros_suspensos_total.inc()
+        logger.info(
+            "membro_suspenso",
+            extra={
+                "nucleo_id": str(nucleo.pk),
+                "user_id": str(participacao.user_id),  # type: ignore[attr-defined]
+                "suspendido_em": participacao.data_suspensao.isoformat(),
+            },
+        )
+        serializer = ParticipacaoNucleoSerializer(participacao)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="membros/(?P<user_id>[^/.]+)/reativar",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def reativar_membro(self, request, pk: str | None = None, user_id: str | None = None):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
+        )
+        if not participacao.status_suspensao:
+            return Response({"detail": _("Membro não está suspenso.")}, status=400)
+        participacao.status_suspensao = False
+        participacao.data_suspensao = None
+        participacao.save(update_fields=["status_suspensao", "data_suspensao"])
+        atualizar_cobranca(nucleo.id, participacao.user_id, "ativo")
+        logger.info(
+            "membro_reativado",
+            extra={
+                "nucleo_id": str(nucleo.pk),
+                "user_id": str(participacao.user_id),  # type: ignore[attr-defined]
+            },
+        )
+        serializer = ParticipacaoNucleoSerializer(participacao)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="membro-status",
+        permission_classes=[IsAuthenticated],
+    )
+    def membro_status(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        participa, info, suspenso = user_belongs_to_nucleo(request.user, nucleo.id)
+        papel = ""
+        ativo = False
+        if participa:
+            papel, status = info.split(":")
+            ativo = status == "ativo"
+        return Response({"papel": papel, "ativo": ativo, "suspenso": suspenso})
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def participacoes(self, request, pk: str | None = None):

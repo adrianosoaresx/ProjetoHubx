@@ -19,7 +19,9 @@
   <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
   <ul>
     {% for part in membros_ativos %}
-    <li>{{ part.user.get_full_name|default:part.user.username }}{% if part.papel == 'coordenador' %} - {% trans 'Coordenador' %}{% endif %}
+    <li>
+      {{ part.user.get_full_name|default:part.user.username }}{% if part.papel == 'coordenador' %} - {% trans 'Coordenador' %}{% endif %}
+      {% if part.status_suspensao %}<span class="text-red-600">({% trans 'Suspenso' %})</span>{% endif %}
       {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
       <form method="post" action="{% url 'nucleos:membro_role' object.pk part.pk %}" class="inline">{% csrf_token %}
         <input type="hidden" name="papel" value="{% if part.papel == 'coordenador' %}membro{% else %}coordenador{% endif %}">
@@ -28,6 +30,15 @@
       <form method="post" action="{% url 'nucleos:membro_remover' object.pk part.pk %}" class="inline">{% csrf_token %}
         <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
       </form>
+      {% if part.status_suspensao %}
+      <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}" hx-on="htmx:afterRequest: location.reload()" class="inline">{% csrf_token %}
+        <button class="text-sm text-green-600">{% trans 'Reativar' %}</button>
+      </form>
+      {% else %}
+      <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}" hx-on="htmx:afterRequest: location.reload()" class="inline">{% csrf_token %}
+        <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
+      </form>
+      {% endif %}
       {% endif %}
     </li>
     {% empty %}
@@ -80,6 +91,15 @@
   </div>
   {% endif %}
 
+  {% if request.user.user_type in ('admin','coordenador') %}
+  <div class="mt-4">
+    <button type="button" class="px-4 py-2 bg-purple-600 text-white rounded" hx-get="{% url 'nucleos:convites_modal' object.pk %}" hx-target="#modal">
+      {% trans 'Gerenciar convites' %} ({{ convites_pendentes }})
+    </button>
+    <p class="text-sm text-gray-500 mt-1">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
+  </div>
+  {% endif %}
+
   <div class="mt-6 space-x-2">
     <div class="inline-block relative">
       <button class="text-blue-600" hx-get="{% url 'nucleos:exportar_membros' object.pk %}?formato=csv" hx-trigger="click" hx-swap="none">{% trans 'Exportar CSV' %}</button>
@@ -95,6 +115,11 @@
     {% if mostrar_solicitar and request.user.user_type not in ('admin','coordenador') %}
     <div class="mt-4">
       <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+    </div>
+    {% endif %}
+    {% if pode_postar %}
+    <div class="mt-4">
+      <button type="button" class="px-4 py-2 bg-green-600 text-white rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
     </div>
     {% endif %}
     <div id="modal"></div>

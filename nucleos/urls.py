@@ -22,6 +22,16 @@ urlpatterns = [
         name="participacao_decidir",
     ),
     path(
+        "<int:pk>/postar/novo/",
+        views.PostarFeedModalView.as_view(),
+        name="postar_modal",
+    ),
+    path(
+        "<int:pk>/convites/",
+        views.ConvitesModalView.as_view(),
+        name="convites_modal",
+    ),
+    path(
         "<int:pk>/membro/<int:participacao_id>/remover/",
         views.MembroRemoveView.as_view(),
         name="membro_remover",

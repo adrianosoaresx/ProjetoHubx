@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import logging
 from datetime import timedelta
 
 from celery import shared_task
+from django.core.cache import cache
 from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import Nucleo, ParticipacaoNucleo
+from .models import ConviteNucleo, Nucleo, ParticipacaoNucleo
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -64,3 +68,26 @@ def expirar_solicitacoes_pendentes() -> None:
         p.justificativa = "expiração automática"
         p.save(update_fields=["status", "data_decisao", "justificativa"])
         notify_participacao_recusada.delay(p.id)
+
+
+@shared_task
+def limpar_contadores_convites() -> None:
+    cache.delete_pattern("convites_nucleo:*")  # type: ignore[attr-defined]
+
+
+@shared_task
+def expirar_convites_nucleo() -> None:
+    agora = timezone.now()
+    expirados = ConviteNucleo.objects.filter(
+        usado_em__isnull=True, data_expiracao__lt=agora
+    )
+    for convite in expirados:
+        convite.usado_em = agora
+        convite.save(update_fields=["usado_em"])
+        logger.info(
+            "convite_expirado",
+            extra={
+                "convite_id": str(convite.pk),
+                "nucleo_id": str(convite.nucleo_id),  # type: ignore[attr-defined]
+            },
+        )
