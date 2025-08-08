@@ -2,6 +2,17 @@
 
 Este app fornece visualizações de métricas com parâmetros flexíveis e suporte a exportação.
 
+## PWA e suporte offline
+
+O dashboard pode ser instalado como um aplicativo no navegador. Ao acessar `/dashboard/`,
+o navegador oferece a opção de adicionar o Hubx Dashboard à tela inicial. O aplicativo
+funciona offline graças ao *service worker*, que armazena em cache os assets estáticos e
+as requisições HTMX mais recentes.
+
+1. Visite `/dashboard/` em um navegador compatível.
+2. Aceite o prompt de instalação ou utilize a opção "Adicionar à tela inicial".
+3. O aplicativo continua acessível mesmo sem conexão de rede.
+
 ## Parâmetros
 
 A view base aceita os seguintes parâmetros via query string:
