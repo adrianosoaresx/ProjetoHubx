@@ -11,7 +11,14 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    ListView,
+    TemplateView,
+    UpdateView,
+    View,
+)
 
 from accounts.models import UserType
 from audit.services import hash_ip, log_audit
@@ -38,7 +45,16 @@ METRICAS_INFO = {
     "num_posts_feed_recent": {"label": _("Posts (24h)"), "icon": "fa-clock"},
     "num_topicos": {"label": _("Tópicos"), "icon": "fa-comments"},
     "num_respostas": {"label": _("Respostas"), "icon": "fa-reply"},
-    "num_mensagens_chat": {"label": _("Mensagens de chat"), "icon": "fa-message"},
+    "num_mensagens_chat": {"label": _("Mensagens de chat"), "icon": "fa-comments"},
+    "total_curtidas": {"label": _("Curtidas"), "icon": "fa-thumbs-up"},
+    "total_compartilhamentos": {"label": _("Compartilhamentos"), "icon": "fa-share"},
+    "tempo_medio_leitura": {
+        "label": _("Tempo médio de leitura (s)"),
+        "icon": "fa-book-open",
+    },
+    "posts_populares_24h": {"label": _("Posts populares 24h"), "icon": "fa-fire"},
+    "tokens_gerados": {"label": _("Tokens gerados"), "icon": "fa-ticket"},
+    "tokens_consumidos": {"label": _("Tokens consumidos"), "icon": "fa-ticket"},
 }
 
 
@@ -110,7 +126,9 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
         metricas = metricas or ["num_users", "num_eventos", "num_posts_feed_total"]
         context["metricas_selecionadas"] = metricas
-        context["chart_data"] = [metrics[m]["total"] for m in metricas if m in metrics]
+        context["chart_data"] = [
+            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
+        ]
         context["metricas_disponiveis"] = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
         context["metricas_iter"] = [
             {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}

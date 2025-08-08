@@ -35,6 +35,19 @@ Exemplo:
 - `num_posts_feed_recent`: posts criados nas últimas 24h.
 - `num_topicos`: total de tópicos de discussão.
 - `num_respostas`: total de respostas em tópicos.
+- `num_mensagens_chat`: mensagens enviadas em canais de chat.
+- `total_curtidas`: soma de curtidas em posts.
+- `total_compartilhamentos`: total de compartilhamentos de posts.
+- `tempo_medio_leitura`: média de leitura de posts em segundos.
+- `posts_populares_24h`: lista dos posts mais curtidos nas últimas 24h.
+- `tokens_gerados`: convites/tokens criados no período.
+- `tokens_consumidos`: tokens validados ou utilizados.
+
+Exemplo solicitando curtidas e tokens via query string:
+
+```
+/api/dashboard/?metricas=total_curtidas&metricas=tokens_gerados
+```
 
 ## Exportação de métricas
 
