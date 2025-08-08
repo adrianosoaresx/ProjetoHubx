@@ -18,7 +18,7 @@ from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import CreateView, ListView, TemplateView, View
+from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
 
 from accounts.models import UserType
 from audit.services import hash_ip, log_audit
@@ -29,9 +29,15 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
+
 from .forms import DashboardConfigForm, DashboardFilterForm
 from .models import Achievement, DashboardConfig, DashboardFilter, UserAchievement
 from .services import DashboardMetricsService, DashboardService, check_achievements
+
+from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
+from .models import DashboardConfig, DashboardFilter, DashboardLayout
+from .services import DashboardMetricsService, DashboardService
+
 
 User = get_user_model()
 
@@ -573,3 +579,70 @@ class DashboardFilterDeleteView(LoginRequiredMixin, View):
             return HttpResponse(status=404)
         filtro.delete()
         return redirect("dashboard:filters")
+
+
+class DashboardLayoutListView(LoginRequiredMixin, ListView):
+    model = DashboardLayout
+    template_name = "dashboard/layout_list.html"
+
+    def get_queryset(self):
+        qs = DashboardLayout.objects.filter(user=self.request.user)
+        if self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            qs = DashboardLayout.objects.all()
+        return qs
+
+
+class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
+    model = DashboardLayout
+    form_class = DashboardLayoutForm
+    template_name = "dashboard/layout_form.html"
+    success_url = "/dashboard/layouts/"
+
+    def form_valid(self, form):
+        layout_data = self.request.POST.get("layout_json", "{}")
+        self.object = form.save(self.request.user, layout_data)
+        return redirect(self.get_success_url())
+
+
+class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
+    model = DashboardLayout
+    form_class = DashboardLayoutForm
+    template_name = "dashboard/layout_form.html"
+    success_url = "/dashboard/layouts/"
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            return HttpResponse(status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        layout_data = self.request.POST.get("layout_json", "{}")
+        self.object = form.save(self.request.user, layout_data)
+        return redirect(self.get_success_url())
+
+
+class DashboardLayoutDeleteView(LoginRequiredMixin, DeleteView):
+    model = DashboardLayout
+    template_name = "dashboard/layout_confirm_delete.html"
+    success_url = "/dashboard/layouts/"
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            return HttpResponse(status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+
+class DashboardLayoutSaveView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        layout = DashboardLayout.objects.filter(pk=pk).first()
+        if not layout:
+            return HttpResponse(status=404)
+        if layout.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            return HttpResponse(status=403)
+        layout_json = request.POST.get("layout_json")
+        if layout_json:
+            layout.layout_json = layout_json
+            layout.save(update_fields=["layout_json", "modified"])
+        return HttpResponse(status=204)

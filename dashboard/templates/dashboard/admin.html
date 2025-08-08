@@ -17,6 +17,40 @@
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
 
+  <div class="mb-8">
+    <label for="toggle-comparativo" class="mr-2">{% trans "Comparar com média global" %}</label>
+    <input type="checkbox" id="toggle-comparativo" aria-label="{% trans 'Ativar comparativo de métricas' %}">
+    <canvas id="comparativoChart" class="mt-4" hidden aria-label="{% trans 'Gráfico comparativo' %}" role="img"></canvas>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{% static 'dashboard/layout.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggle = document.getElementById('toggle-comparativo');
+      const canvas = document.getElementById('comparativoChart');
+      let chart;
+      toggle.addEventListener('change', async () => {
+        if (toggle.checked) {
+          const resp = await fetch('{% url "dashboard_api:dashboard-comparativo" %}?metricas=num_users');
+          const data = await resp.json();
+          const ctx = canvas.getContext('2d');
+          chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['{% trans "Atual" %}', '{% trans "Média" %}'],
+              datasets: [{label: '{% trans "Usuários" %}', data: [data.atual.num_users.total, data.media.num_users], backgroundColor:['#4e79a7','#f28e2b']}]
+            }
+          });
+          canvas.hidden = false;
+        } else {
+          if (chart) chart.destroy();
+          canvas.hidden = true;
+        }
+      });
+    });
+  </script>
+
   {% with labels='["Usuários","Eventos","Posts"]' %}
   {% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
   {% endwith %}
@@ -32,7 +66,6 @@
       <canvas id="feed-tag-chart" aria-label="{% trans 'Top tags' %}" role="img"></canvas>
       <canvas id="feed-author-chart" aria-label="{% trans 'Top autores' %}" role="img"></canvas>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
         fetch('{% url "dashboard_api:feed-metrics" %}')

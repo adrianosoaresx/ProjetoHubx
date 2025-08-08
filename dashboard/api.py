@@ -19,6 +19,8 @@ from accounts.models import UserType
 from .models import DashboardFilter
 from .serializers import DashboardFilterSerializer
 from .services import DashboardMetricsService, check_achievements
+from .services import DashboardMetricsService, DashboardService
+
 
 
 class IsAdminOrCoordenador(permissions.IsAuthenticated):
@@ -111,6 +113,19 @@ class DashboardViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=dashboard.xlsx"
             return response
         return Response({"detail": _("Formato inválido.")}, status=400)
+
+    @action(detail=False, methods=["get"], url_path="comparativo")
+    def comparativo(self, request):
+        metricas = request.query_params.getlist("metricas") or ["num_users"]
+        escopo = request.query_params.get("escopo", "organizacao")
+        filters = {}
+        if escopo == "nucleo":
+            nucleo_id = request.query_params.get("nucleo_id")
+            if nucleo_id:
+                filters["nucleo_id"] = nucleo_id
+        atual = DashboardMetricsService.get_metrics(request.user, escopo=escopo, metricas=metricas, **filters)
+        media = DashboardService.medias_globais(metricas, por=escopo)
+        return Response({"atual": atual, "media": media})
 
 
 class DashboardFilterViewSet(viewsets.ModelViewSet):

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Layouts" %} | Hubx{% endblock %}
+{% block content %}
+<main class="max-w-3xl mx-auto p-4" role="main" aria-label="{% trans 'Layouts' %}">
+  <h1 class="text-2xl mb-4">{% trans "Meus Layouts" %}</h1>
+  <ul>
+    {% for layout in object_list %}
+      <li class="mb-2"><a href="{% url 'dashboard:layout-edit' layout.pk %}" class="text-blue-600">{{ layout.nome }}</a></li>
+    {% empty %}
+      <li>{% trans "Nenhum layout" %}</li>
+    {% endfor %}
+  </ul>
+  <a href="{% url 'dashboard:layout-create' %}" class="btn btn-primary">{% trans "Novo Layout" %}</a>
+</main>
+{% endblock %}

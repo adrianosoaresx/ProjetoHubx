@@ -24,5 +24,13 @@ urlpatterns = [
     path("filters/create/", views.DashboardFilterCreateView.as_view(), name="filter-create"),
     path("filters/<int:pk>/apply/", views.DashboardFilterApplyView.as_view(), name="filter-apply"),
     path("filters/<int:pk>/delete/", views.DashboardFilterDeleteView.as_view(), name="filter-delete"),
+
     path("achievements/", views.AchievementListView.as_view(), name="achievements"),
+
+    path("layouts/", views.DashboardLayoutListView.as_view(), name="layouts"),
+    path("layouts/create/", views.DashboardLayoutCreateView.as_view(), name="layout-create"),
+    path("layouts/<int:pk>/edit/", views.DashboardLayoutUpdateView.as_view(), name="layout-edit"),
+    path("layouts/<int:pk>/delete/", views.DashboardLayoutDeleteView.as_view(), name="layout-delete"),
+    path("layouts/<int:pk>/save/", views.DashboardLayoutSaveView.as_view(), name="layout-save"),
+
 ]

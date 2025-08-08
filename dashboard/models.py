@@ -48,7 +48,6 @@ class DashboardConfig(SoftDeleteModel, TimeStampedModel):
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.nome
 
-
 class Achievement(TimeStampedModel):
     """Representa uma conquista disponível para os usuários."""
 
@@ -74,3 +73,23 @@ class UserAchievement(TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples representação
         return f"{self.user} - {self.achievement}"
+
+class DashboardLayout(SoftDeleteModel, TimeStampedModel):
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    nome = models.CharField(max_length=100)
+    layout_json = models.JSONField()
+    publico = models.BooleanField(default=False)
+
+    class Meta:
+        get_latest_by = "modified"
+
+    def clean(self):
+        if self.publico and self.user_id and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            raise ValidationError({"publico": "Somente admins podem tornar público"})
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return self.nome
+
