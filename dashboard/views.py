@@ -38,6 +38,7 @@ METRICAS_INFO = {
     "num_posts_feed_recent": {"label": _("Posts (24h)"), "icon": "fa-clock"},
     "num_topicos": {"label": _("Tópicos"), "icon": "fa-comments"},
     "num_respostas": {"label": _("Respostas"), "icon": "fa-reply"},
+    "num_mensagens_chat": {"label": _("Mensagens de chat"), "icon": "fa-message"},
 }
 
 

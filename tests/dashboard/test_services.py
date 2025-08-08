@@ -75,6 +75,17 @@ def test_calcular_mensagens_chat(conversa, admin_user):
     assert DashboardService.calcular_mensagens_chat() >= 1
 
 
+def test_get_metrics_mensagens_chat(conversa, admin_user, organizacao):
+    ChatMessage.objects.create(channel=conversa, remetente=admin_user, conteudo="hi")
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user,
+        metricas=["num_mensagens_chat"],
+        escopo="organizacao",
+        organizacao_id=organizacao.id,
+    )
+    assert metrics["num_mensagens_chat"]["total"] == 1
+
+
 def test_calcular_valores_eventos(evento, cliente_user):
     InscricaoEvento.objects.create(evento=evento, user=cliente_user, valor_pago=10)
     values = DashboardService.calcular_valores_eventos()
