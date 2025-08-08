@@ -53,3 +53,12 @@ for posts. Authentication is required for all endpoints.
 
 Integração com S3 requer credenciais com permissão de `s3:PutObject` e
 `s3:GetObject` no *bucket* configurado em `AWS_STORAGE_BUCKET_NAME`.
+
+## Plugins
+
+Organizações podem estender o feed registrando classes que implementem o
+protocolo `FeedPlugin`. Cada plugin pode injetar itens personalizados no feed
+de acordo com o usuário atual. As configurações são armazenadas em
+`FeedPluginConfig` e carregadas dinamicamente em tempo de execução.
+
+Veja mais detalhes em [`docs/feed_plugins.md`](../docs/feed_plugins.md).
