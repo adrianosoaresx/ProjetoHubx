@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from agenda.models import Evento, EventoLog, InscricaoEvento, Tarefa, TarefaLog
-from nucleos.models import ParticipacaoNucleo
+from services.nucleos import user_belongs_to_nucleo
 
 from .metrics import (
     chat_eventos_criados_total,
@@ -70,9 +70,8 @@ def _usuario_no_contexto(user: User, contexto_tipo: str, contexto_id: Optional[s
     if contexto_tipo == "organizacao":
         return str(user.organizacao_id) == str(contexto_id)
     if contexto_tipo == "nucleo":
-        return ParticipacaoNucleo.objects.filter(
-            user=user, nucleo_id=contexto_id, status="aprovado"
-        ).exists()
+        participa, info = user_belongs_to_nucleo(user, contexto_id)
+        return participa and info.endswith("ativo")
     if contexto_tipo == "evento":
         return InscricaoEvento.objects.filter(
             user=user, evento_id=contexto_id, status="confirmada"

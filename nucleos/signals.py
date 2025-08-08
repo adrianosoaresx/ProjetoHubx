@@ -5,6 +5,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .models import CoordenadorSuplente, ParticipacaoNucleo
+from financeiro import atualizar_cobranca
 
 
 def _delete_pattern(pattern: str) -> None:
@@ -22,6 +23,12 @@ def invalidate_participacao(sender, instance, **kwargs):
     _delete_pattern(f"nucleo_{nucleo_id}_metrics*")
     _delete_pattern(f"nucleos_list_{org_id}*")
     _delete_pattern(f"org_{org_id}_taxa_participacao")
+
+
+@receiver(post_save, sender=ParticipacaoNucleo)
+def sync_financeiro(sender, instance, **kwargs):
+    if instance.status in {"ativo", "inativo"}:
+        atualizar_cobranca(instance.nucleo_id, instance.user_id, instance.status)
 
 
 @receiver([post_save, post_delete], sender=CoordenadorSuplente)

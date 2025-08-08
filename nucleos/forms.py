@@ -52,4 +52,4 @@ class SuplenteForm(forms.ModelForm):
 class MembroRoleForm(forms.ModelForm):
     class Meta:
         model = ParticipacaoNucleo
-        fields = ["is_coordenador"]
+        fields = ["papel"]

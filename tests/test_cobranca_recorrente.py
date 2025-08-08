@@ -19,7 +19,7 @@ def test_cobrancas_geradas_e_metricas(settings):
     centro_nucleo = CentroCusto.objects.create(nome="N", tipo="nucleo", nucleo=nucleo)
     user = UserFactory(is_associado=True)
     conta = ContaAssociado.objects.create(user=user)
-    ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="ativo")
     before = metrics.financeiro_cobrancas_total._value.get()
     gerar_cobrancas_mensais()
     assert (

@@ -76,7 +76,7 @@ def test_list_view_exibe_apenas_aprovados(client, cliente_user, admin_user):
         titulo="Aprovado",
         tipo="banner",
         arquivo=file_ok,
-        status="aprovado",
+        status="ativo",
     )
     file_pend = SimpleUploadedFile("pend.pdf", b"%PDF-1.4", content_type="application/pdf")
     MaterialDivulgacaoEvento.objects.create(
@@ -109,14 +109,14 @@ def test_list_view_filtra_por_organizacao(client, admin_user, organizacao):
         titulo="Org1",
         tipo="banner",
         arquivo=file_ok,
-        status="aprovado",
+        status="ativo",
     )
     MaterialDivulgacaoEvento.objects.create(
         evento=evento2,
         titulo="Org2",
         tipo="banner",
         arquivo=file_ok,
-        status="aprovado",
+        status="ativo",
     )
     client.force_login(admin_user)
     resp = client.get(reverse("agenda:material_list"))

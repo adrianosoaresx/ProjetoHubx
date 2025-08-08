@@ -254,7 +254,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     def nucleos(self):
         from nucleos.models import Nucleo
 
-        return Nucleo.objects.filter(participacoes__user=self, participacoes__status="aprovado")
+        return Nucleo.objects.filter(participacoes__user=self, participacoes__status="ativo")
 
 
 class MediaTag(TimeStampedModel, SoftDeleteModel):

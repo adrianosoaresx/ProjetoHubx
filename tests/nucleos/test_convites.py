@@ -18,7 +18,7 @@ def api_client():
 def organizacao():
     from organizacoes.models import Organizacao
 
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -62,7 +62,7 @@ def test_convite_flow(api_client, admin_user, membro_user, organizacao):
     resp = api_client.get(accept_url)
     assert resp.status_code == 200
     assert ParticipacaoNucleo.objects.filter(
-        user=membro_user, nucleo=nucleo, status="aprovado"
+        user=membro_user, nucleo=nucleo, status="ativo"
     ).exists()
 
 

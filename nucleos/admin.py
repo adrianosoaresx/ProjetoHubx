@@ -10,4 +10,4 @@ class NucleoAdmin(admin.ModelAdmin):
 
 @admin.register(ParticipacaoNucleo)
 class ParticipacaoNucleoAdmin(admin.ModelAdmin):
-    list_display = ["user", "nucleo", "is_coordenador"]
+    list_display = ["user", "nucleo", "papel", "status"]

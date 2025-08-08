@@ -59,7 +59,7 @@ def expirar_solicitacoes_pendentes() -> None:
     limite = timezone.now() - timedelta(days=30)
     pendentes = ParticipacaoNucleo.objects.filter(status="pendente", data_solicitacao__lt=limite)
     for p in pendentes:
-        p.status = "recusado"
+        p.status = "inativo"
         p.data_decisao = timezone.now()
         p.justificativa = "expiração automática"
         p.save(update_fields=["status", "data_decisao", "justificativa"])

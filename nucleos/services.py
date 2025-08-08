@@ -14,7 +14,7 @@ def criar_participacoes_membros(nucleo: Nucleo, membros: Iterable[User]) -> list
     participacoes: list[ParticipacaoNucleo] = []
     for user in membros:
         part, _ = ParticipacaoNucleo.objects.get_or_create(nucleo=nucleo, user=user)
-        part.status = "aprovado"
+        part.status = "ativo"
         part.save(update_fields=["status"])
         participacoes.append(part)
     return participacoes

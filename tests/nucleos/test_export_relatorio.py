@@ -19,7 +19,7 @@ def api_client():
 def organizacao():
     from organizacoes.models import Organizacao
 
-    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00")
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def _auth(client, user):
 
 def test_exportar_relatorio(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="R1", slug="r1", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="aprovado")
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     EventoFactory(nucleo=nucleo, organizacao=organizacao, coordenador=admin_user)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-relatorio")

@@ -10,10 +10,10 @@ User = get_user_model()
 
 
 def get_total_membros(nucleo_id: str) -> int:
-    """Retorna o número total de membros aprovados de um núcleo."""
+    """Retorna o número total de membros ativos de um núcleo."""
     return (
         ParticipacaoNucleo.objects.filter(
-            nucleo_id=nucleo_id, status="aprovado", deleted=False
+            nucleo_id=nucleo_id, status="ativo", deleted=False
         ).count()
     )
 
@@ -52,7 +52,7 @@ def get_taxa_participacao(organizacao_id: str) -> float:
         User.objects.filter(
             organizacao_id=organizacao_id,
             is_associado=True,
-            participacoes__status="aprovado",
+            participacoes__status="ativo",
             participacoes__deleted=False,
         )
         .distinct()

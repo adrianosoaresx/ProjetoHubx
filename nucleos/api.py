@@ -52,6 +52,14 @@ class IsAdminOrCoordenador(IsAuthenticated):
         tipo = request.user.get_tipo_usuario
         return tipo in {"admin", "coordenador", "root"}
 
+    def has_object_permission(self, request, view, obj):
+        org = getattr(obj, "organizacao", None)
+        if org is None and hasattr(obj, "nucleo"):
+            org = obj.nucleo.organizacao
+        if org and org != request.user.organizacao:
+            return False
+        return self.has_permission(request, view)
+
 
 class IsAdmin(IsAuthenticated):
     def has_permission(self, request, view):
@@ -59,6 +67,14 @@ class IsAdmin(IsAuthenticated):
             return False
         tipo = request.user.get_tipo_usuario
         return tipo in {"admin", "root"}
+
+    def has_object_permission(self, request, view, obj):
+        org = getattr(obj, "organizacao", None)
+        if org is None and hasattr(obj, "nucleo"):
+            org = obj.nucleo.organizacao
+        if org and org != request.user.organizacao:
+            return False
+        return self.has_permission(request, view)
 
 
 class ConviteNucleoCreateAPIView(APIView):
@@ -86,8 +102,8 @@ class AceitarConviteAPIView(APIView):
             user=request.user,
             nucleo=convite.nucleo,
             defaults={
-                "status": "aprovado",
-                "is_coordenador": convite.papel == "coordenador",
+                "status": "ativo",
+                "papel": convite.papel,
             },
         )
         convite.usado_em = timezone.now()
@@ -101,7 +117,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     pagination_class = NucleoPagination
     def get_queryset(self):
         return (
-            Nucleo.objects.filter(deleted=False)
+            Nucleo.objects.filter(deleted=False, ativo=True)
             .select_related("organizacao")
             .prefetch_related("coordenadores_suplentes")
         )
@@ -139,7 +155,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         if not created:
             if participacao.status == "pendente":
                 return Response({"detail": _("Já solicitado.")}, status=400)
-            if participacao.status == "aprovado":
+            if participacao.status == "ativo":
                 return Response({"detail": _("Já membro do núcleo.")}, status=400)
             participacao.status = "pendente"
             participacao.data_solicitacao = timezone.now()
@@ -175,7 +191,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         )
         if participacao.status != "pendente":
             return Response({"detail": _("Solicitação já decidida.")}, status=400)
-        participacao.status = "aprovado"
+        participacao.status = "ativo"
         participacao.data_decisao = timezone.now()
         participacao.decidido_por = request.user
         participacao.justificativa = ""
@@ -201,7 +217,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         if participacao.status != "pendente":
             return Response({"detail": _("Solicitação já decidida.")}, status=400)
         justificativa = request.data.get("justificativa", "")
-        participacao.status = "recusado"
+        participacao.status = "inativo"
         participacao.data_decisao = timezone.now()
         participacao.decidido_por = request.user
         participacao.justificativa = justificativa
@@ -236,9 +252,9 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         acao = request.data.get("acao")
         if acao == "approve":
-            novo_status = "aprovado"
+            novo_status = "ativo"
         elif acao == "reject":
-            novo_status = "recusado"
+            novo_status = "inativo"
         else:
             return Response({"detail": _("Ação inválida.")}, status=400)
         if participacao.status != "pendente":
@@ -247,7 +263,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao.data_decisao = timezone.now()
         participacao.decidido_por = request.user
         participacao.save(update_fields=["status", "data_decisao", "decidido_por"])
-        if novo_status == "aprovado":
+        if novo_status == "ativo":
             notify_participacao_aprovada.delay(participacao.id)
         else:
             notify_participacao_recusada.delay(participacao.id)
@@ -272,7 +288,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         if data["periodo_inicio"] >= data["periodo_fim"]:
             return Response({"detail": _("Período inválido.")}, status=400)
         if not ParticipacaoNucleo.objects.filter(
-            nucleo=nucleo, user=data["usuario"], status="aprovado"
+            nucleo=nucleo, user=data["usuario"], status="ativo"
         ).exists():
             return Response({"detail": _("Usuário não é membro do núcleo.")}, status=400)
         overlap = CoordenadorSuplente.objects.filter(
@@ -328,6 +344,27 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
+        url_path="membros-ativos",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def membros_ativos(self, request, pk: str | None = None):
+        nucleo = self.get_object()
+        qs = nucleo.participacoes.select_related("user").filter(status="ativo")
+        page = self.paginate_queryset(qs)
+        data = [
+            {
+                "user_id": p.user_id,
+                "papel": p.papel,
+                "data_ingresso": (p.data_decisao or p.data_solicitacao),
+                "mensalidade": nucleo.mensalidade,
+            }
+            for p in page
+        ]
+        return self.get_paginated_response(data)
+
+    @action(
+        detail=True,
+        methods=["get"],
         url_path="membros/exportar",
         permission_classes=[IsAdminOrCoordenador],
     )
@@ -349,7 +386,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 "Nome",
                 "Email",
                 "Status",
-                "is_coordenador",
+                "papel",
                 "is_suplente",
                 "data_ingresso",
             ]
@@ -361,7 +398,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
                     nome,
                     p.user.email,
                     p.status,
-                    p.is_coordenador,
+                    p.papel,
                     p.user_id in suplentes,
                     (p.data_decisao or p.data_solicitacao).isoformat(),
                 ]
@@ -418,7 +455,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
 
         dados = []
         for n in nucleos:
-            membros = n.participacoes.filter(status="aprovado").count()
+            membros = n.participacoes.filter(status="ativo").count()
             eventos = Evento.objects.filter(nucleo=n)
             datas = ";".join(
                 e.data_inicio.isoformat() for e in eventos if getattr(e, "data_inicio", None)
