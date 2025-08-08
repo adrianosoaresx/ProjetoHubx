@@ -123,9 +123,14 @@ next-env.d.ts
 *.swp
 *.orig
 *~
+
 # Ignorar arquivos binários de tradução
 *.mo
-# Ignorar arquivos binários de imagem 
+
+# Impedir que o Codex inclua arquivos binários gerados automaticamente
+# (para evitar erro "Não são suportados ficheiros binários")
 *.png
 *.jpg
+*.jpeg
 *.webp
+*.gif
