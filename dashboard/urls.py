@@ -16,6 +16,7 @@ urlpatterns = [
     path("tarefas-partial/", views.tarefas_partial, name="tarefas-partial"),
     path("eventos-partial/", views.eventos_partial, name="eventos-partial"),
     path("export/", views.DashboardExportView.as_view(), name="export"),
+    path("export/images/<str:filename>", views.DashboardExportedImageView.as_view(), name="export-image"),
     path("configs/", views.DashboardConfigListView.as_view(), name="configs"),
     path("configs/create/", views.DashboardConfigCreateView.as_view(), name="config-create"),
     path("configs/<uuid:pk>/apply/", views.DashboardConfigApplyView.as_view(), name="config-apply"),
@@ -23,4 +24,5 @@ urlpatterns = [
     path("filters/create/", views.DashboardFilterCreateView.as_view(), name="filter-create"),
     path("filters/<int:pk>/apply/", views.DashboardFilterApplyView.as_view(), name="filter-apply"),
     path("filters/<int:pk>/delete/", views.DashboardFilterDeleteView.as_view(), name="filter-delete"),
+    path("achievements/", views.AchievementListView.as_view(), name="achievements"),
 ]

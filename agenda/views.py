@@ -58,6 +58,7 @@ from .models import (
     ParceriaEvento,
 )
 from .tasks import notificar_briefing_status
+from dashboard.services import check_achievements
 
 User = get_user_model()
 
@@ -438,7 +439,9 @@ class InscricaoEventoCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        check_achievements(self.request.user)
+        return response
 
 
 class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):

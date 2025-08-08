@@ -72,6 +72,7 @@ pypdfium2==4.30.0
 openpyxl==3.1.5
 tablib==3.5.0
 reportlab==4.2.0
+matplotlib==3.8.2
 
 # Outros utilitários
 Pygments==2.19.2

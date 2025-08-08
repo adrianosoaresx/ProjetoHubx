@@ -19,6 +19,7 @@ from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 from .utils import get_variation
+from .models import Achievement, UserAchievement, DashboardConfig
 
 
 def _apply_feed_filters(queryset, organizacao=None, data_inicio=None, data_fim=None):
@@ -159,6 +160,7 @@ class DashboardService:
         if evento_id:
             qs = qs.filter(evento_id=evento_id)
         return qs.count()
+
 
     @staticmethod
     def calcular_topicos_discussao(
@@ -521,3 +523,25 @@ class DashboardMetricsService:
 
         cache.set(cache_key, metrics, 300)
         return metrics
+
+def check_achievements(user) -> None:
+    """Verifica e registra conquistas atingidas pelo usuário."""
+
+    achieved = set(
+        UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True)
+    )
+    achievements = {a.code: a for a in Achievement.objects.all()}
+
+    if (
+        "100_inscricoes" in achievements
+        and "100_inscricoes" not in achieved
+        and InscricaoEvento.objects.filter(user=user).count() >= 100
+    ):
+        UserAchievement.objects.create(user=user, achievement=achievements["100_inscricoes"])
+
+    if (
+        "5_dashboards" in achievements
+        and "5_dashboards" not in achieved
+        and DashboardConfig.objects.filter(user=user).count() >= 5
+    ):
+        UserAchievement.objects.create(user=user, achievement=achievements["5_dashboards"])

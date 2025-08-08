@@ -1,12 +1,19 @@
 import csv
+import io
 import shutil
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlencode
 
+from openpyxl import Workbook
+import matplotlib.pyplot as plt
+plt.switch_backend("Agg")
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -23,10 +30,13 @@ from core.permissions import (
 )
 
 from .forms import DashboardConfigForm, DashboardFilterForm
-from .models import DashboardConfig, DashboardFilter
-from .services import DashboardMetricsService, DashboardService
+from .models import Achievement, DashboardConfig, DashboardFilter, UserAchievement
+from .services import DashboardMetricsService, DashboardService, check_achievements
 
 User = get_user_model()
+
+EXPORT_DIR = Path(settings.MEDIA_ROOT) / "dashboard_exports"
+EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 METRICAS_INFO = {
     "num_users": {"label": _("Usuários"), "icon": "fa-users"},
@@ -327,6 +337,54 @@ class DashboardExportView(LoginRequiredMixin, View):
             )
             return resp
 
+        if formato == "xlsx":
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "Métricas"
+            ws.append(["Métrica", "Valor", "Variação (%)"])
+            for key, data in metrics.items():
+                ws.append([key, data["total"], data["crescimento"]])
+            output = io.BytesIO()
+            wb.save(output)
+            resp = HttpResponse(
+                output.getvalue(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.xlsx")
+            resp["Content-Disposition"] = f"attachment; filename={filename}"
+            log_audit(
+                user=request.user,
+                action="EXPORT_XLSX",
+                object_type="DashboardMetrics",
+                object_id="",
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                status="SUCCESS",
+                metadata={"formato": formato, **filters},
+            )
+            return resp
+
+        if formato == "png":
+            keys = list(metrics.keys())
+            values = [data["total"] for data in metrics.values()]
+            fig, ax = plt.subplots()
+            ax.bar(keys, values)
+            ax.set_ylabel("Valor")
+            ax.set_title("Métricas")
+            filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.png")
+            filepath = EXPORT_DIR / filename
+            fig.savefig(filepath)
+            plt.close(fig)
+            log_audit(
+                user=request.user,
+                action="EXPORT_PNG",
+                object_type="DashboardMetrics",
+                object_id="",
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                status="SUCCESS",
+                metadata={"formato": formato, **filters},
+            )
+            return FileResponse(open(filepath, "rb"), as_attachment=True, filename=filename)
+
         # default csv
         resp = HttpResponse(content_type="text/csv")
         filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.csv")
@@ -345,6 +403,31 @@ class DashboardExportView(LoginRequiredMixin, View):
             metadata={"formato": formato, **filters},
         )
         return resp
+
+
+class DashboardExportedImageView(LoginRequiredMixin, View):
+    """Serve imagens de exportações já geradas."""
+
+    def get(self, request, filename: str):
+        if request.user.user_type not in {UserType.ROOT, UserType.ADMIN, UserType.COORDENADOR}:
+            return HttpResponse(status=403)
+        path = EXPORT_DIR / filename
+        if not path.exists():
+            return HttpResponse(status=404)
+        return FileResponse(open(path, "rb"), content_type="image/png")
+
+
+class AchievementListView(LoginRequiredMixin, ListView):
+    model = Achievement
+    template_name = "dashboard/achievement_list.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user_achievements = set(
+            UserAchievement.objects.filter(user=self.request.user).values_list("achievement_id", flat=True)
+        )
+        ctx["user_achievements"] = user_achievements
+        return ctx
 
 
 class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
@@ -374,6 +457,7 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
         if metricas_list:
             config_data["filters"]["metricas"] = metricas_list
         self.object = form.save(self.request.user, config_data)
+        check_achievements(self.request.user)
         action = "SHARE_DASHBOARD" if self.object.publico else "CREATE_CONFIG"
         log_audit(
             user=self.request.user,
@@ -439,6 +523,7 @@ class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
             else:
                 filtros_data[key] = value[0]
         self.object = form.save(self.request.user, filtros_data)
+        check_achievements(self.request.user)
         log_audit(
             user=self.request.user,
             action="CREATE_FILTER",

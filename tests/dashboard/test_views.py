@@ -1,3 +1,6 @@
+import io
+from pathlib import Path
+
 import pytest
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
@@ -181,6 +184,43 @@ def test_export_view_pdf(monkeypatch, client, admin_user):
     resp = client.get(reverse("dashboard:export"), {"formato": "pdf"})
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/pdf"
+
+
+def test_export_view_xlsx(monkeypatch, client, admin_user):
+    client.force_login(admin_user)
+
+    monkeypatch.setattr(
+        DashboardMetricsService,
+        "get_metrics",
+        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+    )
+
+    resp = client.get(reverse("dashboard:export"), {"formato": "xlsx"})
+    assert resp.status_code == 200
+    assert resp["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+    from openpyxl import load_workbook
+    wb = load_workbook(filename=io.BytesIO(resp.content))
+    ws = wb.active
+    assert ws.title == "Métricas"
+    assert ws.max_row == 2
+
+
+def test_export_view_png(monkeypatch, client, admin_user, settings):
+    client.force_login(admin_user)
+
+    monkeypatch.setattr(
+        DashboardMetricsService,
+        "get_metrics",
+        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+    )
+
+    resp = client.get(reverse("dashboard:export"), {"formato": "png"})
+    assert resp.status_code == 200
+    assert resp["Content-Type"] == "image/png"
+    filename = resp["Content-Disposition"].split("filename=")[1].strip('"')
+    path = Path(settings.MEDIA_ROOT) / "dashboard_exports" / filename
+    assert path.exists()
 
 
 def test_export_view_permission(client, cliente_user):
