@@ -1,12 +1,17 @@
 ---
 id: REQ-CONFIGURACOES_CONTA-001
-title: "Requisitos Configurações de Conta Hubx"
-module: Configuracoes_Conta
+title: Requisitos Configuracoes Conta Hubx
+module: configuracoes
 status: Em vigor
-version: '1.1'
-authors: []
-created: '2025-07-25'
-updated: '2025-08-12'
+version: "1.1.0"
+authors: [preencher@hubx.space]
+created: "2025-07-25"
+updated: "2025-08-13"
+owners: [preencher]
+reviewers: [preencher]
+tags: [backend]
+related_docs: []
+dependencies: []
 ---
 
 ## 1. Visão Geral
@@ -35,119 +40,100 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
 
 ## 3. Requisitos Funcionais
 
-### RF‑01 – Ativar/Desativar Notificações por E‑mail
+- **RF-01 — Ativar/Desativar Notificações por E-mail**
+  - Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações por e-mail.
+  - Critérios de Aceite: Checkbox salva e reflete estado atual no banco.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações por e‑mail.
-* Prioridade: Alta.
-* Critério de Aceite: Checkbox salva e reflete estado atual no banco【74186655470974†L44-L55】.
+- **RF-02 — Ativar/Desativar Notificações por WhatsApp**
+  - Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações via WhatsApp.
+  - Critérios de Aceite: Estado persistido em `receber_notificacoes_whatsapp`.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑02 – Ativar/Desativar Notificações por WhatsApp
+- **RF-03 — Ativar/Desativar Notificações Push**
+  - Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações push.
+  - Critérios de Aceite: Estado persistido em `receber_notificacoes_push`.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações via WhatsApp.
-* Prioridade: Média.
-* Critério de Aceite: Estado persistido em `receber_notificacoes_whatsapp`【74186655470974†L50-L55】.
+- **RF-04 — Configurar Frequência de Notificações**
+  - Descrição: O usuário pode escolher a frequência das notificações (imediata, diária ou semanal) para cada canal.
+  - Critérios de Aceite: Campos `frequencia_notificacoes_email`, `frequencia_notificacoes_whatsapp` e `frequencia_notificacoes_push` armazenam o valor selecionado.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑03 – Ativar/Desativar Notificações Push
+- **RF-05 — Escolher Idioma da Interface**
+  - Descrição: Permitir que o usuário selecione o idioma da interface (pt-BR, en-US ou es-ES).
+  - Critérios de Aceite: Campo `idioma` salva opção escolhida.
+  - Rastreabilidade: UC-02; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode habilitar ou desabilitar o recebimento de notificações push.
-* Prioridade: Média.
-* Critério de Aceite: Estado persistido em `receber_notificacoes_push`【74186655470974†L56-L61】.
+- **RF-06 — Alternar Tema da Interface**
+  - Descrição: O usuário pode alternar o tema entre claro, escuro e automático.
+  - Critérios de Aceite: Campo `tema` salva a escolha.
+  - Rastreabilidade: UC-02; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑04 – Configurar Frequência de Notificações
+- **RF-07 — Configurar Horários e Dia da Semana**
+  - Descrição: O usuário define horário para notificações diárias e horário e dia da semana para notificações semanais.
+  - Critérios de Aceite: Campos persistidos e validados; hora e dia obrigatórios quando frequência diária ou semanal está ativa.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode escolher a frequência das notificações (imediata, diária ou semanal) para cada canal (e‑mail, WhatsApp e push).
-* Prioridade: Alta.
-* Critério de Aceite: Campos `frequencia_notificacoes_email`, `frequencia_notificacoes_whatsapp` e `frequencia_notificacoes_push` armazenam o valor selecionado【74186655470974†L44-L61】.
+- **RF-08 — Configuração Automática no Cadastro**
+  - Descrição: Ao cadastrar um usuário, uma instância de `ConfiguracaoConta` é criada automaticamente.
+  - Critérios de Aceite: Após cadastro, existe instância de `ConfiguracaoConta` associada ao usuário.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑05 – Escolher Idioma da Interface
+- **RF-09 — Configurações Contextuais por Escopo**
+  - Descrição: O usuário pode criar configurações específicas para um escopo (`organizacao`, `nucleo` ou `evento`) que sobrepõem preferências globais.
+  - Critérios de Aceite: Modelo `ConfiguracaoContextual` aceita definições por escopo e substitui valores globais quando disponível.
+  - Rastreabilidade: UC-03; Model: Configuracoes.ConfiguracaoContextual
 
-* Descrição: Permitir que o usuário selecione o idioma da interface (pt‑BR, en‑US ou es‑ES).
-* Prioridade: Média.
-* Critério de Aceite: Campo `idioma` salva opção escolhida【74186655470974†L62-L65】.
+- **RF-10 — Registro de Alterações**
+  - Descrição: Todas as alterações nas preferências do usuário são registradas em `ConfiguracaoContaLog`.
+  - Critérios de Aceite: Uma entrada de log é criada para cada alteração salva.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoContaLog
 
-### RF‑06 – Alternar Tema da Interface
+- **RF-11 — Visualização e Edição das Preferências**
+  - Descrição: O usuário pode visualizar suas preferências atuais e editá-las via formulário ou API.
+  - Critérios de Aceite: Formulário exibe os valores atuais e persiste alterações válidas.
+  - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode alternar o tema entre claro, escuro e automático (de acordo com o sistema operacional).
-* Prioridade: Alta.
-* Critério de Aceite: Campo `tema` salva a escolha【74186655470974†L62-L65】.
+- **RF-12 — API de Preferências**
+  - Descrição: O sistema disponibiliza endpoints REST para ler, atualizar e atualizar parcialmente as configurações de conta.
+  - Critérios de Aceite: `ConfiguracaoContaViewSet` retorna e persiste dados através do serializer.
+  - Rastreabilidade: UC-01; /api/configuracoes/; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑07 – Configurar Horários e Dia da Semana
+- **RF-13 — Teste de Notificação**
+  - Descrição: O usuário pode acionar endpoint para enviar notificação de teste em canal específico.
+  - Critérios de Aceite: Endpoint retorna erro se canal desabilitado e envia mensagem de teste quando habilitado.
+  - Rastreabilidade: UC-05; /api/configuracoes/teste/; Model: Configuracoes.ConfiguracaoConta
 
-* Descrição: O usuário pode definir o horário de envio das notificações diárias (`hora_notificacao_diaria`) e o horário e o dia da semana para notificações semanais (`hora_notificacao_semanal` e `dia_semana_notificacao`).
-* Prioridade: Média.
-* Critério de Aceite: Campos persistidos e validados; hora e dia são obrigatórios quando a frequência diária ou semanal está ativa【74186655470974†L66-L77】【184069624769776†L61-L104】.
+- **RF-14 — Envio de Resumos Agregados**
+  - Descrição: O sistema envia resumos periódicos com contagens de itens pendentes conforme frequência e horários definidos.
+  - Critérios de Aceite: Tarefas assíncronas `enviar_notificacoes_diarias` e `enviar_notificacoes_semanais` selecionam usuários elegíveis e disparam resumos.
+  - Rastreabilidade: UC-04; Model: Configuracoes.ConfiguracaoConta
 
-### RF‑08 – Configuração Automática no Cadastro
+## 4. Requisitos Não Funcionais
 
-* Descrição: Ao cadastrar um usuário, uma instância de `ConfiguracaoConta` deve ser criada automaticamente.
-* Prioridade: Alta.
-* Critério de Aceite: Após cadastro, existe instância de `ConfiguracaoConta` associada ao usuário【498180863719394†L16-L33】.
+### Performance
+- Carregamento das configurações deve ocorrer em ≤ 100 ms (p95), aproveitando cache de usuário.
 
-### RF‑09 – Configurações Contextuais por Escopo
+### Segurança & LGPD
+- O log de alterações deve armazenar IP e user-agent de forma criptografada e consultável por administradores autorizados.
+- Criptografar IP e user-agent nos logs de configurações.
 
-* Descrição: O usuário pode criar configurações específicas para um escopo (`organizacao`, `nucleo` ou `evento`) que sobrepõem frequências, idioma e tema globais.
-* Prioridade: Média.
-* Critério de Aceite: Modelo `ConfiguracaoContextual` aceita definições por escopo e substitui valores globais quando disponível【74186655470974†L88-L116】.
+### Observabilidade
+- Expor métricas de hits/misses de cache e latência de leitura (`config_cache_hits_total`, `config_cache_misses_total`, `config_get_latency_seconds`).
+- Expor métricas de cache e latência; definir alertas para taxas de erro de tarefas e p95 de acesso a configurações.
 
-### RF‑10 – Registro de Alterações
+### Acessibilidade & i18n
+- ...
 
-* Descrição: Todas as alterações nas preferências do usuário devem ser registradas em `ConfiguracaoContaLog` (campo, valor antigo, valor novo, IP, user‑agent e fonte).
-* Prioridade: Média.
-* Critério de Aceite: Uma entrada de log é criada para cada alteração salva【74186655470974†L129-L145】.
+### Resiliência
+- Garantir relação 1:1 entre `ConfiguracaoConta` e usuário e unicidade de `ConfiguracaoContextual` por usuário + escopo.
+- Tarefas de envio de resumos devem executar no minuto configurado pelo usuário com tolerância de ±1 minuto; permitir reenvio em caso de falhas.
+- As tarefas de envio de resumos devem garantir entrega confiável, com retries e logs de falhas de integrações externas.
 
-### RF‑11 – Visualização e Edição das Preferências
-
-* Descrição: O usuário pode visualizar todas as suas preferências atuais e editá‑las através de formulário ou API.
-* Prioridade: Alta.
-* Critério de Aceite: Formulário exibe os valores atuais e persiste alterações válidas【184069624769776†L61-L104】.
-
-### RF‑12 – API de Preferências
-
-* Descrição: O sistema deve disponibilizar endpoints REST para ler (`GET`), atualizar (`PUT`) e atualizar parcialmente (`PATCH`) as configurações de conta.
-* Prioridade: Média.
-* Critério de Aceite: `ConfiguracaoContaViewSet` retorna e persiste dados através do serializer【96271031922130†L22-L73】.
-
-### RF‑13 – Teste de Notificação
-
-* Descrição: O usuário pode acionar um endpoint para enviar uma notificação de teste em um canal específico (e‑mail, WhatsApp ou push) e verificar se a configuração está habilitada.
-* Prioridade: Baixa.
-* Critério de Aceite: Endpoint retorna erro se o canal estiver desabilitado e envia mensagem de teste quando habilitado【96271031922130†L104-L131】.
-
-### RF‑14 – Envio de Resumos Agregados
-
-* Descrição: O sistema deve enviar automaticamente resumos periódicos com contagens agregadas de itens pendentes (notificações de chat, novos posts no feed e eventos) de acordo com a frequência e horários definidos pelo usuário.
-* Prioridade: Média.
-* Critério de Aceite: Tarefas assíncronas `enviar_notificacoes_diarias` e `enviar_notificacoes_semanais` selecionam usuários elegíveis e disparam resumos por e‑mail ou WhatsApp, respeitando hora e dia configurados【449563910561256†L22-L63】【449563910561256†L83-L89】.
-
-## 4. Requisitos Não‑Funcionais
-
-### RNF‑01 – Desempenho
-
-* Carregamento das configurações deve ocorrer em ≤ 100 ms (p95), aproveitando cache de usuário【498180863719394†L16-L41】.
-
-### RNF‑02 – Confiabilidade
-
-* Garantia de relação 1:1 entre `ConfiguracaoConta` e usuário, e unicidade de `ConfiguracaoContextual` por usuário + escopo【74186655470974†L80-L86】【74186655470974†L120-L127】.
-
-### RNF‑03 – Timestamp Automático
-
-* Todos os modelos deste app devem herdar de `TimeStampedModel`, fornecendo campos `created` e `modified` automaticamente.
-
-### RNF‑04 – Exclusão Lógica
-
-* Sempre que aplicável, utilizar `SoftDeleteModel` para exclusão lógica, evitando remoções físicas e permitindo restauração.
-
-### RNF‑05 – Auditabilidade
-
-* O log de alterações (`ConfiguracaoContaLog`) deve armazenar IP e user‑agent de forma criptografada e deve ser consultável por administradores autorizados【74186655470974†L129-L145】.
-
-### RNF‑06 – Observabilidade
-
-* Expor métricas de hits/misses de cache e latência de leitura (`config_cache_hits_total`, `config_cache_misses_total`, `config_get_latency_seconds`) para monitoramento【498180863719394†L16-L41】.
-
-### RNF‑07 – Tarefas Programadas
-
-* Tarefas de envio de resumos devem executar no minuto configurado pelo usuário com tolerância de ±1 minuto; o sistema deve permitir reenvio em caso de falhas.
+### Arquitetura & Escala
+- Todos os modelos deste app devem herdar de `TimeStampedModel`, fornecendo campos `created` e `modified` automaticamente.
+- Sempre que aplicável, utilizar `SoftDeleteModel` para exclusão lógica, evitando remoções físicas e permitindo restauração.
 
 ## 5. Casos de Uso
 
@@ -177,60 +163,66 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
 
 1. Em horário programado, a tarefa Celery seleciona usuários com frequência “diária” ou “semanal” para o canal correspondente.
 2. Calcula contagens de itens pendentes de chat, feed e eventos desde o último envio.
-3. Envia e‑mail e/ou mensagem de WhatsApp com o resumo, conforme as preferências【449563910561256†L22-L63】.
+3. Envia e‑mail e/ou mensagem de WhatsApp com o resumo, conforme as preferências.
 
 ### UC‑05 – Testar Notificação
 
 1. Usuário chama o endpoint de teste e informa o canal desejado e, opcionalmente, escopo.
 2. Sistema verifica se o canal está habilitado nas preferências resolvidas para aquele escopo.
-3. Se habilitado, envia uma mensagem de teste utilizando o template correspondente【96271031922130†L104-L131】.
+3. Se habilitado, envia uma mensagem de teste utilizando o template correspondente.
 4. Retorna sucesso ou erro caso o canal esteja desativado.
 
 ## 6. Regras de Negócio
 
-* Cada usuário deve possuir exatamente uma instância de `ConfiguracaoConta` (criada no cadastro)【74186655470974†L80-L86】.
-* As frequências “diária” e “semanal” exigem hora definida; a frequência “semanal” exige também dia da semana【74186655470974†L66-L77】【184069624769776†L61-L104】.
-* Configurações contextuais sobrepõem as configurações globais ao resolver preferências【498180863719394†L54-L69】.
-* Logs devem ser criados toda vez que o usuário salva alterações de preferências【74186655470974†L129-L145】.
+* Cada usuário deve possuir exatamente uma instância de `ConfiguracaoConta` (criada no cadastro).
+* As frequências “diária” e “semanal” exigem hora definida; a frequência “semanal” exige também dia da semana.
+* Configurações contextuais sobrepõem as configurações globais ao resolver preferências.
+* Logs devem ser criados toda vez que o usuário salva alterações de preferências.
 
 ## 7. Modelo de Dados
 
 *Nota:* Todos os modelos herdam de `TimeStampedModel` e utilizam `SoftDeleteModel` quando necessário. Campos de timestamp e exclusão lógica não são listados.
 
-**ConfiguracaoConta** 
- -user: OneToOneField(User), 
- -receber_notificacoes_email: boolean, 
- -frequencia_notificacoes_email: enum('imediata','diaria','semanal'), 
- -receber_notificacoes_whatsapp: boolean, 
- -frequencia_notificacoes_whatsapp: enum, 
- -receber_notificacoes_push: boolean, 
- -frequencia_notificacoes_push: enum, 
- -idioma: enum('pt-BR','en-US','es-ES'), 
- -tema: enum('claro','escuro','automatico'), 
- -hora_notificacao_diaria: time, 
- -hora_notificacao_semanal: time, 
- -dia_semana_notificacao: integer, 
- -deleted: boolean`【74186655470974†L44-L77】 
+### Configuracoes.ConfiguracaoConta
+Descrição: Preferências globais do usuário.
+Campos:
+- `user`: OneToOneField(User)
+- `receber_notificacoes_email`: boolean
+- `frequencia_notificacoes_email`: enum('imediata','diaria','semanal')
+- `receber_notificacoes_whatsapp`: boolean
+- `frequencia_notificacoes_whatsapp`: enum
+- `receber_notificacoes_push`: boolean
+- `frequencia_notificacoes_push`: enum
+- `idioma`: enum('pt-BR','en-US','es-ES')
+- `tema`: enum('claro','escuro','automatico')
+- `hora_notificacao_diaria`: time
+- `hora_notificacao_semanal`: time
+- `dia_semana_notificacao`: integer
+- `deleted`: boolean
 
-**ConfiguracaoContextual**  
- -user: FK → User, 
- -escopo_tipo: enum('organizacao','nucleo','evento'), 
- -escopo_id: UUID, 
- -frequencia_notificacoes_email: enum, 
- -frequencia_notificacoes_whatsapp: enum, 
- -idioma: string, 
- -tema: enum, 
- -deleted: boolean`【74186655470974†L88-L116】
+### Configuracoes.ConfiguracaoContextual
+Descrição: Preferências específicas por escopo.
+Campos:
+- `user`: ForeignKey(User)
+- `escopo_tipo`: enum('organizacao','nucleo','evento')
+- `escopo_id`: UUID
+- `frequencia_notificacoes_email`: enum
+- `frequencia_notificacoes_whatsapp`: enum
+- `idioma`: string
+- `tema`: enum
+- `deleted`: boolean
 
-**ConfiguracaoContaLog** 
- - user: FK → User, 
- - campo: string, 
- -valor_antigo: text, 
- -valor_novo: text, 
- -ip: encrypted string, 
- -user_agent: encrypted string, 
- -fonte: enum('UI','API','import'), 
- -created_at: datetime【74186655470974†L129-L145】
+### Configuracoes.ConfiguracaoContaLog
+Descrição: Histórico de alterações de preferências.
+Campos:
+- `user`: ForeignKey(User)
+- `campo`: string
+- `valor_antigo`: text
+- `valor_novo`: text
+- `ip`: encrypted string
+- `user_agent`: encrypted string
+- `fonte`: enum('UI','API','import')
+- `created_at`: datetime
 
 ## 8. Critérios de Aceite (Gherkin)
 
@@ -248,28 +240,17 @@ Feature: Configurar horário semanal
     Then os resumos semanais são enviados somente às 09h das sextas
 ```
 
-## 9. Dependências / Integrações
+## 9. Dependências e Integrações
 
-* **App Accounts** – Criação automática de instância de `ConfiguracaoConta` no registro de usuário.
-* **Django REST Framework** – ViewSets e API para acessar e modificar preferências【96271031922130†L22-L73】.
-* **Celery** – Tarefas periódicas de envio de resumos diários e semanais【449563910561256†L22-L63】【449563910561256†L83-L89】.
-* **Twilio** – Envio de mensagens de WhatsApp nas tarefas de resumo semanal ou diário【449563910561256†L65-L79】.
-* **Redis/Cache** – Armazenamento das preferências por usuário com métrica de hits/misses e latência【498180863719394†L16-L41】.
-* **Notification Service** – Função `enviar_para_usuario` para envio de e‑mails dentro das tarefas.
+* App Accounts – Criação automática de instância de `ConfiguracaoConta` no registro de usuário.
+* Django REST Framework – ViewSets e API para acessar e modificar preferências.
+* Celery – Tarefas periódicas de envio de resumos diários e semanais.
+* Twilio – Envio de mensagens de WhatsApp nas tarefas de resumo semanal ou diário.
+* Redis/Cache – Armazenamento das preferências por usuário com métrica de hits/misses e latência.
+* Notification Service – Função `enviar_para_usuario` para envio de e-mails dentro das tarefas.
 
-## 10. Requisitos Adicionais / Melhorias (v1.1)
+## Anexos e Referências
+- ...
 
-### Requisitos Funcionais Adicionais
-
-1. **RF‑15 – Notificações Push** – Adicionar campo `receber_notificacoes_push` e `frequencia_notificacoes_push` para habilitar/desabilitar e configurar frequência de notificações push【74186655470974†L56-L61】.
-2. **RF‑16 – Horários de Envio** – Permitir definir horário (`hora_notificacao_diaria` e `hora_notificacao_semanal`) e dia da semana (`dia_semana_notificacao`) para envio de resumos【74186655470974†L66-L77】.
-3. **RF‑17 – Configurações Contextuais** – Criar `ConfiguracaoContextual` para permitir preferências por escopo (organização/núcleo/evento)【74186655470974†L88-L116】.
-4. **RF‑18 – Logs de Alteração** – Implementar `ConfiguracaoContaLog` para rastrear mudanças de preferências【74186655470974†L129-L145】.
-5. **RF‑19 – API de Teste de Notificação** – Disponibilizar endpoint para envio de teste de notificação e verificação de canal【96271031922130†L104-L131】.
-6. **RF‑20 – Resumos Agregados** – Implementar tarefas que enviam resumos diários/semanais com contagens de chat, feed e eventos【449563910561256†L22-L63】【449563910561256†L83-L89】.
-
-### Requisitos Não‑Funcionais Adicionais
-
-1. **RNF‑08 – Proteção de Dados** – Criptografar IP e user‑agent nos logs de configurações【74186655470974†L129-L145】.
-2. **RNF‑09 – Observabilidade** – Expor métricas de cache e latência; definir alertas para taxas de erro de tarefas e p95 de acesso a configurações【498180863719394†L16-L41】.
-3. **RNF‑10 – Confiabilidade de Tarefas** – As tarefas de envio de resumos devem garantir entrega confiável; implementar retries e logs de falhas de integrações externas (Twilio)【449563910561256†L65-L79】.
+## Changelog
+- 1.1.0 — 2025-08-13 — Estrutura padronizada e integração das melhorias da versão 1.1
