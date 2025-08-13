@@ -1,12 +1,17 @@
 ---
 id: REQ-AGENDA-001
 title: Requisitos Agenda Hubx
-module: Agenda
+module: agenda
 status: Em vigor
-version: '1.1'
-authors: []
-created: '2025-07-25'
-updated: '2025-08-12'
+version: "1.1.0"
+authors: [preencher@hubx.space]
+created: "2025-07-25"
+updated: "2025-08-13"
+owners: [preencher]
+reviewers: [preencher]
+tags: [backend]
+related_docs: []
+dependencies: []
 ---
 
 ## 1. Visão Geral
@@ -87,16 +92,25 @@ Principais destaques:
   - Descrição: Permitir que administradores ou coordenadores avaliem uma parceria uma única vez, atribuindo nota (1–5) e comentário.  
   - Critérios de Aceite: Avaliação gravada via API específica; campos validados; operação proibida se já houver avaliação【410067135043595†L390-L409】.
 
-## 4. Requisitos Não‑Funcionais
+## 4. Requisitos Não Funcionais
 
-- **RNF‑01 – Desempenho**: Listagens de eventos, inscrições e materiais devem apresentar p95 ≤ 300 ms.  
-- **RNF‑02 – Confiabilidade**: Upload de mídia resiliente a falhas de rede, com até 3 retentativas automáticas【906211648821816†L29-L41】.  
-- **RNF‑03 – Segurança**: Validação de permissões por escopo (organização e núcleo) e restrição de ações a administradores e coordenadores.  
-- **RNF‑04 – Auditoria**: Todas as ações de criação, edição, exclusão e transições de status em eventos, inscrições, parcerias, briefings e tarefas devem ser registradas em logs【561401687002500†L472-L504】.  
-- **RNF‑05 – Modelagem**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos e `SoftDeleteModel` para exclusão lógica.  
-- **RNF‑06 – Geração de QR code**: A geração do QR code para inscrições deve ocorrer em ≤ 100 ms.  
-- **RNF‑07 – Validação de arquivos**: Materiais de divulgação e comprovantes de pagamento devem ter formato e tamanho validados (imagens até 10 MB, PDFs até 20 MB)【561401687002500†L317-L349】.  
-- **RNF‑08 – Log de orçamento**: Alterações de orçamento e gastos devem ser registradas com detalhes antes/depois【561401687002500†L256-L273】.
+### Performance
+- Listagens de eventos, inscrições e materiais devem apresentar p95 ≤ 300 ms.
+- Geração do QR code para inscrições deve ocorrer em ≤ 100 ms.
+
+### Segurança & LGPD
+- Validação de permissões por escopo (organização e núcleo) e restrição de ações a administradores e coordenadores.
+- Materiais de divulgação e comprovantes de pagamento devem ter formato e tamanho validados (imagens até 10 MB, PDFs até 20 MB)【561401687002500†L317-L349】.
+
+### Observabilidade
+- Todas as ações de criação, edição, exclusão e transições de status em eventos, inscrições, parcerias, briefings e tarefas devem ser registradas em logs【561401687002500†L472-L504】.
+- Alterações de orçamento e gastos devem ser registradas com detalhes antes/depois【561401687002500†L256-L273】.
+
+### Resiliência
+- Upload de mídia resiliente a falhas de rede, com até 3 retentativas automáticas【906211648821816†L29-L41】.
+
+### Arquitetura & Escala
+- Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos e `SoftDeleteModel` para exclusão lógica.
 
 ## 5. Casos de Uso
 
@@ -150,113 +164,161 @@ Principais destaques:
 
 *Observação:* todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e de `SoftDeleteModel` para exclusão lógica. Campos de auditoria não são listados individualmente.
 
-- **Evento**  
-  - id: UUID  
-  - titulo: string  
-  - descricao: text  
-  - data_inicio, data_fim: datetime  
-  - local, cidade, estado, cep: strings (cidade e estado validados por regex; CEP no formato 00000-000)【561401687002500†L171-L191】  
-  - coordenador: FK → User.id  
-  - organizacao: FK → Organizacao.id  
-  - nucleo: FK opcional → Nucleo.id  
-  - status: enum {0: Ativo, 1: Concluído, 2: Cancelado}  
-  - publico_alvo: enum {0: Público, 1: Somente nucleados, 2: Apenas associados}【561401687002500†L203-L204】  
-  - numero_convidados, numero_presentes: integers  
-  - valor_ingresso: decimal (opcional)  
-  - orcamento, orcamento_estimado, valor_gasto: decimal (opcionais)【561401687002500†L210-L215】  
-  - participantes_maximo: integer (opcional)【561401687002500†L216-L218】  
-  - espera_habilitada: boolean【561401687002500†L216-L218】  
-  - cronograma, informacoes_adicionais: text  
-  - contato_nome: string; contato_email: email; contato_whatsapp: string【561401687002500†L219-L223】  
-  - avatar, cover: ImageField (upload)  
-  - briefing: text (observações adicionais)  
-  - mensagem_origem: FK opcional → ChatMessage.id  
-  - Métodos: `calcular_media_feedback()` (calcula média das avaliações)【561401687002500†L247-L249】; `endereco_completo()` (concatena local e endereço completo)【561401687002500†L251-L252】.
+### Agenda.Evento
+Descrição: ...
+Campos:
+- `id`: UUID
+- `titulo`: string
+- `descricao`: text
+- `data_inicio`: datetime
+- `data_fim`: datetime
+- `local`: string
+- `cidade`: string — validada por regex
+- `estado`: string — validado por regex
+- `cep`: string — formato 00000-000
+- `coordenador`: FK → User.id
+- `organizacao`: FK → Organizacao.id
+- `nucleo`: FK → Nucleo.id — opcional
+- `status`: enum {0: Ativo, 1: Concluído, 2: Cancelado}
+- `publico_alvo`: enum {0: Público, 1: Somente nucleados, 2: Apenas associados}
+- `numero_convidados`: integer
+- `numero_presentes`: integer
+- `valor_ingresso`: decimal — opcional
+- `orcamento`: decimal — opcional
+- `orcamento_estimado`: decimal — opcional
+- `valor_gasto`: decimal — opcional
+- `participantes_maximo`: integer — opcional
+- `espera_habilitada`: boolean
+- `cronograma`: text
+- `informacoes_adicionais`: text
+- `contato_nome`: string
+- `contato_email`: email
+- `contato_whatsapp`: string
+- `avatar`: ImageField — upload
+- `cover`: ImageField — upload
+- `briefing`: text
+- `mensagem_origem`: FK → ChatMessage.id — opcional
+Métodos:
+- `calcular_media_feedback()`
+- `endereco_completo()`
 
-- **InscricaoEvento**  
-  - user: FK → User.id  
-  - evento: FK → Evento.id  
-  - status: enum {pendente, confirmada, cancelada}  
-  - presente: boolean  
-  - valor_pago: decimal (opcional)  
-  - metodo_pagamento: enum {pix, boleto, gratuito, outro}【561401687002500†L39-L44】  
-  - comprovante_pagamento: FileField (opcional)  
-  - observacao: text  
-  - data_confirmacao: datetime (opcional)  
-  - qrcode_url: URL (opcional)【561401687002500†L81-L83】  
-  - check_in_realizado_em: datetime (opcional)【561401687002500†L81-L83】  
-  - posicao_espera: integer (opcional)  
-  - avaliacao: integer (1–5) (opcional)【561401687002500†L84-L88】  
-  - feedback: text (opcional)【561401687002500†L89-L90】  
-  - Métodos: `confirmar_inscricao()`, `cancelar_inscricao()`, `realizar_check_in()`, `gerar_qrcode()`【561401687002500†L97-L121】【561401687002500†L148-L158】; registra logs de presença【561401687002500†L159-L168】.
+### Agenda.InscricaoEvento
+Descrição: ...
+Campos:
+- `user`: FK → User.id
+- `evento`: FK → Evento.id
+- `status`: enum {pendente, confirmada, cancelada}
+- `presente`: boolean
+- `valor_pago`: decimal — opcional
+- `metodo_pagamento`: enum {pix, boleto, gratuito, outro}
+- `comprovante_pagamento`: FileField — opcional
+- `observacao`: text
+- `data_confirmacao`: datetime — opcional
+- `qrcode_url`: URL — opcional
+- `check_in_realizado_em`: datetime — opcional
+- `posicao_espera`: integer — opcional
+- `avaliacao`: integer (1–5) — opcional
+- `feedback`: text — opcional
+Métodos:
+- `confirmar_inscricao()`
+- `cancelar_inscricao()`
+- `realizar_check_in()`
+- `gerar_qrcode()`
 
-- **MaterialDivulgacaoEvento**  
-  - evento: FK → Evento.id  
-  - titulo: string; descricao: text  
-  - tipo: enum {banner, flyer, video, outro}  
-  - arquivo: FileField (obrigatório)  
-  - imagem_thumb: ImageField (opcional)  
-  - data_publicacao: date (auto)  
-  - tags: string  
-  - status: enum {criado, aprovado, devolvido}【561401687002500†L335-L339】  
-  - avaliado_por: FK → User.id (opcional)【561401687002500†L341-L348】  
-  - avaliado_em: datetime (opcional)【561401687002500†L341-L349】  
-  - motivo_devolucao: text (opcional)【561401687002500†L349-L349】  
-  - Métodos: `url_publicacao()` retorna URL do arquivo【561401687002500†L358-L360】.
+### Agenda.MaterialDivulgacaoEvento
+Descrição: ...
+Campos:
+- `evento`: FK → Evento.id
+- `titulo`: string
+- `descricao`: text
+- `tipo`: enum {banner, flyer, video, outro}
+- `arquivo`: FileField — obrigatório
+- `imagem_thumb`: ImageField — opcional
+- `data_publicacao`: date — auto
+- `tags`: string
+- `status`: enum {criado, aprovado, devolvido}
+- `avaliado_por`: FK → User.id — opcional
+- `avaliado_em`: datetime — opcional
+- `motivo_devolucao`: text — opcional
+Métodos:
+- `url_publicacao()`
 
-- **ParceriaEvento**  
-  - evento: FK → Evento.id  
-  - nucleo: FK opcional → Nucleo.id  
-  - empresa: FK → Empresa.id  
-  - cnpj: string de 14 dígitos com validação【561401687002500†L281-L284】  
-  - contato: string; representante_legal: string  
-  - tipo_parceria: enum {patrocinio, mentoria, mantenedor, outro}  
-  - acordo: FileField (contrato)【561401687002500†L297-L298】  
-  - data_inicio, data_fim: date  
-  - descricao: text  
-  - avaliacao: integer (1–5) (opcional)【561401687002500†L302-L307】  
-  - comentario: text (opcional)【561401687002500†L307-L307】.
+### Agenda.ParceriaEvento
+Descrição: ...
+Campos:
+- `evento`: FK → Evento.id
+- `nucleo`: FK → Nucleo.id — opcional
+- `empresa`: FK → Empresa.id
+- `cnpj`: string — 14 dígitos com validação
+- `contato`: string
+- `representante_legal`: string
+- `tipo_parceria`: enum {patrocinio, mentoria, mantenedor, outro}
+- `acordo`: FileField
+- `data_inicio`: date
+- `data_fim`: date
+- `descricao`: text
+- `avaliacao`: integer (1–5) — opcional
+- `comentario`: text — opcional
 
-- **BriefingEvento**  
-  - evento: FK → Evento.id  
-  - objetivos, publico_alvo, requisitos_tecnicos, cronograma_resumido, conteudo_programatico, observacoes: text  
-  - status: enum {rascunho, orcamentado, aprovado, recusado}【561401687002500†L369-L378】  
-  - orcamento_enviado_em, aprovado_em, recusado_em: datetime (opcionais)【561401687002500†L379-L383】  
-  - motivo_recusa: text (opcional)【561401687002500†L382-L383】  
-  - coordenadora_aprovou: boolean  
-  - recusado_por, avaliado_por: FK → User.id (opcionais)【561401687002500†L384-L399】  
-  - prazo_limite_resposta: datetime (opcional)【561401687002500†L391-L392】  
-  - avaliado_em: datetime (opcional)【561401687002500†L399-L399】.
+### Agenda.BriefingEvento
+Descrição: ...
+Campos:
+- `evento`: FK → Evento.id
+- `objetivos`: text
+- `publico_alvo`: text
+- `requisitos_tecnicos`: text
+- `cronograma_resumido`: text
+- `conteudo_programatico`: text
+- `observacoes`: text
+- `status`: enum {rascunho, orcamentado, aprovado, recusado}
+- `orcamento_enviado_em`: datetime — opcional
+- `aprovado_em`: datetime — opcional
+- `recusado_em`: datetime — opcional
+- `motivo_recusa`: text — opcional
+- `coordenadora_aprovou`: boolean
+- `recusado_por`: FK → User.id — opcional
+- `avaliado_por`: FK → User.id — opcional
+- `prazo_limite_resposta`: datetime — opcional
+- `avaliado_em`: datetime — opcional
 
-- **FeedbackNota**  
-  - evento: FK → Evento.id  
-  - usuario: FK → User.id  
-  - nota: integer (1–5)【561401687002500†L416-L417】  
-  - comentario: text  
-  - data_feedback: datetime (auto)【561401687002500†L419-L420】.
+### Agenda.FeedbackNota
+Descrição: ...
+Campos:
+- `evento`: FK → Evento.id
+- `usuario`: FK → User.id
+- `nota`: integer (1–5)
+- `comentario`: text
+- `data_feedback`: datetime — auto
 
-- **Tarefa**  
-  - id: UUID  
-  - titulo: string  
-  - descricao: text  
-  - data_inicio, data_fim: datetime【561401687002500†L437-L438】  
-  - responsavel: FK → User.id  
-  - organizacao: FK → Organizacao.id  
-  - nucleo: FK opcional → Nucleo.id  
-  - mensagem_origem: FK opcional → ChatMessage.id【561401687002500†L447-L452】  
-  - status: enum {pendente, concluida}【561401687002500†L454-L457】.
+### Agenda.Tarefa
+Descrição: ...
+Campos:
+- `id`: UUID
+- `titulo`: string
+- `descricao`: text
+- `data_inicio`: datetime
+- `data_fim`: datetime
+- `responsavel`: FK → User.id
+- `organizacao`: FK → Organizacao.id
+- `nucleo`: FK → Nucleo.id — opcional
+- `mensagem_origem`: FK → ChatMessage.id — opcional
+- `status`: enum {pendente, concluida}
 
-- **TarefaLog**  
-  - tarefa: FK → Tarefa.id  
-  - usuario: FK → User.id  
-  - acao: string  
-  - detalhes: JSON【561401687002500†L472-L504】.
+### Agenda.TarefaLog
+Descrição: ...
+Campos:
+- `tarefa`: FK → Tarefa.id
+- `usuario`: FK → User.id
+- `acao`: string
+- `detalhes`: JSON
 
-- **EventoLog**  
-  - evento: FK → Evento.id  
-  - usuario: FK → User.id  
-  - acao: string  
-  - detalhes: JSON【561401687002500†L472-L504】.
+### Agenda.EventoLog
+Descrição: ...
+Campos:
+- `evento`: FK → Evento.id
+- `usuario`: FK → User.id
+- `acao`: string
+- `detalhes`: JSON
 
 ## 8. Critérios de Aceite (Gherkin)
 
@@ -295,11 +357,17 @@ Feature: Gestão de Eventos e Inscrições
     Then tarefa é criada e status inicial é pendente
 ```
 
-## 9. Dependências / Integrações
+## 9. Dependências e Integrações
 
 - **App Accounts, Organizações e Núcleos**: validações de escopo e permissões de usuário.  
 - **App Chat**: tarefas podem estar vinculadas a mensagens do chat.  
 - **Storage (S3)**: upload de mídias e comprovantes de pagamento.  
 - **Celery**: tarefas assíncronas de upload de material, promoção da lista de espera e notificações.  
-- **Search Engine**: busca de eventos e materiais (a ser integrado).  
+- **Search Engine**: busca de eventos e materiais (a ser integrado).
 - **Sentry**: monitoramento de erros e performance.
+
+## Anexos e Referências
+...
+
+## Changelog
+- 1.1.0 — 2025-08-13 — Normalização estrutural.
