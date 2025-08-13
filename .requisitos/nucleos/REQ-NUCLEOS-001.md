@@ -1,12 +1,17 @@
 ---
 id: REQ-NUCLEOS-001
-title: "Requisitos Núcleos Hubx"
-module: "Núcleos"
+title: Requisitos Nucleos Hubx
+module: nucleos
 status: Em vigor
-version: '1.1'
-authors: []
-created: '2025-07-25'
-updated: '2025-08-13'
+version: "1.1.0"
+authors: [preencher@hubx.space]
+created: "2025-07-25"
+updated: "2025-08-13"
+owners: [preencher]
+reviewers: [preencher]
+tags: [backend]
+related_docs: []
+dependencies: []
 ---
 
 ## 1. Visão Geral
@@ -33,108 +38,137 @@ emitir convites, acompanhar métricas e gerar relatórios.
 
 ## 3. Requisitos Funcionais
 
-- **RF‑01**
-  - Descrição: Criar novo núcleo com nome, descrição, avatar e capa.
-  - Prioridade: Alta
-  - Critérios de Aceite: POST `/api/nucleos/` retorna HTTP 201 e campos salvos.
+**RF-01 — Criar núcleo**
+- Descrição: Criar novo núcleo com nome, descrição, avatar e capa.
+- Critérios de Aceite: POST `/api/nucleos/` retorna HTTP 201 e campos salvos.
+- Rastreabilidade: UC-01; `/api/nucleos/`; Model: Nucleos.Nucleo
 
-- **RF‑02**
-  - Descrição: Listar núcleos de uma organização com paginação e cache de 5 min.
-  - Prioridade: Alta
-  - Critérios de Aceite: GET `/api/nucleos/?organizacao=<id>` responde com `X‑Cache` indicando HIT/MISS.
+**RF-02 — Listar núcleos**
+- Descrição: Listar núcleos de uma organização com paginação e cache de 5 min.
+- Critérios de Aceite: GET `/api/nucleos/?organizacao=<id>` responde com `X-Cache` indicando HIT/MISS.
+- Rastreabilidade: UC-02; `/api/nucleos/?organizacao=<id>`; Model: Nucleos.Nucleo
 
-- **RF‑03**
-  - Descrição: Editar dados de um núcleo existente (incluindo avatar/capa).
-  - Prioridade: Média
-  - Critérios de Aceite: PUT/PATCH `/api/nucleos/<id>/` atualiza campos enviados.
+**RF-03 — Editar núcleo**
+- Descrição: Editar dados de um núcleo existente, incluindo avatar e capa.
+- Critérios de Aceite: PUT/PATCH `/api/nucleos/<id>/` atualiza campos enviados.
+- Rastreabilidade: UC-03; `/api/nucleos/<id>/`; Model: Nucleos.Nucleo
 
-- **RF‑04**
-  - Descrição: Deletar núcleo (soft delete).
-  - Prioridade: Média
-  - Critérios de Aceite: DELETE `/api/nucleos/<id>/` retorna HTTP 204 e marca `deleted`.
+**RF-04 — Deletar núcleo**
+- Descrição: Deletar núcleo com soft delete.
+- Critérios de Aceite: DELETE `/api/nucleos/<id>/` retorna HTTP 204 e marca `deleted`.
+- Rastreabilidade: UC-??; `/api/nucleos/<id>/`; Model: Nucleos.Nucleo
 
-- **RF‑05**
-  - Descrição: Usuário solicita participação em um núcleo.
-  - Prioridade: Alta
-  - Critérios de Aceite: POST `/api/nucleos/<id>/solicitar/` cria participação com status `pendente`.
+**RF-05 — Solicitar participação**
+- Descrição: Usuário solicita participação em um núcleo.
+- Critérios de Aceite: POST `/api/nucleos/<id>/solicitar/` cria participação com status `pendente`.
+- Rastreabilidade: UC-04; `/api/nucleos/<id>/solicitar/`; Model: Nucleos.ParticipacaoNucleo
 
-- **RF‑06**
-  - Descrição: Admin ou coordenador aprova ou recusa solicitações de participação.
-  - Prioridade: Alta
-  - Critérios de Aceite: POST `/api/nucleos/<id>/membros/<user_id>/aprovar` ou `/recusar` altera o status.
+**RF-06 — Decidir participação**
+- Descrição: Admin ou coordenador aprova ou recusa solicitações de participação.
+- Critérios de Aceite: POST `/api/nucleos/<id>/membros/<user_id>/aprovar` ou `/recusar` altera o status.
+- Rastreabilidade: UC-05; `/api/nucleos/<id>/membros/<user_id>/aprovar`; Model: Nucleos.ParticipacaoNucleo
 
-- **RF‑07**
-  - Descrição: Admin ou coordenador suspende e reativa membros ativos.
-  - Prioridade: Média
-  - Critérios de Aceite: POST `/api/nucleos/<id>/membros/<user_id>/suspender` ou `/reativar` atualiza `status_suspensao`.
+**RF-07 — Suspender ou reativar membro**
+- Descrição: Admin ou coordenador suspende e reativa membros ativos.
+- Critérios de Aceite: POST `/api/nucleos/<id>/membros/<user_id>/suspender` ou `/reativar` atualiza `status_suspensao`.
+- Rastreabilidade: UC-06; `/api/nucleos/<id>/membros/<user_id>/suspender`; Model: Nucleos.ParticipacaoNucleo
 
-- **RF‑08**
-  - Descrição: Admin gera e revoga convites de participação com cota diária.
-  - Prioridade: Média
-  - Critérios de Aceite: POST `/api/nucleos/<id>/convites/` cria convite e DELETE `/api/nucleos/<id>/convites/<convite_id>/` revoga.
+**RF-08 — Gerenciar convites**
+- Descrição: Admin gera e revoga convites de participação com cota diária.
+- Critérios de Aceite: POST `/api/nucleos/<id>/convites/` cria convite e DELETE `/api/nucleos/<id>/convites/<convite_id>/` revoga.
+- Rastreabilidade: UC-07; `/api/nucleos/<id>/convites/`; Model: Nucleos.ConviteNucleo
 
-- **RF‑09**
-  - Descrição: Usuário aceita convite de núcleo através de token.
-  - Prioridade: Média
-  - Critérios de Aceite: GET `/api/nucleos/aceitar-convite/?token=<token>` adiciona usuário ao núcleo se válido.
+**RF-09 — Aceitar convite**
+- Descrição: Usuário aceita convite de núcleo através de token.
+- Critérios de Aceite: GET `/api/nucleos/aceitar-convite/?token=<token>` adiciona usuário ao núcleo se válido.
+- Rastreabilidade: UC-??; `/api/nucleos/aceitar-convite/`; Model: Nucleos.ConviteNucleo
 
-- **RF‑10**
-  - Descrição: Designar coordenadores suplentes por período determinado.
-  - Prioridade: Média
-  - Critérios de Aceite: POST `/api/nucleos/<id>/suplentes/` cria suplente; DELETE `/api/nucleos/<id>/suplentes/<id>/` remove.
+**RF-10 — Designar coordenador suplente**
+- Descrição: Designar coordenadores suplentes por período determinado.
+- Critérios de Aceite: POST `/api/nucleos/<id>/suplentes/` cria suplente; DELETE `/api/nucleos/<id>/suplentes/<id>/` remove.
+- Rastreabilidade: UC-08; `/api/nucleos/<id>/suplentes/`; Model: Nucleos.CoordenadorSuplente
 
-- **RF‑11**
-  - Descrição: Exportar lista de membros do núcleo.
-  - Prioridade: Baixa
-  - Critérios de Aceite: GET `/api/nucleos/<id>/membros/exportar?formato=csv|xls` retorna arquivo com dados dos membros.
+**RF-11 — Exportar membros**
+- Descrição: Exportar lista de membros do núcleo.
+- Critérios de Aceite: GET `/api/nucleos/<id>/membros/exportar?formato=csv|xls` retorna arquivo com dados dos membros.
+- Rastreabilidade: UC-09; `/api/nucleos/<id>/membros/exportar`; Model: Nucleos.ParticipacaoNucleo
 
-- **RF‑12**
-  - Descrição: Membros ativos não suspensos publicam posts no feed do núcleo.
-  - Prioridade: Baixa
-  - Critérios de Aceite: POST `/api/nucleos/<id>/posts/` retorna HTTP 201 quando usuário é membro ativo.
+**RF-12 — Publicar posts**
+- Descrição: Membros ativos não suspensos publicam posts no feed do núcleo.
+- Critérios de Aceite: POST `/api/nucleos/<id>/posts/` retorna HTTP 201 quando usuário é membro ativo.
+- Rastreabilidade: UC-??; `/api/nucleos/<id>/posts/`; Model: Feed.Post
 
-- **RF‑13**
-  - Descrição: Consultar status do usuário autenticado em um núcleo.
-  - Prioridade: Baixa
-  - Critérios de Aceite: GET `/api/nucleos/<id>/membro-status/` retorna papel, ativo e suspenso.
+**RF-13 — Consultar status do membro**
+- Descrição: Consultar status do usuário autenticado em um núcleo.
+- Critérios de Aceite: GET `/api/nucleos/<id>/membro-status/` retorna papel, ativo e suspenso.
+- Rastreabilidade: UC-??; `/api/nucleos/<id>/membro-status/`; Model: Nucleos.ParticipacaoNucleo
 
-- **RF‑14**
-  - Descrição: Consultar métricas do núcleo.
-  - Prioridade: Baixa
-  - Critérios de Aceite: GET `/api/nucleos/<id>/metrics/` retorna totais e opcionalmente membros por status.
+**RF-14 — Consultar métricas**
+- Descrição: Consultar métricas do núcleo.
+- Critérios de Aceite: GET `/api/nucleos/<id>/metrics/` retorna totais e opcionalmente membros por status.
+- Rastreabilidade: UC-10; `/api/nucleos/<id>/metrics/`; Model: Nucleos.Nucleo
 
-- **RF‑15**
-  - Descrição: Gerar relatório consolidado de núcleos.
-  - Prioridade: Baixa
-  - Critérios de Aceite: GET `/api/nucleos/relatorio?formato=csv|pdf` gera arquivo com métricas de todos os núcleos.
+**RF-15 — Gerar relatório geral**
+- Descrição: Gerar relatório consolidado de núcleos.
+- Critérios de Aceite: GET `/api/nucleos/relatorio?formato=csv|pdf` gera arquivo com métricas de todos os núcleos.
+- Rastreabilidade: UC-10; `/api/nucleos/relatorio`; Model: Nucleos.Nucleo
 
-- **RF‑16**
-  - Descrição: Atribuir e remover coordenadores de núcleo.
-  - Prioridade: Média
-  - Critérios de Aceite: Endpoints específicos para mudança de papel. *A confirmar.*
+**RF-16 — Gerir coordenadores**
+- Descrição: Atribuir e remover coordenadores de núcleo.
+- Critérios de Aceite: Endpoints específicos para mudança de papel. *A confirmar.*
+- Rastreabilidade: UC-??; `/api/nucleos/<id>/membros/<user_id>/coordenador`; Model: Nucleos.ParticipacaoNucleo
 
-## 4. Requisitos Não‑Funcionais
+**RF-17 — Listar núcleos do usuário**
+- Descrição: Listar núcleos de um usuário autenticado. *A confirmar.*
+- Critérios de Aceite: Endpoint de listagem retorna núcleos em que o usuário participa.
+- Rastreabilidade: UC-??; `/api/nucleos/meus/`; Model: Nucleos.ParticipacaoNucleo
 
-- **RNF‑01**
-  - Categoria: Desempenho
-  - Descrição: Listagem de núcleos com paginação e filtros responde em p95 ≤ 300 ms.
-  - Métrica/Meta: 300 ms
+**RF-18 — Promover ou remover coordenador**
+- Descrição: Endpoints para promoção ou remoção de coordenadores existentes.
+- Critérios de Aceite: Endpoint promove ou remove papel de coordenador e retorna confirmação.
+- Rastreabilidade: UC-??; `/api/nucleos/<id>/membros/<user_id>/promover`; Model: Nucleos.ParticipacaoNucleo
 
-- **RNF‑02**
-  - Categoria: Segurança
-  - Descrição: Controle de acesso respeita escopo organizacional e permissões.
-  - Métrica/Meta: 0 acessos indevidos em testes automatizados.
+## 4. Requisitos Não Funcionais
 
-- **RNF‑03**
-  - Categoria: Manutenibilidade
-  - Descrição: Código modular e testável seguindo DDD e Clean Architecture.
-  - Métrica/Meta: Cobertura de testes ≥ 90 %.
+**RNF-01 — Desempenho de listagem**
+- Categoria: Performance
+- Descrição: Listagem de núcleos com paginação e filtros responde em p95 ≤ 300 ms.
+- Métrica/Meta: p95 ≤ 300 ms
 
-- **RNF‑04**: Todos os modelos herdam de `TimeStampedModel`.
-- **RNF‑05**: Modelos com exclusão lógica implementam `SoftDeleteModel`.
-- **RNF‑06**: Listagens e métricas utilizam cache com expiração de 5 min.
-- **RNF‑07**: Métricas de uso são expostas via Prometheus.
-- **RNF‑08**: Convites por usuário são limitados por cota diária configurável.
+**RNF-02 — Controle de acesso**
+- Categoria: Segurança & LGPD
+- Descrição: Controle de acesso respeita escopo organizacional e permissões.
+- Métrica/Meta: 0 acessos indevidos em testes automatizados.
+
+**RNF-03 — Código modular testável**
+- Categoria: Arquitetura & Escala
+- Descrição: Código modular e testável seguindo DDD e Clean Architecture.
+- Métrica/Meta: Cobertura de testes ≥ 90 %.
+
+**RNF-04 — Modelos com marcação temporal**
+- Categoria: Arquitetura & Escala
+- Descrição: Todos os modelos herdam de TimeStampedModel.
+- Métrica/Meta: 100% dos modelos com `created_at` e `updated_at`.
+
+**RNF-05 — Suporte a exclusão lógica**
+- Categoria: Resiliência
+- Descrição: Modelos com exclusão lógica implementam SoftDeleteModel.
+- Métrica/Meta: 100% dos modelos que exigem recuperação.
+
+**RNF-06 — Cache em listagens**
+- Categoria: Performance
+- Descrição: Listagens e métricas utilizam cache com expiração de 5 min.
+- Métrica/Meta: TTL de 5 min.
+
+**RNF-07 — Exposição de métricas**
+- Categoria: Observabilidade
+- Descrição: Métricas de uso são expostas via Prometheus.
+- Métrica/Meta: Endpoint `/metrics` disponível.
+
+**RNF-08 — Limite diário de convites**
+- Categoria: Segurança & LGPD
+- Descrição: Convites por usuário são limitados por cota diária configurável.
+- Métrica/Meta: Configuração de cota respeitada 100% das vezes.
 
 ## 5. Casos de Uso
 
@@ -187,54 +221,64 @@ emitir convites, acompanhar métricas e gerar relatórios.
 - Suspenso não pode publicar nem é contabilizado como ativo.
 - Coordenador suplente é válido apenas dentro do período informado.
 - Soft delete preserva histórico de associações.
+- Definir política para exclusão de membros (remoção definitiva vs. status inativo).
 
 ## 7. Modelo de Dados
 
 *Todos os modelos abaixo herdam de `TimeStampedModel` e `SoftDeleteModel` quando aplicável.*
 
-- **Núcleo**
-  - id: UUID
-  - organizacao: FK → Organizacao.id
-  - nome: string
-  - slug: string
-  - descricao: text (opcional)
-  - avatar: ImageField (S3)
-  - cover: ImageField (S3)
-  - ativo: boolean
-  - mensalidade: decimal
+### Nucleos.Nucleo
+Descrição: Núcleo dentro de uma organização
+Campos:
+- `id`: UUID
+- `organizacao`: FK → Organizacao.id
+- `nome`: string
+- `slug`: string
+- `descricao`: text — opcional
+- `avatar`: ImageField — S3
+- `cover`: ImageField — S3
+- `ativo`: boolean
+- `mensalidade`: decimal
 
-- **ParticipacaoNucleo**
-  - id: UUID
-  - user: FK → User.id
-  - nucleo: FK → Núcleo.id
-  - papel: enum('membro','coordenador')
-  - status: enum('pendente','ativo','inativo')
-  - status_suspensao: boolean
-  - data_suspensao: datetime
-  - data_solicitacao: datetime
-  - data_decisao: datetime
-  - decidido_por: FK → User.id
-  - justificativa: text
-  - unique_together: (user, nucleo)
+### Nucleos.ParticipacaoNucleo
+Descrição: Vínculo entre usuário e núcleo
+Campos:
+- `id`: UUID
+- `user`: FK → User.id
+- `nucleo`: FK → Nucleos.Nucleo.id
+- `papel`: enum('membro','coordenador')
+- `status`: enum('pendente','ativo','inativo')
+- `status_suspensao`: boolean
+- `data_suspensao`: datetime
+- `data_solicitacao`: datetime
+- `data_decisao`: datetime
+- `decidido_por`: FK → User.id
+- `justificativa`: text
+Constraints adicionais:
+- `unique_together (user, nucleo)`
 
-- **CoordenadorSuplente**
-  - id: UUID
-  - nucleo: FK → Núcleo.id
-  - usuario: FK → User.id
-  - periodo_inicio: datetime
-  - periodo_fim: datetime
+### Nucleos.CoordenadorSuplente
+Descrição: Coordenador substituto temporário
+Campos:
+- `id`: UUID
+- `nucleo`: FK → Nucleos.Nucleo.id
+- `usuario`: FK → User.id
+- `periodo_inicio`: datetime
+- `periodo_fim`: datetime
 
-- **ConviteNucleo**
-  - id: UUID
-  - token: string
-  - token_obj: FK → TokenAcesso.id
-  - email: email
-  - papel: enum('membro','coordenador')
-  - limite_uso_diario: integer
-  - data_expiracao: datetime
-  - usado_em: datetime
-  - criado_em: datetime
-  - nucleo: FK → Núcleo.id
+### Nucleos.ConviteNucleo
+Descrição: Convite de participação no núcleo
+Campos:
+- `id`: UUID
+- `token`: string
+- `token_obj`: FK → TokenAcesso.id
+- `email`: email
+- `papel`: enum('membro','coordenador')
+- `limite_uso_diario`: integer
+- `data_expiracao`: datetime
+- `usado_em`: datetime
+- `criado_em`: datetime
+- `nucleo`: FK → Nucleos.Nucleo.id
 
 ## 8. Critérios de Aceite (Gherkin)
 
@@ -251,7 +295,7 @@ Feature: Gestão de Núcleos
     Then participação fica com `status_suspensao=True`
 ```
 
-## 9. Dependências / Integrações
+## 9. Dependências e Integrações
 
 - **App Accounts**: validação de usuários participantes.
 - **App Organizações**: escopo organizacional.
@@ -264,12 +308,9 @@ Feature: Gestão de Núcleos
 - **Celery**: processamento assíncrono de notificações e expirações.
 - **Sentry/Prometheus**: monitoramento de erros e métricas.
 
-## 10. Requisitos Adicionais / Melhorias
+## Anexos e Referências
+...
 
-### Requisitos Funcionais
-- **RF‑17** – Listar núcleos de um usuário autenticado. *A confirmar.*
-- **RF‑18** – Endpoints para promoção ou remoção de coordenadores existentes.
-
-### Regras de Negócio
-- Definir política para exclusão de membros (remoção definitiva vs. status inativo).
+## Changelog
+- 1.1.0 — 2025-08-13 — Normalização para Padrão Unificado v3.1
 

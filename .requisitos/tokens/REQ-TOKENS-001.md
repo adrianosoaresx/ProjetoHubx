@@ -1,10 +1,17 @@
 ---
 id: REQ-TOKENS-001
 title: Requisitos Tokens Hubx
-module: Tokens
+module: tokens
 status: Em vigor
-version: '1.1'
-updated: '2025-08-13'
+version: "1.1.0"
+authors: [preencher@hubx.space]
+created: "2025-08-13"
+updated: "2025-08-13"
+owners: [preencher]
+reviewers: [preencher]
+tags: [backend]
+related_docs: []
+dependencies: []
 ---
 
 ## 1. Visão Geral
@@ -34,6 +41,7 @@ O app Tokens fornece mecanismos de credencial temporária e permanente no Hubx. 
 - **RF-17** (Futuro) Suportar listas de IP allow/deny por token.
 - **RF-18** (Futuro) Aplicar rate limit por token/usuário/IP com políticas de burst e sustained.
 - **RF-19** (Futuro) Emitir webhooks de ciclo de vida (emissão, uso, revogação) com assinatura HMAC e reentrega com backoff.
+- **RF-20** Expor métricas de uso e webhooks de ciclo de vida dos tokens.
 
 ## 4. Requisitos Não Funcionais
 - **RNF-01** Segurança: tokens devem ter entropia ≥128 bits e nunca serem logados em texto claro.
@@ -66,13 +74,18 @@ O app Tokens fornece mecanismos de credencial temporária e permanente no Hubx. 
 - **CodigoAutenticacao**: usuario (FK), codigo, expira_em, verificado, tentativas.
 - **TOTPDevice**: usuario (OneToOne), secret, confirmado.
 
-## 8. Dependências e Integrações
+## 8. Critérios de Aceite (Gherkin)
+...
+
+## 9. Dependências e Integrações
 - Accounts para validação de usuários e eventos de segurança.
 - Celery para tarefas de limpeza e revogação automática.
 - Redis opcional para cache de tokens intensamente lidos.
 - Sentry para captura de erros.
 - Prometheus para métricas.
 
-## 9. Requisitos Adicionais / Melhorias
-- Implementar device binding, IP allow/deny e rate limiting conforme RF-16 a RF-18.
-- Expor métricas e webhooks conforme RNF-06 e RF-19.
+## Anexos e Referências
+...
+
+## Changelog
+- 1.1.0 — 2025-08-13 — Normalização estrutural.
