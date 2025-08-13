@@ -1,195 +1,100 @@
 ---
 id: REQ-DISCUSSAO-001
-title: Requisitos App Discussao Hubx
-module: Discussao
-status: Em vigor
-version: '1.0'
-authors: []
-created: '2025-07-25'
-updated: '2025-07-25'
+version: 1.1
+scope: Discussão (Fórum)
+updated: 2025-08-12
 ---
 
-## 1. Visão Geral
+# Requisitos do módulo de Discussão – versão 1.1
 
-O App Discussão fornece um fórum colaborativo organizado por categorias, permitindo que usuários criem tópicos, respondam, votem e colaborem de forma estruturada dentro de organizações, núcleos e eventos.
+## Visão geral
 
+O módulo de discussão provê um sistema de perguntas e respostas estruturado em **categorias**, **tópicos** e **respostas**. Esta versão atualizada incorpora funcionalidades adicionais observadas no código, como tags, pesquisa full‑text, moderação, anexos e notificações. Os requisitos a seguir substituem a versão 1.0 e servem como referência para desenvolvimento e verificação.
 
-## 2. Escopo
+## Requisitos funcionais
 
+### Criação e gestão de categorias
 
-- **Inclui**:
-  - Criação, edição e exclusão de categorias.
-  - Publicação de tópicos com título e conteúdo.
-  - Inserção de respostas em tópicos.
-  - Sistema de votações (upvote/downvote).
-  - Marcação de tópicos como resolvidos.
-  - Gestão de permissões por tipo de usuário.
-- **Exclui**:
-  - Chat em tempo real (delegado ao App Chat).
-  - Integração com redes sociais externas.
+- RF‑01 – O sistema deve permitir aos administradores listar, criar, editar e remover categorias. Cada categoria possui nome, descrição, slug e ícone. Ela pode estar associada a uma organização, núcleo ou evento.
+- RF‑02 – A listagem de categorias deve ser filtrável por contexto (organização, núcleo, evento) e cacheada por 60 segundos para reduzir latência.
 
+### Tópicos de discussão
 
-## 3. Requisitos Funcionais
+- RF‑03 – Usuários autenticados podem criar tópicos em uma categoria selecionada. Devem ser informados título, descrição (permite Markdown), tags e público alvo. O público alvo pode ser “todos”, “nucleados”, “organizadores” ou “parceiros”.
+- RF‑04 – Cada tópico deve possuir slug único, data de criação/edição, contagem de visualizações e sinalizadores de **fechado** e **resolvido**. O sistema deve atualizar o slug automaticamente a partir do título.
+- RF‑05 – O autor ou um administrador pode editar ou excluir seu tópico dentro de um período de 15 minutos após a criação. Após esse período, apenas administradores podem editar ou remover.
+- RF‑06 – Deve ser possível marcar um tópico como resolvido e indicar a melhor resposta. Somente o autor ou um administrador pode marcar ou desmarcar; ao marcar resolvido, uma notificação deve ser enviada aos participantes. O autor e administradores podem fechar um tópico; apenas administradores podem reabrir.
+- RF‑07 – Os tópicos podem ser pesquisados por termo de busca. Se estiver usando PostgreSQL, deve empregar busca full‑text; caso contrário, utilizar `icontains`. Deve ser possível ordenar resultados por data de criação, número de respostas ou score (votos).
+- RF‑08 – Os tópicos devem oferecer filtragem e associação por **tags**. Tags são entidades reutilizáveis gerenciadas pelos administradores.
 
-- **RF‑01**
-  - Descrição: Usuário pode visualizar lista de categorias e seus tópicos.
-  - Prioridade: Alta
-  - Critérios de Aceite: Lista paginada com título e descrição das categorias.
+### Respostas e interações
 
-- **RF‑02**
-  - Descrição: Usuário cria novos tópicos em uma categoria.
-  - Prioridade: Alta
-  - Critérios de Aceite: Formulário com validação de campos obrigatórios.
+- RF‑09 – Usuários podem responder a um tópico. Cada resposta pode conter texto e opcionalmente anexar um arquivo. Deve ser possível responder a outra resposta (respostas aninhadas) através do campo `reply_to`.
+- RF‑10 – O autor de uma resposta pode editá‑la ou removê‑la dentro de 15 minutos após sua criação; depois desse prazo, somente administradores podem editar/remover. Ao editar, o sistema deve manter um indicador de que a resposta foi editada e registrar a data da edição.
+- RF‑11 – O sistema deve permitir que usuários apliquem **votos** (upvote/downvote) em tópicos ou respostas. O modelo genérico de interação deve garantir que um usuário só possa ter um voto por objeto e possibilitar alternar votos. Deve exibir o **score** e a contagem de votos para cada item.
+- RF‑12 – Usuários podem marcar tópicos ou respostas como inapropriados através de uma **denúncia**. O sistema deve evitar denúncias duplicadas do mesmo usuário para o mesmo objeto. Administradores podem aprovar ou rejeitar denúncias e remover conteúdo; todas as ações de moderação devem ser registradas em um log de moderação.
+- RF‑13 – Quando houver novas respostas ou um tópico for marcado como resolvido, o sistema deve disparar notificações assíncronas para os participantes por meio de tasks Celery.
 
-- **RF‑03**
-  - Descrição: Usuário responde a um tópico existente.
-  - Prioridade: Alta
-  - Critérios de Aceite: Resposta associada corretamente ao tópico e autor.
+### API e integrações
 
-- **RF‑04**
-  - Descrição: Usuário vota em tópicos e respostas (upvote/downvote).
-  - Prioridade: Média
-  - Critérios de Aceite: Voto único por usuário e contagem atualizada em tempo real.
+- RF‑14 – Deve existir uma API REST para gerenciar categorias, tags, tópicos e respostas. A API deve oferecer endpoints de criação, leitura, edição e exclusão com autenticação e permissões. Ações adicionais: marcar resolvido ou não resolvido, fechar e reabrir, denunciar conteúdo, votar (up/down). A API deve suportar busca, filtros por tags, ordenação e paginação.
+- RF‑15 – A API deve respeitar os mesmos limites de edição (15 minutos), permissões (autor vs. administrador) e validações de contexto definidos nas views.
+- RF‑16 – O módulo de discussão deve se integrar ao sistema de notificações para enviar alertas aos participantes e pode se comunicar com o módulo de Agenda para agendar reuniões em decorrência de discussões (recurso futuro).
 
-- **RF‑05**
-  - Descrição: Usuário marca tópico como resolvido se for criador ou admin.
-  - Prioridade: Média
-  - Critérios de Aceite: Status do tópico atualizado e indicações visuais.
+## Requisitos não funcionais
 
+- RNF‑01 – O sistema deve suportar **pesquisa full‑text** quando a base de dados permitir, retornando resultados em ordem de relevância; caso contrário, deve realizar busca parcial por substring.
+- RNF‑02 – As listagens de categorias e tópicos devem empregar cache e otimizações (`select_related`, `prefetch_related`) para evitar consultas N+1 e reduzir a latência.
+- RNF‑03 – As páginas devem ser responsivas e compatíveis com HTMX para atualizações parciais, proporcionando uma experiência fluida.
+- RNF‑04 – A aplicação deve registrar logs de moderação e notificações enviadas. Eventos de denúncias e aprovações/rejeições devem ser auditáveis.
+- RNF‑05 – O sistema deve prevenir spam e abuso, restringindo votos duplicados e denúncias repetidas. Deve validar tipos de arquivo anexados para segurança.
+- RNF‑06 – Tarefas assíncronas (envio de notificações) devem ser executadas via Celery, com mecanismo de retry e monitoramento. Os tempos de resposta para notificações devem ser inferiores a alguns segundos.
 
-## 4. Requisitos Não‑Funcionais
+## Modelos de dados
 
-- **RNF‑01**
-  - Categoria: Desempenho
-  - Descrição: Paginação dos tópicos deve responder em p95 ≤ 300 ms.
-  - Métrica/Meta: 300 ms
+Em vez de tabelas, listamos as entidades e seus principais campos:
 
-- **RNF‑02**
-  - Categoria: Usabilidade
-  - Descrição: Interface deve ser responsiva em dispositivos móveis.
-  - Métrica/Meta: Avaliação em testes de UX
+**CategoriaDiscussao** – nome, descrição, slug (gerado automaticamente), ícone, relacionamentos opcionais para Núcleo e Evento, referência à organização e informação de proprietário/administrador.
 
-- **RNF‑03**
-  - Categoria: Segurança
-  - Descrição: As ações de criação, edição e exclusão devem validar permissões.
-  - Métrica/Meta: 0 acessos indevidos em testes de penetração.
+**Tag** – nome único e slug. As tags podem ser criadas e editadas por administradores e associadas a diversos tópicos.
 
+**TopicoDiscussao** – título, descrição, slug (gerado do título), categoria, autor (usuário), público alvo, indicadores `fechado` e `resolvido`, referência à melhor resposta, contagem de visualizações, campo de busca full‑text, relacionamentos com tags, timestamps de criação e edição, referências opcionais para Núcleo e Evento.
 
-- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
-- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
+**RespostaDiscussao** – conteúdo da resposta, tópico ao qual pertence, autor, campo `reply_to` para indicar se é resposta a outra resposta, campo para arquivo anexado, indicador de edição (`editado`) e data de edição, contadores de votos, timestamps de criação e edição.
 
+**InteracaoDiscussao** – usuário, tipo de interação (upvote/downvote), relação genérica para apontar para tópico ou resposta, data de criação. Deve existir restrição de unicidade por usuário e objeto.
 
-## 5. Casos de Uso
+**Denuncia** – usuário que denuncia, conteúdo denunciado (tópico ou resposta), motivo, estado (pendente, aprovado, rejeitado), data de criação e ações de moderação associadas.
 
-### UC‑01 – Gerenciar Categorias
-1. Admin ou coordenador acessa seção de categorias.  
-2. Cria/edita/exclui categorias.  
-3. Sistema persiste alterações e atualiza lista.
+**DiscussionModerationLog** – registra ações de moderação (aprovar, rejeitar, remover), usuário moderador, conteúdo moderado, motivo, e data.
 
-### UC‑02 – Criar Tópico
-1. Usuário seleciona categoria desejada.  
-2. Preenche título e conteúdo.  
-3. Submete formulário.  
-4. Tópico é criado e aparece na lista.
+## Cenários de utilização (Gherkin)
 
-### UC‑03 – Responder Tópico
-1. Usuário abre tópico.  
-2. Digita resposta e envia.  
-3. Resposta é salva e aparece em ordem cronológica.
+**Cenário: Marcar um tópico como resolvido**
 
-### UC‑04 – Votar
-1. Usuário clica em upvote/downvote em tópico ou resposta.  
-2. Sistema registra e atualiza contagem.
-
-### UC‑05 – Marcar Resolução
-1. Criador do tópico ou admin clica em “Marcar como Resolvido”.  
-2. Sistema define flag `resolved=true` e altera visualização.
-
-
-## 6. Regras de Negócio
-
-
-- Cada usuário tem um único voto por item.  
-- Apenas criador ou admin pode marcar resolução.  
-- Respostas devem herdar contexto organizacional do tópico.
-
-
-## 7. Modelo de Dados
-
-
-*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
-
-- **Categoria**  
-  - id: UUID  
-  - nome: string  
-  - descricao: text  
-  - organizacao: FK → Organizacao.id  
-
-- **Topico**  
-  - id: UUID  
-  - categoria: FK → Categoria.id  
-  - autor: FK → User.id  
-  - titulo: string  
-  - conteudo: text  
-  - resolved: boolean  
-
-- **Resposta**  
-  - id: UUID  
-  - topico: FK → Topico.id  
-  - autor: FK → User.id  
-  - conteudo: text  
-
-- **Voto**  
-  - id: UUID  
-  - item_type: enum('topico','resposta')  
-  - item_id: UUID  
-  - user: FK → User.id  
-  - vote: integer (1 ou -1)
-
-
-## 8. Critérios de Aceite (Gherkin)
-
-
-```gherkin
-Feature: Fórum de Discussão
-  Scenario: Usuário cria tópico
-    Given usuário autenticado
-    When cria tópico com título "X" e conteúdo "Y"
-    Then tópico aparece na lista da categoria
-
-  Scenario: Voto em resposta
-    Given resposta existente
-    When usuário clica em upvote
-    Then contagem de votos aumenta em 1
+```
+Dado que um usuário criou um tópico
+E uma resposta foi fornecida por outro participante
+Quando o autor do tópico marca a resposta como a melhor resposta
+Então o tópico passa a estar resolvido
+E todos os participantes recebem uma notificação
 ```
 
+**Cenário: Denunciar uma resposta inadequada**
 
-## 9. Dependências / Integrações
+```
+Dado que um usuário visualiza uma resposta com conteúdo ofensivo
+Quando ele envia uma denúncia
+Então a denúncia fica com status pendente
+E um administrador poderá aprovar, rejeitar ou remover a resposta
+E as ações ficam registradas em um log de moderação
+```
 
+**Cenário: Pesquisar tópicos por palavra e tag**
 
-- **chat.models.User**: autenticação e contexto de usuário.  
-- **Organizacoes API**: para filtrar categorias por organização.  
-- **Celery**: notificações assíncronas de novos tópicos/respostas.  
-- **Search Engine**: índices para busca de tópicos/respostas.  
-- **Sentry**: monitoramento de erros.
-
-
-## 10. Requisitos Adicionais / Melhorias
-
-### Requisitos Funcionais Adicionais
-- **RF‑06** – Permitir marcar uma resposta como “melhor resposta”, destacando‑a no topo do tópico.  
-- **RF‑07** – Introduzir sistema de tags associadas a tópicos para facilitar busca e categorização.  
-- **RF‑08** – Limitar a edição de tópicos e respostas a 15 minutos após a publicação; após esse período, somente admin pode editar.  
-- **RF‑09** – Permitir fechar e reabrir tópicos para novas respostas.  
-
-### Requisitos Não‑Funcionais Adicionais
-- **RNF‑06** – Prover campo “motivo de edição” para rastrear alterações.  
-
-### Modelo de Dados Adicional
-- `Topico`: adicionar `melhor_resposta: FK → Resposta.id (opcional)` e `tags: M2M → Tag`.  
-- `Resposta`: adicionar `editado_em: datetime`, `motivo_edicao: text`.  
-- Nova entidade `Tag`: `id`, `nome`, ``.  
-
-### Regras de Negócio Adicionais
-- Apenas o autor ou admin pode marcar “melhor resposta”.  
-- Edição limitada a 15 minutos após publicação.
+```
+Dado que existem diversos tópicos em uma categoria
+Quando um usuário busca por “Banco de Dados” e filtra pela tag “Postgres”
+Então são exibidos apenas os tópicos cujo título ou descrição contêm “Banco de Dados” e que possuem a tag “Postgres”
+E os resultados são ordenados conforme critérios selecionados (data, votos ou respostas)
+```

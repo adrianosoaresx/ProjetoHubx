@@ -3,181 +3,182 @@ id: REQ-FEED-001
 title: Requisitos Feed Hubx Atualizado
 module: Feed
 status: Em vigor
-version: '1.0'
+version: '1.1'
 authors: []
 created: '2025-07-25'
-updated: '2025-07-25'
+updated: '2025-08-12'
 ---
+
+# Requisitos do módulo de Feed – versão 1.1
 
 ## 1. Visão Geral
 
-O App Feed permite exibir e gerenciar publicações de texto e mídia, organizadas por tipo (global, usuário, núcleo ou evento), oferecendo filtragem, paginação e controle de permissões conforme o escopo associado.
-
+O módulo Feed provê um mural de publicações que permite a usuários e organizações compartilhar textos e mídias com diferentes escopos (global, usuário, núcleo ou evento). Esta versão atualizada inclui funcionalidades de moderação automática, denúncias, comentários, curtidas, favoritos, reações, notificações, rate limiting, caching e coleta de métricas, além dos requisitos básicos de 1.0.
 
 ## 2. Escopo
 
-
-- **Inclui**:  
-  - Listagem de posts por tipo_feed e filtros (organização, tags).  
-  - Criação, edição e remoção de posts contendo texto, imagem, PDF ou vídeo.
-  - Upload e download de arquivos associados aos posts.  
-  - Paginação e ordenação de publicações.  
-- **Exclui**:  
-  - Chat em tempo real (delegado ao App Chat).  
-  - Integração com serviços de faturamento.
-
+- **Inclui**:
+  - Listagem de posts por tipo de feed com filtros por organização, núcleo, evento, tags e datas.
+  - Criação, edição e remoção (soft delete) de posts contendo texto e um arquivo de mídia (imagem, PDF ou vídeo) com validação de tipo e tamanho.
+  - Upload e download de arquivos através de storage externo (S3) com geração de URL assinada.
+  - Sistema de tags para categorização de posts e filtragem.
+  - Sistema de moderação: análise automatizada de conteúdo, denúncias de usuários e moderação manual por administradores.
+  - Comentários com suporte a respostas aninhadas, curtidas, bookmarks, reações (curtida/compartilhamento) e registro de visualizações.
+  - Notificações para novos posts, interações (curtidas e comentários) e decisões de moderação.
+  - Rate limiting por usuário e organização para criação e leitura de posts.
+  - Cache de listagens e coleta de métricas Prometheus (contadores e histogramas).
+  - Configuração de plugins por organização para posts automatizados.
+- **Exclui**:
+  - Chat em tempo real (delegado ao App Chat).
+  - Pagamentos e integrações financeiras.
 
 ## 3. Requisitos Funcionais
 
-- **RF‑01**  
-  - Descrição: Listar posts do feed conforme `tipo_feed` (global, usuário, núcleo, evento).  
-  - Prioridade: Alta  
-  - Critérios de Aceite: Retorna lista paginada via `GET /api/feed/?tipo_feed=<tipo>&...`.  
+### Posts e mídia
 
-- **RF‑02**
-  - Descrição: Criar novo post com texto e mídia (imagem, PDF ou vídeo).
-  - Prioridade: Alta  
-  - Critérios de Aceite: `POST /api/feed/` aceita `conteudo`, `tipo_feed`, `file`; retorna HTTP 201.  
+- **RF‑01** – Listar posts conforme `tipo_feed` (global, usuário, núcleo, evento) com filtros por organização, núcleo, evento, tags, data de criação e busca textual. A resposta deve ser paginada via `GET /api/feed/`.
+- **RF‑02** – Criar post com texto opcional e uma única mídia (imagem, PDF ou vídeo). O backend deve validar o tipo e tamanho da mídia conforme configuração. Campos obrigatórios: `tipo_feed`, `conteudo` ou mídia, `organizacao`; `nucleo` é obrigatório se `tipo_feed` = "nucleo" e `evento` se `tipo_feed` = "evento".
+- **RF‑03** – Editar post existente pelo autor, administradores ou moderadores, respeitando as mesmas validações de criação.
+- **RF‑04** – Excluir post através de soft delete. O post não aparece em listagens enquanto `deleted=True`.
+- **RF‑05** – Filtrar posts por tags e intervalos de data; combinar busca textual em `conteudo` e `tags__nome` com operadores OR (`|`). A busca deve usar full‑text (PostgreSQL) ou fallback `icontains`.
+- **RF‑06** – Upload de arquivos resiliente: o upload deve armazenar o arquivo em S3 (ou storage configurado), validar tamanho e extensão e retornar chave interna; URLs assinadas para download devem expirar em 1 hora.
+- **RF‑07** – Suportar vídeos (MP4/WebM) com preview e reprodução embutida. Limite de tamanho definido por configuração.
 
-- **RF‑03**  
-  - Descrição: Editar post existente pelo autor ou admin.  
-  - Prioridade: Média  
-  - Critérios de Aceite: `PUT/PATCH /api/feed/<id>/`; atualiza campos permitidos.  
+### Tags e categorização
 
-- **RF‑04**  
-  - Descrição: Excluir post pelo autor ou admin (soft delete).  
-  - Prioridade: Média  
-  - Critérios de Aceite: `DELETE /api/feed/<id>/`; marca `deleted=true`.  
+- **RF‑08** – Criar, editar, listar e excluir tags associadas a posts. Cada tag possui nome único. Os usuários podem selecionar múltiplas tags ao publicar.
 
-- **RF‑05**  
-  - Descrição: Filtrar feed por organização, tags e data de criação.  
-  - Prioridade: Média  
-  - Critérios de Aceite: Parâmetros `?organizacao=<id>&tags=<t1,t2>&date_from=<data>`.  
+### Moderação e denúncias
 
-- **RF‑06**  
-  - Descrição: Fazer upload seguro de arquivos, armazenando em S3.  
-  - Prioridade: Alta  
-  - Critérios de Aceite: URLs de upload/download válidos e protegidos.
+- **RF‑09** – Aplicar moderação automática usando heurísticas de palavras proibidas. O sistema deve classificar conteúdos como “aprovado”, “pendente” ou “rejeitado”. Posts “rejeitados” não são salvos.
+- **RF‑10** – Permitir que usuários denunciem posts. Cada usuário pode denunciar um post uma vez; ao atingir um limite configurável de denúncias (padrão 3), o status de moderação deve passar para “pendente” com motivo “Limite de denúncias atingido”.
+- **RF‑11** – Moderadores devem poder aprovar ou rejeitar posts pendentes, registrando o usuário avaliador, motivo e data. Posts aprovados tornam‑se visíveis; posts rejeitados permanecem ocultos.
+- **RF‑12** – Manter histórico de moderação em `ModeracaoPost` com status atual, motivo, avaliador e data.
 
+### Interações e engajamento
+
+- **RF‑13** – Permitir curtidas (Like) em posts. Curtir novamente remove a curtida (toggle). Registrar apenas uma curtida por usuário por post.
+- **RF‑14** – Permitir bookmarks (salvar) de posts; listar posts favoritos de cada usuário.
+- **RF‑15** – Permitir comentários em posts com suporte a respostas aninhadas (`reply_to`). Comentários devem estar disponíveis via API e interface, com criação e remoção controladas por permissões.
+- **RF‑16** – Permitir reações adicionais (curtida e compartilhamento) em posts registradas em `Reacao` (um tipo por usuário por post).
+- **RF‑17** – Registrar visualizações de posts (abertura e fechamento) por usuário, incluindo tempo de leitura, para métricas e sugestões futuras.
+
+### Notificações e tarefas assíncronas
+
+- **RF‑18** – Enviar notificações para todos os usuários da organização (exceto o autor) quando um novo post é criado (`feed_new_post`). Garantir idempotência em 1 hora.
+- **RF‑19** – Enviar notificações ao autor quando seu post receber uma curtida (`feed_like`) ou um comentário (`feed_comment`).
+- **RF‑20** – Enviar notificações ao autor quando um post for moderado, indicando o status final (`feed_post_moderated`).
+- **RF‑21** – Registrar métricas de posts criados (`POSTS_CREATED`), notificações enviadas (`NOTIFICATIONS_SENT`) e latência do envio (`NOTIFICATION_LATENCY`).
+- **RF‑22** – Configurar plugins de feed por organização (`FeedPluginConfig`) definindo o módulo Python responsável e a frequência de execução. Plugins podem criar posts automaticamente em intervalos definidos.
+
+### API e integrações
+
+- **RF‑23** – Oferecer API REST com endpoints para posts, comentários, curtidas, bookmarks, denúncias e moderação. A API deve suportar filtros, busca textual, ordenação e paginação, além de endpoints específicos para actions (bookmark/unbookmark, denunciar, moderar) e detalhes de visualizações.
+- **RF‑24** – Respeitar rate limits configuráveis: cada usuário tem um número máximo de posts criados e leituras de feed por período, ajustável por multiplicador de organização.
+- **RF‑25** – Integrar com Celery para processar uploads, notificações e moderação assíncrona. As tasks devem registrar falhas no Sentry e realizar retry em caso de erros temporários.
 
 ## 4. Requisitos Não‑Funcionais
 
-- **RNF‑01**  
-  - Categoria: Desempenho  
-  - Descrição: Listagem e paginação com p95 ≤ 300 ms  
-  - Métrica/Meta: 300 ms  
-
-- **RNF‑02**  
-  - Categoria: Confiabilidade  
-  - Descrição: Upload de arquivos resiliente a falhas de rede  
-  - Métrica/Meta: Retries automáticos até 3 tentativas  
-
-- **RNF‑03**  
-  - Categoria: Segurança  
-  - Descrição: Controle de acesso baseado em escopo e permissões  
-  - Métrica/Meta: 0 acessos indevidos em testes de penetração  
-
-
-- **RNF‑04**: Todos os modelos deste app devem herdar de `TimeStampedModel` para timestamps automáticos (`created` e `modified`), garantindo consistência e evitando campos manuais.
-- **RNF‑05**: Quando houver necessidade de exclusão lógica, os modelos devem implementar `SoftDeleteModel` (ou mixin equivalente), evitando remoções físicas e padronizando os campos `deleted` e `deleted_at`.
-
+- **RNF‑01** – Desempenho: listagem e paginação do feed devem responder em p95 ≤ 300 ms. Utilizar `select_related` e `prefetch_related`, índices apropriados e cache de resultados.
+- **RNF‑02** – Confiabilidade: uploads de arquivos devem ser resilientes a falhas de rede, com até 3 retries; tasks assíncronas devem garantir idempotência (ex.: `notify_new_post`).
+- **RNF‑03** – Segurança: controle de acesso baseado em escopo e permissões; aplicar rate limiting para prevenir abuso; sanitizar entradas de texto; restringir tipos de arquivo e tamanho; registrar ações de moderação para auditoria.
+- **RNF‑04** – Persistência: todos os modelos herdam de `TimeStampedModel` para timestamps e `SoftDeleteModel` para exclusão lógica, exceto as tabelas de métricas.
+- **RNF‑05** – Observabilidade: integrar métricas Prometheus (counters, histograms) e logging estruturado; monitorar falhas via Sentry; uso de `PostView` para análise de engajamento.
+- **RNF‑06** – Usabilidade: páginas devem ser responsivas e utilizarem HTMX para atualização parcial; validar formulários no lado cliente e servidor, exibindo mensagens claras.
+- **RNF‑07** – Escalabilidade: suporte a caching configurável (Redis) para listagens populares; índices full‑text para PostgreSQL; fallback eficiente para outras bases.
 
 ## 5. Casos de Uso
 
 ### UC‑01 – Listar Feed
-1. Usuário acessa endpoint de listagem com parâmetros de filtro.  
-2. Sistema retorna posts paginados.  
-3. Interface exibe posts com mídia e metadados.
+1. Usuário acessa endpoint de listagem com parâmetros (`tipo_feed`, `organizacao`, `nucleo`, `evento`, `tags`, `date_from`, `date_to`, `q`).
+2. Sistema verifica permissões e aplica filtros de escopo.
+3. Busca full‑text ou fallback se aplicável; resultados são ordenados por relevância ou data de criação.
+4. Posts são retornados paginados, vindo do cache quando disponível.
 
 ### UC‑02 – Criar Post
-1. Usuário envia `conteudo` e arquivo via formulário.  
-2. Backend valida e armazena mídia em S3.  
-3. Post é registrado com referência a usuário e escopo.
+1. Usuário envia `conteudo`, `tipo_feed` e opcionalmente um arquivo.
+2. Backend valida campos obrigatórios e mídia; analisa o conteúdo via IA (`pre_analise`).
+3. Se a decisão for “rejeitado”, retorna erro; senão, salva o post, aplica decisão de moderação e envia notificações aos usuários da organização.
+4. Retorna HTTP 201 com os dados do post.
 
-### UC‑03 – Editar Post
-1. Usuário ou admin solicita edição de post.  
-2. Campos permitidos são atualizados.  
-3. Sistema retorna dados atualizados.
+### UC‑03 – Interagir com Post
+1. Usuário consulta um post e pode curtir, comentar, reagir ou salvar.
+2. Para curtidas e comentários, tasks assíncronas notificam o autor.
+3. Para denúncias, registra‐se um `Flag`; se o limite for atingido, muda o status de moderação para “pendente”.
+4. Bookmarks são armazenados ou removidos e podem ser listados via endpoint.
 
-### UC‑04 – Excluir Post
-1. Usuário ou admin solicita remoção de post.  
-2. Sistema marca post como `deleted` e o oculta em listagens.
-
-### UC‑05 – Filtrar e Pesquisar
-1. Usuário aplica filtros por tags, data ou organização.  
-2. Sistema retorna posts correspondentes aos critérios.
-
+### UC‑04 – Moderar Post
+1. Moderador acessa o painel de moderação e aprova ou rejeita posts pendentes.
+2. Sistema atualiza o status e registra motivo, avaliador e data.
+3. Uma task assíncrona envia notificação ao autor informando a decisão.
 
 ## 6. Regras de Negócio
 
+- O campo `organizacao` é obrigatório para todos os posts.
+- Para `tipo_feed` = "nucleo", o `nucleo` deve ser especificado e o autor deve ser membro desse núcleo; para `tipo_feed` = "evento", o `evento` deve ser especificado.
+- Apenas um arquivo de mídia pode ser enviado por post; se múltiplos forem enviados, o sistema rejeita a requisição.
+- Posts moderados como "rejeitado" ou "pendente" não aparecem no feed público; somente o autor e moderadores podem visualizá‑los.
+- Denúncias duplicadas pelo mesmo usuário são rejeitadas. O limite de denúncias que coloca um post em revisão é configurável (`FEED_FLAGS_LIMIT`).
+- Curtidas são exclusivas por par (`user`, `post`); reações são exclusivas por par (`user`, `post`, `tipo`).
+- Cada comentário pode referenciar outro comentário (`reply_to`), formando árvore; a ordem de exibição é cronológica.
+- Rate limits por usuário são configuráveis (`FEED_RATE_LIMIT_POST`, `FEED_RATE_LIMIT_READ`) e multiplicados pelo fator da organização.
+- Plugins de feed podem criar posts automáticos conforme frequência configurada em `FeedPluginConfig`.
 
-- Se `tipo_feed` = 'nucleo', campo `nucleo` é obrigatório.  
-- Se `tipo_feed` = 'evento', campo `evento` é obrigatório.
-- `organizacao` é obrigatório para todos os posts.
-- Posts marcados como `deleted` não aparecem no feed.
-- Vídeos devem estar nos formatos MP4 ou WebM e ter até 20 MB.
+## 7. Modelo de Dados (listado)
 
+**Post** – id, autor (FK → User), organizacao (FK → Organizacao), tipo_feed, nucleo (FK → Nucleo, opcional), evento (FK → Evento, opcional), conteudo, image (opcional), pdf (opcional), video (opcional), tags (M2M → Tag), deleted (bool). Herda de `TimeStampedModel` e `SoftDeleteModel`.
 
-## 7. Modelo de Dados
+**Tag** – id, nome. Herda de `TimeStampedModel`.
 
+**ModeracaoPost** – id, post (OneToOne → Post), status (`pendente`, `aprovado`, `rejeitado`), motivo, avaliado_por (FK → User, opcional), avaliado_em (datetime). Herda de `TimeStampedModel`.
 
-*Nota:* Todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e utilizam `SoftDeleteModel` para exclusão lógica quando necessário. Assim, campos de timestamp e exclusão lógica não são listados individualmente.
+**Flag** – id, post (FK → Post), user (FK → User). Herda de `TimeStampedModel`.
 
-- **Post**  
-  - id: UUID  
-  - autor: FK → User.id  
-  - organizacao: FK → Organizacao.id  
-  - tipo_feed: enum('global','usuario','nucleo','evento')  
-  - nucleo: FK → Nucleo.id (opcional)  
-  - evento: FK → Evento.id (opcional)
-  - conteudo: TextField
-  - image: ImageField (S3)
-  - pdf: FileField (S3)
-  - video: FileField (S3)
+**Like** – id, post (FK → Post), user (FK → User). Herda de `TimeStampedModel`.
 
+**Bookmark** – id, user (FK → User), post (FK → Post). Herda de `TimeStampedModel`.
+
+**Comment** – id, post (FK → Post), user (FK → User), reply_to (FK → Comment, opcional), texto. Herda de `TimeStampedModel`.
+
+**Reacao** – id, post (FK → Post), user (FK → User), vote (`like`, `share`). Herda de `TimeStampedModel`.
+
+**PostView** – id, post (FK → Post), user (FK → User), opened_at, closed_at. Herda de `TimeStampedModel`.
+
+**FeedPluginConfig** – id, organizacao (FK → Organizacao), module_path (string), frequency (int). Herda de `TimeStampedModel`.
 
 ## 8. Critérios de Aceite (Gherkin)
 
-
-```gherkin
-Feature: Feed de Publicações
-  Scenario: Listar posts globais
-    Given posts existentes no escopo "global"
-    When GET /api/feed/?tipo_feed=global
-    Then retorna lista de posts em JSON
-
-  Scenario: Criar post com mídia
-    Given usuário autenticado
-    When envia POST com `conteudo` e arquivo
-    Then retorna HTTP 201 e post aparece na listagem
 ```
+Feature: Denúncia e moderação de post
+  Scenario: Post atinge limite de denúncias
+    Given um post existente
+    And usuários denunciam o post até atingir o limite
+    When o limite de denúncias é alcançado
+    Then o status do post passa para “pendente”
+    And o motivo registra “Limite de denúncias atingido”
 
+Feature: Curtida e notificação
+  Scenario: Curtir um post
+    Given um usuário visualiza um post
+    When ele clica em curtir
+    Then uma curtida é registrada
+    And uma notificação “feed_like” é enviada ao autor
+
+Feature: Moderação manual
+  Scenario: Moderador aprova post pendente
+    Given um post em status pendente
+    When o moderador aprova o post
+    Then o status passa a “aprovado”
+    And o autor recebe uma notificação “feed_post_moderated” com status
+```
 
 ## 9. Dependências / Integrações
 
-
-- **Storage S3**: upload/download de arquivos.  
-- **App Accounts**: autenticação e contexto de usuário.  
-- **App Organizações**: validação de escopo de organização.  
-- **App Núcleos** e **App Eventos**: validação de IDs de núcleo/evento.  
-- **Search Engine**: índices para pesquisa por tags.  
-- **Celery**: processar uploads e envio de notificações assíncronas.  
-- **Sentry**: monitoramento de erros.
-
-
-## 10. Requisitos Adicionais / Melhorias
-
-### Requisitos Funcionais Adicionais
-- **RF‑07** – Suportar upload de vídeos (MP4) com preview e reprodução embutida.  
-- **RF‑08** – Implementar sistema de tags associadas a posts e permitir filtragem por tags.  
-- **RF‑09** – Aplicar moderação automática de conteúdo com lista de palavras proibidas e marcação de posts para revisão.  
-- **RF‑10** – Notificar autores quando seus posts receberem curtidas ou comentários.  
-
-### Modelo de Dados Adicional
-- `Post`: adicionar `video: FileField` (opcional) e `tags: M2M → Tag`.  
-- Nova entidade `Tag` com campos: id, nome (único).  
-- Nova entidade `ModeracaoPost` com campos: id, post_id, status (`pendente`,`aprovado`,`rejeitado`), motivo, avaliado_por, avaliado_em.  
-
-### Regras de Negócio Adicionais
-- Vídeos devem estar em formatos suportados (MP4, WEBM) e com tamanho máximo definido por configuração.  
-- Posts com conteúdo moderado ficam ocultos até aprovação.
+- **Storage (S3)** – armazenamento de imagens, PDFs e vídeos.
+- **App Accounts** – autenticação e contexto do usuário.
+- **App Organizações**, **Núcleos**, **Eventos** – validação do escopo de publicação.
+- **Celery** – processamento de uploads, notificações e moderação assíncrona.
+- **App Notificações** – envio de notificações para usuários.
+- **Search Engine** – índices full‑text para PostgreSQL e fallback para outras bases.
+- **Prometheus/Grafana** – coleta de métricas de posts criados, notificações enviadas e latência de notificações.
+- **Sentry** – monitoramento de falhas em tasks e uploads.

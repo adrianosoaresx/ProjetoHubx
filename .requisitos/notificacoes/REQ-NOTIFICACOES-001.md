@@ -218,3 +218,79 @@ Feature: Enviar notificações
 - **Serviços de e‑mail/push/WhatsApp** – integração via clientes específicos; hoje são stubs que apenas registram logs【341912000934825†L9-L21】, devendo ser implementados pela equipe de infraestrutura.
 - **Módulo Financeiro e demais módulos** – deverão utilizar `enviar_para_usuario` para enviar notificações de cobranças, inadimplência e outras comunicações【768480434653939†L9-L33】.
 - **Métricas** – integração com `services/metrics.py` para incrementar contadores de notificações.
+
+## 10. Extensões confirmadas no código (complemento à v1.0.0 — sem remoções)
+
+> Esta seção **não altera** o conteúdo anterior; apenas adiciona itens observados no código do app de notificações. Serve como base para uma futura **v1.1.0**.
+
+### 10.1 Novas capacidades
+
+- Entrega in‑app em tempo real via WebSocket com canal dedicado `ws/notificacoes/` (agrupamento por usuário).
+- Push Web com PushSubscription (Web Push/pywebpush) e integração opcional OneSignal.
+- Marcação de leitura de notificações (status **LIDA**) via API.
+- Digest/Resumo diário e semanal, consolidando pendências por usuário conforme frequência de preferência.
+- Métricas adicionais: histograma de duração de tasks de notificação (além dos contadores existentes).
+- Validação de variáveis de ambiente em inicialização do app (fail‑fast se faltarem chaves necessárias).
+- Permissão específica para disparo interno de notificações por endpoint (ex.: `notificacoes.can_send_notifications`).
+
+### 10.2 Novos Requisitos Funcionais (adições)
+
+- **RF‑08 – Entrega em Tempo Real (WebSocket)**: publicar eventos de nova notificação no grupo do usuário por `ws/notificacoes/`.
+- **RF‑09 – Marcar Notificação como LIDA**: endpoint `PATCH /api/notificacoes/logs/{id}` altera status para LIDA e registra `data_leitura`.
+- **RF‑10 – PushSubscription (Web Push)**: CRUD autenticado de inscrições push do usuário; remoção automática em 404/410.
+- **RF‑11 – Resumos Diário/Semanal (Digest)**: job agrega pendências por canal e registra `HistoricoNotificacao`.
+- **RF‑12 – Permissão de Disparo por Endpoint**: `POST /api/notificacoes/enviar/` exige permissão `notificacoes.can_send_notifications`.
+
+### 10.3 Requisitos Não‑Funcionais adicionais
+
+- **RNF‑09 – Latência In‑App**: eventos WebSocket p95 ≤ 200 ms.
+- **RNF‑10 – Retenção/Auditoria**: logs imutáveis com retenção mínima de 5 anos; admin read‑only.
+- **RNF‑11 – Validação de Ambiente**: falha no start se variáveis críticas não definidas.
+- **RNF‑12 – Observabilidade de Duração**: histogram Prometheus `notificacao_task_duration_seconds`.
+
+### 10.4 Ampliações de Modelo de Dados
+
+- **NotificationLog**: novo status 'LIDA'; campo `data_leitura`.
+- **PushSubscription**: nova entidade com endpoint, chaves e status.
+- **HistoricoNotificacao**: nova entidade para armazenar resumos diários/semanais.
+
+### 10.5 Endpoints REST e WebSocket
+
+- `POST /api/notificacoes/enviar/` — exige permissão.
+- `GET logs/` — lista; `PATCH logs/{id}` — marcar LIDA.
+- `GET/POST/DELETE push/subscriptions/` — gerenciar Web Push.
+- **WS** `ws/notificacoes/` — eventos in‑app.
+
+### 10.6 Preferências e Frequência
+
+- Frequência por canal: `imediata`, `diaria`, `semanal`.
+- Digest respeita a frequência configurada.
+
+### 10.7 Métricas adicionais
+
+- `notificacao_task_duration_seconds` (Histogram).
+- `notificacoes_entregues_in_app_total` (Counter).
+
+### 10.8 Variáveis de Ambiente esperadas
+
+- `NOTIFICATIONS_EMAIL_API_URL`, `NOTIFICATIONS_EMAIL_API_KEY`
+- `NOTIFICATIONS_WHATSAPP_API_URL`, `NOTIFICATIONS_WHATSAPP_API_KEY`
+- `ONESIGNAL_APP_ID`, `ONESIGNAL_API_KEY`
+- `VAPID_PRIVATE_KEY`, `VAPID_CLAIM_SUB`
+- `DEFAULT_FROM_EMAIL`
+
+### 10.9 Critérios de Aceite adicionais (Gherkin)
+
+```gherkin
+Feature: Notificações in-app em tempo real
+  Scenario: Usuário recebe evento via WebSocket
+    Given usuário autenticado com conexão em ws/notificacoes/
+    When sistema dispara notificação elegível para in-app
+    Then cliente recebe evento "notification_message" com payload JSON em até 200 ms
+
+Feature: Marcar notificação como LIDA
+  Scenario: API atualiza status de leitura
+    Given existe NotificationLog com status ENVIADA
+    When cliente envia PATCH /api/notificacoes/logs/{id} com {"status":"LIDA"}
+    Then status do log passa a LIDA e "data_leitura" é preenchida
+```
