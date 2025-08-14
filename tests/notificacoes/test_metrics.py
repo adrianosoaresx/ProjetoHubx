@@ -14,7 +14,10 @@ def test_metrics_dashboard(client):
     staff = UserFactory(is_staff=True, is_superuser=True)
     client.force_login(staff)
     user = UserFactory()
-    total_before = NotificationTemplate.objects.count()
+
+    active_before = NotificationTemplate.objects.count()
+    inactive_before = NotificationTemplate.all_objects.filter(deleted=True).count()
+
     template = NotificationTemplate.objects.create(codigo="t", assunto="a", corpo="b", canal="email")
     NotificationLog.objects.create(user=user, template=template, canal="email", status=NotificationStatus.ENVIADA)
     log2 = NotificationLog.objects.create(user=user, template=template, canal="whatsapp", status=NotificationStatus.FALHA)

@@ -4,7 +4,7 @@ Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp. Todos 
 
 ## Modelos
 
-- `NotificationTemplate` – define mensagens para cada canal e possui campos `created_at`/`updated_at`.
+- `NotificationTemplate` – define mensagens para cada canal e possui campos `created_at`/`updated_at`/`deleted`.
 - `UserNotificationPreference` – guarda preferências do usuário por canal e as frequências (`frequencia_email`, `frequencia_whatsapp`).
 - `NotificationLog` – histórico de envios com status imutável (`pendente`, `enviada`, `falha`).
 
@@ -31,7 +31,9 @@ Parâmetros:
 
 Exceções:
 
-- `ValueError` caso o template não exista.
+
+- `ValueError` caso o template não exista ou tenha sido removido.
+
 
 Se todos os canais preferidos do usuário estiverem desabilitados, um `NotificationLog` é criado com status **FALHA** e nenhum envio é disparado.
 
