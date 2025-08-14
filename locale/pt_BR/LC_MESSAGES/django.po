@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 16:44-0300\n"
+"POT-Creation-Date: 2025-08-14 20:18-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
 #: templates/404.html:4
 msgid "Página não encontrada"
 msgstr ""
@@ -43,6 +44,10 @@ msgstr ""
 #: templates/base.html:39
 msgid "Pular para o conteúdo principal"
 msgstr "Pular para o conteúdo principal"
+
+#: templates/base.html:60
+msgid "Página inicial"
+msgstr "Página inicial"
 
 #: templates/base.html:64
 msgid "Abrir menu"
