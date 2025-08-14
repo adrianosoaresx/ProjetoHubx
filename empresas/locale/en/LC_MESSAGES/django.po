@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 12:47-0300\n"
+"POT-Creation-Date: 2025-08-14 17:57-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,291 +17,378 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: templates/empresas/avaliacao_form.html:4
+
+#: empresas/forms.py:46
+msgid "CNPJ inválido"
+msgstr ""
+
+#: empresas/forms.py:52 empresas/views.py:72 empresas/views.py:94
+msgid "Empresa com este CNPJ já existe."
+msgstr ""
+
+#: empresas/templates/empresas/avaliacao_form.html:4
 msgid "Avaliar empresa"
 msgstr ""
 
-#: templates/empresas/avaliacao_form.html:8
+#: empresas/templates/empresas/avaliacao_form.html:8
 msgid "Avaliação"
 msgstr ""
 
-#: templates/empresas/avaliacao_form.html:12
-#: templates/empresas/contato_form.html:32 templates/empresas/nova.html:86
-#: templates/empresas/tag_form.html:24
+#: empresas/templates/empresas/avaliacao_form.html:12
+#: empresas/templates/empresas/contato_form.html:32
+#: empresas/templates/empresas/nova.html:86
+#: empresas/templates/empresas/tag_form.html:24
 msgid "Salvar"
 msgstr ""
 
-#: templates/empresas/busca.html:4 templates/empresas/busca.html:9
+#: empresas/templates/empresas/busca.html:4
+#: empresas/templates/empresas/busca.html:9
 msgid "Buscar Empresas"
 msgstr ""
 
-#: templates/empresas/busca.html:10
+#: empresas/templates/empresas/busca.html:10
 msgid "Encontre empresas na plataforma HubX"
 msgstr ""
 
-#: templates/empresas/busca.html:14
+#: empresas/templates/empresas/busca.html:14
 msgid "Buscar por nome, CNPJ ou localização..."
 msgstr ""
 
-#: templates/empresas/busca.html:23
+#: empresas/templates/empresas/busca.html:23
 msgid "Voltar para Minhas Empresas"
 msgstr ""
 
-#: templates/empresas/contato_confirm_delete.html:3
+#: empresas/templates/empresas/contato_confirm_delete.html:3
 msgid "Remover Contato"
 msgstr ""
 
-#: templates/empresas/contato_confirm_delete.html:7
+#: empresas/templates/empresas/contato_confirm_delete.html:7
 #, python-format
 msgid "Confirma remover contato %(contato.nome)s?"
 msgstr ""
 
-#: templates/empresas/contato_confirm_delete.html:10
-#: templates/empresas/nova.html:83
-#: templates/empresas/tag_confirm_delete.html:11
-#: templates/empresas/tag_form.html:23
+#: empresas/templates/empresas/contato_confirm_delete.html:10
+#: empresas/templates/empresas/nova.html:83
+#: empresas/templates/empresas/tag_confirm_delete.html:11
+#: empresas/templates/empresas/tag_form.html:23
 msgid "Cancelar"
 msgstr ""
 
-#: templates/empresas/contato_confirm_delete.html:11
-#: templates/empresas/favoritos.html:20
-#: templates/empresas/includes/empresas_table.html:33
-#: templates/empresas/tag_confirm_delete.html:12
-#: templates/empresas/tags_list.html:45
+#: empresas/templates/empresas/contato_confirm_delete.html:11
+#: empresas/templates/empresas/favoritos.html:20
+#: empresas/templates/empresas/includes/empresas_table.html:33
+#: empresas/templates/empresas/tag_confirm_delete.html:12
+#: empresas/templates/empresas/tags_list.html:45
 msgid "Remover"
 msgstr ""
 
-#: templates/empresas/contato_form.html:3
+#: empresas/templates/empresas/contato_form.html:3
+#: empresas/templates/empresas/detail.htm:37
+#: empresas/templates/empresas/detail.htm:39
 msgid "Contato"
 msgstr ""
 
-#: templates/empresas/contato_form.html:9
-#: templates/empresas/includes/empresas_table.html:6
-#: templates/empresas/lista.html:25 templates/empresas/tags_list.html:33
+#: empresas/templates/empresas/contato_form.html:9
+#: empresas/templates/empresas/includes/empresas_table.html:6
+#: empresas/templates/empresas/lista.html:25
+#: empresas/templates/empresas/tags_list.html:33
 msgid "Nome"
 msgstr ""
 
-#: templates/empresas/contato_form.html:14
+#: empresas/templates/empresas/contato_form.html:14
 msgid "E-mail"
 msgstr ""
 
-#: templates/empresas/contato_form.html:19
+#: empresas/templates/empresas/contato_form.html:19
 msgid "Telefone"
 msgstr ""
 
-#: templates/empresas/contato_form.html:24
+#: empresas/templates/empresas/contato_form.html:24
 msgid "Cargo"
 msgstr ""
 
-#: templates/empresas/contato_form.html:30
-#: templates/empresas/includes/empresas_table.html:7
+#: empresas/templates/empresas/contato_form.html:30
+#: empresas/templates/empresas/includes/empresas_table.html:7
 msgid "Contato principal"
 msgstr ""
 
-#: templates/empresas/favoritos.html:4 templates/empresas/favoritos.html:9
+#: empresas/templates/empresas/detail.htm:24
+msgid "CNPJ"
+msgstr "CNPJ"
+
+#: empresas/templates/empresas/detail.htm:25
+msgid "Status de validação"
+msgstr "Validation status"
+
+#: empresas/templates/empresas/detail.htm:27
+#, python-format
+msgid "Validado em %(date)s (%(source)s)"
+msgstr "Validated on %(date)s (%(source)s)"
+
+#: empresas/templates/empresas/detail.htm:31
+msgid "Pendente"
+msgstr "Pending"
+
+#: empresas/templates/empresas/detail.htm:34
+msgid "Localização"
+msgstr "Location"
+
+#: empresas/templates/empresas/detail.htm:39
+msgid "Nenhum contato cadastrado"
+msgstr "No contact registered"
+
+#: empresas/templates/empresas/detail.htm:46
+#: empresas/templates/empresas/includes/empresas_table.html:10
+#: empresas/templates/empresas/lista.html:37
+msgid "Tags"
+msgstr "Tags"
+
+#: empresas/templates/empresas/detail.htm:56
+#: empresas/templates/empresas/tags_list.html:16
+msgid "Produtos"
+msgstr "Products"
+
+#: empresas/templates/empresas/detail.htm:63
+msgid "Nenhum produto cadastrado."
+msgstr "No product registered."
+
+#: empresas/templates/empresas/detail.htm:69
+#: empresas/templates/empresas/tags_list.html:17
+msgid "Serviços"
+msgstr "Services"
+
+#: empresas/templates/empresas/detail.htm:76
+msgid "Nenhum serviço cadastrado."
+msgstr "No service registered."
+
+#: empresas/templates/empresas/detail.htm:86
+#: empresas/templates/empresas/nova.html:9
+msgid "Voltar"
+msgstr "Back"
+
+#: empresas/templates/empresas/detail.htm:88
+msgid "Histórico"
+msgstr "History"
+
+#: empresas/templates/empresas/detail.htm:91
+#: empresas/templates/empresas/includes/empresas_table.html:31
+#: empresas/templates/empresas/tag_form.html:7
+#: empresas/templates/empresas/tags_list.html:44
+msgid "Editar"
+msgstr "Edit"
+
+#: empresas/templates/empresas/favoritos.html:4
+#: empresas/templates/empresas/favoritos.html:9
 msgid "Empresas Favoritas"
 msgstr ""
 
-#: templates/empresas/favoritos.html:23
+#: empresas/templates/empresas/favoritos.html:23
 msgid "Nenhuma empresa favorita."
 msgstr ""
 
-#: templates/empresas/historico.html:3 templates/empresas/historico.html:6
+#: empresas/templates/empresas/historico.html:3
+#: empresas/templates/empresas/historico.html:6
 msgid "Histórico de alterações"
 msgstr ""
 
-#: templates/empresas/historico.html:10
+#: empresas/templates/empresas/historico.html:10
 msgid "Campo"
 msgstr ""
 
-#: templates/empresas/historico.html:11 templates/empresas/historico.html:32
-#: templates/empresas/includes/empresas_table.html:43
-#: templates/empresas/includes/empresas_table.html:45
+#: empresas/templates/empresas/historico.html:11
+#: empresas/templates/empresas/historico.html:33
+#: empresas/templates/empresas/includes/empresas_table.html:43
+#: empresas/templates/empresas/includes/empresas_table.html:45
 msgid "Anterior"
 msgstr ""
 
-#: templates/empresas/historico.html:12
+#: empresas/templates/empresas/historico.html:12
 msgid "Novo"
 msgstr ""
 
-#: templates/empresas/historico.html:13
+#: empresas/templates/empresas/historico.html:13
 msgid "Data"
 msgstr ""
 
-#: templates/empresas/historico.html:25
+#: empresas/templates/empresas/historico.html:26
 msgid "Nenhuma alteração registrada."
 msgstr ""
 
-#: templates/empresas/historico.html:30
-#: templates/empresas/includes/empresas_table.html:41
+#: empresas/templates/empresas/historico.html:31
+#: empresas/templates/empresas/includes/empresas_table.html:41
 msgid "Paginação"
 msgstr ""
 
-#: templates/empresas/historico.html:35
-#: templates/empresas/includes/empresas_table.html:49
-#: templates/empresas/includes/empresas_table.html:51
+#: empresas/templates/empresas/historico.html:36
+#: empresas/templates/empresas/includes/empresas_table.html:49
+#: empresas/templates/empresas/includes/empresas_table.html:51
 msgid "Próxima"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:3
+#: empresas/templates/empresas/includes/avaliacoes.html:3
 msgid "Avaliações"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:5
+#: empresas/templates/empresas/includes/avaliacoes.html:5
 msgid "Média"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:5
+#: empresas/templates/empresas/includes/avaliacoes.html:5
 msgid "avaliações"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:11
+#: empresas/templates/empresas/includes/avaliacoes.html:11
 msgid "Avaliar com"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:11
+#: empresas/templates/empresas/includes/avaliacoes.html:11
 msgid "estrelas"
 msgstr ""
 
-#: templates/empresas/includes/avaliacoes.html:29
+#: empresas/templates/empresas/includes/avaliacoes.html:29
 msgid "Nenhuma avaliação registrada."
 msgstr ""
 
-#: templates/empresas/includes/empresas_table.html:8
+#: empresas/templates/empresas/includes/empresas_table.html:8
 msgid "Setor"
 msgstr ""
 
-#: templates/empresas/includes/empresas_table.html:9
-#: templates/empresas/lista.html:29
+#: empresas/templates/empresas/includes/empresas_table.html:9
+#: empresas/templates/empresas/lista.html:29
 msgid "Município"
 msgstr ""
 
-#: templates/empresas/includes/empresas_table.html:10
-#: templates/empresas/lista.html:37
-msgid "Tags"
-msgstr ""
-
-#: templates/empresas/includes/empresas_table.html:11
-#: templates/empresas/tags_list.html:35
+#: empresas/templates/empresas/includes/empresas_table.html:11
+#: empresas/templates/empresas/tags_list.html:35
 msgid "Ações"
 msgstr ""
 
-#: templates/empresas/includes/empresas_table.html:17
+#: empresas/templates/empresas/includes/empresas_table.html:17
 msgid "excluída"
 msgstr ""
 
-#: templates/empresas/includes/empresas_table.html:31
-#: templates/empresas/tag_form.html:7 templates/empresas/tags_list.html:44
-msgid "Editar"
-msgstr ""
-
-#: templates/empresas/includes/empresas_table.html:56
+#: empresas/templates/empresas/includes/empresas_table.html:56
 msgid "Nenhuma empresa encontrada."
 msgstr ""
 
-#: templates/empresas/lista.html:4 templates/empresas/lista.html:19
+#: empresas/templates/empresas/lista.html:4
+#: empresas/templates/empresas/lista.html:19
 msgid "Empresas"
 msgstr ""
 
-#: templates/empresas/lista.html:20 templates/empresas/nova.html:4
-#: templates/empresas/nova.html:11
+#: empresas/templates/empresas/lista.html:20
+#: empresas/templates/empresas/nova.html:4
+#: empresas/templates/empresas/nova.html:11
 msgid "Nova Empresa"
 msgstr ""
 
-#: templates/empresas/lista.html:33
+#: empresas/templates/empresas/lista.html:33
 msgid "Estado"
 msgstr ""
 
-#: templates/empresas/lista.html:45
+#: empresas/templates/empresas/lista.html:45
 msgid "Palavras-chave"
 msgstr ""
 
-#: templates/empresas/lista.html:49
+#: empresas/templates/empresas/lista.html:49
 msgid "Busca"
 msgstr ""
 
-#: templates/empresas/lista.html:53 templates/empresas/tags_list.html:25
+#: empresas/templates/empresas/lista.html:53
+#: empresas/templates/empresas/tags_list.html:25
 msgid "Filtrar"
 msgstr ""
 
-#: templates/empresas/nova.html:4 templates/empresas/nova.html:11
+#: empresas/templates/empresas/nova.html:4
+#: empresas/templates/empresas/nova.html:11
 msgid "Editar Empresa"
 msgstr ""
 
-#: templates/empresas/nova.html:9
-msgid "Voltar"
-msgstr ""
-
-#: templates/empresas/nova.html:12
+#: empresas/templates/empresas/nova.html:12
 msgid "Cadastre sua empresa na plataforma"
 msgstr ""
 
-#: templates/empresas/nova.html:56
+#: empresas/templates/empresas/nova.html:56
 msgid "Descreva brevemente o que sua empresa faz e seus principais objetivos."
 msgstr ""
 
-#: templates/empresas/nova.html:74
+#: empresas/templates/empresas/nova.html:74
 msgid "Separe por vírgulas."
 msgstr ""
 
-#: templates/empresas/nova.html:86
+#: empresas/templates/empresas/nova.html:86
 msgid "Cadastrar Empresa"
 msgstr ""
 
-#: templates/empresas/tag_confirm_delete.html:3
-#: templates/empresas/tag_confirm_delete.html:7
+#: empresas/templates/empresas/tag_confirm_delete.html:3
+#: empresas/templates/empresas/tag_confirm_delete.html:7
 msgid "Remover Item"
 msgstr ""
 
-#: templates/empresas/tag_confirm_delete.html:8
+#: empresas/templates/empresas/tag_confirm_delete.html:8
 #, python-format
 msgid "Tem certeza que deseja remover <strong>%(object.nome)s</strong>?"
 msgstr ""
 
-#: templates/empresas/tag_form.html:3
+#: empresas/templates/empresas/tag_form.html:3
 msgid "Editar Item"
 msgstr ""
 
-#: templates/empresas/tag_form.html:3 templates/empresas/tags_list.html:8
+#: empresas/templates/empresas/tag_form.html:3
+#: empresas/templates/empresas/tags_list.html:8
 msgid "Novo Item"
 msgstr ""
 
-#: templates/empresas/tag_form.html:7
+#: empresas/templates/empresas/tag_form.html:7
 msgid "Cadastrar"
 msgstr ""
 
-#: templates/empresas/tag_form.html:7
+#: empresas/templates/empresas/tag_form.html:7
 msgid "Item"
 msgstr ""
 
-#: templates/empresas/tag_form.html:8
+#: empresas/templates/empresas/tag_form.html:8
 msgid "Preencha o nome e a categoria do item"
 msgstr ""
 
-#: templates/empresas/tags_list.html:3 templates/empresas/tags_list.html:7
+#: empresas/templates/empresas/tags_list.html:3
+#: empresas/templates/empresas/tags_list.html:7
 msgid "Produtos e Serviços"
 msgstr ""
 
-#: templates/empresas/tags_list.html:13 templates/empresas/tags_list.html:34
+#: empresas/templates/empresas/tags_list.html:13
+#: empresas/templates/empresas/tags_list.html:34
 msgid "Categoria"
 msgstr ""
 
-#: templates/empresas/tags_list.html:15
+#: empresas/templates/empresas/tags_list.html:15
 msgid "Todas"
 msgstr ""
 
-#: templates/empresas/tags_list.html:16
-msgid "Produtos"
-msgstr ""
-
-#: templates/empresas/tags_list.html:17
-msgid "Serviços"
-msgstr ""
-
-#: templates/empresas/tags_list.html:21
+#: empresas/templates/empresas/tags_list.html:21
 msgid "Palavra-chave"
 msgstr ""
 
-#: templates/empresas/tags_list.html:52
+#: empresas/templates/empresas/tags_list.html:52
 msgid "Nenhum item cadastrado."
+msgstr ""
+
+#: empresas/views.py:74
+msgid "Empresa criada com sucesso."
+msgstr ""
+
+#: empresas/views.py:96
+msgid "Empresa atualizada com sucesso."
+msgstr ""
+
+#: empresas/views.py:113
+msgid "Empresa removida com sucesso."
+msgstr ""
+
+#: empresas/views.py:216
+msgid "Avaliação registrada com sucesso."
+msgstr ""
+
+#: empresas/views.py:243
+msgid "Avaliação atualizada com sucesso."
 msgstr ""
