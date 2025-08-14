@@ -24,6 +24,8 @@ class ApiTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Token inválido ou revogado") from exc
         if api_token.expires_at and api_token.expires_at <= timezone.now():
             raise AuthenticationFailed("Token expirado")
+        if api_token.user is None or getattr(api_token.user, "deleted", False):
+            raise AuthenticationFailed("Usuário desativado")
         api_token.last_used_at = timezone.now()
         api_token.save(update_fields=["last_used_at"])
         return (api_token.user, api_token)
