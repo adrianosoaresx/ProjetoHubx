@@ -17,7 +17,7 @@
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
 
-  {% with labels='["Usuários","Eventos","Posts"]' %}
+  {% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
   {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
   {% endwith %}
 

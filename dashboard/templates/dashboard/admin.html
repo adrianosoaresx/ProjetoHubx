@@ -51,9 +51,9 @@
     });
   </script>
 
-  {% with labels='["Usuários","Eventos","Posts"]' %}
-  {% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
-  {% endwith %}
+{% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
+{% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
+{% endwith %}
 
   <div hx-get="{% url 'dashboard:lancamentos-partial' %}" hx-trigger="load, every 30s" hx-target="#lancamentos" hx-swap="innerHTML"></div>
 

@@ -11,6 +11,7 @@ coverage==7.9.2
 freezegun==1.5.3
 factory_boy==3.3.3
 Faker==24.9.0
+beautifulsoup4==4.13.4
 
 # Tipagem
 mypy_extensions==1.1.0
