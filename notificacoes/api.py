@@ -78,21 +78,22 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
         return PushSubscription.objects.filter(user=self.request.user)
 
     def list(self, request):
-        queryset = self.get_queryset().filter(active=True)
+        queryset = self.get_queryset()
         serializer = PushSubscriptionSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request):
         serializer = PushSubscriptionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        subscription, created = PushSubscription.objects.update_or_create(
+        subscription, created = PushSubscription.all_objects.update_or_create(
             user=request.user,
             device_id=serializer.validated_data["device_id"],
             defaults={
                 "endpoint": serializer.validated_data["endpoint"],
                 "p256dh": serializer.validated_data["p256dh"],
                 "auth": serializer.validated_data["auth"],
-                "active": True,
+                "deleted": False,
+                "deleted_at": None,
             },
         )
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
@@ -103,6 +104,5 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
             subscription = self.get_queryset().get(pk=pk)
         except PushSubscription.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        subscription.active = False
-        subscription.save(update_fields=["active"])
+        subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

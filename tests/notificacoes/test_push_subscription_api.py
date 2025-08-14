@@ -19,7 +19,7 @@ def test_crud_push_subscription(admin_user):
     resp = client.post(url, data)
     assert resp.status_code in {200, 201}
     sub_id = resp.data["id"]
-    assert PushSubscription.objects.filter(id=sub_id, active=True).exists()
+    assert PushSubscription.objects.filter(id=sub_id).exists()
 
     resp = client.get(url)
     assert resp.status_code == 200
@@ -27,4 +27,5 @@ def test_crud_push_subscription(admin_user):
 
     resp = client.delete(f"{url}{sub_id}/")
     assert resp.status_code == 204
-    assert PushSubscription.objects.filter(id=sub_id, active=False).exists()
+    assert not PushSubscription.objects.filter(id=sub_id).exists()
+    assert PushSubscription.all_objects.filter(id=sub_id, deleted=True).exists()

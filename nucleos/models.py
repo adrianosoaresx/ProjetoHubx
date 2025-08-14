@@ -87,10 +87,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     def coordenadores(self):
         return self.membros.filter(participacoes__papel="coordenador")
 
-    def soft_delete(self) -> None:
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        self.save(update_fields=["deleted", "deleted_at"])
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -125,7 +121,7 @@ class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
         return self.periodo_inicio <= now <= self.periodo_fim
 
 
-class ConviteNucleo(models.Model):
+class ConviteNucleo(TimeStampedModel):
     token = models.CharField(max_length=36, unique=True, default=uuid.uuid4, editable=False)
     token_obj = models.ForeignKey(
         "tokens.TokenAcesso",
@@ -143,7 +139,6 @@ class ConviteNucleo(models.Model):
     limite_uso_diario = models.PositiveSmallIntegerField(default=1)
     data_expiracao = models.DateTimeField(null=True, blank=True)
     usado_em = models.DateTimeField(null=True, blank=True)
-    criado_em = models.DateTimeField(auto_now_add=True)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.CASCADE)
 
     def expirado(self) -> bool:
@@ -154,7 +149,7 @@ class ConviteNucleo(models.Model):
         from django.conf import settings
 
         dias = getattr(settings, "CONVITE_NUCLEO_EXPIRACAO_DIAS", 7)
-        return self.criado_em + timedelta(days=dias) < timezone.now()
+        return self.created_at + timedelta(days=dias) < timezone.now()
 
     class Meta:
         verbose_name = "Convite para Núcleo"

@@ -30,7 +30,7 @@ def _criar_logs(user, canal, quantidade=2, offset_minutes=0):
             user=user,
             template=template,
             canal=canal,
-            created=base_time + timezone.timedelta(seconds=i),
+            created_at=base_time + timezone.timedelta(seconds=i),
         )
 
 

@@ -216,12 +216,15 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         return self.interacoes.count()
 
 
-class InteracaoDiscussao(TimeStampedModel):
+class InteracaoDiscussao(TimeStampedModel, SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
     valor = models.SmallIntegerField(choices=[(1, "Curtir"), (-1, "Não Curtir")], default=1)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ("user", "content_type", "object_id")
@@ -235,7 +238,7 @@ class InteracaoDiscussao(TimeStampedModel):
         self.valor = 1 if value == "like" else -1
 
 
-class Denuncia(TimeStampedModel):
+class Denuncia(TimeStampedModel, SoftDeleteModel):
     """Denúncia de conteúdo para moderação."""
 
     class Status(models.TextChoices):
@@ -259,6 +262,9 @@ class Denuncia(TimeStampedModel):
         on_delete=models.SET_NULL,
         related_name="denuncias",
     )
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         unique_together = ("user", "content_type", "object_id")

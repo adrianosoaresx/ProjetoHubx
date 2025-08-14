@@ -88,6 +88,6 @@ class ConviteNucleoSerializer(serializers.ModelSerializer):
             "limite_uso_diario",
             "data_expiracao",
             "usado_em",
-            "criado_em",
+            "created_at",
         ]
-        read_only_fields = ["id", "token", "data_expiracao", "usado_em", "criado_em"]
+        read_only_fields = ["id", "token", "data_expiracao", "usado_em", "created_at"]

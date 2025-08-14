@@ -315,9 +315,9 @@ class DashboardService:
     ) -> int:
         qs = UserToken.objects.filter(acao=UserToken.Acao.USO).select_related("token")
         if data_inicio:
-            qs = qs.filter(timestamp__gte=data_inicio)
+            qs = qs.filter(created_at__gte=data_inicio)
         if data_fim:
-            qs = qs.filter(timestamp__lte=data_fim)
+            qs = qs.filter(created_at__lte=data_fim)
         if organizacao_id:
             qs = qs.filter(token__organizacao_id=organizacao_id)
         if nucleo_id:
@@ -382,7 +382,7 @@ class DashboardService:
         queryset,
         inicio: datetime,
         fim: datetime,
-        campo: str = "created",
+        campo: str = "created_at",
     ) -> Dict[str, float]:
         """Calcule crescimento utilizando uma única consulta."""
         delta = fim - inicio
@@ -555,10 +555,6 @@ class DashboardMetricsService:
                 ),
                 "created",
             ),
-            "inscricoes_confirmadas": (
-                InscricaoEvento.objects.select_related("evento").filter(status="confirmada"),
-                "created",
-            ),
             "lancamentos_pendentes": (
                 LancamentoFinanceiro.objects.select_related("centro_custo").filter(
                     status=LancamentoFinanceiro.Status.PENDENTE
@@ -580,8 +576,6 @@ class DashboardMetricsService:
                     qs = qs.filter(organizacao_id=organizacao_id)
                 elif name == "num_empresas":
                     qs = qs.filter(usuario__organizacao_id=organizacao_id)
-                elif name == "inscricoes_confirmadas":
-                    qs = qs.filter(evento__organizacao_id=organizacao_id)
                 elif name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
                 elif name == "num_topicos":
@@ -601,8 +595,6 @@ class DashboardMetricsService:
                     qs = qs.filter(nucleo_id=nucleo_id)
                 if name == "num_posts_feed_total":
                     qs = qs.filter(nucleo_id=nucleo_id)
-                if name == "inscricoes_confirmadas":
-                    qs = qs.filter(evento__nucleo_id=nucleo_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
                 if name == "num_topicos":
@@ -615,8 +607,6 @@ class DashboardMetricsService:
                 if name == "num_eventos":
                     qs = qs.filter(pk=evento_id)
                 if name == "num_posts_feed_total":
-                    qs = qs.filter(evento_id=evento_id)
-                if name == "inscricoes_confirmadas":
                     qs = qs.filter(evento_id=evento_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__evento_id=evento_id)
@@ -632,6 +622,16 @@ class DashboardMetricsService:
             name: DashboardService.calcular_crescimento(qs, inicio, fim, campo=campo)
             for name, (qs, campo) in query_map.items()
         }
+
+        if not metricas or "inscricoes_confirmadas" in metricas:
+            qs = InscricaoEvento.objects.select_related("evento").filter(status="confirmada")
+            if organizacao_id:
+                qs = qs.filter(evento__organizacao_id=organizacao_id)
+            if nucleo_id:
+                qs = qs.filter(evento__nucleo_id=nucleo_id)
+            if evento_id:
+                qs = qs.filter(evento_id=evento_id)
+            metrics["inscricoes_confirmadas"] = {"total": qs.count(), "crescimento": 0.0}
 
         if not metricas or "num_posts_feed_recent" in metricas:
             metrics["num_posts_feed_recent"] = {

@@ -56,6 +56,16 @@ def enable_db_access_for_all_tests(db):
     """Habilita o acesso ao banco de dados para todos os testes."""
     pass
 
+
+@pytest.fixture
+def admin_user(django_user_model):
+    """Cria um superusuário compatível com o modelo customizado."""
+    return django_user_model.objects.create_superuser(
+        email="admin@example.com",
+        username="admin",
+        password="password",
+    )
+
 def pytest_configure():
     """Configura o Django para os testes, garantindo inicialização única."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")

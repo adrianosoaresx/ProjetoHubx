@@ -103,7 +103,7 @@ def test_calcular_crescimento(evento):
     Evento.objects.filter(id=evento.id).update(created=earlier)
     inicio = now.replace(day=1)
     fim = inicio + dt.timedelta(days=30)
-    data = DashboardService.calcular_crescimento(Evento.objects.all(), inicio, fim)
+    data = DashboardService.calcular_crescimento(Evento.objects.all(), inicio, fim, campo="created")
     assert "total" in data and "crescimento" in data
 
 

@@ -3,9 +3,9 @@
 Este aplicativo centraliza as preferências de cada usuário através do modelo
 `ConfiguracaoConta`. Cada usuário possui exatamente uma instância, criada
 automaticamente após o cadastro. O modelo herda de
-`django_extensions.db.models.TimeStampedModel`, fornecendo os campos
-`created` e `modified`, e de `core.models.SoftDeleteModel`, que adiciona
-`deleted` e `deleted_at` para exclusão lógica.
+`core.models.TimeStampedModel`, fornecendo os campos `created_at` e
+`updated_at`, e de `core.models.SoftDeleteModel`, que adiciona `deleted` e
+`deleted_at` para exclusão lógica.
 
 ## Campos principais
 

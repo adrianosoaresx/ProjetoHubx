@@ -120,7 +120,7 @@ class OrganizacaoChangeLogSerializer(serializers.ModelSerializer):
             "campo_alterado",
             "valor_antigo",
             "valor_novo",
-            "alterado_em",
+            "created_at",
             "usuario_email",
         ]
 
@@ -134,6 +134,6 @@ class OrganizacaoAtividadeLogSerializer(serializers.ModelSerializer):
             "id",
             "acao",
             "detalhes",
-            "data",
+            "created_at",
             "usuario_email",
         ]

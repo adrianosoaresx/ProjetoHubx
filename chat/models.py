@@ -4,15 +4,18 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
-from core.models import SoftDeleteManager, SoftDeleteModel
+from core.models import (
+    SoftDeleteManager,
+    SoftDeleteModel,
+    TimeStampedModel as CoreTimeStampedModel,
+)
 
 User = get_user_model()
 
 
-class ChatChannelCategory(TimeStampedModel):
+class ChatChannelCategory(CoreTimeStampedModel, SoftDeleteModel):
     """Categoria para organização de canais de chat."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -27,7 +30,7 @@ class ChatChannelCategory(TimeStampedModel):
         verbose_name_plural = "Categorias de Canal"
 
 
-class ChatChannel(TimeStampedModel, SoftDeleteModel):
+class ChatChannel(CoreTimeStampedModel, SoftDeleteModel):
     CONTEXT_CHOICES = [
         ("privado", "Privado"),
         ("nucleo", "Núcleo"),
@@ -71,7 +74,7 @@ class ChatChannel(TimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Canais de Chat"
 
 
-class ChatParticipant(TimeStampedModel):
+class ChatParticipant(CoreTimeStampedModel, SoftDeleteModel):
     channel = models.ForeignKey(
         ChatChannel,
         on_delete=models.CASCADE,
@@ -86,7 +89,7 @@ class ChatParticipant(TimeStampedModel):
     is_owner = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ("user", "channel")
+        unique_together = ("user", "channel", "deleted")
         verbose_name = "Participante"
         verbose_name_plural = "Participantes"
 
@@ -166,11 +169,10 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
         )
 
 
-class ChatMessageReaction(models.Model):
+class ChatMessageReaction(CoreTimeStampedModel):
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="reaction_details")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_reactions")
     emoji = models.CharField(max_length=32)
-    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("message", "user", "emoji")
@@ -178,7 +180,7 @@ class ChatMessageReaction(models.Model):
         verbose_name_plural = "Reações"
 
 
-class ChatNotification(TimeStampedModel):
+class ChatNotification(CoreTimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(
         User,
@@ -210,15 +212,15 @@ class ChatMessageFlag(TimeStampedModel):
         verbose_name_plural = "Sinalizações"
 
 
-class ChatFavorite(TimeStampedModel):
+class ChatFavorite(CoreTimeStampedModel, SoftDeleteModel):
     """Marcações pessoais de mensagens favoritas."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_favorites")
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="favorited_by")
 
     class Meta:
-        unique_together = ("user", "message")
-        indexes = [models.Index(fields=["user", "message"])]
+        unique_together = ("user", "message", "deleted")
+        indexes = [models.Index(fields=["user", "message", "deleted"])]
         verbose_name = "Favorito"
         verbose_name_plural = "Favoritos"
 
@@ -249,7 +251,7 @@ class ChatAttachment(TimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Anexos"
 
 
-class RelatorioChatExport(TimeStampedModel):
+class RelatorioChatExport(CoreTimeStampedModel):
     channel = models.ForeignKey(ChatChannel, on_delete=models.CASCADE)
     formato = models.CharField(max_length=10)
     gerado_por = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -281,7 +283,7 @@ class ChatModerationLog(TimeStampedModel):
         verbose_name_plural = "Logs de Moderação"
 
 
-class TrendingTopic(models.Model):
+class TrendingTopic(CoreTimeStampedModel):
     canal = models.ForeignKey(
         ChatChannel,
         on_delete=models.CASCADE,
@@ -298,14 +300,13 @@ class TrendingTopic(models.Model):
         verbose_name_plural = "Tópicos em Alta"
 
 
-class ResumoChat(models.Model):
+class ResumoChat(CoreTimeStampedModel):
     PERIODOS = [("diario", "Diário"), ("semanal", "Semanal")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     canal = models.ForeignKey(ChatChannel, on_delete=models.CASCADE, related_name="resumos")
     periodo = models.CharField(max_length=10, choices=PERIODOS)
     conteudo = models.TextField()
-    gerado_em = models.DateTimeField(default=timezone.now)
     detalhes = models.JSONField(default=dict, blank=True)
 
     class Meta:

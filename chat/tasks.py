@@ -167,7 +167,7 @@ def exportar_historico_chat(
     path = default_storage.save(filename, ContentFile(buffer.encode()))
     rel.arquivo_url = default_storage.url(path)
     rel.status = "concluido"
-    rel.save(update_fields=["arquivo_url", "status", "modified"])
+    rel.save(update_fields=["arquivo_url", "status", "updated_at"])
     chat_exportacoes_total.labels(formato=formato).inc()
     return rel.arquivo_url
 
@@ -177,7 +177,7 @@ def limpar_exports_antigos() -> None:
     """Remove arquivos de exportação com mais de 30 dias."""
 
     limite = timezone.now() - timedelta(days=30)
-    antigos = RelatorioChatExport.objects.filter(created__lt=limite)
+    antigos = RelatorioChatExport.objects.filter(created_at__lt=limite)
     for rel in antigos:
         if rel.arquivo_url:
             try:

@@ -23,8 +23,8 @@ User = get_user_model()
 class ChatChannelCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatChannelCategory
-        fields = ["id", "nome", "descricao", "created", "modified"]
-        read_only_fields = ["id", "created", "modified"]
+        fields = ["id", "nome", "descricao", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class ChatChannelSerializer(serializers.ModelSerializer):
@@ -45,10 +45,10 @@ class ChatChannelSerializer(serializers.ModelSerializer):
             "e2ee_habilitado",
             "retencao_dias",
             "categoria",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["id", "created", "modified", "e2ee_habilitado"]
+        read_only_fields = ["id", "created_at", "updated_at", "e2ee_habilitado"]
 
     def create(self, validated_data: dict[str, Any]) -> ChatChannel:
         request = self.context["request"]
@@ -234,9 +234,9 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
             "canal_url",
             "reply_to",
             "lido",
-            "created",
+            "created_at",
         ]
-        read_only_fields = ["id", "created"]
+        read_only_fields = ["id", "created_at"]
 
     def get_mensagem_conteudo(self, obj: ChatNotification) -> str:
         msg = obj.mensagem
@@ -257,7 +257,7 @@ class ChatNotificationSerializer(serializers.ModelSerializer):
 class ResumoChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResumoChat
-        fields = ["id", "periodo", "conteudo", "gerado_em", "detalhes"]
+        fields = ["id", "periodo", "conteudo", "created_at", "detalhes"]
 
 
 class UserChatPreferenceSerializer(serializers.ModelSerializer):

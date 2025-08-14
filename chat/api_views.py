@@ -691,7 +691,7 @@ class ChatNotificationViewSet(viewsets.ReadOnlyModelViewSet):
         return (
             ChatNotification.objects.filter(usuario=self.request.user)
             .select_related("mensagem", "mensagem__channel", "usuario")
-            .order_by("-created")
+            .order_by("-created_at")
         )
 
     @action(detail=True, methods=["post"])
@@ -713,7 +713,7 @@ class ChatFavoriteViewSet(viewsets.ReadOnlyModelViewSet):
         return (
             ChatFavorite.objects.filter(user=self.request.user)
             .select_related("message", "message__channel", "message__remetente")
-            .order_by("-created")
+            .order_by("-created_at")
         )
 
     def list(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]

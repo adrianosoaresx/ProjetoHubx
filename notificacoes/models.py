@@ -5,7 +5,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from model_utils.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 
 class Canal(models.TextChoices):
@@ -54,7 +54,7 @@ class NotificationLog(TimeStampedModel):
     class Meta:
         verbose_name = _("Log de Notificação")
         verbose_name_plural = _("Logs de Notificação")
-        unique_together = ("user", "template", "canal", "created")
+        unique_together = ("user", "template", "canal", "created_at")
 
     def save(self, *args, **kwargs):  # pragma: no cover - comportamento definido
         if self.pk and NotificationLog.objects.filter(pk=self.pk).exists():
@@ -91,7 +91,7 @@ class HistoricoNotificacao(TimeStampedModel):
         return f"{self.user} - {self.canal} - {self.enviado_em:%Y-%m-%d %H:%M}"
 
 
-class PushSubscription(models.Model):
+class PushSubscription(TimeStampedModel, SoftDeleteModel):
     """Armazena inscrições de navegadores para notificações Web Push."""
 
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -104,8 +104,6 @@ class PushSubscription(models.Model):
     endpoint: models.CharField = models.CharField(max_length=500)
     p256dh: models.CharField = models.CharField(max_length=255)
     auth: models.CharField = models.CharField(max_length=255)
-    created_at: models.DateTimeField = models.DateTimeField(auto_now_add=True)
-    active: models.BooleanField = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("user", "device_id")

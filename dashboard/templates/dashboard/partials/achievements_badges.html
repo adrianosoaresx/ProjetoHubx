@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class="flex flex-wrap gap-2 mb-4" aria-label="{% trans 'Conquistas alcançadas' %}">
-{% for ua in request.user.userachievement_set.select_related('achievement').all %}
+{% for ua in request.user.userachievement_set.all %}
   <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded flex items-center gap-1" aria-label="{{ ua.achievement.titulo }}">
     <i class="fa-solid fa-{{ ua.achievement.icon }}" aria-hidden="true"></i>
     {{ ua.achievement.titulo }}

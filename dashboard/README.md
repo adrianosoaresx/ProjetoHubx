@@ -106,7 +106,7 @@ Nos templates há um botão para habilitar o gráfico comparativo utilizando Cha
 
 Os modelos deste app utilizam os mixins `TimeStampedModel` e `SoftDeleteModel`.
 
-- `TimeStampedModel` fornece os campos automáticos `created` e `modified`.
+- `TimeStampedModel` fornece os campos automáticos `created_at` e `updated_at`.
 - `SoftDeleteModel` adiciona remoção lógica via `deleted` e `deleted_at`.
 
 O manager padrão (`objects`) retorna apenas registros não deletados. Para acessar

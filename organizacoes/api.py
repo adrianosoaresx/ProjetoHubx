@@ -116,7 +116,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
             writer = csv.writer(response)
             writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in organizacao.change_logs.all().order_by("-alterado_em"):
+            for log in organizacao.change_logs.all().order_by("-created_at"):
                 writer.writerow(
                     [
                         "change",
@@ -124,10 +124,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                         log.valor_antigo,
                         log.valor_novo,
                         getattr(log.alterado_por, "email", ""),
-                        log.alterado_em.isoformat(),
+                        log.created_at.isoformat(),
                     ]
                 )
-            for log in organizacao.atividade_logs.all().order_by("-data"):
+            for log in organizacao.atividade_logs.all().order_by("-created_at"):
                 writer.writerow(
                     [
                         "activity",
@@ -135,12 +135,12 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                         "",
                         "",
                         getattr(log.usuario, "email", ""),
-                        log.data.isoformat(),
+                        log.created_at.isoformat(),
                     ]
                 )
             return response
-        change_logs = organizacao.change_logs.all().order_by("-alterado_em")[:10]
-        atividade_logs = organizacao.atividade_logs.all().order_by("-data")[:10]
+        change_logs = organizacao.change_logs.all().order_by("-created_at")[:10]
+        atividade_logs = organizacao.atividade_logs.all().order_by("-created_at")[:10]
         change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
         atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
         return Response({"changes": change_ser.data, "activities": atividade_ser.data})
