@@ -47,7 +47,7 @@ def _send_for_frequency(frequency: str) -> None:
         )
     for config in configs:
         counts = {
-            "chat": ChatNotification.objects.filter(usuario=config.user, created__gte=since, lido=False).count(),
+            "chat": ChatNotification.objects.filter(usuario=config.user, created_at__gte=since, lido=False).count(),
             "feed": Post.objects.filter(created_at__gte=since).exclude(autor=config.user).count(),
             "eventos": Evento.objects.filter(created__gte=since).exclude(coordenador=config.user).count(),
         }

@@ -29,7 +29,7 @@
     <tbody>
       {% for log in logs %}
       <tr class="border-t">
-        <td class="px-2 py-1"><time datetime="{{ log.created|date:'c' }}">{{ log.created|date:'d/m/Y H:i' }}</time></td>
+        <td class="px-2 py-1"><time datetime="{{ log.created_at|date:'c' }}">{{ log.created_at|date:'d/m/Y H:i' }}</time></td>
         <td class="px-2 py-1">{{ log.moderator.username }}</td>
         <td class="px-2 py-1">{{ log.previous_content|linebreaksbr }}</td>
         <td class="px-2 py-1">

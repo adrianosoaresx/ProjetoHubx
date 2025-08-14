@@ -51,7 +51,7 @@ def aplicar_politica_retencao() -> None:
     agora = timezone.now()
     for canal in ChatChannel.objects.filter(retencao_dias__isnull=False):
         limite = agora - timedelta(days=canal.retencao_dias or 0)
-        mensagens = list(canal.messages.filter(created__lt=limite))
+        mensagens = list(canal.messages.filter(created_at__lt=limite))
         if not mensagens:
             continue
         ids = [m.id for m in mensagens]
@@ -92,7 +92,7 @@ def gerar_resumo_chat(canal_id: str, periodo: str) -> str:
     inicio = timezone.now()
     channel = ChatChannel.objects.get(pk=canal_id)
     limite = timezone.now() - (timedelta(days=1) if periodo == "diario" else timedelta(days=7))
-    mensagens = channel.messages.filter(created__gte=limite, hidden_at__isnull=True, tipo="text").order_by("created")
+    mensagens = channel.messages.filter(created_at__gte=limite, hidden_at__isnull=True, tipo="text").order_by("created_at")
     texto = "\n".join(m.conteudo for m in mensagens)
     resumo = texto[:500]
     resumo_obj = ResumoChat.objects.create(
@@ -134,9 +134,9 @@ def exportar_historico_chat(
     rel = RelatorioChatExport.objects.get(pk=relatorio_id)
     qs = channel.messages.filter(hidden_at__isnull=True).select_related("remetente")
     if inicio:
-        qs = qs.filter(created__gte=inicio)
+        qs = qs.filter(created_at__gte=inicio)
     if fim:
-        qs = qs.filter(created__lte=fim)
+        qs = qs.filter(created_at__lte=fim)
     if tipos:
         tipos = [t for t in tipos if t]
         if tipos:
@@ -147,7 +147,7 @@ def exportar_historico_chat(
             "remetente": m.remetente.username,
             "tipo": m.tipo,
             "conteudo": m.conteudo if m.tipo == "text" else (m.arquivo.url if m.arquivo else ""),
-            "created": m.created.isoformat(),
+            "created_at": m.created_at.isoformat(),
         }
         for m in qs
     ]
@@ -157,7 +157,7 @@ def exportar_historico_chat(
         from io import StringIO
 
         sio = StringIO()
-        writer = csv.DictWriter(sio, fieldnames=["id", "remetente", "tipo", "conteudo", "created"])
+        writer = csv.DictWriter(sio, fieldnames=["id", "remetente", "tipo", "conteudo", "created_at"])
         writer.writeheader()
         for row in data:
             writer.writerow(row)
@@ -194,7 +194,7 @@ def calcular_trending_topics(canal_id: str, dias: int = 7) -> list[tuple[str, in
     channel = ChatChannel.objects.get(pk=canal_id)
     inicio = timezone.now() - timedelta(days=dias)
     mensagens = channel.messages.filter(
-        created__gte=inicio, hidden_at__isnull=True, tipo="text"
+        created_at__gte=inicio, hidden_at__isnull=True, tipo="text"
     )
     counter: Counter[str] = Counter()
     stop_words = {

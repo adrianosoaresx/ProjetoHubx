@@ -58,7 +58,7 @@ def test_chat_message_creation(media_root, channel, admin_user):
     assert msg.remetente == admin_user
     msg.lido_por.add(admin_user)
     assert admin_user in msg.lido_por.all()
-    assert msg.created and msg.modified
+    assert msg.created_at and msg.updated_at
 
 
 def test_soft_delete_models(channel, admin_user):

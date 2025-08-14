@@ -20,7 +20,7 @@ User = get_user_model()
 
 @login_required
 def conversation_list(request):
-    last_msg = ChatMessage.objects.filter(channel=OuterRef("pk")).order_by("-created")
+    last_msg = ChatMessage.objects.filter(channel=OuterRef("pk")).order_by("-created_at")
     unread = (
         ChatNotification.objects.filter(usuario=request.user, mensagem__channel=OuterRef("pk"), lido=False)
         .values("mensagem__channel")
@@ -32,7 +32,7 @@ def conversation_list(request):
         .prefetch_related("participants")
         .annotate(
             last_message_text=Subquery(last_msg.values("conteudo")[:1]),
-            last_message_at=Subquery(last_msg.values("created")[:1]),
+            last_message_at=Subquery(last_msg.values("created_at")[:1]),
             unread_count=Subquery(unread),
         )
         .distinct()
@@ -118,25 +118,25 @@ def historico_edicoes(request, channel_id, message_id):
     logs = (
         ChatModerationLog.objects.filter(message=message, action="edit")
         .select_related("moderator")
-        .order_by("-created")
+        .order_by("-created_at")
     )
     inicio = request.GET.get("inicio")
     fim = request.GET.get("fim")
     if inicio:
         dt = parse_date(inicio)
         if dt:
-            logs = logs.filter(created__date__gte=dt)
+            logs = logs.filter(created_at__date__gte=dt)
     if fim:
         dt = parse_date(fim)
         if dt:
-            logs = logs.filter(created__date__lte=dt)
+            logs = logs.filter(created_at__date__lte=dt)
     if request.GET.get("export") == "csv":
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = "attachment; filename=historico_edicoes.csv"
         writer = csv.writer(response)
-        writer.writerow(["created", "moderator", "previous_content"])
+        writer.writerow(["created_at", "moderator", "previous_content"])
         for log in logs:
-            writer.writerow([log.created.isoformat(), log.moderator.username, log.previous_content])
+            writer.writerow([log.created_at.isoformat(), log.moderator.username, log.previous_content])
         return response
     paginator = Paginator(logs, 20)
     page = paginator.get_page(request.GET.get("page"))

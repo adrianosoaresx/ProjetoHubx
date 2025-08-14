@@ -213,9 +213,9 @@ class DashboardService:
         """Count chat messages applying optional filters."""
         qs = ChatMessage.objects.select_related("channel")
         if data_inicio:
-            qs = qs.filter(created__gte=data_inicio)
+            qs = qs.filter(created_at__gte=data_inicio)
         if data_fim:
-            qs = qs.filter(created__lte=data_fim)
+            qs = qs.filter(created_at__lte=data_fim)
         if evento_id:
             qs = qs.filter(channel__contexto_tipo="evento", channel__contexto_id=evento_id)
         elif nucleo_id:

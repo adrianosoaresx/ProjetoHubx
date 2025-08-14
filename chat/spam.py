@@ -30,7 +30,7 @@ class SpamDetector:
     def is_spam(self, user: User, channel: ChatChannel, content: str) -> bool:
         now = timezone.now()
         minute_ago = now - timedelta(minutes=1)
-        recent = ChatMessage.objects.filter(remetente=user, channel=channel, created__gte=minute_ago)
+        recent = ChatMessage.objects.filter(remetente=user, channel=channel, created_at__gte=minute_ago)
         if recent.count() >= self.messages_per_minute:
             return True
         if recent.filter(conteudo=content).count() >= self.repeat_limit:

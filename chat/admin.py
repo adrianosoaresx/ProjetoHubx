@@ -17,12 +17,12 @@ class ChatChannelAdmin(admin.ModelAdmin):
 
 @admin.register(ChatMessage)
 class ChatMessageAdmin(admin.ModelAdmin):
-    list_display = ["remetente", "channel", "tipo", "pinned_at", "created"]
+    list_display = ["remetente", "channel", "tipo", "pinned_at", "created_at"]
 
 
 @admin.register(ChatAttachment)
 class ChatAttachmentAdmin(admin.ModelAdmin):
-    list_display = ["id", "mime_type", "tamanho", "preview_ready", "created"]
+    list_display = ["id", "mime_type", "tamanho", "preview_ready", "created_at"]
 
 
 @admin.register(ChatNotification)

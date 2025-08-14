@@ -75,7 +75,7 @@ class ChatChannelSerializer(serializers.ModelSerializer):
     def to_representation(self, instance: ChatChannel) -> dict[str, Any]:
         data = super().to_representation(instance)
         data["participantes"] = instance.participants.count()
-        last_msg = instance.messages.select_related("remetente").order_by("-created").first()
+        last_msg = instance.messages.select_related("remetente").order_by("-created_at").first()
         if last_msg:
             data["ultima_mensagem"] = ChatMessageSerializer(last_msg, context=self.context).data
         return data
@@ -95,7 +95,7 @@ class ChatAttachmentSerializer(serializers.ModelSerializer):
             "thumb_url",
             "preview_url",
             "infected",
-            "created",
+            "created_at",
         ]
         read_only_fields = fields
 
@@ -146,12 +146,12 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "reactions",
             "pinned_at",
             "hidden_at",
-            "created",
+            "created_at",
         ]
         read_only_fields = [
             "id",
             "remetente",
-            "created",
+            "created_at",
             "pinned_at",
             "hidden_at",
             "channel",
@@ -269,7 +269,7 @@ class UserChatPreferenceSerializer(serializers.ModelSerializer):
             "buscas_salvas",
             "resumo_diario",
             "resumo_semanal",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["id", "created", "modified"]
+        read_only_fields = ["id", "created_at", "updated_at"]

@@ -99,7 +99,7 @@ def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_u
     resp = api_client.post(list_url, {"tipo": "text", "conteudo": "hi"})
     assert resp.status_code == 201
     msg = ChatMessage.objects.first()
-    resp = api_client.get(list_url, {"desde": msg.created.isoformat()})
+    resp = api_client.get(list_url, {"desde": msg.created_at.isoformat()})
     assert resp.status_code == 200
     assert resp.json()["count"] >= 1
 
@@ -128,7 +128,7 @@ def test_history_endpoint_filters_by_date(api_client: APIClient, admin_user):
         tipo="text",
         conteudo="old",
     )
-    ChatMessage.objects.filter(pk=old_msg.pk).update(created=old_time)
+    ChatMessage.objects.filter(pk=old_msg.pk).update(created_at=old_time)
     new_msg = ChatMessage.objects.create(
         channel=channel,
         remetente=admin_user,
@@ -138,7 +138,7 @@ def test_history_endpoint_filters_by_date(api_client: APIClient, admin_user):
     api_client.force_authenticate(admin_user)
     cache.clear()
     url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
-    resp = api_client.get(url, {"inicio": new_msg.created.isoformat()})
+    resp = api_client.get(url, {"inicio": new_msg.created_at.isoformat()})
     assert resp.status_code == 200
     data = resp.json()
     ids = [m["id"] for m in data["messages"]]
@@ -163,7 +163,7 @@ def test_search_messages_filters_and_permissions(api_client: APIClient, admin_us
     msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="hello world")
     ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="image", conteudo="hello img")
     old = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="hello old")
-    ChatMessage.objects.filter(pk=old.pk).update(created=timezone.now() - timedelta(days=2))
+    ChatMessage.objects.filter(pk=old.pk).update(created_at=timezone.now() - timedelta(days=2))
     ChatMessage.objects.create(channel=other, remetente=coordenador_user, tipo="text", conteudo="hello secret")
     api_client.force_authenticate(admin_user)
     cache.clear()
@@ -203,7 +203,7 @@ def test_search_messages_date_range(api_client: APIClient, admin_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)
     old_msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="foo")
-    ChatMessage.objects.filter(pk=old_msg.pk).update(created=timezone.now() - timedelta(days=5))
+    ChatMessage.objects.filter(pk=old_msg.pk).update(created_at=timezone.now() - timedelta(days=5))
     recent_msg = ChatMessage.objects.create(channel=channel, remetente=admin_user, tipo="text", conteudo="foo bar")
     api_client.force_authenticate(admin_user)
     url = reverse("chat_api:chat-channel-message-search", args=[channel.id])
@@ -246,7 +246,7 @@ def test_history_before_accepts_timestamp(api_client: APIClient, admin_user):
     ]
     api_client.force_authenticate(admin_user)
     url = reverse("chat_api:chat-channel-messages-history", args=[channel.id])
-    ts = msgs[-1].created.isoformat()
+    ts = msgs[-1].created_at.isoformat()
     resp = api_client.get(url, {"before": ts})
     assert resp.status_code == 200
     ids = [m["id"] for m in resp.json()["messages"]]
@@ -324,7 +324,7 @@ def test_restore_message(api_client: APIClient, admin_user):
     # edit message to create log
     edit_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/"
     api_client.patch(edit_url, {"conteudo": "novo"})
-    log = ChatModerationLog.objects.filter(message=msg, action="edit").latest("created")
+    log = ChatModerationLog.objects.filter(message=msg, action="edit").latest("created_at")
     restore_url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/restore/"
     resp = api_client.post(restore_url, {"log_id": str(log.id)})
     assert resp.status_code == 200
