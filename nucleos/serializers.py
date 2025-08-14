@@ -67,7 +67,6 @@ class NucleoSerializer(serializers.ModelSerializer):
             "descricao",
             "avatar",
             "cover",
-            "ativo",
             "created_at",
             "deleted",
             "deleted_at",

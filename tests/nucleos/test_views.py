@@ -110,4 +110,4 @@ def test_toggle_active(client, admin_user, organizacao):
     resp = client.post(reverse("nucleos:toggle_active", args=[nucleo.pk]))
     assert resp.status_code == 302
     nucleo.refresh_from_db()
-    assert nucleo.ativo is False
+    assert nucleo.deleted is True

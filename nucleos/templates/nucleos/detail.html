@@ -107,7 +107,7 @@
     </div>
     {% if request.user.user_type in ('admin','coordenador','root') %}
     <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
-      <button class="ml-2 text-orange-600">{% if object.ativo %}{% trans 'Inativar' %}{% else %}{% trans 'Reativar' %}{% endif %}</button>
+      <button class="ml-2 text-orange-600">{% if object.deleted %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}</button>
     </form>
     {% endif %}
   </div>

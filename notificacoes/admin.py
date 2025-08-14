@@ -12,9 +12,11 @@ logger = logging.getLogger(__name__)
 
 @admin.register(NotificationTemplate)
 class NotificationTemplateAdmin(admin.ModelAdmin):
+
     list_display = ("codigo", "canal", "deleted")
     search_fields = ("codigo",)
     list_filter = ("canal", "deleted")
+
 
     def has_delete_permission(self, request, obj=None):  # pragma: no cover - admin
         if obj and NotificationLog.objects.filter(template=obj).exists():

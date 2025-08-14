@@ -27,7 +27,9 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
     assunto: models.CharField = models.CharField(max_length=200, verbose_name=_("Assunto"))
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
+
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
+
 
     class Meta:
         verbose_name = _("Template de Notificação")

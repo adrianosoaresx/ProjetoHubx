@@ -43,8 +43,8 @@ class FinanceiroLogAdmin(admin.ModelAdmin):
 
 @admin.register(IntegracaoConfig)
 class IntegracaoConfigAdmin(admin.ModelAdmin):
-    list_display = ["nome", "tipo", "ativo"]
-    list_filter = ["tipo", "ativo"]
+    list_display = ["nome", "tipo"]
+    list_filter = ["tipo"]
     search_fields = ["nome"]
 
 

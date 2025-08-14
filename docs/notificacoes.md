@@ -31,7 +31,9 @@ Parâmetros:
 
 Exceções:
 
+
 - `ValueError` caso o template não exista ou tenha sido removido.
+
 
 Se todos os canais preferidos do usuário estiverem desabilitados, um `NotificationLog` é criado com status **FALHA** e nenhum envio é disparado.
 

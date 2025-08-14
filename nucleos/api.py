@@ -121,7 +121,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     pagination_class = NucleoPagination
     def get_queryset(self):
         return (
-            Nucleo.objects.filter(deleted=False, ativo=True)
+            Nucleo.objects.filter(deleted=False)
             .select_related("organizacao")
             .prefetch_related("coordenadores_suplentes")
         )

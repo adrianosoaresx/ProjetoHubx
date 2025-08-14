@@ -12,16 +12,18 @@ def test_atualizar_templates_total_atualiza_gauge() -> None:
     before = NotificationTemplate.objects.count()
 
     NotificationTemplate.objects.create(
-        codigo="active",
+        codigo="novo",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
+
     )
     inactive = NotificationTemplate.objects.create(
         codigo="inactive",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
+
     )
     inactive.delete()
 
@@ -36,7 +38,7 @@ def test_atualizar_templates_total_atualiza_gauge() -> None:
     )
     assert metrics.templates_total._value.get() == before + 1
 
-    NotificationTemplate.objects.filter(codigo="active").delete()
+    NotificationTemplate.objects.filter(codigo="novo").delete()
     post_migrate.send(
         sender=app_config,
         app_config=app_config,
