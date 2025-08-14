@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 15:01-0300\n"
+"POT-Creation-Date: 2025-08-14 16:44-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,365 +18,395 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/conversation_detail.html:113
-msgid "Nenhum resultado encontrado."
+#: forms.py:14
+msgid "Tipo de contexto"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/conversation_detail.html:132
-msgid "Carregar mais"
+#: forms.py:18
+msgid "Contexto"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/conversation_detail.html:55
-msgid "Limpar"
+#: forms.py:25
+msgid "Participantes"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/partials/message.html:36
-msgid "Adicionar reação"
+#: forms.py:30
+msgid "Descrição"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Reagir com"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Fixar"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Desafixar"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/partials/message.html:69
-msgid "Fixar mensagem"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Desafixar mensagem"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Editar"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-msgid "Erro no upload"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:8
-#: chat/templates/chat/partials/message.html:24
-msgid "Player de vídeo"
-msgstr ""
-
-#: chat/templates/chat/partials/message.html:26
-msgid "Baixar arquivo"
-msgstr "Baixar arquivo"
-
-#: chat/templates/chat/conversation_detail.html:32
-msgid "participantes"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:34
-msgid "Sair do canal"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:34
-msgid "Sair"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:37
-msgid "Exportar histórico"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:42
-#: chat/templates/chat/conversation_detail.html:43
-msgid "Buscar mensagens"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:44
-#: chat/templates/chat/conversation_detail.html:54
-msgid "Buscar"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:48
-msgid "Todos"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:49
-#: chat/templates/chat/partials/export_modal.html:18
-msgid "Texto"
-msgstr ""
-
-#: chat/templates/chat/conversation_detail.html:50
-#: chat/templates/chat/partials/export_modal.html:19
+#: forms.py:32 templates/chat/conversation_detail.html:50
+#: templates/chat/partials/export_modal.html:19
 msgid "Imagem"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:51
-#: chat/templates/chat/partials/export_modal.html:20
+#: forms.py:48
+msgid "Nome da conversa"
+msgstr ""
+
+#: templates/chat/base_chat.html:4
+msgid "Chat"
+msgstr "Chat"
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/conversation_detail.html:113
+msgid "Nenhum resultado encontrado."
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/conversation_detail.html:132
+msgid "Carregar mais"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/conversation_detail.html:55
+msgid "Limpar"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/partials/message.html:38
+msgid "Adicionar reação"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Reagir com"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Fixar"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Desafixar"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/partials/message.html:71
+msgid "Fixar mensagem"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Desafixar mensagem"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Editar"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+msgid "Erro no upload"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:8
+#: templates/chat/partials/message.html:24
+msgid "Player de vídeo"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:32
+msgid "participantes"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:34
+msgid "Sair do canal"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:34
+msgid "Sair"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:37
+msgid "Exportar histórico"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:42
+#: templates/chat/conversation_detail.html:43
+msgid "Buscar mensagens"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:44
+#: templates/chat/conversation_detail.html:54
+msgid "Buscar"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:48
+msgid "Todos"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:49
+#: templates/chat/partials/export_modal.html:18
+msgid "Texto"
+msgstr ""
+
+#: templates/chat/conversation_detail.html:51
+#: templates/chat/partials/export_modal.html:20
 msgid "Vídeo"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:52
-#: chat/templates/chat/partials/export_modal.html:21
+#: templates/chat/conversation_detail.html:52
+#: templates/chat/partials/export_modal.html:21
 msgid "Arquivo"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:61
-#: chat/templates/chat/conversation_detail.html:62
+#: templates/chat/conversation_detail.html:61
+#: templates/chat/conversation_detail.html:62
 msgid "Mensagens fixadas"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:73
-#: chat/templates/chat/modal_room.html:27
+#: templates/chat/conversation_detail.html:73 templates/chat/modal_room.html:27
 msgid "Nenhuma mensagem."
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:77
-#: chat/templates/chat/conversation_detail.html:82
+#: templates/chat/conversation_detail.html:77
+#: templates/chat/conversation_detail.html:82
 msgid "Enviar mensagem"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:79
+#: templates/chat/conversation_detail.html:79
 msgid "Mensagem"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:81
+#: templates/chat/conversation_detail.html:81
 msgid "Enviar arquivo"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:82
+#: templates/chat/conversation_detail.html:82
 msgid "Enviar"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:88
+#: templates/chat/conversation_detail.html:88
 msgid "Editar mensagem"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:91
+#: templates/chat/conversation_detail.html:91
 msgid "Cancelar edição"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:91
+#: templates/chat/conversation_detail.html:91
 msgid "Cancelar"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:92
+#: templates/chat/conversation_detail.html:92
 msgid "Salvar mensagem editada"
 msgstr ""
 
-#: chat/templates/chat/conversation_detail.html:92
+#: templates/chat/conversation_detail.html:92
 msgid "Salvar"
 msgstr ""
 
-#: chat/templates/chat/conversation_form.html:4
-#: chat/templates/chat/conversation_form.html:8
-#: chat/templates/chat/conversation_list.html:13
-#: chat/templates/chat/conversation_list.html:15
+#: templates/chat/conversation_form.html:4
+#: templates/chat/conversation_form.html:8
+#: templates/chat/conversation_list.html:13
+#: templates/chat/conversation_list.html:15
 msgid "Nova conversa"
 msgstr ""
 
-#: chat/templates/chat/conversation_form.html:55
+#: templates/chat/conversation_form.html:55
 msgid "Criar"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:4
+#: templates/chat/conversation_list.html:4
 msgid "Conversas"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:9
+#: templates/chat/conversation_list.html:9
 msgid "Minhas conversas"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:18
+#: templates/chat/conversation_list.html:18
 msgid "Canais de chat"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:22
+#: templates/chat/conversation_list.html:22
 msgid "Privado"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:22
+#: templates/chat/conversation_list.html:22
 msgid "Núcleo"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:22
+#: templates/chat/conversation_list.html:22
 msgid "Evento"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:22
+#: templates/chat/conversation_list.html:22
 msgid "Organização"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:24
+#: templates/chat/conversation_list.html:24
 msgid "Lista de conversas"
 msgstr ""
 
-#: chat/templates/chat/conversation_list.html:51
+#: templates/chat/conversation_list.html:51
 msgid "Nenhuma conversa."
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:5
-#: chat/templates/chat/partials/message.html:78
+#: templates/chat/historico_edicoes.html:5
+#: templates/chat/partials/message.html:80
 msgid "Histórico de edições"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:9
-#: chat/templates/chat/partials/export_modal.html:10
+#: templates/chat/historico_edicoes.html:9
+#: templates/chat/partials/export_modal.html:10
 msgid "Início"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:13
-#: chat/templates/chat/partials/export_modal.html:13
+#: templates/chat/historico_edicoes.html:13
+#: templates/chat/partials/export_modal.html:13
 msgid "Fim"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:16
+#: templates/chat/historico_edicoes.html:16
 msgid "Filtrar"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:17
+#: templates/chat/historico_edicoes.html:17
 msgid "Exportar CSV"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:23
+#: templates/chat/historico_edicoes.html:23
 msgid "Data"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:24
+#: templates/chat/historico_edicoes.html:24
 msgid "Moderador"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:25
+#: templates/chat/historico_edicoes.html:25
 msgid "Conteúdo anterior"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:26
+#: templates/chat/historico_edicoes.html:26
 msgid "Ações"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:39
+#: templates/chat/historico_edicoes.html:39
 msgid "Restaurar"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:45
+#: templates/chat/historico_edicoes.html:45
 msgid "Nenhum registro"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:54
+#: templates/chat/historico_edicoes.html:54
 msgid "Anterior"
 msgstr ""
 
-#: chat/templates/chat/historico_edicoes.html:60
+#: templates/chat/historico_edicoes.html:60
 msgid "Próxima"
 msgstr ""
 
-#: chat/templates/chat/modal_room.html:15
-#: chat/templates/chat/modal_user_list.html:15
+#: templates/chat/modal_room.html:15 templates/chat/modal_user_list.html:15
 msgid "Fechar"
 msgstr ""
 
-#: chat/templates/chat/modal_user_list.html:17
+#: templates/chat/modal_user_list.html:17
 msgid "Escolha um usuário para conversar"
 msgstr ""
 
-#: chat/templates/chat/modal_user_list.html:40
+#: templates/chat/modal_user_list.html:40
 msgid "Nenhum outro membro encontrado."
 msgstr ""
 
-#: chat/templates/chat/moderacao.html:5
+#: templates/chat/moderacao.html:5
 msgid "Moderação"
 msgstr ""
 
-#: chat/templates/chat/moderacao.html:10
+#: templates/chat/moderacao.html:10
 msgid "Flags"
 msgstr ""
 
-#: chat/templates/chat/moderacao.html:11
+#: templates/chat/moderacao.html:11
 msgid "Aprovar"
 msgstr ""
 
-#: chat/templates/chat/moderacao.html:12
+#: templates/chat/moderacao.html:12
 msgid "Remover"
 msgstr ""
 
-#: chat/templates/chat/moderacao.html:15
+#: templates/chat/moderacao.html:15
 msgid "Nenhuma mensagem sinalizada."
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:4
+#: templates/chat/partials/export_modal.html:4
 msgid "Formato"
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:6
+#: templates/chat/partials/export_modal.html:6
 msgid "JSON"
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:7
+#: templates/chat/partials/export_modal.html:7
 msgid "CSV"
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:17
+#: templates/chat/partials/export_modal.html:17
 msgid "Tipos"
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:23
+#: templates/chat/partials/export_modal.html:23
 msgid "Exportar"
 msgstr ""
 
-#: chat/templates/chat/partials/export_modal.html:24
+#: templates/chat/partials/export_modal.html:24
 msgid "Gerando..."
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:5
+#: templates/chat/partials/message.html:5
 #, python-format
 msgid "Avatar de %(username)s"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:15
+#: templates/chat/partials/message.html:15
 msgid "Mensagem fixada"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:16
+#: templates/chat/partials/message.html:16
 msgid "Oculta"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:22
+#: templates/chat/partials/message.html:22
 msgid "Imagem enviada"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:43
+#: templates/chat/partials/message.html:26
+msgid "Baixar arquivo"
+msgstr "Baixar arquivo"
+
+#: templates/chat/partials/message.html:45
 msgid "Reagir com 🙂"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:46
+#: templates/chat/partials/message.html:48
 msgid "Reagir com ❤️"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:49
+#: templates/chat/partials/message.html:51
 msgid "Reagir com 👍"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:52
+#: templates/chat/partials/message.html:54
 msgid "Reagir com 😂"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:55
+#: templates/chat/partials/message.html:57
 msgid "Reagir com 🎉"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:58
+#: templates/chat/partials/message.html:60
 msgid "Reagir com 😢"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:61
+#: templates/chat/partials/message.html:63
 msgid "Reagir com 😡"
 msgstr ""
 
-#: chat/templates/chat/partials/message.html:81
+#: templates/chat/partials/message.html:83
 msgid "Histórico"
+msgstr ""
+
+#: views.py:67
+msgid "Conversa criada com sucesso."
+msgstr ""
+
+#: views.py:69
+msgid "Erro ao criar conversa."
 msgstr ""
