@@ -75,7 +75,7 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         evento = self.request.query_params.get("evento")
         if evento:
             qs = qs.filter(evento_id=evento)
-        return qs.order_by("-created")
+        return qs.order_by("-created_at")
 
     def perform_destroy(self, instance: InscricaoEvento) -> None:
         instance.soft_delete()
@@ -95,7 +95,7 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         inscricao.avaliacao = nota
         inscricao.feedback = request.data.get("feedback", "")
-        inscricao.save(update_fields=["avaliacao", "feedback", "modified"])
+        inscricao.save(update_fields=["avaliacao", "feedback", "updated_at"])
         return Response(self.get_serializer(inscricao).data, status=status.HTTP_200_OK)
 
 
@@ -107,7 +107,7 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
     def get_queryset(self):
         qs = MaterialDivulgacaoEvento.objects.select_related("evento")
         qs = self.filter_by_organizacao(qs, "evento")
-        return qs.order_by("-created")
+        return qs.order_by("-created_at")
 
     def perform_destroy(self, instance: MaterialDivulgacaoEvento) -> None:
         EventoLog.objects.create(
@@ -149,7 +149,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         except (TypeError, ValueError):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         parceria.comentario = request.data.get("comentario", "")
-        parceria.save(update_fields=["avaliacao", "comentario", "modified"])
+        parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
         return Response(self.get_serializer(parceria).data)
 
 
@@ -180,7 +180,7 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         prazo = request.data.get("prazo_limite_resposta")
         if prazo:
             briefing.prazo_limite_resposta = prazo
-        briefing.save(update_fields=["status", "orcamento_enviado_em", "prazo_limite_resposta", "modified"])
+        briefing.save(update_fields=["status", "orcamento_enviado_em", "prazo_limite_resposta", "updated_at"])
         EventoLog.objects.create(
             evento=briefing.evento,
             usuario=request.user,
@@ -195,7 +195,7 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         briefing.status = "aprovado"
         briefing.aprovado_em = timezone.now()
         briefing.coordenadora_aprovou = True
-        briefing.save(update_fields=["status", "aprovado_em", "coordenadora_aprovou", "modified"])
+        briefing.save(update_fields=["status", "aprovado_em", "coordenadora_aprovou", "updated_at"])
         EventoLog.objects.create(
             evento=briefing.evento,
             usuario=request.user,
@@ -217,7 +217,7 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
                 "motivo_recusa",
                 "recusado_em",
                 "recusado_por",
-                "modified",
+                "updated_at",
             ]
         )
         EventoLog.objects.create(

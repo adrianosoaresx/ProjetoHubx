@@ -28,8 +28,8 @@ class EventoSerializer(serializers.ModelSerializer):
             "id",
             "organizacao",
             "coordenador",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
             "nota_media",
             "distribuicao_notas",
         )
@@ -87,8 +87,8 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             "posicao_espera",
             "avaliacao",
             "feedback",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         )
 
     def create(self, validated_data):
@@ -115,8 +115,8 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
             "avaliado_por",
             "avaliado_em",
             "imagem_thumb",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         )
 
     def create(self, validated_data):
@@ -157,8 +157,8 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
             "id",
             "avaliacao",
             "comentario",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         )
 
     def validate_cnpj(self, value: str) -> str:
@@ -212,8 +212,8 @@ class BriefingEventoSerializer(serializers.ModelSerializer):
             "prazo_limite_resposta",
             "avaliado_por",
             "avaliado_em",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         )
 
     def create(self, validated_data):
