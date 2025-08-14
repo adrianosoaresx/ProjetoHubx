@@ -92,13 +92,16 @@ class Post(TimeStampedModel, SoftDeleteModel):
                 moderacao.save(update_fields=["status"])
 
 
-class Like(TimeStampedModel):
+class Like(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
-        unique_together = ("post", "user")
+        unique_together = ("post", "user", "deleted")
         verbose_name = "Curtida"
         verbose_name_plural = "Curtidas"
 
@@ -114,23 +117,29 @@ class Flag(TimeStampedModel):
         verbose_name_plural = "Denúncias"
 
 
-class Bookmark(TimeStampedModel):
+class Bookmark(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookmarks")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="bookmarks")
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
-        unique_together = ("user", "post")
+        unique_together = ("user", "post", "deleted")
         verbose_name = "Bookmark"
         verbose_name_plural = "Bookmarks"
 
 
-class Comment(TimeStampedModel):
+class Comment(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
     reply_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies")
     texto = models.TextField()
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
 
     class Meta:
         ordering = ["created_at"]
@@ -161,7 +170,7 @@ class ModeracaoPost(TimeStampedModel):
         verbose_name_plural = "Moderações de Posts"
 
 
-class Reacao(TimeStampedModel):
+class Reacao(TimeStampedModel, SoftDeleteModel):
     """Registra curtidas e compartilhamentos em posts."""
 
     class Tipo(models.TextChoices):
@@ -173,8 +182,11 @@ class Reacao(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reacoes")
     vote = models.CharField(max_length=20, choices=Tipo.choices)
 
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
-        unique_together = ("post", "user", "vote")
+        unique_together = ("post", "user", "vote", "deleted")
         verbose_name = "Reação"
         verbose_name_plural = "Reações"
 
