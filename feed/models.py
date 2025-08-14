@@ -13,12 +13,13 @@ from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 User = get_user_model()
 
 
-class Tag(TimeStampedModel):
-    nome = models.CharField(max_length=50, unique=True)
+class Tag(TimeStampedModel, SoftDeleteModel):
+    nome = models.CharField(max_length=50)
 
     class Meta:
         verbose_name = "Tag"
         verbose_name_plural = "Tags"
+        unique_together = ("nome", "deleted")
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.nome
