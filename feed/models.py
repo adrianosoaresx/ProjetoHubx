@@ -14,6 +14,7 @@ User = get_user_model()
 
 
 class Tag(TimeStampedModel, SoftDeleteModel):
+
     nome = models.CharField(max_length=50)
 
     class Meta:
