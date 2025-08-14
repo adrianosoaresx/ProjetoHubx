@@ -253,7 +253,6 @@ class IntegracaoConfig(TimeStampedModel):
     tipo = models.CharField(max_length=20, choices=Tipo.choices)
     base_url = URLField(max_length=255)
     credenciais_encrypted = EncryptedCharField(max_length=512, blank=True)
-    ativo = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["nome"]
