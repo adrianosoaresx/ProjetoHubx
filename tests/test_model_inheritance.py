@@ -36,7 +36,7 @@ def serialized_models() -> set[type[models.Model]]:
 def test_models_use_timestamp_and_soft_delete(serialized_models: set[type[models.Model]]) -> None:
     """Ensure concrete models include TimeStampedModel and SoftDeleteModel when required."""
     for model in apps.get_models():
-        if model._meta.abstract:
+        if model._meta.abstract or model._meta.proxy:
             continue
         if model.__module__.startswith(("django.", "rest_framework", "silk")):
             continue
@@ -51,7 +51,7 @@ def test_models_use_timestamp_and_soft_delete(serialized_models: set[type[models
         if model in serialized_models:
             for rel in model._meta.related_objects:
                 if isinstance(rel, (models.ManyToOneRel, models.OneToOneRel)) and rel.related_model is not model:
-                    if any(base.__name__ == "SoftDeleteModel" for base in rel.related_model.__mro__):
+                    if issubclass(rel.related_model, SoftDeleteModel):
                         requires_soft_delete = True
                         break
         if requires_soft_delete:
