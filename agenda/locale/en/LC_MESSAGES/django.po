@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 11:28-0300\n"
+"POT-Creation-Date: 2025-08-14 15:01-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,277 +17,331 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-#: templates/agenda/_lista_eventos_dia.html:3
+
+#: agenda/templates/agenda/_lista_eventos_dia.html:3
 #, python-format
 msgid "Eventos de %(date)s"
 msgstr ""
 
-#: templates/agenda/_lista_eventos_dia.html:18
+#: agenda/templates/agenda/_lista_eventos_dia.html:18
 msgid "Sem eventos."
 msgstr ""
 
-#: templates/agenda/briefing_form.html:3 templates/agenda/briefing_form.html:8
+#: agenda/templates/agenda/avaliacao_form.html:3
+#: agenda/templates/agenda/avaliacao_form.html:7
+msgid "Avaliar evento"
+msgstr ""
+
+#: agenda/templates/agenda/avaliacao_form.html:11
+msgid "Nota"
+msgstr ""
+
+#: agenda/templates/agenda/avaliacao_form.html:19
+msgid "Comentário"
+msgstr ""
+
+#: agenda/templates/agenda/avaliacao_form.html:20
+msgid "Opcional"
+msgstr ""
+
+#: agenda/templates/agenda/avaliacao_form.html:23
+msgid "Enviar avaliação"
+msgstr ""
+
+#: agenda/templates/agenda/briefing_form.html:3
+#: agenda/templates/agenda/briefing_form.html:8
 msgid "Editar Briefing"
 msgstr ""
 
-#: templates/agenda/briefing_form.html:3 templates/agenda/briefing_form.html:8
-#: templates/agenda/briefing_list.html:13
+#: agenda/templates/agenda/briefing_form.html:3
+#: agenda/templates/agenda/briefing_form.html:8
+#: agenda/templates/agenda/briefing_list.html:13
 msgid "Novo Briefing"
 msgstr ""
 
-#: templates/agenda/briefing_form.html:14 templates/agenda/create.html:15
-#: templates/agenda/delete.html:13
-#: templates/agenda/parceria_confirm_delete.html:13
-#: templates/agenda/parceria_form.html:13 templates/agenda/update.html:26
+#: agenda/templates/agenda/briefing_form.html:14
+#: agenda/templates/agenda/create.html:15
+#: agenda/templates/agenda/delete.html:13
+#: agenda/templates/agenda/parceria_confirm_delete.html:13
+#: agenda/templates/agenda/parceria_form.html:13
+#: agenda/templates/agenda/update.html:26
 msgid "Cancelar"
 msgstr ""
 
-#: templates/agenda/briefing_form.html:15 templates/agenda/create.html:16
-#: templates/agenda/parceria_form.html:14 templates/agenda/update.html:27
+#: agenda/templates/agenda/briefing_form.html:15
+#: agenda/templates/agenda/create.html:16
+#: agenda/templates/agenda/parceria_form.html:14
+#: agenda/templates/agenda/update.html:27
 msgid "Salvar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:4
+#: agenda/templates/agenda/briefing_list.html:4
 msgid "Briefings"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:9
+#: agenda/templates/agenda/briefing_list.html:9
 msgid "Briefings de Eventos"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:34
+#: agenda/templates/agenda/briefing_list.html:34
 msgid "Buscar por evento"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:41
-#: templates/agenda/inscricao_list.html:37
-#: templates/agenda/material_list.html:37
+#: agenda/templates/agenda/briefing_list.html:41
+#: agenda/templates/agenda/inscricao_list.html:37
+#: agenda/templates/agenda/material_list.html:37
 msgid "Filtrar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:50
-#: templates/agenda/inscricao_list.html:47
-#: templates/agenda/parceria_list.html:18
+#: agenda/templates/agenda/briefing_list.html:50
+#: agenda/templates/agenda/inscricao_list.html:47
+#: agenda/templates/agenda/parceria_list.html:18
 msgid "Evento"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:51
+#: agenda/templates/agenda/briefing_list.html:51
 msgid "Objetivos"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:52
+#: agenda/templates/agenda/briefing_list.html:52
 msgid "Público Alvo"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:53
+#: agenda/templates/agenda/briefing_list.html:53
 msgid "Requisitos Técnicos"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:54
+#: agenda/templates/agenda/briefing_list.html:54
 msgid "Cronograma Resumido"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:55
+#: agenda/templates/agenda/briefing_list.html:55
 msgid "Conteúdo Programático"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:56
+#: agenda/templates/agenda/briefing_list.html:56
 msgid "Observações"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:57
-#: templates/agenda/inscricao_list.html:53
-#: templates/agenda/material_list.html:49
-#: templates/agenda/parceria_list.html:20
+#: agenda/templates/agenda/briefing_list.html:57
+#: agenda/templates/agenda/inscricao_list.html:53
+#: agenda/templates/agenda/material_list.html:49
+#: agenda/templates/agenda/parceria_list.html:20
 msgid "Ações"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:74
-#: templates/agenda/parceria_list.html:30
+#: agenda/templates/agenda/briefing_list.html:74
+#: agenda/templates/agenda/parceria_list.html:30
 msgid "Editar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:82
+#: agenda/templates/agenda/briefing_list.html:82
 msgid "Orçar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:92
+#: agenda/templates/agenda/briefing_list.html:92
 msgid "Aprovar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:102
+#: agenda/templates/agenda/briefing_list.html:102
 msgid "Recusar"
 msgstr ""
 
-#: templates/agenda/briefing_list.html:109
+#: agenda/templates/agenda/briefing_list.html:109
 msgid "Nenhum briefing encontrado."
 msgstr ""
 
-#: templates/agenda/briefing_list.html:118
-#: templates/agenda/inscricao_list.html:86
-#: templates/agenda/material_list.html:78
+#: agenda/templates/agenda/briefing_list.html:118
+#: agenda/templates/agenda/inscricao_list.html:86
+#: agenda/templates/agenda/material_list.html:78
 msgid "Voltar à agenda"
 msgstr ""
 
-#: templates/agenda/calendario.html:15 templates/agenda/calendario.html:19
-#: templates/agenda/create.html:3
+#: agenda/templates/agenda/calendario.html:15
+#: agenda/templates/agenda/calendario.html:19
+#: agenda/templates/agenda/create.html:3
 msgid "Novo Evento"
 msgstr ""
 
-#: templates/agenda/create.html:7
+#: agenda/templates/agenda/checkin_form.html:3
+msgid "Check-in"
+msgstr ""
+
+#: agenda/templates/agenda/checkin_form.html:7
+msgid "Check-in do evento"
+msgstr ""
+
+#: agenda/templates/agenda/checkin_form.html:10
+msgid "Código do check-in"
+msgstr ""
+
+#: agenda/templates/agenda/checkin_form.html:11
+msgid "Escaneie ou digite o código"
+msgstr ""
+
+#: agenda/templates/agenda/checkin_form.html:13
+msgid "Confirmar presença"
+msgstr ""
+
+#: agenda/templates/agenda/create.html:7
 msgid "Cadastrar Evento"
 msgstr ""
 
-#: templates/agenda/delete.html:3 templates/agenda/delete.html:8
+#: agenda/templates/agenda/delete.html:3 agenda/templates/agenda/delete.html:8
 msgid "Remover Evento"
 msgstr ""
 
-#: templates/agenda/delete.html:9
+#: agenda/templates/agenda/delete.html:9
 #, python-format
 msgid "Tem certeza que deseja remover <strong>%(title)s</strong>?"
 msgstr ""
 
-#: templates/agenda/delete.html:14
-#: templates/agenda/parceria_confirm_delete.html:14
-#: templates/agenda/update.html:45
+#: agenda/templates/agenda/delete.html:14
+#: agenda/templates/agenda/parceria_confirm_delete.html:14
+#: agenda/templates/agenda/update.html:45
 msgid "Remover"
 msgstr ""
 
-#: templates/agenda/detail.html:21
+#: agenda/templates/agenda/detail.html:21
 msgid "Início"
 msgstr ""
 
-#: templates/agenda/detail.html:22
+#: agenda/templates/agenda/detail.html:22
 msgid "Fim"
 msgstr ""
 
-#: templates/agenda/detail.html:30
+#: agenda/templates/agenda/detail.html:30
 msgid "Cancelar inscrição"
 msgstr ""
 
-#: templates/agenda/detail.html:32
+#: agenda/templates/agenda/detail.html:32
 msgid "Inscrever-se"
 msgstr ""
 
-#: templates/agenda/detail.html:38 templates/agenda/update.html:32
+#: agenda/templates/agenda/detail.html:38
+#: agenda/templates/agenda/update.html:32
 msgid "Inscritos"
 msgstr ""
 
-#: templates/agenda/detail.html:61 templates/agenda/update.html:53
+#: agenda/templates/agenda/detail.html:61
+#: agenda/templates/agenda/update.html:53
 msgid "Nenhum inscrito."
 msgstr ""
 
-#: templates/agenda/detail.html:66
+#: agenda/templates/agenda/detail.html:66
 msgid "Voltar"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:4
+#: agenda/templates/agenda/inscricao_list.html:4
 msgid "Inscrições"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:9
+#: agenda/templates/agenda/inscricao_list.html:9
 msgid "Lista de Inscrições"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:30
+#: agenda/templates/agenda/inscricao_list.html:30
 msgid "Buscar por usuário ou evento"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:46
+#: agenda/templates/agenda/inscricao_list.html:46
 msgid "Usuário"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:48
+#: agenda/templates/agenda/inscricao_list.html:48
 msgid "Status"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:49
+#: agenda/templates/agenda/inscricao_list.html:49
 msgid "Presente"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:50
+#: agenda/templates/agenda/inscricao_list.html:50
 msgid "Valor Pago"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:51
+#: agenda/templates/agenda/inscricao_list.html:51
 msgid "Método de Pagamento"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:52
+#: agenda/templates/agenda/inscricao_list.html:52
 msgid "Observação"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:71
+#: agenda/templates/agenda/inscricao_list.html:71
 msgid "Ver"
 msgstr ""
 
-#: templates/agenda/inscricao_list.html:77
+#: agenda/templates/agenda/inscricao_list.html:77
 msgid "Nenhuma inscrição encontrada."
 msgstr ""
 
-#: templates/agenda/material_list.html:4 templates/agenda/material_list.html:9
+#: agenda/templates/agenda/material_list.html:4
+#: agenda/templates/agenda/material_list.html:9
 msgid "Materiais de Divulgação"
 msgstr ""
 
-#: templates/agenda/material_list.html:30
+#: agenda/templates/agenda/material_list.html:30
 msgid "Buscar por título"
 msgstr ""
 
-#: templates/agenda/material_list.html:46
+#: agenda/templates/agenda/material_list.html:46
 msgid "Título"
 msgstr ""
 
-#: templates/agenda/material_list.html:47
+#: agenda/templates/agenda/material_list.html:47
 msgid "Descrição"
 msgstr ""
 
-#: templates/agenda/material_list.html:48
+#: agenda/templates/agenda/material_list.html:48
 msgid "Arquivo"
 msgstr ""
 
-#: templates/agenda/material_list.html:63
+#: agenda/templates/agenda/material_list.html:63
 msgid "Download"
 msgstr ""
 
-#: templates/agenda/material_list.html:69
+#: agenda/templates/agenda/material_list.html:69
 msgid "Nenhum material disponível."
 msgstr ""
 
-#: templates/agenda/parceria_confirm_delete.html:4
-#: templates/agenda/parceria_confirm_delete.html:9
+#: agenda/templates/agenda/parceria_confirm_delete.html:4
+#: agenda/templates/agenda/parceria_confirm_delete.html:9
 msgid "Remover Parceria"
 msgstr ""
 
-#: templates/agenda/parceria_confirm_delete.html:10
+#: agenda/templates/agenda/parceria_confirm_delete.html:10
 #, python-format
 msgid ""
 "Tem certeza que deseja remover <strong>%(object.empresa.nome)s</strong>?"
 msgstr ""
 
-#: templates/agenda/parceria_form.html:4 templates/agenda/parceria_form.html:8
+#: agenda/templates/agenda/parceria_form.html:4
+#: agenda/templates/agenda/parceria_form.html:8
 msgid "Parceria"
 msgstr ""
 
-#: templates/agenda/parceria_list.html:4 templates/agenda/parceria_list.html:9
+#: agenda/templates/agenda/parceria_list.html:4
+#: agenda/templates/agenda/parceria_list.html:9
 msgid "Parcerias"
 msgstr ""
 
-#: templates/agenda/parceria_list.html:17
+#: agenda/templates/agenda/parceria_list.html:17
 msgid "Empresa"
 msgstr ""
 
-#: templates/agenda/parceria_list.html:19
+#: agenda/templates/agenda/parceria_list.html:19
 msgid "Tipo"
 msgstr ""
 
-#: templates/agenda/parceria_list.html:31
+#: agenda/templates/agenda/parceria_list.html:31
 msgid "Excluir"
 msgstr ""
 
-#: templates/agenda/parceria_list.html:36
+#: agenda/templates/agenda/parceria_list.html:36
 msgid "Nenhuma parceria encontrada."
 msgstr ""
 
-#: templates/agenda/update.html:3 templates/agenda/update.html:7
+#: agenda/templates/agenda/update.html:3 agenda/templates/agenda/update.html:7
 msgid "Editar Evento"
 msgstr ""
