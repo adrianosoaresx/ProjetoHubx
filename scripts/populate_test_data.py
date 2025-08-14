@@ -47,7 +47,7 @@ cnpj = CNPJ()
 
 def clear_test_data() -> None:
     """Remove previously generated data keeping only the root user."""
-    TokenAcesso.objects.all().delete()
+    TokenAcesso.all_objects.all().delete()
     ChatMessage.all_objects.all().delete(soft=False)
     ChatParticipant.objects.all().delete()
     ChatConversation.all_objects.all().delete(soft=False)
