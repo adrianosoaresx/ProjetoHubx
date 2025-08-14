@@ -26,12 +26,12 @@ enviar_para_usuario(user, "codigo_do_template", {"nome": "Ana"})
 Parâmetros:
 
 - `user`: instância de usuário destino.
-- `template_codigo`: código do `NotificationTemplate` ativo.
+- `template_codigo`: código do `NotificationTemplate`.
 - `context`: dicionário usado para renderizar assunto e corpo.
 
 Exceções:
 
-- `ValueError` caso o template não exista ou esteja inativo.
+- `ValueError` caso o template não exista.
 
 Se todos os canais preferidos do usuário estiverem desabilitados, um `NotificationLog` é criado com status **FALHA** e nenhum envio é disparado.
 

@@ -8,7 +8,7 @@ from .models import NotificationLog, NotificationTemplate, PushSubscription
 class NotificationTemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationTemplate
-        fields = ["id", "codigo", "assunto", "corpo", "canal", "ativo"]
+        fields = ["id", "codigo", "assunto", "corpo", "canal"]
 class NotificationLogSerializer(serializers.ModelSerializer):
     template_codigo = serializers.CharField(source="template.codigo", read_only=True)
     template_assunto = serializers.CharField(source="template.assunto", read_only=True)

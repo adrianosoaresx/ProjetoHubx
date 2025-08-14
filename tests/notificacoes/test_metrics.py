@@ -14,8 +14,7 @@ def test_metrics_dashboard(client):
     staff = UserFactory(is_staff=True, is_superuser=True)
     client.force_login(staff)
     user = UserFactory()
-    active_before = NotificationTemplate.objects.filter(ativo=True).count()
-    inactive_before = NotificationTemplate.objects.filter(ativo=False).count()
+    total_before = NotificationTemplate.objects.count()
     template = NotificationTemplate.objects.create(codigo="t", assunto="a", corpo="b", canal="email")
     NotificationLog.objects.create(user=user, template=template, canal="email", status=NotificationStatus.ENVIADA)
     log2 = NotificationLog.objects.create(user=user, template=template, canal="whatsapp", status=NotificationStatus.FALHA)
@@ -28,5 +27,4 @@ def test_metrics_dashboard(client):
     assert ctx["total_por_canal"].get("email") in {None, 1}
     assert "whatsapp" not in ctx["total_por_canal"]
     assert ctx["falhas_por_canal"].get("whatsapp") is None
-    assert ctx["templates_ativos"] == active_before + 1
-    assert ctx["templates_inativos"] == inactive_before
+    assert ctx["templates_total"] == total_before + 1
