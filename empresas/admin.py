@@ -23,9 +23,9 @@ class EmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(ContatoEmpresa)
 class ContatoEmpresaAdmin(admin.ModelAdmin):
-    list_display = ["nome", "email", "empresa", "principal"]
+    list_display = ["nome", "email", "empresa", "principal", "deleted"]
     search_fields = ["nome", "email"]
-    list_filter = ["principal"]
+    list_filter = ["principal", "deleted"]
 
 
 @admin.register(AvaliacaoEmpresa)

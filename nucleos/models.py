@@ -120,7 +120,7 @@ class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):
         return self.periodo_inicio <= now <= self.periodo_fim
 
 
-class ConviteNucleo(TimeStampedModel):
+class ConviteNucleo(TimeStampedModel, SoftDeleteModel):
     token = models.CharField(max_length=36, unique=True, default=uuid.uuid4, editable=False)
     token_obj = models.ForeignKey(
         "tokens.TokenAcesso",

@@ -106,7 +106,7 @@ class Empresa(TimeStampedModel, SoftDeleteModel):
         return self.avaliacoes.filter(deleted=False).aggregate(avg=Avg("nota"))["avg"] or 0
 
 
-class ContatoEmpresa(TimeStampedModel):
+class ContatoEmpresa(TimeStampedModel, SoftDeleteModel):
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="contatos")
     nome = models.CharField(max_length=255)
     cargo = models.CharField(max_length=100)
@@ -114,8 +114,11 @@ class ContatoEmpresa(TimeStampedModel):
     telefone = models.CharField(max_length=20)
     principal = models.BooleanField(default=False)
 
+    objects = models.Manager()
+    ativos = SoftDeleteManager()
+
     class Meta:
-        unique_together = ("empresa", "email")
+        unique_together = ("empresa", "email", "deleted")
         verbose_name = "Contato da Empresa"
         verbose_name_plural = "Contatos das Empresas"
 
