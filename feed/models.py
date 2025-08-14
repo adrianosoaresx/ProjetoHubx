@@ -13,7 +13,7 @@ from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 User = get_user_model()
 
 
-class Tag(TimeStampedModel):
+class Tag(TimeStampedModel, SoftDeleteModel):
     nome = models.CharField(max_length=50, unique=True)
 
     class Meta:

@@ -11,7 +11,7 @@ from validate_docbr import CNPJ
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
 
-class Tag(TimeStampedModel):
+class Tag(TimeStampedModel, SoftDeleteModel):
     """Tags para produtos e serviços."""
 
     class Categoria(models.TextChoices):
