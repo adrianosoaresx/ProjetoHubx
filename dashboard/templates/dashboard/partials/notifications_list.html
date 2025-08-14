@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n l10n %}
 <section class="mb-8" id="notifications">
   <h2 class="text-xl font-semibold mb-4">{% trans "Notificações Recentes" %}</h2>
   <ul class="space-y-2">
@@ -12,7 +12,7 @@
         <time
           datetime="{{ log.data_envio|date:'c' }}"
           class="text-sm text-neutral-600"
-          >{{ log.data_envio|date:'d/m/Y H:i' }}</time
+          >{{ log.data_envio|date:'SHORT_DATETIME_FORMAT' }}</time
         >
         <button
           hx-patch="{% url 'notificacoes_api:log-detail' log.id %}"
