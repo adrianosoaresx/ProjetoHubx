@@ -1,23 +1,19 @@
 {% extends 'perfil/perfil.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Minhas Conexões | HubX
-<div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
-</div>
-{% endblock %}
+{% block title %}{% trans "Minhas Conexões" %} | HubX{% endblock %}
 
 {% block perfil_content %}
 <section id="conexoes" class="space-y-6">
   <div>
-    <h2 class="text-xl font-semibold">Minhas Conexões</h2>
-    <p class="text-sm text-gray-500">Gerencie sua rede de contatos</p>
+    <h2 class="text-xl font-semibold">{% trans "Minhas Conexões" %}</h2>
+    <p class="text-sm text-gray-500">{% trans "Gerencie sua rede de contatos" %}</p>
   </div>
 
   <!-- Abas -->
   <div class="flex gap-4 border-b">
-    <button class="tab-btn py-2 px-4 text-sm border-b-2 border-primary text-primary font-medium" data-tab="minhas-conexoes">Minhas Conexões</button>
-    <button class="tab-btn py-2 px-4 text-sm text-gray-600 hover:text-primary" data-tab="solicitacoes">Solicitações</button>
+    <button class="tab-btn py-2 px-4 text-sm border-b-2 border-primary text-primary font-medium" data-tab="minhas-conexoes">{% trans "Minhas Conexões" %}</button>
+    <button class="tab-btn py-2 px-4 text-sm text-gray-600 hover:text-primary" data-tab="solicitacoes">{% trans "Solicitações" %}</button>
   </div>
 
   <!-- Conteúdo das abas -->
@@ -26,8 +22,8 @@
     <!-- MINHAS CONEXÕES -->
     <div class="tab-pane" id="minhas-conexoes">
       <div class="flex gap-2 mb-4">
-        <input type="text" placeholder="Buscar conexões..." class="flex-grow border rounded-lg p-2 text-sm" />
-        <button class="text-gray-600 text-sm">🔍</button>
+        <input type="text" placeholder="{% trans 'Buscar conexões...' %}" class="flex-grow border rounded-lg p-2 text-sm" />
+        <button class="text-gray-600 text-sm" aria-label="{% trans 'Buscar' %}">🔍</button>
       </div>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -47,17 +43,17 @@
             </div>
           </div>
           <div class="flex gap-2">
-            <a href="#" onclick="abrirChat({{ connection.id }})" title="Chat" class="text-green-500 hover:text-green-600">💬</a>
-            <form method="post" action="{% url 'accounts:remover_conexao' connection.id %}" onsubmit="return confirm('Tem certeza que deseja remover esta conexão?');">
+            <a href="#" onclick="abrirChat({{ connection.id }})" title="{% trans 'Chat' %}" class="text-green-500 hover:text-green-600">💬</a>
+            <form method="post" action="{% url 'accounts:remover_conexao' connection.id %}" onsubmit="return confirm('{% trans 'Tem certeza que deseja remover esta conexão?' %}');">
               {% csrf_token %}
-              <button title="Remover conexão" class="text-red-500 hover:text-red-600">❌</button>
+              <button title="{% trans 'Remover conexão' %}" class="text-red-500 hover:text-red-600">❌</button>
             </form>
           </div>
         </div>
         {% empty %}
         <div class="text-center text-sm text-gray-500 col-span-full">
-          <p>Você ainda não tem conexões.</p>
-          <a href="#" class="mt-2 inline-block bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 text-sm">Encontrar Pessoas</a>
+          <p>{% trans "Você ainda não tem conexões." %}</p>
+          <a href="#" class="mt-2 inline-block bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 text-sm">{% trans "Encontrar Pessoas" %}</a>
         </div>
         {% endfor %}
       </div>
@@ -85,17 +81,17 @@
           <div class="flex flex-col gap-1">
             <form method="post" action="{% url 'accounts:aceitar_conexao' request.id %}">
               {% csrf_token %}
-              <button class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded">Aceitar</button>
+              <button class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded">{% trans "Aceitar" %}</button>
             </form>
             <form method="post" action="{% url 'accounts:recusar_conexao' request.id %}">
               {% csrf_token %}
-              <button class="text-sm bg-red-100 text-red-600 px-3 py-1 rounded">Recusar</button>
+              <button class="text-sm bg-red-100 text-red-600 px-3 py-1 rounded">{% trans "Recusar" %}</button>
             </form>
           </div>
         </div>
         {% empty %}
         <div class="text-center text-sm text-gray-500">
-          <p>Você não tem solicitações de conexão pendentes.</p>
+          <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
         </div>
         {% endfor %}
       </div>
@@ -117,6 +113,6 @@
 </script>
 
 <div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}

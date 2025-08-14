@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Registro - CPF | Hubx{% endblock %}
+{% block title %}{% trans "Registro - CPF" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">Passo 5 de 7</span>
+        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=5 total=7 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         <span class="text-sm text-neutral-500">70%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
@@ -16,21 +17,21 @@
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Qual seu CPF?</h1>
-      <p class="text-neutral-600">Precisamos para validar sua identidade e segurança</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Qual seu CPF?" %}</h1>
+      <p class="text-neutral-600">{% trans "Precisamos para validar sua identidade e segurança" %}</p>
     </div>
 
     <form id="cpfForm" method="post" action="{% url 'accounts:cpf' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="cpf" class="mb-1 block text-sm font-medium text-neutral-700">CPF</label>
+        <label for="cpf" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "CPF" %}</label>
         <input type="text" id="cpf" name="cpf" maxlength="14" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="000.000.000-00" required autofocus>
         <div class="text-sm text-red-600" id="cpf_validation"></div>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
   </div>

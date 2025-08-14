@@ -1,20 +1,21 @@
-<h1>Métricas de Notificações</h1>
+{% load i18n %}
+<h1>{% trans "Métricas de Notificações" %}</h1>
 <form method="get">
-  <label>Início: <input type="date" name="inicio" value="{{ request.GET.inicio }}" /></label>
-  <label>Fim: <input type="date" name="fim" value="{{ request.GET.fim }}" /></label>
-  <button type="submit">Filtrar</button>
+  <label>{% trans "Início" %}: <input type="date" name="inicio" value="{{ request.GET.inicio }}" /></label>
+  <label>{% trans "Fim" %}: <input type="date" name="fim" value="{{ request.GET.fim }}" /></label>
+  <button type="submit">{% trans "Filtrar" %}</button>
 </form>
-<h2>Total por canal</h2>
+<h2>{% trans "Total por canal" %}</h2>
 <ul>
-  <li>Email: {{ total_por_canal.email|default:0 }}</li>
-  <li>Push: {{ total_por_canal.push|default:0 }}</li>
-  <li>WhatsApp: {{ total_por_canal.whatsapp|default:0 }}</li>
+  <li>{% trans "E-mail" %}: {{ total_por_canal.email|default:0 }}</li>
+  <li>{% trans "Push" %}: {{ total_por_canal.push|default:0 }}</li>
+  <li>{% trans "WhatsApp" %}: {{ total_por_canal.whatsapp|default:0 }}</li>
 </ul>
-<h2>Falhas por canal</h2>
+<h2>{% trans "Falhas por canal" %}</h2>
 <ul>
-  <li>Email: {{ falhas_por_canal.email|default:0 }}</li>
-  <li>Push: {{ falhas_por_canal.push|default:0 }}</li>
-  <li>WhatsApp: {{ falhas_por_canal.whatsapp|default:0 }}</li>
+  <li>{% trans "E-mail" %}: {{ falhas_por_canal.email|default:0 }}</li>
+  <li>{% trans "Push" %}: {{ falhas_por_canal.push|default:0 }}</li>
+  <li>{% trans "WhatsApp" %}: {{ falhas_por_canal.whatsapp|default:0 }}</li>
 </ul>
-<p>Templates ativos: {{ templates_ativos }}</p>
-<p>Templates inativos: {{ templates_inativos }}</p>
+<p>{% trans "Templates ativos" %}: {{ templates_ativos }}</p>
+<p>{% trans "Templates inativos" %}: {{ templates_inativos }}</p>

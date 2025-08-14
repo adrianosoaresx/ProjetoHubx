@@ -1,19 +1,20 @@
 {% extends 'perfil/perfil.html' %}
+{% load i18n %}
 
-{% block title %}{% if form.instance.pk %}Editar Mídia{% else %}Nova Mídia{% endif %} | Hubx{% endblock %}
+{% block title %}{% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Nova Mídia" %}{% endif %} | Hubx{% endblock %}
 
 {% block perfil_content %}
 <section class="space-y-6">
   <h2 class="text-xl font-semibold">
-    {% if form.instance.pk %}Editar Mídia{% else %}Cadastrar Mídia{% endif %}
+    {% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Cadastrar Mídia" %}{% endif %}
   </h2>
 
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
     {{ form.as_p }}
     <div class="flex justify-end gap-2">
-      <a href="{% url 'accounts:midias' %}" class="text-sm px-4 py-2 border rounded hover:bg-gray-100">Cancelar</a>
-      <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">Salvar</button>
+      <a href="{% url 'accounts:midias' %}" class="text-sm px-4 py-2 border rounded hover:bg-gray-100">{% trans "Cancelar" %}</a>
+      <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">{% trans "Salvar" %}</button>
     </div>
   </form>
 </section>

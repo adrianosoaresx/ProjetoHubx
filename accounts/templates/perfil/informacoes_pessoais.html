@@ -1,18 +1,18 @@
 {% extends 'perfil/perfil.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Informações Pessoais | HubX{% endblock %}
+{% block title %}{% trans "Informações Pessoais" %} | HubX{% endblock %}
 
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">Informações Pessoais</h3>
-  <p class="text-sm text-gray-500 mb-6">Atualize seus dados básicos e de contato</p>
+  <h3 class="text-xl font-semibold mb-1">{% trans "Informações Pessoais" %}</h3>
+  <p class="text-sm text-gray-500 mb-6">{% trans "Atualize seus dados básicos e de contato" %}</p>
 
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
     <div>
-      <label for="nome_completo" class="block text-sm font-medium text-gray-700">Nome completo</label>
+      <label for="nome_completo" class="block text-sm font-medium text-gray-700">{% trans "Nome completo" %}</label>
       <input type="text" id="nome_completo" name="nome_completo"
              class="mt-1 block w-full border rounded-lg p-2 text-sm"
              value="{{ user.nome_completo }}" required>
@@ -20,14 +20,14 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
+        <label for="username" class="block text-sm font-medium text-gray-700">{% trans "Usuário" %}</label>
         <input type="text" id="username" name="username"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.username }}" required>
       </div>
 
       <div>
-        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+        <label for="email" class="block text-sm font-medium text-gray-700">{% trans "Email" %}</label>
         <input type="email" id="email" name="email"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.email }}" required>
@@ -35,53 +35,53 @@
     </div>
 
     <div>
-      <label for="biografia" class="block text-sm font-medium text-gray-700">Bio</label>
+      <label for="biografia" class="block text-sm font-medium text-gray-700">{% trans "Bio" %}</label>
       <textarea id="biografia" name="biografia" rows="4"
                 class="mt-1 block w-full border rounded-lg p-2 text-sm">{{ user.biografia }}</textarea>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label for="data_nascimento" class="block text-sm font-medium text-gray-700">Data de Nascimento</label>
+        <label for="data_nascimento" class="block text-sm font-medium text-gray-700">{% trans "Data de Nascimento" %}</label>
         <input type="date" id="data_nascimento" name="data_nascimento"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.data_nascimento|date:'Y-m-d' }}">
       </div>
 
       <div>
-        <label for="genero" class="block text-sm font-medium text-gray-700">Gênero</label>
+        <label for="genero" class="block text-sm font-medium text-gray-700">{% trans "Gênero" %}</label>
         <select id="genero" name="genero"
                 class="mt-1 block w-full border rounded-lg p-2 text-sm">
-          <option value="">Selecione...</option>
-          <option value="M" {% if user.genero == 'M' %}selected{% endif %}>Masculino</option>
-          <option value="F" {% if user.genero == 'F' %}selected{% endif %}>Feminino</option>
-          <option value="O" {% if user.genero == 'O' %}selected{% endif %}>Outro</option>
+          <option value="">{% trans "Selecione..." %}</option>
+          <option value="M" {% if user.genero == 'M' %}selected{% endif %}>{% trans "Masculino" %}</option>
+          <option value="F" {% if user.genero == 'F' %}selected{% endif %}>{% trans "Feminino" %}</option>
+          <option value="O" {% if user.genero == 'O' %}selected{% endif %}>{% trans "Outro" %}</option>
         </select>
       </div>
     </div>
 
     <div>
-      <label for="avatar" class="block text-sm font-medium text-gray-700">Foto de Perfil</label>
+      <label for="avatar" class="block text-sm font-medium text-gray-700">{% trans "Foto de Perfil" %}</label>
       <input type="file" id="avatar" name="avatar"
              class="mt-1 block w-full border rounded-lg p-2 text-sm">
-      <label for="cover" class="block text-sm font-medium text-gray-700 mt-2">Capa</label>
+      <label for="cover" class="block text-sm font-medium text-gray-700 mt-2">{% trans "Capa" %}</label>
       <input type="file" id="cover" name="cover"
              class="mt-1 block w-full border rounded-lg p-2 text-sm">
     </div>
 
     <hr class="my-6">
 
-    <h4 class="text-lg font-semibold">Informações de Contato</h4>
+    <h4 class="text-lg font-semibold">{% trans "Informações de Contato" %}</h4>
 
     <div class="grid md:grid-cols-2 gap-4">
       <div>
-        <label for="fone" class="block text-sm font-medium text-gray-700">Telefone</label>
+        <label for="fone" class="block text-sm font-medium text-gray-700">{% trans "Telefone" %}</label>
         <input type="tel" id="fone" name="fone"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.fone }}" placeholder="(00) 00000-0000">
       </div>
       <div>
-        <label for="whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>
+        <label for="whatsapp" class="block text-sm font-medium text-gray-700">{% trans "WhatsApp" %}</label>
         <input type="tel" id="whatsapp" name="whatsapp"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
@@ -89,31 +89,31 @@
     </div>
 
     <div>
-      <label for="endereco" class="block text-sm font-medium text-gray-700">Endereço</label>
+      <label for="endereco" class="block text-sm font-medium text-gray-700">{% trans "Endereço" %}</label>
       <input type="text" id="endereco" name="endereco"
              class="mt-1 block w-full border rounded-lg p-2 text-sm"
-             value="{{ user.endereco }}" placeholder="Rua, número, complemento">
+             value="{{ user.endereco }}" placeholder="{% trans 'Rua, número, complemento' %}">
     </div>
 
     <div class="grid md:grid-cols-3 gap-4">
       <div>
-        <label for="cidade" class="block text-sm font-medium text-gray-700">Cidade</label>
+        <label for="cidade" class="block text-sm font-medium text-gray-700">{% trans "Cidade" %}</label>
         <input type="text" id="cidade" name="cidade"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.cidade }}">
       </div>
       <div>
-        <label for="estado" class="block text-sm font-medium text-gray-700">Estado</label>
+        <label for="estado" class="block text-sm font-medium text-gray-700">{% trans "Estado" %}</label>
         <select id="estado" name="estado"
                 class="mt-1 block w-full border rounded-lg p-2 text-sm">
-          <option value="">Selecione...</option>
+          <option value="">{% trans "Selecione..." %}</option>
           {% for uf, sigla in estados %}
             <option value="{{ sigla }}" {% if user.estado == sigla %}selected{% endif %}>{{ uf }}</option>
           {% endfor %}
         </select>
       </div>
       <div>
-        <label for="cep" class="block text-sm font-medium text-gray-700">CEP</label>
+        <label for="cep" class="block text-sm font-medium text-gray-700">{% trans "CEP" %}</label>
         <input type="text" id="cep" name="cep"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
                value="{{ user.cep }}" placeholder="00000-000">
@@ -123,13 +123,13 @@
     <div class="pt-4">
       <button type="submit"
               class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
-        Salvar Alterações
+        {% trans "Salvar Alterações" %}
       </button>
     </div>
   </form>
 </div>
 
 <div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}

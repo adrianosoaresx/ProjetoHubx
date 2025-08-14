@@ -1,25 +1,26 @@
+{% load i18n %}
 <div class="bg-white p-4 border rounded">
   <form hx-get="/api/chat/channels/{{ channel.id }}/export/" hx-target="#export-status" hx-swap="innerHTML" hx-indicator="#export-progress">
-    <label class="block mb-2">Formato
+    <label class="block mb-2">{% trans "Formato" %}
       <select name="formato" class="border rounded p-1">
-        <option value="json">JSON</option>
-        <option value="csv">CSV</option>
+        <option value="json">{% trans "JSON" %}</option>
+        <option value="csv">{% trans "CSV" %}</option>
       </select>
     </label>
-    <label class="block mb-2">Início
+    <label class="block mb-2">{% trans "Início" %}
       <input type="date" name="inicio" class="border rounded p-1" />
     </label>
-    <label class="block mb-2">Fim
+    <label class="block mb-2">{% trans "Fim" %}
       <input type="date" name="fim" class="border rounded p-1" />
     </label>
     <fieldset class="mb-2">
-      <legend class="mb-1">Tipos</legend>
-      <label class="mr-2"><input type="checkbox" name="tipos" value="text" /> Texto</label>
-      <label class="mr-2"><input type="checkbox" name="tipos" value="image" /> Imagem</label>
-      <label class="mr-2"><input type="checkbox" name="tipos" value="video" /> Vídeo</label>
-      <label class="mr-2"><input type="checkbox" name="tipos" value="file" /> Arquivo</label>
+      <legend class="mb-1">{% trans "Tipos" %}</legend>
+      <label class="mr-2"><input type="checkbox" name="tipos" value="text" /> {% trans "Texto" %}</label>
+      <label class="mr-2"><input type="checkbox" name="tipos" value="image" /> {% trans "Imagem" %}</label>
+      <label class="mr-2"><input type="checkbox" name="tipos" value="video" /> {% trans "Vídeo" %}</label>
+      <label class="mr-2"><input type="checkbox" name="tipos" value="file" /> {% trans "Arquivo" %}</label>
     </fieldset>
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">Exportar</button>
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans "Exportar" %}</button>
     <span id="export-progress" class="htmx-indicator ml-2">{% trans "Gerando..." %}</span>
   </form>
   <div id="export-status" class="mt-2"></div>

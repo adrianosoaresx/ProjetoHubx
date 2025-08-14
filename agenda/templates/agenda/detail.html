@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% block title %}{{ object.titulo }} | Hubx{% endblock %}
 
 {% block content %}
@@ -17,8 +18,8 @@
 
   <!-- Informações -->
   <div class="space-y-2 text-sm text-neutral-800 mb-6">
-    <p><strong>Início:</strong> {{ object.data_inicio|date:"d/m/Y H:i" }}</p>
-    <p><strong>Fim:</strong> {{ object.data_fim|date:"d/m/Y H:i" }}</p>
+    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:SHORT_DATETIME_FORMAT }}</p>
+    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:SHORT_DATETIME_FORMAT }}</p>
   </div>
 
   <!-- Inscrição -->
@@ -26,15 +27,15 @@
     <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
       {% csrf_token %}
       {% if object.inscricoes.filter(user=user, status='confirmada').exists %}
-        <button type="submit" class="btn-secondary" aria-label="Cancelar inscrição">Cancelar inscrição</button>
+        <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
       {% else %}
-        <button type="submit" class="btn-primary" aria-label="Inscrever-se">Inscrever-se</button>
+        <button type="submit" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</button>
       {% endif %}
     </form>
   {% endif %}
 
   <!-- Lista de Inscritos -->
-  <h2 class="text-lg font-semibold text-neutral-900 mb-4">Inscritos</h2>
+  <h2 class="text-lg font-semibold text-neutral-900 mb-4">{% trans "Inscritos" %}</h2>
 
   {% if object.inscricoes.all %}
     <div class="grid gap-4 sm:grid-cols-2">
@@ -57,12 +58,12 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-sm text-neutral-500 mb-6">Nenhum inscrito.</p>
+    <p class="text-sm text-neutral-500 mb-6">{% trans "Nenhum inscrito." %}</p>
   {% endif %}
 
   <!-- Voltar -->
   <div class="flex justify-end mt-10">
-    <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="Voltar">Voltar</a>
+    <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
   </div>
 </section>
 {% endblock %}

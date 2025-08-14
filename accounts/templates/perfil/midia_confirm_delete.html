@@ -1,14 +1,15 @@
 {% extends 'perfil/perfil.html' %}
-{% block title %}Remover Mídia | Hubx{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Remover Mídia" %} | Hubx{% endblock %}
 
 {% block perfil_content %}
 <section class="space-y-4">
-  <h2 class="text-xl font-semibold text-red-600">Remover Mídia</h2>
-  <p class="text-gray-600">Tem certeza que deseja remover esta mídia?</p>
+  <h2 class="text-xl font-semibold text-red-600">{% trans "Remover Mídia" %}</h2>
+  <p class="text-gray-600">{% trans "Tem certeza que deseja remover esta mídia?" %}</p>
   <form method="post" class="flex justify-end gap-2">
     {% csrf_token %}
-    <a href="{% url 'accounts:midias' %}" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">Cancelar</a>
-    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Remover</button>
+    <a href="{% url 'accounts:midias' %}" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">{% trans "Cancelar" %}</a>
+    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">{% trans "Remover" %}</button>
   </form>
 </section>
 {% endblock %}

@@ -1,7 +1,8 @@
+{% load i18n %}
 <article class="p-4 border-b border-neutral-200 {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
-      {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"d/m/Y H:i" }}
+      {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"SHORT_DATETIME_FORMAT" }}
     </div>
     <div class="flex items-center gap-2">
     {% if user == comentario.autor or user.get_tipo_usuario in ['admin','coordenador','root'] %}

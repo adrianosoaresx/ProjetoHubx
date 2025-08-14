@@ -1,22 +1,23 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}Remover Organização | Hubx{% endblock %}
+{% block title %}{% trans 'Remover Organização' %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-16">
   <div class="bg-white border border-red-200 rounded-2xl shadow-sm p-6 text-center">
-    <h1 class="text-xl font-semibold text-red-700 mb-4">Confirmar remoção</h1>
+    <h1 class="text-xl font-semibold text-red-700 mb-4">{% trans 'Confirmar remoção' %}</h1>
     <p class="text-sm text-neutral-700">
-      Tem certeza que deseja remover <strong>{{ object.nome }}</strong>?
+      {% blocktrans with nome=object.nome %}Tem certeza que deseja remover <strong>{{ nome }}</strong>?{% endblocktrans %}
     </p>
 
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
       <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-        Cancelar
+        {% trans 'Cancelar' %}
       </a>
       <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">
-        Remover
+        {% trans 'Remover' %}
       </button>
     </form>
   </div>

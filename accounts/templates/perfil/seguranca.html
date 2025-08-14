@@ -1,30 +1,30 @@
 {% extends 'perfil/perfil.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Segurança da Conta | HubX{% endblock %}
+{% block title %}{% trans "Segurança da Conta" %} | HubX{% endblock %}
 
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">Segurança</h3>
-  <p class="text-sm text-gray-500 mb-6">Gerencie sua senha e a proteção da conta</p>
+  <h3 class="text-xl font-semibold mb-1">{% trans "Segurança" %}</h3>
+  <p class="text-sm text-gray-500 mb-6">{% trans "Gerencie sua senha e a proteção da conta" %}</p>
 
   <form method="post" action="{% url 'accounts:seguranca' %}" class="space-y-6">
     {% csrf_token %}
 
     <div>
-      <label for="senha_atual" class="block text-sm font-medium text-gray-700">Senha Atual</label>
+      <label for="senha_atual" class="block text-sm font-medium text-gray-700">{% trans "Senha Atual" %}</label>
       <input type="password" id="senha_atual" name="senha_atual"
              class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label for="nova_senha" class="block text-sm font-medium text-gray-700">Nova Senha</label>
+        <label for="nova_senha" class="block text-sm font-medium text-gray-700">{% trans "Nova Senha" %}</label>
         <input type="password" id="nova_senha" name="nova_senha"
                class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
       </div>
       <div>
-        <label for="confirmar_senha" class="block text-sm font-medium text-gray-700">Confirmar Nova Senha</label>
+        <label for="confirmar_senha" class="block text-sm font-medium text-gray-700">{% trans "Confirmar Nova Senha" %}</label>
         <input type="password" id="confirmar_senha" name="confirmar_senha"
                class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
       </div>
@@ -32,34 +32,34 @@
 
     <!-- Indicador de força de senha -->
     <div>
-      <label class="block text-sm font-medium text-gray-700">Força da senha:</label>
+      <label class="block text-sm font-medium text-gray-700">{% trans "Força da senha:" %}</label>
       <div class="w-full h-2 bg-gray-200 rounded mt-1">
         <div id="strengthFill" class="h-2 bg-green-500 rounded w-1/4 transition-all duration-300"></div>
       </div>
-      <div id="strengthText" class="text-sm text-gray-500 mt-1">Digite uma senha</div>
+      <div id="strengthText" class="text-sm text-gray-500 mt-1">{% trans "Digite uma senha" %}</div>
     </div>
 
     <div>
       <button type="submit"
               class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
-        Alterar Senha
+        {% trans "Alterar Senha" %}
       </button>
     </div>
   </form>
 
   <div class="mt-12 border-t pt-8">
-    <h4 class="text-lg font-semibold mb-2">Verificação em Duas Etapas</h4>
+    <h4 class="text-lg font-semibold mb-2">{% trans "Verificação em Duas Etapas" %}</h4>
     <p class="text-sm text-gray-600 mb-4">
-      A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login.
+      {% trans "A verificação em duas etapas adiciona uma camada extra de segurança à sua conta, exigindo um código além da sua senha ao fazer login." %}
     </p>
     {% if request.user.two_factor_enabled %}
-      <p class="text-sm text-green-600 mb-4">2FA está ativado.</p>
+      <p class="text-sm text-green-600 mb-4">{% trans "2FA está ativado." %}</p>
       <a href="{% url 'accounts:disable_2fa' %}"
-         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">Desativar 2FA</a>
+         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">{% trans "Desativar 2FA" %}</a>
     {% else %}
-      <p class="text-sm text-red-600 mb-4">2FA não está ativado.</p>
+      <p class="text-sm text-red-600 mb-4">{% trans "2FA não está ativado." %}</p>
       <a href="{% url 'accounts:enable_2fa' %}"
-         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">Ativar 2FA</a>
+         class="border border-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-100 transition">{% trans "Ativar 2FA" %}</a>
     {% endif %}
   </div>
 </div>
@@ -76,27 +76,27 @@
     if (!val) {
       strengthFill.style.width = '0%';
       strengthFill.className = 'h-2 bg-gray-300 rounded';
-      strengthText.textContent = 'Digite uma senha';
+      strengthText.textContent = gettext('Digite uma senha');
       return;
     }
 
     if (length < 6) {
       strengthFill.style.width = '25%';
       strengthFill.className = 'h-2 bg-red-500 rounded';
-      strengthText.textContent = 'Fraca';
+      strengthText.textContent = gettext('Fraca');
     } else if (length < 10) {
       strengthFill.style.width = '50%';
       strengthFill.className = 'h-2 bg-yellow-500 rounded';
-      strengthText.textContent = 'Média';
+      strengthText.textContent = gettext('Média');
     } else {
       strengthFill.style.width = '100%';
       strengthFill.className = 'h-2 bg-green-500 rounded';
-      strengthText.textContent = 'Forte';
+      strengthText.textContent = gettext('Forte');
     }
   });
 </script>
 
 <div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}

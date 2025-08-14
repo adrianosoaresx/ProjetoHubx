@@ -23,7 +23,7 @@
   <main>
     {% if qr_code %}
       <div class="flex flex-col items-center mb-4">
-        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" class="w-40 h-40" />
+        <img src="data:image/png;base64,{{ qr_code }}" alt="{% trans 'QR Code' %}" class="w-40 h-40" />
         <p class="mt-2 text-sm font-mono">{{ secret }}</p>
       </div>
     {% endif %}

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Cadastre-se - HubX{% endblock %}
+{% block title %}{% trans "Cadastre-se" %} - HubX{% endblock %}
 
 {% block content %}
 <div class="flex items-center justify-center min-h-screen">
@@ -15,10 +16,10 @@
                 </svg>
             </div>
             <h1 class="text-2xl font-bold mb-6 text-center">
-                Junte-se ao HubX
+                {% trans "Junte-se ao HubX" %}
             </h1>
             <p class="text-neutral-600 mb-6">
-                Conecte-se com comunidades, empresas e organizações em uma única plataforma
+                {% trans "Conecte-se com comunidades, empresas e organizações em uma única plataforma" %}
             </p>
         </div>
 
@@ -31,9 +32,9 @@
                         <line x1="12" y1="14" x2="12" y2="3"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">Compartilhe</h3>
+                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Compartilhe" %}</h3>
                 <p class="text-sm text-neutral-600">
-                    Publique conteúdo e mantenha sua comunidade informada
+                    {% trans "Publique conteúdo e mantenha sua comunidade informada" %}
                 </p>
             </div>
             <div class="text-center">
@@ -45,9 +46,9 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">Conecte</h3>
+                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Conecte" %}</h3>
                 <p class="text-sm text-neutral-600">
-                    Encontre e conecte-se com pessoas e organizações
+                    {% trans "Encontre e conecte-se com pessoas e organizações" %}
                 </p>
             </div>
             <div class="text-center">
@@ -59,9 +60,9 @@
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">Organize</h3>
+                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Organize" %}</h3>
                 <p class="text-sm text-neutral-600">
-                    Crie e participe de eventos da sua comunidade
+                    {% trans "Crie e participe de eventos da sua comunidade" %}
                 </p>
             </div>
         </div>
@@ -74,20 +75,17 @@
                     <line x1="19" y1="8" x2="19" y2="14"/>
                     <line x1="22" y1="11" x2="16" y2="11"/>
                 </svg>
-                Começar Cadastro
+                {% trans "Começar Cadastro" %}
             </a>
             <a href="{% url 'accounts:login' %}" class="bg-gray-100 text-neutral-700 font-semibold py-2 px-4 rounded-xl">
-                Já tenho conta
+                {% trans "Já tenho conta" %}
             </a>
         </div>
 
         <div class="mt-8 pt-6 border-t border-neutral-200">
             <p class="text-xs text-neutral-500">
-                    Ao se cadastrar, você concorda com nossos
-                    <a href="#" class="text-primary-600 hover:text-primary-700">Termos de Uso</a>
-                    e
-                    <a href="#" class="text-primary-600 hover:text-primary-700">Política de Privacidade</a>
-                </p>
+                {% blocktrans trimmed %}Ao se cadastrar, você concorda com nossos <a href="#" class="text-primary-600 hover:text-primary-700">Termos de Uso</a> e <a href="#" class="text-primary-600 hover:text-primary-700">Política de Privacidade</a>{% endblocktrans %}
+            </p>
             </div>
         </div>
     </div>

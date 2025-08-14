@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Registro - Senha | Hubx{% endblock %}
+{% block title %}{% trans "Registro - Senha" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">Passo 5 de 7</span>
+        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=5 total=7 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         <span class="text-sm text-neutral-500">70%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
@@ -16,27 +17,27 @@
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Crie uma senha segura</h1>
-      <p class="text-neutral-600">Proteja sua conta com uma senha forte</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Crie uma senha segura" %}</h1>
+      <p class="text-neutral-600">{% trans "Proteja sua conta com uma senha forte" %}</p>
     </div>
 
     <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="senha" class="mb-1 block text-sm font-medium text-neutral-700">Senha</label>
-        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite sua senha" required autofocus>
+        <label for="senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Senha" %}</label>
+        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite sua senha' %}" required autofocus>
         <div class="text-sm text-red-600" id="senha_validation"></div>
       </div>
 
       <div>
-        <label for="confirmar_senha" class="mb-1 block text-sm font-medium text-neutral-700">Confirmar Senha</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Confirme sua senha" required>
+        <label for="confirmar_senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Confirmar Senha" %}</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Confirme sua senha' %}" required>
         <div class="text-sm text-red-600" id="confirmar_senha_validation"></div>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:email' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+        <a href="{% url 'accounts:email' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
   </div>

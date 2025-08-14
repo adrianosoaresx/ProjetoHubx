@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Token de Convite - HubX{% endblock %}
+{% block title %}{% trans "Token de Convite" %} - HubX{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">Passo 1 de 7</span>
+        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=1 total=7 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         <span class="text-sm text-neutral-500">14%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
@@ -23,28 +24,28 @@
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
       </div>
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Token de Convite</h1>
-      <p class="text-neutral-600">Digite seu token de convite para começar o cadastro</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Token de Convite" %}</h1>
+      <p class="text-neutral-600">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
     </div>
 
     <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="token" class="mb-1 block text-sm font-medium text-neutral-700">Token de Convite</label>
-        <input type="text" id="token" name="token" class="w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite seu token de convite" required autofocus>
-        <p class="mt-1 text-sm text-neutral-500">O token é necessário para continuar o cadastro na plataforma</p>
+        <label for="token" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Token de Convite" %}</label>
+        <input type="text" id="token" name="token" class="w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite seu token de convite' %}" required autofocus>
+        <p class="mt-1 text-sm text-neutral-500">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
-        <button type="submit" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <button type="submit" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
 
     <div class="mt-8 text-center">
       <p class="text-sm text-neutral-600">
-        Já tem uma conta?
-        <a href="{% url 'accounts:login' %}" class="font-medium text-primary-600 hover:text-primary-700">Entrar</a>
+        {% trans "Já tem uma conta?" %}
+        <a href="{% url 'accounts:login' %}" class="font-medium text-primary-600 hover:text-primary-700">{% trans "Entrar" %}</a>
       </p>
     </div>
   </div>

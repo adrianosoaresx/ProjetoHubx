@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
-{% block title %}Editar Evento | Hubx{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Editar Evento" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
-  <h1 class="text-2xl font-bold text-neutral-900 mb-6">Editar Evento</h1>
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">{% trans "Editar Evento" %}</h1>
 
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
@@ -22,13 +23,13 @@
     {% endfor %}
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="Cancelar">Cancelar</a>
-      <button type="submit" class="btn-primary" aria-label="Salvar">Salvar</button>
+      <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
     </div>
   </form>
 
   <!-- Inscritos -->
-  <h2 class="text-lg font-semibold text-neutral-900 mt-10 mb-4">Inscritos</h2>
+  <h2 class="text-lg font-semibold text-neutral-900 mt-10 mb-4">{% trans "Inscritos" %}</h2>
   {% if object.inscricoes.all %}
     <div class="grid gap-4 sm:grid-cols-2">
       {% for ins in object.inscricoes.all %}
@@ -41,7 +42,7 @@
           {% if user.user_type in ("admin","gerente","root") %}
           <form method="post" action="{% url 'agenda:evento_remover_inscrito' object.pk inscrito.pk %}">
             {% csrf_token %}
-            <button type="submit" class="text-sm text-red-600 hover:underline" aria-label="Remover">Remover</button>
+            <button type="submit" class="text-sm text-red-600 hover:underline" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
           </form>
           {% endif %}
         </div>
@@ -49,7 +50,7 @@
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-sm text-neutral-500">Nenhum inscrito.</p>
+    <p class="text-sm text-neutral-500">{% trans "Nenhum inscrito." %}</p>
   {% endif %}
 </section>
 {% endblock %}
