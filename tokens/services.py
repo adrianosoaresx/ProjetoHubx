@@ -37,8 +37,11 @@ def generate_token(
 
 def revoke_token(token_id: uuid.UUID) -> None:
     token = ApiToken.objects.get(id=token_id, revoked_at__isnull=True)
-    token.revoked_at = timezone.now()
-    token.save(update_fields=["revoked_at"])
+    now = timezone.now()
+    token.revoked_at = now
+    token.deleted = True
+    token.deleted_at = now
+    token.save(update_fields=["revoked_at", "deleted", "deleted_at"])
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:

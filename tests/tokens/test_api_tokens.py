@@ -35,6 +35,9 @@ def test_api_token_authentication_and_revocation():
 
     token = ApiToken.objects.get(token_hash=token_hash)
     revoke_token(token.id)
+    token_db = ApiToken.all_objects.get(id=token.id)
+    assert token_db.deleted is True
+    assert token_db.revoked_at is not None
     resp = client.get(url)
     assert resp.status_code in {status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN}
 
@@ -47,8 +50,9 @@ def test_revogar_tokens_expirados():
     token.expires_at = timezone.now() - timezone.timedelta(days=1)
     token.save(update_fields=["expires_at"])
     revogar_tokens_expirados()
-    token.refresh_from_db()
-    assert token.revoked_at is not None
+    token_db = ApiToken.all_objects.get(id=token.id)
+    assert token_db.revoked_at is not None
+    assert token_db.deleted is True
 
 
 def test_api_view_create_and_destroy():
