@@ -62,15 +62,18 @@ class FeedListView(LoginRequiredMixin, ListView):
         params = request.GET
         keys = [
             str(request.user.pk),
-            *(params.get(k, "") for k in [
-                "tipo_feed",
-                "organizacao",
-                "nucleo",
-                "evento",
-                "tags",
-                "page",
-                "q",
-            ]),
+            *(
+                params.get(k, "")
+                for k in [
+                    "tipo_feed",
+                    "organizacao",
+                    "nucleo",
+                    "evento",
+                    "tags",
+                    "page",
+                    "q",
+                ]
+            ),
         ]
         return "feed:list:" + ":".join(keys)
 
@@ -118,13 +121,11 @@ class FeedListView(LoginRequiredMixin, ListView):
             if connection.vendor == "postgresql":
                 query_parts = [" & ".join(term.split()) for term in or_terms]
                 query = SearchQuery(" | ".join(query_parts), config="portuguese")
-                vector = (
-                    SearchVector("conteudo", config="portuguese")
-                    + SearchVector("tags__nome", config="portuguese")
-                )
+                vector = SearchVector("conteudo", config="portuguese") + SearchVector("tags__nome", config="portuguese")
                 qs = (
                     qs.annotate(search=vector, rank=SearchRank(vector, query))
                     .filter(search=query)
+                    .filter(Q(tags__deleted=False) | Q(tags__isnull=True))
                     .order_by("-rank")
                 )
             else:  # fallback para sqlite
@@ -132,13 +133,13 @@ class FeedListView(LoginRequiredMixin, ListView):
                 for term in or_terms:
                     sub = Q()
                     for part in term.split():
-                        sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part)
+                        sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part, tags__deleted=False)
                     or_query |= sub
                 qs = qs.filter(or_query)
         tags_param = self.request.GET.get("tags")
         if tags_param:
             tag_names = [t.strip() for t in tags_param.split(",") if t.strip()]
-            qs = qs.filter(tags__nome__in=tag_names).distinct()
+            qs = qs.filter(tags__nome__in=tag_names, tags__deleted=False).distinct()
 
         return qs.order_by("-created_at")
 

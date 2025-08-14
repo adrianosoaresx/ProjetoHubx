@@ -108,9 +108,7 @@ class PostSerializer(serializers.ModelSerializer):
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "")
         if bucket:
             client = boto3.client("s3")
-            return client.generate_presigned_url(
-                "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=3600
-            )
+            return client.generate_presigned_url("get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=3600)
         return default_storage.url(key)
 
     def get_image_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
@@ -130,17 +128,14 @@ class NucleoPostSerializer(PostSerializer):
     """Serializer específico para posts de núcleo."""
 
     class Meta(PostSerializer.Meta):
-        fields = [
-            f
-            for f in PostSerializer.Meta.fields
-            if f not in {"tipo_feed", "nucleo", "evento"}
-        ]
+        fields = [f for f in PostSerializer.Meta.fields if f not in {"tipo_feed", "nucleo", "evento"}]
         read_only_fields = PostSerializer.Meta.read_only_fields
 
     def validate(self, attrs):
         attrs["tipo_feed"] = "nucleo"
         attrs["nucleo"] = self.context["nucleo"]
         return super().validate(attrs)
+
 
 def _rate_with_multiplier(base: str, multiplier: float) -> str:
     match = re.match(r"(\d+)/(\w+)", base)
@@ -193,9 +188,7 @@ class PostViewSet(viewsets.ModelViewSet):
             .exclude(moderacao__status="rejeitado")
         )
         if not self.request.user.is_staff:
-            qs = qs.filter(
-                Q(moderacao__status="aprovado") | Q(autor=self.request.user)
-            )
+            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=self.request.user))
         qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
@@ -213,7 +206,10 @@ class PostViewSet(viewsets.ModelViewSet):
         tags = params.get("tags")
         if tags:
             tag_list = [t.strip() for t in tags.split(",") if t.strip()]
-            qs = qs.filter(Q(tags__id__in=tag_list) | Q(tags__nome__in=tag_list)).distinct()
+            qs = qs.filter(
+                Q(tags__id__in=tag_list) | Q(tags__nome__in=tag_list),
+                tags__deleted=False,
+            ).distinct()
         date_from = params.get("date_from")
         if date_from:
             try:
@@ -232,20 +228,18 @@ class PostViewSet(viewsets.ModelViewSet):
             if connection.vendor == "postgresql":
                 query_parts = [" & ".join(term.split()) for term in or_terms]
                 query = SearchQuery(" | ".join(query_parts), config="portuguese")
-                vector = (
-                    SearchVector("conteudo", config="portuguese")
-                    + SearchVector("tags__nome", config="portuguese")
-                )
+                vector = SearchVector("conteudo", config="portuguese") + SearchVector("tags__nome", config="portuguese")
                 return (
                     qs.annotate(search=vector, rank=SearchRank(vector, query))
                     .filter(search=query)
+                    .filter(Q(tags__deleted=False) | Q(tags__isnull=True))
                     .order_by("-rank")
                 )
             or_query = Q()
             for term in or_terms:
                 sub = Q()
                 for part in term.split():
-                    sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part)
+                    sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part, tags__deleted=False)
                 or_query |= sub
             return qs.filter(or_query)
         return qs.order_by("-created_at")
@@ -254,15 +248,18 @@ class PostViewSet(viewsets.ModelViewSet):
         params = request.query_params
         keys = [
             str(request.user.pk),
-            *(params.get(k, "") for k in [
-                "tipo_feed",
-                "organizacao",
-                "nucleo",
-                "evento",
-                "tags",
-                "page",
-                "q",
-            ]),
+            *(
+                params.get(k, "")
+                for k in [
+                    "tipo_feed",
+                    "organizacao",
+                    "nucleo",
+                    "evento",
+                    "tags",
+                    "page",
+                    "q",
+                ]
+            ),
         ]
         return "feed:api:" + ":".join(keys)
 
