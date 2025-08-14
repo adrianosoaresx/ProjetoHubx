@@ -201,12 +201,12 @@ class ChatNotification(CoreTimeStampedModel):
         verbose_name_plural = "Notificações"
 
 
-class ChatMessageFlag(CoreTimeStampedModel):
+class ChatMessageFlag(CoreTimeStampedModel, SoftDeleteModel):
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="flags")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ("message", "user")
+        unique_together = ("message", "user", "deleted")
         verbose_name = "Sinalização"
         verbose_name_plural = "Sinalizações"
 
