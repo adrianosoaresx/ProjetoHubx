@@ -67,12 +67,12 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     resp = api_client.patch(url_inativar)
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
-    assert org.inativa is True and org.inativada_em
+    assert org.deleted is True and org.deleted_at
     url_reativar = reverse("organizacoes_api:organizacao-reativar", args=[org.pk])
     resp = api_client.patch(url_reativar)
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
-    assert org.inativa is False and org.inativada_em is None
+    assert org.deleted is False and org.deleted_at is None
     assert OrganizacaoAtividadeLog.objects.filter(organizacao=org, acao="inactivated").exists()
 
 

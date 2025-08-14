@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
+
 from .utils import validate_cnpj
 
 
@@ -35,8 +36,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
     rate_limit_multiplier = models.FloatField(default=1)
-    inativa = models.BooleanField(default=False)
-    inativada_em = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

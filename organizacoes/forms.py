@@ -30,6 +30,7 @@ class OrganizacaoForm(forms.ModelForm):
         for field in self.fields.values():
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
+        self.fields["slug"].required = False
 
     def clean_cnpj(self):
         cnpj = validate_cnpj(self.cleaned_data.get("cnpj"))

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.utils import timezone
 from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -9,9 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
-from core.permissions import IsRoot, IsOrgAdminOrSuperuser
+from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 
-from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
+from .models import Organizacao, OrganizacaoAtividadeLog
 from .serializers import (
     OrganizacaoAtividadeLogSerializer,
     OrganizacaoChangeLogSerializer,
@@ -35,7 +34,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         ):
             pass
         elif user.get_tipo_usuario == UserType.ADMIN.value or getattr(user, "user_type", None) == UserType.ADMIN.value:
-            qs = qs.filter(pk=getattr(user, "organizacao_id", None))
+            org_id = getattr(user, "organizacao_id", None)
+            if org_id is None:
+                raise PermissionDenied
+            qs = qs.filter(pk=org_id)
         else:
             raise PermissionDenied
         search = self.request.query_params.get("search")
@@ -43,7 +45,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         inativa = self.request.query_params.get("inativa")
         if inativa is not None:
-            qs = qs.filter(inativa=inativa.lower() == "true")
+            qs = qs.filter(deleted=inativa.lower() == "true")
         ordering = self.request.query_params.get("ordering")
         allowed = {"nome", "tipo", "cidade", "estado", "created_at"}
         if ordering and ordering.lstrip("-") in allowed:
@@ -78,9 +80,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def inativar(self, request, pk: str | None = None):
         organizacao = self.get_object()
-        organizacao.inativa = True
-        organizacao.inativada_em = timezone.now()
-        organizacao.save(update_fields=["inativa", "inativada_em"])
+        organizacao.delete()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
@@ -92,10 +92,9 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def reativar(self, request, pk: str | None = None):
-        organizacao = self.get_object()
-        organizacao.inativa = False
-        organizacao.inativada_em = None
-        organizacao.save(update_fields=["inativa", "inativada_em"])
+        organizacao = Organizacao.all_objects.get(pk=pk)
+        self.check_object_permissions(request, organizacao)
+        organizacao.undelete()
         OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
@@ -110,6 +109,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         organizacao = self.get_object()
         if request.query_params.get("export") == "csv":
             import csv
+
             from django.http import HttpResponse
 
             response = HttpResponse(content_type="text/csv")

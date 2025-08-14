@@ -4,10 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import (
@@ -26,10 +25,7 @@ from feed.models import Post
 from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
-from .models import (
-    Organizacao,
-    OrganizacaoChangeLog,
-)
+from .models import Organizacao, OrganizacaoChangeLog
 from .services import registrar_log, serialize_organizacao
 from .tasks import organizacao_alterada
 
@@ -45,7 +41,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         qs = (
             super()
             .get_queryset()
-            .filter(deleted=False, inativa=False)
+            .filter(deleted=False)
             .select_related("created_by")
             .prefetch_related("evento_set", "nucleos", "users")
         )
@@ -218,23 +214,22 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
     def post(self, request, pk, *args, **kwargs):
         org = get_object_or_404(Organizacao, pk=pk, deleted=False)
         antiga = serialize_organizacao(org)
-        if org.inativa:
-            org.inativa = False
-            org.inativada_em = None
+        if org.deleted:
+            org.undelete()
             acao = "reactivated"
             msg = _("Organização reativada com sucesso.")
         else:
-            org.inativa = True
-            org.inativada_em = timezone.now()
+            org.delete()
             acao = "inactivated"
             msg = _("Organização inativada com sucesso.")
-        org.save(update_fields=["inativa", "inativada_em"])
         nova = serialize_organizacao(org)
         dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
         dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
         registrar_log(org, request.user, acao, dif_antiga, dif_nova)
         organizacao_alterada.send(sender=self.__class__, organizacao=org, acao=acao)
         messages.success(request, msg)
+        if org.deleted:
+            return redirect("organizacoes:list")
         return redirect("organizacoes:detail", pk=org.pk)
 
 
@@ -259,6 +254,7 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             return HttpResponseForbidden()
         if request.GET.get("export") == "csv":
             import csv
+
             from django.http import HttpResponse
 
             response = HttpResponse(content_type="text/csv")
