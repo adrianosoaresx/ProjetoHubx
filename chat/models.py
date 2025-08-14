@@ -299,7 +299,7 @@ class TrendingTopic(CoreTimeStampedModel):
         verbose_name_plural = "Tópicos em Alta"
 
 
-class ResumoChat(CoreTimeStampedModel):
+class ResumoChat(CoreTimeStampedModel, SoftDeleteModel):
     PERIODOS = [("diario", "Diário"), ("semanal", "Semanal")]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
