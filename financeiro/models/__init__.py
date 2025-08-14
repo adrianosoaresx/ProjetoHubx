@@ -240,7 +240,7 @@ class FinanceiroTaskLog(TimeStampedModel, SoftDeleteModel):
         return f"{self.nome_tarefa} - {self.status}"
 
 
-class IntegracaoConfig(TimeStampedModel):
+class IntegracaoConfig(TimeStampedModel, SoftDeleteModel):
     """Configurações de provedores externos."""
 
     class Tipo(models.TextChoices):

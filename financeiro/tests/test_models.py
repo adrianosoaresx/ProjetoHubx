@@ -8,6 +8,7 @@ from financeiro.models import (
     CentroCusto,
     ContaAssociado,
     FinanceiroLog,
+    IntegracaoConfig,
     LancamentoFinanceiro,
 )
 from financeiro.serializers import LancamentoFinanceiroSerializer
@@ -124,3 +125,16 @@ def test_lancamento_negativo_outro_tipo():
     )
     assert not serializer.is_valid()
     assert "Valor negativo" in str(serializer.errors)
+
+
+def test_integracao_config_soft_delete():
+    config = IntegracaoConfig.objects.create(
+        nome="ERP Hub",
+        tipo=IntegracaoConfig.Tipo.ERP,
+        base_url="https://example.com",
+    )
+    config.soft_delete()
+    config.refresh_from_db()
+    assert config.deleted is True
+    assert IntegracaoConfig.objects.count() == 0
+    assert IntegracaoConfig.all_objects.count() == 1
