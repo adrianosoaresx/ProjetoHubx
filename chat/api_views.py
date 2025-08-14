@@ -188,7 +188,9 @@ class UserChatPreferenceView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self, request: Request) -> UserChatPreference:
-        prefs, _ = UserChatPreference.objects.get_or_create(user=request.user)
+        prefs, _ = UserChatPreference.all_objects.get_or_create(user=request.user)
+        if prefs.deleted:
+            prefs.undelete()
         return prefs
 
     def get(self, request: Request, *args, **kwargs) -> Response:

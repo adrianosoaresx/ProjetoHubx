@@ -313,7 +313,7 @@ class ResumoChat(CoreTimeStampedModel):
         verbose_name_plural = "Resumos de Chat"
 
 
-class UserChatPreference(CoreTimeStampedModel):
+class UserChatPreference(CoreTimeStampedModel, SoftDeleteModel):
     """Preferências de uso do chat por usuário."""
 
     THEME_CHOICES = [("claro", "Claro"), ("escuro", "Escuro")]
