@@ -51,8 +51,9 @@
   <div class="mt-4 flex gap-4">
     <a href="#" id="export-csv" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar relatório em CSV' %}">{% trans "Exportar CSV" %}</a>
     <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar relatório em XLSX' %}">{% trans "Exportar XLSX" %}</a>
-  </div>
-  <script>
+    </div>
+    <script src="{% url 'javascript-catalog' %}"></script>
+    <script>
     function renderRelatorio(evt) {
       const container = document.getElementById('relatorio');
       container.innerHTML = '';
