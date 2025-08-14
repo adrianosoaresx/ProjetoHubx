@@ -29,7 +29,7 @@ from accounts.models import UserType
 from accounts.serializers import UserSerializer
 from accounts.tasks import send_confirmation_email, send_password_reset_email
 from core.permissions import IsAdmin, IsCoordenador
-from tokens.models import TokenAcesso
+from tokens.models import TokenAcesso, TOTPDevice
 
 from .forms import (
     CustomUserChangeForm,
@@ -129,6 +129,15 @@ def enable_2fa(request):
             user.two_factor_secret = secret
             user.two_factor_enabled = True
             user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+            TOTPDevice.all_objects.update_or_create(
+                usuario=user,
+                defaults={
+                    "secret": user.two_factor_secret,
+                    "confirmado": True,
+                    "deleted": False,
+                    "deleted_at": None,
+                },
+            )
             del request.session["tmp_2fa_secret"]
             messages.success(request, _("Verificação em duas etapas ativada."))
             return redirect("accounts:seguranca")
@@ -147,6 +156,7 @@ def disable_2fa(request):
             user.two_factor_secret = None
             user.two_factor_enabled = False
             user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+            TOTPDevice.objects.filter(usuario=user).delete()
             messages.success(request, _("Verificação em duas etapas desativada."))
             return redirect("accounts:seguranca")
         messages.error(request, _("Código inválido."))
@@ -159,7 +169,7 @@ def check_2fa(request):
     if email:
         try:
             user = User.objects.get(email__iexact=email)
-            enabled = user.two_factor_enabled
+            enabled = user.two_factor_enabled and TOTPDevice.objects.filter(usuario=user).exists()
         except User.DoesNotExist:
             pass
     return JsonResponse({"enabled": enabled})
