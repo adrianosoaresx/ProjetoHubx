@@ -179,7 +179,7 @@ class ChatMessageReaction(CoreTimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Reações"
 
 
-class ChatNotification(CoreTimeStampedModel):
+class ChatNotification(CoreTimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(
         User,
