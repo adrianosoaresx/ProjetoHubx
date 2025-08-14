@@ -64,8 +64,9 @@
   </div>
 </div>
 
-<!-- Script simples de força de senha (opcional) -->
-<script>
+  <!-- Script simples de força de senha (opcional) -->
+  <script src="{% url 'javascript-catalog' %}"></script>
+  <script>
   const senhaInput = document.getElementById('nova_senha');
   const strengthFill = document.getElementById('strengthFill');
   const strengthText = document.getElementById('strengthText');
