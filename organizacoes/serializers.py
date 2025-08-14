@@ -1,13 +1,10 @@
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.text import slugify
 from rest_framework import serializers
 
-from .models import (
-    Organizacao,
-    OrganizacaoAtividadeLog,
-    OrganizacaoChangeLog,
-)
+from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
 from .tasks import organizacao_alterada
 from .utils import validate_cnpj
 
@@ -32,11 +29,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_telefone",
             "avatar",
             "cover",
-            "inativa",
-            "inativada_em",
             "created_by",
         ]
-        read_only_fields = ["inativada_em", "inativa", "created_by"]
+        read_only_fields = ["created_by"]
+        extra_kwargs = {"slug": {"required": False}}
 
     def create(self, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
@@ -50,7 +46,10 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             slug = f"{base}-{counter}"
             counter += 1
         validated_data["slug"] = slug
-        validated_data["cnpj"] = validate_cnpj(validated_data.get("cnpj"))
+        try:
+            validated_data["cnpj"] = validate_cnpj(validated_data.get("cnpj"))
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"cnpj": exc.messages}) from exc
         instance = Organizacao(created_by=user, **validated_data)
         instance.full_clean()
         instance.save()
