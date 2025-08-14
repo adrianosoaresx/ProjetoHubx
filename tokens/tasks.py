@@ -9,7 +9,7 @@ from .models import ApiToken, TokenUsoLog
 @shared_task
 def remover_logs_antigos() -> None:
     limite = timezone.now() - timezone.timedelta(days=365)
-    TokenUsoLog.objects.filter(created_at__lt=limite).delete()
+    TokenUsoLog.all_objects.filter(created_at__lt=limite).delete()
 
 
 @shared_task

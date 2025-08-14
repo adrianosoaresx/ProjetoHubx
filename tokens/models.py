@@ -10,12 +10,12 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.fields import EncryptedCharField
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 User = get_user_model()
 
 
-class ApiToken(TimeStampedModel):
+class ApiToken(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         User,
@@ -46,7 +46,7 @@ def generate_hex_uuid() -> str:
     return uuid.uuid4().hex
 
 
-class TokenAcesso(TimeStampedModel):
+class TokenAcesso(TimeStampedModel, SoftDeleteModel):
     class TipoUsuario(models.TextChoices):
         ADMIN = "admin", "Admin"
         ASSOCIADO = "associado", "Associado"
@@ -113,7 +113,7 @@ class TokenAcesso(TimeStampedModel):
         ordering = ["-created_at"]
 
 
-class TokenUsoLog(TimeStampedModel):
+class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
     class Acao(models.TextChoices):
         GERACAO = "geracao", _("Geração")
         VALIDACAO = "validacao", _("Validação")
@@ -139,7 +139,7 @@ class TokenUsoLog(TimeStampedModel):
         ordering = ["-created_at"]
 
 
-class CodigoAutenticacao(TimeStampedModel):
+class CodigoAutenticacao(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(
         get_user_model(),
         on_delete=models.CASCADE,
@@ -163,7 +163,7 @@ class CodigoAutenticacao(TimeStampedModel):
         ordering = ["-created_at"]
 
 
-class TOTPDevice(TimeStampedModel):
+class TOTPDevice(TimeStampedModel, SoftDeleteModel):
     usuario = models.OneToOneField(
         get_user_model(),
         on_delete=models.CASCADE,
