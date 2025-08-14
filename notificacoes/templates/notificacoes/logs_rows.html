@@ -6,6 +6,6 @@
     <td class="px-4 py-2">{{ log.template.codigo }}</td>
     <td class="px-4 py-2">{{ log.get_canal_display }}</td>
     <td class="px-4 py-2">{{ log.get_status_display }}</td>
-    <td class="px-4 py-2 text-sm">{{ log.erro|default:'-' }}</td>
+    <td class="px-4 py-2 text-sm">{{ log.erro|default:_("-") }}</td>
   </tr>
 {% endfor %}
