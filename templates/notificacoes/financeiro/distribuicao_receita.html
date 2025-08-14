@@ -1,2 +1,3 @@
-<p>Olá {{ nome }},</p>
-<p>A receita do evento {{ evento }} no valor de {{ valor }} foi distribuída.</p>
+{% load i18n %}
+<p>{% blocktrans trimmed with nome=nome %}Olá {{ nome }},{% endblocktrans %}</p>
+<p>{% blocktrans trimmed with evento=evento valor=valor %}A receita do evento {{ evento }} no valor de {{ valor }} foi distribuída.{% endblocktrans %}</p>

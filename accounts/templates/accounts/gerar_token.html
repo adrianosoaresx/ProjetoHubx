@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
+{% load widget_tweaks i18n %}
 
-{% block title %}Gerar Token de Acesso | HubX{% endblock %}
+{% block title %}{% trans "Gerar Token de Acesso" %} | HubX{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold text-center mb-6">Gerar Token de Acesso</h1>
+  <h1 class="text-2xl font-bold text-center mb-6">{% trans "Gerar Token de Acesso" %}</h1>
 
   <form method="post" action="" class="bg-white rounded-2xl shadow p-6 space-y-4">
     {% csrf_token %}
@@ -19,13 +19,13 @@
       </div>
     {% endfor %}
     <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">Gerar Token</button>
+      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Gerar Token" %}</button>
     </div>
   </form>
 
   {% if token %}
     <div class="mt-6 text-center rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">
-      Código gerado: <strong>{{ token.codigo }}</strong>
+      {% trans "Código gerado:" %} <strong>{{ token.codigo }}</strong>
     </div>
   {% endif %}
 </section>

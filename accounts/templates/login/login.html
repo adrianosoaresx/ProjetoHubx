@@ -1,14 +1,14 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Entrar - HubX{% endblock %}
+{% block title %}{% trans "Entrar" %} - HubX{% endblock %}
 
 {% block content %}
 <main class="bg-muted min-h-screen flex items-center justify-center px-4">
   <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto" role="dialog" aria-labelledby="login-title">
-    <h1 id="login-title" class="text-2xl font-bold text-center text-gray-900 mb-1">Bem-vindo de volta</h1>
+    <h1 id="login-title" class="text-2xl font-bold text-center text-gray-900 mb-1">{% trans "Bem-vindo de volta" %}</h1>
     <p class="text-center text-sm text-gray-600 mb-6">
-      Entre para acessar sua conta e conectar-se à sua rede
+      {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
     </p>
 
     {% if form.non_field_errors %}
@@ -18,10 +18,10 @@
     <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
       {% csrf_token %}
       <div>
-        <label for="id_email" class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+        <label for="id_email" class="block mb-1 text-sm font-medium text-gray-700">{% trans "Email" %}</label>
         <input type="email" id="id_email" name="email"
                value="{{ form.email.value|default_if_none:'' }}"
-               placeholder="Digite seu e-mail"
+               placeholder="{% trans 'Digite seu e-mail' %}"
                data-check-url="{% url 'accounts:check_2fa' %}"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                required
@@ -32,9 +32,9 @@
         {% endif %}
       </div>
       <div>
-        <label for="id_password" class="block mb-1 text-sm font-medium text-gray-700">Senha</label>
+        <label for="id_password" class="block mb-1 text-sm font-medium text-gray-700">{% trans "Senha" %}</label>
         <input type="password" id="id_password" name="password"
-               placeholder="Digite sua senha"
+               placeholder="{% trans 'Digite sua senha' %}"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                required
                aria-describedby="password-error"
@@ -44,10 +44,10 @@
         {% endif %}
       </div>
       <div id="totp-field" style="display:none">
-        <label for="id_totp" class="block mb-1 text-sm font-medium text-gray-700">TOTP</label>
+        <label for="id_totp" class="block mb-1 text-sm font-medium text-gray-700">{% trans "TOTP" %}</label>
         <input type="text" id="id_totp" name="totp"
                value="{{ form.totp.value|default_if_none:'' }}"
-               placeholder="Código 2FA"
+               placeholder="{% trans 'Código 2FA' %}"
                class="w-full p-3 border border-gray-300 rounded-lg text-sm placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                aria-describedby="totp-error"
                {% if form.totp.errors %}aria-invalid="true"{% endif %}>
@@ -57,25 +57,25 @@
       </div>
       <button type="submit"
               class="w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold text-sm shadow hover:bg-primary/90 transition">
-        Entrar
+        {% trans "Entrar" %}
       </button>
     </form>
 
     <div class="text-center mt-6 space-y-2">
       <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary hover:underline">
-        Esqueceu sua senha?
+        {% trans "Esqueceu sua senha?" %}
       </a>
       <div>
         <a href="{% url 'accounts:resend_confirmation' %}" class="text-sm text-primary hover:underline">
-          Reenviar confirmação de e-mail
+          {% trans "Reenviar confirmação de e-mail" %}
         </a>
       </div>
     </div>
 
     <div class="text-center mt-4 text-sm text-gray-600">
-      Não tem uma conta?
+      {% trans "Não tem uma conta?" %}
       <a href="{% url 'accounts:onboarding' %}" class="text-primary hover:underline">
-        Cadastre-se gratuitamente
+        {% trans "Cadastre-se gratuitamente" %}
       </a>
     </div>
   </div>

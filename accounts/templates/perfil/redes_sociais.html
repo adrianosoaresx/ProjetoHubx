@@ -1,12 +1,12 @@
 {% extends 'perfil/perfil.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Redes Sociais | HubX{% endblock %}
+{% block title %}{% trans "Redes Sociais" %} | HubX{% endblock %}
 
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">Redes Sociais</h3>
-  <p class="text-sm text-gray-500 mb-6">Conecte suas redes sociais com seu perfil</p>
+  <h3 class="text-xl font-semibold mb-1">{% trans "Redes Sociais" %}</h3>
+  <p class="text-sm text-gray-500 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
 
   <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
     {% csrf_token %}
@@ -19,13 +19,13 @@
     <div class="pt-4">
       <button type="submit"
               class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
-        Salvar Alterações
+        {% trans "Salvar Alterações" %}
       </button>
     </div>
   </form>
 </div>
 
 <div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}

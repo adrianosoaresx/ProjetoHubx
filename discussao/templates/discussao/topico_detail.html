@@ -15,7 +15,7 @@
       <span class="ml-2 px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">{% trans "Resolvido" %}</span>
       {% endif %}
     </h1>
-    <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:"d/m/Y H:i" }}</p>
+    <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:SHORT_DATETIME_FORMAT }}</p>
     {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
     <form method="post" hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-container" hx-swap="outerHTML" class="mt-2">
       {% csrf_token %}
