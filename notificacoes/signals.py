@@ -15,5 +15,5 @@ def atualizar_templates_total(sender, **kwargs):
     from django.apps import apps
 
     if apps.is_installed("notificacoes"):
-        total = NotificationTemplate.objects.filter(ativo=True).count()
+        total = NotificationTemplate.objects.count()
         metrics.templates_total.set(total)

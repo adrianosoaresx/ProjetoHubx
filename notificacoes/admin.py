@@ -12,17 +12,9 @@ logger = logging.getLogger(__name__)
 
 @admin.register(NotificationTemplate)
 class NotificationTemplateAdmin(admin.ModelAdmin):
-    list_display = ("codigo", "canal", "ativo")
+    list_display = ("codigo", "canal")
     search_fields = ("codigo",)
-    list_filter = ("canal", "ativo")
-
-    actions = ["desativar_templates"]
-
-    def desativar_templates(self, request, queryset):  # pragma: no cover - ação admin
-        count = queryset.update(ativo=False)
-        self.message_user(request, _(f"{count} templates desativados."))
-
-    desativar_templates.short_description = _("Desativar templates selecionados")
+    list_filter = ("canal",)
 
     def has_delete_permission(self, request, obj=None):  # pragma: no cover - admin
         if obj and NotificationLog.objects.filter(template=obj).exists():

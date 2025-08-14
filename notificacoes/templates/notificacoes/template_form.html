@@ -40,10 +40,6 @@
       {{ form.canal|add_class:'form-select' }}
       {% if form.canal.errors %}<p class="text-sm text-red-600 mt-1">{{ form.canal.errors.0 }}</p>{% endif %}
     </div>
-    <div class="flex items-center gap-2">
-      {{ form.ativo|attr:'role:switch'|attr:'aria-checked:false' }}
-      <label for="{{ form.ativo.id_for_label }}" class="text-sm text-neutral-700">{% trans 'Ativo' %}</label>
-    </div>
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <a href="{% url 'notificacoes:templates_list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans 'Cancelar' %}</a>
       <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar' %}</button>

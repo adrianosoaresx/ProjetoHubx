@@ -9,21 +9,13 @@ pytestmark = pytest.mark.django_db
 
 
 def test_atualizar_templates_total_atualiza_gauge() -> None:
-    before = NotificationTemplate.objects.filter(ativo=True).count()
+    before = NotificationTemplate.objects.count()
 
     NotificationTemplate.objects.create(
-        codigo="active",
+        codigo="novo",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
-        ativo=True,
-    )
-    NotificationTemplate.objects.create(
-        codigo="inactive",
-        assunto="Oi",
-        corpo="{{ nome }}",
-        canal="email",
-        ativo=False,
     )
 
     metrics.templates_total.set(0)
@@ -37,7 +29,7 @@ def test_atualizar_templates_total_atualiza_gauge() -> None:
     )
     assert metrics.templates_total._value.get() == before + 1
 
-    NotificationTemplate.objects.filter(codigo="active").delete()
+    NotificationTemplate.objects.filter(codigo="novo").delete()
     post_migrate.send(
         sender=app_config,
         app_config=app_config,
