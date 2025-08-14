@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-14 15:05+0000\n"
+"POT-Creation-Date: 2025-08-14 19:42+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,63 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: serializers/__init__.py:45
+msgid "Evento é obrigatório para centros do tipo evento"
+msgstr ""
+
+#: serializers/__init__.py:92
+msgid "Vencimento não pode ser anterior à data de lançamento"
+msgstr ""
+
+#: serializers/__init__.py:96 services/importacao.py:234
+msgid "Valor negativo não permitido para este tipo"
+msgstr ""
+
+#: serializers/__init__.py:142
+msgid "Valor deve ser positivo"
+msgstr ""
+
+#: serializers/__init__.py:151
+msgid "Tipo de aporte inválido"
+msgstr ""
+
+#: serializers/__init__.py:199
+msgid "Formato inválido. Envie CSV ou XLSX"
+msgstr ""
+
+#: services/importacao.py:57 services/importacao.py:76
+msgid "Colunas faltantes: {', '.join(missing)}"
+msgstr ""
+
+#: services/importacao.py:59 services/importacao.py:78
+msgid "Coluna conta_associado_id ou email obrigatória"
+msgstr ""
+
+#: services/importacao.py:66 views/__init__.py:302 views/__init__.py:361
+msgid "openpyxl não disponível"
+msgstr ""
+
+#: services/importacao.py:83
+msgid "Formato não suportado"
+msgstr ""
+
+#: services/importacao.py:219
+msgid "Conta do associado não encontrada"
+msgstr ""
+
+#: services/importacao.py:229
+msgid "data_vencimento anterior a data_lancamento"
+msgstr ""
+
+#: services/notificacoes.py:41
+msgid "Inadimplência"
+msgstr ""
+
+#: services/notificacoes.py:42
+msgid "Você possui lançamentos vencidos."
+msgstr ""
+
 #: templates/financeiro/aportes_form.html:5
 #: templates/financeiro/importar_pagamentos.html:52
 #: templates/financeiro/inadimplencias.html:12
@@ -380,4 +437,44 @@ msgstr ""
 
 #: templates/financeiro/task_logs.html:28
 msgid "Nenhum registro encontrado"
+msgstr ""
+
+#: views/__init__.py:207 views/__init__.py:228
+msgid "Arquivo não encontrado"
+msgstr ""
+
+#: views/__init__.py:221
+msgid "Importação iniciada"
+msgstr ""
+
+#: views/__init__.py:231
+msgid "Arquivo ausente"
+msgstr ""
+
+#: views/__init__.py:239
+msgid "Reprocessamento concluído"
+msgstr ""
+
+#: views/__init__.py:258 views/__init__.py:263
+msgid "Sem permissão"
+msgstr ""
+
+#: viewsets.py:102
+msgid "Status inválido"
+msgstr ""
+
+#: viewsets.py:105
+msgid "Apenas lançamentos pendentes podem ser alterados"
+msgstr ""
+
+#: viewsets.py:216
+msgid "Parâmetros obrigatórios"
+msgstr ""
+
+#: viewsets.py:220 viewsets.py:222
+msgid "periodos inválido"
+msgstr ""
+
+#: viewsets.py:237
+msgid "escopo inválido"
 msgstr ""
