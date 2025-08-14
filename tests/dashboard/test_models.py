@@ -10,8 +10,8 @@ pytestmark = pytest.mark.django_db
 
 def test_timestamp_fields(admin_user):
     filtro = DashboardFilter.objects.create(user=admin_user, nome="f1", filtros={})
-    assert filtro.created is not None
-    assert filtro.modified is not None
+    assert filtro.created_at is not None
+    assert filtro.updated_at is not None
     assert filtro.publico is False
 
 

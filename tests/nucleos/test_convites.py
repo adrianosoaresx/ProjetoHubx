@@ -85,7 +85,7 @@ def test_convite_expirado(api_client, admin_user, membro_user, organizacao):
         email=membro_user.email, papel="membro", nucleo=nucleo
     )
     ConviteNucleo.objects.filter(pk=convite.pk).update(
-        criado_em=timezone.now() - timezone.timedelta(days=8)
+        created_at=timezone.now() - timezone.timedelta(days=8)
     )
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"

@@ -115,8 +115,16 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 filters[key] = value
 
         metricas_list = self.request.GET.getlist("metricas")
-        if metricas_list:
-            filters["metricas"] = metricas_list
+        if not metricas_list:
+            metricas_list = [
+                "num_users",
+                "num_organizacoes",
+                "num_nucleos",
+                "num_empresas",
+                "num_eventos",
+                "num_posts_feed_total",
+            ]
+        filters["metricas"] = metricas_list
 
         self.periodo = periodo
         self.escopo = escopo
@@ -662,5 +670,5 @@ class DashboardLayoutSaveView(LoginRequiredMixin, View):
         layout_json = request.POST.get("layout_json")
         if layout_json:
             layout.layout_json = layout_json
-            layout.save(update_fields=["layout_json", "modified"])
+            layout.save(update_fields=["layout_json", "updated_at"])
         return HttpResponse(status=204)

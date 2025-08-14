@@ -142,9 +142,9 @@ def metrics_dashboard(request):
     inicio = request.GET.get("inicio")
     fim = request.GET.get("fim")
     if inicio:
-        logs = logs.filter(created__date__gte=inicio)
+        logs = logs.filter(created_at__date__gte=inicio)
     if fim:
-        logs = logs.filter(created__date__lte=fim)
+        logs = logs.filter(created_at__date__lte=fim)
     total_por_canal = {
         item["canal"]: item["total"]
         for item in logs.values("canal").annotate(total=Count("id"))

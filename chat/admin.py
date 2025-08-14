@@ -12,7 +12,7 @@ from .models import (
 
 @admin.register(ChatChannel)
 class ChatChannelAdmin(admin.ModelAdmin):
-    list_display = ["titulo", "retencao_dias", "created"]
+    list_display = ["titulo", "retencao_dias", "created_at"]
 
 
 @admin.register(ChatMessage)
@@ -32,9 +32,9 @@ class ChatNotificationAdmin(admin.ModelAdmin):
 
 @admin.register(RelatorioChatExport)
 class RelatorioChatExportAdmin(admin.ModelAdmin):
-    list_display = ["channel", "formato", "gerado_por", "created"]
+    list_display = ["channel", "formato", "gerado_por", "created_at"]
 
 
 @admin.register(ResumoChat)
 class ResumoChatAdmin(admin.ModelAdmin):
-    list_display = ["canal", "periodo", "gerado_em"]
+    list_display = ["canal", "periodo", "created_at"]

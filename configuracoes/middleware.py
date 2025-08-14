@@ -14,11 +14,13 @@ def get_request_info() -> tuple[str | None, str | None, str]:
     if not request:
         return None, None, "import"
     fonte = "API" if request.path.startswith("/api/") else "UI"
-    return (
+    info = (
         request.META.get("REMOTE_ADDR"),
         request.META.get("HTTP_USER_AGENT", ""),
         fonte,
     )
+    _local.request = None
+    return info
 
 
 class RequestInfoMiddleware:

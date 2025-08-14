@@ -13,7 +13,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
     template_codigo = serializers.CharField(source="template.codigo", read_only=True)
     template_assunto = serializers.CharField(source="template.assunto", read_only=True)
     template_corpo = serializers.CharField(source="template.corpo", read_only=True)
-    created = serializers.DateTimeField(read_only=True)
+    created_at = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = NotificationLog
@@ -23,7 +23,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "template_codigo",
             "template_assunto",
             "template_corpo",
-            "created",
+            "created_at",
             "canal",
             "status",
             "data_envio",
@@ -36,7 +36,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "template_codigo",
             "template_assunto",
             "template_corpo",
-            "created",
+            "created_at",
             "canal",
             "data_envio",
             "erro",
@@ -53,7 +53,6 @@ class PushSubscriptionSerializer(serializers.ModelSerializer):
             "endpoint",
             "p256dh",
             "auth",
-            "active",
             "created_at",
         ]
-        read_only_fields = ["id", "active", "created_at"]
+        read_only_fields = ["id", "created_at"]

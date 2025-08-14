@@ -14,7 +14,7 @@ def send(user, payload: Any, device_ids: Iterable[str] | None = None) -> None:
     Marca a inscrição como inativa se o endpoint retornar 404 ou 410.
     """
 
-    subs = PushSubscription.objects.filter(user=user, active=True)
+    subs = PushSubscription.objects.filter(user=user)
     if device_ids is not None:
         subs = subs.filter(device_id__in=list(device_ids))
     for sub in subs:
@@ -31,7 +31,6 @@ def send(user, payload: Any, device_ids: Iterable[str] | None = None) -> None:
         except WebPushException as exc:  # pragma: no cover - lib externa
             status = getattr(getattr(exc, "response", None), "status_code", None)
             if status in {404, 410}:
-                sub.active = False
-                sub.save(update_fields=["active"])
+                sub.delete()
             else:
                 raise

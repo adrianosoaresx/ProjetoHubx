@@ -3,10 +3,9 @@ from datetime import time
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django_extensions.db.models import TimeStampedModel
 
 from core.fields import EncryptedCharField
-from core.models import SoftDeleteManager, SoftDeleteModel
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
 NOTIFICACAO_FREQ_CHOICES = [
     ("imediata", _("Imediata")),
@@ -81,7 +80,7 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
     all_objects = models.Manager()
 
     class Meta:
-        ordering = ["-modified"]
+        ordering = ["-updated_at"]
         constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
 
 
@@ -117,7 +116,7 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
     all_objects = models.Manager()
 
     class Meta:
-        ordering = ["-modified"]
+        ordering = ["-updated_at"]
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "escopo_tipo", "escopo_id"],
@@ -126,7 +125,7 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
         ]
 
 
-class ConfiguracaoContaLog(models.Model):
+class ConfiguracaoContaLog(TimeStampedModel):
     """Registro de alterações nas configurações de conta."""
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -140,7 +139,6 @@ class ConfiguracaoContaLog(models.Model):
         choices=[("UI", "UI"), ("API", "API"), ("import", "import")],
         default="UI",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]

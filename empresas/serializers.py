@@ -79,7 +79,7 @@ class EmpresaChangeLogSerializer(serializers.ModelSerializer):
             "campo_alterado",
             "valor_antigo",
             "valor_novo",
-            "alterado_em",
+            "created_at",
             "usuario_email",
         ]
 

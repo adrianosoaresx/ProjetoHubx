@@ -264,14 +264,13 @@ class IntegracaoConfig(TimeStampedModel):
         return self.nome
 
 
-class IntegracaoIdempotency(models.Model):
+class IntegracaoIdempotency(TimeStampedModel):
     """Armazena chaves de idempotência utilizadas nas integrações."""
 
     idempotency_key = models.CharField(max_length=255, unique=True)
     provedor = models.CharField(max_length=100)
     recurso = models.CharField(max_length=100)
     status = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -279,7 +278,7 @@ class IntegracaoIdempotency(models.Model):
         verbose_name_plural = "Idempotências de Integração"
 
 
-class IntegracaoLog(models.Model):
+class IntegracaoLog(TimeStampedModel):
     """Registra as chamadas realizadas aos provedores externos."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -290,7 +289,6 @@ class IntegracaoLog(models.Model):
     status = models.CharField(max_length=50)
     duracao_ms = models.PositiveIntegerField(default=0)
     erro = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]

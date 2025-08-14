@@ -4,7 +4,6 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
@@ -54,15 +53,6 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     def __str__(self) -> str:
         return self.nome
 
-    def delete(self, using: str | None = None, keep_parents: bool = False, soft: bool = True) -> None:
-        super().delete(using=using, keep_parents=keep_parents, soft=soft)
-
-    def soft_delete(self) -> None:
-        """Marca a organização como deletada sem remover do banco."""
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        self.save(update_fields=["deleted", "deleted_at"])
-
     def clean(self) -> None:  # type: ignore[override]
         super().clean()
         self.cnpj = validate_cnpj(self.cnpj)
@@ -78,7 +68,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
                     raise ValidationError({field: _("Imagem excede o tamanho máximo permitido.")})
 
 
-class OrganizacaoChangeLog(models.Model):
+class OrganizacaoChangeLog(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
@@ -94,10 +84,9 @@ class OrganizacaoChangeLog(models.Model):
         null=True,
         blank=True,
     )
-    alterado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-alterado_em"]
+        ordering = ["-created_at"]
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.organizacao} - {self.campo_alterado}"
@@ -111,7 +100,7 @@ class OrganizacaoChangeLog(models.Model):
         raise RuntimeError("Logs não podem ser removidos")
 
 
-class OrganizacaoAtividadeLog(models.Model):
+class OrganizacaoAtividadeLog(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
@@ -125,11 +114,10 @@ class OrganizacaoAtividadeLog(models.Model):
         null=True,
         blank=True,
     )
-    data = models.DateTimeField(auto_now_add=True)
     detalhes = models.TextField(blank=True)
 
     class Meta:
-        ordering = ["-data"]
+        ordering = ["-created_at"]
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.organizacao} - {self.acao}"

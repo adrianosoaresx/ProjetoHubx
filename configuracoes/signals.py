@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
+from django.core.cache import cache
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
@@ -11,6 +12,7 @@ from .models import (
     ConfiguracaoContextual,
     ConfiguracaoContaLog,
 )
+from .services import CACHE_KEY
 
 CONTA_FIELDS = [
     "receber_notificacoes_email",
@@ -75,3 +77,5 @@ def log_changes(sender, instance, created, **kwargs):
             )
         except Exception:
             pass
+    if sender is ConfiguracaoConta:
+        cache.set(CACHE_KEY.format(id=instance.user_id), instance)

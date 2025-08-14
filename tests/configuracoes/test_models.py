@@ -36,8 +36,8 @@ def test_configuracao_unica_por_usuario(admin_user):
 
 def test_timestamps_e_soft_delete(admin_user):
     config = admin_user.configuracao
-    assert config.created is not None
-    assert config.modified is not None
+    assert config.created_at is not None
+    assert config.updated_at is not None
 
     pk = config.pk
     config.delete()

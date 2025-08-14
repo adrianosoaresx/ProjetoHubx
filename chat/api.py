@@ -77,7 +77,7 @@ def notify_users(channel: ChatChannel, message: ChatMessage) -> None:
                     "tipo": message.tipo,
                     "resumo": resumo,
                     "reply_to": str(message.reply_to_id) if message.reply_to_id else None,
-                    "created": notif.created.isoformat(),
+                    "created_at": notif.created_at.isoformat(),
                 },
             )
         duration = time.monotonic() - start

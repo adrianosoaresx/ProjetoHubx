@@ -41,7 +41,7 @@ def test_logs_filtrados_por_usuario(client) -> None:
     assert len(resp.json()) == 1
 
 
-def test_logs_incluem_campo_created(client) -> None:
+def test_logs_incluem_campo_created_at(client) -> None:
     user = UserFactory()
     template = NotificationTemplate.objects.create(codigo="t3", assunto="Oi", corpo="C", canal="email")
     NotificationLog.objects.create(user=user, template=template, canal="email")
@@ -50,7 +50,7 @@ def test_logs_incluem_campo_created(client) -> None:
     resp = client.get("/api/notificacoes/logs/")
     assert resp.status_code == 200
     primeiro = resp.json()[0]
-    assert "created" in primeiro
+    assert "created_at" in primeiro
 
 
 def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
@@ -65,7 +65,7 @@ def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
     resp = client.patch(
         f"/api/notificacoes/logs/{log.id}/",
         {"status": NotificationStatus.LIDA},
-        format="json",
+        content_type="application/json",
     )
     assert resp.status_code == 204
     log.refresh_from_db()
@@ -85,6 +85,6 @@ def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
     resp = client.patch(
         f"/api/notificacoes/logs/{log.id}/",
         {"status": NotificationStatus.LIDA},
-        format="json",
+        content_type="application/json",
     )
     assert resp.status_code == 404

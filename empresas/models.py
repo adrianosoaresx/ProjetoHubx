@@ -130,20 +130,19 @@ class ContatoEmpresa(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class EmpresaChangeLog(SoftDeleteModel):
+class EmpresaChangeLog(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     empresa = models.ForeignKey(Empresa, on_delete=models.CASCADE, related_name="logs")
     usuario = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True, blank=True)
     campo_alterado = models.CharField(max_length=50)
     valor_antigo = models.TextField(blank=True)
     valor_novo = models.TextField(blank=True)
-    alterado_em = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager()
     ativos = SoftDeleteManager()
 
     class Meta:
-        ordering = ["-alterado_em"]
+        ordering = ["-created_at"]
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.empresa.nome} - {self.campo_alterado}"

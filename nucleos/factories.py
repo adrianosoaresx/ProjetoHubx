@@ -11,5 +11,5 @@ class NucleoFactory(DjangoModelFactory):
         model = Nucleo
 
     organizacao = factory.SubFactory(OrganizacaoFactory)
-    nome = factory.Faker("word", locale="pt_BR")
+    nome = factory.Sequence(lambda n: f"nucleo{n}")
     descricao = factory.Faker("sentence", locale="pt_BR")

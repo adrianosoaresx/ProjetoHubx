@@ -113,7 +113,7 @@ class TokenAcesso(TimeStampedModel):
         ordering = ["-created_at"]
 
 
-class TokenUsoLog(models.Model):
+class TokenUsoLog(TimeStampedModel):
     class Acao(models.TextChoices):
         GERACAO = "geracao", _("Geração")
         VALIDACAO = "validacao", _("Validação")
@@ -135,10 +135,8 @@ class TokenUsoLog(models.Model):
     acao = models.CharField(max_length=20, choices=Acao.choices)
     ip = EncryptedCharField(max_length=128, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
     class Meta:
-        ordering = ["-timestamp"]
+        ordering = ["-created_at"]
 
 
 class CodigoAutenticacao(TimeStampedModel):

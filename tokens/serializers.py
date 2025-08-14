@@ -51,9 +51,9 @@ class TokenUsoLogSerializer(serializers.ModelSerializer):
             "acao",
             "ip",
             "user_agent",
-            "timestamp",
+            "created_at",
         ]
-        read_only_fields = ["id", "token", "usuario_email", "timestamp"]
+        read_only_fields = ["id", "token", "usuario_email", "created_at"]
 
 
 class ApiTokenSerializer(serializers.ModelSerializer):

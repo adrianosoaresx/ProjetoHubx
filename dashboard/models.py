@@ -5,10 +5,9 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 
 from accounts.models import UserType
-from core.models import SoftDeleteModel, SoftDeleteManager
+from core.models import SoftDeleteModel, SoftDeleteManager, TimeStampedModel
 
 
 class DashboardFilter(SoftDeleteModel, TimeStampedModel):
@@ -39,7 +38,7 @@ class DashboardConfig(SoftDeleteModel, TimeStampedModel):
     publico = models.BooleanField(default=False)
 
     class Meta:
-        get_latest_by = "modified"
+        get_latest_by = "updated_at"
 
     def clean(self):
         if self.publico and self.user_id and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
@@ -66,7 +65,6 @@ class UserAchievement(TimeStampedModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-    completado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("user", "achievement")
@@ -84,7 +82,7 @@ class DashboardLayout(SoftDeleteModel, TimeStampedModel):
     publico = models.BooleanField(default=False)
 
     class Meta:
-        get_latest_by = "modified"
+        get_latest_by = "updated_at"
 
     def clean(self):
         if self.publico and self.user_id and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}:

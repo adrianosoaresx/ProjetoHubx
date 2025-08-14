@@ -19,8 +19,8 @@ def test_metrics_dashboard(client):
     template = NotificationTemplate.objects.create(codigo="t", assunto="a", corpo="b", canal="email")
     NotificationLog.objects.create(user=user, template=template, canal="email", status=NotificationStatus.ENVIADA)
     log2 = NotificationLog.objects.create(user=user, template=template, canal="whatsapp", status=NotificationStatus.FALHA)
-    log2.created = timezone.now() - timedelta(days=30)
-    log2.save(update_fields=["created"])
+    log2.created_at = timezone.now() - timedelta(days=30)
+    log2.save(update_fields=["created_at"])
     url = reverse("notificacoes:metrics_dashboard")
     resp = client.get(url, {"inicio": timezone.now().date()})
     assert resp.status_code == 200

@@ -19,5 +19,5 @@ urlpatterns = [
     path("forecast/", forecast_view, name="forecast"),
     path("inadimplencias/", inadimplencias_view, name="inadimplencias"),
     path("task-logs/", task_logs_view, name="task_logs"),
-    path("task-logs/<uuid:pk>/", task_log_detail_view, name="task_log_detail"),
+    path("task-logs/<int:pk>/", task_log_detail_view, name="task_log_detail"),
 ]

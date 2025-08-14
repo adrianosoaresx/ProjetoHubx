@@ -37,6 +37,6 @@ class AvaliacaoEmpresaAdmin(admin.ModelAdmin):
 
 @admin.register(EmpresaChangeLog)
 class EmpresaChangeLogAdmin(admin.ModelAdmin):
-    list_display = ["empresa", "campo_alterado", "alterado_em", "usuario"]
+    list_display = ["empresa", "campo_alterado", "created_at", "usuario"]
     search_fields = ["empresa__nome", "campo_alterado", "usuario__email"]
     list_filter = ["campo_alterado"]
