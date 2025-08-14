@@ -36,6 +36,7 @@
 </head>
 
 <body class="min-h-full flex flex-col font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+  <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
 
   {% if messages %}
   <div id="messages" class="fixed top-4 right-4 space-y-2 z-50">
@@ -133,7 +134,7 @@
   </header>
 
   <!-- Conteúdo principal -->
-  <main class="flex-grow">
+  <main id="main-content" class="flex-grow">
     {% block content %}{% endblock %}
   </main>
 

@@ -1,0 +1,172 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 16:44-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: templates/404.html:4
+msgid "Página não encontrada"
+msgstr ""
+
+#: templates/404.html:10
+msgid "Página não encontrada."
+msgstr ""
+
+#: templates/404.html:11 templates/500.html:11
+msgid "Voltar para a Home"
+msgstr ""
+
+#: templates/500.html:4
+msgid "Erro interno do servidor"
+msgstr ""
+
+#: templates/500.html:10
+msgid "Ocorreu um erro interno. Tente novamente mais tarde."
+msgstr ""
+
+#: templates/base.html:28
+msgid "HubX"
+msgstr ""
+
+#: templates/base.html:39
+msgid "Pular para o conteúdo principal"
+msgstr "Skip to main content"
+
+#: templates/base.html:64
+msgid "Abrir menu"
+msgstr ""
+
+#: templates/base.html:73
+msgid "Menu principal"
+msgstr ""
+
+#: templates/base.html:76
+msgid "Perfil"
+msgstr ""
+
+#: templates/base.html:84
+msgid "Notificações de chat"
+msgstr ""
+
+#: templates/base.html:88
+msgid "Notificações"
+msgstr ""
+
+#: templates/base.html:90
+msgid "Som"
+msgstr ""
+
+#: templates/base.html:91
+msgid "Vibração"
+msgstr ""
+
+#: templates/base.html:98
+msgid "Dashboard"
+msgstr ""
+
+#: templates/base.html:101
+msgid "Empresas"
+msgstr ""
+
+#: templates/base.html:104
+msgid "Agenda"
+msgstr ""
+
+#: templates/base.html:107
+msgid "Discussão"
+msgstr ""
+
+#: templates/base.html:110
+msgid "Feed"
+msgstr ""
+
+#: templates/base.html:113
+msgid "Núcleos"
+msgstr ""
+
+#: templates/base.html:117
+msgid "Organizações"
+msgstr ""
+
+#: templates/base.html:121
+msgid "Token"
+msgstr ""
+
+#: templates/base.html:124
+#, python-format
+msgid "Olá, %(user.username)s"
+msgstr ""
+
+#: templates/base.html:125
+msgid "Sair"
+msgstr ""
+
+#: templates/base.html:127
+msgid "Entrar"
+msgstr ""
+
+#: templates/base.html:129
+msgid "Cadastrar"
+msgstr ""
+
+#: templates/base.html:144
+#, python-format
+msgid "© %(year)s HubX. Todos os direitos reservados."
+msgstr ""
+
+#: templates/base.html:146
+msgid "Sobre"
+msgstr ""
+
+#: templates/base.html:147
+msgid "Contato"
+msgstr ""
+
+#: templates/base.html:148
+msgid "Privacidade"
+msgstr ""
+
+#: templates/base.html:149
+msgid "Termos"
+msgstr ""
+
+#: templates/notificacoes/financeiro/ajuste_lancamento.html:2
+#: templates/notificacoes/financeiro/distribuicao_receita.html:2
+#: templates/notificacoes/financeiro/nova_cobranca.html:2
+#, python-format
+msgid "Olá %(nome)s,"
+msgstr ""
+
+#: templates/notificacoes/financeiro/ajuste_lancamento.html:3
+#, python-format
+msgid "Seu lançamento %(lancamento)s foi ajustado em %(valor)s."
+msgstr ""
+
+#: templates/notificacoes/financeiro/distribuicao_receita.html:3
+#, python-format
+msgid "A receita do evento %(evento)s no valor de %(valor)s foi distribuída."
+msgstr ""
+
+#: templates/notificacoes/financeiro/nova_cobranca.html:3
+#, python-format
+msgid ""
+"Você possui uma nova cobrança no valor de %(valor)s com vencimento em "
+"%(vencimento)s."
+msgstr ""
+
+#: templates/notificacoes/financeiro/nova_cobranca.html:4
+#, python-format
+msgid "Acesse %(link_pagamento)s para efetuar o pagamento."
+msgstr ""
