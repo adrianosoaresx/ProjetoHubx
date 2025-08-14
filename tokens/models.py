@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.fields import EncryptedCharField
-from core.models import TimeStampedModel
+from core.models import SoftDeleteModel, TimeStampedModel
 
 User = get_user_model()
 
@@ -46,7 +46,7 @@ def generate_hex_uuid() -> str:
     return uuid.uuid4().hex
 
 
-class TokenAcesso(TimeStampedModel):
+class TokenAcesso(TimeStampedModel, SoftDeleteModel):
     class TipoUsuario(models.TextChoices):
         ADMIN = "admin", "Admin"
         ASSOCIADO = "associado", "Associado"
