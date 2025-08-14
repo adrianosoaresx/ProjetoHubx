@@ -21,15 +21,17 @@
   {% endif %}
 
   <div class="mt-6 space-y-1 text-sm text-neutral-800">
-    <p><strong>CNPJ:</strong> {{ empresa.cnpj }}</p>
-    <p><strong>Status de validação:</strong>
+    <p><strong>{% trans "CNPJ" %}:</strong> {{ empresa.cnpj|localize }}</p>
+    <p><strong>{% trans "Status de validação" %}:</strong>
       {% if empresa.validado_em %}
-        Validado em {{ empresa.validado_em }} ({{ empresa.fonte_validacao }})
+        {% blocktrans trimmed with date=empresa.validado_em|date source=empresa.fonte_validacao %}
+          Validado em {{ date }} ({{ source }})
+        {% endblocktrans %}
       {% else %}
-        Pendente
+        {% trans "Pendente" %}
       {% endif %}
     </p>
-    <p><strong>Localização:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
+    <p><strong>{% trans "Localização" %}:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
     {% with empresa.get_contato_principal as contato %}
       {% if contato %}
         <p><strong>{% trans "Contato" %}:</strong> {{ contato.nome }}</p>
@@ -41,7 +43,7 @@
 
   {% if empresa_tags %}
     <div class="mt-4">
-      <strong>Tags:</strong>
+      <strong>{% trans "Tags" %}:</strong>
       <div class="flex flex-wrap gap-2 mt-1">
         {% for tag in empresa_tags %}
           <span class="text-xs bg-primary-100 text-primary-800 rounded-full px-2 py-0.5">{{ tag.nome }}</span>
@@ -51,27 +53,27 @@
   {% endif %}
 
   {% if prod_tags %}
-    <h2 class="mt-8 text-lg font-semibold text-neutral-900">Produtos</h2>
+    <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Produtos" %}</h2>
     <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
       {% for tag in prod_tags %}
         <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
           <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
         </div>
       {% empty %}
-        <p class="text-sm text-neutral-500">Nenhum produto cadastrado.</p>
+        <p class="text-sm text-neutral-500">{% trans "Nenhum produto cadastrado." %}</p>
       {% endfor %}
     </div>
   {% endif %}
 
   {% if serv_tags %}
-    <h2 class="mt-8 text-lg font-semibold text-neutral-900">Serviços</h2>
+    <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Serviços" %}</h2>
     <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
       {% for tag in serv_tags %}
         <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
           <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
         </div>
       {% empty %}
-        <p class="text-sm text-neutral-500">Nenhum serviço cadastrado.</p>
+        <p class="text-sm text-neutral-500">{% trans "Nenhum serviço cadastrado." %}</p>
       {% endfor %}
     </div>
   {% endif %}
@@ -81,12 +83,12 @@
   </div>
 
   <div class="flex justify-end gap-3 mt-8">
-    <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Voltar</a>
+    <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
     {% if request.user.is_staff %}
-    <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">Histórico</a>
+    <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Histórico" %}</a>
     {% endif %}
     {% if request.user == empresa.usuario %}
-      <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">Editar</a>
+      <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Editar" %}</a>
     {% endif %}
   </div>
 </section>
