@@ -19,7 +19,7 @@
       {% for log in logs %}
       <tr>
         <td class="border px-4 py-2">{{ log.nome_tarefa }}</td>
-        <td class="border px-4 py-2">{{ log.executada_em|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ log.executada_em|date:SHORT_DATETIME_FORMAT }}</td>
         <td class="border px-4 py-2">{{ log.status }}</td>
         <td class="border px-4 py-2"><a class="text-primary underline" href="{% url 'financeiro:task_log_detail' log.id %}">{{ _('Ver') }}</a></td>
       </tr>

@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Registro - Email | Hubx{% endblock %}
+{% block title %}{% trans "Registro - Email" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">Passo 4 de 7</span>
+        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=4 total=7 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         <span class="text-sm text-neutral-500">56%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
@@ -16,21 +17,21 @@
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Qual seu email?</h1>
-      <p class="text-neutral-600">Usaremos para comunicação e recuperação de conta</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Qual seu email?" %}</h1>
+      <p class="text-neutral-600">{% trans "Usaremos para comunicação e recuperação de conta" %}</p>
     </div>
 
     <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="email" class="mb-1 block text-sm font-medium text-neutral-700">Email</label>
-        <input type="email" id="email" name="email" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="Digite seu email" required autofocus>
+        <label for="email" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Email" %}</label>
+        <input type="email" id="email" name="email" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite seu email' %}" required autofocus>
         <div class="text-sm text-red-600" id="email_validation"></div>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Continuar</button>
+        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
   </div>

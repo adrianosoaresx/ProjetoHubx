@@ -1,3 +1,4 @@
-<p>Olá {{ nome }},</p>
-<p>Você possui uma nova cobrança no valor de {{ valor }} com vencimento em {{ vencimento }}.</p>
-<p>Acesse {{ link_pagamento }} para efetuar o pagamento.</p>
+{% load i18n %}
+<p>{% blocktrans trimmed with nome=nome %}Olá {{ nome }},{% endblocktrans %}</p>
+<p>{% blocktrans trimmed with valor=valor vencimento=vencimento %}Você possui uma nova cobrança no valor de {{ valor }} com vencimento em {{ vencimento }}.{% endblocktrans %}</p>
+<p>{% blocktrans trimmed with link_pagamento=link_pagamento|safe %}Acesse {{ link_pagamento }} para efetuar o pagamento.{% endblocktrans %}</p>

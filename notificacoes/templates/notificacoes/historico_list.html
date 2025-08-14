@@ -19,9 +19,9 @@
       <label for="canal" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Canal' %}</label>
       <select name="canal" id="canal" class="form-select" hx-get="{% url 'notificacoes:historico' %}" hx-target="#tabela_historico" hx-include="closest form">
         <option value="" {% if not request.GET.canal %}selected{% endif %}>{% trans 'Todos' %}</option>
-        <option value="email" {% if request.GET.canal == 'email' %}selected{% endif %}>E-mail</option>
-        <option value="push" {% if request.GET.canal == 'push' %}selected{% endif %}>Push</option>
-        <option value="whatsapp" {% if request.GET.canal == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+        <option value="email" {% if request.GET.canal == 'email' %}selected{% endif %}>{% trans 'E-mail' %}</option>
+        <option value="push" {% if request.GET.canal == 'push' %}selected{% endif %}>{% trans 'Push' %}</option>
+        <option value="whatsapp" {% if request.GET.canal == 'whatsapp' %}selected{% endif %}>{% trans 'WhatsApp' %}</option>
       </select>
     </div>
     <noscript><button type="submit" class="mt-2 sm:mt-0 bg-neutral-200 text-neutral-800 px-4 py-2 rounded-xl text-sm hover:bg-neutral-300">{% trans 'Filtrar' %}</button></noscript>

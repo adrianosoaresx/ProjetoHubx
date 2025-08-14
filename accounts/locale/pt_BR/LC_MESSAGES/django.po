@@ -1,0 +1,846 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 16:23+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: templates/accounts/delete_account_confirm.html:3
+#: templates/accounts/delete_account_confirm.html:6
+msgid "Excluir Conta"
+msgstr ""
+
+#: templates/accounts/delete_account_confirm.html:8
+msgid "A exclusão da conta é permanente e você perderá acesso aos seus dados."
+msgstr ""
+
+#: templates/accounts/delete_account_confirm.html:13
+msgid "Digite EXCLUIR para confirmar"
+msgstr ""
+
+#: templates/accounts/delete_account_confirm.html:27
+msgid "Confirmar exclusão"
+msgstr ""
+
+#: templates/accounts/email_confirm.html:3
+msgid "Confirmação de Email"
+msgstr ""
+
+#: templates/accounts/email_confirm.html:8
+msgid "Seu e-mail foi confirmado com sucesso."
+msgstr ""
+
+#: templates/accounts/email_confirm.html:12
+msgid "Link inválido ou expirado."
+msgstr ""
+
+#: templates/accounts/gerar_token.html:4 templates/accounts/gerar_token.html:8
+msgid "Gerar Token de Acesso"
+msgstr ""
+
+#: templates/accounts/gerar_token.html:22
+msgid "Gerar Token"
+msgstr ""
+
+#: templates/accounts/gerar_token.html:28
+msgid "Código gerado:"
+msgstr ""
+
+#: templates/accounts/password_reset.html:3
+#: templates/accounts/password_reset.html:7
+msgid "Recuperar Senha"
+msgstr ""
+
+#: templates/accounts/password_reset.html:8
+msgid "Informe o e-mail cadastrado para receber instruções."
+msgstr ""
+
+#: templates/accounts/password_reset.html:12
+msgid "E-mail"
+msgstr ""
+
+#: templates/accounts/password_reset.html:15
+#: templates/accounts/resend_confirmation.html:11
+#: templates/perfil/midias.html:30
+msgid "Enviar"
+msgstr ""
+
+#: templates/accounts/password_reset_confirm.html:3
+#: templates/accounts/password_reset_confirm.html:7
+msgid "Definir Nova Senha"
+msgstr ""
+
+#: templates/accounts/password_reset_confirm.html:32
+#: templates/perfil/seguranca.html:45
+msgid "Alterar Senha"
+msgstr ""
+
+#: templates/accounts/resend_confirmation.html:3
+#: templates/accounts/resend_confirmation.html:7
+#: templates/register/registro_pendente.html:9
+msgid "Reenviar confirmação"
+msgstr ""
+
+#: templates/accounts/resend_confirmation.html:10
+msgid "Seu e-mail"
+msgstr ""
+
+#: templates/login/login.html:4 templates/login/login.html:60
+#: templates/register/token.html:48
+msgid "Entrar"
+msgstr ""
+
+#: templates/login/login.html:9
+msgid "Bem-vindo de volta"
+msgstr ""
+
+#: templates/login/login.html:11
+msgid "Entre para acessar sua conta e conectar-se à sua rede"
+msgstr ""
+
+#: templates/login/login.html:21 templates/perfil/detail.html:16
+#: templates/perfil/informacoes_pessoais.html:30
+#: templates/register/email.html:27
+msgid "Email"
+msgstr ""
+
+#: templates/login/login.html:24
+msgid "Digite seu e-mail"
+msgstr ""
+
+#: templates/login/login.html:35 templates/register/senha.html:27
+msgid "Senha"
+msgstr ""
+
+#: templates/login/login.html:37 templates/register/senha.html:28
+msgid "Digite sua senha"
+msgstr ""
+
+#: templates/login/login.html:47
+msgid "TOTP"
+msgstr ""
+
+#: templates/login/login.html:50
+msgid "Código 2FA"
+msgstr ""
+
+#: templates/login/login.html:66
+msgid "Esqueceu sua senha?"
+msgstr ""
+
+#: templates/login/login.html:70
+msgid "Reenviar confirmação de e-mail"
+msgstr ""
+
+#: templates/login/login.html:76
+msgid "Não tem uma conta?"
+msgstr ""
+
+#: templates/login/login.html:78
+msgid "Cadastre-se gratuitamente"
+msgstr ""
+
+#: templates/perfil/conexoes.html:4 templates/perfil/conexoes.html:9
+#: templates/perfil/conexoes.html:15
+msgid "Minhas Conexões"
+msgstr ""
+
+#: templates/perfil/conexoes.html:10
+msgid "Gerencie sua rede de contatos"
+msgstr ""
+
+#: templates/perfil/conexoes.html:16
+msgid "Solicitações"
+msgstr ""
+
+#: templates/perfil/conexoes.html:25
+msgid "Buscar conexões..."
+msgstr ""
+
+#: templates/perfil/conexoes.html:26
+msgid "Buscar"
+msgstr ""
+
+#: templates/perfil/conexoes.html:46
+msgid "Chat"
+msgstr ""
+
+#: templates/perfil/conexoes.html:47
+msgid "Tem certeza que deseja remover esta conexão?"
+msgstr ""
+
+#: templates/perfil/conexoes.html:49
+msgid "Remover conexão"
+msgstr ""
+
+#: templates/perfil/conexoes.html:55
+msgid "Você ainda não tem conexões."
+msgstr ""
+
+#: templates/perfil/conexoes.html:56
+msgid "Encontrar Pessoas"
+msgstr ""
+
+#: templates/perfil/conexoes.html:84
+msgid "Aceitar"
+msgstr ""
+
+#: templates/perfil/conexoes.html:88
+msgid "Recusar"
+msgstr ""
+
+#: templates/perfil/conexoes.html:94
+msgid "Você não tem solicitações de conexão pendentes."
+msgstr ""
+
+#: templates/perfil/conexoes.html:116
+#: templates/perfil/informacoes_pessoais.html:133
+#: templates/perfil/midias.html:73 templates/perfil/redes_sociais.html:29
+#: templates/perfil/seguranca.html:100 templates/register/cpf.html:33
+#: templates/register/email.html:33 templates/register/foto.html:34
+#: templates/register/nome.html:33 templates/register/senha.html:39
+#: templates/register/termos.html:50 templates/register/token.html:40
+#: templates/register/usuario.html:34
+msgid "Voltar"
+msgstr ""
+
+#: templates/perfil/detail.html:3
+msgid "Meu Perfil"
+msgstr ""
+
+#: templates/perfil/detail.html:15
+msgid "Contato"
+msgstr ""
+
+#: templates/perfil/detail.html:17
+#: templates/perfil/informacoes_pessoais.html:78
+msgid "Telefone"
+msgstr ""
+
+#: templates/perfil/detail.html:18
+#: templates/perfil/informacoes_pessoais.html:84
+msgid "WhatsApp"
+msgstr ""
+
+#: templates/perfil/detail.html:21
+msgid "Localização"
+msgstr ""
+
+#: templates/perfil/detail.html:27 templates/perfil/redes_sociais.html:4
+#: templates/perfil/redes_sociais.html:8
+msgid "Redes Sociais"
+msgstr ""
+
+#: templates/perfil/detail.html:38
+msgid "Editar perfil"
+msgstr ""
+
+#: templates/perfil/disable_2fa.html:3 templates/perfil/disable_2fa.html:5
+#: templates/perfil/seguranca.html:58
+msgid "Desativar 2FA"
+msgstr ""
+
+#: templates/perfil/disable_2fa.html:6
+msgid ""
+"Digite o código do seu aplicativo autenticador para desativar a verificação "
+"em duas etapas."
+msgstr ""
+
+#: templates/perfil/disable_2fa.html:10 templates/perfil/enable_2fa.html:11
+msgid "Código"
+msgstr ""
+
+#: templates/perfil/disable_2fa.html:13
+msgid "Desativar"
+msgstr ""
+
+#: templates/perfil/enable_2fa.html:3 templates/perfil/enable_2fa.html:5
+#: templates/perfil/seguranca.html:62
+msgid "Ativar 2FA"
+msgstr ""
+
+#: templates/perfil/enable_2fa.html:6
+msgid ""
+"Escaneie o QR-code abaixo com seu aplicativo autenticador e informe o código "
+"gerado."
+msgstr ""
+
+#: templates/perfil/enable_2fa.html:7
+msgid "QR Code"
+msgstr ""
+
+#: templates/perfil/enable_2fa.html:14
+msgid "Ativar"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:4
+#: templates/perfil/informacoes_pessoais.html:8 templates/perfil/perfil.html:31
+msgid "Informações Pessoais"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:9
+msgid "Atualize seus dados básicos e de contato"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:15
+msgid "Nome completo"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:23
+msgid "Usuário"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:38
+msgid "Bio"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:45
+msgid "Data de Nascimento"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:52
+msgid "Gênero"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:55
+#: templates/perfil/informacoes_pessoais.html:109
+msgid "Selecione..."
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:56
+msgid "Masculino"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:57
+msgid "Feminino"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:58
+msgid "Outro"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:64
+msgid "Foto de Perfil"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:67
+msgid "Capa"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:74
+msgid "Informações de Contato"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:92
+msgid "Endereço"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:95
+msgid "Rua, número, complemento"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:100
+msgid "Cidade"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:106
+msgid "Estado"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:116
+msgid "CEP"
+msgstr ""
+
+#: templates/perfil/informacoes_pessoais.html:126
+#: templates/perfil/redes_sociais.html:22
+msgid "Salvar Alterações"
+msgstr ""
+
+#: templates/perfil/midia_confirm_delete.html:3
+#: templates/perfil/midia_confirm_delete.html:7
+msgid "Remover Mídia"
+msgstr ""
+
+#: templates/perfil/midia_confirm_delete.html:8
+msgid "Tem certeza que deseja remover esta mídia?"
+msgstr ""
+
+#: templates/perfil/midia_confirm_delete.html:11
+#: templates/perfil/midia_form.html:16
+msgid "Cancelar"
+msgstr ""
+
+#: templates/perfil/midia_confirm_delete.html:12
+msgid "Remover"
+msgstr ""
+
+#: templates/perfil/midia_detail.html:4
+msgid "Mídia"
+msgstr ""
+
+#: templates/perfil/midia_detail.html:11
+msgid "Voltar para mídias"
+msgstr ""
+
+#: templates/perfil/midia_form.html:4 templates/perfil/midia_form.html:9
+msgid "Editar Mídia"
+msgstr ""
+
+#: templates/perfil/midia_form.html:4
+msgid "Nova Mídia"
+msgstr ""
+
+#: templates/perfil/midia_form.html:9
+msgid "Cadastrar Mídia"
+msgstr ""
+
+#: templates/perfil/midia_form.html:17
+msgid "Salvar"
+msgstr ""
+
+#: templates/perfil/midias.html:4 templates/perfil/midias.html:9
+msgid "Mídias"
+msgstr ""
+
+#: templates/perfil/midias.html:10
+msgid "Gerencie suas imagens, vídeos e documentos"
+msgstr ""
+
+#: templates/perfil/midias.html:17
+msgid "Enviar arquivo"
+msgstr ""
+
+#: templates/perfil/midias.html:21
+msgid "Descrição"
+msgstr ""
+
+#: templates/perfil/midias.html:25
+msgid "Tags"
+msgstr ""
+
+#: templates/perfil/midias.html:26
+msgid "paisagem, viagem"
+msgstr ""
+
+#: templates/perfil/midias.html:37
+msgid "Adicionar Mídias"
+msgstr ""
+
+#: templates/perfil/midias.html:42
+msgid "Buscar por descrição ou tags..."
+msgstr ""
+
+#: templates/perfil/midias.html:50
+msgid "Editar"
+msgstr ""
+
+#: templates/perfil/midias.html:51
+msgid "Excluir"
+msgstr ""
+
+#: templates/perfil/midias.html:67
+msgid "Nenhum arquivo enviado."
+msgstr ""
+
+#: templates/perfil/perfil.html:4
+msgid "Perfil"
+msgstr ""
+
+#: templates/perfil/perfil.html:23
+msgid "Alterar foto"
+msgstr ""
+
+#: templates/perfil/perfil.html:35 templates/perfil/seguranca.html:8
+msgid "Segurança"
+msgstr ""
+
+#: templates/perfil/perfil.html:39
+msgid "Notificações"
+msgstr ""
+
+#: templates/perfil/redes_sociais.html:9
+msgid "Conecte suas redes sociais com seu perfil"
+msgstr ""
+
+#: templates/perfil/seguranca.html:4
+msgid "Segurança da Conta"
+msgstr ""
+
+#: templates/perfil/seguranca.html:9
+msgid "Gerencie sua senha e a proteção da conta"
+msgstr ""
+
+#: templates/perfil/seguranca.html:15
+msgid "Senha Atual"
+msgstr ""
+
+#: templates/perfil/seguranca.html:22
+msgid "Nova Senha"
+msgstr ""
+
+#: templates/perfil/seguranca.html:27
+msgid "Confirmar Nova Senha"
+msgstr ""
+
+#: templates/perfil/seguranca.html:35
+msgid "Força da senha:"
+msgstr ""
+
+#: templates/perfil/seguranca.html:39
+msgid "Digite uma senha"
+msgstr ""
+
+#: templates/perfil/seguranca.html:51
+msgid "Verificação em Duas Etapas"
+msgstr ""
+
+#: templates/perfil/seguranca.html:53
+msgid ""
+"A verificação em duas etapas adiciona uma camada extra de segurança à sua "
+"conta, exigindo um código além da sua senha ao fazer login."
+msgstr ""
+
+#: templates/perfil/seguranca.html:56
+msgid "2FA está ativado."
+msgstr ""
+
+#: templates/perfil/seguranca.html:60
+msgid "2FA não está ativado."
+msgstr ""
+
+#: templates/register/cpf.html:4
+msgid "Registro - CPF"
+msgstr ""
+
+#: templates/register/cpf.html:11 templates/register/email.html:11
+#: templates/register/nome.html:11 templates/register/senha.html:11
+#: templates/register/token.html:11 templates/register/usuario.html:11
+#, python-format
+msgid "Passo %(step)s de %(total)s"
+msgstr ""
+
+#: templates/register/cpf.html:20
+msgid "Qual seu CPF?"
+msgstr ""
+
+#: templates/register/cpf.html:21
+msgid "Precisamos para validar sua identidade e segurança"
+msgstr ""
+
+#: templates/register/cpf.html:27
+msgid "CPF"
+msgstr ""
+
+#: templates/register/cpf.html:34 templates/register/email.html:34
+#: templates/register/foto.html:35 templates/register/nome.html:34
+#: templates/register/senha.html:40 templates/register/token.html:41
+#: templates/register/usuario.html:35
+msgid "Continuar"
+msgstr ""
+
+#: templates/register/email.html:4
+msgid "Registro - Email"
+msgstr ""
+
+#: templates/register/email.html:20
+msgid "Qual seu email?"
+msgstr ""
+
+#: templates/register/email.html:21
+msgid "Usaremos para comunicação e recuperação de conta"
+msgstr ""
+
+#: templates/register/email.html:28
+msgid "Digite seu email"
+msgstr ""
+
+#: templates/register/foto.html:4
+msgid "Registro - Foto"
+msgstr ""
+
+#: templates/register/foto.html:11
+msgid "Passo 6 de 7"
+msgstr ""
+
+#: templates/register/foto.html:20
+msgid "Adicione uma foto de perfil"
+msgstr ""
+
+#: templates/register/foto.html:21
+msgid "Personalize sua presença na comunidade"
+msgstr ""
+
+#: templates/register/foto.html:27
+msgid "Escolher Foto"
+msgstr ""
+
+#: templates/register/foto.html:30
+msgid "Formatos aceitos: JPG, PNG. Tamanho máximo: 5MB"
+msgstr ""
+
+#: templates/register/nome.html:4
+msgid "Registro - Nome"
+msgstr ""
+
+#: templates/register/nome.html:20
+msgid "Como podemos te chamar?"
+msgstr ""
+
+#: templates/register/nome.html:21 templates/register/nome.html:28
+msgid "Digite seu nome completo"
+msgstr ""
+
+#: templates/register/nome.html:27
+msgid "Nome Completo"
+msgstr ""
+
+#: templates/register/onboarding.html:4
+msgid "Cadastre-se"
+msgstr ""
+
+#: templates/register/onboarding.html:19
+msgid "Junte-se ao HubX"
+msgstr ""
+
+#: templates/register/onboarding.html:22
+msgid ""
+"Conecte-se com comunidades, empresas e organizações em uma única plataforma"
+msgstr ""
+
+#: templates/register/onboarding.html:35
+msgid "Compartilhe"
+msgstr ""
+
+#: templates/register/onboarding.html:37
+msgid "Publique conteúdo e mantenha sua comunidade informada"
+msgstr ""
+
+#: templates/register/onboarding.html:49
+msgid "Conecte"
+msgstr ""
+
+#: templates/register/onboarding.html:51
+msgid "Encontre e conecte-se com pessoas e organizações"
+msgstr ""
+
+#: templates/register/onboarding.html:63
+msgid "Organize"
+msgstr ""
+
+#: templates/register/onboarding.html:65
+msgid "Crie e participe de eventos da sua comunidade"
+msgstr ""
+
+#: templates/register/onboarding.html:78
+msgid "Começar Cadastro"
+msgstr ""
+
+#: templates/register/onboarding.html:81
+msgid "Já tenho conta"
+msgstr ""
+
+#: templates/register/onboarding.html:87
+msgid ""
+"Ao se cadastrar, você concorda com nossos <a href=\"#\" class=\"text-"
+"primary-600 hover:text-primary-700\">Termos de Uso</a> e <a href=\"#\" "
+"class=\"text-primary-600 hover:text-primary-700\">Política de Privacidade</a>"
+msgstr ""
+
+#: templates/register/registro_pendente.html:3
+msgid "Confirme seu e-mail"
+msgstr ""
+
+#: templates/register/registro_pendente.html:7
+#: templates/register/termos.html:20
+msgid "Quase lá!"
+msgstr ""
+
+#: templates/register/registro_pendente.html:8
+msgid "Conta criada. Confirme seu e-mail em até 24 horas para ativá-la."
+msgstr ""
+
+#: templates/register/registro_sucesso.html:4
+msgid "Registro Concluído"
+msgstr ""
+
+#: templates/register/registro_sucesso.html:9
+msgid "Bem-vindo ao HubX!"
+msgstr ""
+
+#: templates/register/registro_sucesso.html:10
+#: templates/register/sucesso.html:10
+msgid "Seu cadastro foi concluído com sucesso."
+msgstr ""
+
+#: templates/register/registro_sucesso.html:11
+msgid "Ir para meu Perfil →"
+msgstr ""
+
+#: templates/register/senha.html:4
+msgid "Registro - Senha"
+msgstr ""
+
+#: templates/register/senha.html:20
+msgid "Crie uma senha segura"
+msgstr ""
+
+#: templates/register/senha.html:21
+msgid "Proteja sua conta com uma senha forte"
+msgstr ""
+
+#: templates/register/senha.html:33
+msgid "Confirmar Senha"
+msgstr ""
+
+#: templates/register/senha.html:34
+msgid "Confirme sua senha"
+msgstr ""
+
+#: templates/register/sucesso.html:4
+msgid "Cadastro Concluído"
+msgstr ""
+
+#: templates/register/sucesso.html:9
+msgid "Parabéns!"
+msgstr ""
+
+#: templates/register/sucesso.html:11
+msgid "Fazer login"
+msgstr ""
+
+#: templates/register/termos.html:4
+msgid "Registro - Termos"
+msgstr ""
+
+#: templates/register/termos.html:11
+msgid "Passo 7 de 7"
+msgstr ""
+
+#: templates/register/termos.html:21
+msgid "Revise e aceite os termos para finalizar"
+msgstr ""
+
+#: templates/register/termos.html:27
+msgid "Termos de Uso e Política de Privacidade"
+msgstr ""
+
+#: templates/register/termos.html:28
+msgid ""
+"Ao utilizar o HubX, você concorda com nossos termos de uso e política de "
+"privacidade. Abaixo estão os principais pontos:"
+msgstr ""
+
+#: templates/register/termos.html:29
+msgid "1. Uso da Plataforma"
+msgstr ""
+
+#: templates/register/termos.html:30
+msgid ""
+"O HubX é uma plataforma para comunidades, entidades e associações. Você "
+"concorda em utilizar a plataforma de acordo com as leis aplicáveis e não "
+"violar os direitos de outros usuários."
+msgstr ""
+
+#: templates/register/termos.html:31
+msgid "2. Privacidade"
+msgstr ""
+
+#: templates/register/termos.html:32
+msgid ""
+"Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins "
+"especificados em nossa política de privacidade."
+msgstr ""
+
+#: templates/register/termos.html:33
+msgid "3. Conteúdo"
+msgstr ""
+
+#: templates/register/termos.html:34
+msgid ""
+"Você é responsável pelo conteúdo que compartilha na plataforma. Não "
+"toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros."
+msgstr ""
+
+#: templates/register/termos.html:35
+msgid "4. Segurança"
+msgstr ""
+
+#: templates/register/termos.html:36
+msgid ""
+"Você é responsável por manter a segurança de sua conta e senha. Notifique-"
+"nos imediatamente sobre qualquer uso não autorizado."
+msgstr ""
+
+#: templates/register/termos.html:41
+msgid ""
+"Eu li e concordo com os <a href=\"/termos/\" class=\"text-primary-600 hover:"
+"text-primary-700\" target=\"_blank\">Termos de Uso</a> e <a href=\"/"
+"privacidade/\" class=\"text-primary-600 hover:text-primary-700\" "
+"target=\"_blank\">Política de Privacidade</a>"
+msgstr ""
+
+#: templates/register/termos.html:46
+msgid "Quero receber atualizações e novidades do HubX"
+msgstr ""
+
+#: templates/register/termos.html:51
+msgid "Finalizar Cadastro"
+msgstr ""
+
+#: templates/register/token.html:4 templates/register/token.html:27
+#: templates/register/token.html:34
+msgid "Token de Convite"
+msgstr ""
+
+#: templates/register/token.html:28
+msgid "Digite seu token de convite para começar o cadastro"
+msgstr ""
+
+#: templates/register/token.html:35
+msgid "Digite seu token de convite"
+msgstr ""
+
+#: templates/register/token.html:36
+msgid "O token é necessário para continuar o cadastro na plataforma"
+msgstr ""
+
+#: templates/register/token.html:47
+msgid "Já tem uma conta?"
+msgstr ""
+
+#: templates/register/usuario.html:4
+msgid "Registro - Usuário"
+msgstr ""
+
+#: templates/register/usuario.html:20
+msgid "Escolha seu nome de usuário"
+msgstr ""
+
+#: templates/register/usuario.html:21
+msgid "Como você será identificado na plataforma"
+msgstr ""
+
+#: templates/register/usuario.html:27
+msgid "Nome de Usuário"
+msgstr ""
+
+#: templates/register/usuario.html:28
+msgid "Digite seu nome de usuário"
+msgstr ""
+
+#: templates/register/usuario.html:30
+msgid "Use apenas letras, números e underscore (_)"
+msgstr ""

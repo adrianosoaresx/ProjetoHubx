@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-{% load i18n %}
-<html lang="pt-br">
+{% load i18n l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
 <head>
   <meta charset="utf-8" />
   <title>{% trans "Métricas do Dashboard" %}</title>
@@ -19,7 +20,7 @@
     <tbody>
     {% for key, data in metrics.items %}
       <tr>
-        <td>{{ key }}</td><td>{{ data.total }}</td><td>{{ data.crescimento|floatformat:2 }}</td>
+        <td>{{ key }}</td><td>{{ data.total|localize }}</td><td>{{ data.crescimento|floatformat:2|localize }}</td>
       </tr>
     {% endfor %}
     </tbody>

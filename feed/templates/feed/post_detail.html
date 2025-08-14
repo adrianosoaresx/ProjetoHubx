@@ -19,7 +19,7 @@
       {% endif %}
       <div>
         <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-        <p class="text-xs text-neutral-500">{{ post.criado_em|date:"d/m/Y H:i" }}</p>
+        <p class="text-xs text-neutral-500">{{ post.criado_em|date:SHORT_DATETIME_FORMAT }}</p>
       </div>
     </div>
 
@@ -32,7 +32,7 @@
 
     {% if post.pdf %}
       <div class="relative mt-2">
-        <a href="{{ post.pdf.url }}" target="_blank" class="text-blue-500 underline">Visualizar PDF</a>
+        <a href="{{ post.pdf.url }}" target="_blank" class="text-blue-500 underline">{% trans "Visualizar PDF" %}</a>
       </div>
     {% elif post.image %}
       <div class="mt-2">

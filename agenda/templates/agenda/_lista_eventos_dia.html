@@ -1,5 +1,6 @@
+{% load i18n %}
 <h2 class="text-xl font-semibold mb-4">
-  Eventos de {{ dia_iso|date:"d/m/Y" }}
+  {% blocktrans trimmed with date=dia_iso|date:DATE_FORMAT %}Eventos de {{ date }}{% endblocktrans %}
 </h2>
 
 <ul class="space-y-2">
@@ -9,11 +10,11 @@
          class="block bg-white rounded shadow p-4 hover:bg-gray-50">
         <p class="font-medium">{{ ev.titulo }}</p>
         <p class="text-xs text-gray-500">
-          {{ ev.data_inicio|date:"H:i" }} – {{ ev.fim|date:"H:i" }}
+          {{ ev.data_inicio|date:TIME_FORMAT }} – {{ ev.fim|date:TIME_FORMAT }}
         </p>
       </a>
     </li>
   {% empty %}
-    <li class="text-sm text-gray-400">Sem eventos.</li>
+    <li class="text-sm text-gray-400">{% trans "Sem eventos." %}</li>
   {% endfor %}
 </ul>

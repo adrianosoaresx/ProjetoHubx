@@ -1,14 +1,16 @@
 {% extends 'perfil/perfil.html' %}
+{% load i18n %}
+{% block title %}{% trans "Ativar 2FA" %} | HubX{% endblock %}
 {% block perfil_content %}
-<h3 class="text-xl font-semibold mb-4">Ativar 2FA</h3>
-<p class="text-sm text-gray-600 mb-4">Escaneie o QR-code abaixo com seu aplicativo autenticador e informe o código gerado.</p>
-<img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="mb-4 mx-auto"/>
+<h3 class="text-xl font-semibold mb-4">{% trans "Ativar 2FA" %}</h3>
+<p class="text-sm text-gray-600 mb-4">{% trans "Escaneie o QR-code abaixo com seu aplicativo autenticador e informe o código gerado." %}</p>
+<img src="data:image/png;base64,{{ qr_base64 }}" alt="{% trans 'QR Code' %}" class="mb-4 mx-auto"/>
 <form method="post" class="space-y-4">
   {% csrf_token %}
   <div>
-    <label for="code" class="block text-sm font-medium text-gray-700">Código</label>
+    <label for="code" class="block text-sm font-medium text-gray-700">{% trans "Código" %}</label>
     <input type="text" name="code" id="code" class="mt-1 block w-full border rounded-lg p-2 text-sm" required />
   </div>
-  <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">Ativar</button>
+  <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">{% trans "Ativar" %}</button>
 </form>
 {% endblock %}

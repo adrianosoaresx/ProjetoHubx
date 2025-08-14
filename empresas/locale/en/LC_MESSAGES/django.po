@@ -1,0 +1,307 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 12:47-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: templates/empresas/avaliacao_form.html:4
+msgid "Avaliar empresa"
+msgstr ""
+
+#: templates/empresas/avaliacao_form.html:8
+msgid "Avaliação"
+msgstr ""
+
+#: templates/empresas/avaliacao_form.html:12
+#: templates/empresas/contato_form.html:32 templates/empresas/nova.html:86
+#: templates/empresas/tag_form.html:24
+msgid "Salvar"
+msgstr ""
+
+#: templates/empresas/busca.html:4 templates/empresas/busca.html:9
+msgid "Buscar Empresas"
+msgstr ""
+
+#: templates/empresas/busca.html:10
+msgid "Encontre empresas na plataforma HubX"
+msgstr ""
+
+#: templates/empresas/busca.html:14
+msgid "Buscar por nome, CNPJ ou localização..."
+msgstr ""
+
+#: templates/empresas/busca.html:23
+msgid "Voltar para Minhas Empresas"
+msgstr ""
+
+#: templates/empresas/contato_confirm_delete.html:3
+msgid "Remover Contato"
+msgstr ""
+
+#: templates/empresas/contato_confirm_delete.html:7
+#, python-format
+msgid "Confirma remover contato %(contato.nome)s?"
+msgstr ""
+
+#: templates/empresas/contato_confirm_delete.html:10
+#: templates/empresas/nova.html:83
+#: templates/empresas/tag_confirm_delete.html:11
+#: templates/empresas/tag_form.html:23
+msgid "Cancelar"
+msgstr ""
+
+#: templates/empresas/contato_confirm_delete.html:11
+#: templates/empresas/favoritos.html:20
+#: templates/empresas/includes/empresas_table.html:33
+#: templates/empresas/tag_confirm_delete.html:12
+#: templates/empresas/tags_list.html:45
+msgid "Remover"
+msgstr ""
+
+#: templates/empresas/contato_form.html:3
+msgid "Contato"
+msgstr ""
+
+#: templates/empresas/contato_form.html:9
+#: templates/empresas/includes/empresas_table.html:6
+#: templates/empresas/lista.html:25 templates/empresas/tags_list.html:33
+msgid "Nome"
+msgstr ""
+
+#: templates/empresas/contato_form.html:14
+msgid "E-mail"
+msgstr ""
+
+#: templates/empresas/contato_form.html:19
+msgid "Telefone"
+msgstr ""
+
+#: templates/empresas/contato_form.html:24
+msgid "Cargo"
+msgstr ""
+
+#: templates/empresas/contato_form.html:30
+#: templates/empresas/includes/empresas_table.html:7
+msgid "Contato principal"
+msgstr ""
+
+#: templates/empresas/favoritos.html:4 templates/empresas/favoritos.html:9
+msgid "Empresas Favoritas"
+msgstr ""
+
+#: templates/empresas/favoritos.html:23
+msgid "Nenhuma empresa favorita."
+msgstr ""
+
+#: templates/empresas/historico.html:3 templates/empresas/historico.html:6
+msgid "Histórico de alterações"
+msgstr ""
+
+#: templates/empresas/historico.html:10
+msgid "Campo"
+msgstr ""
+
+#: templates/empresas/historico.html:11 templates/empresas/historico.html:32
+#: templates/empresas/includes/empresas_table.html:43
+#: templates/empresas/includes/empresas_table.html:45
+msgid "Anterior"
+msgstr ""
+
+#: templates/empresas/historico.html:12
+msgid "Novo"
+msgstr ""
+
+#: templates/empresas/historico.html:13
+msgid "Data"
+msgstr ""
+
+#: templates/empresas/historico.html:25
+msgid "Nenhuma alteração registrada."
+msgstr ""
+
+#: templates/empresas/historico.html:30
+#: templates/empresas/includes/empresas_table.html:41
+msgid "Paginação"
+msgstr ""
+
+#: templates/empresas/historico.html:35
+#: templates/empresas/includes/empresas_table.html:49
+#: templates/empresas/includes/empresas_table.html:51
+msgid "Próxima"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:3
+msgid "Avaliações"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:5
+msgid "Média"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:5
+msgid "avaliações"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:11
+msgid "Avaliar com"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:11
+msgid "estrelas"
+msgstr ""
+
+#: templates/empresas/includes/avaliacoes.html:29
+msgid "Nenhuma avaliação registrada."
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:8
+msgid "Setor"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:9
+#: templates/empresas/lista.html:29
+msgid "Município"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:10
+#: templates/empresas/lista.html:37
+msgid "Tags"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:11
+#: templates/empresas/tags_list.html:35
+msgid "Ações"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:17
+msgid "excluída"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:31
+#: templates/empresas/tag_form.html:7 templates/empresas/tags_list.html:44
+msgid "Editar"
+msgstr ""
+
+#: templates/empresas/includes/empresas_table.html:56
+msgid "Nenhuma empresa encontrada."
+msgstr ""
+
+#: templates/empresas/lista.html:4 templates/empresas/lista.html:19
+msgid "Empresas"
+msgstr ""
+
+#: templates/empresas/lista.html:20 templates/empresas/nova.html:4
+#: templates/empresas/nova.html:11
+msgid "Nova Empresa"
+msgstr ""
+
+#: templates/empresas/lista.html:33
+msgid "Estado"
+msgstr ""
+
+#: templates/empresas/lista.html:45
+msgid "Palavras-chave"
+msgstr ""
+
+#: templates/empresas/lista.html:49
+msgid "Busca"
+msgstr ""
+
+#: templates/empresas/lista.html:53 templates/empresas/tags_list.html:25
+msgid "Filtrar"
+msgstr ""
+
+#: templates/empresas/nova.html:4 templates/empresas/nova.html:11
+msgid "Editar Empresa"
+msgstr ""
+
+#: templates/empresas/nova.html:9
+msgid "Voltar"
+msgstr ""
+
+#: templates/empresas/nova.html:12
+msgid "Cadastre sua empresa na plataforma"
+msgstr ""
+
+#: templates/empresas/nova.html:56
+msgid "Descreva brevemente o que sua empresa faz e seus principais objetivos."
+msgstr ""
+
+#: templates/empresas/nova.html:74
+msgid "Separe por vírgulas."
+msgstr ""
+
+#: templates/empresas/nova.html:86
+msgid "Cadastrar Empresa"
+msgstr ""
+
+#: templates/empresas/tag_confirm_delete.html:3
+#: templates/empresas/tag_confirm_delete.html:7
+msgid "Remover Item"
+msgstr ""
+
+#: templates/empresas/tag_confirm_delete.html:8
+#, python-format
+msgid "Tem certeza que deseja remover <strong>%(object.nome)s</strong>?"
+msgstr ""
+
+#: templates/empresas/tag_form.html:3
+msgid "Editar Item"
+msgstr ""
+
+#: templates/empresas/tag_form.html:3 templates/empresas/tags_list.html:8
+msgid "Novo Item"
+msgstr ""
+
+#: templates/empresas/tag_form.html:7
+msgid "Cadastrar"
+msgstr ""
+
+#: templates/empresas/tag_form.html:7
+msgid "Item"
+msgstr ""
+
+#: templates/empresas/tag_form.html:8
+msgid "Preencha o nome e a categoria do item"
+msgstr ""
+
+#: templates/empresas/tags_list.html:3 templates/empresas/tags_list.html:7
+msgid "Produtos e Serviços"
+msgstr ""
+
+#: templates/empresas/tags_list.html:13 templates/empresas/tags_list.html:34
+msgid "Categoria"
+msgstr ""
+
+#: templates/empresas/tags_list.html:15
+msgid "Todas"
+msgstr ""
+
+#: templates/empresas/tags_list.html:16
+msgid "Produtos"
+msgstr ""
+
+#: templates/empresas/tags_list.html:17
+msgid "Serviços"
+msgstr ""
+
+#: templates/empresas/tags_list.html:21
+msgid "Palavra-chave"
+msgstr ""
+
+#: templates/empresas/tags_list.html:52
+msgid "Nenhum item cadastrado."
+msgstr ""

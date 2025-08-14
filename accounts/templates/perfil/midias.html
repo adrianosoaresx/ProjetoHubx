@@ -1,45 +1,45 @@
 {% extends 'perfil/perfil.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Mídias | Hubx{% endblock %}
+{% block title %}{% trans "Mídias" %} | Hubx{% endblock %}
 
 {% block perfil_content %}
 <section id="midias" class="perfil-section active">
   <div class="section-header mb-6">
-    <h2 class="text-xl font-semibold">Mídias</h2>
-    <p class="text-sm text-gray-500">Gerencie suas imagens, vídeos e documentos</p>
+    <h2 class="text-xl font-semibold">{% trans "Mídias" %}</h2>
+    <p class="text-sm text-gray-500">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
   </div>
 
   {% if show_form %}
   <form id="formMidias" class="space-y-6" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <div>
-      <label for="id_file" class="block text-sm font-medium text-gray-700">Enviar arquivo</label>
+      <label for="id_file" class="block text-sm font-medium text-gray-700">{% trans "Enviar arquivo" %}</label>
       <input type="file" id="id_file" name="file" class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
     </div>
     <div>
-      <label for="id_descricao" class="block text-sm font-medium text-gray-700">Descrição</label>
+      <label for="id_descricao" class="block text-sm font-medium text-gray-700">{% trans "Descrição" %}</label>
       <input type="text" id="id_descricao" name="descricao" class="mt-1 block w-full border rounded-lg p-2 text-sm">
     </div>
     <div>
-      <label for="id_tags_field" class="block text-sm font-medium text-gray-700">Tags</label>
-      <input type="text" id="id_tags_field" name="tags_field" class="mt-1 block w-full border rounded-lg p-2 text-sm" placeholder="paisagem, viagem">
+      <label for="id_tags_field" class="block text-sm font-medium text-gray-700">{% trans "Tags" %}</label>
+      <input type="text" id="id_tags_field" name="tags_field" class="mt-1 block w-full border rounded-lg p-2 text-sm" placeholder="{% trans 'paisagem, viagem' %}">
     </div>
     <div>
       <button type="submit" class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
-        Enviar
+        {% trans "Enviar" %}
       </button>
     </div>
   </form>
   {% else %}
     <a href="{% url 'accounts:midias' %}?adicionar=1"
        class="inline-block bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition">
-      Adicionar Mídias
+      {% trans "Adicionar Mídias" %}
     </a>
   {% endif %}
 
   <form method="get" class="mt-6">
-    <input type="text" name="q" value="{{ q }}" placeholder="Buscar por descrição ou tags..."
+    <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Buscar por descrição ou tags...' %}"
            class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm">
   </form>
 
@@ -47,15 +47,15 @@
     {% for media in medias %}
     <div class="bg-white border rounded-lg shadow p-3 relative">
       <div class="absolute top-2 right-2 flex gap-2">
-        <a href="{% url 'accounts:midia_edit' media.pk %}" class="text-sm text-blue-600 hover:underline">✏️</a>
-        <a href="{% url 'accounts:midia_delete' media.pk %}" class="text-sm text-red-600 hover:underline">🗑️</a>
+        <a href="{% url 'accounts:midia_edit' media.pk %}" class="text-sm text-blue-600 hover:underline" aria-label="{% trans 'Editar' %}">✏️</a>
+        <a href="{% url 'accounts:midia_delete' media.pk %}" class="text-sm text-red-600 hover:underline" aria-label="{% trans 'Excluir' %}">🗑️</a>
       </div>
       <a href="{% url 'accounts:midia_detail' media.pk %}">
         <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded">
       </a>
       <div class="mt-2">
         <p class="text-sm font-medium text-gray-700">{{ media.descricao }}</p>
-        <p class="text-xs text-gray-400">{{ media.uploaded_at|date:"d/m/Y H:i" }}</p>
+        <p class="text-xs text-gray-400">{{ media.uploaded_at|date:SHORT_DATETIME_FORMAT }}</p>
         <div class="flex flex-wrap gap-1 mt-1">
           {% for tag in media.tags.all %}
             <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
@@ -64,12 +64,12 @@
       </div>
     </div>
     {% empty %}
-      <p class="text-sm text-gray-500">Nenhum arquivo enviado.</p>
+      <p class="text-sm text-gray-500">{% trans "Nenhum arquivo enviado." %}</p>
     {% endfor %}
   </div>
 </section>
 
 <div class="mt-8 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← Voltar</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}

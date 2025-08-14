@@ -1,13 +1,14 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Registro - Termos | Hubx{% endblock %}
+{% block title %}{% trans "Registro - Termos" %} | Hubx{% endblock %}
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12">
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">Passo 7 de 7</span>
+        <span class="text-sm font-medium text-primary-600">{% trans "Passo 7 de 7" %}</span>
         <span class="text-sm text-neutral-500">100%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
@@ -16,38 +17,38 @@
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">Quase lá!</h1>
-      <p class="text-neutral-600">Revise e aceite os termos para finalizar</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Quase lá!" %}</h1>
+      <p class="text-neutral-600">{% trans "Revise e aceite os termos para finalizar" %}</p>
     </div>
 
     <form id="termosForm" method="post" action="{% url 'accounts:termos' %}" class="space-y-6">
       {% csrf_token %}
       <div class="space-y-4 max-h-64 overflow-y-auto p-4 border border-neutral-200 rounded-lg">
-        <h3 class="font-semibold">Termos de Uso e Política de Privacidade</h3>
-        <p>Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:</p>
-        <h4 class="font-medium">1. Uso da Plataforma</h4>
-        <p>O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários.</p>
-        <h4 class="font-medium">2. Privacidade</h4>
-        <p>Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade.</p>
-        <h4 class="font-medium">3. Conteúdo</h4>
-        <p>Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros.</p>
-        <h4 class="font-medium">4. Segurança</h4>
-        <p>Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado.</p>
+        <h3 class="font-semibold">{% trans "Termos de Uso e Política de Privacidade" %}</h3>
+        <p>{% trans "Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:" %}</p>
+        <h4 class="font-medium">{% trans "1. Uso da Plataforma" %}</h4>
+        <p>{% trans "O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários." %}</p>
+        <h4 class="font-medium">{% trans "2. Privacidade" %}</h4>
+        <p>{% trans "Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade." %}</p>
+        <h4 class="font-medium">{% trans "3. Conteúdo" %}</h4>
+        <p>{% trans "Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros." %}</p>
+        <h4 class="font-medium">{% trans "4. Segurança" %}</h4>
+        <p>{% trans "Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado." %}</p>
       </div>
 
       <div class="flex items-start gap-2">
         <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="mt-1 rounded border-neutral-300 text-primary-600 focus:ring-primary-500" required>
-        <label for="aceitar_termos" class="text-sm text-neutral-700">Eu li e concordo com os <a href="/termos/" class="text-primary-600 hover:text-primary-700" target="_blank">Termos de Uso</a> e <a href="/privacidade/" class="text-primary-600 hover:text-primary-700" target="_blank">Política de Privacidade</a></label>
+        <label for="aceitar_termos" class="text-sm text-neutral-700">{% blocktrans trimmed %}Eu li e concordo com os <a href="/termos/" class="text-primary-600 hover:text-primary-700" target="_blank">Termos de Uso</a> e <a href="/privacidade/" class="text-primary-600 hover:text-primary-700" target="_blank">Política de Privacidade</a>{% endblocktrans %}</label>
       </div>
 
       <div class="flex items-start gap-2">
         <input type="checkbox" id="newsletter" name="newsletter" class="mt-1 rounded border-neutral-300 text-primary-600 focus:ring-primary-500">
-        <label for="newsletter" class="text-sm text-neutral-700">Quero receber atualizações e novidades do HubX</label>
+        <label for="newsletter" class="text-sm text-neutral-700">{% trans "Quero receber atualizações e novidades do HubX" %}</label>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:foto' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">Voltar</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">Finalizar Cadastro</button>
+        <a href="{% url 'accounts:foto' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Finalizar Cadastro" %}</button>
       </div>
     </form>
   </div>
