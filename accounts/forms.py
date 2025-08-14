@@ -8,6 +8,8 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from tokens.models import TOTPDevice
+
 from .models import AccountToken, UserMedia, cpf_validator
 from .tasks import send_confirmation_email
 
@@ -250,7 +252,7 @@ class EmailLoginForm(forms.Form):
         if not user.check_password(password):
             authenticate(self.request, username=email, password=password)
             raise forms.ValidationError("Credenciais inválidas.")
-        if user.two_factor_enabled:
+        if user.two_factor_enabled and TOTPDevice.objects.filter(usuario=user).exists():
             if not totp:
                 raise forms.ValidationError("Código de verificação obrigatório.")
             if not pyotp.TOTP(user.two_factor_secret).verify(totp):

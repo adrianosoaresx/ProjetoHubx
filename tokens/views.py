@@ -24,7 +24,7 @@ from .forms import (
     ValidarTokenConviteForm,
 )
 from accounts.models import SecurityEvent
-from .models import TokenAcesso
+from .models import TokenAcesso, TOTPDevice
 
 User = get_user_model()
 
@@ -178,6 +178,15 @@ class Ativar2FAView(LoginRequiredMixin, View):
         if form.is_valid():
             user.two_factor_enabled = True
             user.save(update_fields=["two_factor_enabled"])
+            TOTPDevice.all_objects.update_or_create(
+                usuario=user,
+                defaults={
+                    "secret": user.two_factor_secret,
+                    "confirmado": True,
+                    "deleted": False,
+                    "deleted_at": None,
+                },
+            )
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="2fa_habilitado",
@@ -204,6 +213,7 @@ class Desativar2FAView(LoginRequiredMixin, View):
         user.two_factor_enabled = False
         user.two_factor_secret = None
         user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        TOTPDevice.objects.filter(usuario=user).delete()
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_desabilitado",

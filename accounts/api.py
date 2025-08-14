@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import AccountToken, SecurityEvent
+from tokens.models import TOTPDevice
 from .serializers import UserSerializer
 from .tasks import send_confirmation_email, send_password_reset_email
 
@@ -116,6 +117,15 @@ class AccountViewSet(viewsets.GenericViewSet):
             return Response({"detail": _("Código inválido.")}, status=400)
         user.two_factor_enabled = True
         user.save(update_fields=["two_factor_enabled"])
+        TOTPDevice.all_objects.update_or_create(
+            usuario=user,
+            defaults={
+                "secret": user.two_factor_secret,
+                "confirmado": True,
+                "deleted": False,
+                "deleted_at": None,
+            },
+        )
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_habilitado",
@@ -129,6 +139,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.two_factor_enabled = False
         user.two_factor_secret = None
         user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
+        TOTPDevice.objects.filter(usuario=user).delete()
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_desabilitado",

@@ -3,6 +3,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from tokens.models import TOTPDevice
+
 User = get_user_model()
 
 
@@ -24,13 +26,14 @@ def test_enable_2fa_flow(client):
 @pytest.mark.django_db
 def test_login_requires_totp_when_enabled(client):
     secret = pyotp.random_base32()
-    User.objects.create_user(
+    user = User.objects.create_user(
         email="b@b.com",
         username="b",
         password="Strong!123",
         two_factor_enabled=True,
         two_factor_secret=secret,
     )
+    TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     url = reverse("accounts:login")
     resp = client.post(url, {"email": "b@b.com", "password": "Strong!123"})
     assert "Código de verificação obrigatório" in resp.content.decode()
@@ -42,9 +45,10 @@ def test_login_requires_totp_when_enabled(client):
 @pytest.mark.django_db
 def test_check_2fa_endpoint(client):
     secret = pyotp.random_base32()
-    User.objects.create_user(
+    user = User.objects.create_user(
         email="c@c.com", username="c", password="Strong!123", two_factor_enabled=True, two_factor_secret=secret
     )
+    TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     url = reverse("accounts:check_2fa") + "?email=c@c.com"
     resp = client.get(url)
     assert resp.json()["enabled"] is True
@@ -62,6 +66,7 @@ def test_disable_2fa_flow(client):
         two_factor_enabled=True,
         two_factor_secret=secret,
     )
+    TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     client.force_login(user)
     code = pyotp.TOTP(secret).now()
     resp = client.post(reverse("accounts:disable_2fa"), {"code": code})
