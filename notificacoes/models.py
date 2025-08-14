@@ -22,13 +22,12 @@ class NotificationStatus(models.TextChoices):
     LIDA = "lida", _("Lida")
 
 
-class NotificationTemplate(TimeStampedModel):
+class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
     assunto: models.CharField = models.CharField(max_length=200, verbose_name=_("Assunto"))
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
-    ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
 
     class Meta:
         verbose_name = _("Template de Notificação")

@@ -128,7 +128,7 @@ def historico_notificacoes(request):
 def delete_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
     if NotificationLog.objects.filter(template=template).exists():
-        messages.error(request, _("Template em uso; desative-o."))
+        messages.error(request, _("Template em uso; não é possível removê-lo."))
     else:
         template.delete()
         messages.success(request, _("Template excluído com sucesso."))
@@ -158,8 +158,8 @@ def metrics_dashboard(request):
     context = {
         "total_por_canal": total_por_canal,
         "falhas_por_canal": falhas_por_canal,
-        "templates_ativos": NotificationTemplate.objects.filter(ativo=True).count(),
-        "templates_inativos": NotificationTemplate.objects.filter(ativo=False).count(),
+        "templates_ativos": NotificationTemplate.objects.count(),
+        "templates_inativos": NotificationTemplate.all_objects.filter(deleted=True).count(),
     }
     logger.info("metrics_view", extra={"user": request.user.id})
     return render(request, "notificacoes/metrics.html", context)

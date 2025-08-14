@@ -9,22 +9,21 @@ pytestmark = pytest.mark.django_db
 
 
 def test_atualizar_templates_total_atualiza_gauge() -> None:
-    before = NotificationTemplate.objects.filter(ativo=True).count()
+    before = NotificationTemplate.objects.count()
 
     NotificationTemplate.objects.create(
         codigo="active",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
-        ativo=True,
     )
-    NotificationTemplate.objects.create(
+    inactive = NotificationTemplate.objects.create(
         codigo="inactive",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
-        ativo=False,
     )
+    inactive.delete()
 
     metrics.templates_total.set(0)
     app_config = apps.get_app_config("notificacoes")

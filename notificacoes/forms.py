@@ -8,7 +8,7 @@ from .models import NotificationTemplate
 class NotificationTemplateForm(forms.ModelForm):
     class Meta:
         model = NotificationTemplate
-        fields = ["codigo", "assunto", "corpo", "canal", "ativo"]
+        fields = ["codigo", "assunto", "corpo", "canal"]
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
