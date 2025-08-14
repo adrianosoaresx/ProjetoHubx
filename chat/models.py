@@ -168,13 +168,13 @@ class ChatMessage(CoreTimeStampedModel, SoftDeleteModel):
         )
 
 
-class ChatMessageReaction(CoreTimeStampedModel):
+class ChatMessageReaction(CoreTimeStampedModel, SoftDeleteModel):
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="reaction_details")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="chat_reactions")
     emoji = models.CharField(max_length=32)
 
     class Meta:
-        unique_together = ("message", "user", "emoji")
+        unique_together = ("message", "user", "emoji", "deleted")
         verbose_name = "Reação"
         verbose_name_plural = "Reações"
 
