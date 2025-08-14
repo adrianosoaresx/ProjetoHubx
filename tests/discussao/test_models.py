@@ -58,8 +58,8 @@ def test_resposta_editar_e_reply(topico, admin_user):
 
 
 def test_timestamp_and_softdelete(topico):
-    assert topico.created is not None
-    assert topico.modified is not None
+    assert topico.created_at is not None
+    assert topico.updated_at is not None
     topico.delete()
     assert not TopicoDiscussao.objects.filter(pk=topico.pk).exists()
     assert TopicoDiscussao.all_objects.filter(pk=topico.pk).exists()

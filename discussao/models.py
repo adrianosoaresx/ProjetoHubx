@@ -8,9 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
-from model_utils.models import TimeStampedModel
 
-from core.models import SoftDeleteManager, SoftDeleteModel
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
 
 class SearchVectorField(models.TextField):
@@ -138,7 +137,7 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
             )
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
         indexes = [models.Index(fields=["slug", "categoria"])]
         verbose_name = "Tópico de Discussão"
         verbose_name_plural = "Tópicos de Discussão"
@@ -186,7 +185,7 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     all_objects = models.Manager()
 
     class Meta:
-        ordering = ["created"]
+        ordering = ["created_at"]
         verbose_name = "Resposta de Discussão"
         verbose_name_plural = "Respostas de Discussão"
 

@@ -149,7 +149,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
             .prefetch_related("respostas")
             .annotate(
                 num_comentarios=Count("respostas"),
-                last_activity=Max("respostas__created"),
+                last_activity=Max("respostas__created_at"),
             )
         )
         tags_param = self.request.GET.get("tags")
@@ -180,7 +180,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
         else:
-            qs = qs.order_by("-created")
+            qs = qs.order_by("-created_at")
         return qs
 
     def get_context_data(self, **kwargs):
@@ -279,7 +279,7 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         self.object = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
         if request.user != self.object.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return HttpResponseForbidden()
-        if timezone.now() - self.object.created > timedelta(minutes=15) and request.user.user_type not in {
+        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
             UserType.ADMIN,
             UserType.ROOT,
         }:
@@ -380,7 +380,7 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
             UserType.ROOT,
         }:
             return HttpResponseForbidden()
-        if timezone.now() - self.object.created > timedelta(minutes=15) and request.user.user_type not in {
+        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
             UserType.ADMIN,
             UserType.ROOT,
         }:

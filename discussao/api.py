@@ -84,7 +84,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
         cache.clear()
 
     def _can_edit(self, obj: TopicoDiscussao) -> bool:
-        if timezone.now() - obj.created > timedelta(minutes=15):
+        if timezone.now() - obj.created_at > timedelta(minutes=15):
             return self.request.user.get_tipo_usuario in {
                 UserType.ADMIN.value,
                 UserType.ROOT.value,
@@ -189,7 +189,7 @@ class RespostaViewSet(viewsets.ModelViewSet):
         cache.clear()
 
     def _can_edit(self, obj: RespostaDiscussao) -> bool:
-        if timezone.now() - obj.created > timedelta(minutes=15):
+        if timezone.now() - obj.created_at > timedelta(minutes=15):
             return self.request.user.get_tipo_usuario in {
                 UserType.ADMIN.value,
                 UserType.ROOT.value,

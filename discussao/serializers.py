@@ -27,10 +27,10 @@ class RespostaDiscussaoSerializer(serializers.ModelSerializer):
             "editado",
             "editado_em",
             "motivo_edicao",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         ]
-        read_only_fields = ["autor", "editado", "created", "modified", "editado_em"]
+        read_only_fields = ["autor", "editado", "created_at", "updated_at", "editado_em"]
 
 
 class TopicoDiscussaoSerializer(serializers.ModelSerializer):
@@ -54,8 +54,8 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
             "resolvido",
             "melhor_resposta",
             "numero_visualizacoes",
-            "created",
-            "modified",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["autor", "numero_visualizacoes", "slug", "resolvido"]
 
