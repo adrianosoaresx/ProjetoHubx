@@ -43,7 +43,7 @@
         </div>
       {% elif post.image %}
         <div>
-          <img src="{{ post.image.url }}" class="w-full rounded" alt="">
+          <img src="{{ post.image.url }}" class="w-full rounded" alt="{% trans 'mídia do post' %}">
         </div>
       {% endif %}
       <div class="flex items-center justify-between text-sm text-neutral-600">

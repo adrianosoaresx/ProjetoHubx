@@ -46,7 +46,7 @@
           </a>
         </div>
       {% elif post.image %}
-        <img src="{{ post.image.url }}" alt="" class="max-w-xs rounded-xl shadow-sm mt-2">
+        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl shadow-sm mt-2">
       {% endif %}
     </div>
 

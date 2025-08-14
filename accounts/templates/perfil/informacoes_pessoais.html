@@ -78,13 +78,13 @@
         <label for="fone" class="block text-sm font-medium text-gray-700">{% trans "Telefone" %}</label>
         <input type="tel" id="fone" name="fone"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
-               value="{{ user.fone }}" placeholder="(00) 00000-0000">
+               value="{{ user.fone }}" placeholder="{% trans '(00) 00000-0000' %}">
       </div>
       <div>
         <label for="whatsapp" class="block text-sm font-medium text-gray-700">{% trans "WhatsApp" %}</label>
         <input type="tel" id="whatsapp" name="whatsapp"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
-               value="{{ user.whatsapp }}" placeholder="(00) 00000-0000">
+               value="{{ user.whatsapp }}" placeholder="{% trans '(00) 00000-0000' %}">
       </div>
     </div>
 
@@ -116,7 +116,7 @@
         <label for="cep" class="block text-sm font-medium text-gray-700">{% trans "CEP" %}</label>
         <input type="text" id="cep" name="cep"
                class="mt-1 block w-full border rounded-lg p-2 text-sm"
-               value="{{ user.cep }}" placeholder="00000-000">
+               value="{{ user.cep }}" placeholder="{% trans '00000-000' %}">
       </div>
     </div>
 

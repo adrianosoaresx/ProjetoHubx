@@ -28,7 +28,7 @@
               <a href="{% url 'chat:conversation_detail' conv.id %}" class="flex items-center justify-between py-2 px-4 hover:bg-gray-100 focus:outline-none focus:ring">
                 <div class="flex items-center gap-3">
                   {% if conv.imagem %}
-                    <img src="{{ conv.imagem.url }}" alt="" class="w-8 h-8 rounded-full" />
+                    <img src="{{ conv.imagem.url }}" alt="{{ conv.titulo|default:conv.id }}" class="w-8 h-8 rounded-full" />
                   {% endif %}
                   <div>
                     <p class="font-medium">{{ conv.titulo|default:conv.id }}</p>

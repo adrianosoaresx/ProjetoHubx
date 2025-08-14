@@ -844,3 +844,14 @@ msgstr ""
 #: templates/register/usuario.html:30
 msgid "Use apenas letras, números e underscore (_)"
 msgstr ""
+#: templates/register/cpf.html:28
+msgid "000.000.000-00"
+msgstr "000.000.000-00"
+
+#: templates/perfil/informacoes_pessoais.html:81 templates/perfil/informacoes_pessoais.html:87
+msgid "(00) 00000-0000"
+msgstr "(000) 000-0000"
+
+#: templates/perfil/informacoes_pessoais.html:119
+msgid "00000-000"
+msgstr "00000"

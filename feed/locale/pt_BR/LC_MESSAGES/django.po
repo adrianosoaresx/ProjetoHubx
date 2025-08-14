@@ -59,7 +59,7 @@ msgstr ""
 
 #: templates/feed/_post_list.html:42
 msgid "mídia do post"
-msgstr ""
+msgstr "mídia do post"
 
 #: templates/feed/_post_list.html:61
 msgid "Nenhuma postagem ainda"
