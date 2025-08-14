@@ -4,7 +4,6 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 
 from core.models import (
     SoftDeleteManager,
@@ -94,7 +93,7 @@ class ChatParticipant(CoreTimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Participantes"
 
 
-class ChatMessage(TimeStampedModel, SoftDeleteModel):
+class ChatMessage(CoreTimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     channel = models.ForeignKey(
         ChatChannel,
@@ -142,7 +141,7 @@ class ChatMessage(TimeStampedModel, SoftDeleteModel):
         return f"{self.remetente} - {self.channel_id}"
 
     class Meta:
-        ordering = ["created"]
+        ordering = ["created_at"]
         verbose_name = "Mensagem"
         verbose_name_plural = "Mensagens"
 
@@ -202,7 +201,7 @@ class ChatNotification(CoreTimeStampedModel):
         verbose_name_plural = "Notificações"
 
 
-class ChatMessageFlag(TimeStampedModel):
+class ChatMessageFlag(CoreTimeStampedModel):
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name="flags")
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -225,7 +224,7 @@ class ChatFavorite(CoreTimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Favoritos"
 
 
-class ChatAttachment(TimeStampedModel, SoftDeleteModel):
+class ChatAttachment(CoreTimeStampedModel, SoftDeleteModel):
     """Metadados de arquivos enviados no chat."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -263,7 +262,7 @@ class RelatorioChatExport(CoreTimeStampedModel):
         verbose_name_plural = "Relatórios de Exportação"
 
 
-class ChatModerationLog(TimeStampedModel):
+class ChatModerationLog(CoreTimeStampedModel):
     ACTION_CHOICES = [
         ("approve", "Aprovar"),
         ("remove", "Remover"),
@@ -314,7 +313,7 @@ class ResumoChat(CoreTimeStampedModel):
         verbose_name_plural = "Resumos de Chat"
 
 
-class UserChatPreference(TimeStampedModel):
+class UserChatPreference(CoreTimeStampedModel):
     """Preferências de uso do chat por usuário."""
 
     THEME_CHOICES = [("claro", "Claro"), ("escuro", "Escuro")]

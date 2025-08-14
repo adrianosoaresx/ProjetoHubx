@@ -158,7 +158,7 @@ def sinalizar_mensagem(mensagem: ChatMessage, user: User) -> int:
     total = mensagem.flags.count()
     if total >= 3 and not mensagem.hidden_at:
         mensagem.hidden_at = timezone.now()
-        mensagem.save(update_fields=["hidden_at", "modified"])
+        mensagem.save(update_fields=["hidden_at", "updated_at"])
         chat_mensagens_ocultadas_total.inc()
     return total
 

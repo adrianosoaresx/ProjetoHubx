@@ -7,7 +7,7 @@ Celery e Django Channels.
 ## Entidades
 
 Todos os modelos utilizam `TimeStampedModel`, expondo os campos
-`created` e `modified`. Quando necessário, a exclusão lógica é feita
+`created_at` e `updated_at`. Quando necessário, a exclusão lógica é feita
 com `SoftDeleteModel`, que adiciona `deleted` e `deleted_at`. Registros
 removidos podem ser acessados via `Model.all_objects` e restaurados
 definindo `deleted=False` e `deleted_at=None`.
@@ -96,7 +96,7 @@ reações, pins e moderação para todos os conectados.
 ## Exportação de histórico
 
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,
-`tipo`, `conteudo` e `created`. No formato CSV, o cabeçalho segue a
+`tipo`, `conteudo` e `created_at`. No formato CSV, o cabeçalho segue a
 mesma estrutura. Mensagens ocultas por moderação são ignoradas.
 Mensagens removidas pela política de retenção não são incluídas nas exportações.
 

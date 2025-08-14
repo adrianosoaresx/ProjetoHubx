@@ -379,25 +379,25 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         before = request.query_params.get("before")
         inicio = request.query_params.get("inicio")
         fim = request.query_params.get("fim")
-        qs = channel.messages.select_related("remetente").order_by("-created")
+        qs = channel.messages.select_related("remetente").order_by("-created_at")
         if before:
             dt = parse_datetime(before)
             if dt:
-                qs = qs.filter(created__lt=dt)
+                qs = qs.filter(created_at__lt=dt)
             else:
                 try:
                     ref_msg = channel.messages.get(pk=before)
-                    qs = qs.filter(created__lt=ref_msg.created)
+                    qs = qs.filter(created_at__lt=ref_msg.created_at)
                 except ChatMessage.DoesNotExist:
                     pass
         if inicio and not before:
             dt = parse_datetime(inicio)
             if dt:
-                qs = qs.filter(created__gte=dt)
+                qs = qs.filter(created_at__gte=dt)
         if fim and not before:
             dt = parse_datetime(fim)
             if dt:
-                qs = qs.filter(created__lte=dt)
+                qs = qs.filter(created_at__lte=dt)
         limit = ChatMessagePagination.page_size + 1
         items = list(qs[:limit])
         has_more = len(items) == limit
@@ -464,7 +464,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             ChatMessage.objects.filter(channel_id=channel_id)
             .select_related("remetente", "reply_to", "reply_to__remetente")
             .prefetch_related("lido_por")
-            .order_by("created")
+            .order_by("created_at")
         )
 
     def perform_create(self, serializer: ChatMessageSerializer) -> None:
@@ -478,11 +478,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         if desde:
             dt = parse_datetime(desde)
             if dt:
-                queryset = queryset.filter(created__gte=dt)
+                queryset = queryset.filter(created_at__gte=dt)
         if ate:
             dt = parse_datetime(ate)
             if dt:
-                queryset = queryset.filter(created__lte=dt)
+                queryset = queryset.filter(created_at__lte=dt)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -512,11 +512,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         if desde:
             dt = parse_datetime(desde)
             if dt:
-                queryset = queryset.filter(created__gte=dt)
+                queryset = queryset.filter(created_at__gte=dt)
         if ate:
             dt = parse_datetime(ate)
             if dt:
-                queryset = queryset.filter(created__lte=dt)
+                queryset = queryset.filter(created_at__lte=dt)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -644,7 +644,7 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                     "tipo": msg.tipo,
                     "conteudo": msg.conteudo,
                     "arquivo_url": msg.arquivo.url if msg.arquivo else None,
-                    "created": msg.created.isoformat(),
+                    "created_at": msg.created_at.isoformat(),
                     "reactions": counts,
                     "actor": request.user.username,
                     "user_reactions": user_emojis,
@@ -748,7 +748,7 @@ class ModeracaoViewSet(viewsets.ViewSet):
                 "conteudo": m.conteudo,
                 "remetente": m.remetente.username,
                 "canal": str(m.channel_id),
-                "created": m.created.isoformat(),
+                "created_at": m.created_at.isoformat(),
                 "flags": m.flags_count,
                 "hidden": bool(m.hidden_at),
             }
@@ -761,7 +761,7 @@ class ModeracaoViewSet(viewsets.ViewSet):
         msg = get_object_or_404(ChatMessage, pk=pk)
         msg.hidden_at = None
         msg.flags.all().delete()
-        msg.save(update_fields=["hidden_at", "modified"])
+        msg.save(update_fields=["hidden_at", "updated_at"])
         ChatModerationLog.objects.create(message=msg, action="approve", moderator=request.user)
         return Response({"status": "approved"})
 
@@ -793,14 +793,14 @@ class ChatMetricsAPIView(APIView):
         if inicio:
             dt = parse_datetime(inicio)
             if dt:
-                msgs = msgs.filter(created__gte=dt)
+                msgs = msgs.filter(created_at__gte=dt)
         if fim:
             dt = parse_datetime(fim)
             if dt:
-                msgs = msgs.filter(created__lte=dt)
+                msgs = msgs.filter(created_at__lte=dt)
 
         msg_agg = (
-            msgs.annotate(p=trunc("created"))
+            msgs.annotate(p=trunc("created_at"))
             .values("p")
             .annotate(
                 total_mensagens=models.Count("id"),
@@ -816,7 +816,7 @@ class ChatMetricsAPIView(APIView):
 
         att_qs = ChatAttachment.objects.filter(mensagem__in=msgs)
         att_agg = (
-            att_qs.annotate(p=trunc("created"))
+            att_qs.annotate(p=trunc("created_at"))
             .values("p")
             .annotate(
                 total_anexos=models.Count("id"),
