@@ -1,7 +1,7 @@
 # Agenda
 
-Todos os modelos deste app herdam de `django_extensions.db.models.TimeStampedModel`,
-disponibilizando os campos `created` e `modified` para registro de criação e
+Todos os modelos deste app herdam de `core.models.TimeStampedModel`,
+disponibilizando os campos `created_at` e `updated_at` para registro de criação e
 atualização.
 
 Os modelos `Evento` e `InscricaoEvento` também utilizam `core.models.SoftDeleteModel`

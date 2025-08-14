@@ -19,10 +19,9 @@ from django.core.validators import (
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
-from django_extensions.db.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
 
-from core.models import SoftDeleteManager, SoftDeleteModel
+from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 from chat.models import ChatMessage
@@ -108,13 +107,13 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
                     or 0
                 )
                 self.posicao_espera = ultimo + 1
-                self.save(update_fields=["status", "posicao_espera", "modified"])
+                self.save(update_fields=["status", "posicao_espera", "updated_at"])
                 return
         self.status = "confirmada"
         self.data_confirmacao = timezone.now()
         if not self.qrcode_url:
             self.gerar_qrcode()
-        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "modified"])
+        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "updated_at"])
         EventoLog.objects.create(
             evento=self.evento,
             usuario=self.user,
@@ -124,7 +123,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     def cancelar_inscricao(self) -> None:
         self.status = "cancelada"
         self.data_confirmacao = timezone.now()
-        self.save(update_fields=["status", "data_confirmacao", "modified"])
+        self.save(update_fields=["status", "data_confirmacao", "updated_at"])
         EventoLog.objects.create(
             evento=self.evento,
             usuario=self.user,
@@ -135,7 +134,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         if self.check_in_realizado_em:
             return
         self.check_in_realizado_em = timezone.now()
-        self.save(update_fields=["check_in_realizado_em", "modified"])
+        self.save(update_fields=["check_in_realizado_em", "updated_at"])
         EventoLog.objects.create(
             evento=self.evento,
             usuario=self.user,
@@ -144,7 +143,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 
     def gerar_qrcode(self) -> None:
         """Gera um QRCode único e salva no armazenamento padrão."""
-        data = f"inscricao:{self.pk}:{self.created.timestamp()}"
+        data = f"inscricao:{self.pk}:{self.created_at.timestamp()}"
         img = qrcode.make(data)
         buffer = BytesIO()
         img.save(buffer, format="PNG")
@@ -465,7 +464,7 @@ class TarefaLog(TimeStampedModel, SoftDeleteModel):
     all_objects = models.Manager()
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]
         verbose_name = "Log de Tarefa"
         verbose_name_plural = "Logs de Tarefa"
 
@@ -485,4 +484,4 @@ class EventoLog(TimeStampedModel, SoftDeleteModel):
     all_objects = models.Manager()
 
     class Meta:
-        ordering = ["-created"]
+        ordering = ["-created_at"]

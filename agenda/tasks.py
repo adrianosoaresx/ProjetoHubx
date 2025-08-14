@@ -23,7 +23,7 @@ def promover_lista_espera(evento_id: int) -> None:
         ins.status = "confirmada"
         ins.posicao_espera = None
         ins.data_confirmacao = timezone.now()
-        ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "modified"])
+        ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "updated_at"])
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
