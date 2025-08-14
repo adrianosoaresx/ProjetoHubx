@@ -15,4 +15,6 @@ def remover_logs_antigos() -> None:
 @shared_task
 def revogar_tokens_expirados() -> None:
     now = timezone.now()
-    ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True).update(revoked_at=now)
+    ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True).update(
+        revoked_at=now, deleted=True, deleted_at=now
+    )
