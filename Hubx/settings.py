@@ -285,6 +285,13 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
+CELERY_BEAT_SCHEDULE |= {
+    "accounts.purge_soft_deleted_daily": {
+        "task": "accounts.tasks.purge_soft_deleted",
+        "schedule": crontab(minute=0, hour=3),
+    }
+}
+
 # Notificações
 # Configurações de notificação – usar valores de ambiente quando definidos,
 # senão definir um valor fictício para evitar ImproperlyConfigured

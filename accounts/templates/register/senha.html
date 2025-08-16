@@ -25,14 +25,16 @@
       {% csrf_token %}
       <div>
         <label for="senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Senha" %}</label>
-        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite sua senha' %}" required autofocus>
+        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite sua senha' %}" required autofocus aria-describedby="senha_help senha_validation">
         <div class="text-sm text-red-600" id="senha_validation"></div>
+        <small id="senha_help" class="text-sm text-neutral-500">{% trans "Use ao menos 8 caracteres com letras e números" %}</small>
       </div>
 
       <div>
         <label for="confirmar_senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Confirmar Senha" %}</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Confirme sua senha' %}" required>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Confirme sua senha' %}" required aria-describedby="confirmar_senha_help confirmar_senha_validation">
         <div class="text-sm text-red-600" id="confirmar_senha_validation"></div>
+        <small id="confirmar_senha_help" class="text-sm text-neutral-500">{% trans "Repita a senha para confirmação" %}</small>
       </div>
 
       <div class="flex gap-4">

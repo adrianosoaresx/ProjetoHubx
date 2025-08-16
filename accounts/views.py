@@ -357,6 +357,11 @@ def password_reset_confirm(request, code: str):
         tipo=AccountToken.Tipo.PASSWORD_RESET,
     )
     if token.expires_at < timezone.now() or token.used_at:
+        SecurityEvent.objects.create(
+            usuario=token.usuario,
+            evento="senha_redefinicao_falha",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         messages.error(request, _("Token inv\u00e1lido ou expirado."))
         return redirect("accounts:password_reset")
 
@@ -370,6 +375,11 @@ def password_reset_confirm(request, code: str):
             user.save(update_fields=["failed_login_attempts", "lock_expires_at"])
             token.used_at = timezone.now()
             token.save(update_fields=["used_at"])
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="senha_redefinida",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             messages.success(request, _("Senha redefinida com sucesso."))
             return redirect("accounts:login")
     else:
@@ -393,6 +403,11 @@ def confirmar_email(request, token: str):
         return render(request, "accounts/email_confirm.html", {"status": "erro"})
 
     if token_obj.expires_at < timezone.now() or token_obj.used_at:
+        SecurityEvent.objects.create(
+            usuario=token_obj.usuario,
+            evento="email_confirmacao_falha",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return render(request, "accounts/email_confirm.html", {"status": "erro"})
 
     with transaction.atomic():
@@ -557,6 +572,8 @@ def termos(request):
                 password=pwd_hash,
                 cpf=cpf_val,
                 user_type=tipo_mapping[token_obj.tipo_destino],
+                is_active=False,
+                email_confirmed=False,
             )
             primeiro_nucleo = token_obj.nucleos.first()
             if primeiro_nucleo:
@@ -571,6 +588,14 @@ def termos(request):
 
             token_obj.estado = TokenAcesso.Estado.USADO
             token_obj.save(update_fields=["estado"])
+
+            token = AccountToken.objects.create(
+                usuario=user,
+                tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+                expires_at=timezone.now() + timezone.timedelta(hours=24),
+                ip_gerado=request.META.get("REMOTE_ADDR"),
+            )
+            send_confirmation_email.delay(token.id)
 
             login(request, user)
             request.session["termos"] = True
