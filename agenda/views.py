@@ -138,7 +138,7 @@ def lista_eventos(request, dia_iso):
     return render(
         request,
         "agenda/_lista_eventos_dia.html",
-        {"eventos": eventos, "dia_iso": dia_iso},
+        {"eventos": eventos, "dia": dia, "dia_iso": dia_iso},
     )
 
 
