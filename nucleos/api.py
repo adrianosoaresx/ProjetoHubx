@@ -546,7 +546,9 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def membros_ativos(self, request, pk: str | None = None):
         nucleo = self.get_object()
-        qs = nucleo.participacoes.select_related("user").filter(status="ativo")
+        qs = nucleo.participacoes.select_related("user").filter(
+            status="ativo", status_suspensao=False
+        )
         page = self.paginate_queryset(qs)
         data = [
             {

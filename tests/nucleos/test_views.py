@@ -58,7 +58,7 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
     client.force_login(admin_user)
     resp = client.post(
         reverse("nucleos:create"),
-        data={"nome": "N1", "slug": "n1", "descricao": "d"},
+        data={"nome": "N1", "slug": "n1", "descricao": "d", "ativo": True},
     )
     assert resp.status_code == 302
     nucleo = Nucleo.objects.get(nome="N1")

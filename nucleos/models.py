@@ -64,6 +64,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
+    ativo = models.BooleanField(default=True)
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
@@ -79,7 +80,9 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     @property
     def membros(self):
         return User.objects.filter(
-            participacoes__nucleo=self, participacoes__status="ativo"
+            participacoes__nucleo=self,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
         )
 
     @property

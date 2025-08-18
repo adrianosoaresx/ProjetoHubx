@@ -227,11 +227,14 @@ def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_mo
 def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N9", slug="n9", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo", papel="coordenador")
-    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    ParticipacaoNucleo.objects.create(
+        user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True
+    )
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-membros-ativos", args=[nucleo.pk])
     resp = api_client.get(url)
     assert resp.status_code == 200
+    assert len(resp.data["results"]) == 1
     assert resp.data["results"][0]["papel"] == "coordenador"
 
 
@@ -248,6 +251,9 @@ def test_financeiro_signal(api_client, admin_user, outro_user, organizacao, monk
 def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user):
     nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")
+    ParticipacaoNucleo.objects.create(
+        user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True
+    )
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
     resp = api_client.get(url)
@@ -256,6 +262,7 @@ def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user)
     assert resp.data["total_membros"] == 1
     resp2 = api_client.get(url)
     assert resp2["X-Cache"] == "HIT"
+
 
 
 def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
@@ -287,3 +294,13 @@ def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
     resp = api_client.get(url)
     assert resp.status_code == 200
     assert resp.data["results"][0]["id"] == str(nucleo.id)
+
+def test_nucleo_ativo_api(api_client, admin_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-detail", args=[nucleo.pk])
+    resp = api_client.patch(url, {"ativo": False})
+    assert resp.status_code == 200 and resp.data["ativo"] is False
+    nucleo.refresh_from_db()
+    assert nucleo.ativo is False
+

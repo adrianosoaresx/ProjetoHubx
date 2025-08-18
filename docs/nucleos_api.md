@@ -2,6 +2,8 @@
 
 Endpoints introduzidos na Sprint 2 para convites, suspensão de membros e posts no feed.
 
+O modelo `Nucleo` possui o campo booleano `ativo` (padrão `true`), permitindo ativar ou desativar núcleos via API ou interface.
+
 ## Convites
 - `POST /api/nucleos/{id}/convites/` — gera um convite para o núcleo, respeitando o limite diário por usuário.
 - `DELETE /api/nucleos/{id}/convites/{convite_id}/` — revoga o convite informado, marcando-o como expirado.

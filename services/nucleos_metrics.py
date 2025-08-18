@@ -13,7 +13,10 @@ def get_total_membros(nucleo_id: str) -> int:
     """Retorna o número total de membros ativos de um núcleo."""
     return (
         ParticipacaoNucleo.objects.filter(
-            nucleo_id=nucleo_id, status="ativo", deleted=False
+            nucleo_id=nucleo_id,
+            status="ativo",
+            status_suspensao=False,
+            deleted=False,
         ).count()
     )
 

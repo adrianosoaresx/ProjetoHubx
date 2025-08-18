@@ -58,6 +58,7 @@ def test_create_with_required_fields(media_root, organizacao):
     assert nucleo.cover.name.startswith("nucleos/capas/")
     assert os.path.exists(nucleo.avatar.path)
     assert os.path.exists(nucleo.cover.path)
+    assert nucleo.ativo is True
 
 
 def test_participacao_unique_constraint(organizacao, usuario):
@@ -74,6 +75,12 @@ def test_membros_property(organizacao, usuario):
         username="u2", email="u2@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
     )
     ParticipacaoNucleo.objects.create(user=u2, nucleo=nucleo, status="ativo")
+    u3 = get_user_model().objects.create_user(
+        username="u3", email="u3@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
+    )
+    ParticipacaoNucleo.objects.create(
+        user=u3, nucleo=nucleo, status="ativo", status_suspensao=True
+    )
     assert list(nucleo.membros) == [u2]
 
 
