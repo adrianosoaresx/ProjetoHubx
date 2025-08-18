@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from django.db.models import Q
-from django.utils import timezone
-
 from accounts.models import UserType
+
 from .models import (
     BriefingEvento,
     Evento,
@@ -16,13 +16,17 @@ from .models import (
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
+    Tarefa,
+    TarefaLog,
 )
+from .permissions import IsAdminOrCoordenadorOrReadOnly
 from .serializers import (
     BriefingEventoSerializer,
     EventoSerializer,
     InscricaoEventoSerializer,
     MaterialDivulgacaoEventoSerializer,
     ParceriaEventoSerializer,
+    TarefaSerializer,
 )
 from .tasks import notificar_briefing_status
 
@@ -48,7 +52,7 @@ class OrganizacaoFilterMixin:
 
 class EventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = EventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
     queryset = Evento.objects.select_related("organizacao", "nucleo").all()
 
@@ -101,9 +105,36 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(inscricao).data, status=status.HTTP_200_OK)
 
 
+class TarefaViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
+    serializer_class = TarefaSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    pagination_class = DefaultPagination
+    queryset = Tarefa.objects.select_related("organizacao", "nucleo").all()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return self.filter_by_organizacao(qs)
+
+    def perform_destroy(self, instance: Tarefa) -> None:
+        TarefaLog.objects.create(
+            tarefa=instance, usuario=self.request.user, acao="tarefa_excluida"
+        )
+        instance.soft_delete()
+
+    @action(detail=True, methods=["post"])
+    def concluir(self, request, pk=None):
+        tarefa = self.get_object()
+        tarefa.status = "concluida"
+        tarefa.save(update_fields=["status", "updated_at"])
+        TarefaLog.objects.create(
+            tarefa=tarefa, usuario=request.user, acao="tarefa_concluida"
+        )
+        return Response(self.get_serializer(tarefa).data)
+
+
 class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = MaterialDivulgacaoEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -120,10 +151,57 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         )
         instance.soft_delete()
 
+    @action(detail=True, methods=["post"])
+    def aprovar(self, request, pk=None):
+        material = self.get_object()
+        material.status = "aprovado"
+        material.avaliado_por = request.user
+        material.avaliado_em = timezone.now()
+        material.motivo_devolucao = ""
+        material.save(
+            update_fields=[
+                "status",
+                "avaliado_por",
+                "avaliado_em",
+                "motivo_devolucao",
+                "updated_at",
+            ]
+        )
+        EventoLog.objects.create(
+            evento=material.evento,
+            usuario=request.user,
+            acao="material_aprovado",
+        )
+        return Response(self.get_serializer(material).data)
+
+    @action(detail=True, methods=["post"])
+    def devolver(self, request, pk=None):
+        material = self.get_object()
+        material.status = "devolvido"
+        material.avaliado_por = request.user
+        material.avaliado_em = timezone.now()
+        material.motivo_devolucao = request.data.get("motivo_devolucao", "")
+        material.save(
+            update_fields=[
+                "status",
+                "avaliado_por",
+                "avaliado_em",
+                "motivo_devolucao",
+                "updated_at",
+            ]
+        )
+        EventoLog.objects.create(
+            evento=material.evento,
+            usuario=request.user,
+            acao="material_devolvido",
+            detalhes={"motivo_devolucao": material.motivo_devolucao},
+        )
+        return Response(self.get_serializer(material).data)
+
 
 class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = ParceriaEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
     queryset = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo").all()
 
@@ -152,12 +230,22 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         parceria.comentario = request.data.get("comentario", "")
         parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
+        EventoLog.objects.create(
+            evento=parceria.evento,
+            usuario=request.user,
+            acao="parceria_avaliada",
+            detalhes={
+                "parceria": parceria.pk,
+                "avaliacao": parceria.avaliacao,
+                "comentario": parceria.comentario,
+            },
+        )
         return Response(self.get_serializer(parceria).data)
 
 
 class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = BriefingEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
 
     def get_queryset(self):

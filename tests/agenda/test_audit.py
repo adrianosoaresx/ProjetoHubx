@@ -4,7 +4,7 @@ from datetime import date, timedelta
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory
 from rest_framework import status
 
 from accounts.models import UserType
@@ -18,6 +18,8 @@ from agenda.models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
+from agenda.serializers import ParceriaEventoSerializer
+from validate_docbr import CNPJ
 
 pytestmark = pytest.mark.django_db
 
@@ -35,6 +37,67 @@ def _admin_user(organizacao):
         is_staff=True,
         nucleo_obj=None,
     )
+
+
+def test_parceria_create_gera_log() -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    empresa = EmpresaFactory(organizacao=org, usuario=user)
+    factory = APIRequestFactory()
+    request = factory.post("/parcerias/")
+    request.user = user
+    serializer = ParceriaEventoSerializer(
+        data={
+            "evento": evento.pk,
+            "empresa": empresa.pk,
+            "cnpj": CNPJ().generate(),
+            "contato": "c",
+            "representante_legal": "r",
+            "data_inicio": date.today(),
+            "data_fim": date.today() + timedelta(days=1),
+            "tipo_parceria": "patrocinio",
+        },
+        context={"request": request},
+    )
+    assert serializer.is_valid(), serializer.errors
+    parceria = serializer.save()
+    assert EventoLog.objects.filter(
+        evento=evento,
+        usuario=user,
+        acao="parceria_criada",
+        detalhes__parceria=parceria.pk,
+        detalhes__empresa=empresa.pk,
+    ).exists()
+
+
+def test_parceria_avaliar_gera_log(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = _admin_user(org)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    empresa = EmpresaFactory(organizacao=org, usuario=user)
+    parceria = ParceriaEvento.objects.create(
+        evento=evento,
+        empresa=empresa,
+        cnpj="12345678000199",
+        contato="c",
+        representante_legal="r",
+        data_inicio=date.today(),
+        data_fim=date.today() + timedelta(days=1),
+        tipo_parceria="patrocinio",
+    )
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:parceria-avaliar", args=[parceria.pk])
+    resp = api_client.post(url, {"avaliacao": 4, "comentario": "Bom"})
+    assert resp.status_code == status.HTTP_200_OK
+    assert EventoLog.objects.filter(
+        evento=evento,
+        usuario=user,
+        acao="parceria_avaliada",
+        detalhes__parceria=parceria.pk,
+        detalhes__avaliacao=4,
+        detalhes__comentario="Bom",
+    ).exists()
 
 
 def test_parceria_delete_gera_log(api_client: APIClient) -> None:
