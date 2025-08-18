@@ -21,6 +21,7 @@ from accounts.models import UserType
 from .models import RespostaDiscussao, Tag, TopicoDiscussao
 from .serializers import RespostaDiscussaoSerializer, TagSerializer, TopicoDiscussaoSerializer
 from .services import marcar_resolucao, responder_topico
+from .services.agenda_bridge import criar_reuniao as criar_reuniao_agenda
 from .tasks import notificar_melhor_resposta, notificar_nova_resposta
 
 
@@ -145,6 +146,17 @@ class TopicoViewSet(viewsets.ModelViewSet):
             topico.save(update_fields=["fechado"])
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="criar-reuniao")
+    def criar_reuniao(self, request, pk=None):
+        topico = self.get_object()
+        criar_reuniao_agenda(
+            topico,
+            request.data.get("data_inicio"),
+            request.data.get("data_fim"),
+            request.data.get("participantes", []),
+        )
+        return Response(status=204)
 
 
 @method_decorator(cache_page(60), name="list")
