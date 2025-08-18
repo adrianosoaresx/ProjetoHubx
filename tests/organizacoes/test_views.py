@@ -65,8 +65,9 @@ def test_list_view_superadmin(superadmin_user, organizacao, faker_ptbr):
         nome="Inativa",
         cnpj=faker_ptbr.cnpj(),
         slug="inativa",
+        inativa=True,
+        inativada_em=timezone.now(),
     )
-    org_inativa.delete()
     Organizacao.objects.create(
         nome="Excluida",
         cnpj=faker_ptbr.cnpj(),
@@ -232,7 +233,7 @@ def test_toggle_active_and_logs(superadmin_user, organizacao):
     resp = superadmin_user.post(url, follow=True)
     assert resp.status_code == 200
     organizacao.refresh_from_db()
-    assert organizacao.deleted is True
+    assert organizacao.inativa is True
     log = organizacao.atividade_logs.first()
     assert log.acao == "inactivated"
 

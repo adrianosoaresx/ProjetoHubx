@@ -77,7 +77,7 @@
                   {% endif %}
                 </div>
                 <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
-                {% if organizacao.deleted %}
+                {% if organizacao.inativa %}
                   <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
                 {% endif %}
               </div>
@@ -96,7 +96,7 @@
               {% if request.user.user_type == 'root' %}
                 <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
                   {% csrf_token %}
-                  {% if organizacao.deleted %}
+                  {% if organizacao.inativa %}
                     <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Reativar' %}">{% trans 'Reativar' %}</button>
                   {% else %}
                     <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Inativar' %}">{% trans 'Inativar' %}</button>
