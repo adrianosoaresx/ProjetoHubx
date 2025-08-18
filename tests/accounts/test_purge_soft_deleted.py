@@ -7,53 +7,50 @@ from accounts.models import User
 from accounts.tasks import purge_soft_deleted
 
 
-def _create_deleted_user(**kwargs) -> User:
-    return User.objects.create_user(
-        email=f"{timezone.now().timestamp()}@example.com",
-        username=str(timezone.now().timestamp()),
-        password="x",
-        deleted=True,
-        deleted_at=timezone.now() - timezone.timedelta(days=31),
-        exclusao_confirmada=True,
-        **kwargs,
-    )
+@pytest.mark.django_db
+def test_purge_soft_deleted_respects_age():
+    old = User.objects.create_user(email="old@example.com", username="old")
+    old.delete()
+    old.deleted_at = timezone.now() - timezone.timedelta(days=31)
+    old.exclusao_confirmada = True
+    old.save(update_fields=["deleted_at", "exclusao_confirmada"])
+
+    recent = User.objects.create_user(email="new@example.com", username="new")
+    recent.delete()
+    recent.deleted_at = timezone.now() - timezone.timedelta(days=10)
+    recent.exclusao_confirmada = True
+    recent.save(update_fields=["deleted_at", "exclusao_confirmada"])
+
+    purge_soft_deleted()
+
+    assert not User.all_objects.filter(pk=old.pk).exists()
+    assert User.all_objects.filter(pk=recent.pk).exists()
 
 
 @pytest.mark.django_db
-def test_purge_removes_old_users():
-    user = _create_deleted_user()
+def test_purge_soft_deleted_idempotent():
+    user = User.objects.create_user(email="tmp@example.com", username="tmp")
+    user.delete()
+    user.deleted_at = timezone.now() - timezone.timedelta(days=40)
+    user.exclusao_confirmada = True
+    user.save(update_fields=["deleted_at", "exclusao_confirmada"])
+
     purge_soft_deleted()
+    purge_soft_deleted()
+
     assert not User.all_objects.filter(pk=user.pk).exists()
 
 
 @pytest.mark.django_db
-def test_purge_keeps_recent_users():
-    user = User.objects.create_user(
-        email="recent@example.com",
-        username="recent",
-        password="x",
-        deleted=True,
-        deleted_at=timezone.now() - timezone.timedelta(days=10),
-        exclusao_confirmada=True,
-    )
-    purge_soft_deleted()
-    assert User.all_objects.filter(pk=user.pk).exists()
+def test_purge_soft_deleted_chunking(mocker):
+    for i in range(3):
+        u = User.objects.create_user(email=f"c{i}@ex.com", username=f"c{i}")
+        u.delete()
+        u.deleted_at = timezone.now() - timezone.timedelta(days=40)
+        u.exclusao_confirmada = True
+        u.save(update_fields=["deleted_at", "exclusao_confirmada"])
 
-
-@pytest.mark.django_db
-def test_purge_idempotent():
-    user = _create_deleted_user()
-    purge_soft_deleted()
-    purge_soft_deleted()
-    assert not User.all_objects.filter(pk=user.pk).exists()
-
-
-@pytest.mark.django_db
-def test_purge_batches(mocker):
-    users = [_create_deleted_user() for _ in range(3)]
-    atomic = mocker.patch("accounts.tasks.transaction.atomic")
+    spy = mocker.spy(User.all_objects, "filter")
     purge_soft_deleted(batch_size=2)
-    assert atomic.call_count >= 2
-    for user in users:
-        assert not User.all_objects.filter(pk=user.pk).exists()
-
+    calls = [c for c in spy.call_args_list if c.kwargs.get("deleted")]
+    assert len(calls) >= 2

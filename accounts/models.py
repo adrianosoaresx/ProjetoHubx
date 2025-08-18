@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import PROTECT, SET_NULL
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -319,6 +320,15 @@ class AccountToken(TimeStampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Token de Conta"
         verbose_name_plural = "Tokens de Conta"
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            now = timezone.now()
+            if self.tipo == self.Tipo.EMAIL_CONFIRMATION:
+                self.expires_at = now + timezone.timedelta(hours=24)
+            elif self.tipo == self.Tipo.PASSWORD_RESET:
+                self.expires_at = now + timezone.timedelta(hours=1)
+        super().save(*args, **kwargs)
 
 
 class LoginAttempt(TimeStampedModel, SoftDeleteModel):

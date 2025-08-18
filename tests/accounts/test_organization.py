@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from accounts.models import User, UserType
+from accounts.models import UserType
 
 
 class OrganizationUserTests(TestCase):

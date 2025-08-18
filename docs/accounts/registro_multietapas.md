@@ -2,7 +2,8 @@
 
 Este fluxo guia o novo usuário convidado em etapas sequenciais. A pré‑condição é
 possuir um **token de convite válido** (`TokenAcesso`) que define o tipo de
-usuário e, opcionalmente, o núcleo de destino.
+usuário e, opcionalmente, o núcleo de destino. Sem esse token o acesso ao wizard
+é bloqueado e o usuário é redirecionado à tela de convite.
 
 ## Etapas
 

@@ -465,7 +465,16 @@ def resend_confirmation(request):
 # ====================== REGISTRO MULTIETAPAS ======================
 
 
+def _require_invite_token(request):
+    if not request.session.get("invite_token"):
+        messages.error(request, _("Token inválido."))
+        return redirect("tokens:token")
+    return None
+
+
 def nome(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         nome_val = request.POST.get("nome")
         if nome_val:
@@ -475,28 +484,40 @@ def nome(request):
 
 
 def cpf(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         valor = request.POST.get("cpf")
         if valor:
             try:
                 cpf_validator(valor)
-                request.session["cpf"] = valor
-                return redirect("accounts:email")
+                if User.objects.filter(cpf=valor).exists():
+                    messages.error(request, _("CPF já cadastrado."))
+                else:
+                    request.session["cpf"] = valor
+                    return redirect("accounts:email")
             except ValidationError:
-                messages.error(request, "CPF inválido.")
+                messages.error(request, _("CPF inválido."))
     return render(request, "register/cpf.html")
 
 
 def email(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         val = request.POST.get("email")
         if val:
-            request.session["email"] = val
-            return redirect("accounts:senha")
+            if User.objects.filter(email__iexact=val).exists():
+                messages.error(request, _("E-mail já cadastrado."))
+            else:
+                request.session["email"] = val
+                return redirect("accounts:senha")
     return render(request, "register/email.html")
 
 
 def usuario(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         usr = request.POST.get("usuario")
         if usr:
@@ -506,6 +527,8 @@ def usuario(request):
 
 
 def senha(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         s1 = request.POST.get("senha")
         s2 = request.POST.get("confirmar_senha")
@@ -517,11 +540,13 @@ def senha(request):
                     messages.error(request, msg)
             else:
                 request.session["senha_hash"] = make_password(s1)
-                return redirect("accounts:foto")
+        return redirect("accounts:foto")
     return render(request, "register/senha.html")
 
 
 def foto(request):
+    if (resp := _require_invite_token(request)):
+        return resp
     if request.method == "POST":
         arquivo = request.FILES.get("foto")
         if arquivo:

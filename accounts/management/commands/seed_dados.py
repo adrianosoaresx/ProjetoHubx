@@ -1,10 +1,11 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
+from django.core.management.base import BaseCommand
+
+from discussao.models import CategoriaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
 from feed.models import Post
-from discussao.models import CategoriaDiscussao, TopicoDiscussao
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 User = get_user_model()
 

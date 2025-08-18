@@ -10,8 +10,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AccountToken, SecurityEvent
 from tokens.models import TOTPDevice
+
+from .models import AccountToken, SecurityEvent
 from .serializers import UserSerializer
 from .tasks import send_confirmation_email, send_password_reset_email
 
@@ -51,10 +52,14 @@ class AccountViewSet(viewsets.GenericViewSet):
         user = request.user
         if user.is_active:
             return Response({"detail": _("Conta já ativada.")}, status=400)
+        AccountToken.objects.filter(
+            usuario=user,
+            tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
+            used_at__isnull=True,
+        ).update(used_at=timezone.now())
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
-            expires_at=timezone.now() + timezone.timedelta(hours=24),
             ip_gerado=request.META.get("REMOTE_ADDR"),
         )
         send_confirmation_email.delay(token.id)
