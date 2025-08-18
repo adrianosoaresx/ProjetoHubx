@@ -7,6 +7,7 @@ from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 from .models import CodigoAutenticacao, TokenAcesso
+from .services import find_token_by_code
 
 User = get_user_model()
 
@@ -39,8 +40,10 @@ class ValidarTokenConviteForm(forms.Form):
     def clean_codigo(self):
         codigo = self.cleaned_data["codigo"]
         try:
-            token = TokenAcesso.objects.get(codigo=codigo, estado=TokenAcesso.Estado.NOVO)
+            token = find_token_by_code(codigo)
         except TokenAcesso.DoesNotExist:
+            raise forms.ValidationError("Token inválido")
+        if token.estado != TokenAcesso.Estado.NOVO:
             raise forms.ValidationError("Token inválido")
         if token.data_expiracao and token.data_expiracao < timezone.now():
             raise forms.ValidationError("Token expirado")

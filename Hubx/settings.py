@@ -155,9 +155,7 @@ if CACHE_URL:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": CACHE_URL,
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            },
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
 else:  # pragma: no cover - fallback para testes sem Redis
@@ -167,6 +165,9 @@ else:  # pragma: no cover - fallback para testes sem Redis
             "LOCATION": "hubx",
         }
     }
+
+TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
+TOKENS_RATE_LIMIT_ENABLED = True
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
