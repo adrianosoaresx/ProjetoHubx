@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import (
     FileResponse,
     HttpResponse,
@@ -633,10 +634,11 @@ class DashboardLayoutListView(LoginRequiredMixin, ListView):
     template_name = "dashboard/layout_list.html"
 
     def get_queryset(self):
-        qs = DashboardLayout.objects.filter(user=self.request.user)
         if self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}:
-            qs = DashboardLayout.objects.all()
-        return qs
+            return DashboardLayout.objects.all()
+        return DashboardLayout.objects.filter(
+            Q(user=self.request.user) | Q(publico=True)
+        )
 
 
 class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
@@ -648,6 +650,14 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         layout_data = self.request.POST.get("layout_json", "{}")
         self.object = form.save(self.request.user, layout_data)
+        log_audit(
+            user=self.request.user,
+            action="CREATE_LAYOUT",
+            object_type="DashboardLayout",
+            object_id=str(self.object.pk),
+            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            metadata={"nome": self.object.nome, "publico": self.object.publico},
+        )
         return redirect(self.get_success_url())
 
 
@@ -666,6 +676,14 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         layout_data = self.request.POST.get("layout_json", "{}")
         self.object = form.save(self.request.user, layout_data)
+        log_audit(
+            user=self.request.user,
+            action="UPDATE_LAYOUT",
+            object_type="DashboardLayout",
+            object_id=str(self.object.pk),
+            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            metadata={"nome": self.object.nome, "publico": self.object.publico},
+        )
         return redirect(self.get_success_url())
 
 
@@ -680,6 +698,19 @@ class DashboardLayoutDeleteView(LoginRequiredMixin, DeleteView):
             return HttpResponse(status=403)
         return super().dispatch(request, *args, **kwargs)
 
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = super().delete(request, *args, **kwargs)
+        log_audit(
+            user=request.user,
+            action="DELETE_LAYOUT",
+            object_type="DashboardLayout",
+            object_id=str(obj.pk),
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            metadata={"nome": obj.nome, "publico": obj.publico},
+        )
+        return response
+
 
 class DashboardLayoutSaveView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -692,4 +723,12 @@ class DashboardLayoutSaveView(LoginRequiredMixin, View):
         if layout_json:
             layout.layout_json = layout_json
             layout.save(update_fields=["layout_json", "updated_at"])
+            log_audit(
+                user=request.user,
+                action="SAVE_LAYOUT",
+                object_type="DashboardLayout",
+                object_id=str(layout.pk),
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                metadata={"nome": layout.nome, "publico": layout.publico},
+            )
         return HttpResponse(status=204)
