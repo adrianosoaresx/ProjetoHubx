@@ -12,10 +12,8 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
-def _upload_media(file: IO[bytes]) -> str:
 
-def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
-
+def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     """Valida e envia mídia para o storage configurado.
 
     Retorna o caminho/chave gerado. Para vídeos, retorna também a chave do preview.
@@ -47,20 +45,6 @@ def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     file.seek(0)
     default_storage.save(key, file)
 
-    return key
-
-
-def upload_media(file: IO[bytes]) -> str:
-    """Wrapper que delega o upload para uma task assíncrona."""
-
-    from .tasks import upload_media as upload_media_task
-    file.seek(0)
-    data = file.read()
-    content_type = getattr(file, "content_type", "")
-
-    return upload_media_task.delay(data, file.name, content_type).get()
-
-
     preview_key: str | None = None
     if is_video:
         try:
@@ -81,3 +65,14 @@ def upload_media(file: IO[bytes]) -> str:
 
     return (key, preview_key) if preview_key else key
 
+
+def upload_media(file: IO[bytes]) -> str:
+    """Wrapper que delega o upload para uma task assíncrona."""
+
+    from .tasks import upload_media as upload_media_task
+
+    file.seek(0)
+    data = file.read()
+    content_type = getattr(file, "content_type", "")
+
+    return upload_media_task.delay(data, file.name, content_type).get()

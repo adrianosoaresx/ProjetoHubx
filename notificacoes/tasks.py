@@ -41,11 +41,7 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         elif canal == Canal.WHATSAPP:
             send_whatsapp(user, body)
         config = getattr(user, "configuracao", None)
-        if (
-            config
-            and config.receber_notificacoes_push
-            and config.frequencia_notificacoes_push == "imediata"
-        ):
+        if config and config.receber_notificacoes_push and config.frequencia_notificacoes_push == "imediata":
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 f"notificacoes_{user.id}",
@@ -72,16 +68,14 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
             template=str(template.id),
             canal=canal,
         )
-        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+        raise self.retry(exc=exc, countdown=2**self.request.retries)
     else:
         log.data_envio = timezone.now()
         log.erro = None
         log.save(update_fields=["status", "data_envio", "erro"])
     finally:
         duration = time.perf_counter() - start
-        metrics.notificacao_task_duration_seconds.labels(task="enviar_notificacao_async").observe(
-            duration
-        )
+        metrics.notificacao_task_duration_seconds.labels(task="enviar_notificacao_async").observe(duration)
         logger.info(
             "notificacao_enviada",
             user_id=user.id,
@@ -97,9 +91,7 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
 def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: str) -> None:
     for canal in canais:
         start = time.perf_counter()
-        logs = NotificationLog.objects.filter(
-            user=config.user, canal=canal, status=NotificationStatus.PENDENTE
-        )
+        logs = NotificationLog.objects.filter(user=config.user, canal=canal, status=NotificationStatus.PENDENTE)
         if not logs.exists():
             continue
         mensagens = [log.template.corpo for log in logs]
@@ -113,16 +105,15 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             send_push(config.user, body)
         logs.update(status=NotificationStatus.ENVIADA, data_envio=agora)
         envio = agora.replace(second=0, microsecond=0)
+        data_ref = agora.date()
         HistoricoNotificacao.objects.get_or_create(
             user=config.user,
             canal=canal,
-            enviado_em=envio,
-            defaults={"conteudo": mensagens},
+            frequencia=tipo,
+            data_referencia=data_ref,
+            defaults={"conteudo": mensagens, "enviado_em": envio},
         )
-        if (
-            config.receber_notificacoes_push
-            and config.frequencia_notificacoes_push == tipo
-        ):
+        if config.receber_notificacoes_push and config.frequencia_notificacoes_push == tipo:
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 f"notificacoes_{config.user.id}",
@@ -135,9 +126,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
                 },
             )
         duration = time.perf_counter() - start
-        metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(
-            duration
-        )
+        metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(duration)
         logger.info(
             "resumo_enviado",
             user_id=config.user.id,
@@ -151,25 +140,14 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
 def enviar_relatorios_diarios() -> None:
     agora = timezone.localtime()
     hora = agora.time().replace(second=0, microsecond=0)
-    configs = ConfiguracaoConta.objects.select_related("user").filter(
-        hora_notificacao_diaria=hora
-    )
+    configs = ConfiguracaoConta.objects.select_related("user").filter(hora_notificacao_diaria=hora)
     for config in configs:
         canais: list[str] = []
-        if (
-            config.receber_notificacoes_email
-            and config.frequencia_notificacoes_email == "diaria"
-        ):
+        if config.receber_notificacoes_email and config.frequencia_notificacoes_email == "diaria":
             canais.append(Canal.EMAIL)
-        if (
-            config.receber_notificacoes_whatsapp
-            and config.frequencia_notificacoes_whatsapp == "diaria"
-        ):
+        if config.receber_notificacoes_whatsapp and config.frequencia_notificacoes_whatsapp == "diaria":
             canais.append(Canal.WHATSAPP)
-        if (
-            config.receber_notificacoes_push
-            and config.frequencia_notificacoes_push == "diaria"
-        ):
+        if config.receber_notificacoes_push and config.frequencia_notificacoes_push == "diaria":
             canais.append(Canal.PUSH)
         _enviar_resumo(config, canais, agora, "diaria")
 
@@ -184,19 +162,10 @@ def enviar_relatorios_semanais() -> None:
     )
     for config in configs:
         canais: list[str] = []
-        if (
-            config.receber_notificacoes_email
-            and config.frequencia_notificacoes_email == "semanal"
-        ):
+        if config.receber_notificacoes_email and config.frequencia_notificacoes_email == "semanal":
             canais.append(Canal.EMAIL)
-        if (
-            config.receber_notificacoes_whatsapp
-            and config.frequencia_notificacoes_whatsapp == "semanal"
-        ):
+        if config.receber_notificacoes_whatsapp and config.frequencia_notificacoes_whatsapp == "semanal":
             canais.append(Canal.WHATSAPP)
-        if (
-            config.receber_notificacoes_push
-            and config.frequencia_notificacoes_push == "semanal"
-        ):
+        if config.receber_notificacoes_push and config.frequencia_notificacoes_push == "semanal":
             canais.append(Canal.PUSH)
         _enviar_resumo(config, canais, agora, "semanal")
