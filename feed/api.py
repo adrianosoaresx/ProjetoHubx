@@ -25,7 +25,7 @@ from rest_framework.response import Response
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
-from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao
+from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
 REACTIONS_TOTAL = Counter(
@@ -42,6 +42,18 @@ POST_VIEW_DURATION = Histogram(
 class CanModerate(permissions.BasePermission):
     def has_permission(self, request, view):  # pragma: no cover - simples
         return request.user.has_perm("feed.change_moderacaopost")
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ["id", "nome"]
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all().order_by("nome")
+    serializer_class = TagSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class PostSerializer(serializers.ModelSerializer):
