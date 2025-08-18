@@ -128,6 +128,8 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         )
 
     def cancelar_inscricao(self) -> None:
+        if timezone.now() >= self.evento.data_inicio:
+            raise ValueError("Não é possível cancelar após o início do evento.")
         self.status = "cancelada"
         self.data_confirmacao = timezone.now()
         self.save(update_fields=["status", "data_confirmacao", "updated_at"])
