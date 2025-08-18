@@ -2,9 +2,11 @@ import io
 from pathlib import Path
 
 import pytest
+from bs4 import BeautifulSoup
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 
+from agenda.models import InscricaoEvento
 from core.permissions import (
     AdminRequiredMixin,
     ClienteRequiredMixin,
@@ -15,6 +17,7 @@ from dashboard.models import DashboardConfig, DashboardFilter
 from dashboard.services import DashboardMetricsService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
+from financeiro.models import CentroCusto, LancamentoFinanceiro
 
 try:
     import weasyprint  # type: ignore
@@ -154,6 +157,36 @@ def test_metrics_partial_new_metrics(client, admin_user):
     assert "Respostas" in content
 
 
+def test_admin_dashboard_shows_new_metrics(client, admin_user, evento, cliente_user):
+    client.force_login(admin_user)
+    InscricaoEvento.objects.create(evento=evento, user=cliente_user, status="confirmada")
+    centro = CentroCusto.objects.create(nome="c", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=admin_user.organizacao)
+    LancamentoFinanceiro.objects.create(centro_custo=centro, tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO, valor=10)
+    resp = client.get(
+        reverse("dashboard:admin"),
+        {"metricas": ["inscricoes_confirmadas", "lancamentos_pendentes"]},
+    )
+    assert resp.status_code == 200
+    soup = BeautifulSoup(resp.content, "html.parser")
+    assert soup.find(id="inscricoes_confirmadas") is not None
+    assert soup.find(id="lancamentos_pendentes") is not None
+
+
+def test_metrics_partial_includes_new_metrics(client, admin_user, evento, cliente_user):
+    client.force_login(admin_user)
+    InscricaoEvento.objects.create(evento=evento, user=cliente_user, status="confirmada")
+    centro = CentroCusto.objects.create(nome="c", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=admin_user.organizacao)
+    LancamentoFinanceiro.objects.create(centro_custo=centro, tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO, valor=10)
+    resp = client.get(
+        reverse("dashboard:metrics-partial"),
+        {"metricas": ["inscricoes_confirmadas", "lancamentos_pendentes"]},
+    )
+    assert resp.status_code == 200
+    soup = BeautifulSoup(resp.content, "html.parser")
+    assert soup.find(id="inscricoes_confirmadas") is not None
+    assert soup.find(id="lancamentos_pendentes") is not None
+
+
 def test_export_view_csv(monkeypatch, client, admin_user):
     client.force_login(admin_user)
 
@@ -200,6 +233,7 @@ def test_export_view_xlsx(monkeypatch, client, admin_user):
     assert resp["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
     from openpyxl import load_workbook
+
     wb = load_workbook(filename=io.BytesIO(resp.content))
     ws = wb.active
     assert ws.title == "Métricas"

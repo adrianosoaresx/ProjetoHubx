@@ -52,21 +52,33 @@ def get_configuracao_contextual(
         return None
 
 
+def merge_preferences(
+    global_prefs: ConfiguracaoConta,
+    contextual: ConfiguracaoContextual | None,
+) -> ConfiguracaoConta:
+    """Mescla preferências globais com contextuais."""
+    prefs = deepcopy(global_prefs)
+    if contextual is None:
+        return prefs
+    for field in [
+        "frequencia_notificacoes_email",
+        "frequencia_notificacoes_whatsapp",
+        "idioma",
+        "tema",
+    ]:
+        setattr(prefs, field, getattr(contextual, field))
+    return prefs
+
+
 def get_user_preferences(
     usuario: User, escopo_tipo: str | None = None, escopo_id: str | None = None
 ) -> ConfiguracaoConta:
     """Resolve preferências do usuário considerando escopo contextual."""
-    prefs = deepcopy(get_configuracao_conta(usuario))
+    base = get_configuracao_conta(usuario)
     if escopo_tipo and escopo_id:
         ctx = get_configuracao_contextual(usuario, escopo_tipo, escopo_id)
-        if ctx:
-            prefs.frequencia_notificacoes_email = ctx.frequencia_notificacoes_email
-            prefs.frequencia_notificacoes_whatsapp = (
-                ctx.frequencia_notificacoes_whatsapp
-            )
-            prefs.idioma = ctx.idioma
-            prefs.tema = ctx.tema
-    return prefs
+        return merge_preferences(base, ctx)
+    return deepcopy(base)
 
 
 def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> ConfiguracaoConta:

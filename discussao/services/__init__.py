@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
 
-from .models import (
+from ..models import (
     CategoriaDiscussao,
     Denuncia,
     InteracaoDiscussao,
@@ -98,3 +98,4 @@ def denunciar_conteudo(
         object_id=content_object.pk,
         motivo=motivo,
     )
+

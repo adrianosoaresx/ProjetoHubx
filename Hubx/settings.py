@@ -155,9 +155,7 @@ if CACHE_URL:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": CACHE_URL,
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            },
+            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
 else:  # pragma: no cover - fallback para testes sem Redis
@@ -167,6 +165,9 @@ else:  # pragma: no cover - fallback para testes sem Redis
             "LOCATION": "hubx",
         }
     }
+
+TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
+TOKENS_RATE_LIMIT_ENABLED = True
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -302,6 +303,8 @@ NOTIFICATIONS_PUSH_API_KEY = os.getenv("NOTIFICATIONS_PUSH_API_KEY", "dummy-key-
 NOTIFICATIONS_WHATSAPP_API_URL = os.getenv("NOTIFICATIONS_WHATSAPP_API_URL", "https://stub-whatsapp.example")
 NOTIFICATIONS_WHATSAPP_API_KEY = os.getenv("NOTIFICATIONS_WHATSAPP_API_KEY", "dummy-key-whatsapp")
 NOTIFICATIONS_ENABLED = True
+
+DISCUSSAO_AGENDA_BRIDGE_ENABLED = os.getenv("DISCUSSAO_AGENDA_BRIDGE_ENABLED") in {"1", "true", "True"}
 
 SILENCED_SYSTEM_CHECKS = ["django_ratelimit.E003", "django_ratelimit.W001"]
 RATELIMIT_VIEW = "feed.api.ratelimit_exceeded"

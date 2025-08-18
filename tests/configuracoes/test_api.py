@@ -31,6 +31,30 @@ def test_update_preferences(api_client: APIClient, admin_user):
     assert admin_user.configuracao.receber_notificacoes_email is False
 
 
+def test_get_preferences_includes_push(api_client: APIClient, admin_user):
+    api_client.force_authenticate(admin_user)
+    url = reverse("configuracoes_api:configuracoes-conta")
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "receber_notificacoes_push" in data
+    assert "frequencia_notificacoes_push" in data
+
+
+def test_update_push_preferences(api_client: APIClient, admin_user):
+    api_client.force_authenticate(admin_user)
+    url = reverse("configuracoes_api:configuracoes-conta")
+    data = {
+        "receber_notificacoes_push": False,
+        "frequencia_notificacoes_push": "diaria",
+    }
+    resp = api_client.patch(url, data)
+    assert resp.status_code == 200
+    admin_user.configuracao.refresh_from_db()
+    assert admin_user.configuracao.receber_notificacoes_push is False
+    assert admin_user.configuracao.frequencia_notificacoes_push == "diaria"
+
+
 def test_requires_auth(api_client: APIClient):
     url = reverse("configuracoes_api:configuracoes-conta")
     resp = api_client.get(url)

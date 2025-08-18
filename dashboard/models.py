@@ -10,6 +10,14 @@ from accounts.models import UserType
 from core.models import SoftDeleteModel, SoftDeleteManager, TimeStampedModel
 
 
+ESCOPO_CHOICES = [
+    ("global", "global"),
+    ("organizacao", "organizacao"),
+    ("nucleo", "nucleo"),
+    ("evento", "evento"),
+]
+
+
 class DashboardFilter(SoftDeleteModel, TimeStampedModel):
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -77,6 +85,23 @@ class UserAchievement(SoftDeleteModel, TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples representação
         return f"{self.user} - {self.achievement}"
+
+
+class DashboardCustomMetric(SoftDeleteModel, TimeStampedModel):
+    code = models.CharField(max_length=50, unique=True)
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+    query_spec = models.JSONField()
+    escopo = models.CharField(max_length=20, choices=ESCOPO_CHOICES)
+
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        get_latest_by = "updated_at"
+
+    def __str__(self) -> str:  # pragma: no cover - simple representation
+        return self.nome
 
 class DashboardLayout(SoftDeleteModel, TimeStampedModel):
     objects = SoftDeleteManager()
