@@ -1,6 +1,6 @@
-import pytest
-from django.core.cache import cache
+import uuid
 
+import pytest
 from django.core.cache import cache
 
 from configuracoes import metrics
@@ -41,15 +41,17 @@ def test_metrics_cache(admin_user):
     assert metrics.config_cache_hits_total._value.get() == 1
 
 
-def test_get_user_preferences_contextual(admin_user):
+@pytest.mark.parametrize("escopo", ["organizacao", "nucleo", "evento"])
+def test_get_user_preferences_contextual(admin_user, escopo):
     cache.clear()
-    ctx = ConfiguracaoContextual.objects.create(
+    escopo_id = uuid.uuid4()
+    ConfiguracaoContextual.objects.create(
         user=admin_user,
-        escopo_tipo="organizacao",
-        escopo_id="123",
-        frequencia_notificacoes_email="semanal",
+        escopo_tipo=escopo,
+        escopo_id=escopo_id,
+        tema="escuro",
     )
-    prefs = get_user_preferences(admin_user, "organizacao", "123")
-    assert prefs.frequencia_notificacoes_email == "semanal"
+    prefs = get_user_preferences(admin_user, escopo, str(escopo_id))
+    assert prefs.tema == "escuro"
     prefs_global = get_user_preferences(admin_user)
-    assert prefs_global.frequencia_notificacoes_email == admin_user.configuracao.frequencia_notificacoes_email
+    assert prefs_global.tema == admin_user.configuracao.tema

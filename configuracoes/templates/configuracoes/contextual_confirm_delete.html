@@ -1,0 +1,7 @@
+{% load i18n %}
+<h1>{% trans "Excluir Configuração" %}</h1>
+<form method="post">
+  {% csrf_token %}
+  <p>{% trans "Tem certeza que deseja excluir esta configuração?" %}</p>
+  <button type="submit">{% trans "Confirmar" %}</button>
+</form>

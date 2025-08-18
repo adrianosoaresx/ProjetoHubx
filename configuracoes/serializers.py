@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import ConfiguracaoConta
+from .models import ConfiguracaoConta, ConfiguracaoContextual
 
 
 class ConfiguracaoContaSerializer(serializers.ModelSerializer):
@@ -19,3 +19,20 @@ class ConfiguracaoContaSerializer(serializers.ModelSerializer):
             "hora_notificacao_semanal",
             "dia_semana_notificacao",
         ]
+
+
+class ConfiguracaoContextualSerializer(serializers.ModelSerializer):
+    """Serializador para CRUD de ``ConfiguracaoContextual``."""
+
+    class Meta:
+        model = ConfiguracaoContextual
+        fields = [
+            "id",
+            "escopo_tipo",
+            "escopo_id",
+            "frequencia_notificacoes_email",
+            "frequencia_notificacoes_whatsapp",
+            "idioma",
+            "tema",
+        ]
+        read_only_fields = ["id"]
