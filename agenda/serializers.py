@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
@@ -118,6 +120,21 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
+
+    def validate_arquivo(self, arquivo):
+        if not arquivo:
+            return arquivo
+        ext = os.path.splitext(arquivo.name)[1].lower()
+        if ext in {".jpg", ".jpeg", ".png"}:
+            max_size = 10 * 1024 * 1024
+        elif ext == ".pdf":
+            max_size = 20 * 1024 * 1024
+        else:
+            raise serializers.ValidationError("Formato de arquivo não permitido.")
+        if arquivo.size > max_size:
+            raise serializers.ValidationError("Arquivo excede o tamanho máximo permitido.")
+        return arquivo
+
 
     def create(self, validated_data):
         request = self.context["request"]
