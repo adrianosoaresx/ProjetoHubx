@@ -6,6 +6,9 @@ from django.core.cache import cache
 from prometheus_client import Counter, Histogram
 
 from notificacoes.services.notificacoes import enviar_para_usuario
+from organizacoes.models import Organizacao
+
+from feed.application.plugins_loader import load_plugins_for
 
 from .models import Post
 
@@ -65,3 +68,20 @@ def notify_post_moderated(post_id: str, status: str) -> None:
         NOTIFICATIONS_SENT.inc()
     except Exception:  # pragma: no cover - melhor esforço
         pass
+
+
+@shared_task
+def executar_plugins() -> None:
+    """Carrega e executa plugins registrados para organizações."""
+
+    User = get_user_model()
+    orgs = Organizacao.objects.filter(feed_plugins__isnull=False).distinct()
+    for org in orgs:
+        user = User.objects.filter(organizacao=org).first()
+        if not user:
+            continue
+        for plugin in load_plugins_for(org):
+            try:
+                plugin.render(user)
+            except Exception:  # pragma: no cover - melhor esforço
+                continue
