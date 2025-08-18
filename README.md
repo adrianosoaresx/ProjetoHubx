@@ -98,6 +98,8 @@ Acesse:
 
 para visualizar categorias e interações.
 
+Na listagem de tópicos é possível ordenar por mais recentes, mais comentados ou mais votados. Na API, utilize `?ordering=score` para retornar os mais votados.
+
 ---
 
 ## 📡 Chat (WebSocket)

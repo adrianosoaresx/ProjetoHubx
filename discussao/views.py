@@ -9,7 +9,8 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db import connection
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Q, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -150,6 +151,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
             .annotate(
                 num_comentarios=Count("respostas"),
                 last_activity=Max("respostas__created_at"),
+                score_total=Coalesce(Sum("interacoes__valor"), 0),
             )
         )
         tags_param = self.request.GET.get("tags")
@@ -179,6 +181,8 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 ).distinct()
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
+        elif ordenacao == "score":
+            qs = qs.order_by("-score_total")
         else:
             qs = qs.order_by("-created_at")
         return qs
