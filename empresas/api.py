@@ -45,6 +45,15 @@ class EmpresaViewSet(viewsets.ModelViewSet):
             for tag_id in tag_ids:
                 qs = qs.filter(tags__id=tag_id)
             qs = qs.distinct()
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        elif user.user_type == UserType.ADMIN:
+            qs = qs.filter(organizacao=user.organizacao)
+        elif user.user_type in {UserType.COORDENADOR, UserType.NUCLEADO}:
+            qs = qs.filter(usuario=user)
+        else:
+            return Empresa.objects.none()
         return qs.order_by("nome")
 
     def perform_destroy(self, instance: Empresa) -> None:
