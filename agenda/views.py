@@ -452,7 +452,9 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        qs = MaterialDivulgacaoEvento.objects.select_related("evento")
+        qs = MaterialDivulgacaoEvento.objects.only(
+            "id", "titulo", "descricao", "arquivo", "status"
+        )
         if user.user_type != UserType.ROOT:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
             filtro = Q(evento__organizacao=user.organizacao)
