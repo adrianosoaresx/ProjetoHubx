@@ -118,6 +118,10 @@ def gerar_relatorio(
     dados_pend = _serie_inadimplencia(pendentes, "pendentes")
     dados_quit = _serie_inadimplencia(quitadas, "quitadas")
 
+    total_inadimplentes = (
+        pendentes.filter(valor__gt=0).aggregate(total=Sum("valor"))["total"] or Decimal("0")
+    )
+
     meses = sorted(set(dados_pend.keys()) | set(dados_quit.keys()))
     inadimplencia: list[dict[str, Any]] = []
     for mes in meses:
@@ -130,4 +134,5 @@ def gerar_relatorio(
         "saldo_atual": float(saldo_atual),
         "serie": serie,
         "inadimplencia": inadimplencia,
+        "total_inadimplentes": float(total_inadimplentes),
     }
