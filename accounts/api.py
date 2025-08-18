@@ -151,8 +151,9 @@ class AccountViewSet(viewsets.GenericViewSet):
     def delete_me(self, request):
         user = request.user
         user.delete()
+        user.is_active = False
         user.exclusao_confirmada = True
-        user.save(update_fields=["exclusao_confirmada"])
+        user.save(update_fields=["is_active", "exclusao_confirmada"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
@@ -165,8 +166,9 @@ class AccountViewSet(viewsets.GenericViewSet):
         user = request.user
         user.deleted = False
         user.deleted_at = None
+        user.is_active = True
         user.exclusao_confirmada = False
-        user.save(update_fields=["deleted", "deleted_at", "exclusao_confirmada"])
+        user.save(update_fields=["deleted", "deleted_at", "is_active", "exclusao_confirmada"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",
