@@ -304,6 +304,11 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
         self.object = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
         if request.user != self.object.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return HttpResponseForbidden()
+        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
+            UserType.ADMIN,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -354,6 +359,11 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
         if request.user != self.object.autor and request.user.user_type not in {
             UserType.ADMIN,
             UserType.COORDENADOR,
+            UserType.ROOT,
+        }:
+            return HttpResponseForbidden()
+        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
+            UserType.ADMIN,
             UserType.ROOT,
         }:
             return HttpResponseForbidden()
