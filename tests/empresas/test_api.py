@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from validate_docbr import CNPJ
 
 from empresas.models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
+from services.cnpj_validator import CNPJValidationError
 
 pytestmark = pytest.mark.django_db
 
@@ -91,6 +92,105 @@ def test_busca_por_tag_e_palavra(api_client, gerente_user, tag_factory):
     resp = api_client.get(url)
     ids = [e["id"] for e in resp.data]
     assert str(e1.id) in ids and str(e2.id) not in ids
+
+
+def test_busca_por_uma_tag(api_client, gerente_user, tag_factory):
+    api_client.force_authenticate(user=gerente_user)
+    t1 = tag_factory(nome="servico", categoria="serv")
+    t2 = tag_factory(nome="outro", categoria="prod")
+    e1 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Alpha",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+    )
+    e1.tags.add(t1)
+    e2 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Beta",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Y",
+        estado="SC",
+    )
+    e2.tags.add(t2)
+    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}"
+    resp = api_client.get(url)
+    ids = [e["id"] for e in resp.data]
+    assert str(e1.id) in ids and str(e2.id) not in ids
+
+
+def test_busca_por_multiplas_tags_and(api_client, gerente_user, tag_factory):
+    api_client.force_authenticate(user=gerente_user)
+    t1 = tag_factory(nome="servico", categoria="serv")
+    t2 = tag_factory(nome="outro", categoria="prod")
+    e1 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Alpha",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+    )
+    e1.tags.add(t1, t2)
+    e2 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Beta",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Y",
+        estado="SC",
+    )
+    e2.tags.add(t1)
+    e3 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Gamma",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Z",
+        estado="SC",
+    )
+    e3.tags.add(t2)
+    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}&tag={t2.id}"
+    resp = api_client.get(url)
+    ids = [e["id"] for e in resp.data]
+    assert str(e1.id) in ids and str(e2.id) not in ids and str(e3.id) not in ids
+
+
+def test_busca_multiplas_tags_sem_and(api_client, gerente_user, tag_factory):
+    api_client.force_authenticate(user=gerente_user)
+    t1 = tag_factory(nome="servico", categoria="serv")
+    t2 = tag_factory(nome="outro", categoria="prod")
+    e1 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Alpha",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+    )
+    e1.tags.add(t1)
+    e2 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Beta",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Y",
+        estado="SC",
+    )
+    e2.tags.add(t2)
+    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}&tag={t2.id}"
+    resp = api_client.get(url)
+    assert resp.data == []
 
 
 def test_busca_palavras_chave(api_client, gerente_user):
@@ -244,3 +344,30 @@ def test_purgar_empresa(api_client, gerente_user, admin_user):
     resp = api_client.delete(url)
     assert resp.status_code == status.HTTP_204_NO_CONTENT
     assert not Empresa.objects.filter(id=empresa.id).exists()
+
+
+def test_validar_cnpj_sucesso(api_client, gerente_user, monkeypatch):
+    api_client.force_authenticate(user=gerente_user)
+    monkeypatch.setattr("empresas.services.validar_cnpj", lambda c: (True, "brasilapi"))
+    url = reverse("empresas_api:empresa-validar-cnpj")
+    resp = api_client.post(url, {"cnpj": "123"})
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["valido"] is True
+    assert resp.data["fonte"] == "brasilapi"
+    assert resp.data["validado_em"] is not None
+
+
+def test_validar_cnpj_fallback_para_task(api_client, gerente_user, monkeypatch):
+    api_client.force_authenticate(user=gerente_user)
+
+    def _raise(_):
+        raise CNPJValidationError("fail")
+
+    monkeypatch.setattr("empresas.services.validar_cnpj", _raise)
+    called = {}
+    monkeypatch.setattr("empresas.services.validar_cnpj_async.delay", lambda c: called.setdefault("cnpj", c))
+    url = reverse("empresas_api:empresa-validar-cnpj")
+    resp = api_client.post(url, {"cnpj": "123"})
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data == {"valido": False, "fonte": "", "validado_em": None}
+    assert called["cnpj"] == "123"

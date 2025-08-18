@@ -6,6 +6,7 @@ from .models import ApiToken, TokenAcesso, TokenUsoLog
 
 
 class TokenAcessoSerializer(serializers.ModelSerializer):
+    codigo = serializers.CharField(read_only=True)
     revogado_por_email = serializers.EmailField(source="revogado_por.email", default=None, read_only=True)
 
     class Meta:

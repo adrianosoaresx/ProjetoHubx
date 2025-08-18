@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 
 from .models import CategoriaDiscussao, Denuncia, RespostaDiscussao, Tag, TopicoDiscussao
+from .validators import validar_arquivo_discussao
 
 
 class CategoriaDiscussaoForm(forms.ModelForm):
@@ -90,6 +91,11 @@ class RespostaDiscussaoForm(forms.ModelForm):
         model = RespostaDiscussao
         fields = ["conteudo", "arquivo", "reply_to", "motivo_edicao"]
         widgets = {"motivo_edicao": forms.Textarea(attrs={"rows": 2})}
+
+    def clean_arquivo(self):
+        arquivo = self.cleaned_data.get("arquivo")
+        validar_arquivo_discussao(arquivo)
+        return arquivo
 
 
 class DenunciaForm(forms.ModelForm):

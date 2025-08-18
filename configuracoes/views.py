@@ -8,11 +8,22 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AbstractBaseUser
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import View
+from django.views.generic import (
+    View,
+    ListView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 
 from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
-from configuracoes.forms import ConfiguracaoContaForm
+from configuracoes.forms import (
+    ConfiguracaoContaForm,
+    ConfiguracaoContextualForm,
+)
+from configuracoes.models import ConfiguracaoContextual
 from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
 
 
@@ -109,3 +120,49 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             response.set_cookie("tema", tema)
             response.set_cookie("django_language", form.instance.idioma)
         return response
+
+
+class ConfiguracaoContextualListView(LoginRequiredMixin, ListView):
+    """Lista configurações contextuais do usuário."""
+
+    model = ConfiguracaoContextual
+    template_name = "configuracoes/contextual_list.html"
+
+    def get_queryset(self):  # pragma: no cover - visual
+        return ConfiguracaoContextual.objects.filter(user=self.request.user)
+
+
+class ConfiguracaoContextualCreateView(LoginRequiredMixin, CreateView):
+    """Cria uma nova ``ConfiguracaoContextual``."""
+
+    model = ConfiguracaoContextual
+    form_class = ConfiguracaoContextualForm
+    template_name = "configuracoes/contextual_form.html"
+    success_url = reverse_lazy("configuracoes-contextual-list")
+
+    def form_valid(self, form):  # pragma: no cover - visual
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class ConfiguracaoContextualUpdateView(LoginRequiredMixin, UpdateView):
+    """Atualiza uma ``ConfiguracaoContextual`` existente."""
+
+    model = ConfiguracaoContextual
+    form_class = ConfiguracaoContextualForm
+    template_name = "configuracoes/contextual_form.html"
+    success_url = reverse_lazy("configuracoes-contextual-list")
+
+    def get_queryset(self):  # pragma: no cover - visual
+        return ConfiguracaoContextual.objects.filter(user=self.request.user)
+
+
+class ConfiguracaoContextualDeleteView(LoginRequiredMixin, DeleteView):
+    """Remove uma ``ConfiguracaoContextual``."""
+
+    model = ConfiguracaoContextual
+    template_name = "configuracoes/contextual_confirm_delete.html"
+    success_url = reverse_lazy("configuracoes-contextual-list")
+
+    def get_queryset(self):  # pragma: no cover - visual
+        return ConfiguracaoContextual.objects.filter(user=self.request.user)

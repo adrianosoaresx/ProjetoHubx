@@ -1,4 +1,5 @@
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from discussao.forms import (
     CategoriaDiscussaoForm,
@@ -86,4 +87,16 @@ def test_resposta_form_fields():
     form = RespostaDiscussaoForm()
     assert list(form.fields) == ["conteudo", "arquivo", "reply_to", "motivo_edicao"]
     form = RespostaDiscussaoForm(data={"conteudo": ""})
+    assert not form.is_valid()
+
+
+def test_resposta_form_valid_upload():
+    file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
+    form = RespostaDiscussaoForm(data={"conteudo": "ok"}, files={"arquivo": file})
+    assert form.is_valid()
+
+
+def test_resposta_form_invalid_upload():
+    file = SimpleUploadedFile("a.exe", b"data", content_type="application/octet-stream")
+    form = RespostaDiscussaoForm(data={"conteudo": "ok"}, files={"arquivo": file})
     assert not form.is_valid()

@@ -5,13 +5,16 @@ import time
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.views import APIView
 
 from . import metrics
-from .serializers import ConfiguracaoContaSerializer
+from .serializers import (
+    ConfiguracaoContaSerializer,
+    ConfiguracaoContextualSerializer,
+)
 from .services import get_configuracao_conta, get_user_preferences
-from .models import ConfiguracaoConta
+from .models import ConfiguracaoConta, ConfiguracaoContextual
 from notificacoes.models import NotificationTemplate, Canal
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -34,6 +37,8 @@ class ConfiguracaoContaViewSet(ViewSet):
                     "frequencia_notificacoes_email": "imediata",
                     "receber_notificacoes_whatsapp": False,
                     "frequencia_notificacoes_whatsapp": "diaria",
+                    "receber_notificacoes_push": True,
+                    "frequencia_notificacoes_push": "imediata",
                     "idioma": "pt-BR",
                     "tema": "claro",
                     "hora_notificacao_diaria": "08:00:00",
@@ -82,8 +87,8 @@ class ConfiguracaoContaViewSet(ViewSet):
             OpenApiExample(
                 "Atualização parcial",
                 request_only=True,
-                value={"receber_notificacoes_email": False},
-            )
+                value={"receber_notificacoes_push": False},
+            ),
         ],
     )
     def partial_update(self, request) -> Response:
@@ -99,6 +104,19 @@ class ConfiguracaoContaViewSet(ViewSet):
             time.monotonic() - start
         )
         return resp
+
+
+class ConfiguracaoContextualViewSet(ModelViewSet):
+    """CRUD das configurações contextuais via API."""
+
+    serializer_class = ConfiguracaoContextualSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):  # pragma: no cover - simples filtro
+        return ConfiguracaoContextual.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):  # pragma: no cover - simples
+        serializer.save(user=self.request.user)
 
 
 class TestarNotificacaoView(APIView):
@@ -131,3 +149,4 @@ class TestarNotificacaoView(APIView):
             escopo_id=escopo_id,
         )
         return Response({"detail": "enviado"})
+

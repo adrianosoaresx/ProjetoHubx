@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import random
+import secrets
 import uuid
 
 import pyotp
@@ -35,8 +39,10 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
     last_used_at = models.DateTimeField(null=True, blank=True)
 
     @property
-    def is_active(self):
-        return self.revoked_at is None and (self.expires_at is None or self.expires_at > timezone.now())
+    def is_active(self) -> bool:
+        return self.revoked_at is None and (
+            self.expires_at is None or self.expires_at > timezone.now()
+        )
 
     class Meta:
         ordering = ["-created_at"]
@@ -60,12 +66,8 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         EXPIRADO = "expirado", _("Expirado")
         REVOGADO = "revogado", _("Revogado")
 
-    codigo = models.CharField(
-        max_length=32,
-        default=generate_hex_uuid,
-        unique=True,
-        editable=False,
-    )
+    codigo_hash = models.CharField(max_length=64, unique=True)
+    codigo_salt = models.CharField(max_length=32)
     tipo_destino = models.CharField(max_length=20, choices=TipoUsuario.choices)
     estado = models.CharField(
         max_length=10,
@@ -112,6 +114,34 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
     class Meta:
         ordering = ["-created_at"]
 
+    # o código não é persistido em texto claro
+    _codigo: str | None = None
+
+    @property
+    def codigo(self) -> str | None:
+        return self._codigo
+
+    @codigo.setter
+    def codigo(self, value: str) -> None:
+        self._codigo = value
+
+    @staticmethod
+    def generate_code() -> str:
+        """Gera um código aleatório com entropia >= 128 bits."""
+        return secrets.token_urlsafe(32)
+
+    def set_codigo(self, codigo: str) -> None:
+        salt = secrets.token_bytes(16)
+        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
+        self.codigo_salt = base64.b64encode(salt).decode()
+        self.codigo_hash = base64.b64encode(digest).decode()
+
+    def check_codigo(self, codigo: str) -> bool:
+        salt = base64.b64decode(self.codigo_salt)
+        expected = base64.b64decode(self.codigo_hash)
+        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
+        return hmac.compare_digest(expected, digest)
+
 
 class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
     class Acao(models.TextChoices):
@@ -135,6 +165,7 @@ class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
     acao = models.CharField(max_length=20, choices=Acao.choices)
     ip = EncryptedCharField(max_length=128, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+
     class Meta:
         ordering = ["-created_at"]
 

@@ -49,3 +49,41 @@ def list_tokens(user: User) -> Iterable[ApiToken]:
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
+
+from datetime import datetime
+from typing import Tuple
+
+from .models import TokenAcesso
+
+
+def create_invite_token(
+    *,
+    gerado_por: User,
+    tipo_destino: str,
+    data_expiracao: datetime | None = None,
+    organizacao=None,
+    nucleos=None,
+) -> Tuple[TokenAcesso, str]:
+    """Cria um ``TokenAcesso`` com código secreto e retorna (token, codigo)."""
+
+    codigo = TokenAcesso.generate_code()
+    token = TokenAcesso(
+        gerado_por=gerado_por,
+        tipo_destino=tipo_destino,
+        data_expiracao=data_expiracao,
+        organizacao=organizacao,
+    )
+    token.set_codigo(codigo)
+    token.save()
+    if nucleos:
+        token.nucleos.set(nucleos)
+    return token, codigo
+
+
+def find_token_by_code(codigo: str) -> TokenAcesso:
+    """Retorna o ``TokenAcesso`` correspondente ao ``codigo`` ou levanta ``DoesNotExist``."""
+
+    for token in TokenAcesso.objects.all():
+        if token.check_codigo(codigo):
+            return token
+    raise TokenAcesso.DoesNotExist

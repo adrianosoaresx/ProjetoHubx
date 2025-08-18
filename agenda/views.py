@@ -138,7 +138,7 @@ def lista_eventos(request, dia_iso):
     return render(
         request,
         "agenda/_lista_eventos_dia.html",
-        {"eventos": eventos, "dia_iso": dia_iso},
+        {"eventos": eventos, "dia": dia, "dia_iso": dia_iso},
     )
 
 
@@ -452,7 +452,9 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        qs = MaterialDivulgacaoEvento.objects.select_related("evento")
+        qs = MaterialDivulgacaoEvento.objects.only(
+            "id", "titulo", "descricao", "arquivo", "status"
+        )
         if user.user_type != UserType.ROOT:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
             filtro = Q(evento__organizacao=user.organizacao)
