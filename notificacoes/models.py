@@ -5,6 +5,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
 from core.models import SoftDeleteModel, TimeStampedModel
 
 
@@ -15,6 +16,12 @@ class Canal(models.TextChoices):
     TODOS = "todos", _("Todos")
 
 
+# O log de notificações não deve armazenar o canal "todos",
+# utilizado apenas para criação de templates que disparam em
+# múltiplos canais. Filtramos a opção para evitar registros inválidos.
+CANAL_LOG_CHOICES = [(c.value, c.label) for c in Canal if c != Canal.TODOS]
+
+
 class NotificationStatus(models.TextChoices):
     PENDENTE = "pendente", _("Pendente")
     ENVIADA = "enviada", _("Enviada")
@@ -22,9 +29,28 @@ class NotificationStatus(models.TextChoices):
     LIDA = "lida", _("Lida")
 
 
+
 class Frequencia(models.TextChoices):
     DIARIA = "diaria", _("Diária")
     SEMANAL = "semanal", _("Semanal")
+
+class UserNotificationPreference(TimeStampedModel):
+    user: models.OneToOneField = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notification_preferences",
+    )
+    email: models.BooleanField = models.BooleanField(default=True)
+    push: models.BooleanField = models.BooleanField(default=True)
+    whatsapp: models.BooleanField = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _("Preferência de Notificação do Usuário")
+        verbose_name_plural = _("Preferências de Notificação dos Usuários")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return str(self.user)
+
 
 
 class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
@@ -34,6 +60,10 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
 
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
+
+
+    ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
+
 
     class Meta:
         verbose_name = _("Template de Notificação")
@@ -49,11 +79,12 @@ class NotificationLog(TimeStampedModel):
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     destinatario: models.CharField = models.CharField(max_length=254, blank=True)
     template: models.ForeignKey = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
-    canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices)
+    canal: models.CharField = models.CharField(max_length=20, choices=CANAL_LOG_CHOICES)
     status: models.CharField = models.CharField(
         max_length=20, choices=NotificationStatus.choices, default=NotificationStatus.PENDENTE
     )
     data_envio: models.DateTimeField = models.DateTimeField(null=True, blank=True)
+    data_leitura: models.DateTimeField = models.DateTimeField(null=True, blank=True)
     erro: models.TextField | None = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -111,6 +142,7 @@ class PushSubscription(TimeStampedModel, SoftDeleteModel):
     endpoint: models.CharField = models.CharField(max_length=500)
     p256dh: models.CharField = models.CharField(max_length=255)
     auth: models.CharField = models.CharField(max_length=255)
+    ativo: models.BooleanField = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("user", "device_id")

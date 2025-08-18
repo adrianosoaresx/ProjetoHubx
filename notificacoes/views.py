@@ -161,8 +161,10 @@ def metrics_dashboard(request):
     context = {
         "total_por_canal": total_por_canal,
         "falhas_por_canal": falhas_por_canal,
+
         "templates_ativos": NotificationTemplate.objects.count(),
         "templates_inativos": NotificationTemplate.all_objects.filter(deleted=True).count(),
+
     }
     logger.info("metrics_view", extra={"user": request.user.id})
     return render(request, "notificacoes/metrics.html", context)

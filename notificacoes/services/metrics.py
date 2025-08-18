@@ -21,5 +21,7 @@ notificacao_task_duration_seconds = Histogram(
 )
 
 
-templates_total = Gauge("templates_total", "Total de templates de notificação")
+templates_total = Gauge(
+    "templates_total", "Total de templates de notificação ativos"
+)
 
