@@ -252,7 +252,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
         user = request.user
         if user.user_type not in {UserType.ADMIN, UserType.ROOT}:
-            centros_user = [str(c.id) for c in _nucleos_do_usuario(user)]
+            centros_user = [str(centro.id) for centro, _ in _nucleos_do_usuario(user)]
             if isinstance(centro_id, list):
                 if not set(centro_id).issubset(set(centros_user)):
                     return Response({"detail": _("Sem permissão")}, status=403)
