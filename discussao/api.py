@@ -5,7 +5,8 @@ from datetime import timedelta
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection, transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -68,6 +69,11 @@ class TopicoViewSet(viewsets.ModelViewSet):
             names = [t.strip() for t in tags_param.split(",") if t.strip()]
             for name in names:
                 qs = qs.filter(tags__nome=name)
+        ordering = self.request.query_params.get("ordering")
+        if ordering in {"score", "-score"}:
+            qs = qs.annotate(score=Coalesce(Sum("interacoes__valor"), 0)).order_by(
+                "-score" if ordering == "score" else "score"
+            )
         return qs
 
     def perform_create(self, serializer):
