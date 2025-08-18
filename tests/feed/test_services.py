@@ -10,7 +10,43 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from feed.services import upload_media
 
+@pytest.mark.django_db
+def test_upload_media_capture_exception(monkeypatch, settings):
+    settings.AWS_STORAGE_BUCKET_NAME = "bucket"
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
+    file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
 
+    def fail(*args, **kwargs):
+        raise ClientError({"Error": {}}, "upload")
+
+    monkeypatch.setattr("feed.services._upload_media", fail)
+    captured = Mock()
+    monkeypatch.setattr("feed.tasks.capture_exception", captured)
+
+    with pytest.raises(ClientError):
+        upload_media(file)
+
+    assert captured.call_count == 4
+
+
+@pytest.mark.django_db
+def test_upload_media_retries(monkeypatch, settings):
+    settings.AWS_STORAGE_BUCKET_NAME = "bucket"
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
+    file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
+    calls = {"n": 0}
+
+    def flaky(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] < 3:
+            raise ClientError({"Error": {}}, "upload")
+        return "ok"
+
+    monkeypatch.setattr("feed.services._upload_media", flaky)
+    url = upload_media(file)
+    assert url == "ok"
+    assert calls["n"] == 3
+=======
 def _make_video_file() -> SimpleUploadedFile:
     tmp = tempfile.NamedTemporaryFile(suffix=".mp4")
     subprocess.run(
@@ -40,6 +76,7 @@ def test_upload_media_generates_preview():
     assert preview_key
     assert default_storage.exists(video_key)
     assert default_storage.exists(preview_key)
+
 
 
 @pytest.mark.django_db
