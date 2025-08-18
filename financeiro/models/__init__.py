@@ -88,6 +88,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
         APORTE_EXTERNO = "aporte_externo", "Aporte Externo"
         DESPESA = "despesa", "Despesa"
         AJUSTE = "ajuste", "Ajuste"
+        REPASSE = "repasse", "Repasse de Receita"
 
     class Status(models.TextChoices):
         PENDENTE = "pendente", "Pendente"
