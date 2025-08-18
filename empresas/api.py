@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+
 from django.shortcuts import get_object_or_404
+from django.http import QueryDict
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -23,7 +25,7 @@ from .serializers import (
     EmpresaSerializer,
 )
 from .tasks import nova_avaliacao
-from .services import verificar_cnpj
+from .services import search_empresas, verificar_cnpj
 
 
 class ContatoEmpresaViewSet(viewsets.ModelViewSet):
@@ -107,7 +109,17 @@ class EmpresaViewSet(viewsets.ModelViewSet):
             for tag_id in tag_ids:
                 qs = qs.filter(tags__id=tag_id)
             qs = qs.distinct()
+        user = self.request.user
+        if user.is_superuser:
+            pass
+        elif user.user_type == UserType.ADMIN:
+            qs = qs.filter(organizacao=user.organizacao)
+        elif user.user_type in {UserType.COORDENADOR, UserType.NUCLEADO}:
+            qs = qs.filter(usuario=user)
+        else:
+            return Empresa.objects.none()
         return qs.order_by("nome")
+
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted
