@@ -38,7 +38,7 @@ def enviar_para_usuario(
     if not getattr(settings, "NOTIFICATIONS_ENABLED", True):
         return
 
-    qs = NotificationTemplate.objects.filter(codigo=template_codigo)
+    qs = NotificationTemplate.objects.filter(codigo=template_codigo, ativo=True)
     template = qs.first()
     if not template:
         raise ValueError(_("Template '%(codigo)s' não encontrado") % {"codigo": template_codigo})

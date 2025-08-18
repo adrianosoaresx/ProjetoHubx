@@ -29,6 +29,7 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
 
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
+    ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
 
 
     class Meta:

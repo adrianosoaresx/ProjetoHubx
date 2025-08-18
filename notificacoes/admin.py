@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 @admin.register(NotificationTemplate)
 class NotificationTemplateAdmin(admin.ModelAdmin):
 
-    list_display = ("codigo", "canal", "deleted")
+    list_display = ("codigo", "canal", "ativo", "deleted")
     search_fields = ("codigo",)
-    list_filter = ("canal", "deleted")
+    list_filter = ("canal", "ativo", "deleted")
 
 
     def has_delete_permission(self, request, obj=None):  # pragma: no cover - admin
