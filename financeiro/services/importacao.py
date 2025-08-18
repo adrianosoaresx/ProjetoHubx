@@ -105,6 +105,7 @@ class ImportadorPagamentos:
                                 "data_vencimento": record["data_vencimento"].isoformat(),
                                 "status": record["status"],
                                 "descricao": record["descricao"],
+                                "origem": record["origem"],
                             }
                         )
                 except Exception as exc:
@@ -149,6 +150,7 @@ class ImportadorPagamentos:
                     "data_vencimento": item["data_vencimento"].isoformat(),
                     "status": item["status"],
                     "descricao": item["descricao"],
+                    "origem": item["origem"],
                 }
                 serializer = LancamentoFinanceiroSerializer(data=payload)
                 if not serializer.is_valid():
@@ -241,4 +243,5 @@ class ImportadorPagamentos:
             "data_vencimento": venc,
             "status": row["status"],
             "descricao": row.get("descricao", ""),
+            "origem": LancamentoFinanceiro.Origem.IMPORTACAO,
         }

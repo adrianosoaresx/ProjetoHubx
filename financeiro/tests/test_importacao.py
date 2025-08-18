@@ -108,6 +108,7 @@ def test_preview_and_confirm(api_client, user, settings):
     assert LancamentoFinanceiro.objects.count() == 2
     centro.refresh_from_db()
     assert centro.saldo == 30
+    assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
 
 
 def test_invalid_vencimento(api_client, user):

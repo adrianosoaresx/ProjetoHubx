@@ -61,6 +61,7 @@ def test_lancamento_default_vencimento():
         data_lancamento=timezone.now(),
     )
     assert lanc.data_vencimento == lanc.data_lancamento
+    assert lanc.origem == LancamentoFinanceiro.Origem.MANUAL
 
 
 def test_serializer_vencimento_anterior_lancamento_error():
