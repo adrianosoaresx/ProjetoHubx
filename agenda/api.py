@@ -85,6 +85,8 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         inscricao = self.get_object()
         if inscricao.user != request.user:
             return Response(status=status.HTTP_403_FORBIDDEN)
+        if inscricao.avaliacao is not None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         if timezone.now() <= inscricao.evento.data_fim:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         try:
