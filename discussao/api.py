@@ -22,6 +22,7 @@ from accounts.models import UserType
 
 from .models import (
     CategoriaDiscussao,
+    Denuncia,
     InteracaoDiscussao,
     RespostaDiscussao,
     Tag,
@@ -29,6 +30,7 @@ from .models import (
 )
 from .serializers import (
     CategoriaDiscussaoSerializer,
+    DenunciaSerializer,
     RespostaDiscussaoSerializer,
     TagSerializer,
     TopicoDiscussaoSerializer,
@@ -272,3 +274,38 @@ class VotoDiscussaoViewSet(viewsets.ViewSet):
                 interacao.save(update_fields=["valor"])
         cache.clear()
         return Response({"score": obj.score, "num_votos": obj.num_votos})
+
+
+class DenunciaViewSet(viewsets.ModelViewSet):
+    queryset = Denuncia.objects.select_related("log").all()
+    serializer_class = DenunciaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):  # pragma: no cover - simple filter
+        qs = super().get_queryset()
+        if self.request.user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+        }:
+            qs = qs.filter(user=self.request.user)
+        return qs
+
+    @action(detail=True, methods=["post"], url_path="aprovar")
+    def aprovar(self, request, pk=None):
+        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+            return Response(status=403)
+        denuncia = self.get_object()
+        notes = request.data.get("notes", "")
+        denuncia.aprovar(request.user, notes)
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="rejeitar")
+    def rejeitar(self, request, pk=None):
+        if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+            return Response(status=403)
+        denuncia = self.get_object()
+        notes = request.data.get("notes", "")
+        denuncia.rejeitar(request.user, notes)
+        serializer = self.get_serializer(denuncia)
+        return Response(serializer.data)
