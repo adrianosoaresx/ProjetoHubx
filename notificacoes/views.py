@@ -13,7 +13,14 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from .forms import NotificationTemplateForm
-from .models import Canal, HistoricoNotificacao, NotificationLog, NotificationStatus, NotificationTemplate
+from .models import (
+    Canal,
+    Frequencia,
+    HistoricoNotificacao,
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +88,7 @@ def list_logs(request):
         writer = csv.writer(response)
         writer.writerow(["user", "template", "canal", "status", "data_envio", "erro"])
         for log in logs:
-            writer.writerow(
-                [log.user_id, log.template.codigo, log.canal, log.status, log.data_envio, log.erro]
-            )
+            writer.writerow([log.user_id, log.template.codigo, log.canal, log.status, log.data_envio, log.erro])
         return response
 
     paginator = Paginator(logs, 20)
@@ -102,6 +107,7 @@ def historico_notificacoes(request):
     inicio = request.GET.get("inicio")
     fim = request.GET.get("fim")
     canal = request.GET.get("canal")
+    frequencia = request.GET.get("frequencia")
     ordenacao = request.GET.get("ordenacao", "-enviado_em")
 
     if inicio:
@@ -110,6 +116,8 @@ def historico_notificacoes(request):
         historico = historico.filter(enviado_em__date__lte=fim)
     if canal in Canal.values:
         historico = historico.filter(canal=canal)
+    if frequencia in Frequencia.values:
+        historico = historico.filter(frequencia=frequencia)
     if ordenacao in ["enviado_em", "-enviado_em"]:
         historico = historico.order_by(ordenacao)
 
@@ -117,18 +125,16 @@ def historico_notificacoes(request):
     page_obj = paginator.get_page(request.GET.get("page"))
     context = {"historicos": page_obj}
     template_name = (
-        "notificacoes/historico_rows.html"
-        if request.headers.get("HX-Request")
-        else "notificacoes/historico_list.html"
+        "notificacoes/historico_rows.html" if request.headers.get("HX-Request") else "notificacoes/historico_list.html"
     )
     return render(request, template_name, context)
+
 
 @login_required
 @permission_required("notificacoes.delete_notificationtemplate", raise_exception=True)
 def delete_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
     if NotificationLog.objects.filter(template=template).exists():
-
         messages.error(request, _("Template em uso; não é possível removê-lo."))
 
     else:
@@ -147,22 +153,18 @@ def metrics_dashboard(request):
         logs = logs.filter(created_at__date__gte=inicio)
     if fim:
         logs = logs.filter(created_at__date__lte=fim)
-    total_por_canal = {
-        item["canal"]: item["total"]
-        for item in logs.values("canal").annotate(total=Count("id"))
-    }
+    total_por_canal = {item["canal"]: item["total"] for item in logs.values("canal").annotate(total=Count("id"))}
     falhas_por_canal = {
         item["canal"]: item["total"]
-        for item in logs.filter(status=NotificationStatus.FALHA)
-        .values("canal")
-        .annotate(total=Count("id"))
+        for item in logs.filter(status=NotificationStatus.FALHA).values("canal").annotate(total=Count("id"))
     }
     context = {
         "total_por_canal": total_por_canal,
         "falhas_por_canal": falhas_por_canal,
-        "templates_total": NotificationTemplate.objects.filter(ativo=True).count(),
-        "templates_inativos": NotificationTemplate.objects.filter(ativo=False).count(),
+
+        "templates_ativos": NotificationTemplate.objects.count(),
+        "templates_inativos": NotificationTemplate.all_objects.filter(deleted=True).count(),
+
     }
     logger.info("metrics_view", extra={"user": request.user.id})
     return render(request, "notificacoes/metrics.html", context)
-

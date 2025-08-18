@@ -29,6 +29,11 @@ class NotificationStatus(models.TextChoices):
     LIDA = "lida", _("Lida")
 
 
+
+class Frequencia(models.TextChoices):
+    DIARIA = "diaria", _("Diária")
+    SEMANAL = "semanal", _("Semanal")
+
 class UserNotificationPreference(TimeStampedModel):
     user: models.OneToOneField = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -47,6 +52,7 @@ class UserNotificationPreference(TimeStampedModel):
         return str(self.user)
 
 
+
 class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
@@ -54,7 +60,10 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
 
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
+
+
     ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
+
 
     class Meta:
         verbose_name = _("Template de Notificação")
@@ -105,6 +114,8 @@ class HistoricoNotificacao(TimeStampedModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices)
+    frequencia: models.CharField = models.CharField(max_length=20, choices=Frequencia.choices)
+    data_referencia: models.DateField = models.DateField()
     conteudo: models.JSONField = models.JSONField(default=list)
     enviado_em: models.DateTimeField = models.DateTimeField(auto_now_add=True)
 
@@ -112,10 +123,10 @@ class HistoricoNotificacao(TimeStampedModel):
         verbose_name = _("Histórico de Notificação")
         verbose_name_plural = _("Históricos de Notificação")
         ordering = ["-enviado_em"]
-        unique_together = ("user", "canal", "enviado_em")
+        unique_together = ("user", "canal", "frequencia", "data_referencia")
 
     def __str__(self) -> str:  # pragma: no cover - simples
-        return f"{self.user} - {self.canal} - {self.enviado_em:%Y-%m-%d %H:%M}"
+        return f"{self.user} - {self.canal} - {self.frequencia} - {self.data_referencia:%Y-%m-%d}"
 
 
 class PushSubscription(TimeStampedModel, SoftDeleteModel):
