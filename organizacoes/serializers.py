@@ -29,9 +29,11 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_telefone",
             "avatar",
             "cover",
+            "inativa",
+            "inativada_em",
             "created_by",
         ]
-        read_only_fields = ["created_by"]
+        read_only_fields = ["created_by", "inativa", "inativada_em"]
         extra_kwargs = {"slug": {"required": False}}
 
     def create(self, validated_data: dict) -> Organizacao:
