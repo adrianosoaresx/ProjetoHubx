@@ -4,7 +4,7 @@ from celery import shared_task  # type: ignore
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import RespostaDiscussao
+from .models import RespostaDiscussao, TopicoDiscussao
 
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
@@ -47,3 +47,25 @@ def notificar_melhor_resposta(resposta_id: int) -> None:
         )
     except ValueError:  # pragma: no cover - template ausente
         return
+
+
+@shared_task(autoretry_for=(Exception,), retry_backoff=True)
+def notificar_agendamento_criado(evento_id: str, topico_id: int) -> None:
+    try:
+        topico = (
+            TopicoDiscussao.objects.select_related("autor")
+            .prefetch_related("respostas__autor")
+            .get(id=topico_id)
+        )
+    except TopicoDiscussao.DoesNotExist:  # pragma: no cover - segurança
+        return
+    destinatarios = {topico.autor, *(r.autor for r in topico.respostas.all())}
+    for user in destinatarios:
+        try:
+            enviar_para_usuario(
+                user,
+                "discussao_agendamento_criado",
+                {"evento_id": evento_id, "topico": topico},
+            )
+        except ValueError:  # pragma: no cover - template ausente
+            continue

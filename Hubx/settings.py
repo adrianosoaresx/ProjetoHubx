@@ -200,6 +200,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 USER_MEDIA_MAX_SIZE = 50 * 1024 * 1024  # 50MB
 USER_MEDIA_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".pdf", ".mp4", ".webm"]
 
+DISCUSSAO_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".pdf"]
+DISCUSSAO_ALLOWED_MIME_PREFIXES = ["image/", "application/pdf"]
+DISCUSSAO_MAX_FILE_MB = 20
+FEATURE_DISCUSSAO_AGENDA = bool(int(os.getenv("FEATURE_DISCUSSAO_AGENDA", "0")))
+
 ORGANIZACOES_MAX_IMAGE_SIZE = 5 * 1024 * 1024
 ORGANIZACOES_ALLOWED_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png"]
 

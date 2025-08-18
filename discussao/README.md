@@ -41,3 +41,10 @@ exclusão lógica através dos campos `deleted` e `deleted_at`.
 
 Moderadores podem sinalizar conteúdo impróprio e revisar no `DiscussionModerationLog`.
 
+## Configuração
+
+- `DISCUSSAO_ALLOWED_EXTS`: extensões permitidas para anexos (`.jpg`, `.jpeg`, `.png`, `.gif`, `.pdf`).
+- `DISCUSSAO_ALLOWED_MIME_PREFIXES`: prefixos MIME aceitos (`image/`, `application/pdf`).
+- `DISCUSSAO_MAX_FILE_MB`: tamanho máximo dos anexos (padrão 20 MB).
+- `FEATURE_DISCUSSAO_AGENDA`: habilita ação opcional de agendar tópicos na Agenda.
+

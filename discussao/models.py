@@ -11,6 +11,8 @@ from django.utils.text import slugify
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 
+from .validators import validate_attachment
+
 
 class SearchVectorField(models.TextField):
     def db_type(self, connection):  # type: ignore[override]
@@ -167,7 +169,12 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         related_name="respostas_discussao",
     )
     conteudo = models.TextField()
-    arquivo = models.FileField(upload_to="discussoes/arquivos/", null=True, blank=True)
+    arquivo = models.FileField(
+        upload_to="discussoes/arquivos/",
+        null=True,
+        blank=True,
+        validators=[validate_attachment],
+    )
     reply_to = models.ForeignKey(
         "self",
         null=True,

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection, transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
@@ -20,8 +22,13 @@ from accounts.models import UserType
 
 from .models import RespostaDiscussao, Tag, TopicoDiscussao
 from .serializers import RespostaDiscussaoSerializer, TagSerializer, TopicoDiscussaoSerializer
-from .services import marcar_resolucao, responder_topico
-from .tasks import notificar_melhor_resposta, notificar_nova_resposta
+from .services import DiscussaoError, marcar_resolucao, responder_topico
+from .services.agenda import criar_evento_para_topico
+from .tasks import (
+    notificar_agendamento_criado,
+    notificar_melhor_resposta,
+    notificar_nova_resposta,
+)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -105,6 +112,33 @@ class TopicoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"], url_path="agendar")
+    def agendar(self, request, pk=None):
+        if not settings.FEATURE_DISCUSSAO_AGENDA:
+            return Response(status=403)
+        topico = self.get_object()
+        if request.user not in {topico.autor} and request.user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+        }:
+            return Response(status=403)
+        inicio = parse_datetime(request.data.get("inicio"))
+        fim = parse_datetime(request.data.get("fim"))
+        titulo = request.data.get("titulo")
+        descricao = request.data.get("descricao", "")
+        if not titulo or not inicio or not fim:
+            return Response({"detail": "Dados inválidos."}, status=400)
+        evento = criar_evento_para_topico(
+            topico=topico,
+            user=request.user,
+            titulo=titulo,
+            inicio=inicio,
+            fim=fim,
+            descricao=descricao,
+        )
+        notificar_agendamento_criado.delay(str(evento.id), topico.id)
+        return Response({"evento_id": str(evento.id)}, status=201)
+
     @action(detail=True, methods=["post"], url_path="desmarcar-resolvido")
     def desmarcar_resolvido(self, request, pk=None):
         topico = self.get_object()
@@ -167,13 +201,16 @@ class RespostaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         data = serializer.validated_data
-        resposta = responder_topico(
-            topico=data["topico"],
-            autor=self.request.user,
-            conteudo=data["conteudo"],
-            reply_to=data.get("reply_to"),
-            arquivo=data.get("arquivo"),
-        )
+        try:
+            resposta = responder_topico(
+                topico=data["topico"],
+                autor=self.request.user,
+                conteudo=data["conteudo"],
+                reply_to=data.get("reply_to"),
+                arquivo=data.get("arquivo"),
+            )
+        except DiscussaoError as exc:
+            raise PermissionDenied(str(exc))
         serializer.instance = resposta
         notificar_nova_resposta.delay(resposta.id)
         cache.clear()

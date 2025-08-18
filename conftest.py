@@ -8,7 +8,7 @@ import threading
 
 # Configurar o Django antes de qualquer operação
 if not django.apps.apps.ready:
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings_test")
     django.setup()
     settings.CELERY_TASK_ALWAYS_EAGER = True
     settings.CELERY_TASK_EAGER_PROPAGATES = True
@@ -68,6 +68,6 @@ def admin_user(django_user_model):
 
 def pytest_configure():
     """Configura o Django para os testes, garantindo inicialização única."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project.settings_test")
     if not settings.configured:
         django.setup()

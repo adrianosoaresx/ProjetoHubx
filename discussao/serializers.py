@@ -3,6 +3,7 @@ from __future__ import annotations
 from rest_framework import serializers
 
 from .models import RespostaDiscussao, Tag, TopicoDiscussao
+from .validators import validate_attachment
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -31,6 +32,11 @@ class RespostaDiscussaoSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["autor", "editado", "created_at", "updated_at", "editado_em"]
+
+    def validate_arquivo(self, arquivo):
+        if arquivo:
+            validate_attachment(arquivo)
+        return arquivo
 
 
 class TopicoDiscussaoSerializer(serializers.ModelSerializer):
