@@ -84,3 +84,6 @@ jobs:
       - name: Resumo de pacotes instalados
         run: |
           pip list --format=columns
+
+      - name: Run tests with coverage
+        run: pytest

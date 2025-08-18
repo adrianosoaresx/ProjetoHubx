@@ -110,6 +110,7 @@ MIDDLEWARE = [
     "dashboard.middleware.DashboardTimingMiddleware",
     "audit.middleware.AuditMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "core.middleware.EndpointMetricsMiddleware",
 ]
 
 ROOT_URLCONF = "Hubx.urls"
