@@ -79,6 +79,39 @@ def test_edicao_apos_limite(api_client, categoria, associado_user, admin_user):
     assert topico.titulo == "Novo"
 
 
+def test_topico_delete_after_limit(api_client, categoria, associado_user, admin_user):
+    with freeze_time("2025-07-10 12:00:00"):
+        topico = create_topico(categoria, associado_user)
+    url = reverse("discussao_api:topico-detail", args=[topico.pk])
+    api_client.force_authenticate(user=associado_user)
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = api_client.delete(url)
+    assert resp.status_code == 403
+    assert TopicoDiscussao.objects.filter(pk=topico.pk).exists()
+    api_client.force_authenticate(user=admin_user)
+    with freeze_time("2025-07-10 12:16:00"):
+        resp2 = api_client.delete(url)
+    assert resp2.status_code == 204
+
+
+def test_resposta_delete_after_limit(api_client, categoria, associado_user, admin_user):
+    topico = create_topico(categoria, associado_user)
+    with freeze_time("2025-07-10 12:00:00"):
+        resposta = RespostaDiscussao.objects.create(
+            topico=topico, autor=associado_user, conteudo="r"
+        )
+    url = reverse("discussao_api:resposta-detail", args=[resposta.pk])
+    api_client.force_authenticate(user=associado_user)
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = api_client.delete(url)
+    assert resp.status_code == 403
+    assert RespostaDiscussao.objects.filter(pk=resposta.pk).exists()
+    api_client.force_authenticate(user=admin_user)
+    with freeze_time("2025-07-10 12:16:00"):
+        resp2 = api_client.delete(url)
+    assert resp2.status_code == 204
+
+
 def test_fechar_e_reabrir_topico(api_client, categoria, associado_user, admin_user):
     topico = create_topico(categoria, associado_user)
     api_client.force_authenticate(user=associado_user)

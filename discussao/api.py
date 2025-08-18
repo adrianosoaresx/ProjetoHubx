@@ -119,6 +119,11 @@ class TopicoViewSet(viewsets.ModelViewSet):
         cache.clear()
 
     def perform_destroy(self, instance):  # type: ignore[override]
+        if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+        }:
+            raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
         cache.clear()
 
@@ -235,6 +240,11 @@ class RespostaViewSet(viewsets.ModelViewSet):
         cache.clear()
 
     def perform_destroy(self, instance):  # type: ignore[override]
+        if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
+            UserType.ADMIN.value,
+            UserType.ROOT.value,
+        }:
+            raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
         cache.clear()
 

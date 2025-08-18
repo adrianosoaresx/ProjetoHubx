@@ -157,6 +157,23 @@ def test_topico_delete_view(client, admin_user, associado_user, categoria, topic
     assert TopicoDiscussao.all_objects.filter(pk=topico.pk).exists()
 
 
+def test_topico_delete_view_rejects_late_deletion(client, associado_user, categoria):
+    with freeze_time("2025-07-10 12:00:00"):
+        t = TopicoDiscussao.objects.create(
+            categoria=categoria,
+            titulo="X",
+            conteudo="c",
+            autor=associado_user,
+            publico_alvo=0,
+        )
+    client.force_login(associado_user)
+    url = reverse("discussao:topico_remover", args=[categoria.slug, t.slug])
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = client.post(url)
+    assert resp.status_code == 403
+    assert TopicoDiscussao.objects.filter(pk=t.pk).exists()
+
+
 def test_resposta_create(client, nucleado_user, categoria, topico):
     client.force_login(nucleado_user)
     url = reverse("discussao:resposta_criar", args=[categoria.slug, topico.slug])
@@ -174,6 +191,24 @@ def test_resposta_create_reply(client, nucleado_user, categoria, topico):
     assert resp.status_code == 302
     child = RespostaDiscussao.objects.get(reply_to=parent)
     assert child.topico == topico
+
+
+def test_resposta_delete_view_rejects_late_deletion(client, associado_user, categoria):
+    with freeze_time("2025-07-10 12:00:00"):
+        t = TopicoDiscussao.objects.create(
+            categoria=categoria,
+            titulo="T",
+            conteudo="c",
+            autor=associado_user,
+            publico_alvo=0,
+        )
+        r = RespostaDiscussao.objects.create(topico=t, autor=associado_user, conteudo="r")
+    client.force_login(associado_user)
+    url = reverse("discussao:delete_comment", args=[r.pk])
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = client.post(url)
+    assert resp.status_code == 403
+    assert RespostaDiscussao.objects.filter(pk=r.pk).exists()
 
 
 def test_resposta_update(client, nucleado_user, categoria, topico):

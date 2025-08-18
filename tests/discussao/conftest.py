@@ -118,8 +118,8 @@ def categoria(organizacao):
 
 
 urlpatterns = [
-    path("api/discussao/", include("discussao.api_urls")),
-    path("discussao/", include("discussao.urls")),
+    path("api/discussao/", include(("discussao.api_urls", "discussao_api"), namespace="discussao_api")),
+    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 ]
 
