@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -213,7 +213,10 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
 
 class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        org = get_object_or_404(Organizacao, pk=pk)
+        try:
+            org = Organizacao.all_objects.get(pk=pk)
+        except Organizacao.DoesNotExist:
+            raise Http404
         antiga = serialize_organizacao(org)
         if org.inativa:
             org.inativa = False
@@ -232,7 +235,7 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
         registrar_log(org, request.user, acao, dif_antiga, dif_nova)
         organizacao_alterada.send(sender=self.__class__, organizacao=org, acao=acao)
         messages.success(request, msg)
-        if org.inativa:
+        if org.inativa or org.deleted:
             return redirect("organizacoes:list")
         return redirect("organizacoes:detail", pk=org.pk)
 
