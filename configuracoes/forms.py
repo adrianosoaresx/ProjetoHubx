@@ -3,7 +3,7 @@ from __future__ import annotations
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from configuracoes.models import ConfiguracaoConta
+from configuracoes.models import ConfiguracaoConta, ConfiguracaoContextual
 
 
 class ConfiguracaoContaForm(forms.ModelForm):
@@ -94,3 +94,18 @@ class ConfiguracaoContaForm(forms.ModelForm):
                     "dia_semana_notificacao", _("Obrigatório para frequência semanal.")
                 )
         return data
+
+
+class ConfiguracaoContextualForm(forms.ModelForm):
+    """Formulário simples para CRUD de ``ConfiguracaoContextual``."""
+
+    class Meta:
+        model = ConfiguracaoContextual
+        fields = (
+            "escopo_tipo",
+            "escopo_id",
+            "frequencia_notificacoes_email",
+            "frequencia_notificacoes_whatsapp",
+            "idioma",
+            "tema",
+        )

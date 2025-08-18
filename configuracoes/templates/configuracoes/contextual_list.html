@@ -1,0 +1,9 @@
+{% load i18n %}
+<h1>{% trans "Configurações Contextuais" %}</h1>
+<ul>
+  {% for cfg in object_list %}
+    <li>{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</li>
+  {% empty %}
+    <li>{% trans "Nenhuma configuração" %}</li>
+  {% endfor %}
+</ul>
