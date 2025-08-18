@@ -10,6 +10,11 @@ urlpatterns = [
         include(("financeiro.api_urls", "financeiro_api"), namespace="financeiro_api"),
     ),
 
+    path(
+        "api/nucleos/",
+        include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
+    ),
+
 
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 
