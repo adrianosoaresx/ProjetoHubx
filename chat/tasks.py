@@ -165,9 +165,10 @@ def exportar_historico_chat(
     else:
         buffer = json.dumps(data)
     path = default_storage.save(filename, ContentFile(buffer.encode()))
+    rel.arquivo_path = path
     rel.arquivo_url = default_storage.url(path)
     rel.status = "concluido"
-    rel.save(update_fields=["arquivo_url", "status", "updated_at"])
+    rel.save(update_fields=["arquivo_path", "arquivo_url", "status", "updated_at"])
     chat_exportacoes_total.labels(formato=formato).inc()
     return rel.arquivo_url
 
@@ -179,9 +180,9 @@ def limpar_exports_antigos() -> None:
     limite = timezone.now() - timedelta(days=30)
     antigos = RelatorioChatExport.objects.filter(created_at__lt=limite)
     for rel in antigos:
-        if rel.arquivo_url:
+        if rel.arquivo_path:
             try:
-                default_storage.delete(rel.arquivo_url)
+                default_storage.delete(rel.arquivo_path)
             except Exception:
                 pass
         rel.delete()
