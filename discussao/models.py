@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
+from .validators import validar_arquivo_discussao
 
 
 class SearchVectorField(models.TextField):
@@ -188,6 +189,10 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         ordering = ["created_at"]
         verbose_name = "Resposta de Discussão"
         verbose_name_plural = "Respostas de Discussão"
+
+    def clean(self):  # type: ignore[override]
+        super().clean()
+        validar_arquivo_discussao(self.arquivo)
 
     def editar_resposta(self, novo_conteudo):
         self.conteudo = novo_conteudo

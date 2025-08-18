@@ -1,5 +1,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
 from django.utils.text import slugify
 
@@ -89,3 +91,18 @@ def test_interacao_unique_and_toggle(topico, admin_user):
     assert InteracaoDiscussao.objects.get().tipo == "dislike"
     with pytest.raises(IntegrityError):
         InteracaoDiscussao.objects.create(user=admin_user, content_type=ct, object_id=topico.id, tipo="like")
+
+
+def test_resposta_model_valid_upload(topico, admin_user):
+    file = SimpleUploadedFile("a.pdf", b"data", content_type="application/pdf")
+    resp = RespostaDiscussao(topico=topico, autor=admin_user, conteudo="ok", arquivo=file)
+    resp.full_clean()
+
+
+def test_resposta_model_invalid_upload_size(topico, admin_user):
+    big = SimpleUploadedFile(
+        "a.png", b"x" * (5 * 1024 * 1024 + 1), content_type="image/png"
+    )
+    resp = RespostaDiscussao(topico=topico, autor=admin_user, conteudo="ok", arquivo=big)
+    with pytest.raises(ValidationError):
+        resp.full_clean()
