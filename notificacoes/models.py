@@ -70,6 +70,7 @@ class NotificationLog(TimeStampedModel):
         max_length=20, choices=NotificationStatus.choices, default=NotificationStatus.PENDENTE
     )
     data_envio: models.DateTimeField = models.DateTimeField(null=True, blank=True)
+    data_leitura: models.DateTimeField = models.DateTimeField(null=True, blank=True)
     erro: models.TextField | None = models.TextField(null=True, blank=True)
 
     class Meta:

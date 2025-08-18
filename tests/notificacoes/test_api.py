@@ -70,6 +70,7 @@ def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
     assert resp.status_code == 204
     log.refresh_from_db()
     assert log.status == NotificationStatus.LIDA
+    assert log.data_leitura is not None
 
 
 def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
