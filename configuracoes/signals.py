@@ -40,7 +40,7 @@ CONTEXT_FIELDS = [
 @receiver(pre_save, sender=ConfiguracaoContextual)
 def capture_old_values(sender, instance, **kwargs):
     if instance.pk:
-        old = sender.objects.get(pk=instance.pk)
+        old = sender.all_objects.get(pk=instance.pk)
         fields = CONTA_FIELDS if sender is ConfiguracaoConta else CONTEXT_FIELDS
         instance._old_values = {f: getattr(old, f) for f in fields}
     else:
