@@ -43,8 +43,9 @@ class CustomUserCreationForm(UserCreationForm):
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
-        if not re.match(r"^\d{11}$", cpf):
-            raise forms.ValidationError("CPF deve conter 11 dígitos numéricos.")
+        if not cpf:
+            return cpf
+        cpf_validator(cpf)
         return cpf
 
     def clean_fone(self):
