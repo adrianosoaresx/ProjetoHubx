@@ -150,6 +150,16 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         parceria.comentario = request.data.get("comentario", "")
         parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
+        EventoLog.objects.create(
+            evento=parceria.evento,
+            usuario=request.user,
+            acao="parceria_avaliada",
+            detalhes={
+                "parceria": parceria.pk,
+                "avaliacao": parceria.avaliacao,
+                "comentario": parceria.comentario,
+            },
+        )
         return Response(self.get_serializer(parceria).data)
 
 

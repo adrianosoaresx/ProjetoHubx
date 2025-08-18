@@ -176,7 +176,14 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
         evento = validated_data["evento"]
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=request.user,
+            acao="parceria_criada",
+            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
+        )
+        return instance
 
     def update(self, instance, validated_data):
         request = self.context["request"]
