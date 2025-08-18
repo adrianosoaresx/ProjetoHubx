@@ -25,6 +25,19 @@ def test_importar_pagamentos_restrito(api_client):
     assert resp.status_code == 403
 
 
+@pytest.mark.parametrize(
+    "tipo",
+    [UserType.ADMIN, getattr(UserType, "FINANCEIRO", UserType.ADMIN)],
+)
+def test_importar_pagamentos_permitido(api_client, tipo):
+    user = UserFactory(user_type=tipo)
+    api_client.force_authenticate(user=user)
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    file = SimpleUploadedFile("data.csv", b"x", content_type="text/csv")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code != 403
+
+
 def test_associado_somente_seus_lancamentos(api_client):
     org = OrganizacaoFactory()
     user1 = UserFactory(user_type=UserType.ASSOCIADO, organizacao=org)
