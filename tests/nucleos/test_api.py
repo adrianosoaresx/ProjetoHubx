@@ -257,3 +257,13 @@ def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user)
     assert resp.data["total_membros"] == 1
     resp2 = api_client.get(url)
     assert resp2["X-Cache"] == "HIT"
+
+
+def test_nucleo_ativo_api(api_client, admin_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-detail", args=[nucleo.pk])
+    resp = api_client.patch(url, {"ativo": False})
+    assert resp.status_code == 200 and resp.data["ativo"] is False
+    nucleo.refresh_from_db()
+    assert nucleo.ativo is False

@@ -58,6 +58,7 @@ def test_create_with_required_fields(media_root, organizacao):
     assert nucleo.cover.name.startswith("nucleos/capas/")
     assert os.path.exists(nucleo.avatar.path)
     assert os.path.exists(nucleo.cover.path)
+    assert nucleo.ativo is True
 
 
 def test_participacao_unique_constraint(organizacao, usuario):
