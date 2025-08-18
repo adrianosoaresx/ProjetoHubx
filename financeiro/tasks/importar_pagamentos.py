@@ -12,7 +12,7 @@ from notificacoes.services.notificacoes import enviar_para_usuario
 from ..models import FinanceiroLog, FinanceiroTaskLog, ImportacaoPagamentos
 from ..services import metrics
 from ..services.auditoria import log_financeiro
-from ..services.importacao import ImportadorPagamentos
+from ..services.importacao import AlreadyProcessedError, ImportadorPagamentos
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,8 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
     detalhes = ""
     try:
         service = ImportadorPagamentos(file_path)
-        total, errors = service.process()
+        importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
+        total, errors = service.process(idempotency_key=importacao.idempotency_key)
         log_path = Path(file_path).with_suffix(".log")
         if errors:
             log_path.write_text("\n".join(errors), encoding="utf-8")
@@ -61,6 +62,12 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
                 enviar_para_usuario(user, "importacao_pagamentos", {"total": total})
             except Exception as exc:  # pragma: no cover - integração externa
                 logger.error("Falha ao notificar importação: %s", exc)
+    except AlreadyProcessedError:
+        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
+            status=ImportacaoPagamentos.Status.CONCLUIDO
+        )
+        logger.info("Importação %s já processada", importacao_id)
+        return
     except Exception as exc:  # pragma: no cover - exceção inesperada
         logger.exception("Erro na importação de pagamentos: %s", exc)
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(

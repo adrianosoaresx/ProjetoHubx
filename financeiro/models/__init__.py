@@ -182,6 +182,7 @@ class ImportacaoPagamentos(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     total_processado = models.PositiveIntegerField(default=0)
     erros = models.JSONField(default=list, blank=True)
+    idempotency_key = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
     class Status(models.TextChoices):
         PROCESSANDO = "processando", "Em processamento"
         CONCLUIDO = "concluido", "Concluído"
