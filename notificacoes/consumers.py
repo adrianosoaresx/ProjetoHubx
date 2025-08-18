@@ -13,7 +13,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
         has_sub = await database_sync_to_async(
-            PushSubscription.objects.filter(user=user).exists
+            PushSubscription.objects.filter(user=user, ativo=True).exists
         )()
         if not has_sub:
             await self.close()

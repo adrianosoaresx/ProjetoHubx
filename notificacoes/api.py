@@ -75,7 +75,7 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return PushSubscription.objects.filter(user=self.request.user)
+        return PushSubscription.objects.filter(user=self.request.user, ativo=True)
 
     def list(self, request):
         queryset = self.get_queryset()
@@ -92,6 +92,7 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
                 "endpoint": serializer.validated_data["endpoint"],
                 "p256dh": serializer.validated_data["p256dh"],
                 "auth": serializer.validated_data["auth"],
+                "ativo": True,
                 "deleted": False,
                 "deleted_at": None,
             },
@@ -104,5 +105,6 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
             subscription = self.get_queryset().get(pk=pk)
         except PushSubscription.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        subscription.delete()
+        subscription.ativo = False
+        subscription.save(update_fields=["ativo"])
         return Response(status=status.HTTP_204_NO_CONTENT)
