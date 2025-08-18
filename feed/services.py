@@ -12,8 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
-def _upload_media(file: IO[bytes]) -> str:
-
 def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
 
     """Valida e envia mídia para o storage configurado.
