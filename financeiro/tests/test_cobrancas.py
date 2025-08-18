@@ -1,10 +1,12 @@
 import pytest
+from decimal import Decimal
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 
 from accounts.factories import UserFactory
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from financeiro.tasks import gerar_cobrancas_mensais
+from financeiro.services.cobrancas import gerar_cobrancas
 from nucleos.factories import NucleoFactory
 from nucleos.models import ParticipacaoNucleo
 from organizacoes.factories import OrganizacaoFactory
@@ -48,8 +50,22 @@ def test_query_efficiency(settings, monkeypatch):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     monkeypatch.setattr("financeiro.services.cobrancas.enviar_cobranca", lambda *a, **k: None)
     _setup_org_centro()
+
     u1 = UserFactory(is_associado=True)
     ContaAssociado.objects.create(user=u1)
     with CaptureQueriesContext(connection) as ctx:
         gerar_cobrancas_mensais()
     assert len(ctx) <= 10
+
+def test_cobranca_com_reajuste(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    org, centro = _setup_org_centro()
+    org.indice_reajuste = Decimal("0.10")
+    org.save()
+    user = UserFactory(is_associado=True)
+    ContaAssociado.objects.create(user=user)
+
+    gerar_cobrancas()
+    lanc = LancamentoFinanceiro.objects.get(centro_custo=centro)
+    assert lanc.valor == Decimal("55.00")
+

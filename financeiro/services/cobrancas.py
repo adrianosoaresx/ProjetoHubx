@@ -46,11 +46,22 @@ def _nucleos_do_usuario(user) -> Iterable[tuple[CentroCusto, Decimal]]:
     return result
 
 
-def gerar_cobrancas() -> None:
-    """Cria lançamentos de cobrança para associados e núcleos."""
+def gerar_cobrancas(reajuste: Decimal | None = None) -> None:
+    """Cria lançamentos de cobrança para associados e núcleos.
+
+    Parâmetros:
+        reajuste: percentual adicional (ex: 0.1 para 10%). Caso ``None``, utiliza o
+        índice configurado na organização, se disponível.
+    """
     centro_org = _centro_organizacao()
     if not centro_org:
         return
+
+    if reajuste is None:
+        org = getattr(centro_org, "organizacao", None)
+        reajuste = getattr(org, "indice_reajuste", Decimal("0")) if org else Decimal("0")
+
+    fator = Decimal("1") + (reajuste or Decimal("0"))
 
     qs = ContaAssociado.objects.filter(user__is_active=True, user__is_associado=True).select_related("user")
     if ParticipacaoNucleo:
@@ -66,7 +77,8 @@ def gerar_cobrancas() -> None:
     inicio_mes = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     venc_dia = getattr(settings, "MENSALIDADE_VENCIMENTO_DIA", 10)
     data_venc = inicio_mes + timezone.timedelta(days=venc_dia - 1)
-    val_assoc = getattr(settings, "MENSALIDADE_ASSOCIACAO", Decimal("50.00"))
+    val_assoc = getattr(settings, "MENSALIDADE_ASSOCIACAO", Decimal("50.00")) * fator
+    val_assoc = val_assoc.quantize(Decimal("0.01"))
     total = 0
     for conta in qs:
         if not LancamentoFinanceiro.objects.filter(
@@ -88,6 +100,7 @@ def gerar_cobrancas() -> None:
                 )
             )
         for centro, val_nucleo in _nucleos_do_usuario(conta.user):
+            val_nucleo = (val_nucleo * fator).quantize(Decimal("0.01"))
             if not LancamentoFinanceiro.objects.filter(
                 centro_custo=centro,
                 conta_associado=conta,

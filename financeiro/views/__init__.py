@@ -47,6 +47,7 @@ from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..services.exportacao import exportar_para_arquivo
 from ..services import metrics
 from ..services.auditoria import log_financeiro
+from ..services.aportes import estornar_aporte as estornar_aporte_service
 from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
@@ -133,7 +134,12 @@ class FinanceiroViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsNotRoot]
 
     def get_permissions(self):
-        if self.action in {"importar_pagamentos", "confirmar_importacao", "reprocessar_erros", "aportes"}:
+        if self.action in {
+            "importar_pagamentos",
+            "confirmar_importacao",
+            "reprocessar_erros",
+            "estornar_aporte",
+        }:
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
         elif self.action == "relatorios":
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin | IsCoordenador]
@@ -143,8 +149,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 IsNotRoot,
                 IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly,
             ]
-        else:
-            self.permission_classes = [IsAuthenticated, IsNotRoot]
         return super().get_permissions()
 
     def _lancamentos_base(self):
@@ -370,6 +374,18 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
         return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="aportes/(?P<aporte_id>[\w-]+)/estornar",
+    )
+    def estornar_aporte(self, request, aporte_id: str):
+        try:
+            lancamento = estornar_aporte_service(aporte_id, request.user)
+        except Exception as exc:  # pragma: no cover - validações
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(AporteSerializer(lancamento).data)
 
 
 def _is_financeiro_or_admin(user) -> bool:
