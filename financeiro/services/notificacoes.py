@@ -7,8 +7,9 @@ from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
-from ..models import LancamentoFinanceiro
 from notificacoes.services.notificacoes import enviar_para_usuario
+
+from ..models import LancamentoFinanceiro
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,21 @@ def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
         )
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar inadimplência: %s", exc)
+
+
+def enviar_aviso_vencimento(user: Any, lancamento: Any) -> None:
+    """Envia aviso de vencimento próximo a um usuário."""
+
+    assunto = _("Vencimento próximo")
+    corpo = _("Você possui lançamentos a vencer em breve.")
+    try:
+        enviar_para_usuario(
+            user,
+            "aviso_vencimento",
+            {"assunto": str(assunto), "corpo": str(corpo)},
+        )
+    except Exception as exc:  # pragma: no cover - integração externa
+        logger.error("Falha ao enviar aviso de vencimento: %s", exc)
 
 
 def enviar_distribuicao(user: Any, evento: Any, valor: Any) -> None:
