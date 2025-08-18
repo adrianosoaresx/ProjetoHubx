@@ -46,15 +46,16 @@ def test_cobranca_nucleo(settings):
     assert LancamentoFinanceiro.objects.filter(centro_custo=centro_nucleo).exists()
 
 
-def test_query_efficiency(settings):
+def test_query_efficiency(settings, monkeypatch):
     settings.CELERY_TASK_ALWAYS_EAGER = True
+    monkeypatch.setattr("financeiro.services.cobrancas.enviar_cobranca", lambda *a, **k: None)
     _setup_org_centro()
-    u1 = UserFactory(is_associado=True, nucleo_obj=None)
+
+    u1 = UserFactory(is_associado=True)
     ContaAssociado.objects.create(user=u1)
     with CaptureQueriesContext(connection) as ctx:
         gerar_cobrancas_mensais()
-    assert len(ctx) <= 11
-
+    assert len(ctx) <= 10
 
 def test_cobranca_com_reajuste(settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
@@ -67,3 +68,4 @@ def test_cobranca_com_reajuste(settings):
     gerar_cobrancas()
     lanc = LancamentoFinanceiro.objects.get(centro_custo=centro)
     assert lanc.valor == Decimal("55.00")
+
