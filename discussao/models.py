@@ -124,9 +124,22 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     objects = SoftDeleteManager()
     all_objects = models.Manager()
 
+    def _generate_unique_slug(self) -> str:
+        base_slug = slugify(self.titulo)
+        slug = base_slug
+        counter = 1
+        while type(self).objects.filter(slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
+
     def save(self, *args, **kwargs):
+        if self.pk:
+            original = type(self).objects.only("titulo").get(pk=self.pk)
+            if original.titulo != self.titulo:
+                self.slug = None
         if not self.slug:
-            self.slug = slugify(self.titulo)
+            self.slug = self._generate_unique_slug()
         if connection.vendor != "postgresql":
             self.search_vector = f"{self.titulo} {self.conteudo}"
         super().save(*args, **kwargs)
