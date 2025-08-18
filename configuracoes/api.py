@@ -37,6 +37,8 @@ class ConfiguracaoContaViewSet(ViewSet):
                     "frequencia_notificacoes_email": "imediata",
                     "receber_notificacoes_whatsapp": False,
                     "frequencia_notificacoes_whatsapp": "diaria",
+                    "receber_notificacoes_push": True,
+                    "frequencia_notificacoes_push": "imediata",
                     "idioma": "pt-BR",
                     "tema": "claro",
                     "hora_notificacao_diaria": "08:00:00",
@@ -85,8 +87,8 @@ class ConfiguracaoContaViewSet(ViewSet):
             OpenApiExample(
                 "Atualização parcial",
                 request_only=True,
-                value={"receber_notificacoes_email": False},
-            )
+                value={"receber_notificacoes_push": False},
+            ),
         ],
     )
     def partial_update(self, request) -> Response:

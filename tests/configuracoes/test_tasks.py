@@ -48,6 +48,18 @@ def test_tarefa_diaria_respeita_preferencia(mock_enviar, admin_user):
     mock_enviar.assert_not_called()
 
 
+@freeze_time("2024-01-01 08:00:00-03:00")
+@patch("configuracoes.tasks.enviar_para_usuario")
+def test_tarefa_diaria_envia_resumo_push(mock_enviar, admin_user):
+    config = admin_user.configuracao
+    config.frequencia_notificacoes_push = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    _criar_notificacao(admin_user)
+    enviar_notificacoes_diarias()
+    mock_enviar.assert_called_once()
+
+
 @patch("configuracoes.tasks.Client")
 def test_enviar_notificacao_whatsapp(mock_client, admin_user):
     instance = mock_client.return_value

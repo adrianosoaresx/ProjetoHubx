@@ -57,11 +57,17 @@ def _send_for_frequency(frequency: str) -> None:
         counts = {
             "chat": ChatNotification.objects.filter(usuario=config.user, created_at__gte=since, lido=False).count(),
             "feed": Post.objects.filter(created_at__gte=since).exclude(autor=config.user).count(),
-            "eventos": Evento.objects.filter(created__gte=since).exclude(coordenador=config.user).count(),
+            "eventos": Evento.objects.filter(created_at__gte=since).exclude(coordenador=config.user).count(),
         }
         if sum(counts.values()) == 0:
             continue
-        if config.receber_notificacoes_email and config.frequencia_notificacoes_email == frequency:
+        if (
+            config.receber_notificacoes_email
+            and config.frequencia_notificacoes_email == frequency
+        ) or (
+            config.receber_notificacoes_push
+            and config.frequencia_notificacoes_push == frequency
+        ):
             enviar_para_usuario(config.user, "resumo_notificacoes", counts)
         if config.receber_notificacoes_whatsapp and config.frequencia_notificacoes_whatsapp == frequency:
             enviar_notificacao_whatsapp(config.user, counts)

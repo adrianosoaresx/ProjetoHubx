@@ -13,6 +13,8 @@ class ConfiguracaoContaSerializer(serializers.ModelSerializer):
             "frequencia_notificacoes_email",
             "receber_notificacoes_whatsapp",
             "frequencia_notificacoes_whatsapp",
+            "receber_notificacoes_push",
+            "frequencia_notificacoes_push",
             "idioma",
             "tema",
             "hora_notificacao_diaria",
