@@ -109,6 +109,12 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
         choices=NOTIFICACAO_FREQ_CHOICES,
         default="imediata",
     )
+    receber_notificacoes_push = models.BooleanField(default=True)
+    frequencia_notificacoes_push = models.CharField(
+        max_length=8,
+        choices=NOTIFICACAO_FREQ_CHOICES,
+        default="imediata",
+    )
     idioma = models.CharField(max_length=5, default="pt-BR")
     tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
 
