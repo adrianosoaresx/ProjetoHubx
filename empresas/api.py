@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -12,14 +13,75 @@ from .metrics import (
     empresas_purgadas_total,
     empresas_restauradas_total,
 )
-from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
+from core.permissions import pode_crud_empresa
+
+from .models import ContatoEmpresa, AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
 from .serializers import (
     AvaliacaoEmpresaSerializer,
+    ContatoEmpresaSerializer,
     EmpresaChangeLogSerializer,
     EmpresaSerializer,
 )
 from .tasks import nova_avaliacao
 from .services import verificar_cnpj
+
+
+class ContatoEmpresaViewSet(viewsets.ModelViewSet):
+    serializer_class = ContatoEmpresaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ContatoEmpresa.objects.filter(
+            empresa_id=self.kwargs["empresa_pk"], deleted=False
+        )
+
+    def list(self, request, *args, **kwargs):
+        empresa = get_object_or_404(Empresa, pk=self.kwargs["empresa_pk"])
+        if not pode_crud_empresa(request.user, empresa):
+            return Response(status=403)
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        empresa = get_object_or_404(Empresa, pk=self.kwargs["empresa_pk"])
+        if not pode_crud_empresa(request.user, empresa):
+            return Response(status=403)
+        serializer = self.get_serializer(data=request.data, context={"empresa": empresa})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(empresa=empresa)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        contato = get_object_or_404(
+            ContatoEmpresa,
+            pk=self.kwargs["pk"],
+            empresa_id=self.kwargs["empresa_pk"],
+            deleted=False,
+        )
+        if not pode_crud_empresa(request.user, contato.empresa):
+            return Response(status=403)
+        serializer = self.get_serializer(
+            contato,
+            data=request.data,
+            partial=partial,
+            context={"empresa": contato.empresa},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        contato = get_object_or_404(
+            ContatoEmpresa,
+            pk=self.kwargs["pk"],
+            empresa_id=self.kwargs["empresa_pk"],
+            deleted=False,
+        )
+        if not pode_crud_empresa(request.user, contato.empresa):
+            return Response(status=403)
+        contato.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
