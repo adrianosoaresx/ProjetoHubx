@@ -27,6 +27,22 @@ Cada alteração relevante gera um registro no histórico, acessível somente po
 
 Usuários autenticados podem avaliar uma empresa com nota de 1 a 5. O proprietário recebe notificação quando uma nova avaliação é criada.
 
+## Validação de CNPJ via API
+
+`POST /api/empresas/validar-cnpj/` valida um CNPJ informando se ele é válido localmente e via serviço externo.
+
+### Variáveis de ambiente
+
+- `CNPJ_VALIDATION_URL`: base URL do serviço externo (padrão BrasilAPI).
+- `CNPJ_VALIDATION_TIMEOUT`: timeout em segundos (padrão 5).
+
+### Métricas
+
+O módulo expõe métricas Prometheus para favoritos, purgas e restaurações:
+- `empresas_favoritos_total`
+- `empresas_purgadas_total`
+- `empresas_restauradas_total`
+
 ## Arquitetura
 
 ```mermaid

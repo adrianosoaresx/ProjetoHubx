@@ -7,10 +7,11 @@ manutenção das views.
 
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import connection
+from django.db.models import Count, Q
 
 from accounts.models import UserType
 
-from .models import Empresa, EmpresaChangeLog, Tag
+from ..models import Empresa, EmpresaChangeLog, Tag
 
 
 def search_empresas(user, params):
@@ -56,7 +57,13 @@ def search_empresas(user, params):
     if palavras:
         qs = qs.filter(palavras_chave__icontains=palavras)
     if tags:
-        qs = qs.filter(tags__in=tags)
+        if isinstance(tags, str):
+            tag_ids = [t for t in tags.split(",") if t]
+        else:
+            tag_ids = list(tags)
+        qs = qs.annotate(
+            _tags_match=Count("tags", filter=Q(tags__id__in=tag_ids), distinct=True)
+        ).filter(_tags_match=len(tag_ids))
     if q:
         if connection.vendor == "postgresql":
             vector = (

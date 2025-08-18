@@ -31,13 +31,16 @@ def _store_old_data(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Empresa)
 def _log_changes(sender, instance, created, **kwargs):
-    if not created:
-        old_data = getattr(instance, "_old_data", {})
-        old_data["tags"] = getattr(instance, "_old_tags", [])
-        registrar_alteracoes(instance.usuario, instance, old_data)
-    _update_search_vector(instance)
     if created:
+        _update_search_vector(instance)
         criar_post_empresa.delay(str(instance.id))
+        validar_cnpj_empresa.delay(str(instance.id))
+        return
+    old_data = getattr(instance, "_old_data", {})
+    old_data["tags"] = getattr(instance, "_old_tags", [])
+    registrar_alteracoes(instance.usuario, instance, old_data)
+    _update_search_vector(instance)
+    if old_data.get("cnpj") != instance.cnpj:
         validar_cnpj_empresa.delay(str(instance.id))
 
 

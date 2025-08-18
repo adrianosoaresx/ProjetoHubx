@@ -70,6 +70,11 @@ def tag_factory(db):
 
 
 @pytest.fixture(autouse=True)
+def _mute_cnpj_validation(monkeypatch):
+    monkeypatch.setattr("empresas.signals.validar_cnpj_empresa.delay", lambda *a, **k: None)
+
+
+@pytest.fixture(autouse=True)
 def media_root(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path
     yield

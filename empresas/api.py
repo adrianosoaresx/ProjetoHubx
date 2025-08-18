@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import re
+
+from django.db.models import Count, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from validate_docbr import CNPJ
 
 from accounts.models import UserType
 
@@ -18,6 +23,7 @@ from .serializers import (
     EmpresaChangeLogSerializer,
     EmpresaSerializer,
 )
+from .services.cnpj_adapter import CNPJServiceError, validate_cnpj_externo
 from .tasks import nova_avaliacao
 
 
@@ -41,7 +47,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         if palavras:
             qs = qs.filter(palavras_chave__icontains=palavras)
         if tag_ids:
-            qs = qs.filter(tags__id__in=tag_ids).distinct()
+            qs = qs.annotate(
+                _tags_match=Count("tags", filter=Q(tags__id__in=tag_ids), distinct=True)
+            ).filter(_tags_match=len(tag_ids))
         return qs.order_by("nome")
 
     def perform_destroy(self, instance: Empresa) -> None:
@@ -167,3 +175,47 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresas_purgadas_total.inc()
         empresa.hard_delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    class ValidarCNPJThrottle(ScopedRateThrottle):
+        scope = "validar_cnpj"
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="validar-cnpj",
+        permission_classes=[IsAuthenticated],
+        throttle_classes=[ValidarCNPJThrottle],
+    )
+    def validar_cnpj(self, request):
+        cnpj_raw = request.data.get("cnpj", "")
+        digits = re.sub(r"\D", "", cnpj_raw)
+        validator = CNPJ()
+        cnpj_formatado = validator.mask(digits) if digits else ""
+        valido_local = validator.validate(digits)
+        valido_externo: bool | None = None
+        fonte: str | None = None
+        mensagem = ""
+        if valido_local:
+            try:
+                valido_externo, fonte = validate_cnpj_externo(digits)
+            except CNPJServiceError:
+                return Response(
+                    {
+                        "cnpj_formatado": cnpj_formatado,
+                        "valido_local": True,
+                        "valido_externo": None,
+                        "fonte": None,
+                        "mensagem": "Serviço indisponível",
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+        else:
+            mensagem = "CNPJ inválido"
+        payload = {
+            "cnpj_formatado": cnpj_formatado,
+            "valido_local": valido_local,
+            "valido_externo": valido_externo,
+            "fonte": fonte,
+            "mensagem": mensagem,
+        }
+        return Response(payload, status=status.HTTP_200_OK)
