@@ -136,7 +136,7 @@
       <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
         {% csrf_token %}
         <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">
-          {% if object.deleted %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
+          {% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
         </button>
       </form>
       <a href="{% url 'organizacoes:historico' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">{% trans 'Histórico' %}</a>

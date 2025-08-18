@@ -36,6 +36,8 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
     contato_telefone = models.CharField(_("Telefone do contato"), max_length=20, blank=True)
     avatar = models.ImageField(upload_to="organizacoes/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="organizacoes/capas/", blank=True, null=True)
+    inativa = models.BooleanField(default=False)
+    inativada_em = models.DateTimeField(null=True, blank=True)
     rate_limit_multiplier = models.FloatField(default=1)
     indice_reajuste = models.DecimalField(
         max_digits=5, decimal_places=4, default=Decimal("0"), help_text="Índice de reajuste anual"
