@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 from django.utils.timezone import make_aware
+from django.utils.formats import date_format
 
 from accounts.models import UserType
 from agenda.models import Evento, InscricaoEvento
@@ -69,6 +70,8 @@ class CalendarViewTests(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Evento")
+        data_formatada = date_format(dia, format="SHORT_DATE_FORMAT")
+        self.assertContains(resp, f"Eventos de {data_formatada}")
 
     def test_month_navigation_context(self):
         url = reverse("agenda:calendario_mes", args=[2025, 5])
@@ -92,7 +95,5 @@ class CalendarViewTests(TestCase):
     def test_calendar_displays_month_in_portuguese(self):
         self.client.force_login(self.admin)
         resp = self.client.get(reverse("agenda:calendario"))
-        from django.utils.formats import date_format
-
         month_name = date_format(date.today(), "F")
         self.assertContains(resp, month_name)
