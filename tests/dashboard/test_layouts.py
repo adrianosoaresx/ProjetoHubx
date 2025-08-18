@@ -1,5 +1,4 @@
 import json
-import json
 import pytest
 from django.urls import reverse
 
@@ -37,6 +36,26 @@ def test_layout_permission(client, admin_user, cliente_user):
     client.force_login(cliente_user)
     resp = client.post(reverse('dashboard:layout-save', args=[layout.pk]), {'layout_json': '[]'})
     assert resp.status_code == 403
+
+
+@pytest.mark.django_db
+def test_layout_list_includes_public(client, admin_user, cliente_user):
+    own_layout = DashboardLayout.objects.create(
+        user=cliente_user, nome="Own", layout_json="[]"
+    )
+    public_layout = DashboardLayout.objects.create(
+        user=admin_user, nome="Pub", layout_json="[]", publico=True
+    )
+    private_layout = DashboardLayout.objects.create(
+        user=admin_user, nome="Priv", layout_json="[]", publico=False
+    )
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:layouts"))
+    assert resp.status_code == 200
+    layouts = set(resp.context["object_list"])
+    assert own_layout in layouts
+    assert public_layout in layouts
+    assert private_layout not in layouts
 
 
 @pytest.mark.django_db
