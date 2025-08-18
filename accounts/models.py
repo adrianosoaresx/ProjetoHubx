@@ -300,6 +300,26 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
                     {"file": _("Arquivo maior que %(size)d MB.") % {"size": max_size // (1024 * 1024)}}
                 )
 
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+        *,
+        soft: bool = True,
+    ) -> None:  # type: ignore[override]
+        """Remove o arquivo associado antes de deletar o registro.
+
+        Se ``soft`` for ``True``, o arquivo é mantido para permitir restauração
+        futura. Quando ``soft`` for ``False``, o arquivo é excluído
+        definitivamente do armazenamento.
+        """
+
+        if not soft and self.file:
+            # ``save=False`` evita a atualização do campo no banco de dados.
+            self.file.delete(save=False)
+
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
+
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.user.username} - {self.file.name}"
 

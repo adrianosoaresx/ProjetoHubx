@@ -257,7 +257,7 @@ def perfil_midia_edit(request, pk):
 def perfil_midia_delete(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
-        media.delete()
+        media.delete(soft=False)
         messages.success(request, "Mídia removida.")
         return redirect("accounts:midias")
     return render(request, "perfil/midia_confirm_delete.html", {"media": media})
