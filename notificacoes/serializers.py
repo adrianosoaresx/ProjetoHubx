@@ -27,6 +27,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "canal",
             "status",
             "data_envio",
+            "data_leitura",
             "erro",
             "destinatario",
         ]
@@ -39,6 +40,7 @@ class NotificationLogSerializer(serializers.ModelSerializer):
             "created_at",
             "canal",
             "data_envio",
+            "data_leitura",
             "erro",
             "destinatario",
         ]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -48,7 +49,10 @@ class NotificationLogViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelView
     def partial_update(self, request, *args, **kwargs):
         if request.data.get("status") != NotificationStatus.LIDA:
             return Response({"detail": _("Status inválido")}, status=status.HTTP_400_BAD_REQUEST)
-        super().partial_update(request, *args, **kwargs)
+        log = self.get_object()
+        log.status = NotificationStatus.LIDA
+        log.data_leitura = timezone.now()
+        log.save(update_fields=["status", "data_leitura"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
