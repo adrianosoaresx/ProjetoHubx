@@ -61,6 +61,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
     image = models.ImageField(upload_to="uploads/", null=True, blank=True)
     pdf = models.FileField(upload_to="uploads/", null=True, blank=True)
     video = models.FileField(upload_to="videos/", null=True, blank=True)
+    video_preview = models.ImageField(upload_to="video_previews/", null=True, blank=True)
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
     evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
@@ -83,15 +84,17 @@ class Post(TimeStampedModel, SoftDeleteModel):
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         super().save(*args, **kwargs)
-        moderacao, _created = ModeracaoPost.objects.get_or_create(post=self)
-        if is_new and _created:
-            # novo post começa pendente
-            pass
+        if is_new:
+            ModeracaoPost.objects.create(post=self)
         banned = getattr(settings, "FEED_BAD_WORDS", [])
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
-            if moderacao.status != "pendente":
-                moderacao.status = "pendente"
-                moderacao.save(update_fields=["status"])
+            mod = self.moderacao
+            if not mod or mod.status != "pendente":
+                ModeracaoPost.objects.create(post=self, status="pendente")
+
+    @property
+    def moderacao(self):
+        return self.moderacoes.order_by("-created_at").first()
 
 
 class Like(TimeStampedModel, SoftDeleteModel):
@@ -160,7 +163,7 @@ class ModeracaoPost(TimeStampedModel):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name="moderacao")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="moderacoes")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
     motivo = models.TextField(blank=True)
     avaliado_por = models.ForeignKey(

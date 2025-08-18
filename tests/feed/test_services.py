@@ -1,39 +1,49 @@
 from __future__ import annotations
 
-from unittest.mock import Mock
+import subprocess
+import tempfile
 
-import boto3
 import pytest
-from botocore.exceptions import ClientError
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from feed.services import upload_media
 
 
+def _make_video_file() -> SimpleUploadedFile:
+    tmp = tempfile.NamedTemporaryFile(suffix=".mp4")
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            "color=c=black:s=16x16:d=1",
+            "-pix_fmt",
+            "yuv420p",
+            tmp.name,
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    tmp.seek(0)
+    return SimpleUploadedFile("v.mp4", tmp.read(), content_type="video/mp4")
+
+
 @pytest.mark.django_db
-def test_upload_media_retries(monkeypatch, settings):
-    settings.AWS_STORAGE_BUCKET_NAME = "bucket"
-    file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
-    client = Mock()
-    calls = {"n": 0}
-
-    def upload_fileobj(f, bucket, key):
-        calls["n"] += 1
-        if calls["n"] < 3:
-            raise ClientError({"Error": {}}, "upload")
-
-    client.upload_fileobj = upload_fileobj
-    client.generate_presigned_url = lambda *a, **k: f"url/{k['Params']['Key']}"
-    monkeypatch.setattr(boto3, "client", lambda *a, **k: client)
-    url = upload_media(file)
-    assert url.startswith("url/")
-    assert calls["n"] == 3
+def test_upload_media_generates_preview():
+    video = _make_video_file()
+    video_key, preview_key = upload_media(video)
+    assert preview_key
+    assert default_storage.exists(video_key)
+    assert default_storage.exists(preview_key)
 
 
 @pytest.mark.django_db
-def test_upload_media_invalid_size(settings):
-    settings.AWS_STORAGE_BUCKET_NAME = "bucket"
+def test_upload_media_invalid_size():
     big = SimpleUploadedFile(
         "a.pdf",
         b"x" * (10 * 1024 * 1024 + 1),
