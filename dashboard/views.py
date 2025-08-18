@@ -706,15 +706,35 @@ class DashboardFilterApplyView(LoginRequiredMixin, View):
             ):
                 return HttpResponse(status=403)
         url = reverse("dashboard:dashboard") + "?" + urlencode(filtro.filtros, doseq=True)
+        log_audit(
+            user=request.user,
+            action="APPLY_FILTER",
+            object_type="DashboardFilter",
+            object_id=str(filtro.pk),
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata={"filtros": filtro.filtros},
+        )
         return redirect(url)
 
 
 class DashboardFilterDeleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        filtro = DashboardFilter.objects.filter(pk=pk, user=request.user).first()
+        filtro = DashboardFilter.objects.filter(pk=pk).first()
         if not filtro:
             return HttpResponse(status=404)
+        if filtro.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            return HttpResponse(status=403)
         filtro.delete()
+        log_audit(
+            user=request.user,
+            action="DELETE_FILTER",
+            object_type="DashboardFilter",
+            object_id=str(filtro.pk),
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata={"filtros": filtro.filtros},
+        )
         return redirect("dashboard:filters")
 
 
