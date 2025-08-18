@@ -31,7 +31,11 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
-from .tasks import notificar_melhor_resposta, notificar_nova_resposta
+from .tasks import (
+    notificar_melhor_resposta,
+    notificar_nova_resposta,
+    notificar_topico_resolvido,
+)
 
 
 @method_decorator(cache_page(60), name="dispatch")
@@ -436,6 +440,7 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             UserType.ROOT,
         }:
             return HttpResponseForbidden()
+        antes_resolvido = topico.resolvido
         resposta_id = request.POST.get("melhor_resposta")
         if resposta_id:
             resposta = get_object_or_404(topico.respostas, pk=resposta_id)
@@ -443,6 +448,8 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             topico.resolvido = True
             topico.save(update_fields=["melhor_resposta", "resolvido"])
             notificar_melhor_resposta.delay(resposta.id)
+            if not antes_resolvido:
+                notificar_topico_resolvido.delay(topico.id)
             cache.clear()
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         elif topico.resolvido:
@@ -454,6 +461,8 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
         else:
             topico.resolvido = True
             topico.save(update_fields=["resolvido"])
+            if not antes_resolvido:
+                notificar_topico_resolvido.delay(topico.id)
             cache.clear()
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         return redirect(

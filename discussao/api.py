@@ -36,7 +36,11 @@ from .serializers import (
 )
 from .services import marcar_resolucao, responder_topico
 from .services.agenda_bridge import criar_reuniao as criar_reuniao_agenda
-from .tasks import notificar_melhor_resposta, notificar_nova_resposta
+from .tasks import (
+    notificar_melhor_resposta,
+    notificar_nova_resposta,
+    notificar_topico_resolvido,
+)
 
 
 class CategoriaDiscussaoViewSet(viewsets.ModelViewSet):
@@ -138,8 +142,11 @@ class TopicoViewSet(viewsets.ModelViewSet):
         topico = self.get_object()
         resposta_id = request.data.get("resposta_id")
         resposta = get_object_or_404(topico.respostas, id=resposta_id)
-        marcar_resolucao(topico=topico, resposta=resposta, user=request.user)
+        was_resolved = topico.resolvido
+        topico = marcar_resolucao(topico=topico, resposta=resposta, user=request.user)
         notificar_melhor_resposta.delay(resposta.id)
+        if not was_resolved:
+            notificar_topico_resolvido.delay(topico.id)
         cache.clear()
         serializer = self.get_serializer(topico)
         return Response(serializer.data)

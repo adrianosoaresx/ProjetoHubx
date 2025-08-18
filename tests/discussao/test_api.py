@@ -139,18 +139,29 @@ def test_tasks_disparadas(api_client, categoria, associado_user, admin_user, mon
         called["resposta"] = resposta_id
 
     monkeypatch.setattr("discussao.tasks.notificar_nova_resposta.delay", fake_delay)
-    url_resp = reverse("discussao_api:resposta-list")
-    resp = api_client.post(url_resp, {"topico": topico.id, "conteudo": "oi"})
+    url_resp = reverse("resposta-list", urlconf="discussao.api_urls")
+    resp = api_client.post("/api/discussao" + url_resp, {"topico": topico.id, "conteudo": "oi"})
     assert resp.status_code == 201 and "resposta" in called
 
     resposta = RespostaDiscussao.objects.get(id=called["resposta"])
-    called2 = {}
+    called2: dict[str, int] = {}
+    called3: dict[str, int] = {}
 
     def fake_best(resposta_id: int) -> None:
         called2["resposta"] = resposta_id
 
+    def fake_topico(topico_id: int) -> None:
+        called3["topico"] = topico_id
+
     monkeypatch.setattr("discussao.tasks.notificar_melhor_resposta.delay", fake_best)
+    monkeypatch.setattr("discussao.tasks.notificar_topico_resolvido.delay", fake_topico)
     api_client.force_authenticate(user=associado_user)
-    url = reverse("discussao_api:topico-marcar-resolvido", args=[topico.pk])
-    resp2 = api_client.post(url, {"resposta_id": resposta.id})
-    assert resp2.status_code == 200 and called2["resposta"] == resposta.id
+    url = reverse(
+        "topico-marcar-resolvido", args=[topico.pk], urlconf="discussao.api_urls"
+    )
+    resp2 = api_client.post("/api/discussao" + url, {"resposta_id": resposta.id})
+    assert (
+        resp2.status_code == 200
+        and called2["resposta"] == resposta.id
+        and called3["topico"] == topico.id
+    )

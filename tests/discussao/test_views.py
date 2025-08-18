@@ -1,5 +1,7 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponse
+from django.test import RequestFactory
 from django.urls import reverse
 from freezegun import freeze_time
 
@@ -10,6 +12,7 @@ from discussao.models import (
     RespostaDiscussao,
     TopicoDiscussao,
 )
+from discussao.views import TopicoMarkResolvedView
 from nucleos.models import Nucleo
 
 pytestmark = pytest.mark.django_db
@@ -269,3 +272,29 @@ def test_interacao_requires_login(client, categoria, topico):
     resp = client.post(reverse("discussao:interacao", args=[ct.id, topico.id, "like"]))
     assert resp.status_code == 302
     assert "/accounts/login" in resp.headers["Location"]
+
+
+def test_topico_mark_resolved_view_triggers_tasks(
+    associado_user, nucleado_user, categoria, monkeypatch
+):
+    topico = TopicoDiscussao.objects.create(
+        categoria=categoria, titulo="T", conteudo="c", autor=associado_user, publico_alvo=0
+    )
+    resp = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r")
+    called: dict[str, int] = {}
+
+    def fake_best(resposta_id: int) -> None:
+        called["resposta"] = resposta_id
+
+    def fake_topico(topico_id: int) -> None:
+        called["topico"] = topico_id
+
+    monkeypatch.setattr("discussao.tasks.notificar_melhor_resposta.delay", fake_best)
+    monkeypatch.setattr("discussao.tasks.notificar_topico_resolvido.delay", fake_topico)
+    rf = RequestFactory()
+    request = rf.post("/dummy", {"melhor_resposta": resp.id})
+    request.user = associado_user
+    monkeypatch.setattr("django.contrib.messages.api.add_message", lambda *a, **k: None)
+    monkeypatch.setattr("discussao.views.redirect", lambda *a, **k: HttpResponse("ok"))
+    TopicoMarkResolvedView.as_view()(request, categoria_slug=categoria.slug, topico_slug=topico.slug)
+    assert called["resposta"] == resp.id and called["topico"] == topico.id
