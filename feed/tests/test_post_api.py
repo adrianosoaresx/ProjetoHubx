@@ -81,3 +81,15 @@ class PostAPITest(TestCase):
         data = list_res.data["results"] if isinstance(list_res.data, dict) else list_res.data
         ids = [item["id"] for item in data]
         self.assertNotIn(post_id, ids)
+
+    def test_update_not_author_forbidden(self):
+        res = self.client.post(
+            "/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"}
+        )
+        post_id = res.data["id"]
+        other_user = UserFactory(organizacao=self.user.organizacao)
+        self.client.force_authenticate(other_user)
+        res = self.client.patch(
+            f"/api/feed/posts/{post_id}/", {"conteudo": "novo"}
+        )
+        self.assertEqual(res.status_code, 403)
