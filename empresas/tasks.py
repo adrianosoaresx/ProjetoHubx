@@ -15,81 +15,116 @@ from .models import AvaliacaoEmpresa, Empresa
 nova_avaliacao = Signal()  # args: avaliacao
 
 
-@shared_task
-def validar_cnpj_empresa(empresa_id: str) -> None:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    max_retries=5,
+)
+def validar_cnpj_empresa(self, empresa_id: str) -> None:
     try:
         empresa = Empresa.objects.get(pk=empresa_id)
+        valido, fonte = validar_cnpj(empresa.cnpj)
+        if valido:
+            empresa.validado_em = timezone.now()
+            empresa.fonte_validacao = fonte
+            empresa.save(update_fields=["validado_em", "fonte_validacao"])
     except Empresa.DoesNotExist as exc:  # pragma: no cover - condição rara
         sentry_sdk.capture_exception(exc)
         return
-    try:
-        valido, fonte = validar_cnpj(empresa.cnpj)
     except CNPJValidationError as exc:  # pragma: no cover - rede externa
         sentry_sdk.capture_exception(exc)
         return
-    if valido:
-        empresa.validado_em = timezone.now()
-        empresa.fonte_validacao = fonte
-        empresa.save(update_fields=["validado_em", "fonte_validacao"])
+    except Exception as exc:  # pragma: no cover - falha inesperada
+        if self.request.retries >= self.max_retries:
+            sentry_sdk.capture_exception(exc)
+        raise
 
 
-@shared_task
-def notificar_responsavel(avaliacao_id: str) -> None:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    max_retries=5,
+)
+def notificar_responsavel(self, avaliacao_id: str) -> None:
     try:
         avaliacao = AvaliacaoEmpresa.objects.select_related("empresa__usuario").get(pk=avaliacao_id)
-    except AvaliacaoEmpresa.DoesNotExist as exc:  # pragma: no cover - condição rara
-        sentry_sdk.capture_exception(exc)
-        return
-    email = avaliacao.empresa.usuario.email
-    if not email:
-        return
-    try:
+        email = avaliacao.empresa.usuario.email
+        if not email:
+            return
         enviar_para_usuario(
             avaliacao.empresa.usuario,
             "nova_avaliacao_empresa",
             {"empresa": avaliacao.empresa.nome},
         )
-    except Exception as exc:  # pragma: no cover - integração externa
+    except AvaliacaoEmpresa.DoesNotExist as exc:  # pragma: no cover - condição rara
         sentry_sdk.capture_exception(exc)
+        return
+    except Exception as exc:  # pragma: no cover - integração externa
+        if self.request.retries >= self.max_retries:
+            sentry_sdk.capture_exception(exc)
+        raise
 
 
-@shared_task
-def criar_post_empresa(empresa_id: str) -> None:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    max_retries=5,
+)
+def criar_post_empresa(self, empresa_id: str) -> None:
     from feed.models import Post  # import local para evitar dependências circulares
 
     try:
         empresa = Empresa.objects.select_related("usuario", "organizacao").get(pk=empresa_id)
+        Post.objects.create(
+            autor=empresa.usuario,
+            organizacao=empresa.organizacao,
+            tipo_feed="global",
+            conteudo=f"Nova empresa cadastrada: {empresa.nome}",
+        )
     except Empresa.DoesNotExist as exc:  # pragma: no cover - condição rara
         sentry_sdk.capture_exception(exc)
         return
-
-    Post.objects.create(
-        autor=empresa.usuario,
-        organizacao=empresa.organizacao,
-        tipo_feed="global",
-        conteudo=f"Nova empresa cadastrada: {empresa.nome}",
-    )
+    except Exception as exc:  # pragma: no cover - falha inesperada
+        if self.request.retries >= self.max_retries:
+            sentry_sdk.capture_exception(exc)
+        raise
 
 
-@shared_task
-def criar_post_avaliacao(avaliacao_id: str) -> None:
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    max_retries=5,
+)
+def criar_post_avaliacao(self, avaliacao_id: str) -> None:
     from feed.models import Post  # import local para evitar dependências circulares
 
     try:
-        avaliacao = AvaliacaoEmpresa.objects.select_related("empresa__organizacao", "empresa", "usuario").get(
-            pk=avaliacao_id
+        avaliacao = AvaliacaoEmpresa.objects.select_related(
+            "empresa__organizacao", "empresa", "usuario"
+        ).get(pk=avaliacao_id)
+        if avaliacao.nota < 4:
+            return
+        Post.objects.create(
+            autor=avaliacao.usuario,
+            organizacao=avaliacao.empresa.organizacao,
+            tipo_feed="global",
+            conteudo=f"{avaliacao.usuario} avaliou {avaliacao.empresa.nome} com nota {avaliacao.nota}",
         )
     except AvaliacaoEmpresa.DoesNotExist as exc:  # pragma: no cover - condição rara
         sentry_sdk.capture_exception(exc)
         return
-    if avaliacao.nota < 4:
-        return
-    Post.objects.create(
-        autor=avaliacao.usuario,
-        organizacao=avaliacao.empresa.organizacao,
-        tipo_feed="global",
-        conteudo=f"{avaliacao.usuario} avaliou {avaliacao.empresa.nome} com nota {avaliacao.nota}",
-    )
+    except Exception as exc:  # pragma: no cover - falha inesperada
+        if self.request.retries >= self.max_retries:
+            sentry_sdk.capture_exception(exc)
+        raise
 
 
 @receiver(nova_avaliacao)
