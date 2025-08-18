@@ -145,6 +145,21 @@ class NucleoViewSet(viewsets.ModelViewSet):
         response["X-Cache"] = "MISS"
         return response
 
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="meus",
+        permission_classes=[IsAuthenticated],
+    )
+    def meus(self, request):
+        qs = self.get_queryset().filter(
+            participacoes__user=request.user, participacoes__status="ativo"
+        )
+        qs = qs.distinct()
+        page = self.paginate_queryset(qs)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 
 
     def perform_destroy(self, instance: Nucleo) -> None:
@@ -362,6 +377,41 @@ class NucleoViewSet(viewsets.ModelViewSet):
         )
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post", "patch", "delete"],
+        url_path="membros/(?P<user_id>[^/.]+)/coordenador",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def coordenador(
+        self,
+        request,
+        pk: str | None = None,
+        user_id: str | None = None,
+    ):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
+        )
+        if request.method == "POST":
+            if participacao.papel == "coordenador":
+                return Response({"detail": _("Membro já é coordenador.")}, status=400)
+            participacao.papel = "coordenador"
+            participacao.save(update_fields=["papel"])
+            serializer = ParticipacaoNucleoSerializer(participacao)
+            return Response(serializer.data)
+        if request.method == "PATCH":
+            if participacao.papel != "coordenador":
+                return Response({"detail": _("Membro não é coordenador.")}, status=400)
+            participacao.papel = "membro"
+            participacao.save(update_fields=["papel"])
+            serializer = ParticipacaoNucleoSerializer(participacao)
+            return Response(serializer.data)
+        if participacao.papel != "coordenador":
+            return Response({"detail": _("Membro não é coordenador.")}, status=400)
+        participacao.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,

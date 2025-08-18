@@ -1,6 +1,5 @@
 import csv
 from datetime import timedelta
-import csv
 
 import pytest
 from django.urls import reverse
@@ -257,3 +256,34 @@ def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user)
     assert resp.data["total_membros"] == 1
     resp2 = api_client.get(url)
     assert resp2["X-Cache"] == "HIT"
+
+
+def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-coordenador", args=[nucleo.pk, outro_user.pk])
+    resp = api_client.post(url)
+    assert resp.status_code == 200
+    part = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=outro_user)
+    assert part.papel == "coordenador"
+    resp = api_client.patch(url)
+    assert resp.status_code == 200
+    part.refresh_from_db()
+    assert part.papel == "membro"
+    resp = api_client.post(url)
+    assert resp.status_code == 200
+    resp = api_client.delete(url)
+    assert resp.status_code == 204
+    assert not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=outro_user).exists()
+
+
+def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N12", slug="n12", organizacao=organizacao)
+    Nucleo.objects.create(nome="N13", slug="n13", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    _auth(api_client, outro_user)
+    url = reverse("nucleos_api:nucleo-meus")
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+    assert resp.data["results"][0]["id"] == str(nucleo.id)
