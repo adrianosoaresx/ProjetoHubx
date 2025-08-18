@@ -558,7 +558,97 @@ class DashboardConfigApplyView(LoginRequiredMixin, View):
             + "?"
             + "&".join(f"{k}={','.join(v) if isinstance(v, list) else v}" for k, v in params.items())
         )
+        log_audit(
+            user=request.user,
+            action="APPLY_CONFIG",
+            object_type="DashboardConfig",
+            object_id=str(cfg.pk),
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata=params,
+        )
         return redirect(url)
+
+
+class DashboardConfigUpdateView(LoginRequiredMixin, UpdateView):
+    model = DashboardConfig
+    form_class = DashboardConfigForm
+    template_name = "dashboard/config_form.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:configs")
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user != request.user and request.user.user_type not in {
+            UserType.ROOT,
+            UserType.ADMIN,
+        }:
+            return HttpResponse(status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        config_data = {
+            "periodo": self.request.GET.get("periodo", "mensal"),
+            "escopo": self.request.GET.get("escopo", "auto"),
+            "filters": {},
+        }
+        inicio = self.request.GET.get("data_inicio")
+        fim = self.request.GET.get("data_fim")
+        if inicio:
+            config_data["filters"]["data_inicio"] = inicio
+        if fim:
+            config_data["filters"]["data_fim"] = fim
+        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
+            val = self.request.GET.get(key)
+            if val:
+                config_data["filters"][key] = val
+        metricas_list = self.request.GET.getlist("metricas")
+        if metricas_list:
+            config_data["filters"]["metricas"] = metricas_list
+        self.object = form.save(form.instance.user, config_data)
+        log_audit(
+            user=self.request.user,
+            action="UPDATE_CONFIG",
+            object_type="DashboardConfig",
+            object_id=str(self.object.pk),
+            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata=config_data,
+        )
+        return redirect(self.get_success_url())
+
+
+class DashboardConfigDeleteView(LoginRequiredMixin, DeleteView):
+    model = DashboardConfig
+    template_name = "dashboard/config_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:configs")
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user != request.user and request.user.user_type not in {
+            UserType.ROOT,
+            UserType.ADMIN,
+        }:
+            return HttpResponse(status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        pk = str(obj.pk)
+        response = super().delete(request, *args, **kwargs)
+        log_audit(
+            user=request.user,
+            action="DELETE_CONFIG",
+            object_type="DashboardConfig",
+            object_id=pk,
+            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            status="SUCCESS",
+            metadata={},
+        )
+        return response
 
 
 class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
