@@ -13,7 +13,7 @@ User = get_user_model()
 class NucleoForm(forms.ModelForm):
     class Meta:
         model = Nucleo
-        fields = ["nome", "slug", "descricao", "avatar", "cover"]
+        fields = ["nome", "slug", "descricao", "avatar", "cover", "ativo"]
 
     def clean_descricao(self):
         descricao = self.cleaned_data.get("descricao", "")
