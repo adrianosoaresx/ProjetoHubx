@@ -9,6 +9,7 @@ from accounts.factories import UserFactory
 from Hubx.asgi import application
 from notificacoes.models import (
     Canal,
+    Frequencia,
     HistoricoNotificacao,
     NotificationLog,
     NotificationStatus,
@@ -46,12 +47,10 @@ def test_relatorio_diario_cria_historico(settings):
 
     enviar_relatorios_diarios()
 
-    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL)
+    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA)
     assert len(hist.conteudo) == 2
-    assert all(
-        log.status == NotificationStatus.ENVIADA
-        for log in NotificationLog.objects.filter(user=user)
-    )
+    assert hist.data_referencia == timezone.localdate()
+    assert all(log.status == NotificationStatus.ENVIADA for log in NotificationLog.objects.filter(user=user))
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
@@ -66,9 +65,7 @@ def test_relatorio_diario_nao_duplicado(settings):
     enviar_relatorios_diarios()
     _criar_logs(user, Canal.EMAIL, offset_minutes=1)
     enviar_relatorios_diarios()
-    assert (
-        HistoricoNotificacao.objects.filter(user=user, canal=Canal.EMAIL).count() == 1
-    )
+    assert HistoricoNotificacao.objects.filter(user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA).count() == 1
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
@@ -130,5 +127,6 @@ def test_relatorio_semanal_cria_historico(settings):
 
     enviar_relatorios_semanais()
 
-    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL)
+    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL, frequencia=Frequencia.SEMANAL)
     assert len(hist.conteudo) == 2
+    assert hist.data_referencia == timezone.localdate()

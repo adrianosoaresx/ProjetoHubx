@@ -2,11 +2,13 @@
 {% for item in historicos %}
 <tr>
   <td class="px-4 py-2 whitespace-nowrap">{{ item.enviado_em|date:'Y-m-d H:i' }}</td>
+  <td class="px-4 py-2 whitespace-nowrap">{{ item.data_referencia|date:'Y-m-d' }}</td>
   <td class="px-4 py-2">{{ item.canal }}</td>
+  <td class="px-4 py-2">{{ item.frequencia }}</td>
   <td class="px-4 py-2">{{ item.conteudo|join:", " }}</td>
 </tr>
 {% empty %}
 <tr>
-  <td colspan="3" class="px-4 py-2 text-center text-neutral-500">{% trans 'Nenhuma notificação' %}</td>
+  <td colspan="5" class="px-4 py-2 text-center text-neutral-500">{% trans 'Nenhuma notificação' %}</td>
 </tr>
 {% endfor %}
