@@ -67,3 +67,33 @@ def test_tarefa_semanal_whatsapp(mock_whatsapp, admin_user):
     _criar_notificacao(admin_user)
     enviar_notificacoes_semanais()
     mock_whatsapp.assert_called_once()
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+@patch("configuracoes.tasks.Evento")
+@patch("configuracoes.tasks.send_push")
+def test_tarefa_diaria_envia_push(mock_push, mock_evento, admin_user):
+    mock_evento.objects.filter.return_value.exclude.return_value.count.return_value = 0
+    config = admin_user.configuracao
+    config.receber_notificacoes_push = True
+    config.frequencia_notificacoes_push = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    _criar_notificacao(admin_user)
+    enviar_notificacoes_diarias()
+    mock_push.assert_called_once()
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+@patch("configuracoes.tasks.Evento")
+@patch("configuracoes.tasks.send_push")
+def test_tarefa_diaria_push_respeita_preferencia(mock_push, mock_evento, admin_user):
+    mock_evento.objects.filter.return_value.exclude.return_value.count.return_value = 0
+    config = admin_user.configuracao
+    config.receber_notificacoes_push = False
+    config.frequencia_notificacoes_push = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    _criar_notificacao(admin_user)
+    enviar_notificacoes_diarias()
+    mock_push.assert_not_called()
