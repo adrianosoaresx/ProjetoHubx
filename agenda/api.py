@@ -118,6 +118,53 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         )
         instance.soft_delete()
 
+    @action(detail=True, methods=["post"])
+    def aprovar(self, request, pk=None):
+        material = self.get_object()
+        material.status = "aprovado"
+        material.avaliado_por = request.user
+        material.avaliado_em = timezone.now()
+        material.motivo_devolucao = ""
+        material.save(
+            update_fields=[
+                "status",
+                "avaliado_por",
+                "avaliado_em",
+                "motivo_devolucao",
+                "updated_at",
+            ]
+        )
+        EventoLog.objects.create(
+            evento=material.evento,
+            usuario=request.user,
+            acao="material_aprovado",
+        )
+        return Response(self.get_serializer(material).data)
+
+    @action(detail=True, methods=["post"])
+    def devolver(self, request, pk=None):
+        material = self.get_object()
+        material.status = "devolvido"
+        material.avaliado_por = request.user
+        material.avaliado_em = timezone.now()
+        material.motivo_devolucao = request.data.get("motivo_devolucao", "")
+        material.save(
+            update_fields=[
+                "status",
+                "avaliado_por",
+                "avaliado_em",
+                "motivo_devolucao",
+                "updated_at",
+            ]
+        )
+        EventoLog.objects.create(
+            evento=material.evento,
+            usuario=request.user,
+            acao="material_devolvido",
+            detalhes={"motivo_devolucao": material.motivo_devolucao},
+        )
+        return Response(self.get_serializer(material).data)
+
 
 class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = ParceriaEventoSerializer
