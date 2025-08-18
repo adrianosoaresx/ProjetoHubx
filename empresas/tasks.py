@@ -3,11 +3,9 @@ from __future__ import annotations
 import sentry_sdk
 from celery import shared_task
 from django.dispatch import Signal, receiver
-
 from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
-
 from services.cnpj_validator import CNPJValidationError, validar_cnpj
 
 from .models import AvaliacaoEmpresa, Empresa
@@ -22,8 +20,8 @@ def validar_cnpj_async(cnpj: str) -> None:
         sentry_sdk.capture_exception(exc)
 
 
-@shared_task
-def validar_cnpj_empresa(empresa_id: str) -> None:
+@shared_task(bind=True)
+def validar_cnpj_empresa(self, empresa_id: str) -> None:
     try:
         empresa = Empresa.objects.get(pk=empresa_id)
         valido, fonte = validar_cnpj(empresa.cnpj)
