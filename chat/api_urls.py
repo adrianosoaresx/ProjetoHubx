@@ -42,6 +42,7 @@ chat_message_restore = ChatMessageViewSet.as_view({"post": "restore"})
 chat_message_search = ChatMessageViewSet.as_view({"get": "search"})
 chat_message_favorite = ChatMessageViewSet.as_view({"post": "favorite", "delete": "favorite"})
 chat_message_create_item = ChatMessageViewSet.as_view({"post": "criar_item"})
+chat_message_mark_read = ChatMessageViewSet.as_view({"post": "mark_read"})
 chat_channel_config_retencao = ChatChannelViewSet.as_view({"patch": "config_retencao"})
 
 urlpatterns = router.urls + [
@@ -84,6 +85,11 @@ urlpatterns = router.urls + [
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/favorite/",
         chat_message_favorite,
         name="chat-channel-message-favorite",
+    ),
+    path(
+        "channels/<uuid:channel_pk>/messages/<uuid:pk>/mark-read/",
+        chat_message_mark_read,
+        name="chat-channel-message-mark-read",
     ),
     path(
         "channels/<uuid:channel_pk>/messages/<uuid:pk>/criar-item/",

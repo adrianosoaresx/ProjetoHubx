@@ -272,6 +272,12 @@
             }
             renderReactions(div,reactions,userReactions);
             setupReactionMenu(div,id);
+            if(id && remetente !== currentUser){
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/mark-read/`,{
+                    method:'POST',
+                    headers:{'X-CSRFToken':csrfToken}
+                });
+            }
             return div;
         }
 
