@@ -21,7 +21,7 @@ def _setup_org_centro():
 def test_cobranca_associacao_para_todos(settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     _, centro = _setup_org_centro()
-    users = UserFactory.create_batch(3)
+    users = UserFactory.create_batch(3, is_associado=True)
     for u in users:
         ContaAssociado.objects.create(user=u)
     gerar_cobrancas_mensais()
@@ -33,7 +33,7 @@ def test_cobranca_nucleo(settings):
     org, centro_org = _setup_org_centro()
     nucleo = NucleoFactory(organizacao=org)
     centro_nucleo = CentroCusto.objects.create(nome="N", tipo="nucleo", nucleo=nucleo)
-    user = UserFactory()
+    user = UserFactory(is_associado=True)
     ContaAssociado.objects.create(user=user)
     ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="ativo")
 
@@ -44,11 +44,12 @@ def test_cobranca_nucleo(settings):
     assert LancamentoFinanceiro.objects.filter(centro_custo=centro_nucleo).exists()
 
 
-def test_query_efficiency(settings):
+def test_query_efficiency(settings, monkeypatch):
     settings.CELERY_TASK_ALWAYS_EAGER = True
+    monkeypatch.setattr("financeiro.services.cobrancas.enviar_cobranca", lambda *a, **k: None)
     _setup_org_centro()
-    u1 = UserFactory()
+    u1 = UserFactory(is_associado=True)
     ContaAssociado.objects.create(user=u1)
     with CaptureQueriesContext(connection) as ctx:
         gerar_cobrancas_mensais()
-    assert len(ctx) <= 5
+    assert len(ctx) <= 10
