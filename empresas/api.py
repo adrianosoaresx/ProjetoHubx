@@ -18,8 +18,8 @@ from .serializers import (
     EmpresaChangeLogSerializer,
     EmpresaSerializer,
 )
-from .tasks import nova_avaliacao
 from .services import verificar_cnpj
+from .tasks import nova_avaliacao
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
@@ -95,8 +95,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if request.user.organizacao != empresa.organizacao:
             return Response(status=403)
-        FavoritoEmpresa.objects.get_or_create(usuario=request.user, empresa=empresa)
-        empresas_favoritos_total.labels(acao="adicionar").inc()
+        _, created = FavoritoEmpresa.objects.get_or_create(usuario=request.user, empresa=empresa)
+        if created:
+            empresas_favoritos_total.inc()
         return Response(status=status.HTTP_201_CREATED)
 
     @favoritar.mapping.delete
@@ -105,7 +106,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         fav = FavoritoEmpresa.objects.filter(usuario=request.user, empresa=empresa, deleted=False).first()
         if fav:
             fav.soft_delete()
-        empresas_favoritos_total.labels(acao="remover").inc()
+            empresas_favoritos_total.dec()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])

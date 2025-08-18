@@ -1,9 +1,8 @@
-from prometheus_client import Counter
+from prometheus_client import Counter, Gauge
 
-empresas_favoritos_total = Counter(
+empresas_favoritos_total = Gauge(
     "empresas_favoritos_total",
-    "Total de operações de favoritos em empresas",
-    ["acao"],
+    "Total de favoritos em empresas",
 )
 
 empresas_restauradas_total = Counter(
