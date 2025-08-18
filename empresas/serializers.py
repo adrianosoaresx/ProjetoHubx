@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, Tag
+from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -82,6 +82,24 @@ class EmpresaChangeLogSerializer(serializers.ModelSerializer):
             "created_at",
             "usuario_email",
         ]
+
+
+class ContatoEmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContatoEmpresa
+        fields = ["id", "nome", "cargo", "email", "telefone", "principal"]
+        read_only_fields = ["id"]
+
+    def validate(self, attrs):
+        principal = attrs.get("principal", getattr(self.instance, "principal", False))
+        empresa = self.context.get("empresa") or getattr(self.instance, "empresa", None)
+        if principal and empresa:
+            qs = ContatoEmpresa.objects.filter(empresa=empresa, principal=True, deleted=False)
+            if self.instance:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise serializers.ValidationError({"principal": "Já existe um contato principal para esta empresa."})
+        return attrs
 
 
 class AvaliacaoEmpresaSerializer(serializers.ModelSerializer):
