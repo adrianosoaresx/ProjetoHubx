@@ -50,8 +50,20 @@ def test_get_user_preferences_contextual(admin_user, escopo):
         escopo_tipo=escopo,
         escopo_id=escopo_id,
         tema="escuro",
+        receber_notificacoes_push=False,
+        frequencia_notificacoes_push="semanal",
     )
     prefs = get_user_preferences(admin_user, escopo, str(escopo_id))
     assert prefs.tema == "escuro"
+    assert prefs.receber_notificacoes_push is False
+    assert prefs.frequencia_notificacoes_push == "semanal"
     prefs_global = get_user_preferences(admin_user)
     assert prefs_global.tema == admin_user.configuracao.tema
+    assert (
+        prefs_global.receber_notificacoes_push
+        == admin_user.configuracao.receber_notificacoes_push
+    )
+    assert (
+        prefs_global.frequencia_notificacoes_push
+        == admin_user.configuracao.frequencia_notificacoes_push
+    )
