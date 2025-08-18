@@ -5,6 +5,7 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
 from core.models import SoftDeleteModel, TimeStampedModel
 
 
@@ -22,6 +23,24 @@ class NotificationStatus(models.TextChoices):
     LIDA = "lida", _("Lida")
 
 
+class UserNotificationPreference(TimeStampedModel):
+    user: models.OneToOneField = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notification_preferences",
+    )
+    email: models.BooleanField = models.BooleanField(default=True)
+    push: models.BooleanField = models.BooleanField(default=True)
+    whatsapp: models.BooleanField = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _("Preferência de Notificação do Usuário")
+        verbose_name_plural = _("Preferências de Notificação dos Usuários")
+
+    def __str__(self) -> str:  # pragma: no cover - simples
+        return str(self.user)
+
+
 class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
@@ -29,6 +48,7 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     corpo: models.TextField = models.TextField(verbose_name=_("Corpo"))
 
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
+    ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
 
 
     class Meta:

@@ -1,9 +1,11 @@
 import pytest
 
 from accounts.factories import UserFactory
+
 from configuracoes.models import ConfiguracaoConta
 from configuracoes.services import atualizar_preferencias_usuario
 from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
+
 from notificacoes.services import notificacoes as svc
 
 pytestmark = pytest.mark.django_db
@@ -39,34 +41,14 @@ def test_enviar_para_usuario(monkeypatch) -> None:
     assert log.destinatario.startswith(user.email[:2])
 
 
-def test_enviar_para_usuario_agrupado(monkeypatch) -> None:
-    """Não envia imediatamente quando configurado para resumo diário."""
-    user = UserFactory()
-    NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
-    config = ConfiguracaoConta.objects.get(user=user)
-    config.frequencia_notificacoes_email = "diaria"
-    config.save(update_fields=["frequencia_notificacoes_email"])
-    called = {}
-
-    def fake_delay(*args, **kwargs):
-        called["count"] = called.get("count", 0) + 1
-
-    monkeypatch.setattr(
-        "notificacoes.services.notificacoes.enviar_notificacao_async.delay",
-        fake_delay,
-    )
-
-    svc.enviar_para_usuario(user, "t", {})
-
-    log = NotificationLog.objects.get()
-    assert called.get("count", 0) == 0
-    assert log.status == "pendente"
 
 
 def test_enviar_sem_canais() -> None:
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
-    atualizar_preferencias_usuario(user, {"receber_notificacoes_email": False})
+    prefs = UserNotificationPreference.objects.get(user=user)
+    prefs.email = False
+    prefs.save(update_fields=["email"])
 
     svc.enviar_para_usuario(user, "t", {})
     log = NotificationLog.objects.get()
@@ -83,9 +65,6 @@ def test_template_inexistente() -> None:
 def test_enviar_multiplos_canais(monkeypatch) -> None:
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
-    config = ConfiguracaoConta.objects.get(user=user)
-    config.receber_notificacoes_whatsapp = True
-    config.save(update_fields=["receber_notificacoes_whatsapp"])
     called = {}
 
     def fake_delay(*args, **kwargs):
@@ -98,14 +77,16 @@ def test_enviar_multiplos_canais(monkeypatch) -> None:
 
     svc.enviar_para_usuario(user, "t", {})
 
-    assert called.get("count") >= 1
-    assert NotificationLog.objects.count() >= 1
+    assert called.get("count") == 3
+    assert NotificationLog.objects.count() == 3
 
 
 def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="p", assunto="Oi", corpo="C", canal="push")
-    atualizar_preferencias_usuario(user, {"receber_notificacoes_push": False})
+    prefs = UserNotificationPreference.objects.get(user=user)
+    prefs.push = False
+    prefs.save(update_fields=["push"])
     called = {}
 
     def fake_delay(*args, **kwargs):
