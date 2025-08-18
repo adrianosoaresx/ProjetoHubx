@@ -23,5 +23,5 @@ def aplicar_decisao(post: Post, decision: Decision) -> None:
     """Atualiza o status de moderação do ``post`` e registra em log."""
 
     status_map = {"aceito": "aprovado", "suspeito": "pendente", "rejeitado": "rejeitado"}
-    ModeracaoPost.objects.update_or_create(post=post, defaults={"status": status_map[decision]})
+    ModeracaoPost.objects.create(post=post, status=status_map[decision])
     logger.info("moderacao_ai", extra={"post_id": str(post.id), "decision": decision})
