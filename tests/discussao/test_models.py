@@ -49,6 +49,22 @@ def test_topico_slug_and_visualizacao(topico):
     assert topico.numero_visualizacoes == 1
 
 
+def test_topico_slug_updated_on_title_change(topico, categoria, admin_user):
+    TopicoDiscussao.objects.create(
+        categoria=categoria,
+        titulo="Novo Titulo",
+        conteudo="Conteudo",
+        autor=admin_user,
+        publico_alvo=0,
+    )
+    old_slug = topico.slug
+    topico.titulo = "Novo Titulo"
+    topico.save()
+    topico.refresh_from_db()
+    assert topico.slug != old_slug
+    assert topico.slug == f"{slugify('Novo Titulo')}-1"
+
+
 def test_resposta_editar_e_reply(topico, admin_user):
     resp = RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="olá")
     filho = RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="filho", reply_to=resp)
