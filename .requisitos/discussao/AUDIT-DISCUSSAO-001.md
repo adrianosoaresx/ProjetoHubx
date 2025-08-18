@@ -1,3 +1,9 @@
+# AUDIT-DISCUSSAO-001
+
+Data: 2025-08-13
+
+## Cobertura de Requisitos
+
 Requisito	Situação	Evidências
 RF‑04 – slug atualizado automaticamente	Parcial. Slug só é gerado se estiver vazio.	TopicoDiscussao.savenão recalcula ao editar
 RF‑05/RF‑10 – edição/remoção limitada a 15 min	Parcial. Edição respeita o limite; deleção não.	TopicoDeleteView e RespostaDeleteView sem checagem de tempo
@@ -7,3 +13,5 @@ RF‑11 – exibir score e nº de votos	Parcial. Propriedades existem, mas não 
 RF‑12 – denúncias e moderação	Parcial. Modelo existe; faltam endpoints/views.	Router da API não registra denúncias
 RF‑14 – API para categorias, votos e denúncias	Não atendido. API cobre apenas tags, tópicos e respostas.	Ausência de CategoryViewSet e ações de voto/denúncia
 RNF‑04 – logs de notificações	Não atendido. Tasks não registram envio.	tasks.pyenvia notificações sem log persistido
+
+## Observações
