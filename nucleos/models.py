@@ -79,7 +79,9 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     @property
     def membros(self):
         return User.objects.filter(
-            participacoes__nucleo=self, participacoes__status="ativo"
+            participacoes__nucleo=self,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
         )
 
     @property
