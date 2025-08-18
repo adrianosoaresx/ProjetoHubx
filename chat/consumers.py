@@ -83,14 +83,26 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     reply_to = None
             start = time.monotonic()
             if self.channel.e2ee_habilitado:
+                if conteudo:
+                    logger.warning("plaintext message rejected for E2EE channel %s", self.channel.id)
+                    await self.close(code=4003)
+                    return
+                cipher = data.get("conteudo_cifrado", "")
+                alg = data.get("alg", "")
+                key_version = data.get("key_version", "")
+                if not cipher:
+                    await self.close(code=4003)
+                    return
                 msg = await database_sync_to_async(enviar_mensagem)(
                     self.channel,
                     user,
                     message_type,
-                    "",
+                    None,
                     arquivo,
                     reply_to,
-                    conteudo,
+                    conteudo_cifrado=cipher,
+                    alg=alg,
+                    key_version=key_version,
                 )
             else:
                 msg = await database_sync_to_async(enviar_mensagem)(
@@ -113,6 +125,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             }
             if self.channel.e2ee_habilitado:
                 payload["conteudo_cifrado"] = msg.conteudo_cifrado
+                payload["alg"] = msg.alg
+                payload["key_version"] = msg.key_version
             else:
                 payload["conteudo"] = msg.conteudo
             await self.channel_layer.group_send(self.group_name, payload)

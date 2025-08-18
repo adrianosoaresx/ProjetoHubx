@@ -451,6 +451,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     lookup_field = "id"
     lookup_url_kwarg = "pk"
 
+    def get_serializer_context(self):  # type: ignore[override]
+        context = super().get_serializer_context()
+        context["channel_pk"] = self.kwargs.get("channel_pk")
+        return context
+
     def get_permissions(self):
         perms: list[type[permissions.BasePermission]] = [
             permissions.IsAuthenticated,

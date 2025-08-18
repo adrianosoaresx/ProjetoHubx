@@ -33,6 +33,8 @@ def create_message(**kwargs):
     tipo = kwargs.get("tipo", "text")
     conteudo = kwargs.get("conteudo", "")
     conteudo_cifrado = kwargs.get("conteudo_cifrado", "")
+    alg = kwargs.get("alg", "")
+    key_version = kwargs.get("key_version", "")
     arquivo = kwargs.get("arquivo")
     reply_to = kwargs.get("reply_to")
     if not reply_to and kwargs.get("reply_to_id"):
@@ -45,6 +47,8 @@ def create_message(**kwargs):
         arquivo=arquivo,
         reply_to=reply_to,
         conteudo_cifrado=conteudo_cifrado,
+        alg=alg,
+        key_version=key_version,
     )
 
 
