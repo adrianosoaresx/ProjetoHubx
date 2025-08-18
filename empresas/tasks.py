@@ -16,6 +16,14 @@ nova_avaliacao = Signal()  # args: avaliacao
 
 
 @shared_task
+def validar_cnpj_async(cnpj: str) -> None:
+    try:
+        validar_cnpj(cnpj)
+    except CNPJValidationError as exc:  # pragma: no cover - rede externa
+        sentry_sdk.capture_exception(exc)
+
+
+@shared_task
 def validar_cnpj_empresa(empresa_id: str) -> None:
     try:
         empresa = Empresa.objects.get(pk=empresa_id)

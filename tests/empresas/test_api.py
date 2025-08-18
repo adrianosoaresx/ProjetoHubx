@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from validate_docbr import CNPJ
 
 from empresas.models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
+from services.cnpj_validator import CNPJValidationError
 
 pytestmark = pytest.mark.django_db
 
@@ -244,3 +245,30 @@ def test_purgar_empresa(api_client, gerente_user, admin_user):
     resp = api_client.delete(url)
     assert resp.status_code == status.HTTP_204_NO_CONTENT
     assert not Empresa.objects.filter(id=empresa.id).exists()
+
+
+def test_validar_cnpj_sucesso(api_client, gerente_user, monkeypatch):
+    api_client.force_authenticate(user=gerente_user)
+    monkeypatch.setattr("empresas.services.validar_cnpj", lambda c: (True, "brasilapi"))
+    url = reverse("empresas_api:empresa-validar-cnpj")
+    resp = api_client.post(url, {"cnpj": "123"})
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["valido"] is True
+    assert resp.data["fonte"] == "brasilapi"
+    assert resp.data["validado_em"] is not None
+
+
+def test_validar_cnpj_fallback_para_task(api_client, gerente_user, monkeypatch):
+    api_client.force_authenticate(user=gerente_user)
+
+    def _raise(_):
+        raise CNPJValidationError("fail")
+
+    monkeypatch.setattr("empresas.services.validar_cnpj", _raise)
+    called = {}
+    monkeypatch.setattr("empresas.services.validar_cnpj_async.delay", lambda c: called.setdefault("cnpj", c))
+    url = reverse("empresas_api:empresa-validar-cnpj")
+    resp = api_client.post(url, {"cnpj": "123"})
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data == {"valido": False, "fonte": "", "validado_em": None}
+    assert called["cnpj"] == "123"

@@ -19,6 +19,7 @@ from .serializers import (
     EmpresaSerializer,
 )
 from .tasks import nova_avaliacao
+from .services import verificar_cnpj
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
@@ -72,6 +73,14 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
             return Response(status=403)
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
+    def validar_cnpj(self, request):
+        cnpj = request.data.get("cnpj")
+        if not cnpj:
+            return Response({"detail": "cnpj é obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
+        resultado = verificar_cnpj(cnpj)
+        return Response(resultado)
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def favoritos(self, request):
