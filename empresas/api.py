@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from rest_framework import status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -12,14 +12,23 @@ from .metrics import (
     empresas_purgadas_total,
     empresas_restauradas_total,
 )
-from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
+from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa, Tag
 from .serializers import (
     AvaliacaoEmpresaSerializer,
     EmpresaChangeLogSerializer,
     EmpresaSerializer,
+    TagSerializer,
 )
 from .tasks import nova_avaliacao
 from .services import verificar_cnpj
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all().order_by("nome")
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nome"]
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
