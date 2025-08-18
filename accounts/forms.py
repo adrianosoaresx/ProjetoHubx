@@ -244,6 +244,7 @@ class EmailLoginForm(forms.Form):
             raise forms.ValidationError("Credenciais inválidas.")
         now = timezone.now()
         if user.lock_expires_at and user.lock_expires_at > now:
+            authenticate(self.request, username=email, password=password)
             raise forms.ValidationError(
                 f"Conta bloqueada. Tente novamente após {user.lock_expires_at.strftime('%H:%M')}"
             )
