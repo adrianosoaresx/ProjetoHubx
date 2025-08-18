@@ -12,7 +12,11 @@ class IsFinanceiroOrAdmin(BasePermission):
     def has_permission(self, request, view) -> bool:  # type: ignore[override]
         if not request.user.is_authenticated:
             raise NotAuthenticated()
-        return request.user.user_type == UserType.ADMIN
+        permitido = {UserType.ADMIN}
+        tipo_fin = getattr(UserType, "FINANCEIRO", None)
+        if tipo_fin:
+            permitido.add(tipo_fin)
+        return request.user.user_type in permitido
 
 
 class IsNotRoot(BasePermission):
