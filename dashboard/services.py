@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from django.core.cache import cache
 from django.db.models import Avg, Count, F, Q, Sum
 from django.utils import timezone
+from prometheus_client import Counter, Histogram
 
 from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
@@ -21,7 +22,15 @@ from tokens.models import TokenAcesso as InviteToken
 from tokens.models import TokenUsoLog as UserToken
 
 from .utils import get_variation
-from .models import Achievement, UserAchievement, DashboardConfig
+from .models import Achievement, UserAchievement, DashboardConfig, MetricDefinition
+from .providers import REGISTRY
+
+
+CACHE_HIT = Counter("dashboard_cache_hits_total", "Cache hits for dashboard metrics")
+CACHE_MISS = Counter("dashboard_cache_misses_total", "Cache misses for dashboard metrics")
+GET_METRICS_LATENCY = Histogram(
+    "dashboard_get_metrics_seconds", "Latency for DashboardMetricsService.get_metrics"
+)
 
 
 def _apply_feed_filters(queryset, organizacao=None, data_inicio=None, data_fim=None):
@@ -481,10 +490,14 @@ class DashboardMetricsService:
             "fim": fim.isoformat(),
             **{k: str(v) for k, v in filters.items()},
         }
-        cache_key = f"dashboard-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
+        cache_key = (
+            f"dashboard-{user.pk}-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
+        )
         cached = cache.get(cache_key)
         if cached:
+            CACHE_HIT.inc()
             return cached
+        CACHE_MISS.inc()
 
         organizacao_id = filters.get("organizacao_id")
         nucleo_id = filters.get("nucleo_id")
@@ -618,10 +631,11 @@ class DashboardMetricsService:
                     qs = qs.filter(channel__contexto_tipo="evento", channel__contexto_id=evento_id)
             query_map[name] = (qs, campo)
 
-        metrics = {
-            name: DashboardService.calcular_crescimento(qs, inicio, fim, campo=campo)
-            for name, (qs, campo) in query_map.items()
-        }
+        with GET_METRICS_LATENCY.time():
+            metrics = {
+                name: DashboardService.calcular_crescimento(qs, inicio, fim, campo=campo)
+                for name, (qs, campo) in query_map.items()
+            }
 
         if not metricas or "inscricoes_confirmadas" in metricas:
             qs = InscricaoEvento.objects.select_related("evento").filter(status="confirmada")
@@ -702,6 +716,21 @@ class DashboardMetricsService:
                 ),
                 "crescimento": 0.0,
             }
+
+        # dynamic metrics
+        defs = MetricDefinition.objects.filter(ativo=True).filter(
+            Q(publico=True) | Q(owner=user)
+        )
+        for mdef in defs:
+            if metricas and mdef.code not in metricas:
+                continue
+            provider_fn = REGISTRY.get(mdef.provider)
+            if not provider_fn:
+                continue
+            try:
+                metrics[mdef.code] = provider_fn(user, mdef.params or {})
+            except Exception:
+                continue
 
         cache.set(cache_key, metrics, 300)
         return metrics

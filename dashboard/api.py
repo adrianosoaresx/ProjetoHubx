@@ -6,6 +6,7 @@ from datetime import datetime
 
 from openpyxl import Workbook
 
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -16,10 +17,9 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import DashboardFilter
-from .serializers import DashboardFilterSerializer
-from .services import DashboardMetricsService, check_achievements
-from .services import DashboardMetricsService, DashboardService
+from .models import DashboardFilter, MetricDefinition
+from .serializers import DashboardFilterSerializer, MetricDefinitionSerializer
+from .services import DashboardMetricsService, DashboardService, check_achievements
 
 
 
@@ -144,3 +144,18 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         check_achievements(self.request.user)
+
+
+class MetricDefinitionViewSet(viewsets.ModelViewSet):
+    serializer_class = MetricDefinitionSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrCoordenador]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = MetricDefinition.objects.filter(ativo=True)
+        if user.user_type == UserType.ROOT:
+            return qs
+        return qs.filter(Q(publico=True) | Q(owner=user))
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)

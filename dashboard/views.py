@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
 from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -38,7 +39,13 @@ from core.permissions import (
 
 
 from .forms import DashboardConfigForm, DashboardFilterForm
-from .models import Achievement, DashboardConfig, DashboardFilter, UserAchievement
+from .models import (
+    Achievement,
+    DashboardConfig,
+    DashboardFilter,
+    MetricDefinition,
+    UserAchievement,
+)
 from .services import DashboardMetricsService, DashboardService, check_achievements
 
 from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
@@ -62,6 +69,8 @@ METRICAS_INFO = {
     "num_topicos": {"label": _("Tópicos"), "icon": "fa-comments"},
     "num_respostas": {"label": _("Respostas"), "icon": "fa-reply"},
     "num_mensagens_chat": {"label": _("Mensagens de chat"), "icon": "fa-comments"},
+    "inscricoes_confirmadas": {"label": _("Inscrições confirmadas"), "icon": "fa-check"},
+    "lancamentos_pendentes": {"label": _("Lançamentos pendentes"), "icon": "fa-money-bill"},
     "total_curtidas": {"label": _("Curtidas"), "icon": "fa-thumbs-up"},
     "total_compartilhamentos": {"label": _("Compartilhamentos"), "icon": "fa-share"},
     "tempo_medio_leitura": {
@@ -123,6 +132,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 "num_empresas",
                 "num_eventos",
                 "num_posts_feed_total",
+                "inscricoes_confirmadas",
+                "lancamentos_pendentes",
             ]
         filters["metricas"] = metricas_list
 
@@ -150,12 +161,26 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
         metricas = metricas or ["num_users", "num_eventos", "num_posts_feed_total"]
         context["metricas_selecionadas"] = metricas
+        dynamic_defs = MetricDefinition.objects.filter(ativo=True).filter(
+            Q(publico=True) | Q(owner=self.request.user)
+        )
+        extra_info = {d.code: {"label": d.titulo, "icon": "fa-chart-column"} for d in dynamic_defs}
+        info_map = {**METRICAS_INFO, **extra_info}
         context["chart_data"] = [
-            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
+            metrics[m]["total"]
+            for m in metricas
+            if m in metrics and isinstance(metrics[m]["total"], (int, float))
         ]
-        context["metricas_disponiveis"] = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
+        context["metricas_disponiveis"] = [
+            {"key": key, "label": data["label"]} for key, data in info_map.items()
+        ]
         context["metricas_iter"] = [
-            {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": info_map.get(m, {}).get("label", m),
+                "icon": info_map.get(m, {}).get("icon", "fa-chart-column"),
+            }
             for m in metricas
             if m in metrics
         ]
@@ -211,12 +236,17 @@ def metrics_partial(request):
     try:
         metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
         metrics = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
+        dynamic_defs = MetricDefinition.objects.filter(ativo=True).filter(
+            Q(publico=True) | Q(owner=request.user)
+        )
+        extra_info = {d.code: {"label": d.titulo, "icon": "fa-chart-column"} for d in dynamic_defs}
+        info_map = {**METRICAS_INFO, **extra_info}
         metricas_iter = [
             {
                 "key": m,
                 "data": metrics[m],
-                "label": METRICAS_INFO[m]["label"],
-                "icon": METRICAS_INFO[m]["icon"],
+                "label": info_map.get(m, {}).get("label", m),
+                "icon": info_map.get(m, {}).get("icon", "fa-chart-column"),
             }
             for m in metricas
             if m in metrics
