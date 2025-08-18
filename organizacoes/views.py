@@ -265,7 +265,10 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
             writer = csv.writer(response)
             writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in org.change_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "change",
@@ -276,7 +279,10 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                         log.created_at.isoformat(),
                     ]
                 )
-            for log in org.atividade_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "activity",
@@ -288,8 +294,14 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                     ]
                 )
             return response
-        change_logs = org.change_logs.all().order_by("-created_at")[:10]
-        atividade_logs = org.atividade_logs.all().order_by("-created_at")[:10]
+        change_logs = (
+            OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+            .order_by("-created_at")[:10]
+        )
+        atividade_logs = (
+            OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
+            .order_by("-created_at")[:10]
+        )
         return render(
             request,
             self.template_name,
