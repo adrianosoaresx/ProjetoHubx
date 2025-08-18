@@ -42,7 +42,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         if palavras:
             qs = qs.filter(palavras_chave__icontains=palavras)
         if tag_ids:
-            qs = qs.filter(tags__id__in=tag_ids).distinct()
+            for tag_id in tag_ids:
+                qs = qs.filter(tags__id=tag_id)
+            qs = qs.distinct()
         return qs.order_by("nome")
 
     def perform_destroy(self, instance: Empresa) -> None:
