@@ -17,6 +17,7 @@ from pathlib import Path
 
 import sentry_sdk
 from celery.schedules import crontab
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,9 +28,10 @@ HTMX_VERSION = "1.9.12"
 
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),
-    integrations=[DjangoIntegration()],
+    integrations=[DjangoIntegration(), CeleryIntegration()],
     traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
     profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.0")),
+    environment=os.getenv("SENTRY_ENVIRONMENT", "development"),
 )
 
 # Quick-start development settings - unsuitable for production

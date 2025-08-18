@@ -11,6 +11,8 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from audit.models import AuditLog
+from audit.services import log_audit
 from configuracoes.models import ConfiguracaoConta
 
 from .models import Canal, HistoricoNotificacao, NotificationLog, NotificationStatus
@@ -61,7 +63,18 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         metrics.notificacoes_falhas_total.labels(canal=canal).inc()
         log.data_envio = timezone.now()
         log.save(update_fields=["status", "erro", "data_envio"])
-        sentry_sdk.capture_exception(exc)
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("module", "notificacoes")
+            scope.set_context("notificacao", {"log_id": str(log.id), "canal": canal})
+            sentry_sdk.capture_exception(exc)
+        log_audit(
+            user,
+            "notification_send_failed",
+            object_type="NotificationLog",
+            object_id=str(log.id),
+            status=AuditLog.Status.FAILURE,
+            metadata={"canal": canal, "template": str(template.id)},
+        )
         logger.exception(
             "falha_envio_notificacao",
             user_id=user.id,
