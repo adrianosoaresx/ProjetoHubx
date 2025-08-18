@@ -51,6 +51,23 @@ notificações enviadas.
 `/api/feed/comments/` and `/api/feed/likes/` allow creating and removing comments and likes
 for posts. Authentication is required for all endpoints.
 
+## Reações
+
+Reações permitem registrar `like` ou `share` em posts através dos endpoints:
+
+- `POST /api/feed/posts/{post_id}/reacoes/` com corpo `{ "vote": "like" | "share" }`
+- `GET /api/feed/posts/{post_id}/reacoes/` retorna contagem agregada e reação do usuário
+- `DELETE /api/feed/posts/{post_id}/reacoes/{vote}/` remove a reação do usuário
+
+## Visualizações
+
+Ao abrir uma página de post a interface chama automaticamente:
+
+- `POST /api/feed/posts/{post_id}/views/open/`
+- `POST /api/feed/posts/{post_id}/views/close/`
+
+Os dados alimentam métricas Prometheus de visualizações e tempo de leitura.
+
 Integração com S3 requer credenciais com permissão de `s3:PutObject` e
 `s3:GetObject` no *bucket* configurado em `AWS_STORAGE_BUCKET_NAME`.
 

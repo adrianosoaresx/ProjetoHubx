@@ -82,4 +82,18 @@
     {% endif %}
   </article>
 </section>
+<script>
+  const csrfToken = '{{ csrf_token }}';
+  fetch('/api/feed/posts/{{ post.id }}/views/open/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken }
+  });
+  window.addEventListener('beforeunload', function () {
+    fetch('/api/feed/posts/{{ post.id }}/views/close/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      keepalive: true
+    });
+  });
+</script>
 {% endblock %}

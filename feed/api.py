@@ -12,10 +12,11 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ratelimit.core import is_ratelimited
+from prometheus_client import Counter, Histogram
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -24,8 +25,18 @@ from rest_framework.response import Response
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
-from .models import Bookmark, Comment, Like, ModeracaoPost, Post
+from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
+
+REACTIONS_TOTAL = Counter(
+    "feed_reactions_total", "Total de reações registradas", ["vote"]
+)
+POST_VIEWS_TOTAL = Counter(
+    "feed_post_views_total", "Total de visualizações de posts"
+)
+POST_VIEW_DURATION = Histogram(
+    "feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos"
+)
 
 
 class CanModerate(permissions.BasePermission):
@@ -330,6 +341,115 @@ class PostViewSet(viewsets.ModelViewSet):
         else:
             notify_post_moderated.delay(str(post.id), moderacao.status)
         return Response(ModeracaoPostSerializer(moderacao).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="reacoes",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def add_reaction(self, request, pk=None):
+        post = self.get_object()
+        vote = request.data.get("vote")
+        if vote not in Reacao.Tipo.values:
+            return Response({"detail": "Voto inválido."}, status=status.HTTP_400_BAD_REQUEST)
+        if is_ratelimited(
+            request,
+            group="feed_reactions_create",
+            key="user",
+            rate=_read_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
+        reacao, created = Reacao.all_objects.get_or_create(
+            post=post, user=request.user, vote=vote
+        )
+        if created or reacao.deleted:
+            reacao.deleted = False
+            reacao.save(update_fields=["deleted"])
+            REACTIONS_TOTAL.labels(vote=vote).inc()
+            cache.delete(f"post_reacoes:{post.id}")
+            return Response({"vote": vote}, status=status.HTTP_201_CREATED)
+        return Response({"vote": vote}, status=status.HTTP_200_OK)
+
+    @add_reaction.mapping.get
+    def list_reactions(self, request, pk=None):
+        post = self.get_object()
+        cache_key = f"post_reacoes:{post.id}"
+        data = cache.get(cache_key)
+        if data is None:
+            counts = (
+                Reacao.objects.filter(post=post, deleted=False)
+                .values("vote")
+                .annotate(count=Count("id"))
+            )
+            data = {c["vote"]: c["count"] for c in counts}
+            cache.set(cache_key, data, self.cache_timeout)
+        user_reaction = None
+        if request.user.is_authenticated:
+            user_reaction = (
+                Reacao.objects.filter(
+                    post=post, user=request.user, deleted=False
+                )
+                .values_list("vote", flat=True)
+                .first()
+            )
+        data = {**{"like": 0, "share": 0}, **data, "user_reaction": user_reaction}
+        return Response(data)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="reacoes/(?P<vote>[^/.]+)",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def remove_reaction(self, request, pk=None, vote=None):
+        post = self.get_object()
+        qs = Reacao.objects.filter(
+            post=post, user=request.user, vote=vote, deleted=False
+        )
+        if qs.exists():
+            qs.update(deleted=True)
+            cache.delete(f"post_reacoes:{post.id}")
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="views/open",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def open_view(self, request, pk=None):
+        post = self.get_object()
+        PostView.objects.create(
+            post=post, user=request.user, opened_at=timezone.now()
+        )
+        POST_VIEWS_TOTAL.inc()
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="views/close",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def close_view(self, request, pk=None):
+        post = self.get_object()
+        view = (
+            PostView.objects.filter(
+                post=post, user=request.user, closed_at__isnull=True
+            )
+            .order_by("-opened_at")
+            .first()
+        )
+        if not view:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        view.closed_at = timezone.now()
+        view.save(update_fields=["closed_at"])
+        duration = (view.closed_at - view.opened_at).total_seconds()
+        POST_VIEW_DURATION.observe(duration)
+        return Response({"tempo_leitura": duration})
 
 
 class CommentSerializer(serializers.ModelSerializer):
