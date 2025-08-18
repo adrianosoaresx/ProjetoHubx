@@ -5,15 +5,17 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlencode
 
-from openpyxl import Workbook
 import matplotlib.pyplot as plt
-plt.switch_backend("Agg")
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import (
+    FileResponse,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+)
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -26,6 +28,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from openpyxl import Workbook
 
 from accounts.models import UserType
 from audit.services import hash_ip, log_audit
@@ -36,17 +39,19 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
-
-from .forms import DashboardConfigForm, DashboardFilterForm
-from .models import Achievement, DashboardConfig, DashboardFilter, UserAchievement
+from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
+from .models import (
+    Achievement,
+    DashboardConfig,
+    DashboardFilter,
+    DashboardLayout,
+    UserAchievement,
+)
 from .services import DashboardMetricsService, DashboardService, check_achievements
 
-from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
-from .models import DashboardConfig, DashboardFilter, DashboardLayout
-from .services import DashboardMetricsService, DashboardService
-
-
 User = get_user_model()
+
+plt.switch_backend("Agg")
 
 EXPORT_DIR = Path(settings.MEDIA_ROOT) / "dashboard_exports"
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
@@ -67,6 +72,14 @@ METRICAS_INFO = {
     "tempo_medio_leitura": {
         "label": _("Tempo médio de leitura (s)"),
         "icon": "fa-book-open",
+    },
+    "inscricoes_confirmadas": {
+        "label": _("Inscrições confirmadas"),
+        "icon": "fa-user-check",
+    },
+    "lancamentos_pendentes": {
+        "label": _("Lançamentos pendentes"),
+        "icon": "fa-hourglass-half",
     },
     "posts_populares_24h": {"label": _("Posts populares 24h"), "icon": "fa-fire"},
     "tokens_gerados": {"label": _("Tokens gerados"), "icon": "fa-ticket"},
@@ -122,6 +135,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 "num_nucleos",
                 "num_empresas",
                 "num_eventos",
+                "inscricoes_confirmadas",
+                "lancamentos_pendentes",
                 "num_posts_feed_total",
             ]
         filters["metricas"] = metricas_list
@@ -148,7 +163,13 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context["escopo"] = getattr(self, "escopo", "auto")
         context["filtros"] = getattr(self, "filters", {})
         metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
-        metricas = metricas or ["num_users", "num_eventos", "num_posts_feed_total"]
+        metricas = metricas or [
+            "num_users",
+            "inscricoes_confirmadas",
+            "lancamentos_pendentes",
+            "num_eventos",
+            "num_posts_feed_total",
+        ]
         context["metricas_selecionadas"] = metricas
         context["chart_data"] = [
             metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
