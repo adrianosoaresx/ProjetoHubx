@@ -16,6 +16,12 @@ class Canal(models.TextChoices):
     TODOS = "todos", _("Todos")
 
 
+# O log de notificações não deve armazenar o canal "todos",
+# utilizado apenas para criação de templates que disparam em
+# múltiplos canais. Filtramos a opção para evitar registros inválidos.
+CANAL_LOG_CHOICES = [(c.value, c.label) for c in Canal if c != Canal.TODOS]
+
+
 class NotificationStatus(models.TextChoices):
     PENDENTE = "pendente", _("Pendente")
     ENVIADA = "enviada", _("Enviada")
@@ -50,7 +56,6 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
     ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
 
-
     class Meta:
         verbose_name = _("Template de Notificação")
         verbose_name_plural = _("Templates de Notificação")
@@ -65,7 +70,7 @@ class NotificationLog(TimeStampedModel):
     user: models.ForeignKey = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     destinatario: models.CharField = models.CharField(max_length=254, blank=True)
     template: models.ForeignKey = models.ForeignKey(NotificationTemplate, on_delete=models.CASCADE)
-    canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices)
+    canal: models.CharField = models.CharField(max_length=20, choices=CANAL_LOG_CHOICES)
     status: models.CharField = models.CharField(
         max_length=20, choices=NotificationStatus.choices, default=NotificationStatus.PENDENTE
     )
