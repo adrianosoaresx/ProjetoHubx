@@ -225,6 +225,22 @@ def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_mo
     assert api_client.post(url).status_code == 403
 
 
+def test_list_forbidden_organizacao(api_client, organizacao, django_user_model):
+    outra = Organizacao.objects.create(nome="OrgY", cnpj="22.222.222/0001-22", slug="orgy")
+    outsider = django_user_model.objects.create_user(
+        username="outsider2",
+        email="o2@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=outra,
+    )
+    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    _auth(api_client, outsider)
+    url = reverse("nucleos_api:nucleo-list")
+    resp = api_client.get(url + f"?organizacao={organizacao.pk}")
+    assert resp.status_code == 403
+
+
 def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N9", slug="n9", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo", papel="coordenador")

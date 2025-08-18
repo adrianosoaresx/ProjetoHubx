@@ -127,7 +127,14 @@ class NucleoViewSet(viewsets.ModelViewSet):
         )
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        org = request.query_params.get("organizacao")
+        org_param = request.query_params.get("organizacao")
+        user_org_id = str(getattr(request.user, "organizacao_id", "") or "")
+        if org_param and org_param != user_org_id:
+            return Response(
+                {"detail": _("Você não tem permissão para acessar esta organização.")},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        org = org_param or user_org_id
         if org:
             queryset = queryset.filter(organizacao_id=org)
         page_number = request.query_params.get("page", "1")
