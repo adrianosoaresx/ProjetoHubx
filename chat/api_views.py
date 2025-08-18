@@ -151,7 +151,7 @@ class UploadArquivoAPIView(APIView):
             tipo = "video"
         return Response(
             {
-                "id": str(attachment.id),
+                "attachment_id": str(attachment.id),
                 "tipo": tipo,
                 "url": url if not infected else "",
                 "mime_type": content_type,
