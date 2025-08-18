@@ -7,7 +7,7 @@ pytestmark = pytest.mark.django_db
 
 def test_nucleo_form_fields():
     form = NucleoForm()
-    assert list(form.fields) == ["nome", "slug", "descricao", "avatar", "cover"]
+    assert list(form.fields) == ["nome", "slug", "descricao", "avatar", "cover", "ativo"]
 
 
 def test_form_validation_errors():

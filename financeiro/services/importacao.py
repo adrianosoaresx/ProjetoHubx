@@ -13,8 +13,18 @@ from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..models import (
+    CentroCusto,
+    ContaAssociado,
+    IntegracaoIdempotency,
+    LancamentoFinanceiro,
+)
 from ..serializers import LancamentoFinanceiroSerializer
+
+
+class AlreadyProcessedError(Exception):
+    """Erro lançado quando uma importação já foi processada."""
+    pass
 
 
 @dataclass
@@ -105,6 +115,7 @@ class ImportadorPagamentos:
                                 "data_vencimento": record["data_vencimento"].isoformat(),
                                 "status": record["status"],
                                 "descricao": record["descricao"],
+                                "origem": record["origem"],
                             }
                         )
                 except Exception as exc:
@@ -123,7 +134,9 @@ class ImportadorPagamentos:
         return ImportResult(preview=preview, errors=errors, errors_file=errors_file)
 
     # ────────────────────────────────────────────────────────────
-    def process(self, batch_size: int = 500) -> tuple[int, list[str]]:
+    def process(
+        self, batch_size: int = 500, *, idempotency_key: str | None = None
+    ) -> tuple[int, list[str]]:
         """Processa o arquivo criando lançamentos em lote."""
         errors: list[str] = []
         total = 0
@@ -133,6 +146,18 @@ class ImportadorPagamentos:
                 "centro_custo_id", "conta_associado_id", "tipo", "valor", "data_lancamento"
             )
         )
+
+        if idempotency_key:
+            idem, created = IntegracaoIdempotency.objects.get_or_create(
+                idempotency_key=idempotency_key,
+                defaults={
+                    "provedor": "financeiro",
+                    "recurso": "importacao_pagamentos",
+                    "status": "processing",
+                },
+            )
+            if not created:
+                raise AlreadyProcessedError(idempotency_key)
 
         def flush(chunk: list[dict[str, Any]]):
             to_create = []
@@ -149,6 +174,7 @@ class ImportadorPagamentos:
                     "data_vencimento": item["data_vencimento"].isoformat(),
                     "status": item["status"],
                     "descricao": item["descricao"],
+                    "origem": item["origem"],
                 }
                 serializer = LancamentoFinanceiroSerializer(data=payload)
                 if not serializer.is_valid():
@@ -184,19 +210,31 @@ class ImportadorPagamentos:
             for aid, inc in saldo_conta.items():
                 ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
 
-        for idx, row in enumerate(self._iter_rows(), start=2):
-            try:
-                batch.append(self._convert_row(row))
-            except Exception as exc:
-                errors.append(f"Linha {idx}: {exc}")
-                continue
-            if len(batch) >= batch_size:
+        status = "completed"
+        try:
+            for idx, row in enumerate(self._iter_rows(), start=2):
+                try:
+                    batch.append(self._convert_row(row))
+                except Exception as exc:
+                    errors.append(f"Linha {idx}: {exc}")
+                    continue
+                if len(batch) >= batch_size:
+                    with transaction.atomic():
+                        flush(batch)
+                    batch = []
+            if batch:
                 with transaction.atomic():
                     flush(batch)
-                batch = []
-        if batch:
-            with transaction.atomic():
-                flush(batch)
+            if errors:
+                status = "error"
+        except Exception:
+            status = "error"
+            raise
+        finally:
+            if idempotency_key:
+                IntegracaoIdempotency.objects.filter(idempotency_key=idempotency_key).update(
+                    status=status
+                )
         return total, errors
 
     # ────────────────────────────────────────────────────────────
@@ -241,4 +279,5 @@ class ImportadorPagamentos:
             "data_vencimento": venc,
             "status": row["status"],
             "descricao": row.get("descricao", ""),
+            "origem": LancamentoFinanceiro.Origem.IMPORTACAO,
         }

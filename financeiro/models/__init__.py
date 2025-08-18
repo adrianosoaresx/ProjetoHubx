@@ -88,11 +88,16 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
         APORTE_EXTERNO = "aporte_externo", "Aporte Externo"
         DESPESA = "despesa", "Despesa"
         AJUSTE = "ajuste", "Ajuste"
+        REPASSE = "repasse", "Repasse de Receita"
 
     class Status(models.TextChoices):
         PENDENTE = "pendente", "Pendente"
         PAGO = "pago", "Pago"
         CANCELADO = "cancelado", "Cancelado"
+
+    class Origem(models.TextChoices):
+        MANUAL = "manual", "Manual"
+        IMPORTACAO = "importacao", "Importação"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     centro_custo = models.ForeignKey(CentroCusto, on_delete=models.CASCADE, related_name="lancamentos")
@@ -115,6 +120,7 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
         help_text="Data limite para pagamento do lançamento",
     )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDENTE)
+    origem = models.CharField(max_length=20, choices=Origem.choices, default=Origem.MANUAL)
     descricao = models.TextField(blank=True)
     ultima_notificacao = models.DateTimeField(null=True, blank=True)
     lancamento_original = models.ForeignKey(
@@ -177,6 +183,7 @@ class ImportacaoPagamentos(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     total_processado = models.PositiveIntegerField(default=0)
     erros = models.JSONField(default=list, blank=True)
+    idempotency_key = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
     class Status(models.TextChoices):
         PROCESSANDO = "processando", "Em processamento"
         CONCLUIDO = "concluido", "Concluído"

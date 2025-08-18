@@ -7,8 +7,9 @@ from typing import Any
 
 from django.utils.translation import gettext_lazy as _
 
-from ..models import LancamentoFinanceiro
 from notificacoes.services.notificacoes import enviar_para_usuario
+
+from ..models import LancamentoFinanceiro
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,21 @@ def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
         logger.error("Falha ao enviar inadimplência: %s", exc)
 
 
+def enviar_aviso_vencimento(user: Any, lancamento: Any) -> None:
+    """Envia aviso de vencimento próximo a um usuário."""
+
+    assunto = _("Vencimento próximo")
+    corpo = _("Você possui lançamentos a vencer em breve.")
+    try:
+        enviar_para_usuario(
+            user,
+            "aviso_vencimento",
+            {"assunto": str(assunto), "corpo": str(corpo)},
+        )
+    except Exception as exc:  # pragma: no cover - integração externa
+        logger.error("Falha ao enviar aviso de vencimento: %s", exc)
+
+
 def enviar_distribuicao(user: Any, evento: Any, valor: Any) -> None:
     """Notifica sobre distribuição de receita de evento."""
     context = {"nome": getattr(user, "first_name", ""), "evento": evento.titulo, "valor": valor}
@@ -79,3 +95,16 @@ def enviar_aporte(user: Any, lancamento: Any) -> None:
         enviar_para_usuario(user, "aporte_recebido", context)
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar aporte: %s", exc)
+
+
+def enviar_estorno_aporte(user: Any, lancamento: Any) -> None:
+    """Notifica estorno de aporte."""
+    context = {
+        "nome": getattr(user, "first_name", ""),
+        "valor": lancamento.valor,
+        "descricao": getattr(lancamento, "descricao", ""),
+    }
+    try:
+        enviar_para_usuario(user, "aporte_estornado", context)
+    except Exception as exc:  # pragma: no cover - integração externa
+        logger.error("Falha ao enviar estorno de aporte: %s", exc)

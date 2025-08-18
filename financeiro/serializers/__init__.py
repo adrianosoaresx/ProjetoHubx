@@ -78,6 +78,7 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             "data_vencimento",
             "status",
             "descricao",
+            "origem",
             "lancamento_original",
             "ajustado",
             "created_at",
@@ -130,10 +131,11 @@ class AporteSerializer(serializers.ModelSerializer):
             "status",
             "descricao",
             "originador",
+            "origem",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["originador", "created_at", "updated_at"]
+        read_only_fields = ["originador", "origem", "created_at", "updated_at"]
         extra_kwargs = {"tipo": {"required": False}}
 
     def validate_valor(self, value: Any) -> Any:  # type: ignore[override]

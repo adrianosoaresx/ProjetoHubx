@@ -10,7 +10,13 @@ from django.utils import timezone
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from financeiro.models import CentroCusto, ContaAssociado, ImportacaoPagamentos, LancamentoFinanceiro
+from financeiro.models import (
+    CentroCusto,
+    ContaAssociado,
+    ImportacaoPagamentos,
+    IntegracaoIdempotency,
+    LancamentoFinanceiro,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -108,6 +114,10 @@ def test_preview_and_confirm(api_client, user, settings):
     assert LancamentoFinanceiro.objects.count() == 2
     centro.refresh_from_db()
     assert centro.saldo == 30
+    assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
+    importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
+    idem = IntegracaoIdempotency.objects.get(idempotency_key=importacao.idempotency_key)
+    assert idem.status == "completed"
 
 
 def test_invalid_vencimento(api_client, user):
@@ -216,6 +226,38 @@ def test_metrics_increment(api_client, user, settings):
     confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
     api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
     assert metrics.importacao_pagamentos_total._value.get() == before + 1
+
+
+def test_confirm_twice_idempotent(api_client, user, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    rows = [
+        [
+            str(centro.id),
+            str(conta.id),
+            "aporte_interno",
+            "10",
+            timezone.now().isoformat(),
+            timezone.now().isoformat(),
+            "pago",
+        ]
+    ]
+    csv_bytes = make_csv(rows)
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
+    assert LancamentoFinanceiro.objects.count() == 1
+    importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
+    assert importacao.total_processado == 1
+    idem = IntegracaoIdempotency.objects.get(idempotency_key=importacao.idempotency_key)
+    assert idem.status == "completed"
 
 
 def test_ignore_duplicate_lines(api_client, user, settings):
