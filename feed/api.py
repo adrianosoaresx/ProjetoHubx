@@ -44,6 +44,13 @@ class CanModerate(permissions.BasePermission):
         return request.user.has_perm("feed.change_moderacaopost")
 
 
+class CanEditPost(permissions.BasePermission):
+    """Permite edição apenas ao autor ou a quem possui ``feed.change_post``."""
+
+    def has_object_permission(self, request, view, obj):
+        return obj.autor == request.user or request.user.has_perm("feed.change_post")
+
+
 class PostSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     pdf_url = serializers.SerializerMethodField()
@@ -179,6 +186,12 @@ class PostViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
     cache_timeout = 60
+
+    def get_permissions(self):  # pragma: no cover - simples
+        perms = super().get_permissions()
+        if self.action in {"update", "partial_update", "destroy"}:
+            perms.append(CanEditPost())
+        return perms
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         if is_ratelimited(
