@@ -122,6 +122,25 @@ def test_cancelar_inscricao(inscricao):
     assert inscricao.status == "cancelada"
 
 
+def test_cancelar_inscricao_apos_inicio_model(inscricao):
+    inscricao.evento.data_inicio = make_aware(datetime.now() - timedelta(hours=1))
+    inscricao.evento.save(update_fields=["data_inicio"])
+    with pytest.raises(ValueError):
+        inscricao.cancelar_inscricao()
+    inscricao.refresh_from_db()
+    assert inscricao.status != "cancelada"
+
+
+def test_usuario_nao_pode_cancelar_apos_inicio(evento, usuario_comum, client):
+    url = reverse("agenda:evento_subscribe", args=[evento.pk])
+    client.post(url)
+    evento.data_inicio = make_aware(datetime.now() - timedelta(hours=1))
+    evento.save(update_fields=["data_inicio"])
+    resp = client.post(url)
+    assert resp.status_code == 302
+    assert InscricaoEvento.objects.filter(evento=evento, user=usuario_comum, status="confirmada").exists()
+
+
 def test_qrcode_and_checkin(client, inscricao):
     inscricao.confirmar_inscricao()
     assert inscricao.qrcode_url

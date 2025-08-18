@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
@@ -12,9 +14,54 @@ from .models import (
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
+    Tarefa,
+    TarefaLog,
 )
 from .tasks import upload_material_divulgacao
 from dashboard.services import check_achievements
+
+
+class TarefaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tarefa
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "organizacao",
+            "responsavel",
+            "status",
+            "mensagem_origem",
+            "created_at",
+            "updated_at",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        validated_data["organizacao"] = request.user.organizacao
+        validated_data["responsavel"] = request.user
+        instance = super().create(validated_data)
+        TarefaLog.objects.create(
+            tarefa=instance, usuario=request.user, acao="tarefa_criada"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        old_instance = Tarefa.objects.get(pk=instance.pk)
+        instance = super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        TarefaLog.objects.create(
+            tarefa=instance,
+            usuario=request.user,
+            acao="tarefa_atualizada",
+            detalhes=changes,
+        )
+        return instance
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -119,6 +166,21 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def validate_arquivo(self, arquivo):
+        if not arquivo:
+            return arquivo
+        ext = os.path.splitext(arquivo.name)[1].lower()
+        if ext in {".jpg", ".jpeg", ".png"}:
+            max_size = 10 * 1024 * 1024
+        elif ext == ".pdf":
+            max_size = 20 * 1024 * 1024
+        else:
+            raise serializers.ValidationError("Formato de arquivo não permitido.")
+        if arquivo.size > max_size:
+            raise serializers.ValidationError("Arquivo excede o tamanho máximo permitido.")
+        return arquivo
+
+
     def create(self, validated_data):
         request = self.context["request"]
         evento = validated_data["evento"]
@@ -176,7 +238,14 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
         evento = validated_data["evento"]
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=request.user,
+            acao="parceria_criada",
+            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
+        )
+        return instance
 
     def update(self, instance, validated_data):
         request = self.context["request"]
