@@ -83,10 +83,13 @@ def enviar_mensagem(
     canal: ChatChannel,
     remetente: User,
     tipo: str,
-    conteudo: str = "",
+    conteudo: str | None = "",
     arquivo=None,
     reply_to: ChatMessage | None = None,
     conteudo_cifrado: str = "",
+    *,
+    alg: str = "",
+    key_version: str = "",
 ) -> ChatMessage:
     """Salva uma nova mensagem no canal.
 
@@ -107,13 +110,16 @@ def enviar_mensagem(
     if reply_to and reply_to.channel_id != canal.id:
         raise ValueError("Mensagem de referência deve ser do mesmo canal")
     detector = SpamDetector()
-    is_spam = detector.is_spam(remetente, canal, conteudo)
+    plain = conteudo or ""
+    is_spam = detector.is_spam(remetente, canal, plain)
     msg = ChatMessage.objects.create(
         channel=canal,
         remetente=remetente,
         tipo=tipo,
         conteudo=conteudo,
         conteudo_cifrado=conteudo_cifrado,
+        alg=alg,
+        key_version=key_version,
         arquivo=arquivo,
         reply_to=reply_to,
         is_spam=is_spam,

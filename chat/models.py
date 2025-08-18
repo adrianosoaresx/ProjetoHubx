@@ -113,8 +113,10 @@ class ChatMessage(CoreTimeStampedModel, SoftDeleteModel):
     ]
 
     tipo = models.CharField(max_length=10, choices=MESSAGE_TYPES, default="text")
-    conteudo = models.TextField(blank=True)
+    conteudo = models.TextField(blank=True, null=True)
     conteudo_cifrado = models.TextField(blank=True)
+    alg = models.CharField(max_length=50, blank=True)
+    key_version = models.CharField(max_length=50, blank=True)
     arquivo = models.FileField(upload_to="chat/arquivos/", null=True, blank=True)
     reply_to = models.ForeignKey(
         "self",
