@@ -30,6 +30,8 @@ class CategoriaDiscussaoSerializer(serializers.ModelSerializer):
 
 class RespostaDiscussaoSerializer(serializers.ModelSerializer):
     autor_email = serializers.EmailField(source="autor.email", read_only=True)
+    score = serializers.IntegerField(read_only=True)
+    num_votos = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = RespostaDiscussao
@@ -44,16 +46,28 @@ class RespostaDiscussaoSerializer(serializers.ModelSerializer):
             "editado",
             "editado_em",
             "motivo_edicao",
+            "score",
+            "num_votos",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["autor", "editado", "created_at", "updated_at", "editado_em"]
+        read_only_fields = [
+            "autor",
+            "editado",
+            "created_at",
+            "updated_at",
+            "editado_em",
+            "score",
+            "num_votos",
+        ]
 
 
 class TopicoDiscussaoSerializer(serializers.ModelSerializer):
     autor_email = serializers.EmailField(source="autor.email", read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     melhor_resposta = RespostaDiscussaoSerializer(read_only=True)
+    score = serializers.IntegerField(read_only=True)
+    num_votos = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = TopicoDiscussao
@@ -71,10 +85,19 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
             "resolvido",
             "melhor_resposta",
             "numero_visualizacoes",
+            "score",
+            "num_votos",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["autor", "numero_visualizacoes", "slug", "resolvido"]
+        read_only_fields = [
+            "autor",
+            "numero_visualizacoes",
+            "slug",
+            "resolvido",
+            "score",
+            "num_votos",
+        ]
 
     def create(self, validated_data: dict) -> TopicoDiscussao:
         request = self.context.get("request")
