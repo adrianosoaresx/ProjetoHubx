@@ -1,5 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
+from django.urls import include, path
+from django.views.i18n import JavaScriptCatalog
 
 from accounts.models import UserType
 from agenda.models import Evento
@@ -113,6 +115,29 @@ def media_root(tmp_path, settings):
 @pytest.fixture
 def categoria(organizacao):
     return CategoriaDiscussao.objects.create(nome="Cat", organizacao=organizacao)
+
+
+urlpatterns = [
+    path("api/discussao/", include("discussao.api_urls")),
+    path("discussao/", include("discussao.urls")),
+    path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
+]
+
+
+@pytest.fixture(autouse=True)
+def override_urls(settings):
+    settings.ROOT_URLCONF = __name__
+    settings.MIDDLEWARE = [m for m in settings.MIDDLEWARE if "silk" not in m]
+
+
+@pytest.fixture(autouse=True)
+def dummy_cache(settings):
+    settings.CACHES = {
+        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
+    }
+    settings.CHANNEL_LAYERS = {
+        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
+    }
 
 
 @pytest.fixture(autouse=True)

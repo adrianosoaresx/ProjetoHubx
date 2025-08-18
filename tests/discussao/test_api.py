@@ -23,6 +23,27 @@ def create_topico(categoria, autor, title="T"):
     )
 
 
+def test_topico_serializer_includes_score(api_client, categoria, associado_user):
+    topico = create_topico(categoria, associado_user)
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("topico-detail", args=[topico.pk], urlconf="discussao.api_urls")
+    resp = api_client.get("/api/discussao" + url)
+    assert resp.status_code == 200
+    assert resp.data["score"] == 0 and resp.data["num_votos"] == 0
+
+
+def test_resposta_serializer_includes_score(api_client, categoria, associado_user):
+    topico = create_topico(categoria, associado_user)
+    resposta = RespostaDiscussao.objects.create(
+        topico=topico, autor=associado_user, conteudo="r"
+    )
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("resposta-detail", args=[resposta.pk], urlconf="discussao.api_urls")
+    resp = api_client.get("/api/discussao" + url)
+    assert resp.status_code == 200
+    assert resp.data["score"] == 0 and resp.data["num_votos"] == 0
+
+
 def test_marcar_resolvido_permission(api_client, categoria, admin_user, associado_user):
     topico = create_topico(categoria, associado_user)
     resp = RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")

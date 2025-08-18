@@ -201,6 +201,16 @@ def test_interacao_view_toggle(client, nucleado_user, categoria, topico):
     assert obj.tipo == "dislike"
 
 
+def test_interacao_view_returns_score(client, nucleado_user, categoria, topico):
+    client.force_login(nucleado_user)
+    ct = ContentType.objects.get_for_model(topico)
+    url = reverse("interacao", args=[ct.id, topico.id, "like"], urlconf="discussao.urls")
+    resp = client.post("/discussao" + url)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["score"] == 1 and data["num_votos"] == 1
+
+
 def test_topico_mark_resolved(client, admin_user, categoria, topico, nucleado_user):
     resp = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r")
     client.force_login(admin_user)
