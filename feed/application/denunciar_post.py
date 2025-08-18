@@ -18,8 +18,10 @@ class DenunciarPost:
         Flag.objects.create(post=post, user=user)
         limit = getattr(settings, "FEED_FLAGS_LIMIT", 3)
         if Flag.objects.filter(post=post).count() >= limit:
-            moderacao, _ = ModeracaoPost.objects.get_or_create(post=post)
-            if moderacao.status != "pendente":
-                moderacao.status = "pendente"
-                moderacao.motivo = "Limite de denúncias atingido"
-                moderacao.save(update_fields=["status", "motivo"])
+            moderacao = post.moderacao
+            if not moderacao or moderacao.status != "pendente":
+                ModeracaoPost.objects.create(
+                    post=post,
+                    status="pendente",
+                    motivo="Limite de denúncias atingido",
+                )

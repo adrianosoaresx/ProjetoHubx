@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -19,24 +19,25 @@ from nucleos.models import Nucleo
 
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Like, ModeracaoPost, Post
-from .services import upload_media
 
 
 @login_required
 def meu_mural(request):
     """Exibe o mural pessoal do usuário com seus posts e posts globais."""
 
+    latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
     posts = (
-        Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao")
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
         .prefetch_related("likes", "comments")
         .filter(deleted=False)
-        .exclude(moderacao__status="rejeitado")
+        .annotate(mod_status=Subquery(latest_status))
+        .exclude(mod_status="rejeitado")
         .filter(
             Q(autor=request.user)
             | Q(
                 tipo_feed="global",
                 organizacao=request.user.organizacao,
-                moderacao__status="aprovado",
+                mod_status="aprovado",
             )
         )
         .order_by("-created_at")
@@ -83,6 +84,7 @@ class FeedListView(LoginRequiredMixin, ListView):
         if cached:
             return cached
         response = super().dispatch(request, *args, **kwargs)
+        response.render()
         cache.set(key, response, self.cache_timeout)
         return response
 
@@ -91,12 +93,13 @@ class FeedListView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q", "").strip()
         user = self.request.user
 
-        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao").prefetch_related(
+        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
             "likes", "comments", "tags"
         )
-        qs = qs.filter(deleted=False).exclude(moderacao__status="rejeitado")
+        qs = qs.filter(deleted=False).annotate(mod_status=Subquery(latest_status)).exclude(mod_status="rejeitado")
         if not user.is_staff:
-            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=user))
+            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=user))
         qs = qs.distinct()
 
         if tipo_feed == "usuario":
@@ -187,9 +190,11 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         for field in ["image", "pdf", "video"]:
-            file = form.cleaned_data.get(field)
-            if file:
-                setattr(form.instance, field, upload_media(file))
+            value = form.cleaned_data.get(field)
+            if value:
+                setattr(form.instance, field, value)
+        if getattr(form, "_video_preview_key", None):
+            form.instance.video_preview = form._video_preview_key
         form.instance.autor = self.request.user
         form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
@@ -203,12 +208,11 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "post"
 
     def get_queryset(self):
-        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao").prefetch_related(
-            "tags"
-        )
-        qs = qs.filter(deleted=False).exclude(moderacao__status="rejeitado")
+        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
+        qs = qs.filter(deleted=False).annotate(mod_status=Subquery(latest_status)).exclude(mod_status="rejeitado")
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=self.request.user))
+            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
         return qs
 
     def get_context_data(self, **kwargs):
@@ -276,9 +280,11 @@ def post_update(request, pk):
         form = PostForm(request.POST, files, instance=post, user=request.user)
         if form.is_valid():
             for field in ["image", "pdf", "video"]:
-                file = form.cleaned_data.get(field)
-                if file:
-                    setattr(form.instance, field, upload_media(file))
+                value = form.cleaned_data.get(field)
+                if value:
+                    setattr(form.instance, field, value)
+            if getattr(form, "_video_preview_key", None):
+                form.instance.video_preview = form._video_preview_key
             form.instance.organizacao = request.user.organizacao
             form.save()
             if request.headers.get("HX-Request"):
@@ -314,18 +320,21 @@ def post_delete(request, pk):
 @permission_required("feed.change_post", raise_exception=True)
 def moderar_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    mod, _ = ModeracaoPost.objects.get_or_create(post=post)
     if request.method == "POST":
         acao = request.POST.get("acao")
         if acao == "aprovar":
-            mod.status = "aprovado"
-            mod.avaliado_por = request.user
-            mod.avaliado_em = timezone.now()
-            mod.save(update_fields=["status", "avaliado_por", "avaliado_em", "updated_at"])
+            ModeracaoPost.objects.create(
+                post=post,
+                status="aprovado",
+                avaliado_por=request.user,
+                avaliado_em=timezone.now(),
+            )
         elif acao == "rejeitar":
-            mod.status = "rejeitado"
-            mod.motivo = request.POST.get("motivo", "")
-            mod.avaliado_por = request.user
-            mod.avaliado_em = timezone.now()
-            mod.save(update_fields=["status", "motivo", "avaliado_por", "avaliado_em", "updated_at"])
+            ModeracaoPost.objects.create(
+                post=post,
+                status="rejeitado",
+                motivo=request.POST.get("motivo", ""),
+                avaliado_por=request.user,
+                avaliado_em=timezone.now(),
+            )
     return redirect("feed:post_detail", pk=pk)

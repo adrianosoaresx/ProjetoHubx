@@ -8,6 +8,9 @@ from sentry_sdk import capture_exception
 from botocore.exceptions import ClientError
 
 from notificacoes.services.notificacoes import enviar_para_usuario
+from organizacoes.models import Organizacao
+
+from feed.application.plugins_loader import load_plugins_for
 
 from .models import Post
 
@@ -29,9 +32,15 @@ def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
     event = "feed_like" if tipo == "like" else "feed_comment"
     try:
         enviar_para_usuario(post.autor, event, {"post_id": str(post.id)})
+
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
+
+        NOTIFICATIONS_SENT.inc()
+    except Exception:  # pragma: no cover - melhor esforço
+        pass
+
 
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
@@ -65,6 +74,7 @@ def notify_post_moderated(post_id: str, status: str) -> None:
         enviar_para_usuario(
             post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status}
         )
+
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
@@ -85,3 +95,25 @@ def upload_media(data: bytes, name: str, content_type: str) -> str:
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
+
+        NOTIFICATIONS_SENT.inc()
+    except Exception:  # pragma: no cover - melhor esforço
+        pass
+
+
+@shared_task
+def executar_plugins() -> None:
+    """Carrega e executa plugins registrados para organizações."""
+
+    User = get_user_model()
+    orgs = Organizacao.objects.filter(feed_plugins__isnull=False).distinct()
+    for org in orgs:
+        user = User.objects.filter(organizacao=org).first()
+        if not user:
+            continue
+        for plugin in load_plugins_for(org):
+            try:
+                plugin.render(user)
+            except Exception:  # pragma: no cover - melhor esforço
+                continue
+

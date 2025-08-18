@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import Count, Q, OuterRef, Subquery
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ratelimit.core import is_ratelimited
@@ -25,7 +25,7 @@ from rest_framework.response import Response
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
-from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao
+from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
 REACTIONS_TOTAL = Counter(
@@ -44,10 +44,43 @@ class CanModerate(permissions.BasePermission):
         return request.user.has_perm("feed.change_moderacaopost")
 
 
+
+class IsCommentAuthorOrModerator(permissions.BasePermission):
+    """Permite edição apenas ao autor do comentário ou a moderadores."""
+
+    message = "Apenas o autor ou moderadores podem modificar o comentário."
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user_id == request.user.id or request.user.is_staff
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ["id", "nome"]
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all().order_by("nome")
+    serializer_class = TagSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class CanEditPost(permissions.BasePermission):
+    """Permite edição apenas ao autor ou a quem possui ``feed.change_post``."""
+
+    def has_object_permission(self, request, view, obj):
+        return obj.autor == request.user or request.user.has_perm("feed.change_post")
+
+
+
+
 class PostSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     pdf_url = serializers.SerializerMethodField()
     video_url = serializers.SerializerMethodField()
+    video_preview_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -58,9 +91,11 @@ class PostSerializer(serializers.ModelSerializer):
             "image",
             "pdf",
             "video",
+            "video_preview",
             "image_url",
             "pdf_url",
             "video_url",
+            "video_preview_url",
             "nucleo",
             "evento",
             "tags",
@@ -69,7 +104,7 @@ class PostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at"]
+        read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at", "video_preview"]
 
     def validate(self, attrs):
         tipo_feed = attrs.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
@@ -91,9 +126,13 @@ class PostSerializer(serializers.ModelSerializer):
             file = validated_data.get(field)
             if file:
                 try:
-                    validated_data[field] = upload_media(file)
+                    result = upload_media(file)
                 except DjangoValidationError as e:
                     raise serializers.ValidationError({field: e.messages}) from e
+                if field == "video" and isinstance(result, tuple):
+                    validated_data["video"], validated_data["video_preview"] = result
+                else:
+                    validated_data[field] = result
 
     def create(self, validated_data):
         self._handle_media(validated_data)
@@ -132,6 +171,10 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_video_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
         key = getattr(obj.video, "name", obj.video)
+        return self._generate_presigned(key)
+
+    def get_video_preview_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
+        key = getattr(obj.video_preview, "name", obj.video_preview)
         return self._generate_presigned(key)
 
 
@@ -180,6 +223,12 @@ class PostViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     cache_timeout = 60
 
+    def get_permissions(self):  # pragma: no cover - simples
+        perms = super().get_permissions()
+        if self.action in {"update", "partial_update", "destroy"}:
+            perms.append(CanEditPost())
+        return perms
+
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         if is_ratelimited(
             request,
@@ -193,13 +242,15 @@ class PostViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
+        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = (
-            Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao")
+            Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
             .prefetch_related("tags")
-            .exclude(moderacao__status="rejeitado")
+            .annotate(mod_status=Subquery(latest_status))
+            .exclude(mod_status="rejeitado")
         )
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=self.request.user))
+            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
         qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
@@ -313,6 +364,15 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response({"bookmarked": True}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def toggle_like(self, request, pk=None):
+        post = self.get_object()
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if not created:
+            like.delete()
+            return Response({"liked": False}, status=status.HTTP_200_OK)
+        return Response({"liked": True}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def flag(self, request, pk=None):
         post = self.get_object()
         use_case = DenunciarPost()
@@ -322,19 +382,17 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": e.message}, status=400)
         return Response(status=204)
 
-    @action(detail=True, methods=["post"], permission_classes=[CanModerate])
+    @action(detail=True, methods=["post"], permission_classes=[CanModerate], url_path="avaliar")
     def moderate(self, request, pk=None):
         post = self.get_object()
         serializer = ModeracaoPostSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        moderacao, _ = ModeracaoPost.objects.update_or_create(
+        moderacao = ModeracaoPost.objects.create(
             post=post,
-            defaults={
-                "status": serializer.validated_data["status"],
-                "motivo": serializer.validated_data.get("motivo", ""),
-                "avaliado_por": request.user,
-                "avaliado_em": timezone.now(),
-            },
+            status=serializer.validated_data["status"],
+            motivo=serializer.validated_data.get("motivo", ""),
+            avaliado_por=request.user,
+            avaliado_em=timezone.now(),
         )
         if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
             notify_post_moderated(str(post.id), moderacao.status)
@@ -461,7 +519,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsCommentAuthorOrModerator]
     queryset = Comment.objects.select_related("post", "user").all()
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
@@ -478,7 +536,9 @@ class LikeSerializer(serializers.ModelSerializer):
 class LikeViewSet(viewsets.ModelViewSet):
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Like.objects.select_related("post", "user").all()
+
+    def get_queryset(self):  # pragma: no cover - simples
+        return Like.objects.select_related("post", "user").filter(user=self.request.user)
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
         serializer.save(user=self.request.user)
