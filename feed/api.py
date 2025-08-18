@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.db.models import Count, Q
+from django.db.models import Count, Q, OuterRef, Subquery
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ratelimit.core import is_ratelimited
@@ -230,13 +230,15 @@ class PostViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
+        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = (
-            Post.objects.select_related("autor", "organizacao", "nucleo", "evento", "moderacao")
+            Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
             .prefetch_related("tags")
-            .exclude(moderacao__status="rejeitado")
+            .annotate(mod_status=Subquery(latest_status))
+            .exclude(mod_status="rejeitado")
         )
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(moderacao__status="aprovado") | Q(autor=self.request.user))
+            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
         qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
@@ -359,19 +361,17 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": e.message}, status=400)
         return Response(status=204)
 
-    @action(detail=True, methods=["post"], permission_classes=[CanModerate])
+    @action(detail=True, methods=["post"], permission_classes=[CanModerate], url_path="avaliar")
     def moderate(self, request, pk=None):
         post = self.get_object()
         serializer = ModeracaoPostSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        moderacao, _ = ModeracaoPost.objects.update_or_create(
+        moderacao = ModeracaoPost.objects.create(
             post=post,
-            defaults={
-                "status": serializer.validated_data["status"],
-                "motivo": serializer.validated_data.get("motivo", ""),
-                "avaliado_por": request.user,
-                "avaliado_em": timezone.now(),
-            },
+            status=serializer.validated_data["status"],
+            motivo=serializer.validated_data.get("motivo", ""),
+            avaliado_por=request.user,
+            avaliado_em=timezone.now(),
         )
         if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
             notify_post_moderated(str(post.id), moderacao.status)

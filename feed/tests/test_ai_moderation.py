@@ -5,7 +5,8 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from feed.forms import PostForm
-from feed.models import ModeracaoPost
+from feed.models import ModeracaoPost, Post
+from feed.application.moderar_ai import aplicar_decisao
 from organizacoes.factories import OrganizacaoFactory
 
 
@@ -26,13 +27,17 @@ class AIModerationAPITest(TestCase):
         self.assertEqual(res.status_code, 400)
 
     def test_flags_suspect_content(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "ruim", "tipo_feed": "global"}
+        post = Post.objects.create(
+            autor=self.user, organizacao=self.user.organizacao, conteudo="ruim"
         )
-        self.assertEqual(res.status_code, 201)
-        post_id = res.data["id"]
-        moderacao = ModeracaoPost.objects.get(post_id=post_id)
-        self.assertEqual(moderacao.status, "pendente")
+        self.assertEqual(post.moderacao.status, "pendente")
+
+    def test_multiple_ai_decisions_create_history(self):
+        post = Post.objects.create(autor=self.user, organizacao=self.user.organizacao, conteudo="ok")
+        aplicar_decisao(post, "aceito")
+        aplicar_decisao(post, "rejeitado")
+        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 3)
+        self.assertEqual(post.moderacao.status, "rejeitado")
 
 
 @override_settings(FEED_BAD_WORDS=["ruim"], FEED_AI_THRESHOLDS={"suspeito": 0.1, "rejeitado": 0.2})

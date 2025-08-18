@@ -84,15 +84,17 @@ class Post(TimeStampedModel, SoftDeleteModel):
     def save(self, *args, **kwargs):
         is_new = self._state.adding
         super().save(*args, **kwargs)
-        moderacao, _created = ModeracaoPost.objects.get_or_create(post=self)
-        if is_new and _created:
-            # novo post começa pendente
-            pass
+        if is_new:
+            ModeracaoPost.objects.create(post=self)
         banned = getattr(settings, "FEED_BAD_WORDS", [])
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
-            if moderacao.status != "pendente":
-                moderacao.status = "pendente"
-                moderacao.save(update_fields=["status"])
+            mod = self.moderacao
+            if not mod or mod.status != "pendente":
+                ModeracaoPost.objects.create(post=self, status="pendente")
+
+    @property
+    def moderacao(self):
+        return self.moderacoes.order_by("-created_at").first()
 
 
 class Like(TimeStampedModel, SoftDeleteModel):
@@ -161,7 +163,7 @@ class ModeracaoPost(TimeStampedModel):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.OneToOneField(Post, on_delete=models.CASCADE, related_name="moderacao")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="moderacoes")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pendente")
     motivo = models.TextField(blank=True)
     avaliado_por = models.ForeignKey(

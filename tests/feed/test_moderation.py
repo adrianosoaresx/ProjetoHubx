@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from feed.models import Post
+from feed.models import ModeracaoPost, Post
 from organizacoes.models import Organizacao
 
 
@@ -67,3 +67,20 @@ class ModerationTests(TestCase):
         resp = self._list(self.author)
         data = resp.data if isinstance(resp.data, dict) else {"results": resp.data}
         self.assertEqual(len(data["results"]), 0)
+
+    def test_multiple_manual_decisions_create_history(self):
+        post = Post.objects.create(autor=self.author, organizacao=self.org, conteudo="hi")
+        self.client.force_authenticate(user=self.admin)
+        self.client.post(
+            f"/api/feed/posts/{post.id}/avaliar/",
+            {"status": "aprovado"},
+            format="json",
+        )
+        self.client.post(
+            f"/api/feed/posts/{post.id}/avaliar/",
+            {"status": "rejeitado"},
+            format="json",
+        )
+        self.client.force_authenticate(user=None)
+        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 3)
+        self.assertEqual(post.moderacao.status, "rejeitado")
