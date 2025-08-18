@@ -6,23 +6,24 @@ import logging
 
 from celery import shared_task  # type: ignore
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils import timezone
 
 from ..models import FinanceiroTaskLog, LancamentoFinanceiro
 from ..services import metrics
-from ..services.notificacoes import enviar_inadimplencia
+from ..services.notificacoes import enviar_aviso_vencimento, enviar_inadimplencia
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task
 def notificar_inadimplencia() -> None:
-    """Envia notificações de inadimplência para lançamentos vencidos."""
+    """Envia notificações de inadimplência ou aviso de vencimento."""
 
     logger.info("Verificando inadimplentes")
     inicio = timezone.now()
     limite = inicio - timezone.timedelta(days=7)
+    aviso_limite = inicio + timezone.timedelta(days=3)
 
     pendentes = (
         LancamentoFinanceiro.objects.select_related(
@@ -30,8 +31,13 @@ def notificar_inadimplencia() -> None:
             "centro_custo__nucleo",
             "centro_custo__organizacao",
         )
-        .filter(status=LancamentoFinanceiro.Status.PENDENTE, data_vencimento__lt=inicio)
-        .filter(Q(ultima_notificacao__isnull=True) | Q(ultima_notificacao__lt=limite))
+        .filter(status=LancamentoFinanceiro.Status.PENDENTE)
+        .filter(Q(data_vencimento__lt=inicio) | Q(data_vencimento__lte=aviso_limite))
+        .filter(
+            Q(ultima_notificacao__isnull=True)
+            | Q(ultima_notificacao__lt=limite)
+            | Q(ultima_notificacao__lt=F("data_vencimento"))
+        )
     )
 
     total = 0
@@ -42,8 +48,12 @@ def notificar_inadimplencia() -> None:
             user = lancamento.conta_associado.user if lancamento.conta_associado else None
             if user:
                 try:  # pragma: no branch - falhas de integração não são cobertas
-                    enviar_inadimplencia(user, lancamento)
-                    logger.info("Aviso de inadimplência para %s", user.email)
+                    if lancamento.data_vencimento and lancamento.data_vencimento > inicio:
+                        enviar_aviso_vencimento(user, lancamento)
+                        logger.info("Aviso de vencimento para %s", user.email)
+                    else:
+                        enviar_inadimplencia(user, lancamento)
+                        logger.info("Aviso de inadimplência para %s", user.email)
                 except Exception as exc:  # pragma: no cover - integração externa
                     logger.error("Falha ao enviar inadimplência: %s", exc)
             with transaction.atomic():
@@ -69,4 +79,3 @@ def notificar_inadimplencia() -> None:
             status=status,
             detalhes=detalhes or f"{total} notificações",
         )
-
