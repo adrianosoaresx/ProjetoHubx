@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection, transaction
@@ -18,11 +19,42 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import RespostaDiscussao, Tag, TopicoDiscussao
-from .serializers import RespostaDiscussaoSerializer, TagSerializer, TopicoDiscussaoSerializer
+from .models import (
+    CategoriaDiscussao,
+    InteracaoDiscussao,
+    RespostaDiscussao,
+    Tag,
+    TopicoDiscussao,
+)
+from .serializers import (
+    CategoriaDiscussaoSerializer,
+    RespostaDiscussaoSerializer,
+    TagSerializer,
+    TopicoDiscussaoSerializer,
+    VotoDiscussaoSerializer,
+)
 from .services import marcar_resolucao, responder_topico
 from .services.agenda_bridge import criar_reuniao as criar_reuniao_agenda
 from .tasks import notificar_melhor_resposta, notificar_nova_resposta
+
+
+class CategoriaDiscussaoViewSet(viewsets.ModelViewSet):
+    queryset = CategoriaDiscussao.objects.all().order_by("nome")
+    serializer_class = CategoriaDiscussaoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        org = self.request.query_params.get("organizacao")
+        if org:
+            qs = qs.filter(organizacao_id=org)
+        nucleo = self.request.query_params.get("nucleo")
+        if nucleo:
+            qs = qs.filter(nucleo_id=nucleo)
+        evento = self.request.query_params.get("evento")
+        if evento:
+            qs = qs.filter(evento_id=evento)
+        return qs
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -210,3 +242,27 @@ class RespostaViewSet(viewsets.ModelViewSet):
             UserType.ADMIN.value,
             UserType.ROOT.value,
         }
+
+
+class VotoDiscussaoViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        serializer = VotoDiscussaoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        ct = get_object_or_404(ContentType, id=serializer.validated_data["content_type_id"])
+        obj = get_object_or_404(ct.model_class(), id=serializer.validated_data["object_id"])
+        interacao, created = InteracaoDiscussao.objects.get_or_create(
+            user=request.user,
+            content_type=ct,
+            object_id=obj.pk,
+            defaults={"valor": serializer.validated_data["valor"]},
+        )
+        if not created:
+            if interacao.valor == serializer.validated_data["valor"]:
+                interacao.delete()
+            else:
+                interacao.valor = serializer.validated_data["valor"]
+                interacao.save(update_fields=["valor"])
+        cache.clear()
+        return Response({"score": obj.score, "num_votos": obj.num_votos})

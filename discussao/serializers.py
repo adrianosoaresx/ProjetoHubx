@@ -2,13 +2,30 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import RespostaDiscussao, Tag, TopicoDiscussao
+from .models import CategoriaDiscussao, RespostaDiscussao, Tag, TopicoDiscussao
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ["id", "nome"]
+
+
+class CategoriaDiscussaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CategoriaDiscussao
+        fields = [
+            "id",
+            "nome",
+            "slug",
+            "descricao",
+            "organizacao",
+            "nucleo",
+            "evento",
+            "icone",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class RespostaDiscussaoSerializer(serializers.ModelSerializer):
@@ -74,3 +91,9 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
         if tags_data:
             instance.tags.set(Tag.objects.filter(pk__in=tags_data))
         return instance
+
+
+class VotoDiscussaoSerializer(serializers.Serializer):
+    content_type_id = serializers.IntegerField()
+    object_id = serializers.IntegerField()
+    valor = serializers.ChoiceField(choices=[1, -1])

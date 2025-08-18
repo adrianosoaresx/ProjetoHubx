@@ -19,6 +19,8 @@ exclusão lógica através dos campos `deleted` e `deleted_at`.
 | POST | `/discussao/<categoria>/<topico>/resolver/` | marca tópico como resolvido |
 | POST | `/discussao/<categoria>/<topico>/responder/` | cria resposta |
 | POST | `/discussao/comentario/<id>/editar/` | edita resposta |
+| GET/POST | `/api/discussao/discussao/categorias/` | CRUD de categorias (API) |
+| POST | `/api/discussao/discussao/votos/` | votar em tópicos ou respostas |
 
 ## Casos de uso
 
