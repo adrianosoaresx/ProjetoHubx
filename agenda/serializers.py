@@ -12,9 +12,54 @@ from .models import (
     InscricaoEvento,
     MaterialDivulgacaoEvento,
     ParceriaEvento,
+    Tarefa,
+    TarefaLog,
 )
 from .tasks import upload_material_divulgacao
 from dashboard.services import check_achievements
+
+
+class TarefaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tarefa
+        exclude = ("deleted", "deleted_at")
+        read_only_fields = (
+            "id",
+            "organizacao",
+            "responsavel",
+            "status",
+            "mensagem_origem",
+            "created_at",
+            "updated_at",
+        )
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        validated_data["organizacao"] = request.user.organizacao
+        validated_data["responsavel"] = request.user
+        instance = super().create(validated_data)
+        TarefaLog.objects.create(
+            tarefa=instance, usuario=request.user, acao="tarefa_criada"
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        request = self.context["request"]
+        old_instance = Tarefa.objects.get(pk=instance.pk)
+        instance = super().update(instance, validated_data)
+        changes: Dict[str, Dict[str, Any]] = {}
+        for field in validated_data:
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        TarefaLog.objects.create(
+            tarefa=instance,
+            usuario=request.user,
+            acao="tarefa_atualizada",
+            detalhes=changes,
+        )
+        return instance
 
 
 class EventoSerializer(serializers.ModelSerializer):
