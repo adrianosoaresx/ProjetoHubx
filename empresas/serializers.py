@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from rest_framework import serializers
+from validate_docbr import CNPJ
 
 from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
 
@@ -47,6 +48,28 @@ class EmpresaSerializer(serializers.ModelSerializer):
             "validado_em",
             "fonte_validacao",
         ]
+
+    def validate_cnpj(self, value: str) -> str:
+        """Valida e formata o CNPJ recebido.
+
+        Utiliza a biblioteca ``validate_docbr`` para garantir que o CNPJ é
+        válido e aplica a máscara padrão. Também verifica se já existe outra
+        empresa cadastrada com o mesmo CNPJ.
+        """
+
+        cnpj = CNPJ()
+        digits = "".join(filter(str.isdigit, value))
+
+        if not cnpj.validate(digits):
+            raise serializers.ValidationError("CNPJ inválido")
+
+        formatted = cnpj.mask(digits)
+        qs = Empresa.objects.filter(cnpj=formatted).exclude(pk=getattr(self.instance, "pk", None))
+
+        if qs.exists():
+            raise serializers.ValidationError("CNPJ já cadastrado")
+
+        return formatted
 
     def create(self, validated_data: dict) -> Empresa:
         tags = validated_data.pop("tags", [])
