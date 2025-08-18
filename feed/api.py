@@ -352,6 +352,15 @@ class PostViewSet(viewsets.ModelViewSet):
         return Response({"bookmarked": True}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def toggle_like(self, request, pk=None):
+        post = self.get_object()
+        like, created = Like.objects.get_or_create(post=post, user=request.user)
+        if not created:
+            like.delete()
+            return Response({"liked": False}, status=status.HTTP_200_OK)
+        return Response({"liked": True}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def flag(self, request, pk=None):
         post = self.get_object()
         use_case = DenunciarPost()
@@ -515,7 +524,9 @@ class LikeSerializer(serializers.ModelSerializer):
 class LikeViewSet(viewsets.ModelViewSet):
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = Like.objects.select_related("post", "user").all()
+
+    def get_queryset(self):  # pragma: no cover - simples
+        return Like.objects.select_related("post", "user").filter(user=self.request.user)
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
         serializer.save(user=self.request.user)
