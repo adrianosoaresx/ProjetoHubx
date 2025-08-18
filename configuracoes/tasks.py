@@ -15,6 +15,7 @@ from agenda.models import Evento
 from chat.models import ChatNotification
 from feed.models import Post
 from notificacoes.services.notificacoes import enviar_para_usuario
+from notificacoes.services.push_client import send_push
 
 from .models import ConfiguracaoConta
 
@@ -27,10 +28,17 @@ def _send_for_frequency(frequency: str) -> None:
     since = now - delta
     configs = ConfiguracaoConta.objects.select_related("user").filter(
         (
-            models.Q(frequencia_notificacoes_email=frequency, receber_notificacoes_email=True)
+            models.Q(
+                frequencia_notificacoes_email=frequency,
+                receber_notificacoes_email=True,
+            )
             | models.Q(
                 frequencia_notificacoes_whatsapp=frequency,
                 receber_notificacoes_whatsapp=True,
+            )
+            | models.Q(
+                frequencia_notificacoes_push=frequency,
+                receber_notificacoes_push=True,
             )
         )
     )
@@ -57,12 +65,15 @@ def _send_for_frequency(frequency: str) -> None:
             enviar_para_usuario(config.user, "resumo_notificacoes", counts)
         if config.receber_notificacoes_whatsapp and config.frequencia_notificacoes_whatsapp == frequency:
             enviar_notificacao_whatsapp(config.user, counts)
+        if config.receber_notificacoes_push and config.frequencia_notificacoes_push == frequency:
+            send_push(
+                config.user,
+                "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**counts),
+            )
 
 
 def enviar_notificacao_whatsapp(user, contexto):
-    message = (
-        "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
-    )
+    message = "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
     try:
         client = Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN"))
         client.messages.create(
