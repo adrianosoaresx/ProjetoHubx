@@ -19,7 +19,6 @@ from nucleos.models import Nucleo
 
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Like, ModeracaoPost, Post
-from .services import upload_media
 
 
 @login_required
@@ -187,9 +186,11 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         for field in ["image", "pdf", "video"]:
-            file = form.cleaned_data.get(field)
-            if file:
-                setattr(form.instance, field, upload_media(file))
+            value = form.cleaned_data.get(field)
+            if value:
+                setattr(form.instance, field, value)
+        if getattr(form, "_video_preview_key", None):
+            form.instance.video_preview = form._video_preview_key
         form.instance.autor = self.request.user
         form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
@@ -276,9 +277,11 @@ def post_update(request, pk):
         form = PostForm(request.POST, files, instance=post, user=request.user)
         if form.is_valid():
             for field in ["image", "pdf", "video"]:
-                file = form.cleaned_data.get(field)
-                if file:
-                    setattr(form.instance, field, upload_media(file))
+                value = form.cleaned_data.get(field)
+                if value:
+                    setattr(form.instance, field, value)
+            if getattr(form, "_video_preview_key", None):
+                form.instance.video_preview = form._video_preview_key
             form.instance.organizacao = request.user.organizacao
             form.save()
             if request.headers.get("HX-Request"):

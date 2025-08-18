@@ -44,6 +44,7 @@ class CanModerate(permissions.BasePermission):
         return request.user.has_perm("feed.change_moderacaopost")
 
 
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -54,12 +55,20 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
     permission_classes = [permissions.IsAuthenticated]
+=======
+class CanEditPost(permissions.BasePermission):
+    """Permite edição apenas ao autor ou a quem possui ``feed.change_post``."""
+
+    def has_object_permission(self, request, view, obj):
+        return obj.autor == request.user or request.user.has_perm("feed.change_post")
+
 
 
 class PostSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     pdf_url = serializers.SerializerMethodField()
     video_url = serializers.SerializerMethodField()
+    video_preview_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -70,9 +79,11 @@ class PostSerializer(serializers.ModelSerializer):
             "image",
             "pdf",
             "video",
+            "video_preview",
             "image_url",
             "pdf_url",
             "video_url",
+            "video_preview_url",
             "nucleo",
             "evento",
             "tags",
@@ -81,7 +92,7 @@ class PostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at"]
+        read_only_fields = ["id", "autor", "organizacao", "created_at", "updated_at", "video_preview"]
 
     def validate(self, attrs):
         tipo_feed = attrs.get("tipo_feed") or getattr(self.instance, "tipo_feed", None)
@@ -103,9 +114,13 @@ class PostSerializer(serializers.ModelSerializer):
             file = validated_data.get(field)
             if file:
                 try:
-                    validated_data[field] = upload_media(file)
+                    result = upload_media(file)
                 except DjangoValidationError as e:
                     raise serializers.ValidationError({field: e.messages}) from e
+                if field == "video" and isinstance(result, tuple):
+                    validated_data["video"], validated_data["video_preview"] = result
+                else:
+                    validated_data[field] = result
 
     def create(self, validated_data):
         self._handle_media(validated_data)
@@ -144,6 +159,10 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_video_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
         key = getattr(obj.video, "name", obj.video)
+        return self._generate_presigned(key)
+
+    def get_video_preview_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
+        key = getattr(obj.video_preview, "name", obj.video_preview)
         return self._generate_presigned(key)
 
 
@@ -191,6 +210,12 @@ class PostViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = PageNumberPagination
     cache_timeout = 60
+
+    def get_permissions(self):  # pragma: no cover - simples
+        perms = super().get_permissions()
+        if self.action in {"update", "partial_update", "destroy"}:
+            perms.append(CanEditPost())
+        return perms
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         if is_ratelimited(

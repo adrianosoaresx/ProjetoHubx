@@ -4,6 +4,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
 import io
+import subprocess
+import tempfile
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
@@ -46,13 +48,31 @@ class PostAPITest(TestCase):
         self.assertEqual(res.status_code, 201)
 
     def test_create_video_post(self):
-        video = SimpleUploadedFile(
-            "v.mp4", b"00", content_type="video/mp4"
+        tmp = tempfile.NamedTemporaryFile(suffix=".mp4")
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=black:s=16x16:d=1",
+                "-pix_fmt",
+                "yuv420p",
+                tmp.name,
+            ],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
+        tmp.seek(0)
+        video = SimpleUploadedFile("v.mp4", tmp.read(), content_type="video/mp4")
         res = self.client.post(
             "/api/feed/posts/", {"tipo_feed": "global", "video": video}, format="multipart"
         )
         self.assertEqual(res.status_code, 201)
+        self.assertTrue(res.data["video_preview"])
+        self.assertTrue(res.data["video_preview_url"])
 
     def test_conteudo_limit(self):
         res = self.client.post(
@@ -81,3 +101,15 @@ class PostAPITest(TestCase):
         data = list_res.data["results"] if isinstance(list_res.data, dict) else list_res.data
         ids = [item["id"] for item in data]
         self.assertNotIn(post_id, ids)
+
+    def test_update_not_author_forbidden(self):
+        res = self.client.post(
+            "/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"}
+        )
+        post_id = res.data["id"]
+        other_user = UserFactory(organizacao=self.user.organizacao)
+        self.client.force_authenticate(other_user)
+        res = self.client.patch(
+            f"/api/feed/posts/{post_id}/", {"conteudo": "novo"}
+        )
+        self.assertEqual(res.status_code, 403)
