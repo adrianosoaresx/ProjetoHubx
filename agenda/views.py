@@ -278,8 +278,12 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
             return redirect("agenda:evento_detalhe", pk=pk)
         inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
         if not created and inscricao.status != "cancelada":
-            inscricao.cancelar_inscricao()
-            messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+            try:
+                inscricao.cancelar_inscricao()
+            except ValueError as exc:
+                messages.error(request, str(exc))
+            else:
+                messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
         else:
             inscricao.confirmar_inscricao()
             messages.success(request, _("Inscrição realizada."))  # pragma: no cover
