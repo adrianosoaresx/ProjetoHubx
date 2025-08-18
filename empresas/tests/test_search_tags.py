@@ -37,6 +37,6 @@ def test_api_filter_tags_and():
     client = APIClient()
     client.force_authenticate(user)
     url = reverse("empresas_api:empresa-list")
-    resp = client.get(url, {"tag": [tag1.id, tag2.id]})
+    resp = client.get(url, {"tags": [tag1.id, tag2.id]})
     ids = {item["id"] for item in resp.json()}
     assert ids == {str(empresa1.id)}

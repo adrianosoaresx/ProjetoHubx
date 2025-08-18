@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.http import QueryDict
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -19,7 +20,7 @@ from .serializers import (
     EmpresaSerializer,
 )
 from .tasks import nova_avaliacao
-from .services import verificar_cnpj
+from .services import search_empresas, verificar_cnpj
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
@@ -28,24 +29,17 @@ class EmpresaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = self.queryset
-        if getattr(self, "action", None) not in {"restaurar", "purgar"}:
-            qs = qs.filter(deleted=False)
-        nome = self.request.query_params.get("nome")
-        tag_ids = self.request.query_params.getlist("tag")
-        termo = self.request.query_params.get("q")
-        palavras = self.request.query_params.get("palavras_chave")
-        if nome:
-            qs = qs.filter(nome__icontains=nome)
-        if termo:
-            qs = qs.filter(palavras_chave__icontains=termo)
-        if palavras:
-            qs = qs.filter(palavras_chave__icontains=palavras)
-        if tag_ids:
-            for tag_id in tag_ids:
-                qs = qs.filter(tags__id=tag_id)
-            qs = qs.distinct()
-        return qs.order_by("nome")
+        if getattr(self, "action", None) in {"restaurar", "purgar"}:
+            return self.queryset
+
+        params = QueryDict(mutable=True)
+        params.setlist("tags", self.request.query_params.getlist("tags"))
+        for field in ["municipio", "estado", "organizacao_id", "q"]:
+            value = self.request.query_params.get(field)
+            if value:
+                params[field] = value
+
+        return search_empresas(self.request.user, params)
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted

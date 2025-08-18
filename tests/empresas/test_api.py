@@ -88,7 +88,7 @@ def test_busca_por_tag_e_palavra(api_client, gerente_user, tag_factory):
     )
     e2.tags.add(t2)
 
-    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}&q=saude"
+    url = reverse("empresas_api:empresa-list") + f"?tags={t1.id}&q=saude"
     resp = api_client.get(url)
     ids = [e["id"] for e in resp.data]
     assert str(e1.id) in ids and str(e2.id) not in ids
@@ -118,7 +118,7 @@ def test_busca_por_uma_tag(api_client, gerente_user, tag_factory):
         estado="SC",
     )
     e2.tags.add(t2)
-    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}"
+    url = reverse("empresas_api:empresa-list") + f"?tags={t1.id}"
     resp = api_client.get(url)
     ids = [e["id"] for e in resp.data]
     assert str(e1.id) in ids and str(e2.id) not in ids
@@ -158,7 +158,7 @@ def test_busca_por_multiplas_tags_and(api_client, gerente_user, tag_factory):
         estado="SC",
     )
     e3.tags.add(t2)
-    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}&tag={t2.id}"
+    url = reverse("empresas_api:empresa-list") + f"?tags={t1.id}&tags={t2.id}"
     resp = api_client.get(url)
     ids = [e["id"] for e in resp.data]
     assert str(e1.id) in ids and str(e2.id) not in ids and str(e3.id) not in ids
@@ -188,7 +188,7 @@ def test_busca_multiplas_tags_sem_and(api_client, gerente_user, tag_factory):
         estado="SC",
     )
     e2.tags.add(t2)
-    url = reverse("empresas_api:empresa-list") + f"?tag={t1.id}&tag={t2.id}"
+    url = reverse("empresas_api:empresa-list") + f"?tags={t1.id}&tags={t2.id}"
     resp = api_client.get(url)
     assert resp.data == []
 
