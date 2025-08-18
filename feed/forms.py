@@ -74,9 +74,15 @@ class PostForm(forms.ModelForm):
             file = cleaned_data.get(field)
             if file:
                 try:
-                    cleaned_data[field] = upload_media(file)
+                    result = upload_media(file)
                 except ValidationError as e:
                     self.add_error(field, e.message)
+                    continue
+                if field == "video" and isinstance(result, tuple):
+                    cleaned_data[field] = result[0]
+                    self._video_preview_key = result[1]
+                else:
+                    cleaned_data[field] = result
 
         tipo_feed = cleaned_data.get("tipo_feed")
         nucleo = cleaned_data.get("nucleo")
@@ -100,6 +106,10 @@ class PostForm(forms.ModelForm):
 
     def save(self, commit: bool = True):  # type: ignore[override]
         post = super().save(commit)
+        if getattr(self, "_video_preview_key", None):
+            post.video_preview = self._video_preview_key
+            if commit:
+                post.save(update_fields=["video_preview"])
         aplicar_decisao(post, getattr(self, "_ai_decision", "aceito"))
         return post
 
