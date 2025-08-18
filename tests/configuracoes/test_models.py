@@ -45,3 +45,11 @@ def test_timestamps_e_soft_delete(admin_user):
     assert config.deleted_at is not None
     assert not ConfiguracaoConta.objects.filter(pk=pk).exists()
     assert ConfiguracaoConta.all_objects.filter(pk=pk).exists()
+
+
+def test_restore_configuracao_conta(admin_user):
+    config = admin_user.configuracao
+    config.delete()
+    config.undelete()  # Should not raise
+    config.refresh_from_db()
+    assert config.deleted is False
