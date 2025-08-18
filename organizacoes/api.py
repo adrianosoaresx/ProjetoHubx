@@ -3,6 +3,7 @@ from __future__ import annotations
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.core.cache import cache
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -35,9 +36,15 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     queryset = Organizacao.objects.all()
     serializer_class = OrganizacaoSerializer
     permission_classes = [IsAuthenticated]
+    cache_timeout = 60
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("created_by")
+            .prefetch_related("users")
+        )
         user = self.request.user
         if (
             user.is_superuser
@@ -67,6 +74,30 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         else:
             qs = qs.order_by("nome")
         return qs
+
+    def _cache_key(self, request) -> str:
+        params = request.query_params
+        keys = [
+            str(getattr(request.user, "pk", "")),
+            params.get("search", ""),
+            params.get("inativa", ""),
+            params.get("ordering", ""),
+            params.get("page", ""),
+            params.get("page_size", ""),
+        ]
+        return "organizacoes_list_" + "_".join(keys)
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        key = self._cache_key(request)
+        cached = cache.get(key)
+        if cached is not None:
+            response = Response(cached)
+            response["X-Cache"] = "HIT"
+            return response
+        response = super().list(request, *args, **kwargs)
+        cache.set(key, response.data, self.cache_timeout)
+        response["X-Cache"] = "MISS"
+        return response
 
     def get_permissions(self):
         if self.action in {
