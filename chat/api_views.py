@@ -603,6 +603,13 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
         ChatFavorite.objects.filter(user=request.user, message=msg).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @action(detail=True, methods=["post"])
+    def mark_read(self, request: Request, channel_pk: str, pk: str) -> Response:
+        """Marca a mensagem como lida pelo usuário autenticado."""
+        msg = self.get_object()
+        msg.lido_por.add(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(
         detail=True,
         methods=["post"],

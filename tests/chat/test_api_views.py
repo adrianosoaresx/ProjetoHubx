@@ -306,6 +306,19 @@ def test_react_message(api_client: APIClient, admin_user):
     assert "👍" not in resp.data["user_reactions"]
 
 
+def test_mark_read_message(api_client: APIClient, admin_user, coordenador_user):
+    conv = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=conv, user=admin_user)
+    ChatParticipant.objects.create(channel=conv, user=coordenador_user)
+    msg = ChatMessage.objects.create(channel=conv, remetente=admin_user, tipo="text", conteudo="hi")
+    api_client.force_authenticate(coordenador_user)
+    url = f"/api/chat/channels/{conv.id}/messages/{msg.id}/mark-read/"
+    resp = api_client.post(url)
+    assert resp.status_code == 204
+    msg.refresh_from_db()
+    assert coordenador_user in msg.lido_por.all()
+
+
 def test_edit_and_delete_message(api_client: APIClient, admin_user, coordenador_user):
     conv = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=conv, user=admin_user)
