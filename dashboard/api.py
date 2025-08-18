@@ -16,10 +16,10 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from .models import DashboardFilter
-from .serializers import DashboardFilterSerializer
-from .services import DashboardMetricsService, check_achievements
-from .services import DashboardMetricsService, DashboardService
+from .models import DashboardFilter, DashboardCustomMetric
+from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
+from .services import DashboardMetricsService, DashboardService, check_achievements
+from .custom_metrics import DashboardCustomMetricService
 
 
 
@@ -144,3 +144,16 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         check_achievements(self.request.user)
+
+
+class DashboardCustomMetricViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = DashboardCustomMetric.objects.all()
+    serializer_class = DashboardCustomMetricSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=["get"])
+    def execute(self, request, pk=None):
+        metric = self.get_object()
+        params = request.query_params.dict()
+        total = DashboardCustomMetricService.execute(metric.query_spec, **params)
+        return Response({"code": metric.code, "total": total})
