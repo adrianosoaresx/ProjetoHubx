@@ -8,7 +8,7 @@ from discussao.tasks import (
 )
 
 
-def test_notificar_nova_resposta(monkeypatch, categoria, associado_user, admin_user, nucleado_user):
+def test_notificar_nova_resposta(monkeypatch, capfd, categoria, associado_user, admin_user, nucleado_user):
     topico = TopicoDiscussao.objects.create(
         categoria=categoria, titulo="T", conteudo="c", autor=associado_user, publico_alvo=0
     )
@@ -22,9 +22,11 @@ def test_notificar_nova_resposta(monkeypatch, categoria, associado_user, admin_u
     monkeypatch.setattr("discussao.tasks.enviar_para_usuario", fake_enviar)
     notificar_nova_resposta(resposta.id)
     assert associado_user in chamados and admin_user in chamados and nucleado_user not in chamados
+    out, _ = capfd.readouterr()
+    assert out.count("notificar_nova_resposta_sucesso") == 2
 
 
-def test_notificar_melhor_resposta(monkeypatch, categoria, associado_user, nucleado_user):
+def test_notificar_melhor_resposta(monkeypatch, capfd, categoria, associado_user, nucleado_user):
     topico = TopicoDiscussao.objects.create(
         categoria=categoria, titulo="T", conteudo="c", autor=associado_user, publico_alvo=0
     )
@@ -37,7 +39,6 @@ def test_notificar_melhor_resposta(monkeypatch, categoria, associado_user, nucle
     monkeypatch.setattr("discussao.tasks.enviar_para_usuario", fake_enviar)
     notificar_melhor_resposta(resposta.id)
     assert chamados == [(nucleado_user, "discussao_melhor_resposta")]
-
 
 def test_notificar_topico_resolvido(
     monkeypatch, categoria, associado_user, admin_user, nucleado_user, capsys
@@ -59,3 +60,4 @@ def test_notificar_topico_resolvido(
     assert all(c == "discussao_topico_resolvido" for _, c in chamados)
     captured = capsys.readouterr()
     assert captured.out.count("topico_resolvido_notificacao_enviada") == 3
+

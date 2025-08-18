@@ -1,8 +1,18 @@
 from __future__ import annotations
 
 from rest_framework import serializers
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 
-from .models import CategoriaDiscussao, RespostaDiscussao, Tag, TopicoDiscussao
+from .models import (
+    CategoriaDiscussao,
+    Denuncia,
+    DiscussionModerationLog,
+    RespostaDiscussao,
+    Tag,
+    TopicoDiscussao,
+)
+from .services import denunciar_conteudo, DiscussaoError
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -114,6 +124,49 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
         if tags_data:
             instance.tags.set(Tag.objects.filter(pk__in=tags_data))
         return instance
+
+
+class DiscussionModerationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscussionModerationLog
+        fields = ["id", "action", "moderator", "notes", "created_at"]
+        read_only_fields = fields
+
+
+class DenunciaSerializer(serializers.ModelSerializer):
+    content_type_id = serializers.IntegerField(write_only=True)
+    log = DiscussionModerationLogSerializer(read_only=True)
+
+    class Meta:
+        model = Denuncia
+        fields = [
+            "id",
+            "user",
+            "content_type_id",
+            "object_id",
+            "motivo",
+            "status",
+            "log",
+            "created_at",
+        ]
+        read_only_fields = ["id", "user", "status", "log", "created_at"]
+
+    def create(self, validated_data: dict) -> Denuncia:
+        ct_id = validated_data.pop("content_type_id")
+        try:
+            ct = ContentType.objects.get(id=ct_id)
+            obj = ct.get_object_for_this_type(id=validated_data["object_id"])
+        except (ContentType.DoesNotExist, ObjectDoesNotExist):
+            raise serializers.ValidationError({"object_id": "Objeto não encontrado."})
+        request = self.context["request"]
+        try:
+            return denunciar_conteudo(
+                user=request.user,
+                content_object=obj,
+                motivo=validated_data["motivo"],
+            )
+        except DiscussaoError as exc:  # pragma: no cover - defensive
+            raise serializers.ValidationError({"detail": str(exc)})
 
 
 class VotoDiscussaoSerializer(serializers.Serializer):

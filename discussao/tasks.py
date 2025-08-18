@@ -3,9 +3,13 @@ from __future__ import annotations
 import structlog
 from celery import shared_task  # type: ignore
 
+import structlog
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import RespostaDiscussao, TopicoDiscussao
+
+
+logger = structlog.get_logger(__name__)
 
 
 logger = structlog.get_logger(__name__)
@@ -32,8 +36,21 @@ def notificar_nova_resposta(resposta_id: int) -> None:
                 "discussao_nova_resposta",
                 {"topico": topico, "resposta": resposta},
             )
-        except ValueError:  # pragma: no cover - template ausente
-            continue
+        except Exception as exc:  # pragma: no cover - falha no envio
+            logger.warning(
+                "notificar_nova_resposta_falha",
+                user_id=getattr(user, "id", None),
+                resposta_id=resposta.id,
+                error=str(exc),
+            )
+            if not isinstance(exc, ValueError):
+                raise
+        else:
+            logger.info(
+                "notificar_nova_resposta_sucesso",
+                user_id=user.id,
+                resposta_id=resposta.id,
+            )
 
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
@@ -49,6 +66,7 @@ def notificar_melhor_resposta(resposta_id: int) -> None:
             "discussao_melhor_resposta",
             {"topico": resposta.topico, "resposta": resposta},
         )
+
     except ValueError:  # pragma: no cover - template ausente
         return
 
@@ -79,3 +97,4 @@ def notificar_topico_resolvido(topico_id: int) -> None:
             )
         except ValueError:  # pragma: no cover - template ausente
             continue
+
