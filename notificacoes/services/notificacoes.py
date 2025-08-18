@@ -7,9 +7,12 @@ from django.conf import settings
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
-from configuracoes.services import get_user_preferences
-
-from ..models import Canal, NotificationLog, NotificationTemplate
+from ..models import (
+    Canal,
+    NotificationLog,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
 from ..tasks import enviar_notificacao_async
 
 logger = logging.getLogger(__name__)
@@ -45,17 +48,14 @@ def enviar_para_usuario(
 
     subject, body = render_template(template, context)
 
-    prefs = get_user_preferences(user, escopo_tipo, escopo_id)
+    prefs, _created = UserNotificationPreference.objects.get_or_create(user=user)
 
     canais: list[str] = []
-    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.receber_notificacoes_email:
+    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.email:
         canais.append(Canal.EMAIL)
-    if (
-        template.canal in {Canal.PUSH, Canal.TODOS}
-        and prefs.receber_notificacoes_push
-    ):
+    if template.canal in {Canal.PUSH, Canal.TODOS} and prefs.push:
         canais.append(Canal.PUSH)
-    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.receber_notificacoes_whatsapp:
+    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.whatsapp:
         canais.append(Canal.WHATSAPP)
 
     if not canais:
@@ -68,12 +68,4 @@ def enviar_para_usuario(
             canal=canal,
             destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
         )
-        enviar_imediato = False
-        if canal == Canal.EMAIL:
-            enviar_imediato = prefs.frequencia_notificacoes_email == "imediata"
-        elif canal == Canal.WHATSAPP:
-            enviar_imediato = prefs.frequencia_notificacoes_whatsapp == "imediata"
-        elif canal == Canal.PUSH:
-            enviar_imediato = prefs.frequencia_notificacoes_push == "imediata"
-        if enviar_imediato:
-            enviar_notificacao_async.delay(subject, body, str(log.id))
+        enviar_notificacao_async.delay(subject, body, str(log.id))

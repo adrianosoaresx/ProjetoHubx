@@ -1,11 +1,12 @@
 import csv
 import logging
+
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
-from .models import NotificationLog, NotificationTemplate
+from .models import NotificationLog, NotificationTemplate, UserNotificationPreference
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,13 @@ class NotificationTemplateAdmin(admin.ModelAdmin):
         if obj and NotificationLog.objects.filter(template=obj).exists():
             return False
         return super().has_delete_permission(request, obj)
+
+
+@admin.register(UserNotificationPreference)
+class UserNotificationPreferenceAdmin(admin.ModelAdmin):
+    list_display = ("user", "email", "push", "whatsapp")
+    search_fields = ("user__email",)
+
 
 @admin.register(NotificationLog)
 class NotificationLogAdmin(admin.ModelAdmin):
