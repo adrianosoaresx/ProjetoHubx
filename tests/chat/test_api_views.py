@@ -61,7 +61,7 @@ def test_upload_endpoint_saves_metadata(api_client: APIClient, admin_user):
     data = resp.json()
     assert data["mime_type"] == "application/pdf"
     assert data["tamanho"] == file.size
-    assert ChatAttachment.objects.filter(id=data["id"]).exists()
+    assert ChatAttachment.objects.filter(id=data["attachment_id"]).exists()
 
 
 def test_create_channel_requires_permission(api_client: APIClient, associado_user):
@@ -102,6 +102,23 @@ def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_u
     resp = api_client.get(list_url, {"desde": msg.created_at.isoformat()})
     assert resp.status_code == 200
     assert resp.json()["count"] >= 1
+
+
+def test_send_message_with_attachment(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    api_client.force_authenticate(admin_user)
+    upload_url = reverse("chat_api:chat-upload")
+    file = SimpleUploadedFile("a.txt", b"a", content_type="text/plain")
+    resp = api_client.post(upload_url, {"file": file}, format="multipart")
+    attachment_id = resp.json()["attachment_id"]
+    list_url = f"/api/chat/channels/{channel.id}/messages/"
+    resp = api_client.post(list_url, {"tipo": "file", "attachment_id": attachment_id})
+    assert resp.status_code == 201
+    msg = ChatMessage.objects.get()
+    att = ChatAttachment.objects.get(id=attachment_id)
+    assert att.mensagem_id == msg.id
+    assert msg.arquivo.name == att.arquivo.name
 
 
 def test_history_endpoint_returns_messages(api_client: APIClient, admin_user):

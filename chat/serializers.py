@@ -133,6 +133,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     conteudo_cifrado = serializers.CharField(required=False, allow_blank=True)
     alg = serializers.CharField(required=False, allow_blank=True)
     key_version = serializers.CharField(required=False, allow_blank=True)
+    attachment_id = serializers.UUIDField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = ChatMessage
@@ -146,6 +147,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
             "alg",
             "key_version",
             "arquivo",
+            "attachment_id",
             "reply_to",
             "reactions",
             "pinned_at",
@@ -187,8 +189,14 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         reply_to = validated_data.get("reply_to")
         alg = validated_data.get("alg", "")
         key_version = validated_data.get("key_version", "")
+        attachment_id = validated_data.pop("attachment_id", None)
+        attachment = None
+        if attachment_id:
+            attachment = ChatAttachment.objects.filter(id=attachment_id).first()
+            if attachment:
+                arquivo = attachment.arquivo
         if channel.e2ee_habilitado:
-            return enviar_mensagem(
+            msg = enviar_mensagem(
                 canal=channel,
                 remetente=remetente,
                 tipo=tipo,
@@ -199,14 +207,19 @@ class ChatMessageSerializer(serializers.ModelSerializer):
                 alg=alg,
                 key_version=key_version,
             )
-        return enviar_mensagem(
-            canal=channel,
-            remetente=remetente,
-            tipo=tipo,
-            conteudo=conteudo,
-            arquivo=arquivo,
-            reply_to=reply_to,
-        )
+        else:
+            msg = enviar_mensagem(
+                canal=channel,
+                remetente=remetente,
+                tipo=tipo,
+                conteudo=conteudo,
+                arquivo=arquivo,
+                reply_to=reply_to,
+            )
+        if attachment:
+            attachment.mensagem = msg
+            attachment.save(update_fields=["mensagem"])
+        return msg
 
     def to_representation(self, instance: ChatMessage) -> dict[str, Any]:
         data = super().to_representation(instance)
