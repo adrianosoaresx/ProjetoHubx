@@ -7,12 +7,11 @@ from django.conf import settings
 from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
-from ..models import (
-    Canal,
-    NotificationLog,
-    NotificationTemplate,
-    UserNotificationPreference,
-)
+
+from configuracoes.services import get_user_preferences
+
+from ..models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
+
 from ..tasks import enviar_notificacao_async
 
 logger = logging.getLogger(__name__)
@@ -59,7 +58,15 @@ def enviar_para_usuario(
         canais.append(Canal.WHATSAPP)
 
     if not canais:
-        raise ValueError(_("Canais desabilitados pelo usuário"))
+        NotificationLog.objects.create(
+            user=user,
+            template=template,
+            canal=template.canal,
+            destinatario=_mask_email(user.email) if template.canal == Canal.EMAIL else "",
+            status=NotificationStatus.FALHA,
+            erro=_("Canais desabilitados pelo usuário"),
+        )
+        return
 
     for canal in canais:
         log = NotificationLog.objects.create(

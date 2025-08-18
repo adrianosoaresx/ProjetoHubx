@@ -1,11 +1,11 @@
 import pytest
 
 from accounts.factories import UserFactory
-from notificacoes.models import (
-    NotificationLog,
-    NotificationTemplate,
-    UserNotificationPreference,
-)
+
+from configuracoes.models import ConfiguracaoConta
+from configuracoes.services import atualizar_preferencias_usuario
+from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
+
 from notificacoes.services import notificacoes as svc
 
 pytestmark = pytest.mark.django_db
@@ -50,9 +50,10 @@ def test_enviar_sem_canais() -> None:
     prefs.email = False
     prefs.save(update_fields=["email"])
 
-    with pytest.raises(ValueError):
-        svc.enviar_para_usuario(user, "t", {})
-    assert NotificationLog.objects.count() == 0
+    svc.enviar_para_usuario(user, "t", {})
+    log = NotificationLog.objects.get()
+    assert log.status == NotificationStatus.FALHA
+    assert log.erro == "Canais desabilitados pelo usuário"
 
 
 def test_template_inexistente() -> None:
@@ -96,6 +97,7 @@ def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
         fake_delay,
     )
 
-    with pytest.raises(ValueError):
-        svc.enviar_para_usuario(user, "p", {})
+    svc.enviar_para_usuario(user, "p", {})
     assert called.get("count", 0) == 0
+    log = NotificationLog.objects.get()
+    assert log.status == NotificationStatus.FALHA
