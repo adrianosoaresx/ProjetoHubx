@@ -1,9 +1,9 @@
 from __future__ import annotations
-
-
+from rest_framework import filters, status, viewsets
 from django.shortcuts import get_object_or_404
 from django.http import QueryDict
 from rest_framework import status, viewsets
+
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,14 +15,16 @@ from .metrics import (
     empresas_purgadas_total,
     empresas_restauradas_total,
 )
-from core.permissions import pode_crud_empresa
 
+from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa, Tag
+from core.permissions import pode_crud_empresa
 from .models import ContatoEmpresa, AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
 from .serializers import (
     AvaliacaoEmpresaSerializer,
     ContatoEmpresaSerializer,
     EmpresaChangeLogSerializer,
     EmpresaSerializer,
+    TagSerializer,
 )
 from .tasks import nova_avaliacao
 from .services import search_empresas, verificar_cnpj
@@ -84,6 +86,14 @@ class ContatoEmpresaViewSet(viewsets.ModelViewSet):
             return Response(status=403)
         contato.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all().order_by("nome")
+    serializer_class = TagSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["nome"]
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
