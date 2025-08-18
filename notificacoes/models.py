@@ -131,6 +131,7 @@ class PushSubscription(TimeStampedModel, SoftDeleteModel):
     endpoint: models.CharField = models.CharField(max_length=500)
     p256dh: models.CharField = models.CharField(max_length=255)
     auth: models.CharField = models.CharField(max_length=255)
+    ativo: models.BooleanField = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("user", "device_id")

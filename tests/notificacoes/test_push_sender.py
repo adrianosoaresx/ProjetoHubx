@@ -26,5 +26,5 @@ def test_invalida_inscricao_quando_endpoint_invalido(admin_user, monkeypatch):
 
     send(admin_user, "payload")
 
-    sub = PushSubscription.all_objects.get(id=sub.id)
-    assert sub.deleted is True
+    sub.refresh_from_db()
+    assert sub.ativo is False
