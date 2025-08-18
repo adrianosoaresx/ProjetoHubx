@@ -56,7 +56,9 @@ def search_empresas(user, params):
     if palavras:
         qs = qs.filter(palavras_chave__icontains=palavras)
     if tags:
-        qs = qs.filter(tags__in=tags)
+        for tag in tags:
+            qs = qs.filter(tags=tag)
+        qs = qs.distinct()
     if q:
         if connection.vendor == "postgresql":
             vector = (
