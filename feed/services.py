@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 
 
-def upload_media(file: IO[bytes]) -> str:
+def _upload_media(file: IO[bytes]) -> str:
     """Valida e envia mídia para o storage configurado.
 
     Retorna apenas o caminho/chave gerado, sem URL assinada.
@@ -40,3 +40,14 @@ def upload_media(file: IO[bytes]) -> str:
     file.seek(0)
     default_storage.save(key, file)
     return key
+
+
+def upload_media(file: IO[bytes]) -> str:
+    """Wrapper que delega o upload para uma task assíncrona."""
+
+    from .tasks import upload_media as upload_media_task
+    file.seek(0)
+    data = file.read()
+    content_type = getattr(file, "content_type", "")
+
+    return upload_media_task.delay(data, file.name, content_type).get()

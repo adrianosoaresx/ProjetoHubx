@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import Mock
 
-import boto3
 import pytest
 from botocore.exceptions import ClientError
 from django.core.exceptions import ValidationError
@@ -12,22 +11,40 @@ from feed.services import upload_media
 
 
 @pytest.mark.django_db
+def test_upload_media_capture_exception(monkeypatch, settings):
+    settings.AWS_STORAGE_BUCKET_NAME = "bucket"
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
+    file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
+
+    def fail(*args, **kwargs):
+        raise ClientError({"Error": {}}, "upload")
+
+    monkeypatch.setattr("feed.services._upload_media", fail)
+    captured = Mock()
+    monkeypatch.setattr("feed.tasks.capture_exception", captured)
+
+    with pytest.raises(ClientError):
+        upload_media(file)
+
+    assert captured.call_count == 4
+
+
+@pytest.mark.django_db
 def test_upload_media_retries(monkeypatch, settings):
     settings.AWS_STORAGE_BUCKET_NAME = "bucket"
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
     file = SimpleUploadedFile("a.png", b"data", content_type="image/png")
-    client = Mock()
     calls = {"n": 0}
 
-    def upload_fileobj(f, bucket, key):
+    def flaky(*args, **kwargs):
         calls["n"] += 1
         if calls["n"] < 3:
             raise ClientError({"Error": {}}, "upload")
+        return "ok"
 
-    client.upload_fileobj = upload_fileobj
-    client.generate_presigned_url = lambda *a, **k: f"url/{k['Params']['Key']}"
-    monkeypatch.setattr(boto3, "client", lambda *a, **k: client)
+    monkeypatch.setattr("feed.services._upload_media", flaky)
     url = upload_media(file)
-    assert url.startswith("url/")
+    assert url == "ok"
     assert calls["n"] == 3
 
 

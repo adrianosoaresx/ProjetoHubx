@@ -4,6 +4,8 @@ from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from prometheus_client import Counter, Histogram
+from sentry_sdk import capture_exception
+from botocore.exceptions import ClientError
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -18,7 +20,7 @@ NOTIFICATION_LATENCY = Histogram(
 )
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception,), retry_backoff=True)
 def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
     try:
         post = Post.objects.get(id=post_id)
@@ -27,11 +29,12 @@ def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
     event = "feed_like" if tipo == "like" else "feed_comment"
     try:
         enviar_para_usuario(post.autor, event, {"post_id": str(post.id)})
-    except Exception:  # pragma: no cover - melhor esforço
-        pass
+    except Exception as exc:  # pragma: no cover - melhor esforço
+        capture_exception(exc)
+        raise
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception,), retry_backoff=True)
 def notify_new_post(post_id: str) -> None:
     # garante idempotência: apenas primeira execução envia
     if not cache.add(f"notify_post_{post_id}", True, 3600):
@@ -47,11 +50,12 @@ def notify_new_post(post_id: str) -> None:
             try:
                 enviar_para_usuario(user, "feed_new_post", {"post_id": str(post.id)})
                 NOTIFICATIONS_SENT.inc()
-            except Exception:  # pragma: no cover - melhor esforço
-                pass
+            except Exception as exc:  # pragma: no cover - melhor esforço
+                capture_exception(exc)
+                raise
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception,), retry_backoff=True)
 def notify_post_moderated(post_id: str, status: str) -> None:
     try:
         post = Post.objects.get(id=post_id)
@@ -61,5 +65,23 @@ def notify_post_moderated(post_id: str, status: str) -> None:
         enviar_para_usuario(
             post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status}
         )
-    except Exception:  # pragma: no cover - melhor esforço
-        pass
+    except Exception as exc:  # pragma: no cover - melhor esforço
+        capture_exception(exc)
+        raise
+
+
+@shared_task(
+    autoretry_for=(ClientError,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
+def upload_media(data: bytes, name: str, content_type: str) -> str:
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from .services import _upload_media
+
+    file = SimpleUploadedFile(name, data, content_type=content_type)
+    try:
+        return _upload_media(file)
+    except Exception as exc:  # pragma: no cover - melhor esforço
+        capture_exception(exc)
+        raise

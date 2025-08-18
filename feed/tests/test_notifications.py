@@ -32,3 +32,21 @@ class FeedNotificationTest(TestCase):
         notify_new_post(post_id)
         self.assertEqual(enviar.call_count, 1)  # idempotente
 
+    @patch("feed.tasks.capture_exception")
+    @patch("feed.tasks.enviar_para_usuario", side_effect=Exception("err"))
+    def test_notificar_autor_capture_exception(self, enviar, capture) -> None:
+        from django.conf import settings
+        from feed.factories import PostFactory
+        from feed.tasks import notificar_autor_sobre_interacao
+
+        settings.CELERY_TASK_EAGER_PROPAGATES = False
+        post = PostFactory(autor=self.user, organizacao=self.user.organizacao)
+
+        result = notificar_autor_sobre_interacao.delay(str(post.id), "like")
+
+        with self.assertRaises(Exception):
+            result.get()
+
+        self.assertEqual(enviar.call_count, 4)
+        self.assertEqual(capture.call_count, 4)
+
