@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -9,6 +10,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+from accounts.serializers import UserSerializer
+from agenda.models import Evento
+from agenda.serializers import EventoSerializer
+from empresas.models import Empresa
+from empresas.serializers import EmpresaSerializer
+from feed.api import PostSerializer
+from feed.models import Post
+from nucleos.models import Nucleo
+from nucleos.serializers import NucleoSerializer
+
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 
 from .models import Organizacao, OrganizacaoAtividadeLog
@@ -163,3 +174,60 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
         atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
         return Response({"changes": change_ser.data, "activities": atividade_ser.data})
+
+
+class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def get_organizacao(self):
+        org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
+        perm = IsOrgAdminOrSuperuser()
+        if not perm.has_object_permission(self.request, self, org):
+            raise PermissionDenied()
+        return org
+
+
+class OrganizacaoUserViewSet(OrganizacaoRelatedViewSet):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return org.users.all()
+
+    @action(detail=False, methods=["get"], url_path="associados")
+    def associados(self, request, organizacao_pk: str | None = None):
+        qs = self.get_queryset().filter(user_type=UserType.ASSOCIADO.value)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
+
+class OrganizacaoNucleoViewSet(OrganizacaoRelatedViewSet):
+    serializer_class = NucleoSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return Nucleo.objects.filter(organizacao=org, deleted=False)
+
+
+class OrganizacaoEventoViewSet(OrganizacaoRelatedViewSet):
+    serializer_class = EventoSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return Evento.objects.filter(organizacao=org, deleted=False)
+
+
+class OrganizacaoEmpresaViewSet(OrganizacaoRelatedViewSet):
+    serializer_class = EmpresaSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return Empresa.objects.filter(organizacao=org, deleted=False)
+
+
+class OrganizacaoPostViewSet(OrganizacaoRelatedViewSet):
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return Post.objects.filter(organizacao=org, deleted=False)
