@@ -14,15 +14,16 @@ from .models import AvaliacaoEmpresa, Empresa
 
 nova_avaliacao = Signal()  # args: avaliacao
 
+@shared_task
+def validar_cnpj_async(cnpj: str) -> None:
+    try:
+        validar_cnpj(cnpj)
+    except CNPJValidationError as exc:  # pragma: no cover - rede externa
+        sentry_sdk.capture_exception(exc)
 
-@shared_task(
-    bind=True,
-    autoretry_for=(Exception,),
-    retry_backoff=True,
-    retry_backoff_max=600,
-    max_retries=5,
-)
-def validar_cnpj_empresa(self, empresa_id: str) -> None:
+
+@shared_task
+def validar_cnpj_empresa(empresa_id: str) -> None:
     try:
         empresa = Empresa.objects.get(pk=empresa_id)
         valido, fonte = validar_cnpj(empresa.cnpj)

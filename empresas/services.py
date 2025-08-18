@@ -7,10 +7,13 @@ manutenção das views.
 
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import connection
+from django.utils import timezone
 
 from accounts.models import UserType
 
 from .models import Empresa, EmpresaChangeLog, Tag
+from .tasks import validar_cnpj_async
+from services.cnpj_validator import CNPJValidationError, validar_cnpj
 
 
 def search_empresas(user, params):
@@ -127,3 +130,18 @@ def registrar_alteracoes(usuario, empresa, old_data):
                 valor_antigo=antigo or "",
                 valor_novo=novo or "",
             )
+
+
+def verificar_cnpj(cnpj: str) -> dict:
+    """Valida um CNPJ utilizando serviço externo.
+
+    Em caso de indisponibilidade do serviço, a validação é enfileirada para
+    execução assíncrona via Celery.
+    """
+
+    try:
+        valido, fonte = validar_cnpj(cnpj)
+    except CNPJValidationError:
+        validar_cnpj_async.delay(cnpj)
+        return {"valido": False, "fonte": "", "validado_em": None}
+    return {"valido": valido, "fonte": fonte, "validado_em": timezone.now()}
