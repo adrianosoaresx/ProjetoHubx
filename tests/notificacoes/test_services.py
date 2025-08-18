@@ -99,3 +99,22 @@ def test_enviar_multiplos_canais(monkeypatch) -> None:
 
     assert called.get("count") >= 1
     assert NotificationLog.objects.count() >= 1
+
+
+def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
+    user = UserFactory()
+    NotificationTemplate.objects.create(codigo="p", assunto="Oi", corpo="C", canal="push")
+    atualizar_preferencias_usuario(user, {"receber_notificacoes_push": False})
+    called = {}
+
+    def fake_delay(*args, **kwargs):
+        called["count"] = called.get("count", 0) + 1
+
+    monkeypatch.setattr(
+        "notificacoes.services.notificacoes.enviar_notificacao_async.delay",
+        fake_delay,
+    )
+
+    with pytest.raises(ValueError):
+        svc.enviar_para_usuario(user, "p", {})
+    assert called.get("count", 0) == 0

@@ -50,7 +50,10 @@ def enviar_para_usuario(
     canais: list[str] = []
     if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.receber_notificacoes_email:
         canais.append(Canal.EMAIL)
-    if template.canal in {Canal.PUSH, Canal.TODOS}:
+    if (
+        template.canal in {Canal.PUSH, Canal.TODOS}
+        and prefs.receber_notificacoes_push
+    ):
         canais.append(Canal.PUSH)
     if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.receber_notificacoes_whatsapp:
         canais.append(Canal.WHATSAPP)
