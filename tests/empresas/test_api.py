@@ -299,7 +299,7 @@ def test_permissoes_edicao(api_client, gerente_user, nucleado_user, admin_user):
     url = reverse("empresas_api:empresa-detail", args=[empresa.id])
     api_client.force_authenticate(user=nucleado_user)
     resp = api_client.patch(url, {"nome": "X"})
-    assert resp.status_code == status.HTTP_403_FORBIDDEN
+    assert resp.status_code == status.HTTP_404_NOT_FOUND
     api_client.force_authenticate(user=admin_user)
     resp = api_client.patch(url, {"nome": "Y"})
     assert resp.status_code == status.HTTP_200_OK
