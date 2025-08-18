@@ -73,7 +73,11 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
     assert org.deleted is False and org.deleted_at is None
-    assert OrganizacaoAtividadeLog.objects.filter(organizacao=org, acao="inactivated").exists()
+    assert (
+        OrganizacaoAtividadeLog.all_objects.filter(
+            organizacao=org, acao="inactivated"
+        ).exists()
+    )
 
 
 def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
@@ -154,7 +158,11 @@ def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
     assert resp.status_code == status.HTTP_200_OK
-    assert OrganizacaoChangeLog.objects.filter(organizacao=org, campo_alterado="nome").exists()
+    assert (
+        OrganizacaoChangeLog.all_objects.filter(
+            organizacao=org, campo_alterado="nome"
+        ).exists()
+    )
 
 
 def test_search_and_ordering(api_client, root_user, faker_ptbr):

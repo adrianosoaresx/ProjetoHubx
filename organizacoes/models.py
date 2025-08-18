@@ -71,7 +71,7 @@ class Organizacao(TimeStampedModel, SoftDeleteModel):
                     raise ValidationError({field: _("Imagem excede o tamanho máximo permitido.")})
 
 
-class OrganizacaoChangeLog(TimeStampedModel):
+class OrganizacaoChangeLog(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
@@ -103,7 +103,7 @@ class OrganizacaoChangeLog(TimeStampedModel):
         raise RuntimeError("Logs não podem ser removidos")
 
 
-class OrganizacaoAtividadeLog(TimeStampedModel):
+class OrganizacaoAtividadeLog(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organizacao = models.ForeignKey(
         Organizacao,
