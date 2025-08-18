@@ -1,0 +1,28 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <title>{% trans "Configurações avançadas" %}</title>
+</head>
+<body class="p-4">
+    <h1 class="text-xl" id="advanced-title">{% trans "Configurações avançadas" %}</h1>
+    <form hx-post="/api/configuracoes/contextuais/" class="mt-4" aria-labelledby="advanced-title">
+        <label for="escopo_tipo">{% trans "Escopo" %}</label>
+        <select name="escopo_tipo" id="escopo_tipo" class="border">
+            <option value="organizacao">{% trans "Organização" %}</option>
+            <option value="nucleo">{% trans "Núcleo" %}</option>
+            <option value="evento">{% trans "Evento" %}</option>
+        </select>
+        <label for="escopo_id" class="ml-2">ID</label>
+        <input type="text" name="escopo_id" id="escopo_id" class="border" />
+        <label for="freq_email" class="ml-2">{% trans "Frequência e-mail" %}</label>
+        <select name="frequencia_notificacoes_email" id="freq_email" class="border">
+            <option value="imediata">{% trans "Imediata" %}</option>
+            <option value="diaria">{% trans "Diária" %}</option>
+            <option value="semanal">{% trans "Semanal" %}</option>
+        </select>
+        <button type="submit" class="ml-2 border px-2">{% trans "Salvar" %}</button>
+    </form>
+</body>
+</html>

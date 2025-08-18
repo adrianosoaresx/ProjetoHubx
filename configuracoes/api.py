@@ -5,13 +5,20 @@ import time
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.views import APIView
+from rest_framework.exceptions import PermissionDenied
 
 from . import metrics
-from .serializers import ConfiguracaoContaSerializer
-from .services import get_configuracao_conta, get_user_preferences
-from .models import ConfiguracaoConta
+from .serializers import (
+    ConfiguracaoContaSerializer,
+    ConfiguracaoContextualSerializer,
+)
+from .services import (
+    get_configuracao_conta,
+    get_user_preferences,
+)
+from .models import ConfiguracaoConta, ConfiguracaoContextual
 from notificacoes.models import NotificationTemplate, Canal
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -99,6 +106,30 @@ class ConfiguracaoContaViewSet(ViewSet):
             time.monotonic() - start
         )
         return resp
+
+
+class ConfiguracaoContextualViewSet(ModelViewSet):
+    """CRUD de configurações contextuais do usuário."""
+
+    serializer_class = ConfiguracaoContextualSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ConfiguracaoContextual.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_update(self, serializer):
+        obj = self.get_object()
+        if obj.user != self.request.user:
+            raise PermissionDenied("escopo sem permissao")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if instance.user != self.request.user:
+            raise PermissionDenied("escopo sem permissao")
+        instance.delete()
 
 
 class TestarNotificacaoView(APIView):

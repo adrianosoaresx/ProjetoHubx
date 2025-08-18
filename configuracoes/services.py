@@ -13,6 +13,7 @@ from . import metrics
 from .models import ConfiguracaoConta, ConfiguracaoContextual
 
 CACHE_KEY = "configuracao_conta:{id}"
+PREFS_CACHE_KEY = "user_prefs:{id}:{tipo}:{escopo}"
 
 
 def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
@@ -55,7 +56,25 @@ def get_configuracao_contextual(
 def get_user_preferences(
     usuario: User, escopo_tipo: str | None = None, escopo_id: str | None = None
 ) -> ConfiguracaoConta:
-    """Resolve preferências do usuário considerando escopo contextual."""
+    """Resolve preferências do usuário considerando escopo contextual.
+
+    Resultado é cacheado por usuário+escopo para garantir leitura rápida
+    (p95 ≤ 100ms) e exposto em métricas de hits/misses/latência.
+    """
+
+    start = time.monotonic()
+    key = PREFS_CACHE_KEY.format(
+        id=usuario.id,
+        tipo=escopo_tipo or "global",
+        escopo=escopo_id or "global",
+    )
+    prefs = cache.get(key)
+    if prefs is not None:
+        metrics.config_cache_hits_total.inc()
+        metrics.config_get_latency_seconds.observe(time.monotonic() - start)
+        return deepcopy(prefs)
+
+    metrics.config_cache_misses_total.inc()
     prefs = deepcopy(get_configuracao_conta(usuario))
     if escopo_tipo and escopo_id:
         ctx = get_configuracao_contextual(usuario, escopo_tipo, escopo_id)
@@ -66,7 +85,9 @@ def get_user_preferences(
             )
             prefs.idioma = ctx.idioma
             prefs.tema = ctx.tema
-    return prefs
+    cache.set(key, prefs)
+    metrics.config_get_latency_seconds.observe(time.monotonic() - start)
+    return deepcopy(prefs)
 
 
 def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> ConfiguracaoConta:
@@ -77,4 +98,8 @@ def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> Conf
             setattr(config, field, value)
     config.save()
     cache.set(CACHE_KEY.format(id=usuario.id), config)
+    try:
+        cache.delete_pattern(f"user_prefs:{usuario.id}:*")
+    except AttributeError:  # pragma: no cover - backend sem suporte
+        cache.clear()
     return config
