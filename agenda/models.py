@@ -17,6 +17,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
+from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
@@ -94,6 +95,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         unique_together = ("user", "evento")
+        constraints = [
+            models.CheckConstraint(
+                check=Q(avaliacao__gte=1, avaliacao__lte=5) | Q(avaliacao__isnull=True),
+                name="inscricao_avaliacao_valida",
+            )
+        ]
 
     def confirmar_inscricao(self) -> None:
         if self.evento.participantes_maximo and self.evento.espera_habilitada:
