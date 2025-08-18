@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from django.db.models import Q
-from django.utils import timezone
 
 from accounts.models import UserType
+
 from .models import (
     BriefingEvento,
     Evento,
@@ -17,6 +17,7 @@ from .models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
+from .permissions import IsAdminOrCoordenadorOrReadOnly
 from .serializers import (
     BriefingEventoSerializer,
     EventoSerializer,
@@ -48,7 +49,7 @@ class OrganizacaoFilterMixin:
 
 class EventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = EventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
     queryset = Evento.objects.select_related("organizacao", "nucleo").all()
 
@@ -101,7 +102,7 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
 
 class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = MaterialDivulgacaoEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
 
     def get_queryset(self):
@@ -121,7 +122,7 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
 
 class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = ParceriaEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
     queryset = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo").all()
 
@@ -155,7 +156,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
 
 class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = BriefingEventoSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
 
     def get_queryset(self):
