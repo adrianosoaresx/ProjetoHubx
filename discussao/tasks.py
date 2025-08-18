@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import structlog
 from celery import shared_task  # type: ignore
 
 import structlog
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import RespostaDiscussao
+from .models import RespostaDiscussao, TopicoDiscussao
+
+
+logger = structlog.get_logger(__name__)
 
 
 logger = structlog.get_logger(__name__)
@@ -62,18 +66,35 @@ def notificar_melhor_resposta(resposta_id: int) -> None:
             "discussao_melhor_resposta",
             {"topico": resposta.topico, "resposta": resposta},
         )
-    except Exception as exc:  # pragma: no cover - falha no envio
-        logger.warning(
-            "notificar_melhor_resposta_falha",
-            user_id=resposta.autor_id,
-            resposta_id=resposta.id,
-            error=str(exc),
+
+    except ValueError:  # pragma: no cover - template ausente
+        return
+
+
+@shared_task(autoretry_for=(Exception,), retry_backoff=True)
+def notificar_topico_resolvido(topico_id: int) -> None:
+    try:
+        topico = (
+            TopicoDiscussao.objects.select_related("autor")
+            .prefetch_related("respostas__autor")
+            .get(id=topico_id)
         )
-        if not isinstance(exc, ValueError):
-            raise
-    else:
-        logger.info(
-            "notificar_melhor_resposta_sucesso",
-            user_id=resposta.autor_id,
-            resposta_id=resposta.id,
-        )
+    except TopicoDiscussao.DoesNotExist:  # pragma: no cover - segurança
+        return
+
+    destinatarios = {topico.autor, *(r.autor for r in topico.respostas.all())}
+    for user in destinatarios:
+        try:
+            enviar_para_usuario(
+                user,
+                "discussao_topico_resolvido",
+                {"topico": topico},
+            )
+            logger.info(
+                "topico_resolvido_notificacao_enviada",
+                topico_id=topico.id,
+                user_id=user.id,
+            )
+        except ValueError:  # pragma: no cover - template ausente
+            continue
+

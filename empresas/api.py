@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.http import QueryDict
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -19,7 +20,7 @@ from .serializers import (
     EmpresaSerializer,
 )
 from .tasks import nova_avaliacao
-from .services import verificar_cnpj
+from .services import search_empresas, verificar_cnpj
 
 
 class EmpresaViewSet(viewsets.ModelViewSet):
@@ -55,6 +56,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         else:
             return Empresa.objects.none()
         return qs.order_by("nome")
+
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted
