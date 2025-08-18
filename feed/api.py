@@ -44,6 +44,17 @@ class CanModerate(permissions.BasePermission):
         return request.user.has_perm("feed.change_moderacaopost")
 
 
+class IsCommentAuthorOrModerator(permissions.BasePermission):
+    """Permite edição apenas ao autor do comentário ou a moderadores."""
+
+    message = "Apenas o autor ou moderadores podem modificar o comentário."
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user_id == request.user.id or request.user.is_staff
+
+
 class PostSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     pdf_url = serializers.SerializerMethodField()
@@ -461,7 +472,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsCommentAuthorOrModerator]
     queryset = Comment.objects.select_related("post", "user").all()
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
