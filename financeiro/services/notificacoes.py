@@ -79,3 +79,16 @@ def enviar_aporte(user: Any, lancamento: Any) -> None:
         enviar_para_usuario(user, "aporte_recebido", context)
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar aporte: %s", exc)
+
+
+def enviar_estorno_aporte(user: Any, lancamento: Any) -> None:
+    """Notifica estorno de aporte."""
+    context = {
+        "nome": getattr(user, "first_name", ""),
+        "valor": lancamento.valor,
+        "descricao": getattr(lancamento, "descricao", ""),
+    }
+    try:
+        enviar_para_usuario(user, "aporte_estornado", context)
+    except Exception as exc:  # pragma: no cover - integração externa
+        logger.error("Falha ao enviar estorno de aporte: %s", exc)

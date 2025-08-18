@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from financeiro.models import CentroCusto, LancamentoFinanceiro
+from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroLog
 
 pytestmark = pytest.mark.django_db
 
@@ -12,6 +12,11 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture
 def api_client():
     return APIClient()
+
+
+@pytest.fixture(autouse=True)
+def _override_urls(settings):
+    settings.ROOT_URLCONF = "tests.financeiro_api_urls"
 
 
 @pytest.fixture
@@ -112,3 +117,59 @@ def test_aporte_externo(api_client):
     assert resp.status_code == 201
     centro.refresh_from_db()
     assert centro.saldo == 5
+
+
+def test_estornar_aporte(api_client, admin_user):
+    auth(api_client, admin_user)
+    centro = _create_centro(admin_user)
+    associado = UserFactory(user_type=UserType.ASSOCIADO)
+    conta = ContaAssociado.objects.create(user=associado)
+    url = reverse("financeiro_api:financeiro-aportes")
+    resp = api_client.post(
+        url,
+        {
+            "centro_custo": str(centro.id),
+            "conta_associado": str(conta.id),
+            "valor": "10",
+            "descricao": "x",
+        },
+    )
+    assert resp.status_code == 201
+    aporte_id = resp.data["id"]
+    centro.refresh_from_db()
+    conta.refresh_from_db()
+    assert centro.saldo == 10
+    assert conta.saldo == 10
+
+    estorno_url = reverse("financeiro_api:financeiro-estornar-aporte", args=[aporte_id])
+    resp = api_client.post(estorno_url)
+    assert resp.status_code == 200, resp.data
+    centro.refresh_from_db()
+    conta.refresh_from_db()
+    lanc = LancamentoFinanceiro.objects.get(pk=aporte_id)
+    assert lanc.status == LancamentoFinanceiro.Status.CANCELADO
+    assert centro.saldo == 0
+    assert conta.saldo == 0
+    assert FinanceiroLog.objects.filter(dados_novos__id=aporte_id).exists()
+
+
+def test_estornar_aporte_sem_permissao(api_client):
+    admin = UserFactory(user_type=UserType.ADMIN)
+    auth(api_client, admin)
+    centro = _create_centro(admin)
+    url = reverse("financeiro_api:financeiro-aportes")
+    resp = api_client.post(
+        url,
+        {
+            "centro_custo": str(centro.id),
+            "valor": "5",
+            "descricao": "x",
+        },
+    )
+    aporte_id = resp.data["id"]
+
+    user = UserFactory()
+    auth(api_client, user)
+    estorno_url = reverse("financeiro_api:financeiro-estornar-aporte", args=[aporte_id])
+    resp = api_client.post(estorno_url)
+    assert resp.status_code == 403
