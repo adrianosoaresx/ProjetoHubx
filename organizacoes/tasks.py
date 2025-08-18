@@ -13,7 +13,7 @@ organizacao_alterada = Signal()  # args: organizacao, acao
 
 @shared_task
 def enviar_email_membros(organizacao_id: int, acao: str) -> None:
-    org = Organizacao.objects.get(pk=organizacao_id)
+    org = Organizacao.all_objects.get(pk=organizacao_id)
     users = list(org.users.all())
     if not users:
         return

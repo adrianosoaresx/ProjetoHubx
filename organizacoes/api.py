@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -20,7 +21,7 @@ from .tasks import organizacao_alterada
 
 
 class OrganizacaoViewSet(viewsets.ModelViewSet):
-    queryset = Organizacao.objects.filter(deleted=False)
+    queryset = Organizacao.objects.all()
     serializer_class = OrganizacaoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -45,7 +46,9 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         inativa = self.request.query_params.get("inativa")
         if inativa is not None:
-            qs = qs.filter(deleted=inativa.lower() == "true")
+            qs = qs.filter(inativa=inativa.lower() == "true")
+        else:
+            qs = qs.filter(inativa=False)
         ordering = self.request.query_params.get("ordering")
         allowed = {"nome", "tipo", "cidade", "estado", "created_at"}
         if ordering and ordering.lstrip("-") in allowed:
@@ -80,7 +83,9 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def inativar(self, request, pk: str | None = None):
         organizacao = self.get_object()
-        organizacao.delete()
+        organizacao.inativa = True
+        organizacao.inativada_em = timezone.now()
+        organizacao.save(update_fields=["inativa", "inativada_em"])
         OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
@@ -92,9 +97,11 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def reativar(self, request, pk: str | None = None):
-        organizacao = Organizacao.all_objects.get(pk=pk)
+        organizacao = Organizacao.objects.get(pk=pk)
         self.check_object_permissions(request, organizacao)
-        organizacao.undelete()
+        organizacao.inativa = False
+        organizacao.inativada_em = None
+        organizacao.save(update_fields=["inativa", "inativada_em"])
         OrganizacaoAtividadeLog.objects.create(
             organizacao=organizacao,
             usuario=request.user,
@@ -116,7 +123,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
             writer = csv.writer(response)
             writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in organizacao.change_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "change",
@@ -127,7 +137,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                         log.created_at.isoformat(),
                     ]
                 )
-            for log in organizacao.atividade_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "activity",
@@ -139,8 +152,14 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                     ]
                 )
             return response
-        change_logs = organizacao.change_logs.all().order_by("-created_at")[:10]
-        atividade_logs = organizacao.atividade_logs.all().order_by("-created_at")[:10]
+        change_logs = (
+            OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+            .order_by("-created_at")[:10]
+        )
+        atividade_logs = (
+            OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+            .order_by("-created_at")[:10]
+        )
         change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
         atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
         return Response({"changes": change_ser.data, "activities": atividade_ser.data})

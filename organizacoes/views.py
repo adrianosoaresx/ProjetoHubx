@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import (
@@ -41,7 +42,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         qs = (
             super()
             .get_queryset()
-            .filter(deleted=False)
+            .filter(inativa=False)
             .select_related("created_by")
             .prefetch_related("evento_set", "nucleos", "users")
         )
@@ -69,14 +70,14 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["tipos"] = Organizacao._meta.get_field("tipo").choices
         context["cidades"] = (
-            Organizacao.objects.filter(deleted=False)
+            Organizacao.objects.filter(inativa=False)
             .exclude(cidade="")
             .values_list("cidade", flat=True)
             .distinct()
             .order_by("cidade")
         )
         context["estados"] = (
-            Organizacao.objects.filter(deleted=False)
+            Organizacao.objects.filter(inativa=False)
             .exclude(estado="")
             .values_list("estado", flat=True)
             .distinct()
@@ -108,7 +109,7 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
     success_url = reverse_lazy("organizacoes:list")
 
     def get_queryset(self):
-        return super().get_queryset().filter(deleted=False)
+        return super().get_queryset().filter(inativa=False)
 
     def form_valid(self, form):
         antiga = serialize_organizacao(self.get_object())
@@ -150,7 +151,7 @@ class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteV
     success_url = reverse_lazy("organizacoes:list")
 
     def get_queryset(self):
-        return super().get_queryset().filter(deleted=False)
+        return super().get_queryset().filter(inativa=False)
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -176,7 +177,7 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
         qs = (
             super()
             .get_queryset()
-            .filter(deleted=False)
+            .filter(inativa=False)
             .prefetch_related(
                 "users",
                 "nucleos",
@@ -212,23 +213,26 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
 
 class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        org = get_object_or_404(Organizacao, pk=pk, deleted=False)
+        org = get_object_or_404(Organizacao, pk=pk)
         antiga = serialize_organizacao(org)
-        if org.deleted:
-            org.undelete()
+        if org.inativa:
+            org.inativa = False
+            org.inativada_em = None
             acao = "reactivated"
             msg = _("Organização reativada com sucesso.")
         else:
-            org.delete()
+            org.inativa = True
+            org.inativada_em = timezone.now()
             acao = "inactivated"
             msg = _("Organização inativada com sucesso.")
+        org.save(update_fields=["inativa", "inativada_em"])
         nova = serialize_organizacao(org)
         dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
         dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
         registrar_log(org, request.user, acao, dif_antiga, dif_nova)
         organizacao_alterada.send(sender=self.__class__, organizacao=org, acao=acao)
         messages.success(request, msg)
-        if org.deleted:
+        if org.inativa:
             return redirect("organizacoes:list")
         return redirect("organizacoes:detail", pk=org.pk)
 
@@ -261,7 +265,10 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
             writer = csv.writer(response)
             writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in org.change_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "change",
@@ -272,7 +279,10 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                         log.created_at.isoformat(),
                     ]
                 )
-            for log in org.atividade_logs.all().order_by("-created_at"):
+            for log in (
+                OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")
+            ):
                 writer.writerow(
                     [
                         "activity",
@@ -284,8 +294,14 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                     ]
                 )
             return response
-        change_logs = org.change_logs.all().order_by("-created_at")[:10]
-        atividade_logs = org.atividade_logs.all().order_by("-created_at")[:10]
+        change_logs = (
+            OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+            .order_by("-created_at")[:10]
+        )
+        atividade_logs = (
+            OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
+            .order_by("-created_at")[:10]
+        )
         return render(
             request,
             self.template_name,

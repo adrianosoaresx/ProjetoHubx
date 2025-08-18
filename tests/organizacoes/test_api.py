@@ -67,19 +67,25 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     resp = api_client.patch(url_inativar)
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
-    assert org.deleted is True and org.deleted_at
+    assert org.inativa is True and org.inativada_em
     url_reativar = reverse("organizacoes_api:organizacao-reativar", args=[org.pk])
     resp = api_client.patch(url_reativar)
     assert resp.status_code == status.HTTP_200_OK
     org.refresh_from_db()
+
     assert org.deleted is False and org.deleted_at is None
-    assert OrganizacaoAtividadeLog.objects.filter(organizacao=org, acao="inactivated").exists()
+    assert (
+        OrganizacaoAtividadeLog.all_objects.filter(
+            organizacao=org, acao="inactivated"
+        ).exists()
+    )
 
 
-def test_list_excludes_deleted(api_client, root_user, faker_ptbr):
+
+def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
     org1 = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="a")
-    org2 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b", deleted=True)
+    org2 = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="b", inativa=True)
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.get(url)
     ids = [o["id"] for o in resp.data]
@@ -154,7 +160,11 @@ def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
     assert resp.status_code == status.HTTP_200_OK
-    assert OrganizacaoChangeLog.objects.filter(organizacao=org, campo_alterado="nome").exists()
+    assert (
+        OrganizacaoChangeLog.all_objects.filter(
+            organizacao=org, campo_alterado="nome"
+        ).exists()
+    )
 
 
 def test_search_and_ordering(api_client, root_user, faker_ptbr):
