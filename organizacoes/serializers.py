@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
@@ -29,12 +30,18 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_telefone",
             "avatar",
             "cover",
+            "rate_limit_multiplier",
             "inativa",
             "inativada_em",
             "created_by",
         ]
-        read_only_fields = ["created_by", "inativa", "inativada_em"]
+        read_only_fields = ["created_by", "inativada_em"]
         extra_kwargs = {"slug": {"required": False}}
+
+    def validate_rate_limit_multiplier(self, value: float) -> float:
+        if value <= 0:
+            raise serializers.ValidationError("Deve ser maior que zero.")
+        return value
 
     def create(self, validated_data: dict) -> Organizacao:
         request = self.context.get("request")
@@ -48,6 +55,8 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             slug = f"{base}-{counter}"
             counter += 1
         validated_data["slug"] = slug
+        if validated_data.get("inativa"):
+            validated_data["inativada_em"] = timezone.now()
         try:
             validated_data["cnpj"] = validate_cnpj(validated_data.get("cnpj"))
         except DjangoValidationError as exc:
@@ -78,6 +87,8 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
                 slug = f"{base}-{counter}"
                 counter += 1
             validated_data["slug"] = slug
+        if "inativa" in validated_data:
+            validated_data["inativada_em"] = timezone.now() if validated_data["inativa"] else None
         campos_relevantes = [
             "nome",
             "tipo",
@@ -85,6 +96,8 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "cnpj",
             "contato_nome",
             "contato_email",
+            "inativa",
+            "rate_limit_multiplier",
         ]
         for campo in campos_relevantes:
             if campo in validated_data:
