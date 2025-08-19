@@ -105,33 +105,17 @@ class EmpresaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = self.queryset
-        if getattr(self, "action", None) not in {"restaurar", "purgar"}:
-            qs = qs.filter(deleted=False)
-        nome = self.request.query_params.get("nome")
-        tag_ids = self.request.query_params.getlist("tag")
-        termo = self.request.query_params.get("q")
-        palavras = self.request.query_params.get("palavras_chave")
-        if nome:
-            qs = qs.filter(nome__icontains=nome)
-        if termo:
-            qs = qs.filter(palavras_chave__icontains=termo)
-        if palavras:
-            qs = qs.filter(palavras_chave__icontains=palavras)
-        if tag_ids:
-            for tag_id in tag_ids:
-                qs = qs.filter(tags__id=tag_id)
-            qs = qs.distinct()
-        user = self.request.user
-        if user.is_superuser:
-            pass
-        elif user.user_type == UserType.ADMIN:
-            qs = qs.filter(organizacao=user.organizacao)
-        elif user.user_type in {UserType.COORDENADOR, UserType.NUCLEADO}:
-            qs = qs.filter(usuario=user)
-        else:
-            return Empresa.objects.none()
-        return qs.order_by("nome")
+        if getattr(self, "action", None) in {"restaurar", "purgar"}:
+            return self.queryset
+        params = self.request.query_params.copy()
+        organizacao = params.get("organizacao")
+        if organizacao:
+            params["organizacao_id"] = organizacao
+            del params["organizacao"]
+        qs = search_empresas(self.request.user, params)
+        if not params.get("q"):
+            qs = qs.order_by("nome")
+        return qs
 
 
     def perform_destroy(self, instance: Empresa) -> None:
