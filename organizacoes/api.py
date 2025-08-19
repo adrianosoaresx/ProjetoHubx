@@ -17,7 +17,9 @@ from agenda.serializers import EventoSerializer
 from empresas.models import Empresa
 from empresas.serializers import EmpresaSerializer
 from feed.api import PostSerializer
-from feed.models import Post
+from feed.models import FeedPluginConfig, Post
+from financeiro.models import CentroCusto
+from financeiro.serializers import CentroCustoSerializer
 from nucleos.models import Nucleo
 from nucleos.serializers import NucleoSerializer
 
@@ -25,6 +27,7 @@ from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 
 from .models import Organizacao, OrganizacaoAtividadeLog
 from .serializers import (
+    FeedPluginConfigSerializer,
     OrganizacaoAtividadeLogSerializer,
     OrganizacaoChangeLogSerializer,
     OrganizacaoSerializer,
@@ -218,6 +221,17 @@ class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
         return org
 
 
+class OrganizacaoRelatedModelViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def get_organizacao(self):
+        org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
+        perm = IsOrgAdminOrSuperuser()
+        if not perm.has_object_permission(self.request, self, org):
+            raise PermissionDenied()
+        return org
+
+
 class OrganizacaoUserViewSet(OrganizacaoRelatedViewSet):
     serializer_class = UserSerializer
 
@@ -262,3 +276,25 @@ class OrganizacaoPostViewSet(OrganizacaoRelatedViewSet):
     def get_queryset(self):
         org = self.get_organizacao()
         return Post.objects.filter(organizacao=org, deleted=False)
+
+
+class OrganizacaoCentroCustoViewSet(OrganizacaoRelatedModelViewSet):
+    serializer_class = CentroCustoSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return CentroCusto.objects.filter(organizacao=org, deleted=False)
+
+    def perform_create(self, serializer):
+        serializer.save(organizacao=self.get_organizacao())
+
+
+class OrganizacaoPluginViewSet(OrganizacaoRelatedModelViewSet):
+    serializer_class = FeedPluginConfigSerializer
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return FeedPluginConfig.objects.filter(organizacao=org)
+
+    def perform_create(self, serializer):
+        serializer.save(organizacao=self.get_organizacao())

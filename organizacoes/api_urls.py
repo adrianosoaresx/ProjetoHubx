@@ -3,7 +3,9 @@ from rest_framework.routers import DefaultRouter
 from .api import (
     OrganizacaoEmpresaViewSet,
     OrganizacaoEventoViewSet,
+    OrganizacaoCentroCustoViewSet,
     OrganizacaoNucleoViewSet,
+    OrganizacaoPluginViewSet,
     OrganizacaoPostViewSet,
     OrganizacaoUserViewSet,
     OrganizacaoViewSet,
@@ -35,6 +37,16 @@ router.register(
     r"organizacoes/(?P<organizacao_pk>[^/.]+)/posts",
     OrganizacaoPostViewSet,
     basename="organizacao-posts",
+)
+router.register(
+    r"organizacoes/(?P<organizacao_pk>[^/.]+)/centros-custo",
+    OrganizacaoCentroCustoViewSet,
+    basename="organizacao-centros-custo",
+)
+router.register(
+    r"organizacoes/(?P<organizacao_pk>[^/.]+)/plugins",
+    OrganizacaoPluginViewSet,
+    basename="organizacao-plugins",
 )
 
 urlpatterns = router.urls
