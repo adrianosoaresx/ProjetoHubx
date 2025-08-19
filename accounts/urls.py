@@ -10,8 +10,6 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("", views.login_view, name="root_login"),
     # Registro de usuário
-    path("register/", views.register_view, name="register"),
-    path("register/pending/", views.registro_pendente, name="registro_pendente"),
     path("resend-confirmation/", views.resend_confirmation, name="resend_confirmation"),
     path("password_reset/", views.password_reset, name="password_reset"),
     path(

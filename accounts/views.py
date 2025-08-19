@@ -33,7 +33,6 @@ from tokens.models import TokenAcesso, TOTPDevice
 
 from .forms import (
     CustomUserChangeForm,
-    CustomUserCreationForm,
     EmailLoginForm,
     InformacoesPessoaisForm,
     MediaForm,
@@ -340,25 +339,6 @@ def excluir_conta(request):
         logout(request)
         messages.success(request, _("Sua conta foi excluída com sucesso."))
         return redirect("core:home")
-    return render(request, "accounts/delete_account_confirm.html")
-
-
-def register_view(request):
-    if request.method == "POST":
-        form = CustomUserCreationForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect("accounts:registro_pendente")
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, "register/onboarding.html", {"form": form})
-
-
-def registro_pendente(request):
-    return render(request, "register/registro_pendente.html")
-
-
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
@@ -689,19 +669,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save(organizacao=organizacao, is_associado=False, is_staff=False)
         else:
             raise PermissionError("Você não tem permissão para criar usuários.")
-
-
-class RegisterView(View):
-    def get(self, request):
-        form = CustomUserCreationForm()
-        return render(request, "accounts/register.html", {"form": form})
-
-    def post(self, request):
-        form = CustomUserCreationForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect("accounts:registro_pendente")
-        return render(request, "accounts/register.html", {"form": form})
 
 
 class UserProfileView(LoginRequiredMixin, View):
