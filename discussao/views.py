@@ -247,6 +247,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["comentarios"] = comentarios
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
         return context
 
 
