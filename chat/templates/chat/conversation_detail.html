@@ -5,7 +5,7 @@
 
 {% block chat_content %}
 <main class="max-w-4xl mx-auto h-screen flex flex-col p-4">
-  <div id="i18n-data" data-i18n='{"noResults": "{{ _("Nenhum resultado encontrado.")|escapejs }}", "loadMore": "{{ _("Carregar mais")|escapejs }}", "clear": "{{ _("Limpar")|escapejs }}", "addReaction": "{{ _("Adicionar reação")|escapejs }}", "reactWith": "{{ _("Reagir com")|escapejs }}", "pin": "{{ _("Fixar")|escapejs }}", "unpin": "{{ _("Desafixar")|escapejs }}", "pinMessage": "{{ _("Fixar mensagem")|escapejs }}", "unpinMessage": "{{ _("Desafixar mensagem")|escapejs }}", "edit": "{{ _("Editar")|escapejs }}", "uploadError": "{{ _("Erro no upload")|escapejs }}", "videoPlayer": "{{ _("Player de vídeo")|escapejs }}"}'></div>
+  <div id="i18n-data" data-i18n='{"noResults": "{{ _("Nenhum resultado encontrado.")|escapejs }}", "loadMore": "{{ _("Carregar mais")|escapejs }}", "clear": "{{ _("Limpar")|escapejs }}", "addReaction": "{{ _("Adicionar reação")|escapejs }}", "reactWith": "{{ _("Reagir com")|escapejs }}", "pin": "{{ _("Fixar")|escapejs }}", "unpin": "{{ _("Desafixar")|escapejs }}", "pinMessage": "{{ _("Fixar mensagem")|escapejs }}", "unpinMessage": "{{ _("Desafixar mensagem")|escapejs }}", "edit": "{{ _("Editar")|escapejs }}", "uploadError": "{{ _("Erro no upload")|escapejs }}", "videoPlayer": "{{ _("Player de vídeo")|escapejs }}", "itemCreated": "{{ _("Item criado com sucesso")|escapejs }}", "itemCreateError": "{{ _("Erro ao criar item")|escapejs }}", "createItem": "{{ _("Criar evento/tarefa")|escapejs }}", "openMenu": "{{ _("Abrir menu")|escapejs }}"}'></div>
   <div
     id="chat-container"
     data-dest-id="{{ conversation.id }}"
@@ -84,6 +84,29 @@
     </form>
   </div>
   <div id="modal"></div>
+  <dialog id="item-modal" class="p-4 rounded max-w-md w-full">
+    <form method="dialog" class="space-y-2" id="item-form">
+      <label class="block" for="item-type">{% trans 'Tipo' %}
+        <select id="item-type" class="w-full border rounded p-2">
+          <option value="evento">{% trans 'Evento' %}</option>
+          <option value="tarefa">{% trans 'Tarefa' %}</option>
+        </select>
+      </label>
+      <label class="block" for="item-title">{% trans 'Título' %}
+        <input type="text" id="item-title" class="w-full border rounded p-2" />
+      </label>
+      <label class="block" for="item-start">{% trans 'Início' %}
+        <input type="date" id="item-start" class="w-full border rounded p-2" />
+      </label>
+      <label class="block" for="item-end">{% trans 'Fim' %}
+        <input type="date" id="item-end" class="w-full border rounded p-2" />
+      </label>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="item-cancel" class="px-3 py-1 border rounded" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</button>
+        <button type="submit" class="px-3 py-1 bg-primary text-white rounded" aria-label="{% trans 'Criar' %}">{% trans 'Criar' %}</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="edit-modal" class="p-4 rounded max-w-md w-full">
     <form method="dialog" class="space-y-2">
       <label for="edit-input" class="sr-only">{% trans 'Editar mensagem' %}</label>

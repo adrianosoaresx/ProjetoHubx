@@ -68,6 +68,27 @@
           </li>
         </ul>
       </div>
+
+      <div class="action-container relative">
+        <button
+          type="button"
+          class="action-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-label="{% trans 'Abrir menu' %}"
+        >⋮</button>
+        <ul
+          class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col"
+          role="menu"
+        >
+          <li>
+            <button type="button" class="create-item" aria-label="{% trans 'Criar evento/tarefa' %}">
+              {% trans 'Criar evento/tarefa' %}
+            </button>
+          </li>
+        </ul>
+      </div>
+
       {% if is_admin %}
         <button
           hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/pin/"
