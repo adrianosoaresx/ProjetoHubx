@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -839,8 +840,38 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
             return HttpResponse(status=403)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        layout = self.object
+        context["layout_save_url"] = reverse("dashboard:layout-save", args=[layout.pk])
+        layout_data = layout.layout_json
+        if isinstance(layout_data, str):
+            try:
+                metricas = json.loads(layout_data)
+            except Exception:
+                metricas = []
+        else:
+            metricas = layout_data or []
+        if not metricas:
+            metricas = list(METRICAS_INFO.keys())
+        metrics = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
+        context["metricas_iter"] = [
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": METRICAS_INFO[m]["label"],
+                "icon": METRICAS_INFO[m]["icon"],
+            }
+            for m in metricas
+            if m in metrics
+        ]
+        context["metricas_selecionadas"] = metricas
+        return context
+
     def form_valid(self, form):
-        layout_data = self.request.POST.get("layout_json", "{}")
+        layout_data = self.request.POST.get("layout_json")
+        if not layout_data:
+            layout_data = self.get_object().layout_json
         self.object = form.save(self.request.user, layout_data)
         log_layout_action(
             user=self.request.user,

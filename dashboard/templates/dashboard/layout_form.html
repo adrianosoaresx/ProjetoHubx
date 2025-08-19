@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% block title %}{% trans "Layout" %} | Hubx{% endblock %}
 {% block content %}
-<main class="max-w-xl mx-auto p-4" role="main" aria-label="{% trans 'Layout form' %}">
+<main class="max-w-7xl mx-auto p-4" role="main" aria-label="{% trans 'Layout form' %}">
   <h1 class="text-2xl mb-4">{% trans "Layout" %}</h1>
   <form method="post">
     {% csrf_token %}
@@ -14,8 +14,17 @@
       <label for="id_publico" class="block">{{ form.publico.label }}</label>
       {{ form.publico }}
     </div>
-    <input type="hidden" name="layout_json" id="layout_json" value="{}">
+    <input type="hidden" name="layout_json" id="layout_json" value="{{ object.layout_json|default:'{}' }}">
     <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
   </form>
+  {% if layout_save_url %}
+    {% include 'dashboard/partials/metrics_list.html' %}
+  {% endif %}
 </main>
+{% endblock %}
+
+{% block extra_js %}
+  {% if layout_save_url %}
+    <script src="{% static 'dashboard/layout.js' %}"></script>
+  {% endif %}
 {% endblock %}
