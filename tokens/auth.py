@@ -7,6 +7,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
 from .models import ApiToken, ApiTokenLog
+from .metrics import tokens_api_tokens_used_total
 
 
 class ApiTokenAuthentication(BaseAuthentication):
@@ -35,4 +36,5 @@ class ApiTokenAuthentication(BaseAuthentication):
             ip=request.META.get("REMOTE_ADDR", ""),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
+        tokens_api_tokens_used_total.inc()
         return (api_token.user, api_token)

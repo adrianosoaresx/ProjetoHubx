@@ -11,11 +11,7 @@ from rest_framework.response import Response
 from .models import ApiToken, ApiTokenLog
 from .serializers import ApiTokenSerializer
 from .services import generate_token, list_tokens, revoke_token
-from .metrics import (
-    tokens_api_latency_seconds,
-    tokens_invites_created_total,
-    tokens_invites_revoked_total,
-)
+from .metrics import tokens_api_latency_seconds
 
 
 class ApiTokenViewSet(viewsets.ViewSet):
@@ -48,9 +44,7 @@ class ApiTokenViewSet(viewsets.ViewSet):
             )
             data = ApiTokenSerializer(api_token).data
             data["token"] = raw_token
-            tokens_invites_created_total.inc()
             return Response(data, status=status.HTTP_201_CREATED)
-
 
     def destroy(self, request, pk: str | None = None):
         token = get_object_or_404(ApiToken, pk=pk)
@@ -66,6 +60,17 @@ class ApiTokenViewSet(viewsets.ViewSet):
                 ip=request.META.get("REMOTE_ADDR", ""),
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
-            tokens_invites_revoked_total.inc()
+
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+        revoke_token(token.id)
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 

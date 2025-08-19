@@ -1,4 +1,3 @@
-
 import pytest
 
 import hashlib
@@ -44,7 +43,7 @@ def test_api_token_authentication_and_revocation():
     usage_log = ApiTokenLog.objects.get(token=token, acao="uso")
     assert usage_log.user_agent == "ua-test"
     assert usage_log.ip == "127.0.0.1"
-    revoke_token(token.id)
+    revoke_token(token.id, user)
 
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.deleted is True
@@ -99,4 +98,3 @@ def test_api_view_create_and_destroy():
 
     token_db = ApiToken.all_objects.get(id=token_id)
     assert token_db.revogado_por == user
-

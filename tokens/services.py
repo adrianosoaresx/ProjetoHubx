@@ -9,7 +9,15 @@ from typing import Callable, Iterable, Tuple
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+
+from .models import ApiToken
+from .metrics import (
+    tokens_api_tokens_created_total,
+    tokens_api_tokens_revoked_total,
+)
+
 from .models import ApiToken, TokenAcesso
+
 
 User = get_user_model()
 
@@ -37,7 +45,11 @@ def generate_token(
         scope=scope,
         expires_at=expires_at,
     )
+
+    tokens_api_tokens_created_total.inc()
+
     token_created(token, raw_token)
+
     return raw_token
 
 
@@ -51,7 +63,11 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     token.deleted = True
     token.deleted_at = now
     token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
+
+    tokens_api_tokens_revoked_total.inc()
+
     token_revoked(token)
+
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:
@@ -59,6 +75,15 @@ def list_tokens(user: User) -> Iterable[ApiToken]:
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
+
+
+
+from datetime import datetime
+from typing import Tuple
+
+from .models import TokenAcesso
+
+
 
 def create_invite_token(
     *,
