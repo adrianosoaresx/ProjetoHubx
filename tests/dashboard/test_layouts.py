@@ -1,12 +1,17 @@
 import json
+import json
 import pytest
 from django.urls import reverse
 
+from audit.models import AuditLog
 from dashboard.models import DashboardLayout
 from organizacoes.factories import OrganizacaoFactory
 from organizacoes.models import Organizacao
 from accounts.models import UserType
 from django.contrib.auth import get_user_model
+
+
+pytestmark = pytest.mark.urls("tests.dashboard.urls")
 
 User = get_user_model()
 
@@ -73,3 +78,30 @@ def test_comparativo_endpoint(client, admin_user):
     expected = total_users / orgs
     assert data['media']['num_users'] == pytest.approx(expected)
     assert all(not isinstance(v, dict) for v in data['media'].values())
+
+
+@pytest.mark.django_db
+def test_layout_audit(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.post(
+        reverse("dashboard:layout-create"),
+        {"nome": "L1", "publico": False, "layout_json": json.dumps(["a"])}
+    )
+    assert resp.status_code == 302
+    layout = DashboardLayout.objects.get(nome="L1")
+    assert AuditLog.objects.filter(action="CREATE_LAYOUT", object_id=str(layout.pk)).exists()
+
+    resp = client.post(
+        reverse("dashboard:layout-edit", args=[layout.pk]),
+        {"nome": "L2", "publico": True, "layout_json": json.dumps(["a"])}
+    )
+    assert resp.status_code == 302
+    layout.refresh_from_db()
+    assert layout.nome == "L2"
+    assert AuditLog.objects.filter(action="UPDATE_LAYOUT", object_id=str(layout.pk)).exists()
+
+    resp = client.post(reverse("dashboard:layout-delete", args=[layout.pk]))
+    assert resp.status_code == 302
+    assert not DashboardLayout.objects.filter(pk=layout.pk).exists()
+    assert AuditLog.objects.filter(action="DELETE_LAYOUT").exists()
+

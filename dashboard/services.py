@@ -9,6 +9,8 @@ from django.utils import timezone
 
 from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
+from audit.models import AuditLog
+from audit.services import hash_ip, log_audit
 from chat.models import ChatMessage
 from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
@@ -21,7 +23,57 @@ from tokens.models import TokenAcesso as InviteToken
 from tokens.models import TokenUsoLog as UserToken
 
 from .utils import get_variation
-from .models import Achievement, UserAchievement, DashboardConfig
+from .models import (
+    Achievement,
+    DashboardConfig,
+    DashboardFilter,
+    DashboardLayout,
+    UserAchievement,
+)
+
+
+def log_filter_action(
+    user,
+    action: str,
+    filtro: DashboardFilter,
+    ip_address: str,
+    status: str = AuditLog.Status.SUCCESS,
+    metadata: dict | None = None,
+) -> None:
+    """Registra auditoria para ações relacionadas a filtros."""
+    if metadata is None:
+        metadata = {"filtros": filtro.filtros}
+    log_audit(
+        user=user,
+        action=action,
+        object_type="DashboardFilter",
+        object_id=str(filtro.pk),
+        ip_hash=hash_ip(ip_address or ""),
+        status=status,
+        metadata=metadata,
+    )
+
+
+def log_layout_action(
+    user,
+    action: str,
+    layout: DashboardLayout,
+    ip_address: str,
+    status: str = AuditLog.Status.SUCCESS,
+    metadata: dict | None = None,
+) -> None:
+    """Registra auditoria para ações relacionadas a layouts."""
+    if metadata is None:
+        metadata = {"nome": layout.nome, "publico": layout.publico}
+    log_audit(
+        user=user,
+        action=action,
+        object_type="DashboardLayout",
+        object_id=str(layout.pk),
+        ip_hash=hash_ip(ip_address or ""),
+        status=status,
+        metadata=metadata,
+    )
 
 
 def _apply_feed_filters(queryset, organizacao=None, data_inicio=None, data_fim=None):

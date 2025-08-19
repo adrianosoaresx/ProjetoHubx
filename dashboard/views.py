@@ -48,7 +48,13 @@ from .models import (
     DashboardLayout,
     UserAchievement,
 )
-from .services import DashboardMetricsService, DashboardService, check_achievements
+from .services import (
+    DashboardMetricsService,
+    DashboardService,
+    check_achievements,
+    log_filter_action,
+    log_layout_action,
+)
 
 User = get_user_model()
 
@@ -668,13 +674,11 @@ class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
                 filtros_data[key] = value[0]
         self.object = form.save(self.request.user, filtros_data)
         check_achievements(self.request.user)
-        log_audit(
+        log_filter_action(
             user=self.request.user,
             action="CREATE_FILTER",
-            object_type="DashboardFilter",
-            object_id=str(self.object.pk),
-            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
-            status="SUCCESS",
+            filtro=self.object,
+            ip_address=self.request.META.get("REMOTE_ADDR", ""),
             metadata=filtros_data,
         )
         return redirect(self.get_success_url())
@@ -707,16 +711,46 @@ class DashboardFilterApplyView(LoginRequiredMixin, View):
             ):
                 return HttpResponse(status=403)
         url = reverse("dashboard:dashboard") + "?" + urlencode(filtro.filtros, doseq=True)
-        log_audit(
+        log_filter_action(
             user=request.user,
             action="APPLY_FILTER",
-            object_type="DashboardFilter",
-            object_id=str(filtro.pk),
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
-            status="SUCCESS",
+            filtro=filtro,
+            ip_address=request.META.get("REMOTE_ADDR", ""),
             metadata={"filtros": filtro.filtros},
         )
         return redirect(url)
+
+
+class DashboardFilterUpdateView(LoginRequiredMixin, UpdateView):
+    model = DashboardFilter
+    form_class = DashboardFilterForm
+    template_name = "dashboard/filter_form.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:filters")
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+            return HttpResponse(status=403)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        filtros_data = {}
+        for key, value in self.request.GET.lists():
+            if key == "metricas":
+                filtros_data[key] = value
+            else:
+                filtros_data[key] = value[0]
+        self.object = form.save(self.request.user, filtros_data)
+        log_filter_action(
+            user=self.request.user,
+            action="UPDATE_FILTER",
+            filtro=self.object,
+            ip_address=self.request.META.get("REMOTE_ADDR", ""),
+            metadata=filtros_data,
+        )
+        return redirect(self.get_success_url())
 
 
 class DashboardFilterDeleteView(LoginRequiredMixin, View):
@@ -727,13 +761,11 @@ class DashboardFilterDeleteView(LoginRequiredMixin, View):
         if filtro.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
             return HttpResponse(status=403)
         filtro.delete()
-        log_audit(
+        log_filter_action(
             user=request.user,
             action="DELETE_FILTER",
-            object_type="DashboardFilter",
-            object_id=str(filtro.pk),
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
-            status="SUCCESS",
+            filtro=filtro,
+            ip_address=request.META.get("REMOTE_ADDR", ""),
             metadata={"filtros": filtro.filtros},
         )
         return redirect("dashboard:filters")
@@ -760,13 +792,11 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         layout_data = self.request.POST.get("layout_json", "{}")
         self.object = form.save(self.request.user, layout_data)
-        log_audit(
+        log_layout_action(
             user=self.request.user,
             action="CREATE_LAYOUT",
-            object_type="DashboardLayout",
-            object_id=str(self.object.pk),
-            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
-            metadata={"nome": self.object.nome, "publico": self.object.publico},
+            layout=self.object,
+            ip_address=self.request.META.get("REMOTE_ADDR", ""),
         )
         return redirect(self.get_success_url())
 
@@ -786,40 +816,30 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         layout_data = self.request.POST.get("layout_json", "{}")
         self.object = form.save(self.request.user, layout_data)
-        log_audit(
+        log_layout_action(
             user=self.request.user,
             action="UPDATE_LAYOUT",
-            object_type="DashboardLayout",
-            object_id=str(self.object.pk),
-            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
-            metadata={"nome": self.object.nome, "publico": self.object.publico},
+            layout=self.object,
+            ip_address=self.request.META.get("REMOTE_ADDR", ""),
         )
         return redirect(self.get_success_url())
 
 
-class DashboardLayoutDeleteView(LoginRequiredMixin, DeleteView):
-    model = DashboardLayout
-    template_name = "dashboard/layout_confirm_delete.html"
-    success_url = "/dashboard/layouts/"
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
+class DashboardLayoutDeleteView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        layout = DashboardLayout.objects.filter(pk=pk).first()
+        if not layout:
+            return HttpResponse(status=404)
+        if layout.user != request.user and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
             return HttpResponse(status=403)
-        return super().dispatch(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-        response = super().delete(request, *args, **kwargs)
-        log_audit(
+        layout.delete()
+        log_layout_action(
             user=request.user,
             action="DELETE_LAYOUT",
-            object_type="DashboardLayout",
-            object_id=str(obj.pk),
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
-            metadata={"nome": obj.nome, "publico": obj.publico},
+            layout=layout,
+            ip_address=request.META.get("REMOTE_ADDR", ""),
         )
-        return response
+        return redirect("/dashboard/layouts/")
 
 
 class DashboardLayoutSaveView(LoginRequiredMixin, View):
@@ -833,12 +853,10 @@ class DashboardLayoutSaveView(LoginRequiredMixin, View):
         if layout_json:
             layout.layout_json = layout_json
             layout.save(update_fields=["layout_json", "updated_at"])
-            log_audit(
+            log_layout_action(
                 user=request.user,
                 action="SAVE_LAYOUT",
-                object_type="DashboardLayout",
-                object_id=str(layout.pk),
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
-                metadata={"nome": layout.nome, "publico": layout.publico},
+                layout=layout,
+                ip_address=request.META.get("REMOTE_ADDR", ""),
             )
         return HttpResponse(status=204)
