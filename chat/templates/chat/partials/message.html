@@ -64,6 +64,7 @@
           </li>
         </ul>
       </div>
+
       <div class="action-container relative">
         <button
           type="button"
@@ -83,6 +84,7 @@
           </li>
         </ul>
       </div>
+
       {% if is_admin %}
         <button
           hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/pin/"

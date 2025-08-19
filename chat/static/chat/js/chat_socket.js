@@ -134,6 +134,35 @@
             }
         }
 
+        function updateFavoriteBtn(btn, fav){
+            if(!btn) return;
+            btn.classList.toggle('favorited', fav);
+            btn.textContent = fav ? '★' : '☆';
+            btn.classList.toggle('text-yellow-500', fav);
+            btn.classList.toggle('text-neutral-600', !fav);
+            btn.setAttribute('aria-label', fav ? t('removeFavorite','Remover dos favoritos') : t('addFavorite','Adicionar aos favoritos'));
+        }
+
+        function setupFavoriteBtn(div, id){
+            const btn = div.querySelector('.favorite-btn');
+            if(!btn || !id) return;
+            updateFavoriteBtn(btn, favoriteIds.has(id));
+            if(btn.dataset.favListener) return;
+            btn.dataset.favListener = 'true';
+            btn.addEventListener('click', ()=>{
+                const favorited = btn.classList.contains('favorited');
+                const method = favorited ? 'DELETE' : 'POST';
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/favorite/`,{method, headers:{'X-CSRFToken':csrfToken}})
+                    .then(r=>{
+                        if(r.ok){
+                            const newFav = !favorited;
+                            updateFavoriteBtn(btn, newFav);
+                            if(newFav){ favoriteIds.add(id); } else { favoriteIds.delete(id); }
+                        }
+                    });
+            });
+        }
+
         function setupReactionMenu(div, id){
             const btn = div.querySelector('.reaction-btn');
             const menu = div.querySelector('.reaction-menu');
@@ -221,18 +250,35 @@
 
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
         const pending = [];
+        const favoriteIds = new Set();
 
         messages.querySelectorAll('[data-message-id]').forEach(el=>{
             setupReactionMenu(el, el.dataset.messageId);
+
             setupItemMenu(el, el.dataset.messageId);
         });
         const pinned = container.querySelector('#pinned');
         if(pinned){
             pinned.querySelectorAll('[data-message-id]').forEach(el=>{
                 setupReactionMenu(el, el.dataset.messageId);
+
                 setupItemMenu(el, el.dataset.messageId);
+
             });
         }
+
+        fetch('/api/chat/favorites/')
+            .then(r=>r.ok ? r.json() : {})
+            .then(data=>{
+                (data[destinatarioId] || []).forEach(m=>{
+                    favoriteIds.add(m.id);
+                    const el = container.querySelector(`[data-message-id="${m.id}"]`);
+                    if(el){
+                        const btn = el.querySelector('.favorite-btn');
+                        updateFavoriteBtn(btn, true);
+                    }
+                });
+            });
 
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
@@ -289,14 +335,18 @@
             if(remetente === currentUser){ div.classList.add('self'); }
             if(pinned){ div.classList.add('pinned'); }
             let content = conteudo;
-            if(tipo === 'image'){
+            if(['image','video','file'].includes(tipo) && !conteudo){
+                content = `<div class="chat-file">${t('attachmentRemoved','Arquivo removido')}</div>`;
+            }else if(tipo === 'image'){
                 content = `<img src="${conteudo}" alt="imagem" class="w-full max-w-xs h-auto rounded">`;
             }else if(tipo === 'video'){
                 content = `<video src="${conteudo}" controls class="w-full max-w-xs h-auto" aria-label="${t('videoPlayer','Player de vídeo')}"></video>`;
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
+
             div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
+
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
@@ -326,7 +376,9 @@
             }
             renderReactions(div,reactions,userReactions);
             setupReactionMenu(div,id);
+
             setupItemMenu(div,id);
+
             if(id && remetente !== currentUser){
                 fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/mark-read/`,{
                     method:'POST',
@@ -339,7 +391,12 @@
         chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
             if(data.remetente === currentUser){
-                const idx = pending.findIndex(p=>p.tipo===data.tipo && p.conteudo===data.conteudo);
+                const idx = pending.findIndex(p=>{
+                    if(data.attachment_id && p.attachment_id){
+                        return p.attachment_id === data.attachment_id;
+                    }
+                    return p.tipo===data.tipo && p.conteudo===data.conteudo;
+                });
                 if(idx!==-1){
                     const placeholder = pending[idx];
                     renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions);
@@ -395,9 +452,9 @@
                     const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, []);
                     div.classList.add('pending');
                     messages.appendChild(div);
-                    pending.push({tipo:data.tipo,conteudo:data.url,elem:div});
+                    pending.push({tipo:data.tipo,conteudo:data.url,elem:div,attachment_id:data.attachment_id});
                     scrollToBottom();
-                    chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url}));
+                    chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url, attachment_id:data.attachment_id}));
                 })
                 .catch(()=>{ alert(t('uploadError','Erro no upload')); })
                 .finally(()=>{
