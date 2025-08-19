@@ -27,3 +27,4 @@ def test_resend_and_confirm_email(settings, mailoutbox):
     assert resp.status_code == 200
     user.refresh_from_db()
     assert user.is_active
+    assert user.email_confirmed is True
