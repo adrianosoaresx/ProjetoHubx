@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from tokens.models import TOTPDevice
 
-from .models import AccountToken, UserMedia, cpf_validator
+from .models import AccountToken, SecurityEvent, UserMedia, cpf_validator
 from .tasks import send_confirmation_email
 
 User = get_user_model()
@@ -246,6 +246,11 @@ class EmailLoginForm(forms.Form):
         now = timezone.now()
         if user.lock_expires_at and user.lock_expires_at > now:
             authenticate(self.request, username=email, password=password)
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="login_bloqueado",
+                ip=self.request.META.get("REMOTE_ADDR") if self.request else None,
+            )
             raise forms.ValidationError(
                 f"Conta bloqueada. Tente novamente após {user.lock_expires_at.strftime('%H:%M')}"
             )
