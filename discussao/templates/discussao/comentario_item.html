@@ -41,6 +41,20 @@
 
     </div>
   </header>
+  <div class="flex items-center space-x-1 mb-2">
+    <button
+      hx-post="{% url 'discussao:interacao' content_type_id comentario.id 'up' %}"
+      hx-swap="none"
+      hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('comment-score-{{comentario.id}}').innerText=r.score;document.getElementById('comment-votes-{{comentario.id}}').innerText=r.num_votos"
+    >&#9650;</button>
+    <span id="comment-score-{{ comentario.id }}">{{ comentario.score }}</span>
+    (<span id="comment-votes-{{ comentario.id }}">{{ comentario.num_votos }}</span>)
+    <button
+      hx-post="{% url 'discussao:interacao' content_type_id comentario.id 'down' %}"
+      hx-swap="none"
+      hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('comment-score-{{comentario.id}}').innerText=r.score;document.getElementById('comment-votes-{{comentario.id}}').innerText=r.num_votos"
+    >&#9660;</button>
+  </div>
   <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
   {% if topico.melhor_resposta_id == comentario.id %}
     <div class="text-xs text-green-700 font-semibold mt-2">{% trans "Melhor resposta" %}</div>

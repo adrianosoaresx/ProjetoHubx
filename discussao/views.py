@@ -273,6 +273,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
                     "partial": True,
                     "user": request.user,
                     "topico": self.object,
+                    "content_type_id": context["resposta_content_type_id"],
                 },
             )
         return self.render_to_response(context)
@@ -290,38 +291,9 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
-        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
-
-
-
-        user = self.request.user
-        agora = timezone.now()
-        pode_topico = (
-            user == self.object.autor or user.user_type in {UserType.ADMIN, UserType.ROOT}
-        ) and (
-            user.user_type in {UserType.ADMIN, UserType.ROOT}
-            or agora - self.object.created_at <= timedelta(minutes=15)
-        )
-        context["pode_editar_topico"] = pode_topico
-
-        def set_perm(resposta: RespostaDiscussao) -> None:
-            resposta.pode_editar = (
-                user == resposta.autor
-                or user.user_type in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}
-            ) and (
-                user.user_type in {UserType.ADMIN, UserType.ROOT}
-                or agora - resposta.created_at <= timedelta(minutes=15)
-            )
-
-        for c in comentarios:
-            set_perm(c)
-        if melhor:
-            set_perm(melhor)
-
-
-        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
-
-
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(
+            RespostaDiscussao
+        ).id
         return context
 
 
@@ -439,8 +411,13 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         notificar_nova_resposta.delay(self.object.id)
         cache.clear()
         if self.request.headers.get("Hx-Request"):
-            self.object.pode_editar = True
-            context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
+            context = {
+                "comentario": self.object,
+                "user": self.request.user,
+                "topico": self.topico,
+                "content_type_id": ContentType.objects.get_for_model(RespostaDiscussao).id,
+            }
+
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
         return redirect(self.get_success_url())

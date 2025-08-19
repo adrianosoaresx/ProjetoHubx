@@ -13,7 +13,7 @@ from discussao.models import (
     RespostaDiscussao,
     TopicoDiscussao,
 )
-from discussao.views import TopicoMarkResolvedView
+from discussao.views import TopicoMarkResolvedView, TopicoDetailView, TopicoListView
 from nucleos.models import Nucleo
 
 pytestmark = pytest.mark.django_db
@@ -248,6 +248,34 @@ def test_interacao_view_returns_score(client, nucleado_user, categoria, topico):
     assert resp.status_code == 200
     data = resp.json()
     assert data["score"] == 1 and data["num_votos"] == 1
+
+
+def test_topico_detail_includes_num_votos(rf, nucleado_user, categoria, topico):
+    RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r")
+    request = rf.get("/")
+    request.user = nucleado_user
+    view = TopicoDetailView()
+    view.request = request
+    view.kwargs = {"categoria_slug": categoria.slug, "topico_slug": topico.slug}
+    obj = view.get_object()
+    view.object = obj
+    context = view.get_context_data(object=obj)
+    assert context["topico"].num_votos == 0
+    comentario = context["comentarios"][0]
+    assert comentario.num_votos == 0
+
+
+def test_topico_list_includes_num_votos(rf, nucleado_user, categoria, topico):
+    request = rf.get("/")
+    request.user = nucleado_user
+    view = TopicoListView()
+    view.request = request
+    view.categoria = categoria
+    view.kwargs = {}
+    qs = view.get_queryset()
+    context = view.get_context_data(object_list=qs)
+    topico_ctx = context["topicos"][0]
+    assert topico_ctx.num_votos == 0
 
 
 def test_topico_mark_resolved(client, admin_user, categoria, topico, nucleado_user):

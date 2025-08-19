@@ -13,9 +13,18 @@
     <td class="px-4 py-2">{{ topico.created|date:SHORT_DATE_FORMAT }}</td>
     <td class="px-4 py-2 text-center">
       <div class="flex items-center justify-center space-x-1">
-        <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('score-{{topico.id}}').innerText = event.detail.xhr.responseJSON.score">&#9650;</button>
+        <button
+          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}"
+          hx-swap="none"
+          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
+        >&#9650;</button>
         <span id="score-{{ topico.id }}">{{ topico.score }}</span>
-        <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('score-{{topico.id}}').innerText = event.detail.xhr.responseJSON.score">&#9660;</button>
+        (<span id="votes-{{ topico.id }}">{{ topico.num_votos }}</span>)
+        <button
+          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}"
+          hx-swap="none"
+          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
+        >&#9660;</button>
       </div>
     </td>
     <td class="px-4 py-2 text-center">{{ topico.num_comentarios }}</td>
