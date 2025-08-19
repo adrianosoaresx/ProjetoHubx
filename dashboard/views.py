@@ -40,6 +40,10 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
+from agenda.models import Evento
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
+
 from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
 from .models import (
     Achievement,
@@ -187,6 +191,30 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             for m in metricas
             if m in metrics
         ]
+        user = self.request.user
+        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            orgs = Organizacao.objects.all()
+            nucleos = Nucleo.objects.all()
+            eventos = Evento.objects.all()
+        else:
+            org_id = getattr(user.organizacao, "pk", None)
+            orgs = Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            nucleos = Nucleo.objects.filter(
+                participacoes__user=user,
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            ).distinct()
+            eventos = Evento.objects.filter(
+                Q(coordenador=user)
+                | Q(
+                    nucleo__participacoes__user=user,
+                    nucleo__participacoes__status="ativo",
+                    nucleo__participacoes__status_suspensao=False,
+                )
+            ).distinct()
+        context["organizacoes_permitidas"] = orgs
+        context["nucleos_permitidos"] = nucleos
+        context["eventos_permitidos"] = eventos
         return context
 
 
@@ -778,9 +806,7 @@ class DashboardLayoutListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}:
             return DashboardLayout.objects.all()
-        return DashboardLayout.objects.filter(
-            Q(user=self.request.user) | Q(publico=True)
-        )
+        return DashboardLayout.objects.filter(Q(user=self.request.user) | Q(publico=True))
 
 
 class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
