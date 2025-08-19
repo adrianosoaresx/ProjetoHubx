@@ -34,6 +34,16 @@
       <span id="topic-score">{{ topico.score }}</span>
       <button hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('topic-score').innerText = event.detail.xhr.responseJSON.score">&#9660;</button>
     </div>
+    <div class="mt-2">
+      <button type="button" class="text-xs text-red-600" onclick="document.getElementById('denuncia-topico-form').classList.toggle('hidden')">{% trans "Denunciar" %}</button>
+      <form id="denuncia-topico-form" class="hidden mt-2" hx-post="{% url 'discussao_api:denuncia-list' %}" hx-swap="none" hx-on:afterRequest="this.reset(); this.classList.add('hidden'); alert('{% trans "Denúncia enviada" %}');" hx-on:error="alert('{% trans "Erro ao enviar denúncia" %}');">
+        {% csrf_token %}
+        <input type="hidden" name="content_type_id" value="{{ content_type_id }}">
+        <input type="hidden" name="object_id" value="{{ topico.id }}">
+        <textarea name="motivo" required class="form-textarea w-full" placeholder="{% trans "Motivo da denúncia" %}"></textarea>
+        <button type="submit" class="mt-1 bg-red-600 text-white px-3 py-1 text-xs rounded">{% trans "Enviar" %}</button>
+      </form>
+    </div>
   </header>
   <div class="prose max-w-none mb-10">{{ topico.conteudo|linebreaks }}</div>
   <section aria-labelledby="comentarios" class="space-y-4">

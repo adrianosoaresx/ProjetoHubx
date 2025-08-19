@@ -290,6 +290,9 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
+
+
 
         user = self.request.user
         agora = timezone.now()
@@ -317,6 +320,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
 
 
         context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
+
 
         return context
 

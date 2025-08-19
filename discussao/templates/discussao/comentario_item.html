@@ -22,6 +22,9 @@
       </form>
     {% endif %}
 
+    <button type="button" class="text-red-600 text-xs" onclick="document.getElementById('denuncia-comentario-{{ comentario.id }}').classList.toggle('hidden')">{% trans "Denunciar" %}</button>
+
+
     {% if not topico.fechado %}
       <button type="button" class="text-primary-600 text-xs" hx-on:click="document.getElementById('reply_to').value='{{ comentario.id }}'; document.getElementById('id_conteudo').focus();">
         {% trans "Responder" %}
@@ -35,10 +38,18 @@
         <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos">&#9660;</button>
       </div>
 
+
     </div>
   </header>
   <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
   {% if topico.melhor_resposta_id == comentario.id %}
     <div class="text-xs text-green-700 font-semibold mt-2">{% trans "Melhor resposta" %}</div>
   {% endif %}
+  <form id="denuncia-comentario-{{ comentario.id }}" class="hidden mt-2" hx-post="{% url 'discussao_api:denuncia-list' %}" hx-swap="none" hx-on:afterRequest="this.reset(); this.classList.add('hidden'); alert('{% trans "Denúncia enviada" %}');" hx-on:error="alert('{% trans "Erro ao enviar denúncia" %}');">
+    {% csrf_token %}
+    <input type="hidden" name="content_type_id" value="{{ resposta_content_type_id }}">
+    <input type="hidden" name="object_id" value="{{ comentario.id }}">
+    <textarea name="motivo" required class="form-textarea w-full" placeholder="{% trans "Motivo da denúncia" %}"></textarea>
+    <button type="submit" class="mt-1 bg-red-600 text-white px-3 py-1 text-xs rounded">{% trans "Enviar" %}</button>
+  </form>
 </article>
