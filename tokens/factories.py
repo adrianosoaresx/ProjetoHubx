@@ -25,6 +25,14 @@ class TokenAcessoFactory(DjangoModelFactory):
         elements=[choice.value for choice in TokenAcesso.Estado],
     )
     data_expiracao = factory.LazyFunction(lambda: timezone.now() + timezone.timedelta(days=30))
+    codigo = factory.LazyFunction(TokenAcesso.generate_code)
+
+    @factory.post_generation
+    def _setup_codigo(self, create, extracted, **kwargs):
+        """Gera ``codigo_hash`` automaticamente."""
+        self.set_codigo(self.codigo)
+        if create:
+            self.save()
 
     @factory.post_generation
     def nucleos(self, create, extracted, **kwargs):
