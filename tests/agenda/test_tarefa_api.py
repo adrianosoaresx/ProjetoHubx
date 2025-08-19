@@ -4,8 +4,11 @@ import pytest
 from django.utils import timezone
 from rest_framework.test import APIClient
 
+from accounts.models import UserType
 from agenda.models import Tarefa, TarefaLog
 from organizacoes.models import Organizacao
+
+pytestmark = pytest.mark.urls("Hubx.urls")
 
 
 @pytest.fixture
@@ -27,6 +30,7 @@ def admin_user(django_user_model, organizacao):
         email="admin@example.com",
         password="password",
         organizacao=organizacao,
+        user_type=UserType.ADMIN,
     )
 
 
