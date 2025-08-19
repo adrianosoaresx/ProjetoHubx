@@ -7,12 +7,20 @@ from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Canal, NotificationLog, NotificationStatus, NotificationTemplate, PushSubscription
+from .models import (
+    Canal,
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    PushSubscription,
+    UserNotificationPreference,
+)
 from .permissions import CanSendNotifications
 from .serializers import (
     NotificationLogSerializer,
     NotificationTemplateSerializer,
     PushSubscriptionSerializer,
+    UserNotificationPreferenceSerializer,
 )
 from .services.notificacoes import enviar_para_usuario
 
@@ -112,3 +120,14 @@ class PushSubscriptionViewSet(viewsets.ViewSet):
         subscription.ativo = False
         subscription.save(update_fields=["ativo"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserNotificationPreferenceViewSet(viewsets.ModelViewSet):
+    serializer_class = UserNotificationPreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserNotificationPreference.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

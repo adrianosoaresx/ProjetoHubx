@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import NotificationLog, NotificationTemplate, PushSubscription
+from .models import (
+    NotificationLog,
+    NotificationTemplate,
+    PushSubscription,
+    UserNotificationPreference,
+)
 
 
 class NotificationTemplateSerializer(serializers.ModelSerializer):
@@ -58,3 +63,10 @@ class PushSubscriptionSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
+
+
+class UserNotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserNotificationPreference
+        fields = ["id", "email", "push", "whatsapp"]
+        read_only_fields = ["id"]
