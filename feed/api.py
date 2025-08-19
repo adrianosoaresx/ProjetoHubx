@@ -37,6 +37,11 @@ POST_VIEWS_TOTAL = Counter(
 POST_VIEW_DURATION = Histogram(
     "feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos"
 )
+LIKES_TOTAL = Counter("feed_likes_total", "Total de curtidas registradas")
+
+
+def _dec_counter(metric: Counter) -> None:
+    metric._value.set(max(0, metric._value.get() - 1))
 
 
 class CanModerate(permissions.BasePermission):
@@ -369,7 +374,9 @@ class PostViewSet(viewsets.ModelViewSet):
         like, created = Like.objects.get_or_create(post=post, user=request.user)
         if not created:
             like.delete()
+            _dec_counter(LIKES_TOTAL)
             return Response({"liked": False}, status=status.HTTP_200_OK)
+        LIKES_TOTAL.inc()
         return Response({"liked": True}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
@@ -540,8 +547,22 @@ class LikeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):  # pragma: no cover - simples
         return Like.objects.select_related("post", "user").filter(user=self.request.user)
 
-    def perform_create(self, serializer: serializers.ModelSerializer) -> None:
-        serializer.save(user=self.request.user)
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        post = serializer.validated_data["post"]
+        existing = Like.objects.filter(post=post, user=request.user).first()
+        if existing:
+            existing.delete()
+            _dec_counter(LIKES_TOTAL)
+            return Response({"liked": False}, status=status.HTTP_200_OK)
+        serializer.save(user=request.user)
+        LIKES_TOTAL.inc()
+        return Response({"liked": True}, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance: Like) -> None:
+        instance.delete()
+        _dec_counter(LIKES_TOTAL)
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
