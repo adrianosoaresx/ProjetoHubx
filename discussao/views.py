@@ -246,6 +246,31 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["comentarios"] = comentarios
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
+
+        user = self.request.user
+        agora = timezone.now()
+        pode_topico = (
+            user == self.object.autor or user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ) and (
+            user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or agora - self.object.created_at <= timedelta(minutes=15)
+        )
+        context["pode_editar_topico"] = pode_topico
+
+        def set_perm(resposta: RespostaDiscussao) -> None:
+            resposta.pode_editar = (
+                user == resposta.autor
+                or user.user_type in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}
+            ) and (
+                user.user_type in {UserType.ADMIN, UserType.ROOT}
+                or agora - resposta.created_at <= timedelta(minutes=15)
+            )
+
+        for c in comentarios:
+            set_perm(c)
+        if melhor:
+            set_perm(melhor)
+
         return context
 
 
@@ -291,7 +316,12 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
             UserType.ADMIN,
             UserType.ROOT,
         }:
-            return HttpResponseForbidden()
+            messages.error(request, gettext_lazy("Prazo de edição expirado."))
+            return redirect(
+                "discussao:topico_detalhe",
+                categoria_slug=self.categoria.slug,
+                topico_slug=self.object.slug,
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -345,6 +375,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         notificar_nova_resposta.delay(self.object.id)
         cache.clear()
         if self.request.headers.get("Hx-Request"):
+            self.object.pode_editar = True
             context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
@@ -392,6 +423,7 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
+        self.topico = self.object.topico
         if request.user != self.object.autor and request.user.user_type not in {
             UserType.ADMIN,
             UserType.COORDENADOR,
@@ -402,7 +434,12 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
             UserType.ADMIN,
             UserType.ROOT,
         }:
-            return HttpResponseForbidden()
+            messages.error(request, gettext_lazy("Prazo de edição expirado."))
+            return redirect(
+                "discussao:topico_detalhe",
+                categoria_slug=self.topico.categoria.slug,
+                topico_slug=self.topico.slug,
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
