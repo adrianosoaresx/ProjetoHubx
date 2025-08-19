@@ -131,16 +131,25 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         return secrets.token_urlsafe(32)
 
     def set_codigo(self, codigo: str) -> None:
-        salt = secrets.token_bytes(16)
-        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
-        self.codigo_salt = base64.b64encode(salt).decode()
-        self.codigo_hash = base64.b64encode(digest).decode()
+        """Define ``codigo`` gerando hash para persistência."""
+        # Tokens gerados após a introdução deste método utilizam SHA256
+        # simples para permitir busca direta pelo hash.
+        self.codigo_hash = hashlib.sha256(codigo.encode()).hexdigest()
+        # ``codigo_salt`` permanece para compatibilidade com tokens antigos
+        # que ainda utilizam PBKDF2 com salt.
+        self.codigo_salt = ""
 
     def check_codigo(self, codigo: str) -> bool:
-        salt = base64.b64decode(self.codigo_salt)
-        expected = base64.b64decode(self.codigo_hash)
-        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
-        return hmac.compare_digest(expected, digest)
+        """Verifica o ``codigo`` considerando tokens legados."""
+        if self.codigo_salt:
+            # Compatibilidade com tokens gerados antes da mudança,
+            # que utilizam PBKDF2 com salt.
+            salt = base64.b64decode(self.codigo_salt)
+            expected = base64.b64decode(self.codigo_hash)
+            digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
+            return hmac.compare_digest(expected, digest)
+        # Tokens novos armazenam apenas o SHA256 do código.
+        return self.codigo_hash == hashlib.sha256(codigo.encode()).hexdigest()
 
 
 class TokenUsoLog(TimeStampedModel, SoftDeleteModel):

@@ -82,8 +82,15 @@ def create_invite_token(
 
 def find_token_by_code(codigo: str) -> TokenAcesso:
     """Retorna o ``TokenAcesso`` correspondente ao ``codigo`` ou levanta ``DoesNotExist``."""
-
-    for token in TokenAcesso.objects.all():
-        if token.check_codigo(codigo):
-            return token
-    raise TokenAcesso.DoesNotExist
+    # Busca otimizada utilizando o hash direto do código.
+    codigo_hash = hashlib.sha256(codigo.encode()).hexdigest()
+    try:
+        return TokenAcesso.objects.get(codigo_hash=codigo_hash)
+    except TokenAcesso.DoesNotExist:
+        # Compatibilidade com tokens antigos que armazenam o hash PBKDF2
+        # com ``codigo_salt``. Nesses casos, precisamos iterar e verificar
+        # manualmente.
+        for token in TokenAcesso.objects.exclude(codigo_salt=""):
+            if token.check_codigo(codigo):
+                return token
+        raise TokenAcesso.DoesNotExist
