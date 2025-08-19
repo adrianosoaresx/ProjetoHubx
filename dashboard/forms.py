@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from django import forms
 
-from .models import DashboardConfig, DashboardFilter, DashboardLayout
+from .models import (
+    DashboardConfig,
+    DashboardCustomMetric,
+    DashboardFilter,
+    DashboardLayout,
+)
 
 
 class DashboardConfigForm(forms.ModelForm):
@@ -46,3 +51,9 @@ class DashboardLayoutForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class DashboardCustomMetricForm(forms.ModelForm):
+    class Meta:
+        model = DashboardCustomMetric
+        fields = ["code", "nome", "descricao", "query_spec", "escopo"]

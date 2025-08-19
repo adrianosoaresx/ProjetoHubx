@@ -50,6 +50,11 @@ urlpatterns = [
         include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
 
+    path(
+        "api/dashboard/",
+        include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
+    ),
+
 
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 
