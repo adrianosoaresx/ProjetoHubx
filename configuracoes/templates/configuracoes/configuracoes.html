@@ -13,14 +13,14 @@
       {% endfor %}
     </div>
   {% endif %}
-  <nav class="flex flex-wrap gap-4 border-b mb-4 text-sm" aria-label="{% trans 'Seções de Configuração' %}">
-    <button hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
-    <button hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
-  </nav>
-  <div id="content" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
-    {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
+    <nav class="flex flex-wrap gap-4 border-b mb-4 text-sm" aria-label="{% trans 'Seções de Configuração' %}" role="tablist">
+      <button role="tab" aria-selected="{% if tab == 'informacoes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
+      <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
+      <button role="tab" aria-selected="{% if tab == 'redes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
+      <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
+    </nav>
+    <div id="content" role="tabpanel" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
+      {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
+    </div>
   </div>
-</div>
 {% endblock %}
