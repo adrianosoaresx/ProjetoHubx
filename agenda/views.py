@@ -392,14 +392,27 @@ def avaliar_parceria(request, pk: int):
     )
     if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
         return HttpResponseForbidden()
-    if request.method == "POST" and parceria.avaliacao is None:
+
+    if request.method == "POST":
+        if parceria.avaliacao is not None:
+            return JsonResponse({"error": _("Parceria já avaliada.")}, status=400)
         try:
-            parceria.avaliacao = int(request.POST.get("avaliacao"))
+            parceria.avaliacao = int(request.POST.get("nota"))
+            if not 1 <= parceria.avaliacao <= 5:
+                raise ValueError
         except (TypeError, ValueError):
-            return HttpResponse(status=400)
+            return JsonResponse({"error": _("Nota inválida.")}, status=400)
         parceria.comentario = request.POST.get("comentario", "")
         parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
-    return JsonResponse({"avaliacao": parceria.avaliacao, "comentario": parceria.comentario})
+        return JsonResponse(
+            {
+                "success": _("Avaliação registrada com sucesso."),
+                "avaliacao": parceria.avaliacao,
+                "comentario": parceria.comentario,
+            }
+        )
+
+    return render(request, "agenda/parceria_avaliar.html", {"parceria": parceria})
 
 
 @csrf_exempt

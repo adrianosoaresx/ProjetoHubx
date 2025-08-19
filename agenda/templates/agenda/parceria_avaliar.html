@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Avaliar parceria" %}{% endblock %}
+
+{% block content %}
+<main class="max-w-md mx-auto py-8 px-4">
+  <h1 class="text-xl font-semibold mb-4">{% trans "Avaliar parceria" %}</h1>
+  <form id="avaliacao-form" method="post" action="{% url 'agenda:parceria_avaliar' parceria.pk %}" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label for="nota" class="block text-sm font-medium">{% trans "Nota" %}</label>
+      <select id="nota" name="nota" class="form-select w-full" required>
+        {% for n in '12345' %}
+        <option value="{{ n }}">{{ n }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="comentario" class="block text-sm font-medium">{% trans "Comentário" %}</label>
+      <textarea id="comentario" name="comentario" rows="4" class="form-textarea w-full" placeholder="{% trans 'Opcional' %}"></textarea>
+    </div>
+    <div class="text-right">
+      <button type="submit" class="btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+    </div>
+  </form>
+  <p id="message" class="mt-4 text-sm"></p>
+</main>
+<script>
+const form = document.getElementById('avaliacao-form');
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const response = await fetch(form.action, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+    },
+    body: new FormData(form)
+  });
+  const data = await response.json();
+  const msg = document.getElementById('message');
+  if (response.ok && data.success) {
+    msg.textContent = data.success;
+    form.reset();
+  } else {
+    msg.textContent = data.error || 'Erro.';
+  }
+});
+</script>
+{% endblock %}

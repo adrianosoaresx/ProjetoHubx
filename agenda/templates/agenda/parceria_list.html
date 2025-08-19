@@ -27,6 +27,9 @@
               <td class="px-4 py-2">{{ parceria.evento.titulo }}</td>
               <td class="px-4 py-2">{{ parceria.get_tipo_parceria_display }}</td>
               <td class="px-4 py-2 space-x-2">
+                {% if parceria.avaliacao is None %}
+                  <a href="{% url 'agenda:parceria_avaliar' parceria.pk %}" class="text-green-600 hover:underline">{% trans "Avaliar" %}</a>
+                {% endif %}
                 <a href="{% url 'agenda:parceria_editar' parceria.pk %}" class="text-blue-600 hover:underline">{% trans "Editar" %}</a>
                 <a href="{% url 'agenda:parceria_excluir' parceria.pk %}" class="text-red-600 hover:underline">{% trans "Excluir" %}</a>
               </td>
