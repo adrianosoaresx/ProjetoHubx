@@ -40,6 +40,21 @@
       </div>
     </header>
 
+    <section id="resumos" class="mb-4" aria-label="{% trans 'Resumos disponíveis' %}">
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-semibold text-neutral-600">{% trans 'Resumos' %}</h3>
+        {% if is_admin %}
+          <button id="resumo-gerar" class="text-blue-600 hover:underline text-sm" type="button">{% trans 'Gerar resumo' %}</button>
+        {% endif %}
+      </div>
+      <ul id="resumos-list" class="pl-5 list-disc text-sm text-neutral-700"></ul>
+    </section>
+
+    <section id="trending" class="mb-4" aria-label="{% trans 'Tópicos em alta' %}">
+      <h3 class="text-sm font-semibold text-neutral-600">{% trans 'Tópicos em alta' %}</h3>
+      <ul id="trending-list" class="pl-5 list-disc text-sm text-neutral-700"></ul>
+    </section>
+
     <form id="search-form" data-channel="{{ conversation.id }}" class="mb-4 flex flex-wrap items-end gap-2" aria-label="{% trans 'Buscar mensagens' %}">
       <label for="search-q" class="sr-only">{% trans 'Buscar mensagens' %}</label>
       <input type="search" id="search-q" name="q" class="w-full sm:flex-1 border rounded p-2" placeholder="{% trans 'Buscar' %}" />
@@ -131,6 +146,53 @@
     const feedback = document.getElementById('search-feedback');
     const clearBtn = document.getElementById('search-clear');
     let nextUrl = null;
+    const chatContainer = document.getElementById('chat-container');
+    const channelId = chatContainer.dataset.destId;
+    const csrfToken = chatContainer.dataset.csrfToken;
+    const isAdmin = chatContainer.dataset.isAdmin === 'true';
+    const resumosList = document.getElementById('resumos-list');
+    const trendingList = document.getElementById('trending-list');
+    const gerarBtn = document.getElementById('resumo-gerar');
+
+    function carregarResumos(){
+      fetch(`/api/chat/channels/${channelId}/resumos/`)
+        .then(r=>r.json())
+        .then(data=>{
+          resumosList.innerHTML='';
+          data.forEach(item=>{
+            const li=document.createElement('li');
+            const dt=new Date(item.created_at).toLocaleString();
+            li.textContent=`${item.periodo} - ${dt}`;
+            resumosList.appendChild(li);
+          });
+        });
+    }
+
+    function carregarTrending(){
+      fetch(`/api/chat/trending/?canal=${channelId}`)
+        .then(r=>r.json())
+        .then(data=>{
+          trendingList.innerHTML='';
+          data.forEach(item=>{
+            const li=document.createElement('li');
+            li.textContent=`${item.palavra} (${item.frequencia})`;
+            trendingList.appendChild(li);
+          });
+        });
+    }
+
+    if(isAdmin && gerarBtn){
+      gerarBtn.addEventListener('click', function(){
+        fetch(`/api/chat/channels/${channelId}/gerar-resumo/`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+          body: JSON.stringify({periodo:'diario'})
+        }).then(r=>{ if(r.ok){carregarResumos();} });
+      });
+    }
+
+    carregarResumos();
+    carregarTrending();
     function render(data, append){
       if(!append){ results.innerHTML=''; }
       if(data.results.length === 0 && !append){
