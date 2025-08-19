@@ -35,13 +35,16 @@ def generate_token(
     return raw_token
 
 
-def revoke_token(token_id: uuid.UUID) -> None:
-    token = ApiToken.objects.get(id=token_id, revoked_at__isnull=True)
+def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
+    token = ApiToken.all_objects.get(id=token_id)
+    if token.revoked_at:
+        return
     now = timezone.now()
     token.revoked_at = now
+    token.revogado_por = revogado_por
     token.deleted = True
     token.deleted_at = now
-    token.save(update_fields=["revoked_at", "deleted", "deleted_at"])
+    token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:
@@ -82,8 +85,15 @@ def create_invite_token(
 
 def find_token_by_code(codigo: str) -> TokenAcesso:
     """Retorna o ``TokenAcesso`` correspondente ao ``codigo`` ou levanta ``DoesNotExist``."""
-
-    for token in TokenAcesso.objects.all():
-        if token.check_codigo(codigo):
-            return token
-    raise TokenAcesso.DoesNotExist
+    # Busca otimizada utilizando o hash direto do código.
+    codigo_hash = hashlib.sha256(codigo.encode()).hexdigest()
+    try:
+        return TokenAcesso.objects.get(codigo_hash=codigo_hash)
+    except TokenAcesso.DoesNotExist:
+        # Compatibilidade com tokens antigos que armazenam o hash PBKDF2
+        # com ``codigo_salt``. Nesses casos, precisamos iterar e verificar
+        # manualmente.
+        for token in TokenAcesso.objects.exclude(codigo_salt=""):
+            if token.check_codigo(codigo):
+                return token
+        raise TokenAcesso.DoesNotExist

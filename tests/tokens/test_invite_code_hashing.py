@@ -1,3 +1,4 @@
+import hashlib
 import pytest
 
 from accounts.factories import UserFactory
@@ -17,4 +18,6 @@ def test_invite_code_hashing():
     assert not token.check_codigo("wrong")
     assert len(codigo) >= 32
     assert codigo not in token.codigo_hash
+    assert token.codigo_hash == hashlib.sha256(codigo.encode()).hexdigest()
+    assert len(token.codigo_hash) == 64
     assert "codigo" not in [f.name for f in TokenAcesso._meta.fields]

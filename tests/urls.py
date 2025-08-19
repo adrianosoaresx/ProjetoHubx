@@ -15,6 +15,16 @@ urlpatterns = [
         include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
     ),
 
+    path(
+        "api/organizacoes/",
+        include(("organizacoes.api_urls", "organizacoes_api"), namespace="organizacoes_api"),
+    ),
+
+    path(
+        "api/tokens/",
+        include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
+    ),
+
 
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 

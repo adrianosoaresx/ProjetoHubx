@@ -78,7 +78,7 @@ class ValidarCodigoAutenticacaoForm(forms.Form):
             raise forms.ValidationError("Código bloqueado")
         if auth.is_expirado():
             raise forms.ValidationError("Código expirado")
-        if codigo != auth.codigo:
+        if not auth.check_codigo(codigo):
             auth.tentativas += 1
             auth.save(update_fields=["tentativas"])
             raise forms.ValidationError("Código incorreto")

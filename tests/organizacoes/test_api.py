@@ -74,12 +74,34 @@ def test_inativar_reativar(api_client, root_user, faker_ptbr):
     org.refresh_from_db()
 
     assert org.deleted is False and org.deleted_at is None
-    assert (
-        OrganizacaoAtividadeLog.all_objects.filter(
-            organizacao=org, acao="inactivated"
-        ).exists()
-    )
+    assert OrganizacaoAtividadeLog.all_objects.filter(organizacao=org, acao="inactivated").exists()
 
+
+def test_patch_inativa_e_rate_limit(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="p")
+    url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
+    resp = api_client.patch(
+        url,
+        {"inativa": True, "rate_limit_multiplier": 2},
+        format="json",
+    )
+    assert resp.status_code == status.HTTP_200_OK
+    org.refresh_from_db()
+    assert org.inativa is True and org.inativada_em
+    assert org.rate_limit_multiplier == 2
+    resp = api_client.patch(url, {"inativa": False}, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+    org.refresh_from_db()
+    assert org.inativa is False and org.inativada_em is None
+
+
+def test_rate_limit_validation(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="r")
+    url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
+    resp = api_client.patch(url, {"rate_limit_multiplier": -1}, format="json")
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
 def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
@@ -160,11 +182,7 @@ def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
     assert resp.status_code == status.HTTP_200_OK
-    assert (
-        OrganizacaoChangeLog.all_objects.filter(
-            organizacao=org, campo_alterado="nome"
-        ).exists()
-    )
+    assert OrganizacaoChangeLog.all_objects.filter(organizacao=org, campo_alterado="nome").exists()
 
 
 def test_search_and_ordering(api_client, root_user, faker_ptbr):

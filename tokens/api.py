@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import time
 
+import sentry_sdk
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -46,6 +47,10 @@ class TokenViewSet(viewsets.GenericViewSet):
         ip = request.META.get("REMOTE_ADDR", "")
         target_role = request.data.get("tipo_destino")
         if not can_issue_invite(request.user, target_role):
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("module", "tokens")
+                scope.set_context("invite", {"target_role": target_role, "user_id": request.user.id})
+                sentry_sdk.capture_message("token_invite_denied", level="warning")
             log_audit(
                 request.user,
                 "token_invite_denied",
@@ -90,6 +95,18 @@ class TokenViewSet(viewsets.GenericViewSet):
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("module", "tokens")
+            scope.set_context("invite", {"token_id": str(token.id), "user_id": request.user.id})
+            sentry_sdk.capture_message("token_invite_created")
+        log_audit(
+            request.user,
+            "token_invite_created",
+            object_type="TokenAcesso",
+            object_id=str(token.id),
+            ip_hash=hash_ip(ip),
+            metadata={"target_role": target_role},
+        )
         token.codigo = codigo
         out = self.get_serializer(token)
         tokens_invites_created_total.inc()
@@ -106,11 +123,7 @@ class TokenViewSet(viewsets.GenericViewSet):
         ip = request.META.get("REMOTE_ADDR", "")
         code_hash = hashlib.sha256(codigo.encode()).hexdigest()
         rl1 = check_rate_limit(f"code:{code_hash}:{ip}")
-        rl2 = (
-            check_rate_limit(f"user:{request.user.id}:{ip}")
-            if request.user.is_authenticated
-            else None
-        )
+        rl2 = check_rate_limit(f"user:{request.user.id}:{ip}") if request.user.is_authenticated else None
         if not rl1.allowed or (rl2 and not rl2.allowed):
             tokens_rate_limited_total.inc()
             retry = rl1.retry_after if rl1.retry_after else (rl2.retry_after if rl2 else 0)

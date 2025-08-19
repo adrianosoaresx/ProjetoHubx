@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from .models import ApiToken
+from .models import ApiToken, ApiTokenLog
 
 
 class ApiTokenAuthentication(BaseAuthentication):
@@ -28,4 +28,11 @@ class ApiTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Usuário desativado")
         api_token.last_used_at = timezone.now()
         api_token.save(update_fields=["last_used_at"])
+        ApiTokenLog.objects.create(
+            token=api_token,
+            usuario=api_token.user,
+            acao=ApiTokenLog.Acao.USO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return (api_token.user, api_token)
