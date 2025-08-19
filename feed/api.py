@@ -413,11 +413,20 @@ class PostViewSet(viewsets.ModelViewSet):
         url_path="reacoes",
         permission_classes=[permissions.IsAuthenticated],
     )
-    def add_reaction(self, request, pk=None):
+    def toggle_reaction(self, request, pk=None):
         post = self.get_object()
         vote = request.data.get("vote")
         if vote not in Reacao.Tipo.values:
             return Response({"detail": "Voto inválido."}, status=status.HTTP_400_BAD_REQUEST)
+        reacao = Reacao.all_objects.filter(
+            post=post, user=request.user, vote=vote
+        ).first()
+        if reacao and not reacao.deleted:
+            reacao.deleted = True
+            reacao.save(update_fields=["deleted"])
+            _dec_counter(REACTIONS_TOTAL.labels(vote=vote))
+            cache.delete(f"post_reacoes:{post.id}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
         if is_ratelimited(
             request,
             group="feed_reactions_create",
@@ -427,18 +436,18 @@ class PostViewSet(viewsets.ModelViewSet):
             increment=True,
         ):
             return ratelimit_exceeded(request, None)
-        reacao, created = Reacao.all_objects.get_or_create(
-            post=post, user=request.user, vote=vote
-        )
-        if created or reacao.deleted:
+        if reacao:
             reacao.deleted = False
             reacao.save(update_fields=["deleted"])
-            REACTIONS_TOTAL.labels(vote=vote).inc()
-            cache.delete(f"post_reacoes:{post.id}")
-            return Response({"vote": vote}, status=status.HTTP_201_CREATED)
-        return Response({"vote": vote}, status=status.HTTP_200_OK)
+        else:
+            reacao = Reacao.all_objects.create(
+                post=post, user=request.user, vote=vote
+            )
+        REACTIONS_TOTAL.labels(vote=vote).inc()
+        cache.delete(f"post_reacoes:{post.id}")
+        return Response({"vote": vote}, status=status.HTTP_201_CREATED)
 
-    @add_reaction.mapping.get
+    @toggle_reaction.mapping.get
     def list_reactions(self, request, pk=None):
         post = self.get_object()
         cache_key = f"post_reacoes:{post.id}"
@@ -462,22 +471,6 @@ class PostViewSet(viewsets.ModelViewSet):
             )
         data = {**{"like": 0, "share": 0}, **data, "user_reaction": user_reaction}
         return Response(data)
-
-    @action(
-        detail=True,
-        methods=["delete"],
-        url_path="reacoes/(?P<vote>[^/.]+)",
-        permission_classes=[permissions.IsAuthenticated],
-    )
-    def remove_reaction(self, request, pk=None, vote=None):
-        post = self.get_object()
-        qs = Reacao.objects.filter(
-            post=post, user=request.user, vote=vote, deleted=False
-        )
-        if qs.exists():
-            qs.update(deleted=True)
-            cache.delete(f"post_reacoes:{post.id}")
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
