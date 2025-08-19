@@ -156,10 +156,7 @@ class ImportacaoPagamentosViewSet(mixins.ListModelMixin, mixins.RetrieveModelMix
     def get_queryset(self):  # type: ignore[override]
         qs = ImportacaoPagamentos.objects.select_related("usuario").all()
         user = self.request.user
-        permitido = {UserType.ADMIN}
-        tipo_fin = getattr(UserType, "FINANCEIRO", None)
-        if tipo_fin:
-            permitido.add(tipo_fin)
+        permitido = {UserType.ADMIN, UserType.FINANCEIRO}
         if user.user_type not in permitido:
             qs = qs.filter(usuario=user)
         params = self.request.query_params

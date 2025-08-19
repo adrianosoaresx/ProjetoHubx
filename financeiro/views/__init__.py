@@ -389,10 +389,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
 
 def _is_financeiro_or_admin(user) -> bool:
-    permitido = {UserType.ADMIN}
-    tipo_financeiro = getattr(UserType, "FINANCEIRO", None)
-    if tipo_financeiro:
-        permitido.add(tipo_financeiro)
+    permitido = {UserType.ADMIN, UserType.FINANCEIRO}
     return user.is_authenticated and user.user_type in permitido
 
 

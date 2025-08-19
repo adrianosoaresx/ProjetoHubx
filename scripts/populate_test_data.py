@@ -127,6 +127,19 @@ def create_users(orgs, nucleos):
         users.append(admin)
         creds.append((admin.username, admin.email, "1234Hubx!"))
 
+        financeiro = User.objects.create_user(
+            username=f"fin_{org.pk}",
+            email=f"fin_{org.pk}@example.com",
+            password="1234Hubx!",
+            user_type=UserType.FINANCEIRO,
+            organizacao=org,
+            nome_completo=fake.name(),
+            cpf=cpf.generate(),
+        )
+        ConfiguracaoConta.objects.create(user=financeiro)
+        users.append(financeiro)
+        creds.append((financeiro.username, financeiro.email, "1234Hubx!"))
+
         nucleo_org = random.choice([n for n in nucleos if n.organizacao_id == org.id])
         coord = User.objects.create_user(
             username=f"coord_{org.pk}",
