@@ -93,6 +93,27 @@ def test_cliente_dashboard_view(client, cliente_user):
     assert "Dashboard Cliente" in resp.content.decode()
 
 
+@pytest.mark.parametrize(
+    "user_fixture, url_name",
+    [
+        ("root_user", "dashboard:root"),
+        ("admin_user", "dashboard:admin"),
+        ("gerente_user", "dashboard:gerente"),
+    ],
+)
+def test_can_export_true_for_privileged_users(client, request, user_fixture, url_name):
+    user = request.getfixturevalue(user_fixture)
+    client.force_login(user)
+    resp = client.get(reverse(url_name))
+    assert resp.context["can_export"] is True
+
+
+def test_can_export_false_for_cliente(client, cliente_user):
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:cliente"))
+    assert resp.context["can_export"] is False
+
+
 def test_base_view_accepts_params(monkeypatch, client, admin_user):
     client.force_login(admin_user)
 

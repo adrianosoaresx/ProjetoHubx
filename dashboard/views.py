@@ -174,6 +174,11 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context["periodo"] = getattr(self, "periodo", "mensal")
         context["escopo"] = getattr(self, "escopo", "auto")
         context["filtros"] = getattr(self, "filters", {})
+        context["can_export"] = self.request.user.user_type in {
+            UserType.ROOT,
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+        }
         metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
         metricas = metricas or [
             "num_users",
