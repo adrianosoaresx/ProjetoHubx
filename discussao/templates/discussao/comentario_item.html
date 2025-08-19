@@ -5,6 +5,9 @@
       {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"SHORT_DATETIME_FORMAT" }}
     </div>
     <div class="flex items-center gap-2">
+    {% if comentario.pode_editar %}
+      <a href="{% url 'discussao:resposta_editar' comentario.id %}" class="text-blue-600 text-xs">{% trans "Editar" %}</a>
+    {% endif %}
     {% if user == comentario.autor or user.get_tipo_usuario in ['admin','coordenador','root'] %}
       <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
         {% csrf_token %}
