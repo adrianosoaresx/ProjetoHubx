@@ -269,24 +269,24 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
-    """Inscreve ou remove o usuário do evento."""
+    """Cancela a inscrição do usuário no evento."""
 
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         if request.user.user_type == UserType.ADMIN:
-            messages.error(request, _("Administradores não podem se inscrever em eventos."))  # pragma: no cover
+            messages.error(
+                request, _("Administradores não podem se inscrever em eventos.")
+            )  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
-        inscricao, created = InscricaoEvento.objects.get_or_create(user=request.user, evento=evento)
-        if not created and inscricao.status != "cancelada":
-            try:
-                inscricao.cancelar_inscricao()
-            except ValueError as exc:
-                messages.error(request, str(exc))
-            else:
-                messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+        inscricao = get_object_or_404(
+            InscricaoEvento, user=request.user, evento=evento
+        )
+        try:
+            inscricao.cancelar_inscricao()
+        except ValueError as exc:
+            messages.error(request, str(exc))
         else:
-            inscricao.confirmar_inscricao()
-            messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+            messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
@@ -436,16 +436,38 @@ class InscricaoEventoListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class InscricaoEventoCreateView(LoginRequiredMixin, CreateView):
+class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
     template_name = "agenda/inscricao_form.html"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.evento = get_object_or_404(
+            _queryset_por_organizacao(request), pk=kwargs["pk"]
+        )
+        if request.user.user_type == UserType.ADMIN:
+            messages.error(
+                request, _("Administradores não podem se inscrever em eventos.")
+            )
+            return redirect("agenda:evento_detalhe", pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["evento"] = self.evento
+        return context
+
     def form_valid(self, form):
         form.instance.user = self.request.user
+        form.instance.evento = self.evento
         response = super().form_valid(form)
+        self.object.confirmar_inscricao()
+        messages.success(self.request, _("Inscrição realizada."))
         check_achievements(self.request.user)
         return response
+
+    def get_success_url(self):
+        return reverse_lazy("agenda:evento_detalhe", kwargs={"pk": self.evento.pk})
 
 
 class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
