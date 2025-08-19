@@ -30,6 +30,11 @@ urlpatterns = [
         include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
     ),
 
+    path(
+        "api/accounts/",
+        include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
+    ),
+
 
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 

@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import AccountToken, SecurityEvent
+from tokens.models import TOTPDevice
 
 User = get_user_model()
 
@@ -26,7 +27,8 @@ def test_security_events_flow():
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitado").exists()
 
     # disable 2FA
-    resp = client.post(reverse("accounts_api:account-disable-2fa"))
+    disable_code = pyotp.TOTP(secret).now()
+    resp = client.post(reverse("accounts_api:account-disable-2fa"), {"code": disable_code})
     assert resp.status_code == 200
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()
 
@@ -44,6 +46,9 @@ def test_security_events_flow():
 @pytest.mark.django_db
 def test_reset_password_logs_security_event():
     user = User.objects.create_user(email="reset@example.com", username="r", password="old")
+    user.failed_login_attempts = 3
+    user.lock_expires_at = timezone.now() + timezone.timedelta(minutes=30)
+    user.save()
     token = AccountToken.objects.create(
         usuario=user,
         tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -53,4 +58,27 @@ def test_reset_password_logs_security_event():
     url = reverse("accounts_api:account-reset-password")
     resp = client.post(url, {"token": token.codigo, "password": "newpass"})
     assert resp.status_code == 200
+    user.refresh_from_db()
+    assert user.failed_login_attempts == 0
+    assert user.lock_expires_at is None
     assert SecurityEvent.objects.filter(usuario=user, evento="senha_redefinida").exists()
+
+
+@pytest.mark.django_db
+def test_resend_confirmation_logs_security_event():
+    user = User.objects.create_user(email="inactive@example.com", username="i", is_active=False)
+    client = APIClient()
+    client.force_authenticate(user=user)
+    resp = client.post(reverse("accounts_api:account-resend-confirmation"))
+    assert resp.status_code == 204
+    assert SecurityEvent.objects.filter(usuario=user, evento="resend_confirmation").exists()
+
+
+@pytest.mark.django_db
+def test_disable_2fa_requires_code():
+    user = User.objects.create_user(email="tfa@example.com", username="t", password="pass", two_factor_enabled=True, two_factor_secret=pyotp.random_base32())
+    TOTPDevice.objects.create(usuario=user, secret=user.two_factor_secret, confirmado=True)
+    client = APIClient()
+    client.force_authenticate(user=user)
+    resp = client.post(reverse("accounts_api:account-disable-2fa"))
+    assert resp.status_code == 400

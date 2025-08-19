@@ -38,7 +38,8 @@ class AccountViewSet(viewsets.GenericViewSet):
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
         token.usuario.is_active = True
-        token.usuario.save(update_fields=["is_active"])
+        token.usuario.email_confirmed = True
+        token.usuario.save(update_fields=["is_active", "email_confirmed"])
         SecurityEvent.objects.create(
             usuario=token.usuario,
             evento="email_confirmado",
@@ -58,6 +59,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             ip_gerado=request.META.get("REMOTE_ADDR"),
         )
         send_confirmation_email.delay(token.id)
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="resend_confirmation",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
         return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="request-password-reset")
@@ -88,8 +94,10 @@ class AccountViewSet(viewsets.GenericViewSet):
         if token.expires_at < timezone.now() or token.used_at:
             return Response({"detail": _("Token inválido ou expirado.")}, status=400)
         user = token.usuario
+        user.failed_login_attempts = 0
+        user.lock_expires_at = None
         user.set_password(new_password)
-        user.save(update_fields=["password"])
+        user.save(update_fields=["password", "failed_login_attempts", "lock_expires_at"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="senha_redefinida",
@@ -136,6 +144,11 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="disable-2fa")
     def disable_2fa(self, request):
         user = request.user
+        code = request.data.get("code")
+        if not code:
+            return Response({"detail": _("Código obrigatório.")}, status=400)
+        if not user.two_factor_secret or not pyotp.TOTP(user.two_factor_secret).verify(code):
+            return Response({"detail": _("Código inválido.")}, status=400)
         user.two_factor_enabled = False
         user.two_factor_secret = None
         user.save(update_fields=["two_factor_enabled", "two_factor_secret"])
