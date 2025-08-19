@@ -11,7 +11,13 @@ from services.nucleos import user_belongs_to_nucleo
 
 from .api import notify_users
 from .metrics import chat_message_latency_seconds
-from .models import ChatChannel, ChatMessage, ChatMessageReaction, ChatParticipant
+from .models import (
+    ChatAttachment,
+    ChatChannel,
+    ChatMessage,
+    ChatMessageReaction,
+    ChatParticipant,
+)
 from .services import (
     adicionar_reacao,
     enviar_mensagem,
@@ -82,6 +88,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     )
                 except ChatMessage.DoesNotExist:
                     reply_to = None
+            if message_type in {"image", "video", "file"}:
+                if not attachment_id:
+                    return
+                exists = await database_sync_to_async(
+                    ChatAttachment.objects.filter(id=attachment_id).exists
+                )()
+                if not exists:
+                    return
             start = time.monotonic()
             if self.channel.e2ee_habilitado:
                 if conteudo:
@@ -126,6 +140,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 "reactions": msg.reaction_counts(),
                 "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
             }
+            if attachment_id:
+                payload["attachment_id"] = str(attachment_id)
             if self.channel.e2ee_habilitado:
                 payload["conteudo_cifrado"] = msg.conteudo_cifrado
                 payload["alg"] = msg.alg

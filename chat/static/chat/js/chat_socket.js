@@ -235,7 +235,9 @@
             if(remetente === currentUser){ div.classList.add('self'); }
             if(pinned){ div.classList.add('pinned'); }
             let content = conteudo;
-            if(tipo === 'image'){
+            if(['image','video','file'].includes(tipo) && !conteudo){
+                content = `<div class="chat-file">${t('attachmentRemoved','Arquivo removido')}</div>`;
+            }else if(tipo === 'image'){
                 content = `<img src="${conteudo}" alt="imagem" class="w-full max-w-xs h-auto rounded">`;
             }else if(tipo === 'video'){
                 content = `<video src="${conteudo}" controls class="w-full max-w-xs h-auto" aria-label="${t('videoPlayer','Player de vídeo')}"></video>`;
@@ -284,7 +286,12 @@
         chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
             if(data.remetente === currentUser){
-                const idx = pending.findIndex(p=>p.tipo===data.tipo && p.conteudo===data.conteudo);
+                const idx = pending.findIndex(p=>{
+                    if(data.attachment_id && p.attachment_id){
+                        return p.attachment_id === data.attachment_id;
+                    }
+                    return p.tipo===data.tipo && p.conteudo===data.conteudo;
+                });
                 if(idx!==-1){
                     const placeholder = pending[idx];
                     renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions);
@@ -340,9 +347,9 @@
                     const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, []);
                     div.classList.add('pending');
                     messages.appendChild(div);
-                    pending.push({tipo:data.tipo,conteudo:data.url,elem:div});
+                    pending.push({tipo:data.tipo,conteudo:data.url,elem:div,attachment_id:data.attachment_id});
                     scrollToBottom();
-                    chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url}));
+                    chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url, attachment_id:data.attachment_id}));
                 })
                 .catch(()=>{ alert(t('uploadError','Erro no upload')); })
                 .finally(()=>{
