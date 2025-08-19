@@ -1,4 +1,8 @@
+
 import pytest
+
+import hashlib
+
 from datetime import timedelta
 
 import hashlib
@@ -36,13 +40,16 @@ def test_api_token_authentication_and_revocation():
     assert client.get(url, HTTP_USER_AGENT="ua-test").status_code == 200
 
     token = ApiToken.objects.get(token_hash=token_hash)
+
     usage_log = ApiTokenLog.objects.get(token=token, acao="uso")
     assert usage_log.user_agent == "ua-test"
     assert usage_log.ip == "127.0.0.1"
     revoke_token(token.id)
+
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.deleted is True
     assert token_db.revoked_at is not None
+    assert token_db.revogado_por == user
     resp = client.get(url)
     assert resp.status_code in {status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN}
 
@@ -87,4 +94,9 @@ def test_api_view_create_and_destroy():
         HTTP_USER_AGENT="ua-delete",
     )
     assert del_resp.status_code == status.HTTP_204_NO_CONTENT
+
     assert ApiTokenLog.objects.filter(token=token, acao="revogacao").exists()
+
+    token_db = ApiToken.all_objects.get(id=token_id)
+    assert token_db.revogado_por == user
+

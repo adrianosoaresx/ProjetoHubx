@@ -71,9 +71,10 @@ def test_gerar_codigo_autenticacao_form_save():
 
 def test_validar_codigo_autenticacao_form_flow():
     user = UserFactory()
-    codigo = CodigoAutenticacao.objects.create(
-        usuario=user, codigo="123456", expira_em=timezone.now() + timezone.timedelta(minutes=10)
-    )
+    codigo = CodigoAutenticacao(usuario=user)
+    codigo.set_codigo("123456")
+    codigo.expira_em = timezone.now() + timezone.timedelta(minutes=10)
+    codigo.save()
 
     form_wrong = ValidarCodigoAutenticacaoForm({"codigo": "000000"}, usuario=user)
     assert not form_wrong.is_valid()
@@ -94,16 +95,16 @@ def test_validar_codigo_autenticacao_form_expirado_bloqueado():
     user = UserFactory()
     codigo = CodigoAutenticacao.objects.create(usuario=user)
     codigo.expira_em = timezone.now() - timezone.timedelta(seconds=1)
-    codigo.codigo = "654321"
-    codigo.save(update_fields=["expira_em", "codigo"])
+    codigo.set_codigo("654321")
+    codigo.save(update_fields=["expira_em", "codigo_hash", "codigo_salt"])
     form = ValidarCodigoAutenticacaoForm({"codigo": codigo.codigo}, usuario=user)
     assert not form.is_valid()
     assert "expirado" in form.errors["codigo"][0]
 
     codigo = CodigoAutenticacao.objects.create(usuario=user)
     codigo.expira_em = timezone.now() + timezone.timedelta(minutes=10)
-    codigo.codigo = "222222"
-    codigo.save(update_fields=["expira_em", "codigo"])
+    codigo.set_codigo("222222")
+    codigo.save(update_fields=["expira_em", "codigo_hash", "codigo_salt"])
     for _ in range(4):
         form = ValidarCodigoAutenticacaoForm({"codigo": "000000"}, usuario=user)
         assert not form.is_valid()

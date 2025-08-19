@@ -14,7 +14,7 @@ class TokenAcessoAdmin(admin.ModelAdmin):
         "data_expiracao",
     )
     list_filter = ("estado", "tipo_destino")
-    search_fields = ("codigo",)
+    search_fields = ("codigo_hash",)
 
 
 @admin.register(CodigoAutenticacao)

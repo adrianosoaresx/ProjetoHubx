@@ -46,6 +46,7 @@ class ApiTokenViewSet(viewsets.ViewSet):
         token = get_object_or_404(ApiToken, pk=pk)
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
         revoke_token(token.id)
         ApiTokenLog.objects.create(
             token=token,
@@ -54,4 +55,5 @@ class ApiTokenViewSet(viewsets.ViewSet):
             ip=request.META.get("REMOTE_ADDR", ""),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
+
         return Response(status=status.HTTP_204_NO_CONTENT)

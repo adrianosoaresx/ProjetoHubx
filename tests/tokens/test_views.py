@@ -73,9 +73,10 @@ def test_gerar_codigo_autenticacao_view(client):
 def test_validar_codigo_autenticacao_view(client):
     user = UserFactory()
     _login(client, user)
-    codigo = CodigoAutenticacao.objects.create(
-        usuario=user, codigo="123456", expira_em=timezone.now() + timezone.timedelta(minutes=10)
-    )
+    codigo = CodigoAutenticacao(usuario=user)
+    codigo.set_codigo("123456")
+    codigo.expira_em = timezone.now() + timezone.timedelta(minutes=10)
+    codigo.save()
     resp = client.post(reverse("tokens:validar_codigo"), {"codigo": codigo.codigo})
     assert resp.status_code == 200
     codigo.refresh_from_db()
