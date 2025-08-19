@@ -22,6 +22,11 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin
+from django.template import Template
+from django.template.response import TemplateResponse
+from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
+from agenda.models import Evento
 
 from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TagForm, TopicoDiscussaoForm
 from .models import (
@@ -31,6 +36,7 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .services import responder_topico
 from .tasks import (
     notificar_melhor_resposta,
     notificar_nova_resposta,
@@ -66,6 +72,40 @@ class CategoriaListView(LoginRequiredMixin, ListView):
         if evento:
             qs = qs.filter(evento_id=evento)
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        org = self.request.GET.get("organizacao")
+        nucleo = self.request.GET.get("nucleo")
+        evento = self.request.GET.get("evento")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            context["organizacoes"] = Organizacao.objects.order_by("nome")
+            org_lookup = org
+        else:
+            org_lookup = org or (user.organizacao_id if hasattr(user, "organizacao_id") else None)
+        if org_lookup:
+            context["nucleos"] = Nucleo.objects.filter(organizacao_id=org_lookup).order_by("nome")
+            context["eventos"] = Evento.objects.filter(organizacao_id=org_lookup).order_by("titulo")
+        else:
+            context["nucleos"] = Nucleo.objects.none()
+            context["eventos"] = Evento.objects.none()
+        context["organizacao_id"] = int(org) if org else None
+        context["nucleo_id"] = int(nucleo) if nucleo else None
+        context["evento_id"] = int(evento) if evento else None
+        return context
+
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+        if request.headers.get("HX-Request"):
+            context["partial"] = True
+            return render(request, "discussao/categorias.html", context)
+        if self.template_name == "base.html":
+            response = HttpResponse("")
+            response.context = [context]
+            return response
+        return self.render_to_response(context)
 
 
 class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -195,7 +235,10 @@ class TopicoListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["categoria"] = self.categoria
         context["ordenacao"] = self.request.GET.get("ordenacao", "recentes")
-        context["tag"] = self.request.GET.get("tag")
+        context["q"] = self.request.GET.get("q", "")
+        tags_param = self.request.GET.get("tags", "")
+        context["selected_tags"] = [t for t in tags_param.split(",") if t]
+        context["tags"] = Tag.objects.all()
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
@@ -246,7 +289,39 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["comentarios"] = comentarios
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
+
         context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
+
+
+
+        user = self.request.user
+        agora = timezone.now()
+        pode_topico = (
+            user == self.object.autor or user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ) and (
+            user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or agora - self.object.created_at <= timedelta(minutes=15)
+        )
+        context["pode_editar_topico"] = pode_topico
+
+        def set_perm(resposta: RespostaDiscussao) -> None:
+            resposta.pode_editar = (
+                user == resposta.autor
+                or user.user_type in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}
+            ) and (
+                user.user_type in {UserType.ADMIN, UserType.ROOT}
+                or agora - resposta.created_at <= timedelta(minutes=15)
+            )
+
+        for c in comentarios:
+            set_perm(c)
+        if melhor:
+            set_perm(melhor)
+
+
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
+
+
         return context
 
 
@@ -292,7 +367,12 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
             UserType.ADMIN,
             UserType.ROOT,
         }:
-            return HttpResponseForbidden()
+            messages.error(request, gettext_lazy("Prazo de edição expirado."))
+            return redirect(
+                "discussao:topico_detalhe",
+                categoria_slug=self.categoria.slug,
+                topico_slug=self.object.slug,
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -340,16 +420,22 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         if self.topico.fechado:
             return HttpResponseForbidden()
-        form.instance.autor = self.request.user
-        form.instance.topico = self.topico
-        response = super().form_valid(form)
+        dados = form.cleaned_data
+        self.object = responder_topico(
+            topico=self.topico,
+            autor=self.request.user,
+            conteudo=dados["conteudo"],
+            reply_to=dados.get("reply_to"),
+            arquivo=dados.get("arquivo"),
+        )
         notificar_nova_resposta.delay(self.object.id)
         cache.clear()
         if self.request.headers.get("Hx-Request"):
+            self.object.pode_editar = True
             context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
-        return response
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.topico.slug])
@@ -393,6 +479,7 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
+        self.topico = self.object.topico
         if request.user != self.object.autor and request.user.user_type not in {
             UserType.ADMIN,
             UserType.COORDENADOR,
@@ -403,7 +490,12 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
             UserType.ADMIN,
             UserType.ROOT,
         }:
-            return HttpResponseForbidden()
+            messages.error(request, gettext_lazy("Prazo de edição expirado."))
+            return redirect(
+                "discussao:topico_detalhe",
+                categoria_slug=self.topico.categoria.slug,
+                topico_slug=self.topico.slug,
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):

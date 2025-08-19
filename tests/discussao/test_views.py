@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.messages import get_messages
 from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
@@ -280,7 +281,34 @@ def test_resposta_edicao_limite(client, nucleado_user, categoria, topico):
     url = reverse("discussao:resposta_editar", args=[r.id])
     with freeze_time("2025-07-10 12:16:00"):
         resp = client.post(url, {"conteudo": "b"})
-    assert resp.status_code == 403
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith(
+        reverse("discussao:topico_detalhe", args=[categoria.slug, topico.slug])
+    )
+    msgs = [str(m) for m in get_messages(resp.wsgi_request)]
+    assert any("Prazo de edição expirado" in m for m in msgs)
+    r.refresh_from_db()
+    assert r.conteudo == "a"
+
+
+def test_topico_edicao_limite(client, associado_user, categoria):
+    with freeze_time("2025-07-10 12:00:00"):
+        t = TopicoDiscussao.objects.create(
+            categoria=categoria, titulo="T", conteudo="c", autor=associado_user, publico_alvo=0
+        )
+    client.force_login(associado_user)
+    url = reverse("discussao:topico_editar", args=[categoria.slug, t.slug])
+    data = {"categoria": categoria.pk, "titulo": "Edit", "conteudo": "c", "publico_alvo": 0}
+    with freeze_time("2025-07-10 12:16:00"):
+        resp = client.post(url, data=data)
+    assert resp.status_code == 302
+    assert resp.headers["Location"].endswith(
+        reverse("discussao:topico_detalhe", args=[categoria.slug, t.slug])
+    )
+    msgs = [str(m) for m in get_messages(resp.wsgi_request)]
+    assert any("Prazo de edição expirado" in m for m in msgs)
+    t.refresh_from_db()
+    assert t.titulo == "T"
 
 
 def test_toggle_fechado(client, nucleado_user, admin_user, categoria):

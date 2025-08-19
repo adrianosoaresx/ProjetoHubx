@@ -16,6 +16,9 @@
       {% endif %}
     </h1>
     <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:SHORT_DATETIME_FORMAT }}</p>
+    {% if pode_editar_topico %}
+      <a href="{% url 'discussao:topico_editar' topico.categoria.slug topico.slug %}" class="text-sm text-blue-600">{% trans "Editar" %}</a>
+    {% endif %}
     {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
     <form method="post" hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-container" hx-swap="outerHTML" class="mt-2">
       {% csrf_token %}
@@ -63,10 +66,12 @@
     </div>
     {% endif %}
     {% if not topico.fechado %}
-    <form method="post" hx-post="{% url 'discussao:resposta_criar' topico.categoria.slug topico.slug %}" hx-target="#lista-comentarios" hx-swap="beforeend" class="space-y-4 mt-6">
+    <form method="post" enctype="multipart/form-data" hx-post="{% url 'discussao:resposta_criar' topico.categoria.slug topico.slug %}" hx-target="#lista-comentarios" hx-swap="beforeend" class="space-y-4 mt-6">
       {% csrf_token %}
+      <input type="hidden" name="reply_to" id="reply_to" />
       <label for="id_conteudo" class="block text-sm font-medium text-neutral-700">{% trans "Comentar" %}</label>
-      <textarea name="conteudo" required class="form-textarea"></textarea>
+      <textarea id="id_conteudo" name="conteudo" required class="form-textarea"></textarea>
+      <input type="file" name="arquivo" />
       <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl">{% trans "Comentar" %}</button>
     </form>
     {% if user == topico.autor or user.get_tipo_usuario in ['admin','root'] %}
