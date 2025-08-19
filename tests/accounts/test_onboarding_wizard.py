@@ -24,7 +24,7 @@ def test_onboarding_wizard_flow(client, mocker):
     assert resp.status_code == 302
     resp = client.post(reverse("accounts:nome"), {"nome": "Wizard Test"})
     assert resp.status_code == 302
-    resp = client.post(reverse("accounts:cpf"), {"cpf": "123.456.789-00"})
+    resp = client.post(reverse("accounts:cpf"), {"cpf": "123.456.789-09"})
     assert resp.status_code == 302
     resp = client.post(reverse("accounts:email"), {"email": "wizard@example.com"})
     assert resp.status_code == 302

@@ -97,7 +97,7 @@ def test_confirmation_token_default_expiry_and_invalidation(client):
         form = CustomUserCreationForm(
             data={
                 "email": "time@example.com",
-                "cpf": "12345678901",
+                "cpf": "39053344705",
                 "password1": "StrongPass1!",
                 "password2": "StrongPass1!",
             }

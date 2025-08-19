@@ -12,7 +12,7 @@ def test_email_change_generates_confirmation_token(client):
         email="old@example.com",
         username="u",
         password="123",
-        cpf="123.456.789-00",
+        cpf="529.982.247-25",
     )
     client.force_login(user)
     resp = client.post(
@@ -21,7 +21,7 @@ def test_email_change_generates_confirmation_token(client):
             "nome_completo": "Nome",
             "username": "u",
             "email": "new@example.com",
-            "cpf": "123.456.789-00",
+            "cpf": "529.982.247-25",
             "biografia": "",
             "fone": "",
             "whatsapp": "",

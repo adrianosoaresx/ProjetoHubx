@@ -13,7 +13,7 @@ def test_user_creation_creates_inactive_and_token():
     form = CustomUserCreationForm(
         data={
             "email": "new@example.com",
-            "cpf": "12345678901",
+            "cpf": "39053344705",
             "password1": "StrongPass1!",
             "password2": "StrongPass1!",
         }
@@ -33,7 +33,7 @@ def test_user_creation_unique_email():
     form = CustomUserCreationForm(
         data={
             "email": "dup@example.com",
-            "cpf": "12345678901",
+            "cpf": "39053344705",
             "password1": "StrongPass1!",
             "password2": "StrongPass1!",
         }

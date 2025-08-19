@@ -9,7 +9,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
@@ -18,12 +17,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from core.fields import EncryptedCharField, URLField
 from core.models import SoftDeleteModel, TimeStampedModel
 
-# ───────────────────────────────────────────────────────────────
-#  Validador de CPF simples (###.###.###-## ou ###########)
-cpf_validator = RegexValidator(
-    regex=r"^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$",
-    message="Digite um CPF válido no formato 000.000.000-00.",
-)
+from .validators import cpf_validator
 
 
 def generate_secure_token() -> str:

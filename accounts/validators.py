@@ -30,3 +30,16 @@ class ComplexPasswordValidator:
         return _(
             "A senha deve conter pelo menos 8 caracteres, incluindo letras, números e caracteres especiais."
         )
+
+
+def cpf_validator(value: str) -> None:
+    """Valida o CPF utilizando os dígitos verificadores oficiais."""
+    cpf = re.sub(r"\D", "", value or "")
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        raise ValidationError(_("Digite um CPF válido no formato 000.000.000-00."))
+
+    for i in range(9, 11):
+        soma = sum(int(cpf[num]) * ((i + 1) - num) for num in range(i))
+        digito = ((soma * 10) % 11) % 10
+        if digito != int(cpf[i]):
+            raise ValidationError(_("Digite um CPF válido no formato 000.000.000-00."))
