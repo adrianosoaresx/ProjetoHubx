@@ -31,6 +31,7 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .services import responder_topico
 from .tasks import (
     notificar_melhor_resposta,
     notificar_nova_resposta,
@@ -247,6 +248,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
+
         user = self.request.user
         agora = timezone.now()
         pode_topico = (
@@ -270,6 +272,9 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
             set_perm(c)
         if melhor:
             set_perm(melhor)
+
+
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
 
         return context
 
@@ -369,9 +374,14 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         if self.topico.fechado:
             return HttpResponseForbidden()
-        form.instance.autor = self.request.user
-        form.instance.topico = self.topico
-        response = super().form_valid(form)
+        dados = form.cleaned_data
+        self.object = responder_topico(
+            topico=self.topico,
+            autor=self.request.user,
+            conteudo=dados["conteudo"],
+            reply_to=dados.get("reply_to"),
+            arquivo=dados.get("arquivo"),
+        )
         notificar_nova_resposta.delay(self.object.id)
         cache.clear()
         if self.request.headers.get("Hx-Request"):
@@ -379,7 +389,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
             context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
-        return response
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.topico.slug])

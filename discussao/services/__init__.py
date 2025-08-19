@@ -4,6 +4,7 @@ from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
@@ -48,8 +49,9 @@ def responder_topico(
     autor: User,
     conteudo: str,
     reply_to: RespostaDiscussao | None = None,
-    arquivo: Any | None = None,
+    arquivo: UploadedFile | None = None,
 ) -> RespostaDiscussao:
+    """Cria uma resposta para um tópico, permitindo respostas encadeadas e upload de arquivos."""
     if topico.fechado:
         raise DiscussaoError(_("Tópico fechado para novas respostas."))
     return RespostaDiscussao.objects.create(

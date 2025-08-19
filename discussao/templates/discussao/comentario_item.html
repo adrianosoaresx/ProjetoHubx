@@ -21,6 +21,20 @@
         <button type="submit" class="text-green-600 text-xs">{% trans "Marcar como resolvido" %}</button>
       </form>
     {% endif %}
+
+    {% if not topico.fechado %}
+      <button type="button" class="text-primary-600 text-xs" hx-on:click="document.getElementById('reply_to').value='{{ comentario.id }}'; document.getElementById('id_conteudo').focus();">
+        {% trans "Responder" %}
+      </button>
+    {% endif %}
+
+      <div class="flex items-center gap-1">
+        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos">&#9650;</button>
+        <span id="comment-score-{{ comentario.id }}">{{ comentario.score }}</span>
+        <span class="text-xs">(<span id="comment-votes-{{ comentario.id }}">{{ comentario.num_votos }}</span>)</span>
+        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos">&#9660;</button>
+      </div>
+
     </div>
   </header>
   <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
