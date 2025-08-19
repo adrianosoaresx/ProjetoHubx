@@ -1,6 +1,6 @@
 {% if partial %}
   {% for comentario in comentarios %}
-    {% include 'discussao/comentario_item.html' with comentario=comentario user=user topico=topico %}
+    {% include 'discussao/comentario_item.html' with comentario=comentario user=user topico=topico resposta_content_type_id=resposta_content_type_id %}
   {% endfor %}
 {% else %}
 {% extends 'base.html' %}
@@ -36,10 +36,10 @@
   <section aria-labelledby="comentarios" class="space-y-4">
     <h2 id="comentarios" class="text-xl font-semibold">{% trans "Coment\u00e1rios" %}</h2>
     {% if melhor_resposta %}
-      {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True %}
+      {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True resposta_content_type_id=resposta_content_type_id %}
     {% endif %}
     <div id="lista-comentarios">
-      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user only %}
+      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user resposta_content_type_id=resposta_content_type_id only %}
     </div>
     {% if comentarios.has_previous or comentarios.has_next %}
     <div class="flex justify-center gap-3 text-sm">
