@@ -321,6 +321,9 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):  # type: ignore[override]
         response = super().delete(request, *args, **kwargs)
         cache.clear()
+        if request.headers.get("Hx-Request"):
+            return HttpResponse("")
+        messages.success(request, gettext_lazy("Tópico removido"))
         return response
 
 
@@ -335,6 +338,11 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         if request.user.user_type != UserType.ROOT and request.user.organizacao != self.categoria.organizacao:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["topico"] = self.topico
+        return context
 
     def form_valid(self, form):
         if self.topico.fechado:
