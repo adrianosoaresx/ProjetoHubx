@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     "financeiro.apps.FinanceiroConfig",
     "notificacoes.apps.NotificacoesConfig",
     "audit",
+    "webhooks.apps.WebhooksConfig",
 ]
 
 MIDDLEWARE = [
