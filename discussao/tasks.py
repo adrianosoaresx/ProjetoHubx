@@ -3,14 +3,9 @@ from __future__ import annotations
 import structlog
 from celery import shared_task  # type: ignore
 
-import structlog
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import RespostaDiscussao, TopicoDiscussao
-
-
-logger = structlog.get_logger(__name__)
-
 
 logger = structlog.get_logger(__name__)
 
