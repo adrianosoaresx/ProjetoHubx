@@ -20,6 +20,7 @@ from .models import DashboardFilter, DashboardCustomMetric
 from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
 from .services import DashboardMetricsService, DashboardService, check_achievements
 from .custom_metrics import DashboardCustomMetricService
+from core.permissions import IsModeratorUser
 
 
 
@@ -146,10 +147,16 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
         check_achievements(self.request.user)
 
 
-class DashboardCustomMetricViewSet(viewsets.ReadOnlyModelViewSet):
+class DashboardCustomMetricViewSet(viewsets.ModelViewSet):
     queryset = DashboardCustomMetric.objects.all()
     serializer_class = DashboardCustomMetricSerializer
-    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):  # type: ignore[override]
+        if self.action in {"list", "retrieve", "execute"}:
+            self.permission_classes = [permissions.IsAuthenticated]
+        else:
+            self.permission_classes = [IsModeratorUser]
+        return super().get_permissions()
 
     @action(detail=True, methods=["get"])
     def execute(self, request, pk=None):

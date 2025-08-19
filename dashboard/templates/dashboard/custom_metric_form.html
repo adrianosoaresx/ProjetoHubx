@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Métrica personalizada' %}{% endblock %}
+{% block content %}
+<main class="max-w-md mx-auto p-4" role="main">
+  <h1 class="text-2xl font-semibold mb-4">{% trans 'Métrica personalizada' %}</h1>
+  <form method="post" class="space-y-4" aria-label="{% trans 'Formulário de métrica personalizada' %}">
+    {% csrf_token %}
+    <div>
+      <label for="id_code" class="block text-sm font-medium text-neutral-700">{% trans 'Código' %}</label>
+      {{ form.code }}
+    </div>
+    <div>
+      <label for="id_nome" class="block text-sm font-medium text-neutral-700">{% trans 'Nome' %}</label>
+      {{ form.nome }}
+    </div>
+    <div>
+      <label for="id_descricao" class="block text-sm font-medium text-neutral-700">{% trans 'Descrição' %}</label>
+      {{ form.descricao }}
+    </div>
+    <div>
+      <label for="id_query_spec" class="block text-sm font-medium text-neutral-700">{% trans 'Query spec' %}</label>
+      {{ form.query_spec }}
+    </div>
+    <div>
+      <label for="id_escopo" class="block text-sm font-medium text-neutral-700">{% trans 'Escopo' %}</label>
+      {{ form.escopo }}
+    </div>
+    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded" aria-label="{% trans 'Salvar métrica' %}">{% trans 'Salvar' %}</button>
+  </form>
+</main>
+{% endblock %}
+

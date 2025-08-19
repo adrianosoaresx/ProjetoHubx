@@ -40,10 +40,16 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
-from .forms import DashboardConfigForm, DashboardFilterForm, DashboardLayoutForm
+from .forms import (
+    DashboardConfigForm,
+    DashboardCustomMetricForm,
+    DashboardFilterForm,
+    DashboardLayoutForm,
+)
 from .models import (
     Achievement,
     DashboardConfig,
+    DashboardCustomMetric,
     DashboardFilter,
     DashboardLayout,
     UserAchievement,
@@ -860,3 +866,34 @@ class DashboardLayoutSaveView(LoginRequiredMixin, View):
                 ip_address=request.META.get("REMOTE_ADDR", ""),
             )
         return HttpResponse(status=204)
+
+
+class DashboardCustomMetricListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+    model = DashboardCustomMetric
+    template_name = "dashboard/custom_metric_list.html"
+
+
+class DashboardCustomMetricCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+    model = DashboardCustomMetric
+    form_class = DashboardCustomMetricForm
+    template_name = "dashboard/custom_metric_form.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:custom-metrics")
+
+
+class DashboardCustomMetricUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
+    model = DashboardCustomMetric
+    form_class = DashboardCustomMetricForm
+    template_name = "dashboard/custom_metric_form.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:custom-metrics")
+
+
+class DashboardCustomMetricDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = DashboardCustomMetric
+    template_name = "dashboard/custom_metric_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse("dashboard:custom-metrics")

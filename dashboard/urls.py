@@ -36,4 +36,9 @@ urlpatterns = [
     path("layouts/<int:pk>/delete/", views.DashboardLayoutDeleteView.as_view(), name="layout-delete"),
     path("layouts/<int:pk>/save/", views.DashboardLayoutSaveView.as_view(), name="layout-save"),
 
+    path("custom-metrics/", views.DashboardCustomMetricListView.as_view(), name="custom-metrics"),
+    path("custom-metrics/create/", views.DashboardCustomMetricCreateView.as_view(), name="custom-metric-create"),
+    path("custom-metrics/<int:pk>/edit/", views.DashboardCustomMetricUpdateView.as_view(), name="custom-metric-edit"),
+    path("custom-metrics/<int:pk>/delete/", views.DashboardCustomMetricDeleteView.as_view(), name="custom-metric-delete"),
+
 ]
