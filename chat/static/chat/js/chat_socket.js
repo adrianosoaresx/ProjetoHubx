@@ -40,6 +40,10 @@
         const editInput = editModal ? editModal.querySelector('#edit-input') : null;
         const editCancel = editModal ? editModal.querySelector('#edit-cancel') : null;
         const editForm = editModal ? editModal.querySelector('form') : null;
+        const itemModal = document.getElementById('item-modal');
+        const itemForm = itemModal ? itemModal.querySelector('#item-form') : null;
+        const itemCancel = itemModal ? itemModal.querySelector('#item-cancel') : null;
+        let itemMessageId = null;
         let editState = {id:null, div:null, original:''};
         let oldestId = null;
         let historyEnd = false;
@@ -48,6 +52,9 @@
         if(editCancel){
             editCancel.addEventListener('click', ()=> editModal.close());
         }
+        if(itemCancel){
+            itemCancel.addEventListener('click', ()=> itemModal.close());
+        }
 
         function openEditModal(div,id,content){
             if(!editModal || !editInput) return;
@@ -55,6 +62,15 @@
             editInput.value = content;
             editModal.showModal();
             editInput.focus();
+        }
+
+        function openItemModal(id){
+            if(!itemModal || !itemForm) return;
+            itemMessageId = id;
+            itemForm.reset();
+            itemModal.showModal();
+            const title = itemForm.querySelector('#item-title');
+            if(title){ title.focus(); }
         }
 
         if(editForm && editInput){
@@ -76,6 +92,24 @@
                 if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
                     editForm.requestSubmit();
                 }
+            });
+        }
+
+        if(itemForm){
+            itemForm.addEventListener('submit', function(e){
+                e.preventDefault();
+                const tipo = itemForm.querySelector('#item-type').value;
+                const titulo = itemForm.querySelector('#item-title').value.trim();
+                const inicio = itemForm.querySelector('#item-start').value;
+                const fim = itemForm.querySelector('#item-end').value;
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${itemMessageId}/criar-item/`,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+                    body: JSON.stringify({tipo, titulo, inicio, fim})
+                }).then(r=> r.ok ? r.json() : Promise.reject())
+                  .then(()=>{ alert(t('itemCreated','Item criado com sucesso')); })
+                  .catch(()=>{ alert(t('itemCreateError','Erro ao criar item')); })
+                  .finally(()=> itemModal.close());
             });
         }
 
@@ -167,16 +201,36 @@
             }
         }
 
+        function setupItemMenu(div, id){
+            const btn = div.querySelector('.action-btn');
+            const menu = div.querySelector('.action-menu');
+            if(!btn || !menu || !id) return;
+            btn.addEventListener('click', ()=>{
+                const hidden = menu.classList.toggle('hidden');
+                btn.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+            });
+            menu.addEventListener('click', e=>{
+                const opt = e.target.closest('.create-item');
+                if(opt){
+                    menu.classList.add('hidden');
+                    btn.setAttribute('aria-expanded','false');
+                    openItemModal(id);
+                }
+            });
+        }
+
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
         const pending = [];
 
         messages.querySelectorAll('[data-message-id]').forEach(el=>{
             setupReactionMenu(el, el.dataset.messageId);
+            setupItemMenu(el, el.dataset.messageId);
         });
         const pinned = container.querySelector('#pinned');
         if(pinned){
             pinned.querySelectorAll('[data-message-id]').forEach(el=>{
                 setupReactionMenu(el, el.dataset.messageId);
+                setupItemMenu(el, el.dataset.messageId);
             });
         }
 
@@ -242,7 +296,7 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
@@ -272,6 +326,7 @@
             }
             renderReactions(div,reactions,userReactions);
             setupReactionMenu(div,id);
+            setupItemMenu(div,id);
             if(id && remetente !== currentUser){
                 fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/mark-read/`,{
                     method:'POST',
