@@ -8,7 +8,7 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import ApiToken
+from .models import ApiToken, ApiTokenLog
 from .serializers import ApiTokenSerializer
 from .services import generate_token, list_tokens, revoke_token
 
@@ -31,6 +31,13 @@ class ApiTokenViewSet(viewsets.ViewSet):
         raw_token = generate_token(request.user, client_name, scope, expires_delta)
         token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
         api_token = ApiToken.objects.get(token_hash=token_hash)
+        ApiTokenLog.objects.create(
+            token=api_token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.GERACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         data = ApiTokenSerializer(api_token).data
         data["token"] = raw_token
         return Response(data, status=status.HTTP_201_CREATED)
@@ -40,4 +47,11 @@ class ApiTokenViewSet(viewsets.ViewSet):
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
         revoke_token(token.id)
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
