@@ -45,6 +45,11 @@ urlpatterns = [
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
     ),
 
+    path(
+        "api/agenda/",
+        include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
+    ),
+
 
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
 
