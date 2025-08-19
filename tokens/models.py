@@ -36,6 +36,13 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
     )
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
+    revogado_por = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="api_tokens_revogados",
+    )
     last_used_at = models.DateTimeField(null=True, blank=True)
 
     @property

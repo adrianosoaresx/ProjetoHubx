@@ -39,5 +39,5 @@ class ApiTokenViewSet(viewsets.ViewSet):
         token = get_object_or_404(ApiToken, pk=pk)
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        revoke_token(token.id)
+        revoke_token(token.id, request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)

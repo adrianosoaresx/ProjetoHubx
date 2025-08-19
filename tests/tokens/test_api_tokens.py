@@ -1,5 +1,4 @@
-import pytest
-pytestmark = pytest.mark.skip(reason="legacy tests")
+import hashlib
 from datetime import timedelta
 
 import pytest
@@ -35,10 +34,12 @@ def test_api_token_authentication_and_revocation():
     assert client.get(url).status_code == 200
 
     token = ApiToken.objects.get(token_hash=token_hash)
-    revoke_token(token.id)
+    revoke_token(token.id, user)
+    revoke_token(token.id, user)
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.deleted is True
     assert token_db.revoked_at is not None
+    assert token_db.revogado_por == user
     resp = client.get(url)
     assert resp.status_code in {status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN}
 
@@ -71,3 +72,5 @@ def test_api_view_create_and_destroy():
 
     del_resp = client.delete(reverse("tokens_api:api-token-detail", args=[token_id]))
     assert del_resp.status_code == status.HTTP_204_NO_CONTENT
+    token_db = ApiToken.all_objects.get(id=token_id)
+    assert token_db.revogado_por == user
