@@ -3,15 +3,20 @@ from __future__ import annotations
 import hashlib
 import secrets
 import uuid
-from datetime import timedelta
-from typing import Iterable
+from datetime import timedelta, datetime
+from typing import Callable, Iterable, Tuple
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .models import ApiToken
+from .models import ApiToken, TokenAcesso
 
 User = get_user_model()
+
+
+# Callbacks para webhooks, sobrescritos em ``apps.py``
+token_created: Callable[[ApiToken, str], None] = lambda token, raw: None
+token_revoked: Callable[[ApiToken], None] = lambda token: None
 
 
 def generate_token(
@@ -25,13 +30,14 @@ def generate_token(
     raw_token = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
     expires_at = timezone.now() + expires_in if expires_in else None
-    ApiToken.objects.create(
+    token = ApiToken.objects.create(
         user=user,
         client_name=client_name or "",
         token_hash=token_hash,
         scope=scope,
         expires_at=expires_at,
     )
+    token_created(token, raw_token)
     return raw_token
 
 
@@ -41,10 +47,11 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
         return
     now = timezone.now()
     token.revoked_at = now
-    token.revogado_por = revogado_por
+    token.revogado_por = revogado_por or token.user
     token.deleted = True
     token.deleted_at = now
     token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
+    token_revoked(token)
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:
@@ -52,12 +59,6 @@ def list_tokens(user: User) -> Iterable[ApiToken]:
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
-
-from datetime import datetime
-from typing import Tuple
-
-from .models import TokenAcesso
-
 
 def create_invite_token(
     *,

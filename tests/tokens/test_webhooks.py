@@ -1,0 +1,85 @@
+import hashlib
+import hmac
+import json
+from datetime import timedelta
+
+import pytest
+import requests
+from django.apps import apps
+from django.test import override_settings
+
+from accounts.factories import UserFactory
+from tokens.models import ApiToken
+from tokens.services import generate_token, revoke_token
+
+
+pytestmark = pytest.mark.django_db
+
+
+@override_settings(
+    TOKEN_CREATED_WEBHOOK_URL="https://example.com/created",
+    TOKEN_WEBHOOK_SECRET="segredo",
+)
+def test_generate_token_triggers_webhook(monkeypatch):
+    calls: dict[str, object] = {}
+
+    def fake_post(url, data, headers, timeout):
+        calls["url"] = url
+        calls["data"] = data
+        calls["headers"] = headers
+
+        class Resp:
+            status_code = 200
+
+        return Resp()
+
+    monkeypatch.setattr(requests, "post", fake_post)
+    apps.get_app_config("tokens").ready()
+
+    user = UserFactory()
+    raw = generate_token(user, None, "read", timedelta(days=1))
+
+    token_hash = hashlib.sha256(raw.encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+
+    assert calls["url"] == "https://example.com/created"
+    assert json.loads(calls["data"].decode()) == {"id": str(token.id), "token": raw}
+
+    expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
+    assert calls["headers"]["X-Hubx-Signature"] == expected_sig
+
+
+@override_settings(
+    TOKEN_CREATED_WEBHOOK_URL="https://example.com/created",
+    TOKEN_REVOKED_WEBHOOK_URL="https://example.com/revoked",
+    TOKEN_WEBHOOK_SECRET="segredo",
+)
+def test_revoke_token_triggers_webhook(monkeypatch):
+    calls: list[tuple[str, bytes, dict[str, str]]] = []
+
+    def fake_post(url, data, headers, timeout):
+        calls.append((url, data, headers))
+
+        class Resp:
+            status_code = 200
+
+        return Resp()
+
+    monkeypatch.setattr(requests, "post", fake_post)
+    apps.get_app_config("tokens").ready()
+
+    user = UserFactory()
+    raw = generate_token(user, None, "read", timedelta(days=1))
+    token = ApiToken.objects.get(token_hash=hashlib.sha256(raw.encode()).hexdigest())
+
+    calls.clear()  # ignora webhook de criação
+
+    revoke_token(token.id)
+
+    assert len(calls) == 1
+    url, data, headers = calls[0]
+    assert url == "https://example.com/revoked"
+    assert json.loads(data.decode()) == {"id": str(token.id)}
+    expected_sig = hmac.new(b"segredo", data, hashlib.sha256).hexdigest()
+    assert headers["X-Hubx-Signature"] == expected_sig
+

@@ -39,6 +39,13 @@ class ApiTokenViewSet(viewsets.ViewSet):
             raw_token = generate_token(request.user, client_name, scope, expires_delta)
             token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
             api_token = ApiToken.objects.get(token_hash=token_hash)
+            ApiTokenLog.objects.create(
+                token=api_token,
+                usuario=request.user,
+                acao=ApiTokenLog.Acao.GERACAO,
+                ip=request.META.get("REMOTE_ADDR", ""),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             data = ApiTokenSerializer(api_token).data
             data["token"] = raw_token
             tokens_invites_created_total.inc()
@@ -51,19 +58,14 @@ class ApiTokenViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         with tokens_api_latency_seconds.time():
-            revoke_token(token.id)
+            revoke_token(token.id, request.user)
+            ApiTokenLog.objects.create(
+                token=token,
+                usuario=request.user,
+                acao=ApiTokenLog.Acao.REVOGACAO,
+                ip=request.META.get("REMOTE_ADDR", ""),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             tokens_invites_revoked_total.inc()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-        revoke_token(token.id)
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=request.user,
-            acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=request.META.get("REMOTE_ADDR", ""),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
