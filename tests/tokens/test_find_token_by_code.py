@@ -12,16 +12,17 @@ from tokens.services import create_invite_token, find_token_by_code
 pytestmark = pytest.mark.django_db
 
 
-def test_find_token_by_code_uses_hash():
+def test_find_token_by_code_single_query(django_assert_num_queries):
     user = UserFactory(user_type=UserType.ADMIN.value)
     token, codigo = create_invite_token(
         gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO
     )
-    encontrado = find_token_by_code(codigo)
+    with django_assert_num_queries(1):
+        encontrado = find_token_by_code(codigo)
     assert encontrado.id == token.id
 
 
-def test_find_token_by_code_legacy():
+def test_find_token_by_code_legacy_not_supported():
     user = UserFactory(user_type=UserType.ADMIN.value)
     codigo = TokenAcesso.generate_code()
     token = TokenAcesso(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
@@ -30,5 +31,5 @@ def test_find_token_by_code_legacy():
     token.codigo_salt = base64.b64encode(salt).decode()
     token.codigo_hash = base64.b64encode(digest).decode()
     token.save()
-    encontrado = find_token_by_code(codigo)
-    assert encontrado.id == token.id
+    with pytest.raises(TokenAcesso.DoesNotExist):
+        find_token_by_code(codigo)
