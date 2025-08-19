@@ -24,14 +24,16 @@
 
   <!-- Inscrição -->
   {% if user.is_authenticated and user.user_type not in ('admin','root') %}
-    <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
-      {% csrf_token %}
-      {% if object.inscricoes.filter(user=user, status='confirmada').exists %}
+    {% if object.inscricoes.filter(user=user, status='confirmada').exists %}
+      <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
+        {% csrf_token %}
         <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
-      {% else %}
-        <button type="submit" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</button>
-      {% endif %}
-    </form>
+      </form>
+    {% else %}
+      <div class="mb-10">
+        <a href="{% url 'agenda:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
+      </div>
+    {% endif %}
   {% endif %}
 
   <!-- Lista de Inscritos -->

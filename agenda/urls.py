@@ -13,6 +13,7 @@ from .views import (
     EventoRemoveInscritoView,
     EventoSubscribeView,
     EventoUpdateView,
+    InscricaoEventoCreateView,
     InscricaoEventoListView,
     MaterialDivulgacaoEventoListView,
     MaterialDivulgacaoEventoCreateView,
@@ -35,6 +36,11 @@ urlpatterns = [
     path("evento/<uuid:pk>/", EventoDetailView.as_view(), name="evento_detalhe"),
     path("evento/<uuid:pk>/editar/", EventoUpdateView.as_view(), name="evento_editar"),
     path("evento/<uuid:pk>/excluir/", EventoDeleteView.as_view(), name="evento_excluir"),
+    path(
+        "evento/<uuid:pk>/inscricao/",
+        InscricaoEventoCreateView.as_view(),
+        name="inscricao_criar",
+    ),
     path(
         "evento/<uuid:pk>/inscrever/",
         EventoSubscribeView.as_view(),
