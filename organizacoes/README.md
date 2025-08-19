@@ -32,3 +32,13 @@ O *payload* é consumido por `enviar_email_membros`, que encaminha mensagens aos
 ## Histórico
 
 A lista de alterações pode ser consultada em `/organizacoes/<id>/historico/` (apenas admins da organização ou superusuários). Os registros de log são imutáveis e preservam os dados relevantes de cada ação.
+
+## Recursos associados
+
+Endpoints para gerenciar recursos vinculados à organização. Apenas usuários com permissões administrativas da organização podem utilizar estas rotas.
+
+- **Listar**: `GET /api/organizacoes/<organizacao_id>/recursos/`
+- **Criar**: `POST /api/organizacoes/<organizacao_id>/recursos/`
+- **Remover**: `DELETE /api/organizacoes/<organizacao_id>/recursos/<id>/`
+
+O corpo do `POST` deve conter `content_type` e `object_id` do recurso a ser associado (por exemplo, um projeto ou evento).

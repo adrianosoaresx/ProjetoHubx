@@ -25,11 +25,12 @@ from nucleos.serializers import NucleoSerializer
 
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 
-from .models import Organizacao, OrganizacaoAtividadeLog
+from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoRecurso
 from .serializers import (
     FeedPluginConfigSerializer,
     OrganizacaoAtividadeLogSerializer,
     OrganizacaoChangeLogSerializer,
+    OrganizacaoRecursoSerializer,
     OrganizacaoSerializer,
 )
 from .tasks import organizacao_alterada
@@ -295,6 +296,18 @@ class OrganizacaoPluginViewSet(OrganizacaoRelatedModelViewSet):
     def get_queryset(self):
         org = self.get_organizacao()
         return FeedPluginConfig.objects.filter(organizacao=org)
+
+    def perform_create(self, serializer):
+        serializer.save(organizacao=self.get_organizacao())
+
+
+class OrganizacaoRecursoViewSet(OrganizacaoRelatedModelViewSet):
+    serializer_class = OrganizacaoRecursoSerializer
+    http_method_names = ["get", "post", "delete", "head", "options"]
+
+    def get_queryset(self):
+        org = self.get_organizacao()
+        return OrganizacaoRecurso.objects.filter(organizacao=org, deleted=False)
 
     def perform_create(self, serializer):
         serializer.save(organizacao=self.get_organizacao())

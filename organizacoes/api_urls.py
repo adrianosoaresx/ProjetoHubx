@@ -7,6 +7,7 @@ from .api import (
     OrganizacaoNucleoViewSet,
     OrganizacaoPluginViewSet,
     OrganizacaoPostViewSet,
+    OrganizacaoRecursoViewSet,
     OrganizacaoUserViewSet,
     OrganizacaoViewSet,
 )
@@ -47,6 +48,11 @@ router.register(
     r"organizacoes/(?P<organizacao_pk>[^/.]+)/plugins",
     OrganizacaoPluginViewSet,
     basename="organizacao-plugins",
+)
+router.register(
+    r"organizacoes/(?P<organizacao_pk>[^/.]+)/recursos",
+    OrganizacaoRecursoViewSet,
+    basename="organizacao-recursos",
 )
 
 urlpatterns = router.urls

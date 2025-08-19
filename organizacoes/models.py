@@ -5,6 +5,8 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
@@ -134,3 +136,20 @@ class OrganizacaoAtividadeLog(TimeStampedModel, SoftDeleteModel):
 
     def delete(self, *args, **kwargs):  # type: ignore[override]
         raise RuntimeError("Logs não podem ser removidos")
+
+
+class OrganizacaoRecurso(TimeStampedModel, SoftDeleteModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organizacao = models.ForeignKey(
+        Organizacao,
+        on_delete=models.CASCADE,
+        related_name="recursos",
+    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.UUIDField()
+    recurso = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        unique_together = ("organizacao", "content_type", "object_id")
+        verbose_name = "Recurso de Organização"
+        verbose_name_plural = "Recursos de Organização"

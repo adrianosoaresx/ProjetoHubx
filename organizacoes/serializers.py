@@ -5,7 +5,12 @@ from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 
-from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
+from .models import (
+    Organizacao,
+    OrganizacaoAtividadeLog,
+    OrganizacaoChangeLog,
+    OrganizacaoRecurso,
+)
 from .tasks import organizacao_alterada
 from .utils import validate_cnpj
 from feed.models import FeedPluginConfig
@@ -166,3 +171,18 @@ class FeedPluginConfigSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["organizacao", "created_at", "updated_at"]
+
+
+class OrganizacaoRecursoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizacaoRecurso
+        fields = ["id", "content_type", "object_id", "organizacao"]
+        read_only_fields = ["id", "organizacao"]
+
+    def validate(self, attrs):
+        ct = attrs.get("content_type")
+        obj_id = attrs.get("object_id")
+        model_class = ct.model_class() if ct else None
+        if model_class is None or not model_class.objects.filter(pk=obj_id).exists():
+            raise serializers.ValidationError({"object_id": "Objeto não encontrado."})
+        return attrs
