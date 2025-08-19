@@ -195,7 +195,10 @@ class TopicoListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["categoria"] = self.categoria
         context["ordenacao"] = self.request.GET.get("ordenacao", "recentes")
-        context["tag"] = self.request.GET.get("tag")
+        context["q"] = self.request.GET.get("q", "")
+        tags_param = self.request.GET.get("tags", "")
+        context["selected_tags"] = [t for t in tags_param.split(",") if t]
+        context["tags"] = Tag.objects.all()
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
 
