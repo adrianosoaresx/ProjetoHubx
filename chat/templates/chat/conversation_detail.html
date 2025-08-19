@@ -12,6 +12,7 @@
     data-current-user="{{ request.user.username }}"
     data-csrf-token="{{ csrf_token }}"
     data-is-admin="{{ is_admin|yesno:'true,false' }}"
+    data-e2ee="{{ conversation.e2ee_habilitado|yesno:'true,false' }}"
     data-upload-url="{% url 'chat_api:chat-upload' %}"
     data-history-url="{{ history_url }}"
     class="flex flex-col h-full"
@@ -143,7 +144,8 @@
       if(!append){ ul.className = 'divide-y'; }
       data.results.forEach(m=>{
         const li = document.createElement('li');
-        li.innerHTML = `<button type="button" class="w-full text-left p-2 hover:bg-neutral-100" data-id="${m.id}"><span class="font-semibold">${m.remetente}</span> <time class="text-xs text-neutral-500">${new Date(m.created_at).toLocaleString()}</time> - ${m.conteudo.substring(0,80)}</button>`;
+        const snippet = m.conteudo_cifrado ? '🔒' : (m.conteudo || '').substring(0,80);
+        li.innerHTML = `<button type="button" class="w-full text-left p-2 hover:bg-neutral-100" data-id="${m.id}"><span class="font-semibold">${m.remetente}</span> <time class="text-xs text-neutral-500">${new Date(m.created_at).toLocaleString()}</time> - ${snippet}</button>`;
         ul.appendChild(li);
       });
       if(!append){ results.appendChild(ul); }

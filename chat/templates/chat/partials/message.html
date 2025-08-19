@@ -16,16 +16,20 @@
       {% if m.hidden_at %}<span class="text-red-500">{% trans "Oculta" %}</span>{% endif %}
     </header>
     <div class="mt-1">
-      {% if m.tipo == 'text' %}
-        <p>{{ m.conteudo|linebreaksbr }}</p>
-      {% elif m.tipo == 'image' %}
-        <img src="{{ m.arquivo.url }}" alt="{% trans 'Imagem enviada' %}" class="w-full max-w-xs h-auto rounded" />
-      {% elif m.tipo == 'video' %}
-        <video src="{{ m.arquivo.url }}" controls class="w-full max-w-xs h-auto" aria-label="{% trans 'Player de vídeo' %}"></video>
-      {% elif m.tipo == 'file' %}
-        <a href="{{ m.arquivo.url }}" class="text-primary underline" download aria-label="{% trans 'Baixar arquivo' %}">
-          {{ m.arquivo.name }}
-        </a>
+      {% if m.conteudo_cifrado %}
+        <p data-cipher="{{ m.conteudo_cifrado }}" data-alg="{{ m.alg }}" data-key-version="{{ m.key_version }}">🔒 {% trans 'Mensagem cifrada' %}</p>
+      {% else %}
+        {% if m.tipo == 'text' %}
+          <p>{{ m.conteudo|linebreaksbr }}</p>
+        {% elif m.tipo == 'image' %}
+          <img src="{{ m.arquivo.url }}" alt="{% trans 'Imagem enviada' %}" class="w-full max-w-xs h-auto rounded" />
+        {% elif m.tipo == 'video' %}
+          <video src="{{ m.arquivo.url }}" controls class="w-full max-w-xs h-auto" aria-label="{% trans 'Player de vídeo' %}"></video>
+        {% elif m.tipo == 'file' %}
+          <a href="{{ m.arquivo.url }}" class="text-primary underline" download aria-label="{% trans 'Baixar arquivo' %}">
+            {{ m.arquivo.name }}
+          </a>
+        {% endif %}
       {% endif %}
     </div>
     <div class="mt-2 flex items-center gap-2">
