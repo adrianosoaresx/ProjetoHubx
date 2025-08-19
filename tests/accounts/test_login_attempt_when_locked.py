@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.contrib.auth import get_user_model
 
 from accounts.forms import EmailLoginForm
-from accounts.models import LoginAttempt
+from accounts.models import LoginAttempt, SecurityEvent
 
 
 User = get_user_model()
@@ -22,3 +22,8 @@ def test_login_attempt_created_when_account_locked(rf):
 
     assert not form.is_valid()
     assert LoginAttempt.objects.filter(usuario=user, sucesso=False).count() == 1
+    assert SecurityEvent.objects.filter(
+        usuario=user,
+        evento="login_bloqueado",
+        ip=request.META.get("REMOTE_ADDR"),
+    ).exists()
