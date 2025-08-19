@@ -264,6 +264,9 @@ MENSALIDADE_VENCIMENTO_DIA = 10
 
 # Celery Beat
 
+# Intervalo (em minutos) para execução dos plugins do feed pelo celery beat
+FEED_PLUGINS_INTERVAL_MINUTES = int(os.getenv("FEED_PLUGINS_INTERVAL_MINUTES", "1"))
+
 CELERY_BEAT_SCHEDULE = {
     "notificar_inadimplencia": {
         "task": "financeiro.tasks.inadimplencia.notificar_inadimplencia",
@@ -295,7 +298,9 @@ CELERY_BEAT_SCHEDULE = {
     },
     "executar_feed_plugins": {  # executa plugins do feed periodicamente
         "task": "feed.tasks.executar_plugins",
-        "schedule": crontab(minute="*"),
+        "schedule": crontab(
+            minute="*" if FEED_PLUGINS_INTERVAL_MINUTES == 1 else f"*/{FEED_PLUGINS_INTERVAL_MINUTES}"
+        ),
     },
 }
 

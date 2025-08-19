@@ -28,3 +28,28 @@ def test_executar_plugins_scheduled(monkeypatch, db, settings):
     celery_app.tasks[schedule["task"]].apply()
 
     assert called["user"] == user
+
+
+def test_executar_plugins_periodic(monkeypatch, db):
+    """Simula chamadas periódicas do celery beat para os plugins."""
+
+    org = OrganizacaoFactory()
+    FeedPluginConfig.objects.create(
+        organizacao=org,
+        module_path="feed.tests.sample_plugin.DummyPlugin",
+        frequency=1,
+    )
+    user = UserFactory(organizacao=org, nucleo_obj=NucleoFactory(organizacao=org))
+    calls: list = []
+
+    def fake_render(self, u):
+        calls.append(u)
+        return []
+
+    monkeypatch.setattr(sample_plugin.DummyPlugin, "render", fake_render, raising=False)
+
+    task = celery_app.tasks["feed.tasks.executar_plugins"]
+    task.apply()
+    task.apply()
+
+    assert calls == [user, user]
