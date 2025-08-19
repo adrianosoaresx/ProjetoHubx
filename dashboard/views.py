@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -40,12 +41,19 @@ from core.permissions import (
     SuperadminRequiredMixin,
 )
 
+
 from .forms import (
     DashboardConfigForm,
     DashboardCustomMetricForm,
     DashboardFilterForm,
     DashboardLayoutForm,
 )
+
+from agenda.models import Evento
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
+
+
 from .models import (
     Achievement,
     DashboardConfig,
@@ -193,6 +201,30 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             for m in metricas
             if m in metrics
         ]
+        user = self.request.user
+        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            orgs = Organizacao.objects.all()
+            nucleos = Nucleo.objects.all()
+            eventos = Evento.objects.all()
+        else:
+            org_id = getattr(user.organizacao, "pk", None)
+            orgs = Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            nucleos = Nucleo.objects.filter(
+                participacoes__user=user,
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            ).distinct()
+            eventos = Evento.objects.filter(
+                Q(coordenador=user)
+                | Q(
+                    nucleo__participacoes__user=user,
+                    nucleo__participacoes__status="ativo",
+                    nucleo__participacoes__status_suspensao=False,
+                )
+            ).distinct()
+        context["organizacoes_permitidas"] = orgs
+        context["nucleos_permitidos"] = nucleos
+        context["eventos_permitidos"] = eventos
         return context
 
 
@@ -784,9 +816,7 @@ class DashboardLayoutListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.user_type in {UserType.ROOT, UserType.ADMIN}:
             return DashboardLayout.objects.all()
-        return DashboardLayout.objects.filter(
-            Q(user=self.request.user) | Q(publico=True)
-        )
+        return DashboardLayout.objects.filter(Q(user=self.request.user) | Q(publico=True))
 
 
 class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
@@ -819,8 +849,38 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
             return HttpResponse(status=403)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        layout = self.object
+        context["layout_save_url"] = reverse("dashboard:layout-save", args=[layout.pk])
+        layout_data = layout.layout_json
+        if isinstance(layout_data, str):
+            try:
+                metricas = json.loads(layout_data)
+            except Exception:
+                metricas = []
+        else:
+            metricas = layout_data or []
+        if not metricas:
+            metricas = list(METRICAS_INFO.keys())
+        metrics = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
+        context["metricas_iter"] = [
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": METRICAS_INFO[m]["label"],
+                "icon": METRICAS_INFO[m]["icon"],
+            }
+            for m in metricas
+            if m in metrics
+        ]
+        context["metricas_selecionadas"] = metricas
+        return context
+
     def form_valid(self, form):
-        layout_data = self.request.POST.get("layout_json", "{}")
+        layout_data = self.request.POST.get("layout_json")
+        if not layout_data:
+            layout_data = self.get_object().layout_json
         self.object = form.save(self.request.user, layout_data)
         log_layout_action(
             user=self.request.user,
