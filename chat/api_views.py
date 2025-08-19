@@ -211,6 +211,9 @@ class UserChatPreferenceView(APIView):
         serializer.save()
         return Response(serializer.data)
 
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        return self.patch(request, *args, **kwargs)
+
 
 class ChatChannelViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciamento de canais de chat.
