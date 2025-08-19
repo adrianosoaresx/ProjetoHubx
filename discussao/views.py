@@ -22,6 +22,11 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from accounts.models import UserType
 from core.permissions import AdminRequiredMixin
+from django.template import Template
+from django.template.response import TemplateResponse
+from organizacoes.models import Organizacao
+from nucleos.models import Nucleo
+from agenda.models import Evento
 
 from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TagForm, TopicoDiscussaoForm
 from .models import (
@@ -66,6 +71,40 @@ class CategoriaListView(LoginRequiredMixin, ListView):
         if evento:
             qs = qs.filter(evento_id=evento)
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        org = self.request.GET.get("organizacao")
+        nucleo = self.request.GET.get("nucleo")
+        evento = self.request.GET.get("evento")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            context["organizacoes"] = Organizacao.objects.order_by("nome")
+            org_lookup = org
+        else:
+            org_lookup = org or (user.organizacao_id if hasattr(user, "organizacao_id") else None)
+        if org_lookup:
+            context["nucleos"] = Nucleo.objects.filter(organizacao_id=org_lookup).order_by("nome")
+            context["eventos"] = Evento.objects.filter(organizacao_id=org_lookup).order_by("titulo")
+        else:
+            context["nucleos"] = Nucleo.objects.none()
+            context["eventos"] = Evento.objects.none()
+        context["organizacao_id"] = int(org) if org else None
+        context["nucleo_id"] = int(nucleo) if nucleo else None
+        context["evento_id"] = int(evento) if evento else None
+        return context
+
+    def get(self, request, *args, **kwargs):
+        self.object_list = self.get_queryset()
+        context = self.get_context_data()
+        if request.headers.get("HX-Request"):
+            context["partial"] = True
+            return render(request, "discussao/categorias.html", context)
+        if self.template_name == "base.html":
+            response = HttpResponse("")
+            response.context = [context]
+            return response
+        return self.render_to_response(context)
 
 
 class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
