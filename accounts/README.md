@@ -15,6 +15,8 @@ A exclusão padrão é lógica, basta chamar `instance.delete()`. Para remover d
 Para o modelo `User`, ao excluir definitivamente (`soft=False`), os arquivos `avatar` e `cover`
 associados ao usuário também são removidos do armazenamento.
 
-## Documentação
+## Fluxo de registro
 
-- [Registro multietapas](../docs/accounts/registro_multietapas.md)
+O cadastro de novos usuários ocorre exclusivamente pelo fluxo multietapas
+iniciado em `/accounts/onboarding/`. Detalhes de cada etapa estão descritos na
+[documentação de registro multietapas](../docs/accounts/registro_multietapas.md).
