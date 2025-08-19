@@ -1,10 +1,11 @@
 import re
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import patch
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -14,7 +15,7 @@ from agenda.factories import EventoFactory
 from empresas.factories import EmpresaFactory
 from organizacoes.factories import OrganizacaoFactory
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.urls("Hubx.urls")]
 
 
 @pytest.fixture
@@ -110,6 +111,29 @@ def test_briefing_create_requires_admin_or_coordenador(api_client: APIClient) ->
         "objetivos": "obj",
         "publico_alvo": "pub",
         "requisitos_tecnicos": "req",
+    }
+    usuario = UserFactory(user_type=UserType.ASSOCIADO, organizacao=org, nucleo_obj=None)
+    api_client.force_authenticate(usuario)
+    resp = api_client.post(url, data)
+    assert resp.status_code == status.HTTP_403_FORBIDDEN
+
+    for utype in [UserType.ADMIN, UserType.COORDENADOR]:
+        user = UserFactory(user_type=utype, organizacao=org, nucleo_obj=None)
+        api_client.force_authenticate(user)
+        resp = api_client.post(url, data)
+        assert resp.status_code == status.HTTP_201_CREATED
+
+
+def test_tarefa_create_requires_admin_or_coordenador(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    url = reverse("agenda_api:tarefa-list")
+    inicio = timezone.now()
+    fim = inicio + timedelta(hours=1)
+    data = {
+        "titulo": "Teste",
+        "descricao": "Desc",
+        "data_inicio": inicio.isoformat(),
+        "data_fim": fim.isoformat(),
     }
     usuario = UserFactory(user_type=UserType.ASSOCIADO, organizacao=org, nucleo_obj=None)
     api_client.force_authenticate(usuario)
