@@ -1,21 +1,19 @@
 from __future__ import annotations
 
 import logging
-import os
 from datetime import timedelta
 
 import sentry_sdk
 from celery import shared_task
 from django.db import models
 from django.utils import timezone
-from twilio.base.exceptions import TwilioRestException  # type: ignore
-from twilio.rest import Client  # type: ignore
 
 from agenda.models import Evento
 from chat.models import ChatNotification
 from feed.models import Post
 from notificacoes.services.notificacoes import enviar_para_usuario
 from notificacoes.services.push_client import send_push
+from notificacoes.services.whatsapp_client import send_whatsapp
 
 from .models import ConfiguracaoConta
 
@@ -81,15 +79,10 @@ def _send_for_frequency(frequency: str) -> None:
 def enviar_notificacao_whatsapp(user, contexto):
     message = "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
     try:
-        client = Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN"))
-        client.messages.create(
-            body=message,
-            from_=os.environ.get("TWILIO_WHATSAPP_FROM"),
-            to=f"whatsapp:{user.whatsapp}",
-        )
-    except TwilioRestException as exc:  # pragma: no cover - falha externa
+        send_whatsapp(user, message)
+    except Exception as exc:  # pragma: no cover - falha externa
         sentry_sdk.capture_exception(exc)
-        logger.exception("Falha ao enviar WhatsApp", extra={"user": user.id})
+        logger.exception("Falha ao enviar WhatsApp", extra={"user": getattr(user, "id", None)})
 
 
 @shared_task
