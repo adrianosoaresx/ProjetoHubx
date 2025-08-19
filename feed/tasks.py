@@ -99,7 +99,12 @@ def upload_media(data: bytes, name: str, content_type: str) -> str:
 
 @shared_task
 def executar_plugins() -> None:
-    """Carrega e executa plugins registrados para organizações."""
+    """Carrega e executa plugins registrados para organizações.
+
+    A tarefa é idempotente e pode ser agendada periodicamente pelo
+    ``celery beat`` para que os plugins sejam executados de acordo com o
+    intervalo configurado.
+    """
 
     User = get_user_model()
     orgs = Organizacao.objects.filter(feed_plugins__isnull=False).distinct()
