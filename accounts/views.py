@@ -179,7 +179,7 @@ def check_2fa(request):
 @login_required
 def perfil_conexoes(request):
     connections = request.user.connections.all() if hasattr(request.user, "connections") else []
-    connection_requests = []  # pode ser implementado futuramente
+    connection_requests = request.user.followers.all() if hasattr(request.user, "followers") else []
 
     context = {
         "connections": connections,
@@ -197,6 +197,41 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
+    return redirect("accounts:conexoes")
+
+
+@login_required
+def aceitar_conexao(request, id):
+    try:
+        other_user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        messages.error(request, "Solicitação de conexão não encontrada.")
+        return redirect("accounts:conexoes")
+
+    if other_user not in request.user.followers.all():
+        messages.error(request, "Solicitação de conexão não encontrada.")
+        return redirect("accounts:conexoes")
+
+    request.user.connections.add(other_user)
+    request.user.followers.remove(other_user)
+    messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
+    return redirect("accounts:conexoes")
+
+
+@login_required
+def recusar_conexao(request, id):
+    try:
+        other_user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        messages.error(request, "Solicitação de conexão não encontrada.")
+        return redirect("accounts:conexoes")
+
+    if other_user not in request.user.followers.all():
+        messages.error(request, "Solicitação de conexão não encontrada.")
+        return redirect("accounts:conexoes")
+
+    request.user.followers.remove(other_user)
+    messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
     return redirect("accounts:conexoes")
 
 

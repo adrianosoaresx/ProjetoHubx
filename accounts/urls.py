@@ -42,6 +42,16 @@ urlpatterns = [
         views.remover_conexao,
         name="remover_conexao",
     ),
+    path(
+        "perfil/conexoes/<int:id>/aceitar/",
+        views.aceitar_conexao,
+        name="aceitar_conexao",
+    ),
+    path(
+        "perfil/conexoes/<int:id>/recusar/",
+        views.recusar_conexao,
+        name="recusar_conexao",
+    ),
     # Mídias
     path("perfil/midias/", views.perfil_midias, name="midias"),
     path("perfil/midias/<int:pk>/", views.perfil_midia_detail, name="midia_detail"),

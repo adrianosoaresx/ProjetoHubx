@@ -2,6 +2,7 @@ from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 
 urlpatterns = [
+    path("", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
 
