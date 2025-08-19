@@ -230,6 +230,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
                     "partial": True,
                     "user": request.user,
                     "topico": self.object,
+                    "content_type_id": context["resposta_content_type_id"],
                 },
             )
         return self.render_to_response(context)
@@ -246,6 +247,9 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["comentarios"] = comentarios
         context["melhor_resposta"] = melhor
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(
+            RespostaDiscussao
+        ).id
         return context
 
 
@@ -345,7 +349,12 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         notificar_nova_resposta.delay(self.object.id)
         cache.clear()
         if self.request.headers.get("Hx-Request"):
-            context = {"comentario": self.object, "user": self.request.user, "topico": self.topico}
+            context = {
+                "comentario": self.object,
+                "user": self.request.user,
+                "topico": self.topico,
+                "content_type_id": ContentType.objects.get_for_model(RespostaDiscussao).id,
+            }
             return render(self.request, "discussao/comentario_item.html", context)
         messages.success(self.request, gettext_lazy("Coment\u00e1rio publicado"))
         return response
