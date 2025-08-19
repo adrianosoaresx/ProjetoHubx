@@ -8,7 +8,7 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import ApiToken
+from .models import ApiToken, ApiTokenLog
 from .serializers import ApiTokenSerializer
 from .services import generate_token, list_tokens, revoke_token
 from .metrics import (
@@ -34,6 +34,7 @@ class ApiTokenViewSet(viewsets.ViewSet):
         if scope == "admin" and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         expires_delta = timedelta(days=int(expires_in)) if expires_in else None
+
         with tokens_api_latency_seconds.time():
             raw_token = generate_token(request.user, client_name, scope, expires_delta)
             token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
@@ -43,11 +44,26 @@ class ApiTokenViewSet(viewsets.ViewSet):
             tokens_invites_created_total.inc()
             return Response(data, status=status.HTTP_201_CREATED)
 
+
     def destroy(self, request, pk: str | None = None):
         token = get_object_or_404(ApiToken, pk=pk)
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
         with tokens_api_latency_seconds.time():
             revoke_token(token.id)
             tokens_invites_revoked_total.inc()
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+        revoke_token(token.id)
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+

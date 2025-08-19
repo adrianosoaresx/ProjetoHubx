@@ -3,13 +3,14 @@ from __future__ import annotations
 from celery import shared_task
 from django.utils import timezone
 
-from .models import ApiToken, TokenUsoLog
+from .models import ApiToken, ApiTokenLog, TokenUsoLog
 
 
 @shared_task
 def remover_logs_antigos() -> None:
     limite = timezone.now() - timezone.timedelta(days=365)
     TokenUsoLog.all_objects.filter(created_at__lt=limite).delete()
+    ApiTokenLog.all_objects.filter(created_at__lt=limite).delete()
 
 
 @shared_task
