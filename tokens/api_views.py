@@ -60,17 +60,5 @@ class ApiTokenViewSet(viewsets.ViewSet):
                 ip=request.META.get("REMOTE_ADDR", ""),
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
-
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-        revoke_token(token.id)
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=request.user,
-            acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=request.META.get("REMOTE_ADDR", ""),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
