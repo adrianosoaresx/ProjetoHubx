@@ -1,4 +1,4 @@
-import uuid
+import uuid  # required for uuid4 usage in tests
 
 import pytest
 from django.contrib.auth import get_user_model
