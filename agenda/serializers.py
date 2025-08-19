@@ -238,32 +238,7 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
         evento = validated_data["evento"]
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
-        instance = super().create(validated_data)
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=request.user,
-            acao="parceria_criada",
-            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
-        )
-        return instance
-
-    def update(self, instance, validated_data):
-        request = self.context["request"]
-        old_instance = ParceriaEvento.objects.get(pk=instance.pk)
-        instance = super().update(instance, validated_data)
-        changes: Dict[str, Dict[str, Any]] = {}
-        for field in validated_data:
-            before = getattr(old_instance, field)
-            after = getattr(instance, field)
-            if before != after:
-                changes[field] = {"antes": before, "depois": after}
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=request.user,
-            acao="parceria_atualizada",
-            detalhes=changes,
-        )
-        return instance
+        return super().create(validated_data)
 
 
 class BriefingEventoSerializer(serializers.ModelSerializer):

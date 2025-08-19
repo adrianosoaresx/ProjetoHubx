@@ -210,6 +210,31 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         qs = self.filter_by_organizacao(qs, "evento")
         return qs
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=self.request.user,
+            acao="parceria_criada",
+            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
+        )
+
+    def perform_update(self, serializer):
+        old_instance = ParceriaEvento.all_objects.get(pk=serializer.instance.pk)
+        instance = serializer.save()
+        changes = {}
+        for field, value in serializer.validated_data.items():
+            before = getattr(old_instance, field)
+            after = getattr(instance, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        EventoLog.objects.create(
+            evento=instance.evento,
+            usuario=self.request.user,
+            acao="parceria_atualizada",
+            detalhes=changes,
+        )
+
     def perform_destroy(self, instance: ParceriaEvento) -> None:
         EventoLog.objects.create(
             evento=instance.evento,

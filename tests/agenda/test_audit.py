@@ -4,7 +4,8 @@ from datetime import date, timedelta
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
-from rest_framework.test import APIClient, APIRequestFactory
+from django.test.utils import override_settings
+from rest_framework.test import APIClient
 from rest_framework import status
 
 from accounts.models import UserType
@@ -18,7 +19,6 @@ from agenda.models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from agenda.serializers import ParceriaEventoSerializer
 from validate_docbr import CNPJ
 
 pytestmark = pytest.mark.django_db
@@ -39,38 +39,37 @@ def _admin_user(organizacao):
     )
 
 
-def test_parceria_create_gera_log() -> None:
+@override_settings(ROOT_URLCONF="Hubx.urls")
+def test_parceria_create_gera_log(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = _admin_user(org)
     evento = EventoFactory(organizacao=org, coordenador=user)
     empresa = EmpresaFactory(organizacao=org, usuario=user)
-    factory = APIRequestFactory()
-    request = factory.post("/parcerias/")
-    request.user = user
-    serializer = ParceriaEventoSerializer(
-        data={
-            "evento": evento.pk,
-            "empresa": empresa.pk,
-            "cnpj": CNPJ().generate(),
-            "contato": "c",
-            "representante_legal": "r",
-            "data_inicio": date.today(),
-            "data_fim": date.today() + timedelta(days=1),
-            "tipo_parceria": "patrocinio",
-        },
-        context={"request": request},
-    )
-    assert serializer.is_valid(), serializer.errors
-    parceria = serializer.save()
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:parceria-list")
+    data = {
+        "evento": evento.pk,
+        "empresa": empresa.pk,
+        "cnpj": CNPJ().generate(),
+        "contato": "c",
+        "representante_legal": "r",
+        "data_inicio": date.today(),
+        "data_fim": date.today() + timedelta(days=1),
+        "tipo_parceria": "patrocinio",
+    }
+    resp = api_client.post(url, data, format="json")
+    assert resp.status_code == status.HTTP_201_CREATED
+    parceria_id = resp.data["id"]
     assert EventoLog.objects.filter(
         evento=evento,
         usuario=user,
         acao="parceria_criada",
-        detalhes__parceria=parceria.pk,
+        detalhes__parceria=parceria_id,
         detalhes__empresa=empresa.pk,
     ).exists()
 
 
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_parceria_avaliar_gera_log(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = _admin_user(org)
@@ -100,6 +99,7 @@ def test_parceria_avaliar_gera_log(api_client: APIClient) -> None:
     ).exists()
 
 
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_parceria_delete_gera_log(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = _admin_user(org)
@@ -182,6 +182,7 @@ def test_evento_update_gera_log(api_client: APIClient) -> None:
     assert log.detalhes["titulo"] == {"antes": "Antigo", "depois": "Novo"}
 
 
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_parceria_update_gera_log(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
     user = _admin_user(org)
