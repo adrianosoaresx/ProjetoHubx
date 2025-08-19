@@ -1,7 +1,26 @@
-{% load i18n %}
-<h1>{% trans "Configuração Contextual" %}</h1>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">{% trans "Salvar" %}</button>
-</form>
+{% extends 'base.html' %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{% trans "Configuração Contextual" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">{% trans "Configuração Contextual" %}</h1>
+  <form method="post" class="bg-white p-6 rounded-md shadow space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium">{{ field.label }}</label>
+        {{ field|add_class:'w-full p-2 border rounded-lg' }}
+        {% for error in field.errors %}
+          <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-between pt-4">
+      <a href="{% url 'configuracoes' %}" class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300">{% trans "Cancelar" %}</a>
+      <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">{% trans "Salvar" %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
