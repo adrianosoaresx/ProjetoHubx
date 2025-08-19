@@ -32,14 +32,10 @@ def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
     event = "feed_like" if tipo == "like" else "feed_comment"
     try:
         enviar_para_usuario(post.autor, event, {"post_id": str(post.id)})
-
+        NOTIFICATIONS_SENT.inc()
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
-
-        NOTIFICATIONS_SENT.inc()
-    except Exception:  # pragma: no cover - melhor esforço
-        pass
 
 
 
@@ -74,7 +70,7 @@ def notify_post_moderated(post_id: str, status: str) -> None:
         enviar_para_usuario(
             post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status}
         )
-
+        NOTIFICATIONS_SENT.inc()
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
