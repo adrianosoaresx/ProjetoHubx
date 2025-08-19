@@ -100,6 +100,35 @@
             }
         }
 
+        function updateFavoriteBtn(btn, fav){
+            if(!btn) return;
+            btn.classList.toggle('favorited', fav);
+            btn.textContent = fav ? '★' : '☆';
+            btn.classList.toggle('text-yellow-500', fav);
+            btn.classList.toggle('text-neutral-600', !fav);
+            btn.setAttribute('aria-label', fav ? t('removeFavorite','Remover dos favoritos') : t('addFavorite','Adicionar aos favoritos'));
+        }
+
+        function setupFavoriteBtn(div, id){
+            const btn = div.querySelector('.favorite-btn');
+            if(!btn || !id) return;
+            updateFavoriteBtn(btn, favoriteIds.has(id));
+            if(btn.dataset.favListener) return;
+            btn.dataset.favListener = 'true';
+            btn.addEventListener('click', ()=>{
+                const favorited = btn.classList.contains('favorited');
+                const method = favorited ? 'DELETE' : 'POST';
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/favorite/`,{method, headers:{'X-CSRFToken':csrfToken}})
+                    .then(r=>{
+                        if(r.ok){
+                            const newFav = !favorited;
+                            updateFavoriteBtn(btn, newFav);
+                            if(newFav){ favoriteIds.add(id); } else { favoriteIds.delete(id); }
+                        }
+                    });
+            });
+        }
+
         function setupReactionMenu(div, id){
             const btn = div.querySelector('.reaction-btn');
             const menu = div.querySelector('.reaction-menu');
@@ -169,16 +198,32 @@
 
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
         const pending = [];
+        const favoriteIds = new Set();
 
         messages.querySelectorAll('[data-message-id]').forEach(el=>{
             setupReactionMenu(el, el.dataset.messageId);
+            setupFavoriteBtn(el, el.dataset.messageId);
         });
         const pinned = container.querySelector('#pinned');
         if(pinned){
             pinned.querySelectorAll('[data-message-id]').forEach(el=>{
                 setupReactionMenu(el, el.dataset.messageId);
+                setupFavoriteBtn(el, el.dataset.messageId);
             });
         }
+
+        fetch('/api/chat/favorites/')
+            .then(r=>r.ok ? r.json() : {})
+            .then(data=>{
+                (data[destinatarioId] || []).forEach(m=>{
+                    favoriteIds.add(m.id);
+                    const el = container.querySelector(`[data-message-id="${m.id}"]`);
+                    if(el){
+                        const btn = el.querySelector('.favorite-btn');
+                        updateFavoriteBtn(btn, true);
+                    }
+                });
+            });
 
         if(historyUrl){
             fetch(historyUrl).then(r=>r.json()).then(data=>{
@@ -242,7 +287,7 @@
             }else if(tipo === 'file'){
                 content = `<div class="chat-file"><a href="${conteudo}" target="_blank">📎 Baixar arquivo</a></div>`;
             }
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><button type="button" class="favorite-btn text-xs text-neutral-600" aria-label="${t('addFavorite','Adicionar aos favoritos')}">☆</button>`;
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
                 const btn = document.createElement('button');
@@ -272,6 +317,7 @@
             }
             renderReactions(div,reactions,userReactions);
             setupReactionMenu(div,id);
+            setupFavoriteBtn(div,id);
             if(id && remetente !== currentUser){
                 fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/mark-read/`,{
                     method:'POST',

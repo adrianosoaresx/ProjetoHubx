@@ -64,6 +64,11 @@
           </li>
         </ul>
       </div>
+      <button
+        type="button"
+        class="favorite-btn text-xs text-neutral-600"
+        aria-label="{% trans 'Adicionar aos favoritos' %}"
+      >☆</button>
       {% if is_admin %}
         <button
           hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/pin/"
