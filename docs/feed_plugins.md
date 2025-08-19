@@ -14,3 +14,10 @@ class AvisoPlugin:
 
 Para ativar um plugin, registre o caminho completo da classe em
 `FeedPluginConfig` via painel administrativo.
+
+## Execução periódica
+
+Os plugins registrados são executados pela tarefa Celery
+`feed.tasks.executar_plugins`. O agendamento padrão ocorre a cada minuto e
+é configurado em `CELERY_BEAT_SCHEDULE` com a chave
+`executar_feed_plugins`.

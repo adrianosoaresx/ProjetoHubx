@@ -293,7 +293,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "audit.tasks.cleanup_old_logs",
         "schedule": crontab(minute=0, hour=0, day_of_week="sun"),
     },
-    "executar_feed_plugins": {
+    "executar_feed_plugins": {  # executa plugins do feed periodicamente
         "task": "feed.tasks.executar_plugins",
         "schedule": crontab(minute="*"),
     },
