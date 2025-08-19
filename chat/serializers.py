@@ -190,11 +190,6 @@ class ChatMessageSerializer(serializers.ModelSerializer):
         alg = validated_data.get("alg", "")
         key_version = validated_data.get("key_version", "")
         attachment_id = validated_data.pop("attachment_id", None)
-        attachment = None
-        if attachment_id:
-            attachment = ChatAttachment.objects.filter(id=attachment_id).first()
-            if attachment:
-                arquivo = attachment.arquivo
         if channel.e2ee_habilitado:
             msg = enviar_mensagem(
                 canal=channel,
@@ -206,6 +201,7 @@ class ChatMessageSerializer(serializers.ModelSerializer):
                 conteudo_cifrado=validated_data.get("conteudo_cifrado", ""),
                 alg=alg,
                 key_version=key_version,
+                attachment_id=attachment_id,
             )
         else:
             msg = enviar_mensagem(
@@ -215,10 +211,8 @@ class ChatMessageSerializer(serializers.ModelSerializer):
                 conteudo=conteudo,
                 arquivo=arquivo,
                 reply_to=reply_to,
+                attachment_id=attachment_id,
             )
-        if attachment:
-            attachment.mensagem = msg
-            attachment.save(update_fields=["mensagem"])
         return msg
 
     def to_representation(self, instance: ChatMessage) -> dict[str, Any]:

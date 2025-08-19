@@ -18,6 +18,7 @@ from .metrics import (
 )
 from .models import (
     ChatChannel,
+    ChatAttachment,
     ChatMessage,
     ChatMessageFlag,
     ChatMessageReaction,
@@ -90,6 +91,7 @@ def enviar_mensagem(
     *,
     alg: str = "",
     key_version: str = "",
+    attachment_id: str | None = None,
 ) -> ChatMessage:
     """Salva uma nova mensagem no canal.
 
@@ -98,6 +100,11 @@ def enviar_mensagem(
     """
     if not ChatParticipant.objects.filter(channel=canal, user=remetente).exists():
         raise PermissionError("Usuário não participa do canal.")
+    attachment = None
+    if attachment_id:
+        attachment = ChatAttachment.objects.filter(id=attachment_id).first()
+        if attachment:
+            arquivo = arquivo or attachment.arquivo
     if tipo in {"image", "video", "file"} and not arquivo:
         from django.core.exceptions import ValidationError
         from django.core.validators import URLValidator
@@ -131,6 +138,9 @@ def enviar_mensagem(
             moderator=remetente,
             previous_content="",
         )
+    if attachment:
+        attachment.mensagem = msg
+        attachment.save(update_fields=["mensagem"])
     return msg
 
 

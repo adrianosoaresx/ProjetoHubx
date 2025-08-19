@@ -1,7 +1,9 @@
 import pytest
 from django.contrib.auth import get_user_model
 
-from chat.models import ChatParticipant
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from chat.models import ChatAttachment, ChatParticipant
 from chat.services import adicionar_reacao, remover_reacao, criar_canal, enviar_mensagem
 from nucleos.models import ParticipacaoNucleo
 
@@ -146,3 +148,22 @@ def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user):
     assert msg.reaction_counts()["👍"] == 2
     remover_reacao(msg, admin_user, "👍")
     assert msg.reaction_counts()["👍"] == 1
+
+
+def test_enviar_mensagem_com_attachment_id(admin_user, coordenador_user):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    att = ChatAttachment.objects.create(
+        arquivo=SimpleUploadedFile("a.txt", b"a"),
+        tamanho=1,
+    )
+    msg = enviar_mensagem(canal, admin_user, "file", attachment_id=str(att.id))
+    att.refresh_from_db()
+    assert att.mensagem_id == msg.id
+    assert msg.arquivo.name == att.arquivo.name

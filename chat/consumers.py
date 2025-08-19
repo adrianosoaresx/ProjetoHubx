@@ -72,6 +72,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         if message_type in {"text", "image", "video", "file"}:
             conteudo = data.get("conteudo", "")
             arquivo = None
+            attachment_id = data.get("attachment_id")
             reply_to_id = data.get("reply_to")
             reply_to = None
             if reply_to_id:
@@ -103,6 +104,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     conteudo_cifrado=cipher,
                     alg=alg,
                     key_version=key_version,
+                    attachment_id=attachment_id,
                 )
             else:
                 msg = await database_sync_to_async(enviar_mensagem)(
@@ -112,6 +114,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     conteudo,
                     arquivo,
                     reply_to,
+                    attachment_id=attachment_id,
                 )
             payload = {
                 "type": "chat.message",
