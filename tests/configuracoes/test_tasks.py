@@ -60,11 +60,12 @@ def test_tarefa_diaria_envia_resumo_push(mock_enviar, admin_user):
     mock_enviar.assert_called_once()
 
 
-@patch("configuracoes.tasks.Client")
-def test_enviar_notificacao_whatsapp(mock_client, admin_user):
-    instance = mock_client.return_value
+@patch("configuracoes.tasks.send_whatsapp")
+def test_enviar_notificacao_whatsapp(mock_send, admin_user):
     enviar_notificacao_whatsapp(admin_user, {"chat": 1, "feed": 0, "eventos": 0})
-    instance.messages.create.assert_called_once()
+    mock_send.assert_called_once_with(
+        admin_user, "Resumo: chat=1, feed=0, eventos=0"
+    )
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
