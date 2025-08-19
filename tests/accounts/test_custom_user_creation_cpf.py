@@ -32,11 +32,11 @@ def test_clean_cpf_accepts_formatted_cpf():
 
 
 @pytest.mark.django_db
-def test_clean_cpf_rejects_invalid_format():
+def test_clean_cpf_rejects_invalid_cpf():
     form = CustomUserCreationForm(
         data={
             "email": "invalid@example.com",
-            "cpf": "123456",
+            "cpf": "123.456.789-00",
             "password1": "StrongPass1!",
             "password2": "StrongPass1!",
         }

@@ -10,8 +10,9 @@ from django.utils.translation import gettext_lazy as _
 
 from tokens.models import TOTPDevice
 
-from .models import AccountToken, SecurityEvent, UserMedia, cpf_validator
+from .models import AccountToken, SecurityEvent, UserMedia
 from .tasks import send_confirmation_email
+from .validators import cpf_validator
 
 User = get_user_model()
 

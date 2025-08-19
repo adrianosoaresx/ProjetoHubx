@@ -39,7 +39,8 @@ from .forms import (
     MediaForm,
     RedesSociaisForm,
 )
-from .models import AccountToken, SecurityEvent, UserMedia, cpf_validator
+from .models import AccountToken, SecurityEvent, UserMedia
+from .validators import cpf_validator
 
 User = get_user_model()
 
