@@ -490,6 +490,51 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
+    success_url = reverse_lazy("agenda:material_list")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        EventoLog.objects.create(
+            evento=self.object.evento,
+            usuario=self.request.user,
+            acao="material_criado",
+        )
+        return response
+
+
+class MaterialDivulgacaoEventoUpdateView(LoginRequiredMixin, UpdateView):
+    model = MaterialDivulgacaoEvento
+    form_class = MaterialDivulgacaoEventoForm
+    template_name = "agenda/material_form.html"
+    success_url = reverse_lazy("agenda:material_list")
+
+    def get_queryset(self):  # pragma: no cover - simples
+        qs = MaterialDivulgacaoEvento.objects.all()
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            filtro = Q(evento__organizacao=user.organizacao)
+            if nucleo_ids:
+                filtro |= Q(evento__nucleo__in=nucleo_ids)
+            qs = qs.filter(filtro)
+        return qs
+
+    def form_valid(self, form):
+        old_obj = self.get_object()
+        detalhes: dict[str, dict[str, Any]] = {}
+        for field in form.changed_data:
+            before = getattr(old_obj, field)
+            after = form.cleaned_data.get(field)
+            if before != after:
+                detalhes[field] = {"antes": before, "depois": after}
+        response = super().form_valid(form)
+        EventoLog.objects.create(
+            evento=self.object.evento,
+            usuario=self.request.user,
+            acao="material_atualizado",
+            detalhes=detalhes,
+        )
+        return response
 
 
 class ParceriaPermissionMixin(UserPassesTestMixin):
