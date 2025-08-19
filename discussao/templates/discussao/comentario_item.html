@@ -18,6 +18,11 @@
         <button type="submit" class="text-green-600 text-xs">{% trans "Marcar como resolvido" %}</button>
       </form>
     {% endif %}
+    {% if not topico.fechado %}
+      <button type="button" class="text-primary-600 text-xs" hx-on:click="document.getElementById('reply_to').value='{{ comentario.id }}'; document.getElementById('id_conteudo').focus();">
+        {% trans "Responder" %}
+      </button>
+    {% endif %}
     </div>
   </header>
   <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
