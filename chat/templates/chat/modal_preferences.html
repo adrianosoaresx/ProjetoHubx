@@ -1,0 +1,27 @@
+{% load i18n %}
+<aside id="preferences-modal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50" role="dialog" aria-modal="true">
+  <section class="bg-white rounded-lg max-w-md w-full p-6 space-y-4">
+    <h2 class="text-lg font-semibold">{% trans "Preferências do Chat" %}</h2>
+    <form id="preferences-form" class="space-y-4">
+      <div>
+        <label for="pref-theme" class="block text-sm font-medium">{% trans "Tema" %}</label>
+        <select id="pref-theme" name="tema" class="mt-1 block w-full border rounded p-2">
+          <option value="claro">{% trans "Claro" %}</option>
+          <option value="escuro">{% trans "Escuro" %}</option>
+        </select>
+      </div>
+      <div class="space-y-2">
+        <label class="flex items-center gap-2"><input type="checkbox" id="pref-daily" /> {% trans "Resumo diário" %}</label>
+        <label class="flex items-center gap-2"><input type="checkbox" id="pref-weekly" /> {% trans "Resumo semanal" %}</label>
+      </div>
+      <div>
+        <label for="pref-searches" class="block text-sm font-medium">{% trans "Buscas salvas (separadas por vírgula)" %}</label>
+        <input type="text" id="pref-searches" class="mt-1 block w-full border rounded p-2" />
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" id="pref-cancel" class="px-3 py-1 border rounded">{% trans "Cancelar" %}</button>
+        <button type="submit" class="px-3 py-1 bg-primary text-white rounded">{% trans "Salvar" %}</button>
+      </div>
+    </form>
+  </section>
+</aside>
