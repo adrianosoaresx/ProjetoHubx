@@ -8,6 +8,7 @@ from rest_framework import serializers
 from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
 from .tasks import organizacao_alterada
 from .utils import validate_cnpj
+from feed.models import FeedPluginConfig
 
 
 class OrganizacaoSerializer(serializers.ModelSerializer):
@@ -151,3 +152,17 @@ class OrganizacaoAtividadeLogSerializer(serializers.ModelSerializer):
             "created_at",
             "usuario_email",
         ]
+
+
+class FeedPluginConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeedPluginConfig
+        fields = [
+            "id",
+            "module_path",
+            "frequency",
+            "organizacao",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["organizacao", "created_at", "updated_at"]
