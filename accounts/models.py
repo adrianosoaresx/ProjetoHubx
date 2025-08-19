@@ -219,6 +219,23 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
 
+    def delete(
+        self,
+        using: str | None = None,
+        keep_parents: bool = False,
+        *,
+        soft: bool = True,
+    ) -> None:  # type: ignore[override]
+        """Remove avatar e cover ao excluir definitivamente o usuário."""
+
+        if not soft:
+            if self.avatar:
+                self.avatar.delete(save=False)
+            if self.cover:
+                self.cover.delete(save=False)
+
+        super().delete(using=using, keep_parents=keep_parents, soft=soft)
+
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)
     followers = models.ManyToManyField(

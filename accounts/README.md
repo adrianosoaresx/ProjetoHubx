@@ -12,6 +12,8 @@ class Exemplo(TimeStampedModel, SoftDeleteModel):
 ```
 
 A exclusão padrão é lógica, basta chamar `instance.delete()`. Para remover definitivamente, use `instance.delete(soft=False)`.
+Para o modelo `User`, ao excluir definitivamente (`soft=False`), os arquivos `avatar` e `cover`
+associados ao usuário também são removidos do armazenamento.
 
 ## Documentação
 
