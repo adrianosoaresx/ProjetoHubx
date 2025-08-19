@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 from .validators import validar_arquivo_discussao
@@ -92,9 +93,15 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="topicos_discussao",
     )
-    publico_alvo = models.PositiveSmallIntegerField(
-        choices=[(0, "Todos"), (1, "Apenas nucleados"), (2, "Apenas associados")]
-    )
+    PUBLICO_ALVO_CHOICES = [
+        (0, _("Todos")),
+        (1, _("Apenas nucleados")),
+        (2, _("Apenas associados")),
+        (3, _("Apenas organizadores")),
+        (4, _("Apenas parceiros")),
+    ]
+
+    publico_alvo = models.PositiveSmallIntegerField(choices=PUBLICO_ALVO_CHOICES)
     melhor_resposta = models.ForeignKey(
         "RespostaDiscussao",
         null=True,
