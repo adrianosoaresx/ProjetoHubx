@@ -1,9 +1,20 @@
+{% extends 'base.html' %}
 {% load i18n %}
-<h1>{% trans "Configurações Contextuais" %}</h1>
-<ul>
-  {% for cfg in object_list %}
-    <li>{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</li>
-  {% empty %}
-    <li>{% trans "Nenhuma configuração" %}</li>
-  {% endfor %}
-</ul>
+
+{% block title %}{% trans "Configurações Contextuais" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">{% trans "Configurações Contextuais" %}</h1>
+  <ul class="space-y-2">
+    {% for cfg in object_list %}
+      <li class="p-4 bg-white rounded-lg shadow">{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</li>
+    {% empty %}
+      <li class="text-gray-600">{% trans "Nenhuma configuração" %}</li>
+    {% endfor %}
+  </ul>
+  <div class="mt-4">
+    <a href="{% url 'configuracoes' %}" class="text-blue-600 hover:underline">{% trans "Voltar para Configurações" %}</a>
+  </div>
+</div>
+{% endblock %}
