@@ -11,9 +11,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
         limite = timezone.now() - timezone.timedelta(days=30)
-        qs = User.objects.filter(deleted=True, deleted_at__lt=limite, exclusao_confirmada=True)
+        qs = (
+            User.objects.filter(deleted=True, deleted_at__lt=limite, exclusao_confirmada=True)
+            .prefetch_related("medias")
+        )
         count = 0
         for user in qs:
+            for media in user.medias.all():
+                media.delete(soft=False)
             user.delete(soft=False)
             count += 1
         self.stdout.write(f"{count} contas removidas")

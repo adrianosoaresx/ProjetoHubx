@@ -60,7 +60,9 @@ def purge_soft_deleted(batch_size: int = 500) -> None:
                 break
             with transaction.atomic():
                 # ``soft=False`` remove definitivamente
-                for user in User.all_objects.filter(pk__in=ids):
+                for user in User.all_objects.filter(pk__in=ids).prefetch_related("medias"):
+                    for media in user.medias.all():
+                        media.delete(soft=False)
                     user.delete(soft=False)
             total_purged += len(ids)
     except Exception:
