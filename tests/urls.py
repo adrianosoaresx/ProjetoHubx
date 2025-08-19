@@ -5,6 +5,15 @@ urlpatterns = [
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
+    path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
+    path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
+    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
+    path("feed/", include(("feed.urls", "feed"), namespace="feed")),
+    path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
+    path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
+    path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
 
     path(
         "api/financeiro/",

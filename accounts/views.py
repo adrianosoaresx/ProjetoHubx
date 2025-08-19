@@ -15,7 +15,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -516,8 +516,12 @@ def cpf(request):
         if valor:
             try:
                 cpf_validator(valor)
-                request.session["cpf"] = valor
-                return redirect("accounts:email")
+                if User.objects.filter(cpf=valor).exists():
+                    messages.error(request, _("CPF já cadastrado."))
+                    return redirect("accounts:cpf")
+                else:
+                    request.session["cpf"] = valor
+                    return redirect("accounts:email")
             except ValidationError:
                 messages.error(request, "CPF inválido.")
     return render(request, "register/cpf.html")
@@ -527,8 +531,12 @@ def email(request):
     if request.method == "POST":
         val = request.POST.get("email")
         if val:
-            request.session["email"] = val
-            return redirect("accounts:senha")
+            if User.objects.filter(email__iexact=val).exists():
+                messages.error(request, _("Este e-mail já está em uso."))
+                return redirect("accounts:email")
+            else:
+                request.session["email"] = val
+                return redirect("accounts:senha")
     return render(request, "register/email.html")
 
 
@@ -536,8 +544,12 @@ def usuario(request):
     if request.method == "POST":
         usr = request.POST.get("usuario")
         if usr:
-            request.session["usuario"] = usr
-            return redirect("accounts:nome")
+            if User.objects.filter(username__iexact=usr).exists():
+                messages.error(request, _("Nome de usuário já cadastrado."))
+                return redirect("accounts:usuario")
+            else:
+                request.session["usuario"] = usr
+                return redirect("accounts:nome")
     return render(request, "register/usuario.html")
 
 
@@ -599,18 +611,27 @@ def termos(request):
                 TokenAcesso.TipoUsuario.ASSOCIADO: UserType.ASSOCIADO,
                 TokenAcesso.TipoUsuario.CONVIDADO: UserType.CONVIDADO,
             }
-            user = User.objects.create(
-                username=username,
-                email=email_val,
-                first_name=first_name,
-                last_name=last_name,
-                nome_completo=nome_completo,
-                password=pwd_hash,
-                cpf=cpf_val,
-                user_type=tipo_mapping[token_obj.tipo_destino],
-                is_active=False,
-                email_confirmed=False,
-            )
+            try:
+                with transaction.atomic():
+                    user = User.objects.create(
+                        username=username,
+                        email=email_val,
+                        first_name=first_name,
+                        last_name=last_name,
+                        nome_completo=nome_completo,
+                        password=pwd_hash,
+                        cpf=cpf_val,
+                        user_type=tipo_mapping[token_obj.tipo_destino],
+                        is_active=False,
+                        email_confirmed=False,
+                    )
+            except IntegrityError:
+                messages.error(
+                    request,
+                    _("Não foi possível criar o usuário. Dados já cadastrados."),
+                )
+                return redirect("accounts:usuario")
+
             primeiro_nucleo = token_obj.nucleos.first()
             if primeiro_nucleo:
                 user.nucleo = primeiro_nucleo
