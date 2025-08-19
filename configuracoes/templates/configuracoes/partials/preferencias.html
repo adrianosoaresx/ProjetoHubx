@@ -16,6 +16,12 @@
       {% if preferencias_form.frequencia_notificacoes_email.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_email.help_text }}</p>
       {% endif %}
+      <div class="mt-2 flex items-center gap-2">
+        <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "email"}' hx-include="[name=csrfmiddlewaretoken]" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-email').innerText = event.detail.xhr.responseJSON.detail">
+          {% trans 'Testar e-mail' %}
+        </button>
+        <span id="msg-email" class="text-xs text-gray-600" aria-live="polite"></span>
+      </div>
     </div>
     <div>
       <label class="flex items-center gap-2">
@@ -29,6 +35,12 @@
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_whatsapp.help_text }}</p>
       {% endif %}
       <p class="text-xs text-gray-500">{% trans 'Funcionalidade de WhatsApp em desenvolvimento' %}</p>
+      <div class="mt-2 flex items-center gap-2">
+        <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken]" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail">
+          {% trans 'Testar WhatsApp' %}
+        </button>
+        <span id="msg-whatsapp" class="text-xs text-gray-600" aria-live="polite"></span>
+      </div>
     </div>
     <div>
       <label class="flex items-center gap-2">
@@ -41,6 +53,12 @@
       {% if preferencias_form.frequencia_notificacoes_push.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_push.help_text }}</p>
       {% endif %}
+      <div class="mt-2 flex items-center gap-2">
+        <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "push"}' hx-include="[name=csrfmiddlewaretoken]" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-push').innerText = event.detail.xhr.responseJSON.detail">
+          {% trans 'Testar push' %}
+        </button>
+        <span id="msg-push" class="text-xs text-gray-600" aria-live="polite"></span>
+      </div>
     </div>
     <div id="campo-hora-diaria" class="hidden">
       <label for="{{ preferencias_form.hora_notificacao_diaria.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário diário' %}</label>
