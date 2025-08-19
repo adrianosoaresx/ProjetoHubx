@@ -39,6 +39,7 @@ def create_message(**kwargs):
     reply_to = kwargs.get("reply_to")
     if not reply_to and kwargs.get("reply_to_id"):
         reply_to = ChatMessage.objects.get(pk=kwargs["reply_to_id"])
+    attachment_id = kwargs.get("attachment_id")
     return enviar_mensagem(
         canal=channel,
         remetente=remetente,
@@ -49,6 +50,7 @@ def create_message(**kwargs):
         conteudo_cifrado=conteudo_cifrado,
         alg=alg,
         key_version=key_version,
+        attachment_id=attachment_id,
     )
 
 

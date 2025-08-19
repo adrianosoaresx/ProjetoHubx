@@ -144,6 +144,12 @@ class UploadArquivoAPIView(APIView):
         attachment.save()
         chat_attachments_total.inc()
 
+        # Remove orphan attachments older than 1 hour
+        ChatAttachment.objects.filter(
+            mensagem__isnull=True,
+            created_at__lt=timezone.now() - timedelta(hours=1),
+        ).delete()
+
         tipo = "file"
         if content_type.startswith("image"):
             tipo = "image"
