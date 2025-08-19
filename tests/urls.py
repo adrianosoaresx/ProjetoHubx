@@ -21,6 +21,11 @@ urlpatterns = [
     ),
 
     path(
+        "api/empresas/",
+        include(("empresas.api_urls", "empresas_api"), namespace="empresas_api"),
+    ),
+
+    path(
         "api/tokens/",
         include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
     ),

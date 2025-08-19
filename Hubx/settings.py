@@ -173,6 +173,11 @@ else:  # pragma: no cover - fallback para testes sem Redis
 TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
 TOKENS_RATE_LIMIT_ENABLED = True
 
+# Configuração de webhooks para tokens
+TOKEN_CREATED_WEBHOOK_URL = os.getenv("TOKEN_CREATED_WEBHOOK_URL")
+TOKEN_REVOKED_WEBHOOK_URL = os.getenv("TOKEN_REVOKED_WEBHOOK_URL")
+TOKEN_WEBHOOK_SECRET = os.getenv("TOKEN_WEBHOOK_SECRET", "")
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

@@ -107,7 +107,7 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
 
 class TarefaViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = TarefaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
     queryset = Tarefa.objects.select_related("organizacao", "nucleo").all()
 
