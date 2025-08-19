@@ -176,14 +176,40 @@ class CodigoAutenticacao(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="codigos_autenticacao",
     )
-    codigo = models.CharField(max_length=8)
+    codigo_hash = models.CharField(max_length=64)
+    codigo_salt = models.CharField(max_length=32)
     expira_em = models.DateTimeField()
     verificado = models.BooleanField(default=False)
     tentativas = models.PositiveSmallIntegerField(default=0)
 
+    _codigo: str | None = None
+
+    @property
+    def codigo(self) -> str | None:
+        return self._codigo
+
+    @codigo.setter
+    def codigo(self, value: str) -> None:
+        self._codigo = value
+
+    def set_codigo(self, codigo: str) -> None:
+        self._codigo = codigo
+        salt = secrets.token_bytes(16)
+        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
+        self.codigo_salt = base64.b64encode(salt).decode()
+        self.codigo_hash = base64.b64encode(digest).decode()
+
+    def check_codigo(self, codigo: str) -> bool:
+        salt = base64.b64decode(self.codigo_salt)
+        expected = base64.b64decode(self.codigo_hash)
+        digest = hashlib.pbkdf2_hmac("sha256", codigo.encode(), salt, 120000)
+        return hmac.compare_digest(expected, digest)
+
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.codigo = f"{random.randint(0, 999999):06d}"
+            if not self._codigo:
+                self._codigo = f"{random.randint(0, 999999):06d}"
+            self.set_codigo(self._codigo)
             self.expira_em = timezone.now() + timezone.timedelta(minutes=10)
         super().save(*args, **kwargs)
 
@@ -200,7 +226,7 @@ class TOTPDevice(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="totp_device",
     )
-    secret = models.CharField(max_length=32)
+    secret = EncryptedCharField(max_length=128)
     confirmado = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
