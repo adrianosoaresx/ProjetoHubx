@@ -5,6 +5,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from validate_docbr import CNPJ
+from django.contrib.auth import get_user_model
+
+from accounts.models import UserType
+from organizacoes.factories import OrganizacaoFactory
 
 from empresas.models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
 from services.cnpj_validator import CNPJValidationError
@@ -219,6 +223,77 @@ def test_busca_palavras_chave(api_client, gerente_user):
     resp = api_client.get(url)
     ids = [e["id"] for e in resp.data]
     assert str(e1.id) in ids and len(resp.data) == 1
+
+
+def test_busca_por_organizacao_superuser(api_client, admin_user):
+    org2 = OrganizacaoFactory()
+    User = get_user_model()
+    outro_admin = User.objects.create_user(
+        email="other@example.com",
+        username="other",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=org2,
+    )
+    emp1 = Empresa.objects.create(
+        usuario=admin_user,
+        organizacao=admin_user.organizacao,
+        nome="Org1",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="X",
+        estado="SC",
+    )
+    emp2 = Empresa.objects.create(
+        usuario=outro_admin,
+        organizacao=org2,
+        nome="Org2",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Y",
+        estado="PR",
+    )
+    root = User.objects.create_superuser(
+        email="root@example.com", username="root", password="pass"
+    )
+    api_client.force_authenticate(root)
+    url = reverse("empresas_api:empresa-list") + f"?organizacao={org2.id}"
+    resp = api_client.get(url)
+    ids = {e["id"] for e in resp.data}
+    assert ids == {str(emp2.id)}
+
+
+def test_busca_combinada(api_client, gerente_user, tag_factory):
+    api_client.force_authenticate(user=gerente_user)
+    tag = tag_factory(nome="servico", categoria="serv")
+    e1 = Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Alpha",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Florianopolis",
+        estado="SC",
+        palavras_chave="saude",
+    )
+    e1.tags.add(tag)
+    Empresa.objects.create(
+        usuario=gerente_user,
+        organizacao=gerente_user.organizacao,
+        nome="Beta",
+        cnpj=CNPJ().generate(),
+        tipo="mei",
+        municipio="Florianopolis",
+        estado="SC",
+        palavras_chave="tech",
+    )
+    url = (
+        reverse("empresas_api:empresa-list")
+        + f"?municipio=Florianopolis&estado=SC&tags={tag.id}&q=saude"
+    )
+    resp = api_client.get(url)
+    ids = {e["id"] for e in resp.data}
+    assert ids == {str(e1.id)}
 
 
 def test_avaliacao_unica(api_client, gerente_user):
