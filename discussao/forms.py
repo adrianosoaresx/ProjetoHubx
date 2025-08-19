@@ -50,6 +50,7 @@ class TopicoDiscussaoForm(forms.ModelForm):
             "evento": forms.HiddenInput(),
             "fechado": forms.HiddenInput(),
         }
+        labels = {"publico_alvo": _("Público-alvo")}
 
     def clean_tags(self):
         tags = list(self.cleaned_data.get("tags", []))

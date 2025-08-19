@@ -77,7 +77,7 @@ def test_topico_form_validation(categoria, admin_user, nucleo, evento):
             "categoria": categoria.pk,
             "titulo": "x",
             "conteudo": "c",
-            "publico_alvo": 3,
+            "publico_alvo": 5,
         }
     )
     assert not form4.is_valid()

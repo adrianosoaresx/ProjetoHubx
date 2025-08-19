@@ -26,7 +26,7 @@ class TopicoDiscussaoFactory(DjangoModelFactory):
     slug = factory.Sequence(lambda n: f"topico-{n}")
     conteudo = factory.Faker("paragraph", locale="pt_BR")
     autor = factory.SubFactory(UserFactory)
-    publico_alvo = factory.Faker("random_element", elements=[0, 1, 2])
+    publico_alvo = factory.Faker("random_element", elements=[0, 1, 2, 3, 4])
 
 
 class RespostaDiscussaoFactory(DjangoModelFactory):
