@@ -7,7 +7,13 @@
 <section class="max-w-2xl mx-auto py-8">
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+    <p>{{ form.nome.label_tag }} {{ form.nome }} {{ form.nome.errors }}</p>
+    <p>{{ form.slug.label_tag }} {{ form.slug }} {{ form.slug.errors }}</p>
+    <p>{{ form.descricao.label_tag }} {{ form.descricao }} {{ form.descricao.errors }}</p>
+    <p>{{ form.avatar.label_tag }} {{ form.avatar }} {{ form.avatar.errors }}</p>
+    <p>{{ form.cover.label_tag }} {{ form.cover }} {{ form.cover.errors }}</p>
+    <p>{{ form.mensalidade.label_tag }} {{ form.mensalidade }} {{ form.mensalidade.errors }}</p>
+    <p>{{ form.ativo.label_tag }} {{ form.ativo }} {{ form.ativo.errors }}</p>
     <div class="flex justify-end gap-2">
       <a href="{% url 'nucleos:detail' object.pk %}" class="px-4 py-2 border rounded">{% trans 'Cancelar' %}</a>
       <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">{% trans 'Salvar' %}</button>

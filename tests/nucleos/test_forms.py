@@ -11,13 +11,27 @@ pytestmark = pytest.mark.django_db
 
 def test_nucleo_form_fields():
     form = NucleoForm()
-    assert list(form.fields) == ["nome", "slug", "descricao", "avatar", "cover", "ativo"]
+    assert list(form.fields) == [
+        "nome",
+        "slug",
+        "descricao",
+        "avatar",
+        "cover",
+        "mensalidade",
+        "ativo",
+    ]
 
 
 def test_form_validation_errors():
     form = NucleoForm(data={"nome": "", "slug": ""})
     assert not form.is_valid()
     assert "nome" in form.errors
+
+
+def test_mensalidade_negative_value():
+    form = NucleoForm(data={"nome": "N", "slug": "n", "mensalidade": -1})
+    assert not form.is_valid()
+    assert "mensalidade" in form.errors
 
 
 def test_search_form_contains_field():

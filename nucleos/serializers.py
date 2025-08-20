@@ -67,6 +67,7 @@ class NucleoSerializer(serializers.ModelSerializer):
             "descricao",
             "avatar",
             "cover",
+            "mensalidade",
             "ativo",
             "created_at",
             "deleted",
@@ -74,6 +75,11 @@ class NucleoSerializer(serializers.ModelSerializer):
             "suplentes",
         ]
         read_only_fields = ["deleted", "deleted_at", "created_at"]
+
+    def validate_mensalidade(self, valor):
+        if valor < 0:
+            raise serializers.ValidationError("Valor inválido")
+        return valor
 
 
 class ConviteNucleoSerializer(serializers.ModelSerializer):
