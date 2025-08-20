@@ -113,3 +113,40 @@ class ConfiguracaoContextualForm(forms.ModelForm):
             "idioma",
             "tema",
         )
+        widgets = {
+            "receber_notificacoes_email": forms.CheckboxInput(),
+            "receber_notificacoes_whatsapp": forms.CheckboxInput(),
+            "receber_notificacoes_push": forms.CheckboxInput(),
+            "frequencia_notificacoes_email": forms.Select(),
+            "frequencia_notificacoes_whatsapp": forms.Select(),
+            "frequencia_notificacoes_push": forms.Select(),
+            "idioma": forms.Select(),
+            "tema": forms.Select(),
+        }
+        help_texts = {
+            "frequencia_notificacoes_email": _(
+                "Aplicável apenas se notificações por e-mail estiverem ativas."
+            ),
+            "frequencia_notificacoes_whatsapp": _(
+                "Aplicável apenas se notificações por WhatsApp estiverem ativas."
+            ),
+            "frequencia_notificacoes_push": _(
+                "Aplicável apenas se notificações push estiverem ativas."
+            ),
+        }
+
+    def clean(self) -> dict[str, object]:
+        data = super().clean()
+        if not data.get("receber_notificacoes_email"):
+            data["frequencia_notificacoes_email"] = (
+                self.instance.frequencia_notificacoes_email
+            )
+        if not data.get("receber_notificacoes_whatsapp"):
+            data["frequencia_notificacoes_whatsapp"] = (
+                self.instance.frequencia_notificacoes_whatsapp
+            )
+        if not data.get("receber_notificacoes_push"):
+            data["frequencia_notificacoes_push"] = (
+                self.instance.frequencia_notificacoes_push
+            )
+        return data

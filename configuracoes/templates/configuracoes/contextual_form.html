@@ -11,7 +11,14 @@
     {% for field in form %}
       <div>
         <label for="{{ field.id_for_label }}" class="block text-sm font-medium">{{ field.label }}</label>
-        {{ field|add_class:'w-full p-2 border rounded-lg' }}
+        {% if field.field.widget.input_type == 'checkbox' %}
+          {{ field|add_class:'form-checkbox' }}
+        {% else %}
+          {{ field|add_class:'w-full p-2 border rounded-lg' }}
+        {% endif %}
+        {% if field.help_text %}
+          <p class="text-xs text-gray-500">{{ field.help_text }}</p>
+        {% endif %}
         {% for error in field.errors %}
           <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
         {% endfor %}

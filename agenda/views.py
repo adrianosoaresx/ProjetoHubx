@@ -27,7 +27,6 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -302,6 +301,11 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
             filtro |= Q(nucleo__in=nucleo_ids)
         return qs.filter(filtro)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["logs"] = self.object.logs.select_related("usuario").all()
+        return context
+
 
 class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = Tarefa
@@ -541,7 +545,6 @@ def avaliar_parceria(request, pk: int):
     return render(request, "agenda/parceria_avaliar.html", {"parceria": parceria})
 
 
-@csrf_exempt
 def checkin_inscricao(request, pk: int):
     """Valida o QRCode enviado e registra o check-in."""
     if request.method != "POST":

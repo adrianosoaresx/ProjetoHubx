@@ -1,7 +1,7 @@
 {% if partial %}
   {% for comentario in comentarios %}
 
-    {% include 'discussao/comentario_item.html' with comentario=comentario user=user topico=topico content_type_id=content_type_id %}
+    {% include 'discussao/comentario_item.html' with comentario=comentario user=user topico=topico resposta_content_type_id=resposta_content_type_id %}
 
 
   {% endfor %}
@@ -18,7 +18,7 @@
       <span class="ml-2 px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">{% trans "Resolvido" %}</span>
       {% endif %}
     </h1>
-    <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created|date:SHORT_DATETIME_FORMAT }}</p>
+    <p class="text-sm text-neutral-600">{% trans "Por" %} {{ topico.autor.get_full_name|default:topico.autor.username }} · {{ topico.created_at|date:SHORT_DATETIME_FORMAT }}</p>
     {% if pode_editar_topico %}
       <a href="{% url 'discussao:topico_editar' topico.categoria.slug topico.slug %}" class="text-sm text-blue-600">{% trans "Editar" %}</a>
     {% endif %}
@@ -62,10 +62,12 @@
     <h2 id="comentarios" class="text-xl font-semibold">{% trans "Coment\u00e1rios" %}</h2>
     {% if melhor_resposta %}
 
-      {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True content_type_id=resposta_content_type_id %}
+      {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True resposta_content_type_id=resposta_content_type_id %}
     {% endif %}
     <div id="lista-comentarios">
-      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user content_type_id=resposta_content_type_id only %}
+
+      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user resposta_content_type_id=content_type_id only %}
+
 
     </div>
     {% if comentarios.has_previous or comentarios.has_next %}
