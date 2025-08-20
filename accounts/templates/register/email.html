@@ -21,6 +21,14 @@
       <p class="text-neutral-600">{% trans "Usaremos para comunicação e recuperação de conta" %}</p>
     </div>
 
+    {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for message in messages %}
+        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
       {% csrf_token %}
       <div>
