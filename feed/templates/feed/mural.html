@@ -10,6 +10,7 @@
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Meu Mural" %}</h1>
     <div class="flex gap-2">
       <a href="{% url 'feed:listar' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Ver Feed Global' %}">{% trans "Ver Feed Global" %}</a>
+      <a href="{% url 'feed:bookmarks' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Favoritos' %}">{% trans "Favoritos" %}</a>
       {% if request.user.user_type != 'root' %}
       <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Nova postagem' %}">
         <i class="fa-solid fa-circle-plus"></i>
