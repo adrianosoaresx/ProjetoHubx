@@ -25,21 +25,10 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-
-from .models import TokenAcesso, TokenUsoLog, TOTPDevice
-from .services import create_invite_token
-
-from accounts.models import SecurityEvent
-
-from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
 from .metrics import tokens_invites_revoked_total
-from . import services
-
-from .models import TokenAcesso, TOTPDevice
+from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
 from .perms import can_issue_invite
-from .services import create_invite_token
-
-
+from .services import create_invite_token, list_tokens, revoke_token
 
 User = get_user_model()
 
@@ -137,7 +126,7 @@ def revogar_convite(request, token_id: int):
 
 @login_required
 def listar_api_tokens(request):
-    tokens = services.list_tokens(request.user)
+    tokens = list_tokens(request.user)
     return render(request, "tokens/api_tokens.html", {"tokens": tokens})
 
 
@@ -147,7 +136,7 @@ def revogar_api_token(request, token_id: str):
     if token.revoked_at:
         messages.info(request, _("Token já revogado."))
     else:
-        services.revoke_token(token.id, revogado_por=request.user)
+        revoke_token(token.id, revogado_por=request.user)
         ApiTokenLog.objects.create(
             token=token,
             usuario=request.user,
