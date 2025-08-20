@@ -34,6 +34,14 @@
     {% if object.participantes_maximo %}
       <p><strong>{% trans "Participantes máximo" %}:</strong> {{ object.participantes_maximo }}</p>
     {% endif %}
+    <p>
+      <strong>{% trans "Lista de espera" %}:</strong>
+      {% if object.espera_habilitada %}
+        {% trans "Habilitada" %}
+      {% else %}
+        {% trans "Desabilitada" %}
+      {% endif %}
+    </p>
     {% if object.orcamento %}
       <p><strong>{% trans "Orçamento" %}:</strong> {{ object.orcamento }}</p>
     {% endif %}
