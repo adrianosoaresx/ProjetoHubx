@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 from .models import Organizacao
 from .utils import validate_cnpj
@@ -22,7 +23,11 @@ class OrganizacaoForm(forms.ModelForm):
             "contato_telefone",
             "avatar",
             "cover",
+            "rate_limit_multiplier",
         ]
+        labels = {
+            "rate_limit_multiplier": _("Multiplicador de limite de taxa"),
+        }
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -31,6 +36,12 @@ class OrganizacaoForm(forms.ModelForm):
             existing = field.widget.attrs.get("class", "")
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
         self.fields["slug"].required = False
+
+    def clean_rate_limit_multiplier(self):
+        mult = self.cleaned_data.get("rate_limit_multiplier")
+        if mult is not None and mult <= 0:
+            raise forms.ValidationError(_("Deve ser maior que zero."))
+        return mult
 
     def clean_cnpj(self):
         cnpj = validate_cnpj(self.cleaned_data.get("cnpj"))

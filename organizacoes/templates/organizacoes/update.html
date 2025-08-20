@@ -116,6 +116,14 @@
     </div>
 
     <div>
+      <label for="{{ form.rate_limit_multiplier.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rate_limit_multiplier.label }}</label>
+      {{ form.rate_limit_multiplier }}
+      {% if form.rate_limit_multiplier.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.rate_limit_multiplier.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div>
       <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
       {{ form.avatar }}
       {% if form.avatar.errors %}
