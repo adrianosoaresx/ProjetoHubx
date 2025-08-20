@@ -68,8 +68,7 @@ def test_reset_password_logs_security_event():
 def test_resend_confirmation_logs_security_event():
     user = User.objects.create_user(email="inactive@example.com", username="i", is_active=False)
     client = APIClient()
-    client.force_authenticate(user=user)
-    resp = client.post(reverse("accounts_api:account-resend-confirmation"))
+    resp = client.post(reverse("accounts_api:account-resend-confirmation"), {"email": user.email})
     assert resp.status_code == 204
     assert SecurityEvent.objects.filter(usuario=user, evento="resend_confirmation").exists()
 

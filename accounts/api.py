@@ -29,7 +29,9 @@ class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
+
         if self.action in {"delete_me", "enable_2fa", "disable_2fa", "resend_confirmation"}:
+
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -55,7 +57,13 @@ class AccountViewSet(viewsets.GenericViewSet):
 
     @action(detail=False, methods=["post"], url_path="resend-confirmation")
     def resend_confirmation(self, request):
-        user = request.user
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": _("Email ausente.")}, status=400)
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return Response(status=204)
         if user.is_active:
             return Response({"detail": _("Conta já ativada.")}, status=400)
         token = AccountToken.objects.create(

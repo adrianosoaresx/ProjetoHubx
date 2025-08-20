@@ -40,3 +40,15 @@ dos elementos segue fluxo lógico para navegação assistida.
 Após concluir o cadastro, o usuário pode solicitar novo e‑mail de confirmação.
 Tokens antigos são marcados como usados e não podem ser reutilizados.
 
+**Endpoint**: `POST /api/accounts/resend-confirmation/`
+
+```json
+{
+  "email": "usuario@example.com"
+}
+```
+
+O endpoint não exige autenticação e retorna `204 No Content` mesmo quando o e‑mail
+não existir. Caso a conta já esteja ativa, é retornado `400` com a mensagem
+`"Conta já ativada."`.
+
