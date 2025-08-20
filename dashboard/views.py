@@ -387,8 +387,18 @@ class DashboardExportView(LoginRequiredMixin, View):
 
     def get(self, request):
         user = request.user
+
+        def _response_with_message(msg: str, status: int) -> HttpResponse:
+            messages.error(request, msg)
+            if request.headers.get("Hx-Request") == "true":
+                html = render_to_string(
+                    "dashboard/partials/messages.html", request=request
+                )
+                return HttpResponse(html, status=status)
+            return HttpResponse(msg, status=status)
+
         if user.user_type not in {UserType.ROOT, UserType.ADMIN, UserType.COORDENADOR}:
-            return HttpResponse(status=403)
+            return _response_with_message(_("Acesso negado"), 403)
 
         periodo = request.GET.get("periodo", "mensal")
         escopo = request.GET.get("escopo", "auto")
@@ -417,15 +427,15 @@ class DashboardExportView(LoginRequiredMixin, View):
                 **filters,
             )
         except PermissionError:
-            return HttpResponse(status=403)
+            return _response_with_message(_("Acesso negado"), 403)
         except ValueError as exc:
-            return HttpResponse(str(exc), status=400)
+            return _response_with_message(str(exc), 400)
 
         if formato == "pdf":
             try:
                 from weasyprint import HTML
             except Exception:
-                return HttpResponse(status=500)
+                return _response_with_message(_("PDF indisponível"), 500)
             html = render_to_string("dashboard/export_pdf.html", {"metrics": metrics})
             pdf_bytes = HTML(string=html).write_pdf()
             resp = HttpResponse(pdf_bytes, content_type="application/pdf")
