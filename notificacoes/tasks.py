@@ -49,6 +49,7 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
                 f"notificacoes_{user.id}",
                 {
                     "type": "notification.message",
+                    "event": "notification_message",
                     "titulo": subject,
                     "mensagem": body,
                     "canal": canal,
@@ -132,6 +133,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
                 f"notificacoes_{config.user.id}",
                 {
                     "type": "notification.message",
+                    "event": "notification_message",
                     "titulo": subject,
                     "mensagem": body,
                     "canal": canal,
