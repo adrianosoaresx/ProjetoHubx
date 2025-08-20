@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.files.storage import default_storage
@@ -444,6 +445,17 @@ def lancamentos_list_view(request):
         "nucleos": list(nucleos),
     }
     return render(request, "financeiro/lancamentos_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def logs_list_view(request):
+    User = get_user_model()
+    context = {
+        "acoes": FinanceiroLog.Acao.choices,
+        "usuarios": User.objects.all(),
+    }
+    return render(request, "financeiro/logs_list.html", context)
 
 
 @login_required
