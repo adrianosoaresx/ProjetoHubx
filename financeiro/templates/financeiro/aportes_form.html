@@ -1,5 +1,11 @@
 {% load i18n %}
-<form hx-post="/api/financeiro/aportes/" class="p-4 bg-white rounded shadow max-w-md" aria-live="assertive">
+<form
+  hx-post="/api/financeiro/aportes/"
+  hx-target="#aportes-messages"
+  hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();document.getElementById('aportes-messages').textContent='{{ _('Aporte registrado com sucesso') }}';}else{document.getElementById('aportes-messages').textContent='{{ _('Erro ao registrar aporte') }}';}"
+  class="p-4 bg-white rounded shadow max-w-md"
+  aria-live="assertive"
+>
   {% csrf_token %}
   <div class="mb-2">
     <label for="id_centro" class="block text-sm font-medium">{{ _('Centro de Custo') }}</label>
