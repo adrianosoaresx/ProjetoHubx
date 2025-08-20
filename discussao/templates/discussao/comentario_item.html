@@ -3,6 +3,9 @@
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
       {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"SHORT_DATETIME_FORMAT" }}
+      {% if comentario.editado %}
+        ({% blocktrans with data=comentario.editado_em|date:"SHORT_DATETIME_FORMAT" %}editado em {{ data }}{% endblocktrans %})
+      {% endif %}
     </div>
     <div class="flex items-center gap-2">
     {% if comentario.pode_editar %}
