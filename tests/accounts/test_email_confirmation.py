@@ -15,9 +15,8 @@ def test_resend_and_confirm_email(settings, mailoutbox):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     user = User.objects.create_user(email="a@example.com", username="a", is_active=False)
     client = APIClient()
-    client.force_authenticate(user=user)
     url = reverse("accounts_api:account-resend-confirmation")
-    resp = client.post(url)
+    resp = client.post(url, {"email": user.email})
     assert resp.status_code == 204
     token = AccountToken.objects.filter(usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION).latest("created_at")
     assert token.expires_at > timezone.now()
