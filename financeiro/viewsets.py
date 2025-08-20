@@ -38,6 +38,7 @@ from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .services.forecast import calcular_previsao
+from .services.exportacao import exportar_para_arquivo
 from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -200,6 +201,61 @@ class FinanceiroLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, vie
         return qs
 
 
+class RepasseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Listagem de lançamentos de repasses de receita."""
+
+    serializer_class = LancamentoFinanceiroSerializer
+    permission_classes = [
+        IsAuthenticated,
+        IsNotRoot,
+        IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly,
+    ]
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = LancamentoFinanceiro.objects.select_related(
+            "centro_custo__evento",
+            "centro_custo__nucleo",
+            "centro_custo__organizacao",
+            "conta_associado__user",
+        ).filter(tipo=LancamentoFinanceiro.Tipo.REPASSE)
+        user = self.request.user
+        if user.user_type == UserType.COORDENADOR and user.nucleo_id:
+            qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
+        elif user.user_type != UserType.ADMIN:
+            qs = qs.filter(conta_associado__user=user)
+        if evento_id := self.request.query_params.get("evento"):
+            qs = qs.filter(centro_custo__evento_id=evento_id)
+        return qs
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        fmt = request.query_params.get("format")
+        qs = self.get_queryset()
+        if fmt in {"csv", "xlsx"}:
+            headers = [
+                "id",
+                "centro_custo",
+                "conta_associado",
+                "valor",
+                "data_lancamento",
+                "status",
+            ]
+            linhas = qs.values_list(
+                "id",
+                "centro_custo__nome",
+                "conta_associado__user__email",
+                "valor",
+                "data_lancamento",
+                "status",
+            )
+            tmp_name = exportar_para_arquivo(fmt, headers, linhas)
+            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=f"repasses.{fmt}")
+        page = self.paginate_queryset(qs)
+        serializer = self.get_serializer(page or qs, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+
 class FinanceiroForecastViewSet(viewsets.ViewSet):
     """Fornece previsões financeiras agregadas."""
 
@@ -308,6 +364,7 @@ __all__ = [
     "LancamentoFinanceiroViewSet",
     "ImportacaoPagamentosViewSet",
     "FinanceiroLogViewSet",
+    "RepasseViewSet",
     "FinanceiroForecastViewSet",
     "FinanceiroTaskLogViewSet",
 ]

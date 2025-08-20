@@ -20,6 +20,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+from agenda.models import Evento
 
 from ..models import (
     CentroCusto,
@@ -444,6 +445,13 @@ def lancamentos_list_view(request):
         "nucleos": list(nucleos),
     }
     return render(request, "financeiro/lancamentos_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def repasses_view(request):
+    eventos = Evento.objects.all()
+    return render(request, "financeiro/repasses.html", {"eventos": eventos})
 
 
 @login_required

@@ -10,6 +10,7 @@ from .viewsets import (
     FinanceiroForecastViewSet,
     ImportacaoPagamentosViewSet,
     LancamentoFinanceiroViewSet,
+    RepasseViewSet,
 )
 
 router = routers.DefaultRouter()
@@ -19,6 +20,7 @@ router.register("importacoes", ImportacaoPagamentosViewSet, basename="importacao
 router.register("logs", FinanceiroLogViewSet, basename="log")
 router.register("task-logs", FinanceiroTaskLogViewSet, basename="task-log")
 router.register("forecast", FinanceiroForecastViewSet, basename="forecast")
+router.register("repasses", RepasseViewSet, basename="repasse")
 router.register("", FinanceiroViewSet, basename="financeiro")
 
 urlpatterns = router.urls

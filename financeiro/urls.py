@@ -8,6 +8,7 @@ from .views import (
     lancamentos_list_view,
     relatorios_view,
     centros_list_view,
+    repasses_view,
     task_log_detail_view,
     task_logs_view,
 )
@@ -20,6 +21,7 @@ urlpatterns = [
     path("relatorios/", relatorios_view, name="relatorios"),
     path("centros/", centros_list_view, name="centros"),
     path("lancamentos/", lancamentos_list_view, name="lancamentos"),
+    path("repasses/", repasses_view, name="repasses"),
     path("forecast/", forecast_view, name="forecast"),
     path("inadimplencias/", inadimplencias_view, name="inadimplencias"),
     path("task-logs/", task_logs_view, name="task_logs"),
