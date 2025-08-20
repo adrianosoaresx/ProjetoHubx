@@ -17,14 +17,18 @@ def _login(client, user):
     client.force_login(user)
 
 
-def test_gerar_token_view_creates_token(client):
-    user = UserFactory(is_staff=True)
+def test_gerar_convite_form_fields(client):
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    org.users.add(user)
+    NucleoFactory(organizacao=org)
     _login(client, user)
-    resp = client.post(reverse("tokens:gerar_token"), {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN})
+    resp = client.get(reverse("tokens:gerar_convite"))
     assert resp.status_code == 200
-    token = TokenAcesso.objects.get(gerado_por=user)
-    assert token.tipo_destino == TokenAcesso.TipoUsuario.ADMIN
-    assert token.gerado_por == user
+    content = resp.content.decode()
+    assert "name=\"tipo_destino\"" in content
+    assert "name=\"organizacao\"" in content
+    assert "name=\"nucleos\"" in content
 
 
 def test_gerar_token_convite_view(client):
