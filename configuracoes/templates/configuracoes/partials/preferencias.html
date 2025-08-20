@@ -8,7 +8,7 @@
     <div>
       <label class="flex items-center gap-2">
         {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
-          {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por e-mail')|attr:'aria-checked:'|add:email_checked }}
+          {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:'aria-checked:'|add:email_checked }}
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por e-mail' %}</span>
       </label>
@@ -28,7 +28,7 @@
     <div>
       <label class="flex items-center gap-2">
         {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
-          {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações por WhatsApp')|attr:'aria-checked:'|add:whats_checked }}
+          {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:'aria-checked:'|add:whats_checked }}
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por WhatsApp' %}</span>
       </label>
@@ -50,7 +50,7 @@
     <div>
       <label class="flex items-center gap-2">
         {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
-          {{ preferencias_form.receber_notificacoes_push|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:'|add:_('Receber notificações push')|attr:'aria-checked:'|add:push_checked }}
+          {{ preferencias_form.receber_notificacoes_push|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:'aria-checked:'|add:push_checked }}
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações push' %}</span>
       </label>
