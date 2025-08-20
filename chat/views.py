@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.db.models import Count, OuterRef, Subquery
+from django.db.models import Count, OuterRef, Subquery, UUIDField
 from django.http import HttpResponse
 import csv
 from django.shortcuts import get_object_or_404, redirect, render
@@ -201,3 +201,40 @@ def exportar_modal(request, channel_id):
     if not is_admin:
         return HttpResponse(status=403)
     return render(request, "chat/partials/export_modal.html", {"channel": channel})
+
+
+@login_required
+def modal_users(request):
+    users = User.objects.exclude(pk=request.user.pk).order_by("username")
+    return render(request, "chat/modal_user_list.html", {"users": users})
+
+
+@login_required
+def modal_room(request, user_id):
+    if isinstance(User._meta.pk, UUIDField):
+        other = get_object_or_404(User, pk=user_id)
+    else:
+        other = get_object_or_404(User, pk=user_id.int)
+    channel = (
+        ChatChannel.objects.filter(contexto_tipo="privado", participants__user=request.user)
+        .filter(participants__user=other)
+        .first()
+    )
+    if channel is None:
+        channel = criar_canal(
+            criador=request.user,
+            contexto_tipo="privado",
+            contexto_id=None,
+            titulo="",
+            descricao="",
+            participantes=[other],
+        )
+    messages = (
+        channel.messages.select_related("remetente").order_by("-created_at")[:20]
+    )
+    messages = list(messages)[::-1]
+    return render(
+        request,
+        "chat/modal_room.html",
+        {"dest": other, "messages": messages},
+    )

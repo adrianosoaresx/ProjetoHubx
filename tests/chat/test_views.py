@@ -1,7 +1,9 @@
 import pytest
+import uuid
 from django.urls import reverse
 
 from chat.models import ChatChannel, ChatMessage, ChatModerationLog, ChatParticipant
+from chat.services import criar_canal, enviar_mensagem
 
 pytestmark = pytest.mark.django_db
 
@@ -87,3 +89,36 @@ def test_historico_edicoes_export_csv(client, admin_user):
     assert resp.status_code == 200
     assert resp["Content-Type"] == "text/csv"
     assert "b" in resp.content.decode()
+
+
+def test_modal_users_requires_login(client):
+    resp = client.get(reverse("chat:modal_users"))
+    assert resp.status_code == 302
+
+
+def test_modal_users_lists_other_users(client, admin_user, coordenador_user):
+    client.force_login(admin_user)
+    resp = client.get(reverse("chat:modal_users"))
+    assert resp.status_code == 200
+    users = list(resp.context["users"])
+    assert coordenador_user in users
+    assert admin_user not in users
+
+
+def test_modal_room_loads_messages(client, admin_user, coordenador_user):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=None,
+        titulo="",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    enviar_mensagem(canal, admin_user, "text", conteudo="olá")
+    enviar_mensagem(canal, coordenador_user, "text", conteudo="oi")
+    client.force_login(admin_user)
+    user_uuid = uuid.UUID(int=coordenador_user.id)
+    resp = client.get(reverse("chat:modal_room", args=[user_uuid]))
+    assert resp.status_code == 200
+    msgs = list(resp.context["messages"])
+    assert [m.conteudo for m in msgs] == ["olá", "oi"]

@@ -8,6 +8,8 @@ urlpatterns = [
     path("", views.conversation_list, name="conversation_list"),
     path("nova/", views.nova_conversa, name="nova_conversa"),
     path("contextos/", views.contextos, name="contextos"),
+    path("modal/users/", views.modal_users, name="modal_users"),
+    path("modal/room/<uuid:user_id>/", views.modal_room, name="modal_room"),
     path(
         "partials/message/<uuid:message_id>/",
         views.message_partial,
