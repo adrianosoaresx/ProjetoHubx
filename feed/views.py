@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,6 +18,7 @@ from django.views.generic import CreateView, DetailView, ListView
 
 from accounts.models import UserType
 from nucleos.models import Nucleo
+from agenda.models import Evento
 
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Like, ModeracaoPost, Post
@@ -71,6 +74,8 @@ class FeedListView(LoginRequiredMixin, ListView):
                     "nucleo",
                     "evento",
                     "tags",
+                    "date_from",
+                    "date_to",
                     "page",
                     "q",
                 ]
@@ -144,11 +149,32 @@ class FeedListView(LoginRequiredMixin, ListView):
             tag_names = [t.strip() for t in tags_param.split(",") if t.strip()]
             qs = qs.filter(tags__nome__in=tag_names, tags__deleted=False).distinct()
 
+        date_from = self.request.GET.get("date_from")
+        if date_from:
+            try:
+                df = datetime.fromisoformat(date_from).date()
+                qs = qs.filter(created_at__date__gte=df)
+            except ValueError:
+                pass
+
+        date_to = self.request.GET.get("date_to")
+        if date_to:
+            try:
+                dt = datetime.fromisoformat(date_to).date()
+                qs = qs.filter(created_at__date__lte=dt)
+            except ValueError:
+                pass
+
         return qs.order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
+        user = self.request.user
+        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=user)
+        if hasattr(user, "eventos"):
+            context["eventos_do_usuario"] = user.eventos.all()
+        else:
+            context["eventos_do_usuario"] = Evento.objects.none()
         return context
 
     def render_to_response(self, context, **response_kwargs):
