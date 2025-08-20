@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from accounts.factories import UserFactory
+from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 from agenda.factories import EventoFactory
 from agenda.models import MaterialDivulgacaoEvento, EventoLog
@@ -31,7 +32,7 @@ def _create_material(user):
 
 def test_aprovar_material(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
-    user = UserFactory(organizacao=org, nucleo_obj=None)
+    user = UserFactory(user_type=UserType.ADMIN, organizacao=org, nucleo_obj=None)
     material = _create_material(user)
     api_client.force_authenticate(user)
     url = reverse("agenda_api:material-aprovar", args=[material.pk])
@@ -47,7 +48,7 @@ def test_aprovar_material(api_client: APIClient) -> None:
 
 def test_devolver_material(api_client: APIClient) -> None:
     org = OrganizacaoFactory()
-    user = UserFactory(organizacao=org, nucleo_obj=None)
+    user = UserFactory(user_type=UserType.ADMIN, organizacao=org, nucleo_obj=None)
     material = _create_material(user)
     api_client.force_authenticate(user)
     url = reverse("agenda_api:material-devolver", args=[material.pk])
@@ -63,4 +64,22 @@ def test_devolver_material(api_client: APIClient) -> None:
         acao="material_devolvido",
         usuario=user,
         detalhes__motivo_devolucao="corrigir",
+    ).exists()
+
+
+def test_devolver_material_sem_motivo(api_client: APIClient) -> None:
+    org = OrganizacaoFactory()
+    user = UserFactory(user_type=UserType.ADMIN, organizacao=org, nucleo_obj=None)
+    material = _create_material(user)
+    api_client.force_authenticate(user)
+    url = reverse("agenda_api:material-devolver", args=[material.pk])
+    resp = api_client.post(url)
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    material.refresh_from_db()
+    assert material.status == "criado"
+    assert material.motivo_devolucao == ""
+    assert not EventoLog.objects.filter(
+        evento=material.evento,
+        acao="material_devolvido",
+        usuario=user,
     ).exists()

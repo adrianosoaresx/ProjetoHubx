@@ -177,10 +177,16 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
     @action(detail=True, methods=["post"])
     def devolver(self, request, pk=None):
         material = self.get_object()
+        motivo = request.data.get("motivo_devolucao", "").strip()
+        if not motivo:
+            return Response(
+                {"detail": "Motivo de devolução é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         material.status = "devolvido"
         material.avaliado_por = request.user
         material.avaliado_em = timezone.now()
-        material.motivo_devolucao = request.data.get("motivo_devolucao", "")
+        material.motivo_devolucao = motivo
         material.save(
             update_fields=[
                 "status",
