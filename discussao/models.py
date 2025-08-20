@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -9,6 +10,7 @@ from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from accounts.models import UserType
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
 from .validators import validar_arquivo_discussao
@@ -175,7 +177,6 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     def num_votos(self) -> int:
         return self.interacoes.count()
 
-
 class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     topico = models.ForeignKey(
         TopicoDiscussao,
@@ -238,6 +239,17 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     @property
     def num_votos(self) -> int:
         return self.interacoes.count()
+
+    @property
+    def pode_editar(self) -> bool:
+        """Retorna se o usuário atual pode editar a resposta."""
+        user = getattr(self, "_user", None)
+        if not user:
+            return False
+        if user.user_type in {UserType.ADMIN, UserType.ROOT}:
+            return True
+        dentro_prazo = timezone.now() - self.created_at <= timedelta(minutes=15)
+        return user == self.autor and dentro_prazo
 
 
 class InteracaoDiscussao(TimeStampedModel, SoftDeleteModel):

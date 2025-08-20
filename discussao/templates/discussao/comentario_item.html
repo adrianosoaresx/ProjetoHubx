@@ -12,7 +12,7 @@
     {% if comentario.pode_editar %}
       <a href="{% url 'discussao:resposta_editar' comentario.id %}" class="text-blue-600 text-xs">{% trans "Editar" %}</a>
     {% endif %}
-    {% if user == comentario.autor or user.get_tipo_usuario in ['admin','coordenador','root'] %}
+    {% if comentario.pode_editar or user.get_tipo_usuario in ['admin','coordenador','root'] %}
       <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
         {% csrf_token %}
         <button type="submit" class="text-red-600 text-xs">{% trans "Remover" %}</button>
