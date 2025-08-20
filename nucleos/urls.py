@@ -6,6 +6,7 @@ app_name = "nucleos"
 
 urlpatterns = [
     path("", views.NucleoListView.as_view(), name="list"),
+    path("meus/", views.NucleoMeusView.as_view(), name="meus"),
     path("novo/", views.NucleoCreateView.as_view(), name="create"),
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
     path("<int:pk>/metrics/", views.NucleoMetricsView.as_view(), name="metrics"),
