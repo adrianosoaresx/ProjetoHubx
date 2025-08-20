@@ -198,9 +198,9 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 score_total=Coalesce(Sum("interacoes__valor"), 0),
             )
         )
-        tags_param = self.request.GET.get("tags")
+        tags_param = self.request.GET.getlist("tags")
         if tags_param:
-            names = [t.strip() for t in tags_param.split(",") if t.strip()]
+            names = [t.strip() for t in tags_param if t.strip()]
             for name in names:
                 qs = qs.filter(tags__nome=name)
         query = self.request.GET.get("q")
@@ -236,8 +236,8 @@ class TopicoListView(LoginRequiredMixin, ListView):
         context["categoria"] = self.categoria
         context["ordenacao"] = self.request.GET.get("ordenacao", "recentes")
         context["q"] = self.request.GET.get("q", "")
-        tags_param = self.request.GET.get("tags", "")
-        context["selected_tags"] = [t for t in tags_param.split(",") if t]
+        tags_param = self.request.GET.getlist("tags")
+        context["selected_tags"] = [t for t in tags_param if t]
         context["tags"] = Tag.objects.all()
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
         return context
