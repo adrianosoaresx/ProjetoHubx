@@ -27,6 +27,7 @@ from ..models import (
     FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
+    IntegracaoConfig,
 )
 from ..permissions import (
     IsAssociadoReadOnly,
@@ -432,6 +433,24 @@ def centros_list_view(request):
         "prev": prev_offset,
     }
     return render(request, "financeiro/centros_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def integracoes_list_view(request):
+    limit = 20
+    offset = int(request.GET.get("offset", 0))
+    qs = IntegracaoConfig.objects.all()
+    total = qs.count()
+    integracoes = qs[offset : offset + limit]
+    next_offset = offset + limit if total > offset + limit else None
+    prev_offset = offset - limit if offset - limit >= 0 else None
+    context = {
+        "integracoes": integracoes,
+        "next": next_offset,
+        "prev": prev_offset,
+    }
+    return render(request, "financeiro/integracoes_list.html", context)
 
 
 @login_required
