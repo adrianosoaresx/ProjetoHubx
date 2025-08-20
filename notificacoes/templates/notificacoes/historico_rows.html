@@ -3,8 +3,8 @@
 <tr>
   <td class="px-4 py-2 whitespace-nowrap">{{ item.enviado_em|date:'Y-m-d H:i' }}</td>
   <td class="px-4 py-2 whitespace-nowrap">{{ item.data_referencia|date:'Y-m-d' }}</td>
-  <td class="px-4 py-2">{{ item.canal }}</td>
-  <td class="px-4 py-2">{{ item.frequencia }}</td>
+  <td class="px-4 py-2">{{ item.get_canal_display }}</td>
+  <td class="px-4 py-2">{{ item.get_frequencia_display }}</td>
   <td class="px-4 py-2">{{ item.conteudo|join:", " }}</td>
 </tr>
 {% empty %}
