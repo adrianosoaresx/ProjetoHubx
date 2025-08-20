@@ -1,0 +1,12 @@
+{% load i18n %}
+<h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Membros' %} ({{ usuarios|length }})</h2>
+<ul class="list-disc pl-6 text-neutral-700">
+  {% for user in usuarios %}
+    <li>{{ user.get_full_name|default:user.username }}</li>
+  {% empty %}
+    <li class="list-none text-neutral-500">{% trans 'Nenhum usuário associado.' %}</li>
+  {% endfor %}
+</ul>
+{% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
+<a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="{% url 'organizacoes:usuarios_modal' object.id %}" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
+{% endif %}

@@ -55,74 +55,24 @@
     </dl>
   </section>
 
-  <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Membros' %} ({{ usuarios|length }})</h2>
-    <ul class="list-disc pl-6 text-neutral-700">
-      {% for user in usuarios %}
-        <li>{{ user.get_full_name|default:user.username }}</li>
-      {% empty %}
-        <li class="list-none text-neutral-500">{% trans 'Nenhum usuário associado.' %}</li>
-      {% endfor %}
-    </ul>
-    {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="#" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
-    {% endif %}
+  <section id="usuarios-section">
+    {% include 'organizacoes/partials/usuarios_list.html' %}
   </section>
 
-  <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Núcleos' %} ({{ nucleos|length }})</h2>
-    <ul class="list-disc pl-6 text-neutral-700">
-      {% for nucleo in nucleos %}
-        <li>{{ nucleo.nome }}</li>
-      {% empty %}
-        <li class="list-none text-neutral-500">{% trans 'Nenhum núcleo associado.' %}</li>
-      {% endfor %}
-    </ul>
-    {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="#" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
-    {% endif %}
+  <section id="nucleos-section">
+    {% include 'organizacoes/partials/nucleos_list.html' %}
   </section>
 
-  <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Eventos' %} ({{ eventos|length }})</h2>
-    <ul class="list-disc pl-6 text-neutral-700">
-      {% for evento in eventos %}
-        <li>{{ evento.titulo }}</li>
-      {% empty %}
-        <li class="list-none text-neutral-500">{% trans 'Nenhum evento associado.' %}</li>
-      {% endfor %}
-    </ul>
-    {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="#" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
-    {% endif %}
+  <section id="eventos-section">
+    {% include 'organizacoes/partials/eventos_list.html' %}
   </section>
 
-  <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Empresas' %} ({{ empresas|length }})</h2>
-    <ul class="list-disc pl-6 text-neutral-700">
-      {% for empresa in empresas %}
-        <li>{{ empresa.nome }}</li>
-      {% empty %}
-        <li class="list-none text-neutral-500">{% trans 'Nenhuma empresa associada.' %}</li>
-      {% endfor %}
-    </ul>
-    {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="#" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
-    {% endif %}
+  <section id="empresas-section">
+    {% include 'organizacoes/partials/empresas_list.html' %}
   </section>
 
-  <section>
-    <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Posts' %} ({{ posts|length }})</h2>
-    <ul class="list-disc pl-6 text-neutral-700">
-      {% for post in posts %}
-        <li>{{ post.conteudo|truncatewords:10 }}</li>
-      {% empty %}
-        <li class="list-none text-neutral-500">{% trans 'Nenhum post associado.' %}</li>
-      {% endfor %}
-    </ul>
-    {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="#" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
-    {% endif %}
+  <section id="posts-section">
+    {% include 'organizacoes/partials/posts_list.html' %}
   </section>
 
   <div class="flex justify-end gap-3">
@@ -143,5 +93,6 @@
     {% endif %}
     <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans 'Voltar' %}</a>
   </div>
+  <div id="modal"></div>
 </section>
 {% endblock %}
