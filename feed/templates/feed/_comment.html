@@ -1,6 +1,12 @@
 {% load i18n %}
 <li class="border border-neutral-200 bg-white rounded-xl shadow-sm p-4" id="comment-{{ comment.id }}">
   <p class="text-sm font-medium">{{ comment.user.get_full_name|default:comment.user.username }}</p>
-  <p class="text-xs text-neutral-500">{{ comment.created|date:"SHORT_DATETIME_FORMAT" }}</p>
+  <p class="text-xs text-neutral-500">{{ comment.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
   <p class="text-sm text-neutral-800">{{ comment.texto }}</p>
+  <button type="button" class="text-primary-600 text-xs" hx-on:click="setReplyTo('{{ comment.id }}')">{% trans "Responder" %}</button>
+  <ul class="mt-2 space-y-2 ml-4" id="replies-{{ comment.id }}">
+    {% for reply in comment.replies.all %}
+      {% include 'feed/_comment.html' with comment=reply %}
+    {% endfor %}
+  </ul>
 </li>
