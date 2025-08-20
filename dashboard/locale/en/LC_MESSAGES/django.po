@@ -118,11 +118,6 @@ msgstr ""
 msgid "Ver Feed"
 msgstr ""
 
-#: templates/dashboard/config_form.html:3
-#: templates/dashboard/config_form.html:6
-msgid "Salvar filtros"
-msgstr ""
-
 #: templates/dashboard/config_form.html:7
 msgid "Formulário de configuração do dashboard"
 msgstr ""
@@ -138,6 +133,8 @@ msgstr ""
 msgid "Público"
 msgstr ""
 
+#: templates/dashboard/config_form.html:3
+#: templates/dashboard/config_form.html:6
 #: templates/dashboard/config_form.html:17
 #: templates/dashboard/partials/filters_form.html:64
 msgid "Salvar configuração"
