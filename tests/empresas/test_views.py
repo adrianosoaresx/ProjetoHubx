@@ -7,6 +7,15 @@ from empresas.models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog
 
 
 @pytest.mark.django_db
+def test_buscar_view_returns_results(client, admin_user):
+    EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Alpha")
+    client.force_login(admin_user)
+    resp = client.get(reverse("empresas:buscar"), {"q": "Alpha"}, HTTP_HX_REQUEST="true")
+    assert resp.status_code == 200
+    assert "Alpha" in resp.content.decode()
+
+
+@pytest.mark.django_db
 def test_list_filters_name_municipio_tags(client, admin_user, tag_factory):
     tag1 = tag_factory(nome="Tech")
     tag2 = tag_factory(nome="Food")
