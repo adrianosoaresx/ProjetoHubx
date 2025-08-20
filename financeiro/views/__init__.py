@@ -436,6 +436,13 @@ def centros_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
+def centro_form_view(request, pk: int | None = None):
+    centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
+    return render(request, "financeiro/centro_form.html", {"centro": centro})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
 def lancamentos_list_view(request):
     centros = CentroCusto.objects.all()
     nucleos = {c.nucleo for c in centros if c.nucleo}
