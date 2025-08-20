@@ -336,6 +336,33 @@ def conta_inativa(request):
 @login_required
 def excluir_conta(request):
     """Permite que o usuário exclua sua própria conta."""
+
+    if request.method == "GET":
+        return render(request, "accounts/delete_account_confirm.html")
+
+    if request.method != "POST":
+        return redirect("accounts:excluir_conta")
+
+    if request.POST.get("confirm") != "EXCLUIR":
+        messages.error(request, _("Confirme digitando EXCLUIR."))
+        return redirect("accounts:excluir_conta")
+
+    with transaction.atomic():
+        user = request.user
+        user.delete()
+        user.exclusao_confirmada = True
+        user.is_active = False
+        user.save(update_fields=["exclusao_confirmada", "is_active"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="conta_excluida",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
+
+    logout(request)
+    messages.success(request, _("Sua conta foi excluída com sucesso."))
+    return redirect("core:home")
+
     if request.method == "POST":
         if request.POST.get("confirm") != "EXCLUIR":
             messages.error(request, _("Confirme digitando EXCLUIR."))
@@ -354,6 +381,7 @@ def excluir_conta(request):
         logout(request)
         messages.success(request, _("Sua conta foi excluída com sucesso."))
         return redirect("core:home")
+
 
 
 def password_reset(request):
