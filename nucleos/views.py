@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -56,6 +56,16 @@ class NucleoListView(LoginRequiredMixin, ListView):
             Nucleo.objects.select_related("organizacao")
             .prefetch_related("participacoes")
             .filter(deleted=False)
+            .annotate(
+                membros_count=Count(
+                    "participacoes",
+                    filter=Q(
+                        participacoes__status="ativo",
+                        participacoes__status_suspensao=False,
+                    ),
+                    distinct=True,
+                )
+            )
         )
         user = self.request.user
         if user.user_type == UserType.ADMIN:
