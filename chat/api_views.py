@@ -299,6 +299,20 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         ChatParticipant.objects.filter(channel=channel, user__id__in=user_ids).delete()
         return Response({"removidos": user_ids})
 
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated, IsChannelParticipant])
+    def leave(self, request: Request, pk: str | None = None) -> Response:
+        channel = self.get_object()
+        try:
+            participant = ChatParticipant.objects.get(channel=channel, user=request.user)
+        except ChatParticipant.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        if (participant.is_admin or participant.is_owner) and not ChatParticipant.objects.filter(
+            channel=channel, is_admin=True
+        ).exclude(user=request.user).exists():
+            return Response({"erro": "Último administrador não pode sair"}, status=status.HTTP_400_BAD_REQUEST)
+        participant.delete()
+        return Response({"status": "ok"})
+
     @action(detail=True, methods=["get"], permission_classes=[permissions.IsAuthenticated, IsChannelParticipant])
     def attachments(self, request: Request, pk: str | None = None) -> Response:
         channel = self.get_object()
