@@ -55,6 +55,25 @@
       <ul id="trending-list" class="pl-5 list-disc text-sm text-neutral-700"></ul>
     </section>
 
+    {% if is_admin %}
+      <section id="retencao" class="mb-4" aria-label="{% trans 'Configurar retenção de mensagens' %}">
+        <h3 class="text-sm font-semibold text-neutral-600">{% trans 'Retenção de mensagens (dias)' %}</h3>
+        <form id="retencao-form" class="mt-2 flex items-center gap-2">
+          <label for="retencao-dias" class="sr-only">{% trans 'Dias de retenção' %}</label>
+          <input
+            type="number"
+            id="retencao-dias"
+            name="retencao_dias"
+            class="border rounded p-2 w-24"
+            min="0"
+            value="{{ conversation.retencao_dias|default_if_none:'' }}"
+          />
+          <button type="submit" class="bg-primary text-white px-3 py-1 rounded">{% trans 'Salvar' %}</button>
+        </form>
+        <p id="retencao-feedback" class="text-sm mt-2 hidden"></p>
+      </section>
+    {% endif %}
+
     <form id="search-form" data-channel="{{ conversation.id }}" class="mb-4 flex flex-wrap items-end gap-2" aria-label="{% trans 'Buscar mensagens' %}">
       <label for="search-q" class="sr-only">{% trans 'Buscar mensagens' %}</label>
       <input type="search" id="search-q" name="q" class="w-full sm:flex-1 border rounded p-2" placeholder="{% trans 'Buscar' %}" />
@@ -155,6 +174,8 @@
     const resumosList = document.getElementById('resumos-list');
     const trendingList = document.getElementById('trending-list');
     const gerarBtn = document.getElementById('resumo-gerar');
+    const retencaoForm = document.getElementById('retencao-form');
+    const retencaoFeedback = document.getElementById('retencao-feedback');
 
     function carregarResumos(){
       fetch(`/api/chat/channels/${channelId}/resumos/`)
@@ -190,6 +211,35 @@
           headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
           body: JSON.stringify({periodo:'diario'})
         }).then(r=>{ if(r.ok){carregarResumos();} });
+      });
+    }
+
+    if(retencaoForm){
+      retencaoForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        retencaoFeedback.classList.add('hidden');
+        fetch(`/api/chat/canais/${channelId}/config-retencao/`, {
+          method:'PATCH',
+          headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+          body: JSON.stringify({retencao_dias: retencaoForm.retencao_dias.value})
+        })
+          .then(r=>r.json().then(data=>({ok:r.ok, data})))
+          .then(({ok, data})=>{
+            if(ok){
+              retencaoFeedback.textContent = '{% trans "Retenção atualizada com sucesso." %}';
+              retencaoFeedback.className = 'text-sm text-green-600 mt-2';
+              retencaoForm.retencao_dias.value = data.retencao_dias;
+            }else{
+              retencaoFeedback.textContent = data.detail || '{% trans "Erro ao atualizar retenção." %}';
+              retencaoFeedback.className = 'text-sm text-red-600 mt-2';
+            }
+            retencaoFeedback.classList.remove('hidden');
+          })
+          .catch(()=>{
+            retencaoFeedback.textContent = '{% trans "Erro ao atualizar retenção." %}';
+            retencaoFeedback.className = 'text-sm text-red-600 mt-2';
+            retencaoFeedback.classList.remove('hidden');
+          });
       });
     }
 
