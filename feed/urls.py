@@ -7,6 +7,7 @@ app_name = "feed"
 urlpatterns = [
     path("", views.FeedListView.as_view(), name="listar"),
     path("mural/", views.meu_mural, name="meu_mural"),
+    path("favoritos/", views.bookmark_list, name="bookmarks"),
     path("novo/", views.NovaPostagemView.as_view(), name="nova_postagem"),
     path("<uuid:pk>/", views.PostDetailView.as_view(), name="post_detail"),
     path("<uuid:pk>/comentar/", views.create_comment, name="create_comment"),
