@@ -15,6 +15,12 @@
     <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
   </div>
   {% endif %}
+  {% if request.user.user_type == 'admin' %}
+  <div class="mb-4 space-x-2">
+    <a href="{% url 'nucleos_api:nucleo-relatorio' %}?formato=csv" class="text-blue-600">{% trans 'Relatório CSV' %}</a>
+    <a href="{% url 'nucleos_api:nucleo-relatorio' %}?formato=pdf" class="text-blue-600">{% trans 'Relatório PDF' %}</a>
+  </div>
+  {% endif %}
   <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {% for nucleo in object_list %}
     <li role="listitem" class="border rounded p-4">

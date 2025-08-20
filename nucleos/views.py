@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
@@ -156,6 +156,30 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         ctx["pode_postar"] = bool(
             part and part.status == "ativo" and not part.status_suspensao
         )
+        return ctx
+
+
+class NucleoMetricsView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+    model = Nucleo
+    template_name = "nucleos/metrics.html"
+
+    def get_queryset(self):
+        qs = Nucleo.objects.filter(deleted=False)
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(organizacao=user.organizacao)
+        elif user.user_type == UserType.COORDENADOR:
+            qs = qs.filter(participacoes__user=user)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        nucleo = self.object
+        ctx["nucleo"] = nucleo
+        ctx["metrics_url"] = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
+        relatorio_base = reverse("nucleos_api:nucleo-relatorio")
+        ctx["relatorio_csv_url"] = f"{relatorio_base}?formato=csv"
+        ctx["relatorio_pdf_url"] = f"{relatorio_base}?formato=pdf"
         return ctx
 
 
