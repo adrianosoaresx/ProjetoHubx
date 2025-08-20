@@ -4,7 +4,13 @@
     {% for categoria in categorias %}
     <li class="p-4 bg-white border border-neutral-200 rounded-xl flex justify-between items-center">
       <a href="{% url 'discussao:topicos' categoria.slug %}" class="text-primary-600 font-medium">{{ categoria.nome }}</a>
-      <span class="text-sm text-neutral-600">{{ categoria.topicos.count }}</span>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-neutral-600">{{ categoria.topicos.count }}</span>
+        {% if user.user_type == 'admin' or user.user_type == 'coordenador' or user.user_type == 'root' %}
+        <a href="{% url 'discussao:categoria_editar' categoria.slug %}" class="text-sm text-neutral-600">{% trans 'Editar' %}</a>
+        <a href="{% url 'discussao:categoria_remover' categoria.slug %}" class="text-sm text-red-600">{% trans 'Remover' %}</a>
+        {% endif %}
+      </div>
     </li>
     {% empty %}
     <li class="text-neutral-600">{% trans 'Nenhuma categoria cadastrada.' %}</li>

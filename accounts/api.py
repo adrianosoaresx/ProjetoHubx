@@ -165,8 +165,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         user = request.user
         user.delete()
         user.is_active = False
-        user.exclusao_confirmada = True
-        user.save(update_fields=["is_active", "exclusao_confirmada"])
+        user.save(update_fields=["is_active"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",

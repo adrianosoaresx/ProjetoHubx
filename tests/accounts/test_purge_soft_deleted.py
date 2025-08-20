@@ -17,7 +17,6 @@ def _create_deleted_user(**kwargs) -> User:
         password="x",
         deleted=True,
         deleted_at=timezone.now() - timezone.timedelta(days=31),
-        exclusao_confirmada=True,
         **kwargs,
     )
 
@@ -37,7 +36,6 @@ def test_purge_keeps_recent_users():
         password="x",
         deleted=True,
         deleted_at=timezone.now() - timezone.timedelta(days=10),
-        exclusao_confirmada=True,
     )
     purge_soft_deleted()
     assert User.all_objects.filter(pk=user.pk).exists()
