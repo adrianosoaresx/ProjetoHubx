@@ -25,9 +25,6 @@
 
     <div class="text-sm text-neutral-800 whitespace-pre-line">
       {{ post.conteudo }}
-      {% if post.moderacao and post.moderacao.status != 'aprovado' %}
-        <span class="ml-2 text-xs text-yellow-700">{{ post.moderacao.get_status_display }}</span>
-      {% endif %}
     </div>
 
     {% if post.pdf %}
@@ -51,6 +48,10 @@
         {% endfor %}
       </div>
     {% endif %}
+
+    <div id="moderacao-wrapper" class="mt-4">
+      {% include 'feed/_moderacao.html' with post=post %}
+    </div>
 
     <div class="mt-4" id="like-btn-{{ post.id }}">
       {% include 'feed/_like_button.html' with post=post %}
