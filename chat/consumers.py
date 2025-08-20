@@ -105,7 +105,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 cipher = data.get("conteudo_cifrado", "")
                 alg = data.get("alg", "")
                 key_version = data.get("key_version", "")
-                if not cipher:
+                if not cipher or not alg or not key_version:
                     await self.close(code=4003)
                     return
                 msg = await database_sync_to_async(enviar_mensagem)(
