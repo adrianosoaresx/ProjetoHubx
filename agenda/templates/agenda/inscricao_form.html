@@ -8,21 +8,26 @@
   <h1 class="text-2xl font-bold text-neutral-900 mb-6">{% trans "Inscrição" %}</h1>
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
+    {{ form.non_field_errors }}
     <div>
       {{ form.metodo_pagamento.label_tag }}
       {{ form.metodo_pagamento }}
+      {{ form.metodo_pagamento.errors }}
     </div>
     <div>
       {{ form.valor_pago.label_tag }}
       {{ form.valor_pago }}
+      {{ form.valor_pago.errors }}
     </div>
     <div>
       {{ form.comprovante_pagamento.label_tag }}
       {{ form.comprovante_pagamento.as_widget(attrs={'accept': '.jpg,.jpeg,.png,.pdf'}) }}
+      {{ form.comprovante_pagamento.errors }}
     </div>
     <div>
       {{ form.observacao.label_tag }}
       {{ form.observacao }}
+      {{ form.observacao.errors }}
     </div>
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <a href="{% url 'agenda:evento_detalhe' evento.pk %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>

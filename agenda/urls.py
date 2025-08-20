@@ -59,6 +59,7 @@ urlpatterns = [
         EventoFeedbackView.as_view(),
         name="evento_feedback",
     ),
+    path("checkin/<int:pk>/", views.checkin_form, name="inscricao_checkin_form"),
     path(
         "api/inscricoes/<int:pk>/checkin/",
         views.checkin_inscricao,
@@ -66,7 +67,7 @@ urlpatterns = [
     ),
     path("api/eventos/<uuid:pk>/orcamento/", views.evento_orcamento, name="evento_orcamento"),
     path("api/eventos/<uuid:pk>/espera/", views.fila_espera, name="fila_espera"),
-    path("api/parcerias/<int:pk>/avaliar/", views.avaliar_parceria, name="parceria_avaliar"),
+    path("parceria/<int:pk>/avaliar/", views.avaliar_parceria, name="parceria_avaliar"),
     path("eventos_por_dia/", views.eventos_por_dia, name="eventos_por_dia"),
     path("inscricoes/", InscricaoEventoListView.as_view(), name="inscricao_list"),
     path("materiais/", MaterialDivulgacaoEventoListView.as_view(), name="material_list"),

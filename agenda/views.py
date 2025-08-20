@@ -545,6 +545,12 @@ def avaliar_parceria(request, pk: int):
     return render(request, "agenda/parceria_avaliar.html", {"parceria": parceria})
 
 
+@login_required
+def checkin_form(request, pk: int):
+    inscricao = get_object_or_404(InscricaoEvento, pk=pk)
+    return render(request, "agenda/checkin_form.html", {"inscricao": inscricao})
+
+
 def checkin_inscricao(request, pk: int):
     """Valida o QRCode enviado e registra o check-in."""
     if request.method != "POST":
