@@ -51,22 +51,42 @@ def test_get_user_preferences_contextual(admin_user, escopo):
         escopo_id=escopo_id,
         tema="escuro",
         receber_notificacoes_email=False,
-        frequencia_notificacoes_email="diaria",
+
+        frequencia_notificacoes_email="semanal",
         receber_notificacoes_whatsapp=True,
-        frequencia_notificacoes_whatsapp="semanal",
+        frequencia_notificacoes_whatsapp="diaria",
+
         receber_notificacoes_push=False,
         frequencia_notificacoes_push="semanal",
     )
     prefs = get_user_preferences(admin_user, escopo, str(escopo_id))
     assert prefs.tema == "escuro"
     assert prefs.receber_notificacoes_email is False
-    assert prefs.frequencia_notificacoes_email == "diaria"
+
+    assert prefs.frequencia_notificacoes_email == "semanal"
     assert prefs.receber_notificacoes_whatsapp is True
-    assert prefs.frequencia_notificacoes_whatsapp == "semanal"
+    assert prefs.frequencia_notificacoes_whatsapp == "diaria"
+
     assert prefs.receber_notificacoes_push is False
     assert prefs.frequencia_notificacoes_push == "semanal"
     prefs_global = get_user_preferences(admin_user)
     assert prefs_global.tema == admin_user.configuracao.tema
+    assert (
+        prefs_global.receber_notificacoes_email
+        == admin_user.configuracao.receber_notificacoes_email
+    )
+    assert (
+        prefs_global.frequencia_notificacoes_email
+        == admin_user.configuracao.frequencia_notificacoes_email
+    )
+    assert (
+        prefs_global.receber_notificacoes_whatsapp
+        == admin_user.configuracao.receber_notificacoes_whatsapp
+    )
+    assert (
+        prefs_global.frequencia_notificacoes_whatsapp
+        == admin_user.configuracao.frequencia_notificacoes_whatsapp
+    )
     assert (
         prefs_global.receber_notificacoes_push
         == admin_user.configuracao.receber_notificacoes_push
