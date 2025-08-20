@@ -31,6 +31,8 @@ CONTA_FIELDS = [
 CONTEXT_FIELDS = [
     "frequencia_notificacoes_email",
     "frequencia_notificacoes_whatsapp",
+    "receber_notificacoes_push",
+    "frequencia_notificacoes_push",
     "idioma",
     "tema",
 ]
