@@ -4,7 +4,12 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroLog
+from financeiro.models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    LancamentoFinanceiro,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -117,6 +122,31 @@ def test_aporte_externo(api_client):
     assert resp.status_code == 201
     centro.refresh_from_db()
     assert centro.saldo == 5
+
+
+def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monkeypatch):
+    settings.MEDIA_ROOT = tmp_path
+    sent = {}
+
+    def fake_send_email(user, subject, body):
+        sent["user"] = user
+        sent["subject"] = subject
+        sent["body"] = body
+
+    monkeypatch.setattr("financeiro.views.send_email", fake_send_email)
+    auth(api_client, admin_user)
+    centro = _create_centro(admin_user)
+    url = reverse("financeiro_api:financeiro-aportes")
+    resp = api_client.post(
+        url,
+        {"centro_custo": str(centro.id), "valor": "10", "descricao": "x"},
+    )
+    assert resp.status_code == 201, resp.data
+    assert "recibo_url" in resp.data
+    file_path = tmp_path / "recibos" / f"aporte_{resp.data['id']}.html"
+    assert file_path.exists()
+    assert sent["user"] == admin_user
+    assert str(resp.data["recibo_url"]) in sent["body"]
 
 
 def test_estornar_aporte(api_client, admin_user):

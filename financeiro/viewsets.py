@@ -26,6 +26,7 @@ from .models import (
     FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
+    IntegracaoConfig,
 )
 from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin, IsNotRoot
 from .serializers import (
@@ -33,6 +34,7 @@ from .serializers import (
     FinanceiroTaskLogSerializer,
     ImportacaoPagamentosSerializer,
     LancamentoFinanceiroSerializer,
+    IntegracaoConfigSerializer,
 )
 from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
@@ -358,6 +360,14 @@ class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return qs
 
 
+class IntegracaoConfigViewSet(viewsets.ModelViewSet):
+    """CRUD das configurações de integrações externas."""
+
+    queryset = IntegracaoConfig.objects.all()
+    serializer_class = IntegracaoConfigSerializer
+    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
+
+
 __all__ = [
     "CentroCustoViewSet",
     "FinanceiroViewSet",
@@ -367,5 +377,6 @@ __all__ = [
     "RepasseViewSet",
     "FinanceiroForecastViewSet",
     "FinanceiroTaskLogViewSet",
+    "IntegracaoConfigViewSet",
 ]
 
