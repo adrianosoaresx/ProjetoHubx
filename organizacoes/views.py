@@ -42,7 +42,6 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         qs = (
             super()
             .get_queryset()
-            .filter(inativa=False)
             .select_related("created_by")
             .prefetch_related("evento_set", "nucleos", "users")
         )
@@ -51,6 +50,12 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         cidade = self.request.GET.get("cidade")
         estado = self.request.GET.get("estado")
         order = self.request.GET.get("order", "nome")
+        inativa = self.request.GET.get("inativa")
+
+        if inativa is not None and inativa != "":
+            qs = qs.filter(inativa=inativa.lower() in ["1", "true", "t", "yes"]) 
+        else:
+            qs = qs.filter(inativa=False)
 
         if query:
             qs = qs.filter(Q(nome__icontains=query) | Q(slug__icontains=query))
@@ -83,6 +88,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             .distinct()
             .order_by("estado")
         )
+        context["inativa"] = self.request.GET.get("inativa", "")
         return context
 
 
