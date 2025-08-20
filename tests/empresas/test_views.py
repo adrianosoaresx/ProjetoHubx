@@ -108,6 +108,14 @@ def test_admin_can_list_deleted(client, admin_user):
 
 
 @pytest.mark.django_db
+def test_admin_excludes_deleted_by_default(client, admin_user):
+    emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
+    client.force_login(admin_user)
+    resp = client.get(reverse("empresas:lista"))
+    assert emp.nome not in resp.content.decode()
+
+
+@pytest.mark.django_db
 def test_historico_view_access(client, admin_user, nucleado_user):
     empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
     EmpresaChangeLog.objects.create(

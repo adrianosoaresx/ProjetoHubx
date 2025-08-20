@@ -55,8 +55,17 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
+        params = self.request.GET.copy()
+        if "organizacao" in params and "organizacao_id" not in params:
+            params["organizacao_id"] = params.get("organizacao")
 
-        qs = search_empresas(self.request.user, self.request.GET)
+        qs = search_empresas(self.request.user, params)
+
+        if not (
+            self.request.GET.get("mostrar_excluidas") == "1"
+            and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ):
+            qs = qs.filter(deleted=False)
 
         if self.request.user.is_authenticated:
             fav_exists = FavoritoEmpresa.objects.filter(
@@ -64,19 +73,6 @@ class EmpresaListView(LoginRequiredMixin, ListView):
             )
             qs = qs.annotate(favoritado=Exists(fav_exists))
         return qs
-
-        if (
-            self.request.GET.get("mostrar_excluidas") == "1"
-            and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
-        ):
-            return qs
-        return qs.filter(deleted=False)
-
-
-        params = self.request.GET.copy()
-        if "organizacao" in params and "organizacao_id" not in params:
-            params["organizacao_id"] = params.get("organizacao")
-        return search_empresas(self.request.user, params)
 
 
     def get_context_data(self, **kwargs):
