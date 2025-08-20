@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -24,9 +24,15 @@ from .forms import (
     ValidarTokenConviteForm,
 )
 from accounts.models import SecurityEvent
+
+from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
+from .metrics import tokens_invites_revoked_total
+from . import services
+
 from .models import TokenAcesso, TOTPDevice
 from .perms import can_issue_invite
 from .services import create_invite_token
+
 
 User = get_user_model()
 
@@ -73,6 +79,65 @@ def criar_token(request):
         "tokens/gerar_token.html",
         {"form": form, "token": token},
     )
+
+
+@login_required
+def listar_convites(request):
+    if not request.user.is_staff:
+        messages.error(request, _("Você não tem permissão para visualizar convites."))
+        return redirect("accounts:perfil")
+    convites = TokenAcesso.objects.filter(gerado_por=request.user)
+    return render(request, "tokens/listar_convites.html", {"convites": convites})
+
+
+@login_required
+def revogar_convite(request, token_id: int):
+    if not request.user.is_staff:
+        messages.error(request, _("Você não tem permissão para revogar convites."))
+        return redirect("tokens:listar_convites")
+    token = get_object_or_404(TokenAcesso, id=token_id, gerado_por=request.user)
+    if token.estado != TokenAcesso.Estado.REVOGADO:
+        now = timezone.now()
+        token.estado = TokenAcesso.Estado.REVOGADO
+        token.revogado_em = now
+        token.revogado_por = request.user
+        token.save(update_fields=["estado", "revogado_em", "revogado_por"])
+        TokenUsoLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=TokenUsoLog.Acao.REVOGACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+        tokens_invites_revoked_total.inc()
+        messages.success(request, _("Convite revogado."))
+    else:
+        messages.info(request, _("Convite já estava revogado."))
+    return redirect("tokens:listar_convites")
+
+
+@login_required
+def listar_api_tokens(request):
+    tokens = services.list_tokens(request.user)
+    return render(request, "tokens/api_tokens.html", {"tokens": tokens})
+
+
+@login_required
+def revogar_api_token(request, token_id: str):
+    token = get_object_or_404(ApiToken, id=token_id, user=request.user)
+    if token.revoked_at:
+        messages.info(request, _("Token já revogado."))
+    else:
+        services.revoke_token(token.id, revogado_por=request.user)
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+        messages.success(request, _("Token revogado."))
+    return redirect("tokens:listar_api_tokens")
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
