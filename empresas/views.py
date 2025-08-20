@@ -22,6 +22,15 @@ from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog,
 from .services import list_all_tags, search_empresas
 
 
+@login_required
+def buscar(request):
+    empresas = search_empresas(request.user, request.GET)
+    context = {"empresas": empresas, "q": request.GET.get("q", "")}
+    if request.headers.get("HX-Request"):
+        return render(request, "empresas/includes/empresas_table.html", context)
+    return render(request, "empresas/busca.html", context)
+
+
 class EmpresaListView(LoginRequiredMixin, ListView):
     model = Empresa
     template_name = "empresas/lista.html"
