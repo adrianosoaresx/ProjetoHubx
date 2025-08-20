@@ -42,7 +42,7 @@ def test_create_empresa_sets_user_and_org(client, nucleado_user):
         "estado": "SP",
         "descricao": "",
         "palavras_chave": "",
-        "tags_field": "",
+        "tags": [],
     }
     resp = client.post(reverse("empresas:empresa_criar"), data)
     assert resp.status_code in (302, 200)
@@ -66,7 +66,7 @@ def test_duplicate_cnpj_returns_error(client, nucleado_user):
         "estado": "SP",
         "descricao": "",
         "palavras_chave": "",
-        "tags_field": "",
+        "tags": [],
     }
     resp = client.post(reverse("empresas:empresa_criar"), data)
     assert resp.status_code == 200

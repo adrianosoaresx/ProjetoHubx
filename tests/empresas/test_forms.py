@@ -16,7 +16,7 @@ def test_clean_cnpj_formats_and_unique(nucleado_user):
             "estado": "SC",
             "descricao": "",
             "palavras_chave": "",
-            "tags_field": "",
+            "tags": [],
         },
         initial={"usuario": nucleado_user, "organizacao": nucleado_user.organizacao},
     )
@@ -35,7 +35,7 @@ def test_clean_cnpj_formats_and_unique(nucleado_user):
             "estado": "SC",
             "descricao": "",
             "palavras_chave": "",
-            "tags_field": "",
+            "tags": [],
         },
         initial={"usuario": nucleado_user, "organizacao": nucleado_user.organizacao},
     )
@@ -54,7 +54,7 @@ def test_clean_cnpj_invalid(nucleado_user):
             "estado": "SC",
             "descricao": "",
             "palavras_chave": "",
-            "tags_field": "",
+            "tags": [],
         },
         initial={"usuario": nucleado_user, "organizacao": nucleado_user.organizacao},
     )

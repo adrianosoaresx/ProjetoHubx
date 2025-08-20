@@ -8,13 +8,22 @@ from validate_docbr import CNPJ
 from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, Tag
 
 
-def sanitize_tag_name(name: str) -> str:
-    """Remove caracteres potencialmente perigosos de nomes de tags."""
-    return re.sub(r"[^\w\s-]", "", name).strip()
+class TagMultipleWidget(s2forms.ModelSelect2MultipleWidget):
+    search_fields = ["nome__icontains"]
 
 
 class EmpresaForm(forms.ModelForm):
-    tags_field = forms.CharField(required=False, label="Tags")
+    tags = forms.ModelMultipleChoiceField(
+        queryset=Tag.objects.all(),
+        required=False,
+        label=_("Tags"),
+        widget=TagMultipleWidget(
+            attrs={
+                "data-placeholder": _("Buscar itens..."),
+                "data-minimum-input-length": 2,
+            }
+        ),
+    )
 
     class Meta:
         model = Empresa
@@ -29,12 +38,13 @@ class EmpresaForm(forms.ModelForm):
             "palavras_chave",
             "validado_em",
             "fonte_validacao",
+            "tags",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.fields["tags_field"].initial = ", ".join(self.instance.tags.values_list("nome", flat=True))
+            self.fields["tags"].initial = self.instance.tags.all()
         self.initial.setdefault("organizacao", getattr(self.instance, "organizacao", None))
         self.initial.setdefault("usuario", getattr(self.instance, "usuario", None))
         self.fields["validado_em"].disabled = True
@@ -57,21 +67,13 @@ class EmpresaForm(forms.ModelForm):
         if not instance.pk:
             instance.usuario = self.initial.get("usuario")
             instance.organizacao = self.initial.get("organizacao")
+        tags = self.cleaned_data.get("tags")
         if commit:
             instance.save()
-        tags_names = [tag.strip() for tag in self.cleaned_data.get("tags_field", "").split(",") if tag.strip()]
-        tags = []
-        for name in tags_names:
-            clean_name = sanitize_tag_name(name)
-            if not clean_name:
-                continue
-            tag, _ = Tag.objects.get_or_create(nome=clean_name)
-            tags.append(tag)
-        if commit:
-            instance.tags.set(tags)
-            self.save_m2m()
+            if tags is not None:
+                instance.tags.set(tags)
         else:
-            self._save_m2m = lambda: instance.tags.set(tags)
+            self._save_m2m = lambda: instance.tags.set(tags or [])
         return instance
 
 
