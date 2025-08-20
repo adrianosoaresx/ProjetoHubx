@@ -65,13 +65,10 @@
         <i class="fa-solid fa-flag"></i>
       </button>
 
-    <div id="moderacao-wrapper" class="mt-4">
-      {% include 'feed/_moderacao.html' with post=post %}
     </div>
 
-    <div class="mt-4" id="like-btn-{{ post.id }}">
-      {% include 'feed/_like_button.html' with post=post %}
-
+    <div id="moderacao-wrapper" class="mt-4">
+      {% include 'feed/_moderacao.html' with post=post %}
     </div>
 
     <div class="mt-6">
