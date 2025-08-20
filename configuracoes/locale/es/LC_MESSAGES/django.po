@@ -163,10 +163,6 @@ msgstr "Recibir notificaciones por correo electrónico"
 msgid "Receber notificações por WhatsApp"
 msgstr "Recibir notificaciones por WhatsApp"
 
-#: templates/configuracoes/partials/preferencias.html:25
-msgid "Funcionalidade de WhatsApp em desenvolvimento"
-msgstr "Funcionalidad de WhatsApp en desarrollo"
-
 #: templates/configuracoes/partials/preferencias.html:28
 msgid "Horário diário"
 msgstr "Horario diario"
