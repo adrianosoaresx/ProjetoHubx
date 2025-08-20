@@ -26,10 +26,27 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
+
 from .metrics import tokens_invites_revoked_total
 from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
 from .perms import can_issue_invite
 from .services import create_invite_token
+
+from .models import (
+    ApiToken,
+    ApiTokenLog,
+    TokenAcesso,
+    TokenUsoLog,
+    CodigoAutenticacaoLog,
+    TOTPDevice,
+)
+from .services import create_invite_token
+from .metrics import tokens_invites_revoked_total
+from . import services
+from .perms import can_issue_invite
+
+from .services import create_invite_token, list_tokens, revoke_token
+
 
 User = get_user_model()
 
@@ -127,7 +144,7 @@ def revogar_convite(request, token_id: int):
 
 @login_required
 def listar_api_tokens(request):
-    tokens = services.list_tokens(request.user)
+    tokens = list_tokens(request.user)
     return render(request, "tokens/api_tokens.html", {"tokens": tokens})
 
 
@@ -137,7 +154,7 @@ def revogar_api_token(request, token_id: str):
     if token.revoked_at:
         messages.info(request, _("Token já revogado."))
     else:
-        services.revoke_token(token.id, revogado_por=request.user)
+        revoke_token(token.id, revogado_por=request.user)
         ApiTokenLog.objects.create(
             token=token,
             usuario=request.user,
@@ -159,7 +176,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         if form.is_valid():
 
             token, codigo = create_invite_token(gerado_por=request.user, tipo_destino=form.cleaned_data["tipo_destino"])
-
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
@@ -186,10 +202,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         request,
                         "tokens/_resultado.html",
                         {"error": _("Limite diário atingido.")},
-                        status=409,
+                        status=429,
                     )
                 messages.error(request, _("Limite diário atingido."))
-                return JsonResponse({"error": _("Limite diário atingido.")}, status=409)
+                return JsonResponse({"error": _("Limite diário atingido.")}, status=429)
 
             token, codigo = create_invite_token(
                 gerado_por=request.user,
@@ -253,6 +269,15 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
         form = GerarCodigoAutenticacaoForm(request.POST)
         if form.is_valid():
             codigo = form.save()
+            ip = request.META.get("REMOTE_ADDR", "")
+            user_agent = request.META.get("HTTP_USER_AGENT", "")
+            CodigoAutenticacaoLog.objects.create(
+                codigo=codigo,
+                usuario=request.user,
+                acao=CodigoAutenticacaoLog.Acao.EMISSAO,
+                ip=ip,
+                user_agent=user_agent,
+            )
             # TODO: enviar via email/SMS
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
@@ -268,6 +293,17 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
+            ip = request.META.get("REMOTE_ADDR", "")
+            user_agent = request.META.get("HTTP_USER_AGENT", "")
+            codigo = getattr(form, "codigo_obj", None)
+            if codigo:
+                CodigoAutenticacaoLog.objects.create(
+                    codigo=codigo,
+                    usuario=request.user,
+                    acao=CodigoAutenticacaoLog.Acao.VALIDACAO,
+                    ip=ip,
+                    user_agent=user_agent,
+                )
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Código validado")})
             messages.success(request, _("Código validado"))

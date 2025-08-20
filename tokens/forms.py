@@ -74,6 +74,7 @@ class ValidarCodigoAutenticacaoForm(forms.Form):
             auth = CodigoAutenticacao.objects.filter(usuario=self.usuario, verificado=False).latest("created_at")
         except CodigoAutenticacao.DoesNotExist:
             raise forms.ValidationError("Código inválido")
+        self.codigo_obj = auth
         if auth.tentativas >= 3:
             raise forms.ValidationError("Código bloqueado")
         if auth.is_expirado():

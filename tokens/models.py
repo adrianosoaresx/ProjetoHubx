@@ -34,7 +34,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
         max_length=20,
         choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],
     )
-    expires_at = models.DateTimeField()
+    expires_at = models.DateTimeField(null=True, blank=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
     revogado_por = models.ForeignKey(
         User,
@@ -47,9 +47,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
 
     @property
     def is_active(self) -> bool:
-        return self.revoked_at is None and (
-            self.expires_at is None or self.expires_at > timezone.now()
-        )
+        return self.revoked_at is None and (self.expires_at is None or self.expires_at > timezone.now())
 
     class Meta:
         ordering = ["-created_at"]
@@ -257,6 +255,31 @@ class CodigoAutenticacao(TimeStampedModel, SoftDeleteModel):
 
     def is_expirado(self) -> bool:
         return timezone.now() > self.expira_em
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class CodigoAutenticacaoLog(TimeStampedModel, SoftDeleteModel):
+    class Acao(models.TextChoices):
+        EMISSAO = "emissao", _("Emissão")
+        VALIDACAO = "validacao", _("Validação")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    codigo = models.ForeignKey(
+        CodigoAutenticacao,
+        on_delete=models.CASCADE,
+        related_name="logs",
+    )
+    usuario = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    acao = models.CharField(max_length=20, choices=Acao.choices)
+    ip = EncryptedCharField(max_length=128, null=True, blank=True)
+    user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

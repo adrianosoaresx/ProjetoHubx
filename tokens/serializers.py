@@ -71,3 +71,4 @@ class ApiTokenSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "revoked_at", "last_used_at", "created_at"]
+        extra_kwargs = {"expires_at": {"allow_null": True, "required": False}}
