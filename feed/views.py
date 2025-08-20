@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 
 from accounts.models import UserType
@@ -317,7 +318,7 @@ def post_delete(request, pk):
 
 
 @login_required
-@permission_required("feed.change_post", raise_exception=True)
+@permission_required("feed.change_moderacaopost", raise_exception=True)
 def moderar_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
@@ -329,12 +330,38 @@ def moderar_post(request, pk):
                 avaliado_por=request.user,
                 avaliado_em=timezone.now(),
             )
+            post.refresh_from_db()
+            message = _("Post aprovado com sucesso.")
+            if request.headers.get("HX-Request"):
+                html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
+                return HttpResponse(html)
+            messages.success(request, message)
         elif acao == "rejeitar":
-            ModeracaoPost.objects.create(
-                post=post,
-                status="rejeitado",
-                motivo=request.POST.get("motivo", ""),
-                avaliado_por=request.user,
-                avaliado_em=timezone.now(),
-            )
+            motivo = request.POST.get("motivo", "").strip()
+            if not motivo:
+                error = _("Motivo é obrigatório.")
+                if request.headers.get("HX-Request"):
+                    html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
+                    return HttpResponse(html, status=400)
+                messages.error(request, error)
+            else:
+                ModeracaoPost.objects.create(
+                    post=post,
+                    status="rejeitado",
+                    motivo=motivo,
+                    avaliado_por=request.user,
+                    avaliado_em=timezone.now(),
+                )
+                post.refresh_from_db()
+                message = _("Post rejeitado.")
+                if request.headers.get("HX-Request"):
+                    html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
+                    return HttpResponse(html)
+                messages.success(request, message)
+        else:
+            error = _("Ação inválida.")
+            if request.headers.get("HX-Request"):
+                html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
+                return HttpResponse(html, status=400)
+            messages.error(request, error)
     return redirect("feed:post_detail", pk=pk)
