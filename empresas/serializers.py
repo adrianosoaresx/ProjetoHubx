@@ -86,9 +86,22 @@ class EmpresaSerializer(serializers.ModelSerializer):
         return instance
 
     def get_favoritado(self, obj: Empresa) -> bool:
+        """Retorna ``True`` se a empresa estiver favoritada pelo usuário atual."""
+
         request = self.context.get("request")
+
+        # Quando o serializer é utilizado fora de uma requisição (ex.: para
+        # renderizar templates), o atributo ``favoritado`` pode ser definido
+        # previamente no objeto. Nesse caso, apenas retornamos o valor já
+        # calculado.
         if not request or not request.user.is_authenticated:
-            return False
+            return getattr(obj, "favoritado", False)
+
+        # Para requisições autenticadas, verifica a existência do favorito no
+        # banco caso o atributo ainda não esteja presente.
+        if hasattr(obj, "favoritado"):
+            return bool(obj.favoritado)
+
         return obj.favoritos.filter(usuario=request.user, deleted=False).exists()
 
 

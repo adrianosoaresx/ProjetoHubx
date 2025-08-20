@@ -29,6 +29,35 @@
       </td>
       <td class="px-3 py-2 text-center space-x-2">
         <a href="{% url 'empresas:empresa_editar' empresa.pk %}" class="text-blue-600 hover:underline">{% translate "Editar" %}</a>
+
+        <a href="{% url 'empresas:remover' empresa.pk %}" class="text-red-600 hover:underline">
+          {% translate "Remover" %}
+        </a>
+        {% translate "Favoritar" as txt_favoritar %}
+        {% translate "Desfavoritar" as txt_desfavoritar %}
+        <button
+          class="text-yellow-600 hover:underline"
+          {% if empresa.favoritado %}
+            hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+          {% else %}
+            hx-post="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+          {% endif %}
+          hx-swap="none"
+          hx-on:afterRequest="
+            if (event.detail.xhr.status === 201) {
+              this.innerText='{{ txt_desfavoritar }}';
+              this.setAttribute('hx-delete', '{% url 'empresas_api:empresa-favoritar' empresa.id %}');
+              this.removeAttribute('hx-post');
+            } else if (event.detail.xhr.status === 204) {
+              this.innerText='{{ txt_favoritar }}';
+              this.setAttribute('hx-post', '{% url 'empresas_api:empresa-favoritar' empresa.id %}');
+              this.removeAttribute('hx-delete');
+            }
+          "
+        >
+          {% if empresa.favoritado %}{{ txt_desfavoritar }}{% else %}{{ txt_favoritar }}{% endif %}
+        </button>
+
         {% if empresa.deleted %}
           <form hx-post="{% url 'empresas_api:empresa-restaurar' empresa.pk %}" hx-on="htmx:afterRequest: location.reload()" class="inline">
             {% csrf_token %}
@@ -45,6 +74,7 @@
             {% translate "Remover" %}
           </a>
         {% endif %}
+
       </td>
     </tr>
     {% endfor %}

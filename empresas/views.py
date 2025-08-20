@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
+from django.db.models import Exists, OuterRef
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -19,7 +20,14 @@ from core.permissions import (
 from organizacoes.models import Organizacao
 
 from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
-from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
+from .models import (
+    AvaliacaoEmpresa,
+    ContatoEmpresa,
+    Empresa,
+    EmpresaChangeLog,
+    FavoritoEmpresa,
+    Tag,
+)
 from .services import list_all_tags, search_empresas
 
 
@@ -49,12 +57,21 @@ class EmpresaListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
 
         qs = search_empresas(self.request.user, self.request.GET)
+
+        if self.request.user.is_authenticated:
+            fav_exists = FavoritoEmpresa.objects.filter(
+                usuario=self.request.user, empresa=OuterRef("pk"), deleted=False
+            )
+            qs = qs.annotate(favoritado=Exists(fav_exists))
+        return qs
+
         if (
             self.request.GET.get("mostrar_excluidas") == "1"
             and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
         ):
             return qs
         return qs.filter(deleted=False)
+
 
         params = self.request.GET.copy()
         if "organizacao" in params and "organizacao_id" not in params:
@@ -298,6 +315,12 @@ def detalhes_empresa(request, pk):
         and empresa.usuario.organizacao != request.user.organizacao  # Corrigido para usar 'organizacao'
     ):
         return HttpResponseForbidden()
+    if request.user.is_authenticated:
+        empresa.favoritado = FavoritoEmpresa.objects.filter(
+            usuario=request.user, empresa=empresa, deleted=False
+        ).exists()
+    else:
+        empresa.favoritado = False
     prod_tags = empresa.tags.filter(categoria=Tag.Categoria.PRODUTO)
     serv_tags = empresa.tags.filter(categoria=Tag.Categoria.SERVICO)
     avaliacoes = empresa.avaliacoes.filter(deleted=False).select_related("usuario")

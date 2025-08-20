@@ -87,6 +87,31 @@
     {% if request.user.is_staff %}
     <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Histórico" %}</a>
     {% endif %}
+    {% translate "Favoritar" as txt_favoritar %}
+    {% translate "Desfavoritar" as txt_desfavoritar %}
+    <button
+      id="favorito-btn"
+      class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100"
+      {% if empresa.favoritado %}
+        hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+      {% else %}
+        hx-post="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+      {% endif %}
+      hx-swap="none"
+      hx-on:afterRequest="
+        if (event.detail.xhr.status === 201) {
+          this.innerText='{{ txt_desfavoritar }}';
+          this.setAttribute('hx-delete', '{% url 'empresas_api:empresa-favoritar' empresa.id %}');
+          this.removeAttribute('hx-post');
+        } else if (event.detail.xhr.status === 204) {
+          this.innerText='{{ txt_favoritar }}';
+          this.setAttribute('hx-post', '{% url 'empresas_api:empresa-favoritar' empresa.id %}');
+          this.removeAttribute('hx-delete');
+        }
+      "
+    >
+      {% if empresa.favoritado %}{{ txt_desfavoritar }}{% else %}{{ txt_favoritar }}{% endif %}
+    </button>
     {% if request.user == empresa.usuario %}
       <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Editar" %}</a>
     {% endif %}
