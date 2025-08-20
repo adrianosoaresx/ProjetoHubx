@@ -24,8 +24,13 @@
         const uploadUrl = container.dataset.uploadUrl || '';
         const historyUrl = container.dataset.historyUrl || '';
         const scheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const hostname = window.location.hostname;
-        const url = scheme + hostname + ':8001/ws/chat/' + destinatarioId + '/';
+        let baseWs = container.dataset.wsUrl || window.CHAT_WS_URL;
+        if (!baseWs) {
+            baseWs = scheme + window.location.host;
+        } else if (!/^wss?:\/\//.test(baseWs)) {
+            baseWs = scheme + baseWs;
+        }
+        const url = baseWs.replace(/\/$/, '') + '/ws/chat/' + destinatarioId + '/';
 
         if(container._chatCleanup){ container._chatCleanup(); }
         const closeSocket = createSocket(container, url);

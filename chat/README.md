@@ -79,6 +79,11 @@ Após conectar, envie objetos JSON com `tipo` e `conteudo` para publicar
 mensagens. O servidor transmite eventos de novos participantes,
 reações, pins e moderação para todos os conectados.
 
+O script `static/chat/js/chat_socket.js` utiliza `window.location.host` para
+montar a URL padrão de conexão. Em cenários com proxy reverso, é possível
+sobrescrever o host definindo a variável global `CHAT_WS_URL` ou atribuindo um
+valor ao atributo `data-ws-url` no container do chat.
+
 ## Permissões e papéis
 
 - **Participante** – pode ler e enviar mensagens.
