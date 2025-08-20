@@ -45,11 +45,11 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             .select_related("created_by")
             .prefetch_related("evento_set", "nucleos", "users")
         )
-        query = self.request.GET.get("q")
+        search = self.request.GET.get("search")
         tipo = self.request.GET.get("tipo")
         cidade = self.request.GET.get("cidade")
         estado = self.request.GET.get("estado")
-        order = self.request.GET.get("order", "nome")
+        ordering = self.request.GET.get("ordering", "nome")
         inativa = self.request.GET.get("inativa")
 
         if inativa is not None and inativa != "":
@@ -57,8 +57,8 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         else:
             qs = qs.filter(inativa=False)
 
-        if query:
-            qs = qs.filter(Q(nome__icontains=query) | Q(slug__icontains=query))
+        if search:
+            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         if tipo:
             qs = qs.filter(tipo=tipo)
         if cidade:
@@ -67,9 +67,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             qs = qs.filter(estado=estado)
 
         allowed_order = {"nome", "tipo", "cidade", "estado", "created_at"}
-        if order not in allowed_order:
-            order = "nome"
-        return qs.order_by(order)
+        if ordering not in allowed_order:
+            ordering = "nome"
+        return qs.order_by(ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
