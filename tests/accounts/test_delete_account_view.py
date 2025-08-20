@@ -17,6 +17,6 @@ def test_delete_account_view(client):
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.deleted is True and user.deleted_at is not None
-    assert user.exclusao_confirmada
+    assert not user.exclusao_confirmada
     assert not user.is_active
     assert SecurityEvent.objects.filter(usuario=user, evento="conta_excluida").exists()

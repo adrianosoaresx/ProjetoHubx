@@ -9,3 +9,6 @@
   <p class="text-sm text-neutral-600">{% trans 'Nenhuma conquista ainda.' %}</p>
 {% endfor %}
 </div>
+{% if has_pending_achievements %}
+<a href="{% url 'dashboard:achievements' %}" class="text-sm text-blue-600 hover:underline">{% trans 'Ver conquistas' %}</a>
+{% endif %}

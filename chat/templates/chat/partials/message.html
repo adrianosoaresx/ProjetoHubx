@@ -106,6 +106,12 @@
         </ul>
       </div>
 
+      <button
+        type="button"
+        class="favorite-btn"
+        aria-label="{% trans 'Favoritar mensagem' %}"
+      >⭐</button>
+
       {% if is_admin %}
         <button
           hx-post="/api/chat/channels/{{ m.channel_id }}/messages/{{ m.id }}/pin/"

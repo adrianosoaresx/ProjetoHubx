@@ -42,7 +42,7 @@ def send_confirmation_email(token_id: int) -> None:
 
 @shared_task
 def purge_soft_deleted(batch_size: int = 500) -> None:
-    """Remove definitivamente usuários soft-deleted há mais de 30 dias."""
+    """Remove definitivamente usuários marcados como excluídos há mais de 30 dias."""
     limit = timezone.now() - timezone.timedelta(days=30)
     total_purged = 0
     try:
@@ -51,7 +51,6 @@ def purge_soft_deleted(batch_size: int = 500) -> None:
                 User.all_objects.filter(
                     deleted=True,
                     deleted_at__lte=limit,
-                    exclusao_confirmada=True,
                 )
                 .order_by("pk")
                 .values_list("pk", flat=True)[:batch_size]
