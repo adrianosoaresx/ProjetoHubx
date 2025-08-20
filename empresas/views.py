@@ -16,6 +16,7 @@ from core.permissions import (
     no_superadmin_required,
     pode_crud_empresa,
 )
+from organizacoes.models import Organizacao
 
 from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
 from .models import AvaliacaoEmpresa, ContatoEmpresa, Empresa, EmpresaChangeLog, Tag
@@ -37,13 +38,23 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
-        return search_empresas(self.request.user, self.request.GET)
+        params = self.request.GET.copy()
+        if "organizacao" in params and "organizacao_id" not in params:
+            params["organizacao_id"] = params.get("organizacao")
+        return search_empresas(self.request.user, params)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tags"] = list_all_tags()
         context["selected_tags"] = self.request.GET.getlist("tags")
         context["empresas"] = context.get("object_list")
+        if self.request.user.is_superuser or self.request.user.user_type == UserType.ADMIN:
+            context["organizacoes"] = Organizacao.objects.all()
+        else:
+            org_id = getattr(self.request.user, "organizacao_id", None)
+            context["organizacoes"] = (
+                Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            )
         return context
 
     def get_template_names(self):  # type: ignore[override]
