@@ -8,9 +8,13 @@ from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
 
-from configuracoes.services import get_user_preferences
-
-from ..models import Canal, NotificationLog, NotificationStatus, NotificationTemplate
+from ..models import (
+    Canal,
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
 
 from ..tasks import enviar_notificacao_async
 
