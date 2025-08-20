@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -210,6 +210,22 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
         )
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        section = self.request.GET.get("section")
+        if self.request.headers.get("HX-Request") and section in {
+            "usuarios",
+            "nucleos",
+            "eventos",
+            "empresas",
+            "posts",
+        }:
+            return render(
+                self.request,
+                f"organizacoes/partials/{section}_list.html",
+                context,
+            )
+        return super().render_to_response(context, **response_kwargs)
+
 
 class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
@@ -312,5 +328,80 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 "organizacao": org,
                 "change_logs": change_logs,
                 "atividade_logs": atividade_logs,
+            },
+        )
+
+
+class OrganizacaoUsuariosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
+        usuarios = User.objects.filter(organizacao=org)
+        return render(
+            request,
+            "organizacoes/usuarios_modal.html",
+            {
+                "organizacao": org,
+                "usuarios": usuarios,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=usuarios",
+            },
+        )
+
+
+class OrganizacaoNucleosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
+        nucleos = Nucleo.objects.filter(organizacao=org, deleted=False)
+        return render(
+            request,
+            "organizacoes/nucleos_modal.html",
+            {
+                "organizacao": org,
+                "nucleos": nucleos,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=nucleos",
+            },
+        )
+
+
+class OrganizacaoEventosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
+        eventos = Evento.objects.filter(organizacao=org)
+        return render(
+            request,
+            "organizacoes/eventos_modal.html",
+            {
+                "organizacao": org,
+                "eventos": eventos,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=eventos",
+            },
+        )
+
+
+class OrganizacaoEmpresasModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
+        empresas = Empresa.objects.filter(organizacao=org, deleted=False)
+        return render(
+            request,
+            "organizacoes/empresas_modal.html",
+            {
+                "organizacao": org,
+                "empresas": empresas,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=empresas",
+            },
+        )
+
+
+class OrganizacaoPostsModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
+        posts = Post.objects.filter(organizacao=org, deleted=False)
+        return render(
+            request,
+            "organizacoes/posts_modal.html",
+            {
+                "organizacao": org,
+                "posts": posts,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=posts",
             },
         )

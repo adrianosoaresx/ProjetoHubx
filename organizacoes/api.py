@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.cache import cache
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -233,12 +234,28 @@ class OrganizacaoRelatedModelViewSet(viewsets.ModelViewSet):
         return org
 
 
-class OrganizacaoUserViewSet(OrganizacaoRelatedViewSet):
+class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = UserSerializer
 
     def get_queryset(self):
         org = self.get_organizacao()
         return org.users.all()
+
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        user_id = request.data.get("user_id")
+        user = get_object_or_404(get_user_model(), pk=user_id)
+        user.organizacao = org
+        user.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
+        org = self.get_organizacao()
+        user = get_object_or_404(get_user_model(), pk=pk, organizacao=org)
+        user.organizacao = None
+        user.save(update_fields=["organizacao"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"], url_path="associados")
     def associados(self, request, organizacao_pk: str | None = None):
@@ -247,36 +264,96 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedViewSet):
         return Response(serializer.data)
 
 
-class OrganizacaoNucleoViewSet(OrganizacaoRelatedViewSet):
+class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = NucleoSerializer
 
     def get_queryset(self):
         org = self.get_organizacao()
         return Nucleo.objects.filter(organizacao=org, deleted=False)
 
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        nucleo_id = request.data.get("nucleo_id")
+        nucleo = get_object_or_404(Nucleo, pk=nucleo_id)
+        nucleo.organizacao = org
+        nucleo.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(nucleo)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class OrganizacaoEventoViewSet(OrganizacaoRelatedViewSet):
+    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
+        org = self.get_organizacao()
+        nucleo = get_object_or_404(Nucleo, pk=pk, organizacao=org)
+        nucleo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrganizacaoEventoViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = EventoSerializer
 
     def get_queryset(self):
         org = self.get_organizacao()
         return Evento.objects.filter(organizacao=org, deleted=False)
 
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        evento_id = request.data.get("evento_id")
+        evento = get_object_or_404(Evento, pk=evento_id)
+        evento.organizacao = org
+        evento.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(evento)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class OrganizacaoEmpresaViewSet(OrganizacaoRelatedViewSet):
+    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
+        org = self.get_organizacao()
+        evento = get_object_or_404(Evento, pk=pk, organizacao=org)
+        evento.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrganizacaoEmpresaViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = EmpresaSerializer
 
     def get_queryset(self):
         org = self.get_organizacao()
         return Empresa.objects.filter(organizacao=org, deleted=False)
 
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        empresa_id = request.data.get("empresa_id")
+        empresa = get_object_or_404(Empresa, pk=empresa_id)
+        empresa.organizacao = org
+        empresa.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(empresa)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class OrganizacaoPostViewSet(OrganizacaoRelatedViewSet):
+    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
+        org = self.get_organizacao()
+        empresa = get_object_or_404(Empresa, pk=pk, organizacao=org)
+        empresa.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class OrganizacaoPostViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = PostSerializer
 
     def get_queryset(self):
         org = self.get_organizacao()
         return Post.objects.filter(organizacao=org, deleted=False)
+
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        post_id = request.data.get("post_id")
+        post = get_object_or_404(Post, pk=post_id)
+        post.organizacao = org
+        post.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(post)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
+        org = self.get_organizacao()
+        post = get_object_or_404(Post, pk=pk, organizacao=org)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class OrganizacaoCentroCustoViewSet(OrganizacaoRelatedModelViewSet):

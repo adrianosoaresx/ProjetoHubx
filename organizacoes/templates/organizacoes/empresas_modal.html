@@ -1,0 +1,20 @@
+{% load i18n %}
+<div class="bg-white p-4 rounded shadow" hx-target="this">
+  <h3 class="text-lg font-semibold mb-2">{% trans 'Gerenciar empresas' %}</h3>
+  <form hx-post="/api/organizacoes/{{ organizacao.id }}/empresas/" hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#empresas-section'); this.closest('#modal').innerHTML='';" class="space-y-2">
+    {% csrf_token %}
+    <label class="block text-sm" for="empresa_id">{% trans 'ID da empresa' %}</label>
+    <input type="text" name="empresa_id" class="w-full border px-2 py-1 rounded">
+    <button type="submit" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Adicionar' %}</button>
+  </form>
+  <ul class="mt-4 space-y-1">
+    {% for empresa in empresas %}
+      <li class="flex justify-between items-center">
+        {{ empresa.nome }}
+        <button hx-delete="/api/organizacoes/{{ organizacao.id }}/empresas/{{ empresa.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#empresas-section');" class="text-red-600 text-sm">{% trans 'Remover' %}</button>
+      </li>
+    {% empty %}
+      <li class="text-neutral-500 text-sm">{% trans 'Nenhuma empresa associada.' %}</li>
+    {% endfor %}
+  </ul>
+</div>
