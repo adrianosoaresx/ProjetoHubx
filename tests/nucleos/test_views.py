@@ -222,3 +222,14 @@ def test_suplente_create_success(client, admin_user, membro_user, organizacao):
     assert CoordenadorSuplente.objects.filter(
         nucleo=nucleo, usuario=membro_user
     ).exists()
+
+
+def test_meus_nucleos_view(client, membro_user, organizacao):
+    nucleo1 = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    nucleo2 = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(nucleo=nucleo1, user=membro_user, status="ativo")
+    ParticipacaoNucleo.objects.create(nucleo=nucleo2, user=membro_user, status="inativo")
+    client.force_login(membro_user)
+    resp = client.get(reverse("nucleos:meus"))
+    assert resp.status_code == 200
+    assert list(resp.context["object_list"]) == [nucleo1]

@@ -83,6 +83,43 @@ class NucleoListView(LoginRequiredMixin, ListView):
         return ctx
 
 
+class NucleoMeusView(LoginRequiredMixin, ListView):
+    model = Nucleo
+    template_name = "nucleos/meus_list.html"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = (
+            Nucleo.objects.select_related("organizacao")
+            .prefetch_related("participacoes")
+            .filter(
+                deleted=False,
+                participacoes__user=self.request.user,
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            )
+            .annotate(
+                membros_count=Count(
+                    "participacoes",
+                    filter=Q(
+                        participacoes__status="ativo",
+                        participacoes__status_suspensao=False,
+                    ),
+                    distinct=True,
+                )
+            )
+        )
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
+        return qs.order_by("nome").distinct()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        return ctx
+
+
 class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm

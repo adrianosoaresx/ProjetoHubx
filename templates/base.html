@@ -115,6 +115,9 @@
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-users"></i> {% trans "Núcleos" %}
         </a>
+        <a href="{% url 'nucleos:meus' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-user-group"></i> {% trans "Meus Núcleos" %}
+        </a>
         {% if user.is_authenticated %}
         {% if user.user_type == 'financeiro' or user.user_type == 'admin' %}
         <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
