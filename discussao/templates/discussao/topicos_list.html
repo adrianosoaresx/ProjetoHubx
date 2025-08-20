@@ -28,6 +28,7 @@
       </div>
     </td>
     <td class="px-4 py-2 text-center">{{ topico.num_comentarios }}</td>
+    <td class="px-4 py-2 text-center">{{ topico.numero_visualizacoes }}</td>
     <td class="px-4 py-2">{{ topico.last_activity|date:SHORT_DATETIME_FORMAT }}</td>
   </tr>
   {% endfor %}
@@ -61,6 +62,7 @@
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans "Criado em" %}</th>
           <th class="px-4 py-2 text-center font-medium text-neutral-700">{% trans "Votos" %}</th>
           <th class="px-4 py-2 text-center font-medium text-neutral-700">{% trans "Coment\u00e1rios" %}</th>
+          <th class="px-4 py-2 text-center font-medium text-neutral-700">{% trans "Visualizações" %}</th>
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans "\u00daltima atividade" %}</th>
         </tr>
       </thead>
