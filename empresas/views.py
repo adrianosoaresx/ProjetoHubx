@@ -301,6 +301,13 @@ def adicionar_contato(request, empresa_id):
             contato = form.save(commit=False)
             contato.empresa = empresa
             contato.save()
+            if request.headers.get("HX-Request"):
+                context = {
+                    "contato": contato,
+                    "empresa": empresa,
+                    "message": "Contato adicionado",
+                }
+                return render(request, "empresas/contato_form.html", context, status=HTTP_201_CREATED)
             return JsonResponse({"message": "Contato adicionado"}, status=HTTP_201_CREATED)
     else:
         form = ContatoEmpresaForm()
@@ -316,7 +323,14 @@ def editar_contato(request, pk):
     if request.method == "POST":
         form = ContatoEmpresaForm(request.POST, instance=contato)
         if form.is_valid():
-            form.save()
+            contato = form.save()
+            if request.headers.get("HX-Request"):
+                context = {
+                    "contato": contato,
+                    "empresa": contato.empresa,
+                    "message": "Contato atualizado",
+                }
+                return render(request, "empresas/contato_form.html", context)
             return JsonResponse({"message": "Contato atualizado"}, status=200)
     else:
         form = ContatoEmpresaForm(instance=contato)
