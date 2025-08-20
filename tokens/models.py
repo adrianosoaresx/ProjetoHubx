@@ -260,6 +260,31 @@ class CodigoAutenticacao(TimeStampedModel, SoftDeleteModel):
         ordering = ["-created_at"]
 
 
+class CodigoAutenticacaoLog(TimeStampedModel, SoftDeleteModel):
+    class Acao(models.TextChoices):
+        EMISSAO = "emissao", _("Emissão")
+        VALIDACAO = "validacao", _("Validação")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    codigo = models.ForeignKey(
+        CodigoAutenticacao,
+        on_delete=models.CASCADE,
+        related_name="logs",
+    )
+    usuario = models.ForeignKey(
+        get_user_model(),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    acao = models.CharField(max_length=20, choices=Acao.choices)
+    ip = EncryptedCharField(max_length=128, null=True, blank=True)
+    user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class TOTPDevice(TimeStampedModel, SoftDeleteModel):
     usuario = models.OneToOneField(
         get_user_model(),

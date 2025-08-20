@@ -26,8 +26,19 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
+
+
+from .models import (
+    ApiToken,
+    ApiTokenLog,
+    TokenAcesso,
+    TokenUsoLog,
+    CodigoAutenticacaoLog,
+    TOTPDevice,
+)
+from .services import create_invite_token
 from .metrics import tokens_invites_revoked_total
-from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
+from . import services
 from .perms import can_issue_invite
 
 from .services import create_invite_token, list_tokens, revoke_token
@@ -242,6 +253,15 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
         form = GerarCodigoAutenticacaoForm(request.POST)
         if form.is_valid():
             codigo = form.save()
+            ip = request.META.get("REMOTE_ADDR", "")
+            user_agent = request.META.get("HTTP_USER_AGENT", "")
+            CodigoAutenticacaoLog.objects.create(
+                codigo=codigo,
+                usuario=request.user,
+                acao=CodigoAutenticacaoLog.Acao.EMISSAO,
+                ip=ip,
+                user_agent=user_agent,
+            )
             # TODO: enviar via email/SMS
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
@@ -257,6 +277,17 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
+            ip = request.META.get("REMOTE_ADDR", "")
+            user_agent = request.META.get("HTTP_USER_AGENT", "")
+            codigo = getattr(form, "codigo_obj", None)
+            if codigo:
+                CodigoAutenticacaoLog.objects.create(
+                    codigo=codigo,
+                    usuario=request.user,
+                    acao=CodigoAutenticacaoLog.Acao.VALIDACAO,
+                    ip=ip,
+                    user_agent=user_agent,
+                )
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Código validado")})
             messages.success(request, _("Código validado"))

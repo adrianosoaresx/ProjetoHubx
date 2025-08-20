@@ -295,7 +295,6 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
     template_name = "organizacoes/history.html"
 
     def get(self, request, pk, *args, **kwargs):
-
         try:
             org = get_object_or_404(Organizacao, pk=pk)
             user = request.user
@@ -310,67 +309,37 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                     )
                     and getattr(user, "organizacao_id", None) == org.id
                 )
-
-            return HttpResponseForbidden()
-              
-        if request.GET.get("export") == "csv":
-            import csv
-
-            from django.http import HttpResponse
-
-            response = HttpResponse(content_type="text/csv")
-            response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
-            writer = csv.writer(response)
-            writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in (
-                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
-                .order_by("-created_at")
-
             ):
-                capture_exception(PermissionDenied("historico sem permissão"))
                 return HttpResponseForbidden()
+
             if request.GET.get("export") == "csv":
                 import csv
-
                 from django.http import HttpResponse
 
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
+                response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
                 writer = csv.writer(response)
-                writer.writerow(
-                    ["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"]
-                )
-                for log in (
-                    OrganizacaoChangeLog.all_objects.filter(organizacao=org)
-                    .order_by("-created_at")
-                ):
-                    writer.writerow(
-                        [
-                            "change",
-                            log.campo_alterado,
-                            log.valor_antigo,
-                            log.valor_novo,
-                            getattr(log.alterado_por, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                for log in (
-                    OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
-                    .order_by("-created_at")
-                ):
-                    writer.writerow(
-                        [
-                            "activity",
-                            log.acao,
-                            "",
-                            "",
-                            getattr(log.usuario, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
+                writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
+                for log in OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
+                    writer.writerow([
+                        "change",
+                        log.campo_alterado,
+                        log.valor_antigo,
+                        log.valor_novo,
+                        getattr(log.alterado_por, "email", ""),
+                        log.created_at.isoformat(),
+                    ])
+                for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
+                    writer.writerow([
+                        "activity",
+                        log.acao,
+                        "",
+                        "",
+                        getattr(log.usuario, "email", ""),
+                        log.created_at.isoformat(),
+                    ])
                 return response
+
             change_logs = (
                 OrganizacaoChangeLog.all_objects.filter(organizacao=org)
                 .order_by("-created_at")[:10]
