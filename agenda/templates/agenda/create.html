@@ -8,9 +8,22 @@
 
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
-
-    {{ form.as_p }}
-
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div>
+      <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">
+        {{ field.label }}
+      </label>
+      {% if field.name == 'avatar' or field.name == 'cover' %}
+      {{ field.as_widget(attrs={'accept': 'image/*'}) }}
+      {% else %}
+      {{ field }}
+      {% endif %}
+      {% if field.errors %}
+      <p class="text-sm text-red-600 mt-1">{{ field.errors }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
       <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>

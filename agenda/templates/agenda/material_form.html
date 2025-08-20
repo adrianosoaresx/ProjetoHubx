@@ -9,7 +9,20 @@
   </h1>
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+    <div>
+      {{ field.label_tag }}
+      {% if field.name == 'arquivo' %}
+      {{ field.as_widget(attrs={'accept': '.jpg,.jpeg,.png,.pdf'}) }}
+      {% elif field.name == 'imagem_thumb' %}
+      {{ field.as_widget(attrs={'accept': '.jpg,.jpeg,.png'}) }}
+      {% else %}
+      {{ field }}
+      {% endif %}
+      {{ field.errors }}
+    </div>
+    {% endfor %}
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
       <a href="{% url 'agenda:material_list' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
       <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
