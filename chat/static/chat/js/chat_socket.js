@@ -254,6 +254,23 @@
             });
         }
 
+        function setupPinToggle(div, id){
+            const btn = div.querySelector('.pin-toggle');
+            if(!btn || !id) return;
+            if(btn.dataset.pinListener) return;
+            btn.dataset.pinListener = 'true';
+            btn.addEventListener('click', ()=>{
+                const action = div.classList.contains('pinned') ? 'unpin' : 'pin';
+                fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/${action}/`,{method:'POST',headers:{'X-CSRFToken':csrfToken}})
+                    .then(r=>r.json())
+                    .then(data=>{
+                        div.classList.toggle('pinned', !!data.pinned_at);
+                        btn.textContent = data.pinned_at ? t('unpin','Desafixar') : t('pin','Fixar');
+                        btn.setAttribute('aria-label', data.pinned_at ? t('unpinMessage','Desafixar mensagem') : t('pinMessage','Fixar mensagem'));
+                    });
+            });
+        }
+
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
         const pending = [];
         const favoriteIds = new Set();
@@ -262,6 +279,8 @@
             setupReactionMenu(el, el.dataset.messageId);
 
             setupItemMenu(el, el.dataset.messageId);
+
+            setupPinToggle(el, el.dataset.messageId);
         });
         const pinned = container.querySelector('#pinned');
         if(pinned){
@@ -269,6 +288,8 @@
                 setupReactionMenu(el, el.dataset.messageId);
 
                 setupItemMenu(el, el.dataset.messageId);
+
+                setupPinToggle(el, el.dataset.messageId);
 
             });
         }
@@ -364,16 +385,8 @@
                 btn.classList.add('pin-toggle');
                 btn.textContent = pinned ? t('unpin','Desafixar') : t('pin','Fixar');
                 btn.setAttribute('aria-label', pinned ? t('unpinMessage','Desafixar mensagem') : t('pinMessage','Fixar mensagem'));
-                btn.addEventListener('click', ()=>{
-                    const action = div.classList.contains('pinned') ? 'unpin' : 'pin';
-                    fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/${action}/`,{method:'POST',headers:{'X-CSRFToken':csrfToken}})
-                        .then(r=>r.json()).then(data=>{
-                            div.classList.toggle('pinned', !!data.pinned_at);
-                            btn.textContent = data.pinned_at ? t('unpin','Desafixar') : t('pin','Fixar');
-                            btn.setAttribute('aria-label', data.pinned_at ? t('unpinMessage','Desafixar mensagem') : t('pinMessage','Fixar mensagem'));
-                        });
-                });
                 div.appendChild(btn);
+                setupPinToggle(div, id);
             }
             if(id && (remetente === currentUser || isAdmin) && tipo === 'text'){
                 const edit = document.createElement('button');
