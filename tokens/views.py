@@ -15,6 +15,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
+from accounts.models import SecurityEvent
+
 from .forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoForm,
@@ -23,6 +25,10 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
+
+from .models import TokenAcesso, TokenUsoLog, TOTPDevice
+from .services import create_invite_token
+
 from accounts.models import SecurityEvent
 
 from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
@@ -32,6 +38,7 @@ from . import services
 from .models import TokenAcesso, TOTPDevice
 from .perms import can_issue_invite
 from .services import create_invite_token
+
 
 
 User = get_user_model()
@@ -56,9 +63,21 @@ def criar_token(request):
     if request.method == "POST":
         form = TokenAcessoForm(request.POST)
         if form.is_valid():
-            token = form.save(commit=False)
-            token.gerado_por = request.user
-            token.save()
+            token, codigo = create_invite_token(
+                gerado_por=request.user,
+                tipo_destino=form.cleaned_data["tipo_destino"],
+            )
+            ip = request.META.get("REMOTE_ADDR", "")
+            token.ip_gerado = ip
+            token.save(update_fields=["ip_gerado"])
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user,
+                acao=TokenUsoLog.Acao.GERACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+            token.codigo = codigo
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"token": token.codigo})
             messages.success(request, _("Token gerado"))
@@ -148,6 +167,11 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return JsonResponse({"error": _("Não autorizado")}, status=403)
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
+
+            token, codigo = create_invite_token(
+                gerado_por=request.user,
+                tipo_destino=form.cleaned_data["tipo_destino"],
+
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
@@ -182,10 +206,24 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             token, codigo = create_invite_token(
                 gerado_por=request.user,
                 tipo_destino=target_role,
+
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
                 organizacao=form.cleaned_data.get("organizacao"),
                 nucleos=form.cleaned_data["nucleos"],
             )
+
+            ip = request.META.get("REMOTE_ADDR", "")
+            token.ip_gerado = ip
+            token.save(update_fields=["ip_gerado"])
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user,
+                acao=TokenUsoLog.Acao.GERACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+            token.codigo = codigo
+
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"token": codigo})
             messages.success(request, _("Token gerado"))
