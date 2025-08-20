@@ -16,6 +16,7 @@
   </header>
   <ul class="space-y-2">
     {% for cfg in object_list %}
+
       <li class="p-4 bg-white rounded-lg shadow flex items-center justify-between">
         <span>{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</span>
         <span class="space-x-2">
@@ -32,6 +33,14 @@
             {% trans "Remover" %}
           </a>
         </span>
+
+      <li class="p-4 bg-white rounded-lg shadow">
+        {{ cfg.escopo_tipo }} {{ cfg.escopo_id }} -
+        {% trans "E-mail" %}: {{ cfg.receber_notificacoes_email|yesno:_("Sim,Não") }} -
+        WhatsApp: {{ cfg.receber_notificacoes_whatsapp|yesno:_("Sim,Não") }} -
+        Push: {{ cfg.receber_notificacoes_push|yesno:_("Sim,Não") }} -
+        {{ cfg.tema }}
+
       </li>
     {% empty %}
       <li class="text-gray-600">{% trans "Nenhuma configuração" %}</li>

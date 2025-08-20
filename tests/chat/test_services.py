@@ -65,6 +65,42 @@ def test_criar_canal_valida_contexto_nucleo(
         )
 
 
+def test_criar_canal_privado_valida_nucleo(
+    admin_user, coordenador_user, associado_user, nucleo
+):
+    ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")
+    ParticipacaoNucleo.objects.create(
+        user=coordenador_user, nucleo=nucleo, status="ativo"
+    )
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=nucleo.id,
+        titulo="",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    assert canal.contexto_id == nucleo.id
+    with pytest.raises(PermissionError):
+        criar_canal(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=nucleo.id,
+            titulo="",
+            descricao="",
+            participantes=[associado_user],
+        )
+    with pytest.raises(PermissionError):
+        criar_canal(
+            criador=associado_user,
+            contexto_tipo="privado",
+            contexto_id=nucleo.id,
+            titulo="",
+            descricao="",
+            participantes=[coordenador_user],
+        )
+
+
 def test_enviar_mensagem_valida_participacao(admin_user, coordenador_user, associado_user):
     canal = criar_canal(
         criador=admin_user,

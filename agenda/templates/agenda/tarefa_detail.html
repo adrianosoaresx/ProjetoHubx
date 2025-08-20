@@ -4,4 +4,17 @@
 {% block content %}
 <h1>{{ object.titulo }}</h1>
 <p>{{ object.descricao }}</p>
+<p><strong>{% trans "Data de início" %}:</strong> {{ object.data_inicio }}</p>
+<p><strong>{% trans "Data de fim" %}:</strong> {{ object.data_fim }}</p>
+<p><strong>{% trans "Responsável" %}:</strong> {{ object.responsavel }}</p>
+<p><strong>{% trans "Status" %}:</strong> {{ object.get_status_display }}</p>
+
+<h2>{% trans "Logs" %}</h2>
+<ul>
+  {% for log in logs %}
+    <li>{{ log.created_at }} - {{ log.usuario }} - {{ log.acao }}</li>
+  {% empty %}
+    <li>{% trans "Nenhum log disponível." %}</li>
+  {% endfor %}
+</ul>
 {% endblock %}
