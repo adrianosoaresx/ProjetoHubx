@@ -2,7 +2,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 
-from feed.models import Comment, Like, Post
+from feed.models import Comment, Post, Reacao
 
 
 @pytest.mark.django_db
@@ -26,18 +26,18 @@ def test_post_relationships(admin_user, organizacao):
     )
     Comment.objects.create(post=post, user=admin_user, texto="c1")
     Comment.objects.create(post=post, user=admin_user, texto="c2")
-    Like.objects.create(post=post, user=admin_user)
+    Reacao.objects.create(post=post, user=admin_user, vote="like")
 
     assert post.comments.count() == 2
-    assert post.likes.count() == 1
+    assert post.reacoes.filter(vote="like", deleted=False).count() == 1
 
 
 @pytest.mark.django_db
-def test_like_uniqueness(admin_user, organizacao):
+def test_reaction_uniqueness(admin_user, organizacao):
     post = Post.objects.create(autor=admin_user, organizacao=organizacao)
-    Like.objects.create(post=post, user=admin_user)
+    Reacao.objects.create(post=post, user=admin_user, vote="like")
     with pytest.raises(IntegrityError):
-        Like.objects.create(post=post, user=admin_user)
+        Reacao.objects.create(post=post, user=admin_user, vote="like")
 
 
 @pytest.mark.django_db

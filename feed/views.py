@@ -21,8 +21,13 @@ from accounts.models import UserType
 from nucleos.models import Nucleo
 from agenda.models import Evento
 
+
+from .forms import CommentForm, PostForm
+from .models import ModeracaoPost, Post, Reacao, Tag
+
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Bookmark, Like, ModeracaoPost, Post, Tag
+
 
 
 @login_required
@@ -32,7 +37,7 @@ def meu_mural(request):
     latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
     posts = (
         Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
-        .prefetch_related("likes", "comments")
+        .prefetch_related("reacoes", "comments")
         .filter(deleted=False)
         .annotate(mod_status=Subquery(latest_status))
         .exclude(mod_status="rejeitado")
@@ -124,7 +129,7 @@ class FeedListView(LoginRequiredMixin, ListView):
 
         latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
-            "likes", "comments", "tags"
+            "reacoes", "comments", "tags"
         )
         qs = qs.filter(deleted=False).annotate(mod_status=Subquery(latest_status)).exclude(mod_status="rejeitado")
         if not user.is_staff:
@@ -273,7 +278,6 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["comment_form"] = CommentForm()
-        context["like_form"] = LikeForm()
         return context
 
 
@@ -303,11 +307,19 @@ def create_comment(request, pk):
 @login_required
 def toggle_like(request, pk):
     post = get_object_or_404(Post.objects.filter(deleted=False), id=pk)
-    like, created = Like.objects.get_or_create(post=post, user=request.user)
-    if not created:
-        like.delete()
+    reacao = Reacao.all_objects.filter(post=post, user=request.user, vote="like").first()
+    if reacao and not reacao.deleted:
+        reacao.deleted = True
+        reacao.save(update_fields=["deleted"])
+    elif reacao:
+        reacao.deleted = False
+        reacao.save(update_fields=["deleted"])
+    else:
+        Reacao.objects.create(post=post, user=request.user, vote="like")
     if request.headers.get("HX-Request"):
-        html = render_to_string("feed/_like_button.html", {"post": post, "user": request.user}, request=request)
+        html = render_to_string(
+            "feed/_like_button.html", {"post": post, "user": request.user}, request=request
+        )
         return HttpResponse(html)
     return redirect("feed:post_detail", pk=post.id)
 

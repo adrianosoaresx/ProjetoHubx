@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponseForbidden
 from django.urls import reverse
 
-from feed.models import Comment, Like, Post, Tag
+from feed.models import Comment, Post, Reacao, Tag
 
 pytestmark = pytest.mark.django_db
 
@@ -98,9 +98,9 @@ def test_toggle_like(client, nucleado_user, posts):
     post = posts[0]
     url = reverse("feed:toggle_like", args=[post.id])
     client.post(url)
-    assert Like.objects.filter(post=post, user=nucleado_user).exists()
+    assert Reacao.objects.filter(post=post, user=nucleado_user, vote="like", deleted=False).exists()
     client.post(url)
-    assert not Like.objects.filter(post=post, user=nucleado_user).exists()
+    assert Reacao.all_objects.filter(post=post, user=nucleado_user, vote="like", deleted=True).exists()
 
 
 def test_post_update_permissions(client, nucleado_user, admin_user, posts):

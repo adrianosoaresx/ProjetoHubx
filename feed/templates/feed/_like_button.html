@@ -1,8 +1,16 @@
 {% load i18n %}
-<form method="post" hx-post="{% url 'feed:toggle_like' post.id %}" hx-target="this" hx-swap="outerHTML" class="inline-flex items-center gap-1" aria-label="{% if user in post.likes.all %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}">
-  {% csrf_token %}
-  <button type="submit" class="hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded">
-    <i class="fa-solid fa-heart {% if user in post.likes.all %}text-emerald-600{% endif %}"></i>
-    <span>{{ post.likes.count }}</span>
-  </button>
-</form>
+{% with liked=post.reacoes.filter(user=user, vote='like', deleted=False).exists count=post.reacoes.filter(vote='like', deleted=False).count %}
+<button
+  hx-post="/api/feed/posts/{{ post.id }}/reacoes/"
+  hx-ext="json-enc"
+  hx-vals='{"vote":"like"}'
+  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+  hx-swap="none"
+  hx-on="htmx:afterRequest: if(event.detail.xhr.status===201){const i=this.querySelector('i');i.classList.add('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)+1;}else if(event.detail.xhr.status===204){const i=this.querySelector('i');i.classList.remove('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)-1;}"
+  class="inline-flex items-center gap-1 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded"
+  aria-label="{% if liked %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}"
+>
+  <i class="fa-solid fa-heart {% if liked %}text-emerald-600{% endif %}"></i>
+  <span>{{ count }}</span>
+</button>
+{% endwith %}
