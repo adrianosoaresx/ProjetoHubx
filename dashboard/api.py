@@ -15,6 +15,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from accounts.models import UserType
+from audit.services import hash_ip, log_audit
 
 from .models import DashboardFilter, DashboardCustomMetric
 from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
@@ -73,11 +74,31 @@ class DashboardViewSet(viewsets.ViewSet):
         fim = request.query_params.get("fim")
         inicio_dt = datetime.fromisoformat(inicio) if inicio else None
         fim_dt = datetime.fromisoformat(fim) if fim else None
+        filtros = request.query_params.dict()
+        filtros.pop("formato", None)
+        metadata = {"filtros": filtros, "formato": formato}
+        ip_hash = hash_ip(request.META.get("REMOTE_ADDR", ""))
         try:
             data = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt)
         except PermissionError:
+            log_audit(
+                request.user,
+                f"EXPORT_{formato.upper()}",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                status="ERROR",
+                metadata=metadata,
+            )
             return Response({"detail": "Forbidden"}, status=403)
         except ValueError as exc:
+            log_audit(
+                request.user,
+                f"EXPORT_{formato.upper()}",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                status="ERROR",
+                metadata={**metadata, "error": str(exc)},
+            )
             return Response({"detail": str(exc)}, status=400)
         if formato == "csv":
             output = io.StringIO()
@@ -87,16 +108,38 @@ class DashboardViewSet(viewsets.ViewSet):
                 writer.writerow([key, value["total"], value["crescimento"]])
             response = HttpResponse(output.getvalue(), content_type="text/csv")
             response["Content-Disposition"] = "attachment; filename=dashboard.csv"
+            log_audit(
+                request.user,
+                "EXPORT_CSV",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                metadata=metadata,
+            )
             return response
         elif formato == "pdf":
             try:
                 from weasyprint import HTML
             except Exception:
+                log_audit(
+                    request.user,
+                    "EXPORT_PDF",
+                    object_type="DashboardMetrics",
+                    ip_hash=ip_hash,
+                    status="ERROR",
+                    metadata=metadata,
+                )
                 return Response({"detail": "PDF indisponível"}, status=500)
             html = render_to_string("dashboard/export_pdf.html", {"metrics": data})
             pdf_bytes = HTML(string=html).write_pdf()
             response = HttpResponse(pdf_bytes, content_type="application/pdf")
             response["Content-Disposition"] = "attachment; filename=dashboard.pdf"
+            log_audit(
+                request.user,
+                "EXPORT_PDF",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                metadata=metadata,
+            )
             return response
         elif formato == "xlsx":
             wb = Workbook()
@@ -112,7 +155,22 @@ class DashboardViewSet(viewsets.ViewSet):
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
             response["Content-Disposition"] = "attachment; filename=dashboard.xlsx"
+            log_audit(
+                request.user,
+                "EXPORT_XLSX",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                metadata=metadata,
+            )
             return response
+        log_audit(
+            request.user,
+            f"EXPORT_{formato.upper()}",
+            object_type="DashboardMetrics",
+            ip_hash=ip_hash,
+            status="ERROR",
+            metadata=metadata,
+        )
         return Response({"detail": _("Formato inválido.")}, status=400)
 
     @action(detail=False, methods=["get"], url_path="comparativo")
