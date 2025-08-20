@@ -502,6 +502,7 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
 class RespostaUpdateView(LoginRequiredMixin, UpdateView):
     model = RespostaDiscussao
     form_class = RespostaDiscussaoForm
+    template_name = "discussao/resposta_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
