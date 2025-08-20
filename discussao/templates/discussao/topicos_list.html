@@ -65,7 +65,7 @@
         </tr>
       </thead>
       <tbody id="lista-topicos" class="divide-y divide-neutral-200">
-        {% include 'discussao/topicos_list.html' with partial=True only %}
+        {% include 'discussao/topicos_list.html' with partial=True topicos=topicos categoria=categoria content_type_id=content_type_id only %}
       </tbody>
     </table>
   </div>
