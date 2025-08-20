@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Atualiza campo oculto com tags selecionadas para o filtro
   const tagsSelect = document.getElementById("tags-select")
-  const tagsHidden = document.getElementById("filtro-tags")
+  const tagsHidden = document.getElementById("tags")
 
   if (tagsSelect && tagsHidden) {
     tagsSelect.addEventListener("change", () => {

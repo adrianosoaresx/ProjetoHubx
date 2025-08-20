@@ -23,21 +23,6 @@
   </div>
 
 
-  <div class="flex items-center gap-4 mb-4">
-    <label class="font-semibold">{% trans "Núcleo" %}:</label>
-    <select id="filtro-nucleo" name="nucleo"
-            hx-get="{% url 'feed:listar' %}"
-            hx-target="#feed-grid"
-            hx-indicator="#feed-loading"
-            hx-include="#feed-search,#filtro-nucleo,#filtro-tags"
-            class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-      <option value="">{% trans "Global" %}</option>
-      {% for n in nucleos_do_usuario %}
-        <option value="{{ n.id }}">{{ n.nome }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
   <form id="feed-filters" class="flex flex-wrap items-center gap-4 mb-4">
     <div>
       <label class="font-semibold" for="tipo-feed">{% trans "Tipo" %}:</label>
@@ -46,7 +31,7 @@
               hx-target="#feed-grid"
               hx-trigger="change"
               hx-indicator="#feed-loading"
-              hx-include="#feed-filters,#feed-search"
+              hx-include="#feed-filters,#feed-search,#tags"
               class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="global">{% trans "Global" %}</option>
         <option value="usuario">{% trans "Usuário" %}</option>
@@ -61,7 +46,7 @@
               hx-target="#feed-grid"
               hx-trigger="change"
               hx-indicator="#feed-loading"
-              hx-include="#feed-filters,#feed-search"
+              hx-include="#feed-filters,#feed-search,#tags"
               class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">{% trans "Global" %}</option>
         {% for n in nucleos_do_usuario %}
@@ -76,7 +61,7 @@
               hx-target="#feed-grid"
               hx-trigger="change"
               hx-indicator="#feed-loading"
-              hx-include="#feed-filters,#feed-search"
+              hx-include="#feed-filters,#feed-search,#tags"
               class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
         <option value="">{% trans "Selecione" %}</option>
         {% for e in eventos_do_usuario %}
@@ -91,7 +76,7 @@
              hx-target="#feed-grid"
              hx-trigger="change"
              hx-indicator="#feed-loading"
-             hx-include="#feed-filters,#feed-search"
+             hx-include="#feed-filters,#feed-search,#tags"
              class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
     </div>
     <div>
@@ -101,18 +86,7 @@
              hx-target="#feed-grid"
              hx-trigger="change"
              hx-indicator="#feed-loading"
-             hx-include="#feed-filters,#feed-search"
-             class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-    </div>
-    <div>
-      <label class="font-semibold" for="filtro-tags">{% trans "Tags" %}:</label>
-      <input type="text" id="filtro-tags" name="tags"
-             placeholder="{% trans 'Ex: educação,tecnologia' %}"
-             hx-get="{% url 'feed:listar' %}"
-             hx-target="#feed-grid"
-             hx-trigger="keyup changed delay:500ms"
-             hx-indicator="#feed-loading"
-             hx-include="#feed-filters,#feed-search"
+             hx-include="#feed-filters,#feed-search,#tags"
              class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
     </div>
   </form>
@@ -124,12 +98,12 @@
             hx-get="{% url 'feed:listar' %}"
             hx-target="#feed-grid"
             hx-indicator="#feed-loading"
-            hx-include="#feed-search,#filtro-nucleo,#filtro-tags">
+            hx-include="#feed-search,#feed-filters,#tags">
       {% for tag in tags_disponiveis %}
         <option value="{{ tag.nome }}">{{ tag.nome }}</option>
       {% endfor %}
     </select>
-    <input type="hidden" id="filtro-tags" name="tags">
+    <input type="hidden" id="tags" name="tags">
   </div>
 
   <input type="search" name="q" id="feed-search"
@@ -137,11 +111,7 @@
          hx-get="{% url 'feed:listar' %}"
          hx-trigger="keyup changed delay:500ms"
          hx-target="#feed-grid"
-
-         hx-include="#filtro-nucleo,#filtro-tags"
-
-         hx-include="#feed-filters"
-
+         hx-include="#feed-filters,#tags"
          class="w-full rounded border-gray-300 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
   <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
