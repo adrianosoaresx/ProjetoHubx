@@ -38,7 +38,6 @@
       {% if preferencias_form.frequencia_notificacoes_whatsapp.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_whatsapp.help_text }}</p>
       {% endif %}
-      <p class="text-xs text-gray-500">{% trans 'Funcionalidade de WhatsApp em desenvolvimento' %}</p>
       <div class="mt-2 flex items-center gap-2">
         <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken]" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail">
           {% trans 'Testar WhatsApp' %}

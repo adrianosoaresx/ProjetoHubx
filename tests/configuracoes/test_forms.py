@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from configuracoes.forms import ConfiguracaoContaForm
+from unittest.mock import MagicMock
 
 pytestmark = pytest.mark.django_db
 
@@ -115,3 +116,35 @@ def test_form_requires_weekly_fields(admin_user):
     assert not form.is_valid()
     assert "hora_notificacao_semanal" in form.errors
     assert "dia_semana_notificacao" in form.errors
+
+
+def test_testar_whatsapp_api(client, admin_user, settings, monkeypatch):
+    settings.CACHES["default"]["BACKEND"] = "django.core.cache.backends.locmem.LocMemCache"
+    settings.ROOT_URLCONF = "Hubx.urls"
+    admin_user.configuracao.receber_notificacoes_whatsapp = True
+    admin_user.configuracao.save(update_fields=["receber_notificacoes_whatsapp"])
+    import configuracoes.api as api
+    mock_send = MagicMock()
+    monkeypatch.setattr(api, "send_whatsapp", mock_send)
+    client.force_login(admin_user)
+    response = client.post("/api/configuracoes/testar/", {"canal": "whatsapp"})
+    assert response.status_code == 200
+    assert response.json()["detail"] == "enviado"
+    mock_send.assert_called_once_with(admin_user, "Mensagem de teste")
+
+
+def test_testar_whatsapp_api_indisponivel(client, admin_user, settings, monkeypatch):
+    settings.CACHES["default"]["BACKEND"] = "django.core.cache.backends.locmem.LocMemCache"
+    settings.ROOT_URLCONF = "Hubx.urls"
+    admin_user.configuracao.receber_notificacoes_whatsapp = True
+    admin_user.configuracao.save(update_fields=["receber_notificacoes_whatsapp"])
+    import configuracoes.api as api
+
+    def fake_send(user, msg):
+        raise RuntimeError("WhatsApp indisponível")
+
+    monkeypatch.setattr(api, "send_whatsapp", fake_send)
+    client.force_login(admin_user)
+    response = client.post("/api/configuracoes/testar/", {"canal": "whatsapp"})
+    assert response.status_code == 503
+    assert response.json()["detail"] == "WhatsApp indisponível"
