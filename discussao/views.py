@@ -11,26 +11,38 @@ from django.core.paginator import Paginator
 from django.db import connection
 from django.db.models import Count, Max, Q, Sum
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import cache_page
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView, View
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+    View,
+)
 
 from accounts.models import UserType
-from core.permissions import AdminRequiredMixin
-from django.template import Template
-from django.template.response import TemplateResponse
-from organizacoes.models import Organizacao
-from nucleos.models import Nucleo
 from agenda.models import Evento
+from core.permissions import AdminRequiredMixin
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
-from .forms import CategoriaDiscussaoForm, RespostaDiscussaoForm, TagForm, TopicoDiscussaoForm
+from .forms import (
+    CategoriaDiscussaoForm,
+    RespostaDiscussaoForm,
+    TagForm,
+    TopicoDiscussaoForm,
+)
 from .models import (
     CategoriaDiscussao,
+    Denuncia,
+    DiscussionModerationLog,
     InteracaoDiscussao,
     RespostaDiscussao,
     Tag,
@@ -218,16 +230,10 @@ class TopicoListView(LoginRequiredMixin, ListView):
                     + SearchVector("respostas__conteudo", weight="C")
                 )
                 search_query = SearchQuery(query)
-                qs = (
-                    qs.annotate(rank=SearchRank(vector, search_query))
-                    .filter(rank__gt=0)
-                    .order_by("-rank")
-                )
+                qs = qs.annotate(rank=SearchRank(vector, search_query)).filter(rank__gt=0).order_by("-rank")
             else:
                 qs = qs.filter(
-                    Q(titulo__icontains=query)
-                    | Q(conteudo__icontains=query)
-                    | Q(respostas__conteudo__icontains=query)
+                    Q(titulo__icontains=query) | Q(conteudo__icontains=query) | Q(respostas__conteudo__icontains=query)
                 ).distinct()
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
@@ -279,26 +285,48 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
                     "partial": True,
                     "user": request.user,
                     "topico": self.object,
-                    "content_type_id": context["resposta_content_type_id"],
+                    "resposta_content_type_id": context["resposta_content_type_id"],
                 },
             )
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        comentarios_qs = self.object.respostas.select_related("autor")
+        respostas_qs = self.object.respostas.select_related("autor")
+        todas_respostas = list(respostas_qs)
+
+        class RespostaNode:
+            def __init__(self, obj):
+                self._obj = obj
+                self.respostas_filhas: list["RespostaNode"] = []
+
+            def __getattr__(self, attr):
+                return getattr(self._obj, attr)
+
+        nodes = {r.pk: RespostaNode(r) for r in todas_respostas}
+        raiz: list[RespostaNode] = []
+        for r in todas_respostas:
+            node = nodes[r.pk]
+            if r.reply_to_id and r.reply_to_id in nodes:
+                nodes[r.reply_to_id].respostas_filhas.append(node)
+            else:
+                raiz.append(node)
+
         melhor = self.object.melhor_resposta
-        if melhor:
-            comentarios_qs = comentarios_qs.exclude(pk=melhor.pk)
-        paginator = Paginator(comentarios_qs, self.paginate_by)
+        melhor_node = nodes.get(melhor.pk) if melhor else None
+        if melhor_node and melhor_node in raiz:
+            raiz.remove(melhor_node)
+
+        paginator = Paginator(raiz, self.paginate_by)
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         user = self.request.user
         for comentario in comentarios:
             comentario._user = user
         context["comentarios"] = comentarios
-        context["melhor_resposta"] = melhor
+        context["melhor_resposta"] = melhor_node
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
+
 
         context["resposta_content_type_id"] = ContentType.objects.get_for_model(
             RespostaDiscussao
@@ -306,6 +334,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         is_admin = user.user_type in {UserType.ADMIN, UserType.ROOT}
         dentro_prazo = timezone.now() - self.object.created_at <= timedelta(minutes=15)
         context["pode_editar_topico"] = is_admin or (user == self.object.autor and dentro_prazo)
+
         return context
 
 
@@ -591,3 +620,64 @@ class TopicoToggleFechadoView(LoginRequiredMixin, View):
             categoria_slug=categoria.slug,
             topico_slug=topico.slug,
         )
+
+
+class DenunciaListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+    model = Denuncia
+    template_name = "discussao/denuncia_list.html"
+    context_object_name = "denuncias"
+
+    def get_queryset(self):
+        status = self.kwargs.get("status", Denuncia.Status.PENDENTE)
+        if status not in Denuncia.Status.values:
+            raise Http404()
+        self.status = status
+        return Denuncia.objects.filter(status=status).select_related("user", "log").order_by("-created_at")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["status"] = self.status
+        context["status_choices"] = Denuncia.Status.choices
+        return context
+
+
+class DenunciaDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
+    model = Denuncia
+    template_name = "discussao/denuncia_detail.html"
+    context_object_name = "denuncia"
+
+
+class DenunciaApproveView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def post(self, request, pk):
+        denuncia = get_object_or_404(Denuncia, pk=pk)
+        notes = request.POST.get("notes", "")
+        denuncia.aprovar(request.user, notes)
+        messages.success(request, gettext_lazy("Denúncia aprovada"))
+        return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
+
+
+class DenunciaRejectView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def post(self, request, pk):
+        denuncia = get_object_or_404(Denuncia, pk=pk)
+        notes = request.POST.get("notes", "")
+        denuncia.rejeitar(request.user, notes)
+        messages.success(request, gettext_lazy("Denúncia rejeitada"))
+        return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
+
+
+class DenunciaRemoveContentView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def post(self, request, pk):
+        denuncia = get_object_or_404(Denuncia, pk=pk)
+        notes = request.POST.get("notes", "")
+        log = DiscussionModerationLog.objects.create(
+            content_object=denuncia.content_object,
+            action="remove",
+            moderator=request.user,
+            notes=notes,
+        )
+        denuncia.content_object.delete()
+        denuncia.status = Denuncia.Status.REVISADO
+        denuncia.log = log
+        denuncia.save(update_fields=["status", "log"])
+        messages.success(request, gettext_lazy("Conteúdo removido"))
+        return redirect("discussao:denuncia_list", status=Denuncia.Status.PENDENTE)

@@ -4,9 +4,15 @@ from accounts.factories import UserFactory
 
 from configuracoes.models import ConfiguracaoConta
 from configuracoes.services import atualizar_preferencias_usuario
-from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
+from notificacoes.models import (
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+    UserNotificationPreference,
+)
 
 from notificacoes.services import notificacoes as svc
+from notificacoes.services.whatsapp_client import send_whatsapp
 
 pytestmark = pytest.mark.django_db
 
@@ -101,3 +107,34 @@ def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
     assert called.get("count", 0) == 0
     log = NotificationLog.objects.get()
     assert log.status == NotificationStatus.FALHA
+
+
+def test_send_whatsapp_requires_credentials(admin_user, settings):
+    settings.TWILIO_SID = ""
+    settings.TWILIO_TOKEN = ""
+    settings.TWILIO_WHATSAPP_FROM = ""
+    with pytest.raises(RuntimeError):
+        send_whatsapp(admin_user, "oi")
+
+
+def test_send_whatsapp_ok(admin_user, settings, monkeypatch):
+    settings.TWILIO_SID = "sid"
+    settings.TWILIO_TOKEN = "token"
+    settings.TWILIO_WHATSAPP_FROM = "+123"
+
+    called: dict[str, dict] = {}
+
+    class DummyClient:
+        def __init__(self, sid, token):  # pragma: no cover - simples
+            self.messages = self
+
+        def create(self, **kwargs):  # pragma: no cover - simples
+            called["msg"] = kwargs
+
+    monkeypatch.setattr(
+        "notificacoes.services.whatsapp_client.TwilioClient", DummyClient
+    )
+
+    admin_user.whatsapp = "+551199999999"
+    send_whatsapp(admin_user, "oi")
+    assert called["msg"]["body"] == "oi"

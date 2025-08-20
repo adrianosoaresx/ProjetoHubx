@@ -23,6 +23,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import ValidationError
 
 from .api import add_reaction, remove_reaction
 from .metrics import chat_attachments_total, chat_categories_total
@@ -485,6 +486,13 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer: ChatMessageSerializer) -> None:
         channel = get_object_or_404(ChatChannel, pk=self.kwargs["channel_pk"])
+        if channel.e2ee_habilitado:
+            data = serializer.validated_data
+            if data.get("conteudo"):
+                raise ValidationError({"conteudo": "Proibido quando E2EE habilitado"})
+            missing = [k for k in ("conteudo_cifrado", "alg", "key_version") if not data.get(k)]
+            if missing:
+                raise ValidationError({m: "Obrigatório quando E2EE habilitado" for m in missing})
         serializer.save(channel=channel)
 
     def list(self, request: Request, *args, **kwargs) -> Response:  # type: ignore[override]

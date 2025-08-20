@@ -46,11 +46,10 @@ def criar_canal(
     ``contexto_tipo`` define o escopo da conversa. Validações
     adicionais de permissão serão implementadas futuramente.
     """
-    if contexto_tipo != "privado":
-        users = [criador] + list(participantes)
-        for u in users:
-            if not _usuario_no_contexto(u, contexto_tipo, contexto_id):
-                raise PermissionError("Usuário não pertence ao contexto informado")
+    users = [criador] + list(participantes)
+    for u in users:
+        if not _usuario_no_contexto(u, contexto_tipo, contexto_id):
+            raise PermissionError("Usuário não pertence ao contexto informado")
     canal = ChatChannel.objects.create(
         contexto_tipo=contexto_tipo,
         contexto_id=contexto_id,
@@ -70,7 +69,9 @@ def _usuario_no_contexto(user: User, contexto_tipo: str, contexto_id: Optional[s
     """Retorna ``True`` se o ``user`` pertence ao contexto especificado."""
     if contexto_tipo == "organizacao":
         return str(user.organizacao_id) == str(contexto_id)
-    if contexto_tipo == "nucleo":
+    if contexto_tipo in {"nucleo", "privado"}:
+        if not contexto_id:
+            return True
         participa, info, suspenso = user_belongs_to_nucleo(user, contexto_id)
         return participa and info.endswith("ativo") and not suspenso
     if contexto_tipo == "evento":
