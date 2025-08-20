@@ -59,6 +59,7 @@ urlpatterns = [
         EventoFeedbackView.as_view(),
         name="evento_feedback",
     ),
+    path("checkin/<int:pk>/", views.checkin_form, name="inscricao_checkin_form"),
     path(
         "api/inscricoes/<int:pk>/checkin/",
         views.checkin_inscricao,

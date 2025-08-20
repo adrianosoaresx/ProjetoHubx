@@ -78,6 +78,13 @@
                 >
                   {% trans "Ver" %}
                 </a>
+                |
+                <a
+                  href="{% url 'agenda:inscricao_checkin_form' inscricao.pk %}"
+                  class="text-blue-600 hover:underline"
+                >
+                  {% trans "Check-in" %}
+                </a>
               </td>
             </tr>
           {% empty %}
