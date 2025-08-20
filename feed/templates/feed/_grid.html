@@ -45,6 +45,10 @@
         <div>
           <img src="{{ post.image.url }}" class="w-full rounded" alt="{% trans 'mídia do post' %}">
         </div>
+      {% elif post.video %}
+        <div>
+          <video src="{{ post.video.url }}" controls class="w-full rounded"></video>
+        </div>
       {% endif %}
       <div class="flex items-center justify-between text-sm text-neutral-600">
         <div id="like-btn-{{ post.id }}">
