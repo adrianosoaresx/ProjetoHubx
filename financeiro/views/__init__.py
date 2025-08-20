@@ -12,10 +12,10 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -23,9 +23,8 @@ from accounts.models import UserType
 
 from ..models import (
     CentroCusto,
-    ContaAssociado,
-    FinanceiroTaskLog,
     FinanceiroLog,
+    FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
 )
@@ -41,13 +40,13 @@ from ..serializers import (
     ImportarPagamentosConfirmacaoSerializer,
     ImportarPagamentosPreviewSerializer,
 )
+from ..services import metrics
+from ..services.aportes import estornar_aporte as estornar_aporte_service
+from ..services.auditoria import log_financeiro
 from ..services.cobrancas import _nucleos_do_usuario
+from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
-from ..services.exportacao import exportar_para_arquivo
-from ..services import metrics
-from ..services.auditoria import log_financeiro
-from ..services.aportes import estornar_aporte as estornar_aporte_service
 from ..tasks.importar_pagamentos import importar_pagamentos_async
 
 
@@ -270,7 +269,9 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
         tipo = params.get("tipo")
         cache_centro = "|".join(sorted(centro_id)) if isinstance(centro_id, list) else centro_id
-        cache_key = f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}"
+        cache_key = (
+            f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}"
+        )
         result = cache.get(cache_key)
         if result is None:
             result = gerar_relatorio(
@@ -393,6 +394,10 @@ def _is_financeiro_or_admin(user) -> bool:
     return user.is_authenticated and user.user_type in permitido
 
 
+def _is_associado(user) -> bool:
+    return user.is_authenticated and user.user_type == UserType.ASSOCIADO
+
+
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
 def importar_pagamentos_view(request):
@@ -472,3 +477,10 @@ def task_log_detail_view(request, pk):
 def forecast_view(request):
     """Tela com previsão financeira."""
     return render(request, "financeiro/forecast.html")
+
+
+@login_required
+@user_passes_test(_is_associado)
+def aportes_form_view(request):
+    centros = CentroCusto.objects.all()
+    return render(request, "financeiro/aportes_form.html", {"centros": centros})
