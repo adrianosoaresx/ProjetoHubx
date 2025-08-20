@@ -69,10 +69,32 @@ class InscricaoEventoForm(forms.ModelForm):
     class Meta:
         model = InscricaoEvento
         fields = [
+            "valor_pago",
             "metodo_pagamento",
             "comprovante_pagamento",
             "observacao",
         ]
+
+    def clean_valor_pago(self):
+        valor = self.cleaned_data.get("valor_pago")
+        if valor is not None and valor <= 0:
+            raise forms.ValidationError(_("O valor pago deve ser positivo."))
+        return valor
+
+    def clean_comprovante_pagamento(self):
+        arquivo = self.cleaned_data.get("comprovante_pagamento")
+        if not arquivo:
+            return arquivo
+        ext = os.path.splitext(arquivo.name)[1].lower()
+        if ext in {".jpg", ".jpeg", ".png"}:
+            max_size = 10 * 1024 * 1024
+        elif ext == ".pdf":
+            max_size = 20 * 1024 * 1024
+        else:
+            raise forms.ValidationError(_("Formato de arquivo não permitido."))
+        if arquivo.size > max_size:
+            raise forms.ValidationError(_("Arquivo excede o tamanho máximo permitido."))
+        return arquivo
 
 
 class FeedbackForm(forms.ModelForm):
