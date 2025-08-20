@@ -73,6 +73,42 @@ def nova_conversa(request):
 
 
 @login_required
+def contextos(request):
+    tipo = request.GET.get("contexto_tipo")
+    options: list[tuple[str, str]] = []
+    if tipo == "organizacao":
+        org = getattr(request.user, "organizacao", None)
+        if org:
+            options = [(str(org.id), str(org))]
+    elif tipo == "nucleo":
+        from nucleos.models import Nucleo
+
+        qs = Nucleo.objects.filter(
+            participacoes__user=request.user,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        ).values_list("id", "nome")
+        options = [(str(pk), name) for pk, name in qs]
+    elif tipo == "evento":
+        from agenda.models import Evento
+
+        qs = Evento.objects.filter(
+            inscricoes__user=request.user,
+            inscricoes__status="confirmada",
+        ).values_list("id", "titulo")
+        options = [(str(pk), title) for pk, title in qs]
+
+    from django.utils.html import format_html_join
+
+    html = format_html_join(
+        "",
+        '<option value="{}">{}</option>',
+        ((pk, name) for pk, name in options),
+    )
+    return HttpResponse(html)
+
+
+@login_required
 def conversation_detail(request, channel_id):
     conversation = get_object_or_404(
         ChatChannel.objects.prefetch_related("messages__lido_por", "participants__user"),

@@ -13,8 +13,12 @@
       {{ form.metodo_pagamento }}
     </div>
     <div>
+      {{ form.valor_pago.label_tag }}
+      {{ form.valor_pago }}
+    </div>
+    <div>
       {{ form.comprovante_pagamento.label_tag }}
-      {{ form.comprovante_pagamento }}
+      {{ form.comprovante_pagamento.as_widget(attrs={'accept': '.jpg,.jpeg,.png,.pdf'}) }}
     </div>
     <div>
       {{ form.observacao.label_tag }}

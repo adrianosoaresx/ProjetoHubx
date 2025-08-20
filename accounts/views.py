@@ -17,7 +17,7 @@ from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -96,9 +96,8 @@ def perfil_seguranca(request):
             )
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
-    else:
-        form = PasswordChangeForm(request.user)
-
+        return render(request, "perfil/seguranca.html", {"form": form})
+    form = PasswordChangeForm(request.user)
     return render(request, "perfil/seguranca.html", {"form": form})
 
 
@@ -190,6 +189,8 @@ def perfil_conexoes(request):
 
 @login_required
 def remover_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
         request.user.connections.remove(other_user)
@@ -201,6 +202,8 @@ def remover_conexao(request, id):
 
 @login_required
 def aceitar_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
@@ -219,6 +222,8 @@ def aceitar_conexao(request, id):
 
 @login_required
 def recusar_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
@@ -307,8 +312,11 @@ def login_view(request):
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
-        login(request, form.get_user())
-        return redirect("accounts:perfil")
+        user = form.get_user()
+        if user.is_active:
+            login(request, user)
+            return redirect("accounts:perfil")
+        messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
 
     return render(request, "login/login.html", {"form": form})
 
@@ -318,19 +326,52 @@ def logout_view(request):
     return redirect("accounts:login")
 
 
+def conta_inativa(request):
+    """Exibe aviso para usuários inativos e encerra a sessão."""
+    if request.user.is_authenticated:
+        logout(request)
+    return render(request, "account_inactive.html")
+
+
 @login_required
 def excluir_conta(request):
     """Permite que o usuário exclua sua própria conta."""
+
+    if request.method == "GET":
+        return render(request, "accounts/delete_account_confirm.html")
+
+    if request.method != "POST":
+        return redirect("accounts:excluir_conta")
+
+    if request.POST.get("confirm") != "EXCLUIR":
+        messages.error(request, _("Confirme digitando EXCLUIR."))
+        return redirect("accounts:excluir_conta")
+
+    with transaction.atomic():
+        user = request.user
+        user.delete()
+        user.exclusao_confirmada = True
+        user.is_active = False
+        user.save(update_fields=["exclusao_confirmada", "is_active"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="conta_excluida",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
+
+    logout(request)
+    messages.success(request, _("Sua conta foi excluída com sucesso."))
+    return redirect("core:home")
+
     if request.method == "POST":
         if request.POST.get("confirm") != "EXCLUIR":
             messages.error(request, _("Confirme digitando EXCLUIR."))
             return redirect("accounts:excluir_conta")
         with transaction.atomic():
             user = request.user
-            user.delete()
-            user.exclusao_confirmada = True
+            user.delete()  # marca deleted/deleted_at
             user.is_active = False
-            user.save(update_fields=["exclusao_confirmada", "is_active"])
+            user.save(update_fields=["is_active"])
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="conta_excluida",
@@ -338,7 +379,9 @@ def excluir_conta(request):
             )
         logout(request)
         messages.success(request, _("Sua conta foi excluída com sucesso."))
-        return redirect("core:home")
+
+        return redirect("/")
+
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
@@ -634,9 +677,8 @@ def termos(request):
             )
             send_confirmation_email.delay(token.id)
 
-            login(request, user)
             request.session["termos"] = True
-            return redirect("accounts:perfil")
+            return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
         return redirect("accounts:usuario")

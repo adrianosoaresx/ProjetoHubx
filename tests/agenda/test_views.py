@@ -4,6 +4,7 @@ import pytest
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 from django.utils.timezone import make_aware
+from django.test import override_settings
 
 from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
@@ -68,6 +69,12 @@ def evento(organizacao, usuario_logado):
         numero_presentes=0,
         valor_ingresso=50.00,
         orcamento=5000.00,
+        orcamento_estimado=5500.00,
+        valor_gasto=4500.00,
+        participantes_maximo=150,
+        contato_nome="Contato Teste",
+        contato_email="contato@teste.com",
+        contato_whatsapp="12999998888",
     )
 
 
@@ -83,13 +90,24 @@ def test_calendar_view_get(client):
     assert "<html" in response.content.decode().lower()
 
 
-@pytest.mark.xfail(reason="Erro de template em produção")
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_evento_detail_view_htmx(evento, client):
-    url = reverse("agenda:evento_detalhe", args=[evento.pk])
+    url = f"/agenda/evento/{evento.pk}/"
     client.force_login(evento.coordenador)
     response = client.get(url, HTTP_HX_REQUEST="true")
+    content = response.content.decode()
     assert response.status_code == 200
-    assert "evento" in response.context
+    assert evento.local in content
+    assert evento.cidade in content
+    assert evento.estado in content
+    assert evento.cep in content
+    assert evento.contato_nome in content
+    assert evento.contato_email in content
+    assert evento.contato_whatsapp in content
+    assert str(evento.participantes_maximo) in content
+    assert str(int(evento.orcamento)) in content
+    assert str(int(evento.orcamento_estimado)) in content
+    assert str(int(evento.valor_gasto)) in content
 
 
 @pytest.mark.xfail(reason="Erro de template em produção")
