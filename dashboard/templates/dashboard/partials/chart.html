@@ -1,9 +1,9 @@
-{% load i18n %}
+{% load i18n static %}
 <div class="p-4 bg-white rounded-lg shadow" role="figure" aria-labelledby="{{ chart_id }}-title">
   <h2 id="{{ chart_id }}-title" class="text-xl font-semibold mb-4">{{ title }}</h2>
   <canvas id="{{ chart_id }}" class="w-full h-64" role="img" aria-label="{{ title }}"></canvas>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'dashboard/chart.min.js' %}"></script>
 <script>
   (function(){
     const ctx = document.getElementById('{{ chart_id }}');
