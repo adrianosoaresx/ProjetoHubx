@@ -94,7 +94,7 @@
           </div>
         </div>
         {% endif %}
-        <a href="{% url 'dashboard:dashboard' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+        <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
         </a>
         <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
@@ -115,10 +115,12 @@
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-users"></i> {% trans "Núcleos" %}
         </a>
-        {% if user.is_authenticated and (user.user_type == 'financeiro' or user.user_type == 'admin') %}
+        {% if user.is_authenticated %}
+        {% if user.user_type == 'financeiro' or user.user_type == 'admin' %}
         <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-hand-holding-usd"></i> {% trans "Financeiro" %}
         </a>
+        {% endif %}
         {% endif %}
         {% if user.is_authenticated and user.user_type == 'root' %}
         <a href="{% url 'organizacoes:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
