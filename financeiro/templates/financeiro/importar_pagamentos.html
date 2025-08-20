@@ -23,6 +23,7 @@
     </button>
     <div id="preview" class="mt-6" aria-live="polite"></div>
     <div id="messages" class="mt-4 text-sm" aria-live="polite"></div>
+    <div id="reprocess" class="mt-4"></div>
     <form id="confirm-form">
       {% csrf_token %}
       <input type="hidden" id="confirm-id" name="id" />
@@ -43,8 +44,10 @@
     function renderPreview(evt) {
       const preview = document.getElementById('preview');
       const messages = document.getElementById('messages');
+      const reprocess = document.getElementById('reprocess');
       preview.innerHTML = '';
       messages.innerHTML = '';
+      reprocess.innerHTML = '';
       try {
         const data = JSON.parse(evt.detail.xhr.response);
         if (data.preview && data.preview.length) {
@@ -58,6 +61,10 @@
           if (!data.preview || !data.preview.length) {
             document.getElementById('confirm-btn').disabled = true;
           }
+        }
+        if (data.token_erros) {
+          const token = data.token_erros;
+          reprocess.innerHTML = `<div class="space-y-2"><a href="/media/importacoes/${token}.errors.csv" download class="text-blue-600 underline">{% trans "Baixar arquivo de erros" %}</a><form id="reprocess-form" class="space-y-2" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required /><button type="submit" class="bg-primary text-white px-4 py-2 rounded" hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/" hx-target="#messages" hx-include="#reprocess-form" hx-encoding="multipart/form-data">{% trans "Reprocessar" %}</button></form></div>`;
         }
       } catch (e) {
         messages.textContent = '{% trans "Erro ao processar pré-visualização" %}';
