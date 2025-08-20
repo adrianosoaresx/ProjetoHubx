@@ -19,15 +19,12 @@
       {% endif %}
       <div>
         <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-        <p class="text-xs text-neutral-500">{{ post.criado_em|date:SHORT_DATETIME_FORMAT }}</p>
+        <p class="text-xs text-neutral-500">{{ post.created_at|date:SHORT_DATETIME_FORMAT }}</p>
       </div>
     </div>
 
     <div class="text-sm text-neutral-800 whitespace-pre-line">
       {{ post.conteudo }}
-      {% if post.moderacao and post.moderacao.status != 'aprovado' %}
-        <span class="ml-2 text-xs text-yellow-700">{{ post.moderacao.get_status_display }}</span>
-      {% endif %}
     </div>
 
     {% if post.pdf %}
@@ -52,6 +49,7 @@
       </div>
     {% endif %}
 
+
     <div class="mt-4 flex items-center gap-4 text-sm text-neutral-600">
       <div id="like-btn-{{ post.id }}">
         {% include 'feed/_like_button.html' with post=post %}
@@ -66,12 +64,21 @@
       <button type="button" data-post-id="{{ post.id }}" class="flag-btn hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded {% if post.flags.filter(user=user).exists %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.flags.filter(user=user).exists %}disabled{% endif %}>
         <i class="fa-solid fa-flag"></i>
       </button>
+
+    <div id="moderacao-wrapper" class="mt-4">
+      {% include 'feed/_moderacao.html' with post=post %}
+    </div>
+
+    <div class="mt-4" id="like-btn-{{ post.id }}">
+      {% include 'feed/_like_button.html' with post=post %}
+
     </div>
 
     <div class="mt-6">
       <h3 class="text-lg font-medium">{% trans "Comentários" %}</h3>
-      <form method="post" action="{% url 'feed:create_comment' post.id %}" hx-post="{% url 'feed:create_comment' post.id %}" hx-target="#comments" hx-swap="afterbegin" class="space-y-2">
+      <form id="comment-form" method="post" action="{% url 'feed:create_comment' post.id %}" hx-post="{% url 'feed:create_comment' post.id %}" hx-target="#comments" hx-swap="afterbegin" class="space-y-2" hx-on:afterRequest="this.reset(); setReplyTo(null)">
         {% csrf_token %}
+        {{ comment_form.reply_to.as_hidden }}
         {{ comment_form.texto }}
         {% if comment_form.texto.errors %}
           <p class="text-red-500 text-xs">{{ comment_form.texto.errors }}</p>
@@ -107,6 +114,7 @@
       keepalive: true
     });
   });
+
   document.querySelectorAll('.bookmark-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const postId = btn.dataset.postId;
@@ -144,5 +152,20 @@
       }
     });
   });
+
+
+  function setReplyTo(commentId) {
+    const replyInput = document.getElementById('id_reply_to');
+    const form = document.getElementById('comment-form');
+    if (commentId) {
+      replyInput.value = commentId;
+      form.setAttribute('hx-target', `#replies-${commentId}`);
+    } else {
+      replyInput.value = '';
+      form.setAttribute('hx-target', '#comments');
+    }
+    document.getElementById('id_texto').focus();
+  }
+
 </script>
 {% endblock %}

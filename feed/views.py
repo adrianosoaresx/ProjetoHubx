@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,10 +14,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 
 from accounts.models import UserType
 from nucleos.models import Nucleo
+from agenda.models import Evento
 
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Like, ModeracaoPost, Post
@@ -71,6 +75,8 @@ class FeedListView(LoginRequiredMixin, ListView):
                     "nucleo",
                     "evento",
                     "tags",
+                    "date_from",
+                    "date_to",
                     "page",
                     "q",
                 ]
@@ -144,11 +150,32 @@ class FeedListView(LoginRequiredMixin, ListView):
             tag_names = [t.strip() for t in tags_param.split(",") if t.strip()]
             qs = qs.filter(tags__nome__in=tag_names, tags__deleted=False).distinct()
 
+        date_from = self.request.GET.get("date_from")
+        if date_from:
+            try:
+                df = datetime.fromisoformat(date_from).date()
+                qs = qs.filter(created_at__date__gte=df)
+            except ValueError:
+                pass
+
+        date_to = self.request.GET.get("date_to")
+        if date_to:
+            try:
+                dt = datetime.fromisoformat(date_to).date()
+                qs = qs.filter(created_at__date__lte=dt)
+            except ValueError:
+                pass
+
         return qs.order_by("-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
+        user = self.request.user
+        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=user)
+        if hasattr(user, "eventos"):
+            context["eventos_do_usuario"] = user.eventos.all()
+        else:
+            context["eventos_do_usuario"] = Evento.objects.none()
         return context
 
     def render_to_response(self, context, **response_kwargs):
@@ -317,7 +344,7 @@ def post_delete(request, pk):
 
 
 @login_required
-@permission_required("feed.change_post", raise_exception=True)
+@permission_required("feed.change_moderacaopost", raise_exception=True)
 def moderar_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
@@ -329,12 +356,38 @@ def moderar_post(request, pk):
                 avaliado_por=request.user,
                 avaliado_em=timezone.now(),
             )
+            post.refresh_from_db()
+            message = _("Post aprovado com sucesso.")
+            if request.headers.get("HX-Request"):
+                html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
+                return HttpResponse(html)
+            messages.success(request, message)
         elif acao == "rejeitar":
-            ModeracaoPost.objects.create(
-                post=post,
-                status="rejeitado",
-                motivo=request.POST.get("motivo", ""),
-                avaliado_por=request.user,
-                avaliado_em=timezone.now(),
-            )
+            motivo = request.POST.get("motivo", "").strip()
+            if not motivo:
+                error = _("Motivo é obrigatório.")
+                if request.headers.get("HX-Request"):
+                    html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
+                    return HttpResponse(html, status=400)
+                messages.error(request, error)
+            else:
+                ModeracaoPost.objects.create(
+                    post=post,
+                    status="rejeitado",
+                    motivo=motivo,
+                    avaliado_por=request.user,
+                    avaliado_em=timezone.now(),
+                )
+                post.refresh_from_db()
+                message = _("Post rejeitado.")
+                if request.headers.get("HX-Request"):
+                    html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
+                    return HttpResponse(html)
+                messages.success(request, message)
+        else:
+            error = _("Ação inválida.")
+            if request.headers.get("HX-Request"):
+                html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
+                return HttpResponse(html, status=400)
+            messages.error(request, error)
     return redirect("feed:post_detail", pk=pk)
