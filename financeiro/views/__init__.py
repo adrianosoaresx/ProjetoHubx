@@ -21,9 +21,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from accounts.models import UserType
+from agenda.models import Evento
 from notificacoes.services.email_client import send_email
+
 
 from ..models import (
     CentroCusto,
@@ -485,6 +486,11 @@ def lancamentos_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
+
+def repasses_view(request):
+    eventos = Evento.objects.all()
+    return render(request, "financeiro/repasses.html", {"eventos": eventos})
+
 def logs_list_view(request):
     User = get_user_model()
     context = {
@@ -492,6 +498,7 @@ def logs_list_view(request):
         "usuarios": User.objects.all(),
     }
     return render(request, "financeiro/logs_list.html", context)
+
 
 
 @login_required
