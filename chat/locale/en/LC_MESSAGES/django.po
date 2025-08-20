@@ -410,3 +410,11 @@ msgstr ""
 #: views.py:69
 msgid "Erro ao criar conversa."
 msgstr ""
+
+#: templates/chat/conversation_detail.html:73
+msgid "Deixar em branco desativa a retenção."
+msgstr ""
+
+#: templates/chat/conversation_detail.html:224
+msgid "Valor deve ser maior que zero."
+msgstr ""
