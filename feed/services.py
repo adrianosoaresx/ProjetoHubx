@@ -44,30 +44,32 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
 
     key = f"feed/{uuid.uuid4()}-{file.name}"
     file.seek(0)
-    default_storage.save(key, file)
+    data = file.read()
 
     preview_key: str | None = None
     if is_video:
         try:
-            if hasattr(default_storage, "path"):
-                video_path = default_storage.path(key)  # type: ignore[attr-defined]
-                with tempfile.NamedTemporaryFile(suffix=".jpg") as tmp:
-                    subprocess.run(
-                        ["ffmpeg", "-y", "-i", video_path, "-frames:v", "1", tmp.name],
-                        check=True,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
-                    tmp.seek(0)
-                    preview_key = f"{key}-preview.jpg"
-                    default_storage.save(preview_key, ContentFile(tmp.read()))
+            with tempfile.NamedTemporaryFile(suffix=ext) as src_tmp, tempfile.NamedTemporaryFile(suffix=".jpg") as tmp:
+                src_tmp.write(data)
+                src_tmp.flush()
+                subprocess.run(
+                    ["ffmpeg", "-y", "-i", src_tmp.name, "-frames:v", "1", tmp.name],
+                    check=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                tmp.seek(0)
+                preview_key = f"{key}-preview.jpg"
+                default_storage.save(preview_key, ContentFile(tmp.read()))
         except Exception:
             preview_key = None
+
+    default_storage.save(key, ContentFile(data))
 
     return (key, preview_key) if preview_key else key
 
 
-def upload_media(file: IO[bytes]) -> str:
+def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     """Wrapper que delega o upload para uma task assíncrona."""
 
     from .tasks import upload_media as upload_media_task
