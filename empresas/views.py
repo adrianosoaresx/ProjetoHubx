@@ -37,7 +37,13 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
-        return search_empresas(self.request.user, self.request.GET)
+        qs = search_empresas(self.request.user, self.request.GET)
+        if (
+            self.request.GET.get("mostrar_excluidas") == "1"
+            and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ):
+            return qs
+        return qs.filter(deleted=False)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
