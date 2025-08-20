@@ -456,6 +456,11 @@ def centros_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
+
+def centro_form_view(request, pk: int | None = None):
+    centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
+    return render(request, "financeiro/centro_form.html", {"centro": centro})
+
 def integracoes_list_view(request):
     limit = 20
     offset = int(request.GET.get("offset", 0))
@@ -470,6 +475,7 @@ def integracoes_list_view(request):
         "prev": prev_offset,
     }
     return render(request, "financeiro/integracoes_list.html", context)
+
 
 
 @login_required
