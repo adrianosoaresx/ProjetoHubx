@@ -255,6 +255,15 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        user = self.request.user
+        evento: Evento = self.object
+        confirmada = evento.inscricoes.filter(
+            user=user, status="confirmada"
+        ).exists()
+        context["inscricao_confirmada"] = confirmada
+        context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
+
         evento = context["object"]
         context.update(
             {
@@ -274,6 +283,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
                 ).exists(),
             }
         )
+
         return context
 
 

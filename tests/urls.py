@@ -3,6 +3,7 @@ from django.views.i18n import JavaScriptCatalog
 
 urlpatterns = [
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
+    path("core/", include(("core.urls", "core"), namespace="core")),
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
