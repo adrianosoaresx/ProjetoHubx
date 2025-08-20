@@ -302,6 +302,11 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
             filtro |= Q(nucleo__in=nucleo_ids)
         return qs.filter(filtro)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["logs"] = self.object.logs.select_related("usuario").all()
+        return context
+
 
 class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = Tarefa
