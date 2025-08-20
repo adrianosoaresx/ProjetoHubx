@@ -102,6 +102,15 @@ class TagForm(forms.ModelForm):
         model = Tag
         fields = ["nome", "categoria", "parent"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["parent"].widget = TagWidget(
+            attrs={
+                "data-placeholder": _("Buscar item pai..."),
+                "data-minimum-input-length": 2,
+            }
+        )
+
 
 class EmpresaWidget(s2forms.ModelSelect2Widget):
     search_fields = [
