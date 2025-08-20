@@ -21,7 +21,7 @@
     </a>
   </div>
 
-  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-5 gap-2">
+  <form hx-get="{% url 'organizacoes:list' %}" hx-target="#org-list" hx-push-url="true" class="mb-6 grid md:grid-cols-6 gap-2">
     <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por nome ou slug' %}" class="w-full p-2 border rounded-lg" />
     <select name="tipo" class="w-full p-2 border rounded-lg">
       <option value="">{% trans 'Tipo' %}</option>
@@ -41,13 +41,18 @@
         <option value="{{ e }}" {% if request.GET.estado == e %}selected{% endif %}>{{ e }}</option>
       {% endfor %}
     </select>
+    <select name="inativa" class="w-full p-2 border rounded-lg">
+      <option value="">{% trans 'Status' %}</option>
+      <option value="false" {% if inativa == 'false' %}selected{% endif %}>{% trans 'Ativas' %}</option>
+      <option value="true" {% if inativa == 'true' %}selected{% endif %}>{% trans 'Inativas' %}</option>
+    </select>
     <select name="order" class="w-full p-2 border rounded-lg">
       <option value="nome" {% if request.GET.order == 'nome' or not request.GET.order %}selected{% endif %}>{% trans 'Nome' %}</option>
       <option value="tipo" {% if request.GET.order == 'tipo' %}selected{% endif %}>{% trans 'Tipo' %}</option>
       <option value="cidade" {% if request.GET.order == 'cidade' %}selected{% endif %}>{% trans 'Localização' %}</option>
       <option value="created_at" {% if request.GET.order == 'created_at' %}selected{% endif %}>{% trans 'Data' %}</option>
     </select>
-    <div class="md:col-span-5 flex justify-end">
+    <div class="md:col-span-6 flex justify-end">
       <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">{% trans 'Filtrar' %}</button>
     </div>
   </form>
@@ -111,11 +116,11 @@
     </div>
     <div class="mt-6 flex justify-center gap-2">
       {% if page_obj.has_previous %}
-        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Anterior' %}">{% trans 'Anterior' %}</a>
+        <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Anterior' %}">{% trans 'Anterior' %}</a>
       {% endif %}
       <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
       {% if page_obj.has_next %}
-        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Próxima' %}">{% trans 'Próxima' %}</a>
+        <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Próxima' %}">{% trans 'Próxima' %}</a>
       {% endif %}
     </div>
   {% else %}
