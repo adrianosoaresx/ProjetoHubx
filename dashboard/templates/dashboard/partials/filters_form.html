@@ -76,5 +76,6 @@
     <a href="{% url 'dashboard:filter-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro rápido' %}">{% trans 'Salvar filtro' %}</a>
     <a href="{% url 'dashboard:filters' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver filtros salvos' %}">{% trans 'Meus filtros' %}</a>
     <a href="{% url 'dashboard:config-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar configuração' %}">{% trans 'Salvar configuração' %}</a>
+    <a href="{% url 'dashboard:configs' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver configurações salvas' %}">{% trans 'Minhas configurações' %}</a>
   </div>
 </form>
