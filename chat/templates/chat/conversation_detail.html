@@ -32,7 +32,7 @@
       <div class="flex items-center gap-2 text-sm text-neutral-600">
         <span>{{ conversation.participants.count }} {% trans 'participantes' %}</span>
         {% if not is_owner %}
-          <a href="#" class="text-red-600 hover:underline" aria-label="{% trans 'Sair do canal' %}">{% trans 'Sair' %}</a>
+          <button id="leave-channel" type="button" class="text-red-600 hover:underline" data-success="{% trans 'Você saiu do canal' %}" aria-label="{% trans 'Sair do canal' %}">{% trans 'Sair' %}</button>
         {% endif %}
         {% if is_admin %}
           <button hx-get="{% url 'chat:exportar_modal' conversation.id %}" hx-target="#modal" class="text-blue-600 hover:underline" type="button">{% trans 'Exportar histórico' %}</button>
@@ -176,6 +176,7 @@
     const gerarBtn = document.getElementById('resumo-gerar');
     const retencaoForm = document.getElementById('retencao-form');
     const retencaoFeedback = document.getElementById('retencao-feedback');
+    const leaveBtn = document.getElementById('leave-channel');
 
     function carregarResumos(){
       fetch(`/api/chat/channels/${channelId}/resumos/`)
@@ -240,6 +241,21 @@
             retencaoFeedback.className = 'text-sm text-red-600 mt-2';
             retencaoFeedback.classList.remove('hidden');
           });
+      });
+    }
+
+    if(leaveBtn){
+      leaveBtn.addEventListener('click', function(){
+        fetch(`/api/chat/channels/${channelId}/leave/`, {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrfToken}
+        }).then(r => {
+          if(r.ok){
+            leaveBtn.outerHTML = `<span class="text-green-600">${leaveBtn.dataset.success}</span>`;
+          }else{
+            r.json().then(data=>{alert(data.erro || 'Erro');});
+          }
+        });
       });
     }
 

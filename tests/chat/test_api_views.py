@@ -10,6 +10,7 @@ from django.contrib.auth.models import Permission
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
+from django.test import override_settings
 from django.utils import timezone
 from rest_framework.settings import api_settings
 from rest_framework.test import APIClient
@@ -88,6 +89,38 @@ def test_add_and_remove_participant(api_client: APIClient, admin_user, coordenad
     resp = api_client.post(remove_url, {"usuarios": [coordenador_user.id]})
     assert resp.status_code == 200
     assert not ChatParticipant.objects.filter(channel=channel, user=coordenador_user).exists()
+
+
+@override_settings(ROOT_URLCONF="chat.api_urls")
+def test_leave_channel(api_client: APIClient, admin_user, coordenador_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
+    ChatParticipant.objects.create(channel=channel, user=coordenador_user)
+    api_client.force_authenticate(coordenador_user)
+    resp = api_client.post(f"/channels/{channel.pk}/leave/")
+    assert resp.status_code == 200
+    assert not ChatParticipant.objects.filter(channel=channel, user=coordenador_user).exists()
+
+
+@override_settings(ROOT_URLCONF="chat.api_urls")
+def test_leave_channel_last_admin_forbidden(api_client: APIClient, admin_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True, is_owner=True)
+    api_client.force_authenticate(admin_user)
+    resp = api_client.post(f"/channels/{channel.pk}/leave/")
+    assert resp.status_code == 400
+    assert ChatParticipant.objects.filter(channel=channel, user=admin_user).exists()
+
+
+@override_settings(ROOT_URLCONF="chat.api_urls")
+def test_leave_channel_admin_with_other_admin(api_client: APIClient, admin_user, coordenador_user):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
+    ChatParticipant.objects.create(channel=channel, user=coordenador_user, is_admin=True)
+    api_client.force_authenticate(admin_user)
+    resp = api_client.post(f"/channels/{channel.pk}/leave/")
+    assert resp.status_code == 200
+    assert not ChatParticipant.objects.filter(channel=channel, user=admin_user).exists()
 
 
 def test_send_and_list_messages(api_client: APIClient, admin_user, coordenador_user):
