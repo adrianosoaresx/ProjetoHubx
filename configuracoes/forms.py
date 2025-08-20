@@ -104,7 +104,9 @@ class ConfiguracaoContextualForm(forms.ModelForm):
         fields = (
             "escopo_tipo",
             "escopo_id",
+            "receber_notificacoes_email",
             "frequencia_notificacoes_email",
+            "receber_notificacoes_whatsapp",
             "frequencia_notificacoes_whatsapp",
             "receber_notificacoes_push",
             "frequencia_notificacoes_push",

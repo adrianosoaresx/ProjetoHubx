@@ -13,7 +13,7 @@ from configuracoes.models import (
 
 User = get_user_model()
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.urls("tests.configuracoes.urls")]
 
 
 def test_contextual_unique_constraint(admin_user):

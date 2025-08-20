@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 
-pytestmark = pytest.mark.django_db
+pytestmark = [pytest.mark.django_db, pytest.mark.urls("tests.configuracoes.urls")]
 
 
 @pytest.fixture
