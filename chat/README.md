@@ -67,6 +67,25 @@ GET /api/chat/channels/<id>/export/?formato=csv
 A chamada cria um `RelatorioChatExport` e, após processamento assíncrono,
 disponibiliza um arquivo JSON ou CSV com as mensagens visíveis.
 
+## Criptografia de ponta a ponta (E2EE)
+
+Quando um canal tem `e2ee_habilitado` ativado, o cliente deve cifrar o conteúdo
+das mensagens antes do envio. A implementação utiliza a Web Crypto API com
+`AES-GCM`, combinando um vetor de inicialização aleatório com o texto cifrado e
+codificando o resultado em Base64. O servidor armazena somente os campos
+`conteudo_cifrado`, `alg` (sempre `AES-GCM`) e `key_version`.
+
+Exemplo de payload cifrado:
+
+```json
+{
+  "tipo": "text",
+  "conteudo_cifrado": "BASE64(iv+ciphertext)",
+  "alg": "AES-GCM",
+  "key_version": "1"
+}
+```
+
 ## WebSocket
 
 Conexão:

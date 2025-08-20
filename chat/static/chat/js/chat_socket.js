@@ -180,9 +180,19 @@
         const texts = window.chatTexts || {};
         function t(key, fallback){ return texts[key] || fallback; }
 
-        function encryptMessage(text){
-            const cipher = btoa(unescape(encodeURIComponent(text)));
-            return {cipher, alg:'base64', keyVersion:'1'};
+        async function encryptMessage(text){
+            const keyB64 = window.chatKey || '';
+            const raw = Uint8Array.from(atob(keyB64), c=>c.charCodeAt(0));
+            const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const data = new TextEncoder().encode(text);
+            const encrypted = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, data);
+            const cipherBytes = new Uint8Array(encrypted);
+            const combined = new Uint8Array(iv.length + cipherBytes.length);
+            combined.set(iv);
+            combined.set(cipherBytes, iv.length);
+            const cipher = btoa(String.fromCharCode(...combined));
+            return {cipher, alg:'AES-GCM', keyVersion:'1'};
         }
 
         function renderReactions(div, reactions, userReactions){
@@ -557,12 +567,12 @@
             }
         };
 
-        form.addEventListener('submit', function(e){
+        form.addEventListener('submit', async function(e){
             e.preventDefault();
             const message = input.value.trim();
             if(message){
                 if(isE2EE){
-                    const {cipher, alg, keyVersion} = encryptMessage(message);
+                    const {cipher, alg, keyVersion} = await encryptMessage(message);
                     const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion, replyTo);
                     div.classList.add('pending');
                     messages.appendChild(div);
@@ -599,10 +609,10 @@
             formData.append('file', file);
             fetch(uploadUrl,{method:'POST',body:formData,headers:{'X-CSRFToken':csrfToken}})
                 .then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
-                .then(data=>{
+                .then(async data=>{
 
                     if(isE2EE){
-                        const {cipher, alg, keyVersion} = encryptMessage(data.url);
+                        const {cipher, alg, keyVersion} = await encryptMessage(data.url);
                         const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion, replyTo);
                         div.classList.add('pending');
                         messages.appendChild(div);
