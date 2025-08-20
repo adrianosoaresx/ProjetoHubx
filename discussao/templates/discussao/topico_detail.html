@@ -65,7 +65,9 @@
       {% include 'discussao/comentario_item.html' with comentario=melhor_resposta user=user topico=topico melhor=True resposta_content_type_id=resposta_content_type_id %}
     {% endif %}
     <div id="lista-comentarios">
+
       {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user resposta_content_type_id=content_type_id only %}
+
 
     </div>
     {% if comentarios.has_previous or comentarios.has_next %}

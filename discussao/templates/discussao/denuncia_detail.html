@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Denúncia" %} | HubX{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold mb-6">{% trans "Denúncia" %}</h1>
+
+  <div class="space-y-2 mb-6">
+    <p><strong>{% trans "Conteúdo:" %}</strong> {{ denuncia.content_object }}</p>
+    <p><strong>{% trans "Usuário:" %}</strong> {{ denuncia.user }}</p>
+    <p><strong>{% trans "Motivo:" %}</strong> {{ denuncia.motivo }}</p>
+    <p><strong>{% trans "Status:" %}</strong> {{ denuncia.get_status_display }}</p>
+  </div>
+
+  {% if denuncia.log %}
+  <div class="mb-6">
+    <h2 class="font-semibold mb-2">{% trans "Última ação" %}</h2>
+    <p>{{ denuncia.log.get_action_display }} - {{ denuncia.log.moderator }} - {{ denuncia.log.created_at|date:SHORT_DATETIME_FORMAT }}</p>
+    {% if denuncia.log.notes %}<p>{{ denuncia.log.notes }}</p>{% endif %}
+  </div>
+  {% endif %}
+
+  <div class="flex space-x-2">
+    <form method="post" action="{% url 'discussao:denuncia_aprovar' denuncia.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">{% trans "Aprovar" %}</button>
+    </form>
+    <form method="post" action="{% url 'discussao:denuncia_rejeitar' denuncia.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded">{% trans "Rejeitar" %}</button>
+    </form>
+    <form method="post" action="{% url 'discussao:denuncia_remover' denuncia.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">{% trans "Remover conteúdo" %}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
