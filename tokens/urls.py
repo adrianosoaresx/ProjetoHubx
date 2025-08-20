@@ -6,7 +6,6 @@ app_name = "tokens"
 
 urlpatterns = [
     path("", views.token, name="token"),
-    path("gerar-token/", views.criar_token, name="gerar_token"),
     path("convites/", views.listar_convites, name="listar_convites"),
     path("convites/<int:token_id>/revogar/", views.revogar_convite, name="revogar_convite"),
     path("api-tokens/", views.listar_api_tokens, name="listar_api_tokens"),

@@ -9,8 +9,8 @@
     <p class="text-sm text-neutral-600 mt-2">{% trans "Use este token para convidar novos membros ou recuperar o acesso." %}</p>
   </header>
 
-  <form method="post" action="{% url 'tokens:gerar_token' %}"
-        hx-post="{% url 'tokens:gerar_token' %}"
+  <form method="post" action="{% url 'tokens:gerar_convite' %}"
+        hx-post="{% url 'tokens:gerar_convite' %}"
         hx-target="#resultado" hx-swap="innerHTML"
         class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}

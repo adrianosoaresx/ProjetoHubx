@@ -21,7 +21,6 @@ from .forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
-    TokenAcessoForm,
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
@@ -52,52 +51,6 @@ def token(request):
             return redirect("accounts:usuario")
     return render(request, "register/token.html")
 
-
-@login_required
-def criar_token(request):
-    if not request.user.is_staff:
-        messages.error(request, _("Você não tem permissão para gerar tokens."))
-        return redirect("accounts:perfil")
-
-    token = None
-    if request.method == "POST":
-        form = TokenAcessoForm(request.POST)
-        if form.is_valid():
-            token, codigo = create_invite_token(
-                gerado_por=request.user,
-                tipo_destino=form.cleaned_data["tipo_destino"],
-            )
-            ip = request.META.get("REMOTE_ADDR", "")
-            token.ip_gerado = ip
-            token.save(update_fields=["ip_gerado"])
-            TokenUsoLog.objects.create(
-                token=token,
-                usuario=request.user,
-                acao=TokenUsoLog.Acao.GERACAO,
-                ip=ip,
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
-            token.codigo = codigo
-            if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"token": token.codigo})
-            messages.success(request, _("Token gerado"))
-        else:
-            if request.headers.get("HX-Request") == "true":
-                return render(
-                    request,
-                    "tokens/_resultado.html",
-                    {"error": form.errors.as_text()},
-                    status=400,
-                )
-            messages.error(request, _("Dados inválidos"))
-    else:
-        form = TokenAcessoForm()
-
-    return render(
-        request,
-        "tokens/gerar_token.html",
-        {"form": form, "token": token},
-    )
 
 
 @login_required
@@ -160,6 +113,13 @@ def revogar_api_token(request, token_id: str):
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, _("Você não tem permissão para gerar tokens."))
+            return redirect("accounts:perfil")
+        form = GerarTokenConviteForm(user=request.user)
+        return render(request, "tokens/gerar_token.html", {"form": form})
+
     def post(self, request, *args, **kwargs):
         if not request.user.is_staff:
             if request.headers.get("HX-Request") == "true":
