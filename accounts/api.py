@@ -10,10 +10,16 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from audit.models import AuditLog
+from audit.services import hash_ip, log_audit
 from .models import AccountToken, SecurityEvent
 from tokens.models import TOTPDevice
 from .serializers import UserSerializer
-from .tasks import send_confirmation_email, send_password_reset_email
+from .tasks import (
+    send_cancel_delete_email,
+    send_confirmation_email,
+    send_password_reset_email,
+)
 
 User = get_user_model()
 
@@ -23,7 +29,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action in {"delete_me", "cancel_delete", "enable_2fa", "disable_2fa", "resend_confirmation"}:
+        if self.action in {"delete_me", "enable_2fa", "disable_2fa", "resend_confirmation"}:
             return [IsAuthenticated()]
         return [AllowAny()]
 
@@ -165,25 +171,57 @@ class AccountViewSet(viewsets.GenericViewSet):
         user = request.user
         user.delete()
         user.is_active = False
-        user.save(update_fields=["is_active"])
+        user.exclusao_confirmada = True
+        user.save(update_fields=["is_active", "exclusao_confirmada"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
             ip=request.META.get("REMOTE_ADDR"),
         )
+        token = AccountToken.objects.create(
+            usuario=user,
+            tipo=AccountToken.Tipo.CANCEL_DELETE,
+            expires_at=timezone.now() + timezone.timedelta(days=7),
+            ip_gerado=request.META.get("REMOTE_ADDR"),
+        )
+        send_cancel_delete_email.delay(token.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["post"], url_path="me/cancel-delete")
     def cancel_delete(self, request):
-        user = request.user
+        code = request.data.get("token")
+        if not code:
+            return Response({"detail": _("Token ausente.")}, status=400)
+        try:
+            token = AccountToken.objects.select_related("usuario").get(
+                codigo=code,
+                tipo=AccountToken.Tipo.CANCEL_DELETE,
+            )
+        except AccountToken.DoesNotExist:
+            return Response({"detail": _("Token inválido ou expirado.")}, status=400)
+        if token.expires_at < timezone.now() or token.used_at:
+            return Response({"detail": _("Token inválido ou expirado.")}, status=400)
+
+        user = token.usuario
         user.deleted = False
         user.deleted_at = None
         user.is_active = True
         user.exclusao_confirmada = False
         user.save(update_fields=["deleted", "deleted_at", "is_active", "exclusao_confirmada"])
+        token.used_at = timezone.now()
+        token.save(update_fields=["used_at"])
+        ip = request.META.get("REMOTE_ADDR", "")
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=ip,
+        )
+        log_audit(
+            user,
+            "account_delete_canceled",
+            object_type="User",
+            object_id=str(user.id),
+            ip_hash=hash_ip(ip),
+            status=AuditLog.Status.SUCCESS,
         )
         return Response({"detail": _("Processo cancelado.")})

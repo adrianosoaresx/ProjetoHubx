@@ -340,6 +340,7 @@ class AccountToken(TimeStampedModel, SoftDeleteModel):
     class Tipo(models.TextChoices):
         EMAIL_CONFIRMATION = "email_confirmation", "Confirmação de Email"
         PASSWORD_RESET = "password_reset", "Redefinição de Senha"
+        CANCEL_DELETE = "cancel_delete", "Cancelar Exclusão"
 
     codigo = models.CharField(max_length=64, unique=True, default=generate_secure_token, db_index=True)
     tipo = models.CharField(max_length=20, choices=Tipo.choices)

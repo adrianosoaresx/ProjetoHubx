@@ -41,6 +41,19 @@ def send_confirmation_email(token_id: int) -> None:
 
 
 @shared_task
+def send_cancel_delete_email(token_id: int) -> None:
+    token = AccountToken.objects.select_related("usuario").get(pk=token_id)
+    if token.used_at or token.expires_at < timezone.now():
+        return
+    url = f"{settings.FRONTEND_URL}/cancel-delete/?token={token.codigo}"
+    enviar_para_usuario(
+        token.usuario,
+        "cancel_delete",
+        {"url": url, "nome": token.usuario.first_name},
+    )
+
+
+@shared_task
 def purge_soft_deleted(batch_size: int = 500) -> None:
     """Remove definitivamente usuários marcados como excluídos há mais de 30 dias."""
     limit = timezone.now() - timezone.timedelta(days=30)
