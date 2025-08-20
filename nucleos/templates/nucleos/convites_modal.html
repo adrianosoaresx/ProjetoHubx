@@ -18,7 +18,12 @@
     {% for c in convites %}
     <li id="convite-{{ c.id }}" class="flex justify-between items-center">
       <span>{{ c.email }} - {{ c.papel }}</span>
-      <button class="text-red-600" hx-delete="{% url 'nucleos_api:nucleo-revogar-convite' nucleo.pk c.id %}" hx-target="#convite-{{ c.id }}" hx-swap="outerHTML">{% trans 'Revogar' %}</button>
+      <form hx-delete="{% url 'nucleos_api:nucleo-revogar-convite' nucleo.pk c.id %}"
+            hx-target="#convite-{{ c.id }}" hx-swap="outerHTML"
+            hx-confirm="{% trans 'Confirmar revogação?' %}">
+        {% csrf_token %}
+        <button type="submit" class="text-red-600">{% trans 'Revogar' %}</button>
+      </form>
     </li>
     {% empty %}
     <li class="text-sm text-gray-500">{% trans 'Nenhum convite pendente.' %}</li>

@@ -242,3 +242,7 @@ msgstr ""
 #: templates/nucleos/solicitar_modal.html:10
 msgid "Confirmar"
 msgstr ""
+
+#: templates/nucleos/convites_modal.html:23
+msgid "Confirmar revogação?"
+msgstr "Confirm revocation?"
