@@ -28,7 +28,7 @@ from feed.models import Post
 from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
-from .models import Organizacao, OrganizacaoChangeLog
+from .models import Organizacao, OrganizacaoChangeLog, OrganizacaoAtividadeLog
 from .services import registrar_log, serialize_organizacao
 from .tasks import organizacao_alterada
 
@@ -47,11 +47,11 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             .select_related("created_by")
             .prefetch_related("evento_set", "nucleos", "users")
         )
-        query = self.request.GET.get("q")
+        search = self.request.GET.get("search")
         tipo = self.request.GET.get("tipo")
         cidade = self.request.GET.get("cidade")
         estado = self.request.GET.get("estado")
-        order = self.request.GET.get("order", "nome")
+        ordering = self.request.GET.get("ordering", "nome")
         inativa = self.request.GET.get("inativa")
 
         if inativa is not None and inativa != "":
@@ -59,8 +59,8 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         else:
             qs = qs.filter(inativa=False)
 
-        if query:
-            qs = qs.filter(Q(nome__icontains=query) | Q(slug__icontains=query))
+        if search:
+            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         if tipo:
             qs = qs.filter(tipo=tipo)
         if cidade:
@@ -69,9 +69,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             qs = qs.filter(estado=estado)
 
         allowed_order = {"nome", "tipo", "cidade", "estado", "created_at"}
-        if order not in allowed_order:
-            order = "nome"
-        return qs.order_by(order)
+        if ordering not in allowed_order:
+            ordering = "nome"
+        return qs.order_by(ordering)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -295,6 +295,7 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
     template_name = "organizacoes/history.html"
 
     def get(self, request, pk, *args, **kwargs):
+
         try:
             org = get_object_or_404(Organizacao, pk=pk)
             user = request.user
@@ -309,6 +310,22 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                     )
                     and getattr(user, "organizacao_id", None) == org.id
                 )
+
+            return HttpResponseForbidden()
+              
+        if request.GET.get("export") == "csv":
+            import csv
+
+            from django.http import HttpResponse
+
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
+            writer = csv.writer(response)
+            writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
+            for log in (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")
+
             ):
                 capture_exception(PermissionDenied("historico sem permissão"))
                 return HttpResponseForbidden()
