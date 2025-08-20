@@ -292,7 +292,7 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
-    """Cancela a inscrição do usuário no evento."""
+    """Inscreve ou cancela a inscrição do usuário no evento."""
 
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
@@ -301,15 +301,23 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 request, _("Administradores não podem se inscrever em eventos.")
             )  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
-        inscricao = get_object_or_404(
-            InscricaoEvento, user=request.user, evento=evento
+
+        inscricao, created = InscricaoEvento.objects.get_or_create(
+            user=request.user, evento=evento
         )
-        try:
-            inscricao.cancelar_inscricao()
-        except ValueError as exc:
-            messages.error(request, str(exc))
+        if inscricao.status == "confirmada":
+            try:
+                inscricao.cancelar_inscricao()
+                messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+            except ValueError as exc:
+                messages.error(request, str(exc))
         else:
-            messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+            inscricao.confirmar_inscricao()
+            check_achievements(request.user)
+            if inscricao.status == "confirmada":
+                messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+            else:
+                messages.success(request, _("Você está na lista de espera."))  # pragma: no cover
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
