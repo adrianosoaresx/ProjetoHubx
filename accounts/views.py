@@ -96,9 +96,8 @@ def perfil_seguranca(request):
             )
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
-    else:
-        form = PasswordChangeForm(request.user)
-
+        return render(request, "perfil/seguranca.html", {"form": form})
+    form = PasswordChangeForm(request.user)
     return render(request, "perfil/seguranca.html", {"form": form})
 
 
