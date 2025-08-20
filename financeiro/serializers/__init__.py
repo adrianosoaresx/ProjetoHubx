@@ -14,6 +14,7 @@ from ..models import (
     FinanceiroTaskLog,
     LancamentoFinanceiro,
     ImportacaoPagamentos,
+    IntegracaoConfig,
 )
 from ..services.distribuicao import repassar_receita_ingresso
 from ..services.notificacoes import enviar_aporte
@@ -224,6 +225,25 @@ class ImportacaoPagamentosSerializer(serializers.ModelSerializer):
             "status",
         ]
         read_only_fields = fields
+
+
+class IntegracaoConfigSerializer(serializers.ModelSerializer):
+    """Serializador para ``IntegracaoConfig``."""
+
+    credenciais = serializers.CharField(source="credenciais_encrypted", allow_blank=True, required=False)
+
+    class Meta:
+        model = IntegracaoConfig
+        fields = [
+            "id",
+            "nome",
+            "tipo",
+            "base_url",
+            "credenciais",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
 
 
 class FinanceiroLogSerializer(serializers.ModelSerializer):

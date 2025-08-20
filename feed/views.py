@@ -21,8 +21,13 @@ from accounts.models import UserType
 from nucleos.models import Nucleo
 from agenda.models import Evento
 
+
 from .forms import CommentForm, PostForm
 from .models import ModeracaoPost, Post, Reacao, Tag
+
+from .forms import CommentForm, LikeForm, PostForm
+from .models import Bookmark, Like, ModeracaoPost, Post, Tag
+
 
 
 @login_required
@@ -53,6 +58,29 @@ def meu_mural(request):
         "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
     }
     return render(request, "feed/mural.html", context)
+
+
+@login_required
+def bookmark_list(request):
+    bookmarks = (
+        Bookmark.objects.filter(user=request.user)
+        .select_related(
+            "post__autor",
+            "post__organizacao",
+            "post__nucleo",
+            "post__evento",
+        )
+        .prefetch_related(
+            "post__likes",
+            "post__comments",
+            "post__bookmarks",
+            "post__flags",
+            "post__reacoes",
+        )
+        .order_by("-created_at")
+    )
+    posts = [bookmark.post for bookmark in bookmarks]
+    return render(request, "feed/bookmarks.html", {"posts": posts})
 
 
 class FeedListView(LoginRequiredMixin, ListView):

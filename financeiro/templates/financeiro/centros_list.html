@@ -7,9 +7,9 @@
 <main class="p-4 max-w-5xl mx-auto">
   <header class="flex items-center justify-between mb-4">
     <h1 class="text-2xl font-semibold">{% trans "Centros de Custo" %}</h1>
-    <button class="bg-blue-600 text-white px-4 py-2 rounded" hx-get="/api/financeiro/centros/" hx-target="#modal" hx-trigger="click">
-      {% trans "Novo Centro" %}
-    </button>
+      <button class="bg-blue-600 text-white px-4 py-2 rounded" hx-get="/financeiro/centros/form/" hx-target="#modal" hx-trigger="click">
+        {% trans "Novo Centro" %}
+      </button>
   </header>
   <section id="centros-list" class="overflow-x-auto" aria-live="polite">
     <table class="min-w-full divide-y divide-gray-200">
@@ -32,8 +32,8 @@
           </td>
           <td class="px-3 py-2">{{ c.saldo }}</td>
           <td class="px-3 py-2 text-right space-x-2">
-            <button class="text-primary underline" hx-get="/api/financeiro/centros/{{ c.id }}/" hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
-            <button class="text-red-600 underline" hx-delete="/api/financeiro/centros/{{ c.id }}/" hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}'>{% trans "Excluir" %}</button>
+              <button class="text-primary underline" hx-get="/financeiro/centros/form/{{ c.id }}/" hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
+              <button class="text-red-600 underline" hx-delete="/api/financeiro/centros/{{ c.id }}/" hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}'>{% trans "Excluir" %}</button>
           </td>
         </tr>
         {% empty %}
