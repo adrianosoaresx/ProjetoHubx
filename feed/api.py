@@ -371,13 +371,30 @@ class PostViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def toggle_like(self, request, pk=None):
         post = self.get_object()
-        like, created = Like.objects.get_or_create(post=post, user=request.user)
-        if not created:
-            like.delete()
-            _dec_counter(LIKES_TOTAL)
-            return Response({"liked": False}, status=status.HTTP_200_OK)
-        LIKES_TOTAL.inc()
-        return Response({"liked": True}, status=status.HTTP_201_CREATED)
+        reacao = Reacao.all_objects.filter(post=post, user=request.user, vote="like").first()
+        if reacao and not reacao.deleted:
+            reacao.deleted = True
+            reacao.save(update_fields=["deleted"])
+            _dec_counter(REACTIONS_TOTAL.labels(vote="like"))
+            cache.delete(f"post_reacoes:{post.id}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        if is_ratelimited(
+            request,
+            group="feed_reactions_create",
+            key="user",
+            rate=_read_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
+        if reacao:
+            reacao.deleted = False
+            reacao.save(update_fields=["deleted"])
+        else:
+            reacao = Reacao.all_objects.create(post=post, user=request.user, vote="like")
+        REACTIONS_TOTAL.labels(vote="like").inc()
+        cache.delete(f"post_reacoes:{post.id}")
+        return Response({"vote": "like"}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def flag(self, request, pk=None):

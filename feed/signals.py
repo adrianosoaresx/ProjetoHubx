@@ -5,17 +5,17 @@ from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
-from .models import Comment, Like, Post
+from .models import Comment, Post, Reacao
 from .tasks import notificar_autor_sobre_interacao
 
 
-@receiver(post_save, sender=Like)
-def notificar_like(sender, instance, created, **kwargs):
-    if created:
+@receiver(post_save, sender=Reacao)
+def notificar_reacao(sender, instance, created, update_fields=None, **kwargs):
+    if created or (update_fields and "deleted" in update_fields and not instance.deleted):
         if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
-            notificar_autor_sobre_interacao(instance.post_id, "like")
+            notificar_autor_sobre_interacao(instance.post_id, instance.vote)
         else:
-            notificar_autor_sobre_interacao.delay(instance.post_id, "like")
+            notificar_autor_sobre_interacao.delay(instance.post_id, instance.vote)
 
 
 @receiver(post_save, sender=Comment)

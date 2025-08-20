@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from feed.models import Comment, Like, Post
+from feed.models import Comment, Post, Reacao
 from feed.tasks import (
     NOTIFICATIONS_SENT,
     notificar_autor_sobre_interacao,
@@ -26,7 +26,7 @@ class NotificationTests(TestCase):
     @patch("feed.signals.notificar_autor_sobre_interacao")
     def test_like_triggers_task(self, mock_task):
         post = Post.objects.create(autor=self.author, organizacao=self.org, conteudo="hi")
-        Like.objects.create(post=post, user=self.other)
+        Reacao.objects.create(post=post, user=self.other, vote="like")
         mock_task.assert_called_once_with(post.id, "like")
 
     @patch("feed.signals.notificar_autor_sobre_interacao")
