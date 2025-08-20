@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.cache import cache
+from sentry_sdk import capture_exception
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -60,10 +61,14 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         elif user.get_tipo_usuario == UserType.ADMIN.value or getattr(user, "user_type", None) == UserType.ADMIN.value:
             org_id = getattr(user, "organizacao_id", None)
             if org_id is None:
-                raise PermissionDenied
+                e = PermissionDenied()
+                capture_exception(e)
+                raise e
             qs = qs.filter(pk=org_id)
         else:
-            raise PermissionDenied
+            e = PermissionDenied()
+            capture_exception(e)
+            raise e
         search = self.request.query_params.get("search")
         if search:
             qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
@@ -118,6 +123,27 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated, IsOrgAdminOrSuperuser]
         return super().get_permissions()
 
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
+
+    def update(self, request, *args, **kwargs):  # type: ignore[override]
+        try:
+            return super().update(request, *args, **kwargs)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
+
+    def partial_update(self, request, *args, **kwargs):  # type: ignore[override]
+        try:
+            return super().partial_update(request, *args, **kwargs)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
+
     def perform_destroy(self, instance: Organizacao) -> None:
         instance.delete()
         OrganizacaoAtividadeLog.objects.create(
@@ -129,87 +155,107 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def inativar(self, request, pk: str | None = None):
-        organizacao = self.get_object()
-        organizacao.inativa = True
-        organizacao.inativada_em = timezone.now()
-        organizacao.save(update_fields=["inativa", "inativada_em"])
-        OrganizacaoAtividadeLog.objects.create(
-            organizacao=organizacao,
-            usuario=request.user,
-            acao="inactivated",
-        )
-        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inactivated")
-        serializer = self.get_serializer(organizacao)
-        return Response(serializer.data)
+        try:
+            organizacao = self.get_object()
+            organizacao.inativa = True
+            organizacao.inativada_em = timezone.now()
+            organizacao.save(update_fields=["inativa", "inativada_em"])
+            OrganizacaoAtividadeLog.objects.create(
+                organizacao=organizacao,
+                usuario=request.user,
+                acao="inactivated",
+            )
+            organizacao_alterada.send(
+                sender=self.__class__, organizacao=organizacao, acao="inactivated"
+            )
+            serializer = self.get_serializer(organizacao)
+            return Response(serializer.data)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
 
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def reativar(self, request, pk: str | None = None):
-        organizacao = Organizacao.objects.get(pk=pk)
-        self.check_object_permissions(request, organizacao)
-        organizacao.inativa = False
-        organizacao.inativada_em = None
-        organizacao.save(update_fields=["inativa", "inativada_em"])
-        OrganizacaoAtividadeLog.objects.create(
-            organizacao=organizacao,
-            usuario=request.user,
-            acao="reactivated",
-        )
-        organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
-        serializer = self.get_serializer(organizacao)
-        return Response(serializer.data)
+        try:
+            organizacao = Organizacao.objects.get(pk=pk)
+            self.check_object_permissions(request, organizacao)
+            organizacao.inativa = False
+            organizacao.inativada_em = None
+            organizacao.save(update_fields=["inativa", "inativada_em"])
+            OrganizacaoAtividadeLog.objects.create(
+                organizacao=organizacao,
+                usuario=request.user,
+                acao="reactivated",
+            )
+            organizacao_alterada.send(
+                sender=self.__class__, organizacao=organizacao, acao="reactivated"
+            )
+            serializer = self.get_serializer(organizacao)
+            return Response(serializer.data)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
 
     @action(detail=True, methods=["get"], url_path="history")
     def history(self, request, pk: str | None = None):
-        organizacao = self.get_object()
-        if request.query_params.get("export") == "csv":
-            import csv
+        try:
+            organizacao = self.get_object()
+            if request.query_params.get("export") == "csv":
+                import csv
 
-            from django.http import HttpResponse
+                from django.http import HttpResponse
 
-            response = HttpResponse(content_type="text/csv")
-            response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
-            writer = csv.writer(response)
-            writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-            for log in (
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+                writer = csv.writer(response)
+                writer.writerow(
+                    ["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"]
+                )
+                for log in (
+                    OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+                    .order_by("-created_at")
+                ):
+                    writer.writerow(
+                        [
+                            "change",
+                            log.campo_alterado,
+                            log.valor_antigo,
+                            log.valor_novo,
+                            getattr(log.alterado_por, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
+                for log in (
+                    OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+                    .order_by("-created_at")
+                ):
+                    writer.writerow(
+                        [
+                            "activity",
+                            log.acao,
+                            "",
+                            "",
+                            getattr(log.usuario, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
+                return response
+            change_logs = (
                 OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")
-            ):
-                writer.writerow(
-                    [
-                        "change",
-                        log.campo_alterado,
-                        log.valor_antigo,
-                        log.valor_novo,
-                        getattr(log.alterado_por, "email", ""),
-                        log.created_at.isoformat(),
-                    ]
-                )
-            for log in (
+                .order_by("-created_at")[:10]
+            )
+            atividade_logs = (
                 OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")
-            ):
-                writer.writerow(
-                    [
-                        "activity",
-                        log.acao,
-                        "",
-                        "",
-                        getattr(log.usuario, "email", ""),
-                        log.created_at.isoformat(),
-                    ]
-                )
-            return response
-        change_logs = (
-            OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-            .order_by("-created_at")[:10]
-        )
-        atividade_logs = (
-            OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-            .order_by("-created_at")[:10]
-        )
-        change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
-        atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
-        return Response({"changes": change_ser.data, "activities": atividade_ser.data})
+                .order_by("-created_at")[:10]
+            )
+            change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
+            atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
+            return Response({"changes": change_ser.data, "activities": atividade_ser.data})
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
 
 
 class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
@@ -219,7 +265,9 @@ class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
         org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
         perm = IsOrgAdminOrSuperuser()
         if not perm.has_object_permission(self.request, self, org):
-            raise PermissionDenied()
+            e = PermissionDenied()
+            capture_exception(e)
+            raise e
         return org
 
 
@@ -230,7 +278,9 @@ class OrganizacaoRelatedModelViewSet(viewsets.ModelViewSet):
         org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
         perm = IsOrgAdminOrSuperuser()
         if not perm.has_object_permission(self.request, self, org):
-            raise PermissionDenied()
+            e = PermissionDenied()
+            capture_exception(e)
+            raise e
         return org
 
 
