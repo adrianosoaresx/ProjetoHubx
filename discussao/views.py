@@ -127,7 +127,9 @@ class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        cache.clear()
+        return response
 
     def get_success_url(self):
         return reverse("discussao:categorias")
@@ -146,6 +148,11 @@ class CategoriaUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
             qs = qs.filter(organizacao=self.request.user.organizacao)
         return qs
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        cache.clear()
+        return response
+
     def get_success_url(self):
         return reverse("discussao:categorias")
 
@@ -161,6 +168,11 @@ class CategoriaDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
         if self.request.user.user_type != UserType.ROOT:
             qs = qs.filter(organizacao=self.request.user.organizacao)
         return qs
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        cache.clear()
+        return response
 
     def get_success_url(self):
         return reverse("discussao:categorias")
