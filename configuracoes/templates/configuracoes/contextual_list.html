@@ -5,22 +5,54 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold mb-4">{% trans "Configurações Contextuais" %}</h1>
+  <header class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-bold">{% trans "Configurações Contextuais" %}</h1>
+    <a
+      href="{% url 'configuracoes-contextual-create' %}"
+      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+    >
+      {% trans "Nova Configuração" %}
+    </a>
+  </header>
   <ul class="space-y-2">
     {% for cfg in object_list %}
+
+      <li class="p-4 bg-white rounded-lg shadow flex items-center justify-between">
+        <span>{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</span>
+        <span class="space-x-2">
+          <a
+            href="{% url 'configuracoes-contextual-update' cfg.id %}"
+            class="text-blue-600 hover:underline"
+          >
+            {% trans "Editar" %}
+          </a>
+          <a
+            href="{% url 'configuracoes-contextual-delete' cfg.id %}"
+            class="text-red-600 hover:underline"
+          >
+            {% trans "Remover" %}
+          </a>
+        </span>
+
       <li class="p-4 bg-white rounded-lg shadow">
         {{ cfg.escopo_tipo }} {{ cfg.escopo_id }} -
         {% trans "E-mail" %}: {{ cfg.receber_notificacoes_email|yesno:_("Sim,Não") }} -
         WhatsApp: {{ cfg.receber_notificacoes_whatsapp|yesno:_("Sim,Não") }} -
         Push: {{ cfg.receber_notificacoes_push|yesno:_("Sim,Não") }} -
         {{ cfg.tema }}
+
       </li>
     {% empty %}
       <li class="text-gray-600">{% trans "Nenhuma configuração" %}</li>
     {% endfor %}
   </ul>
   <div class="mt-4">
-    <a href="{% url 'configuracoes' %}" class="text-blue-600 hover:underline">{% trans "Voltar para Configurações" %}</a>
+    <a
+      href="{% url 'configuracoes' %}"
+      class="text-blue-600 hover:underline"
+    >
+      {% trans "Voltar para Configurações" %}
+    </a>
   </div>
 </div>
 {% endblock %}
