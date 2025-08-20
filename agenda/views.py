@@ -45,6 +45,7 @@ from .forms import (
     InscricaoEventoForm,
     MaterialDivulgacaoEventoForm,
     ParceriaEventoForm,
+    TarefaForm,
 )
 from .models import (
     BriefingEvento,
@@ -266,6 +267,89 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         if nucleo_ids:
             filtro |= Q(nucleo__in=nucleo_ids)
         return qs.filter(filtro)
+
+
+class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
+    model = Tarefa
+    template_name = "agenda/tarefa_list.html"
+    context_object_name = "tarefas"
+
+    def get_queryset(self):
+        qs = Tarefa.objects.select_related("organizacao", "responsavel")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            return qs
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(organizacao=user.organizacao)
+        if nucleo_ids:
+            filtro |= Q(nucleo__in=nucleo_ids)
+        return qs.filter(filtro)
+
+
+class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
+    model = Tarefa
+    form_class = TarefaForm
+    template_name = "agenda/tarefa_form.html"
+    success_url = reverse_lazy("agenda:tarefa_list")
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        form.fields["responsavel"].queryset = User.objects.filter(
+            organizacao=user.organizacao
+        )
+        return form
+
+    def form_valid(self, form):
+        form.instance.organizacao = self.request.user.organizacao
+        response = super().form_valid(form)
+        TarefaLog.objects.create(
+            tarefa=self.object, usuario=self.request.user, acao="tarefa_criada"
+        )
+        return response
+
+
+class TarefaUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
+    model = Tarefa
+    form_class = TarefaForm
+    template_name = "agenda/tarefa_form.html"
+    success_url = reverse_lazy("agenda:tarefa_list")
+
+    def get_queryset(self):
+        qs = Tarefa.objects.select_related("organizacao")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            return qs
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(organizacao=user.organizacao)
+        if nucleo_ids:
+            filtro |= Q(nucleo__in=nucleo_ids)
+        return qs.filter(filtro)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        form.fields["responsavel"].queryset = User.objects.filter(
+            organizacao=user.organizacao
+        )
+        return form
+
+    def form_valid(self, form):
+        old_instance = Tarefa.objects.get(pk=self.object.pk)
+        response = super().form_valid(form)
+        changes = {}
+        for field in form.changed_data:
+            before = getattr(old_instance, field)
+            after = getattr(self.object, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        TarefaLog.objects.create(
+            tarefa=self.object,
+            usuario=self.request.user,
+            acao="tarefa_atualizada",
+            detalhes=changes,
+        )
+        return response
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
