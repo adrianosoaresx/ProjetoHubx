@@ -283,7 +283,22 @@
       data.results.forEach(m=>{
         const li = document.createElement('li');
         const snippet = m.conteudo_cifrado ? '🔒' : (m.conteudo || '').substring(0,80);
-        li.innerHTML = `<button type="button" class="w-full text-left p-2 hover:bg-neutral-100" data-id="${m.id}"><span class="font-semibold">${m.remetente}</span> <time class="text-xs text-neutral-500">${new Date(m.created_at).toLocaleString()}</time> - ${snippet}</button>`;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-full text-left p-2 hover:bg-neutral-100';
+        btn.dataset.id = m.id;
+        const span = document.createElement('span');
+        span.className = 'font-semibold';
+        span.textContent = m.remetente;
+        const time = document.createElement('time');
+        time.className = 'text-xs text-neutral-500';
+        time.textContent = new Date(m.created_at).toLocaleString();
+        btn.appendChild(span);
+        btn.append(' ');
+        btn.appendChild(time);
+        btn.append(' - ');
+        btn.append(snippet);
+        li.appendChild(btn);
         ul.appendChild(li);
       });
       if(!append){ results.appendChild(ul); }
