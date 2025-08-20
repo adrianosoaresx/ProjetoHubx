@@ -175,6 +175,12 @@ class TagUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("discussao:tags")
 
 
+class TagDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
+    model = Tag
+    template_name = "discussao/tag_confirm_delete.html"
+    success_url = reverse_lazy("discussao:tags")
+
+
 @method_decorator(cache_page(60), name="dispatch")
 class TopicoListView(LoginRequiredMixin, ListView):
     model = TopicoDiscussao

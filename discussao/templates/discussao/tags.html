@@ -11,7 +11,10 @@
     {% for tag in tags %}
     <li class="p-4 bg-white border border-neutral-200 rounded-xl flex justify-between items-center">
       <span class="text-primary-600 font-medium">{{ tag.nome }}</span>
-      <a href="{% url 'discussao:tag_editar' tag.pk %}" class="text-sm text-neutral-600">{% trans 'Editar' %}</a>
+      <div class="flex items-center gap-4">
+        <a href="{% url 'discussao:tag_editar' tag.pk %}" class="text-sm text-neutral-600">{% trans 'Editar' %}</a>
+        <a href="{% url 'discussao:tag_remover' tag.pk %}" class="text-sm text-red-600">{% trans 'Remover' %}</a>
+      </div>
     </li>
     {% empty %}
     <li class="text-neutral-600">{% trans 'Nenhuma tag cadastrada.' %}</li>
