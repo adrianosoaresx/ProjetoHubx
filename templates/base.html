@@ -159,6 +159,13 @@
   <script src="https://unpkg.com/htmx.org@{{ HTMX_VERSION }}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
   <script>
+    document.body.addEventListener('htmx:responseError', function (evt) {
+      if (evt.detail.xhr.status === 403) {
+        alert(gettext('Você não tem permissão para realizar esta ação.'));
+      }
+    });
+  </script>
+  <script>
     (function () {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
