@@ -17,6 +17,7 @@ from django.views import View
 
 from accounts.models import SecurityEvent
 
+from . import services
 from .forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoForm,
@@ -25,6 +26,7 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
+
 
 from .models import (
     ApiToken,
@@ -39,7 +41,7 @@ from .metrics import tokens_invites_revoked_total
 from . import services
 from .perms import can_issue_invite
 
-
+from .services import create_invite_token, list_tokens, revoke_token
 
 User = get_user_model()
 
@@ -137,7 +139,7 @@ def revogar_convite(request, token_id: int):
 
 @login_required
 def listar_api_tokens(request):
-    tokens = services.list_tokens(request.user)
+    tokens = list_tokens(request.user)
     return render(request, "tokens/api_tokens.html", {"tokens": tokens})
 
 
@@ -147,7 +149,7 @@ def revogar_api_token(request, token_id: str):
     if token.revoked_at:
         messages.info(request, _("Token já revogado."))
     else:
-        services.revoke_token(token.id, revogado_por=request.user)
+        revoke_token(token.id, revogado_por=request.user)
         ApiTokenLog.objects.create(
             token=token,
             usuario=request.user,
@@ -167,12 +169,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return JsonResponse({"error": _("Não autorizado")}, status=403)
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
-
-            token, codigo = create_invite_token(
-                gerado_por=request.user,
-                tipo_destino=form.cleaned_data["tipo_destino"]
-            )
-
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
@@ -199,15 +195,14 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         request,
                         "tokens/_resultado.html",
                         {"error": _("Limite diário atingido.")},
-                        status=409,
+                        status=429,
                     )
                 messages.error(request, _("Limite diário atingido."))
-                return JsonResponse({"error": _("Limite diário atingido.")}, status=409)
+                return JsonResponse({"error": _("Limite diário atingido.")}, status=429)
 
             token, codigo = create_invite_token(
                 gerado_por=request.user,
                 tipo_destino=target_role,
-
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
                 organizacao=form.cleaned_data.get("organizacao"),
                 nucleos=form.cleaned_data["nucleos"],

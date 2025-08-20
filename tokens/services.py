@@ -3,35 +3,35 @@ from __future__ import annotations
 import hashlib
 import secrets
 import uuid
-from datetime import timedelta, datetime
-from typing import Callable, Iterable, Tuple
+from datetime import datetime, timedelta
+from typing import Iterable, Tuple
 
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-
-from .models import ApiToken
 from .metrics import (
     tokens_api_tokens_created_total,
     tokens_api_tokens_revoked_total,
 )
-
 from .models import ApiToken, TokenAcesso
-
 
 User = get_user_model()
 
 
 # Callbacks para webhooks, sobrescritos em ``apps.py``
-token_created: Callable[[ApiToken, str], None] = lambda token, raw: None
-token_revoked: Callable[[ApiToken], None] = lambda token: None
+def token_created(token: ApiToken, raw: str) -> None:
+    pass
+
+
+def token_revoked(token: ApiToken) -> None:
+    pass
 
 
 def generate_token(
     user: User | None,
     client_name: str | None,
     scope: str,
-    expires_in: timedelta | None,
+    expires_in: timedelta | None = None,
 ) -> str:
     """Gera um token de API e retorna o valor bruto."""
 
@@ -67,7 +67,6 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     tokens_api_tokens_revoked_total.inc()
 
     token_revoked(token)
-
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:
@@ -107,7 +106,6 @@ def create_invite_token(
     if nucleos:
         token.nucleos.set(nucleos)
     return token, codigo
-
 
 def find_token_by_code(codigo: str) -> TokenAcesso:
     """Retorna o ``TokenAcesso`` correspondente ao ``codigo``.

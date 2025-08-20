@@ -34,7 +34,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
         max_length=20,
         choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],
     )
-    expires_at = models.DateTimeField()
+    expires_at = models.DateTimeField(null=True, blank=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
     revogado_por = models.ForeignKey(
         User,
@@ -47,9 +47,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
 
     @property
     def is_active(self) -> bool:
-        return self.revoked_at is None and (
-            self.expires_at is None or self.expires_at > timezone.now()
-        )
+        return self.revoked_at is None and (self.expires_at is None or self.expires_at > timezone.now())
 
     class Meta:
         ordering = ["-created_at"]
