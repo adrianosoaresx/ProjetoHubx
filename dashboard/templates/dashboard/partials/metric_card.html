@@ -1,8 +1,11 @@
 {% load i18n l10n %}
-<div class="p-4 bg-white rounded-lg shadow" aria-label="{{ title }}">
+<div class="card p-4 bg-white rounded-lg shadow" id="{{ id }}" aria-label="{{ title }}">
   <div class="flex items-center justify-between">
     <h3 class="text-sm font-medium text-neutral-700">{{ title }}</h3>
-    {% if icon %}<i class="fa-solid {{ icon }} text-primary-600" aria-label="{{ title }}"></i>{% endif %}
+    <div class="flex items-center space-x-2">
+      {% if icon %}<i class="fa-solid {{ icon }} text-primary-600" aria-label="{{ title }}"></i>{% endif %}
+      <i class="fa-solid fa-grip-dots card-handle cursor-move text-neutral-400" aria-hidden="true"></i>
+    </div>
   </div>
-  <p class="text-3xl font-bold text-neutral-900" id="{{ id }}" aria-label="{{ title }}">{{ value|localize }}</p>
+  <p class="text-3xl font-bold text-neutral-900" aria-label="{{ title }}">{{ value|localize }}</p>
 </div>
