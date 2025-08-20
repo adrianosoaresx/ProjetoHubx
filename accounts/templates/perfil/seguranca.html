@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load static i18n %}
+{% load static i18n custom_filters %}
 
 {% block title %}{% trans "Segurança da Conta" %} | HubX{% endblock %}
 
@@ -12,21 +12,27 @@
     {% csrf_token %}
 
     <div>
-      <label for="senha_atual" class="block text-sm font-medium text-gray-700">{% trans "Senha Atual" %}</label>
-      <input type="password" id="senha_atual" name="senha_atual"
-             class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
+      <label for="{{ form.old_password.id_for_label }}" class="block text-sm font-medium text-gray-700">{% trans "Senha Atual" %}</label>
+      {{ form.old_password|add_class:'mt-1 block w-full border rounded-lg p-2 text-sm' }}
+      {% if form.old_password.errors %}
+        <p class="text-red-600 text-sm mt-1">{{ form.old_password.errors }}</p>
+      {% endif %}
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label for="nova_senha" class="block text-sm font-medium text-gray-700">{% trans "Nova Senha" %}</label>
-        <input type="password" id="nova_senha" name="nova_senha"
-               class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
+        <label for="{{ form.new_password1.id_for_label }}" class="block text-sm font-medium text-gray-700">{% trans "Nova Senha" %}</label>
+        {{ form.new_password1|add_class:'mt-1 block w-full border rounded-lg p-2 text-sm' }}
+        {% if form.new_password1.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.new_password1.errors }}</p>
+        {% endif %}
       </div>
       <div>
-        <label for="confirmar_senha" class="block text-sm font-medium text-gray-700">{% trans "Confirmar Nova Senha" %}</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha"
-               class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
+        <label for="{{ form.new_password2.id_for_label }}" class="block text-sm font-medium text-gray-700">{% trans "Confirmar Nova Senha" %}</label>
+        {{ form.new_password2|add_class:'mt-1 block w-full border rounded-lg p-2 text-sm' }}
+        {% if form.new_password2.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.new_password2.errors }}</p>
+        {% endif %}
       </div>
     </div>
 
@@ -67,7 +73,7 @@
   <!-- Script simples de força de senha (opcional) -->
   <script src="{% url 'javascript-catalog' %}"></script>
   <script>
-  const senhaInput = document.getElementById('nova_senha');
+  const senhaInput = document.getElementById('{{ form.new_password1.id_for_label }}');
   const strengthFill = document.getElementById('strengthFill');
   const strengthText = document.getElementById('strengthText');
 
