@@ -832,8 +832,26 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
     template_name = "dashboard/layout_form.html"
     success_url = "/dashboard/layouts/"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["layout_save_url"] = "#"
+        metricas = list(METRICAS_INFO.keys())
+        metrics = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
+        context["metricas_iter"] = [
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": METRICAS_INFO[m]["label"],
+                "icon": METRICAS_INFO[m]["icon"],
+            }
+            for m in metricas
+            if m in metrics
+        ]
+        context["metricas_selecionadas"] = metricas
+        return context
+
     def form_valid(self, form):
-        layout_data = self.request.POST.get("layout_json", "{}")
+        layout_data = self.request.POST.get("layout_json", "[]")
         self.object = form.save(self.request.user, layout_data)
         log_layout_action(
             user=self.request.user,
