@@ -17,7 +17,7 @@ from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -189,6 +189,8 @@ def perfil_conexoes(request):
 
 @login_required
 def remover_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
         request.user.connections.remove(other_user)
@@ -200,6 +202,8 @@ def remover_conexao(request, id):
 
 @login_required
 def aceitar_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
@@ -218,6 +222,8 @@ def aceitar_conexao(request, id):
 
 @login_required
 def recusar_conexao(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
     try:
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
