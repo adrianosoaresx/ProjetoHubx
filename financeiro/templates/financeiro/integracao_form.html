@@ -1,0 +1,37 @@
+{% load i18n %}
+<form id="integracao-form"
+      {% if integracao %}
+        hx-put="/api/financeiro/integracoes/{{ integracao.id }}/"
+      {% else %}
+        hx-post="/api/financeiro/integracoes/"
+      {% endif %}
+      hx-target="#integracoes-list"
+      hx-on="htmx:afterRequest: htmx.ajax('GET', '/financeiro/integracoes/', '#integracoes-list'); document.getElementById('modal').innerHTML='';"
+      class="p-4 bg-white rounded shadow max-w-md space-y-4" aria-live="assertive">
+  {% csrf_token %}
+  <div>
+    <label for="id_nome" class="block text-sm font-medium">{{ _('Nome') }}</label>
+    <input id="id_nome" name="nome" type="text" class="border p-2 w-full" required {% if integracao %}value="{{ integracao.nome }}"{% endif %} {% if form and form.nome.errors %}aria-invalid="true"{% endif %} />
+    {% if form and form.nome.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.nome.errors }}</p>{% endif %}
+  </div>
+  <div>
+    <label for="id_tipo" class="block text-sm font-medium">{{ _('Tipo') }}</label>
+    <select id="id_tipo" name="tipo" class="border p-2 w-full" required {% if form and form.tipo.errors %}aria-invalid="true"{% endif %}>
+      <option value="erp"{% if integracao and integracao.tipo == 'erp' %} selected{% endif %}>{{ _('ERP') }}</option>
+      <option value="contabilidade"{% if integracao and integracao.tipo == 'contabilidade' %} selected{% endif %}>{{ _('Contabilidade') }}</option>
+      <option value="gateway"{% if integracao and integracao.tipo == 'gateway' %} selected{% endif %}>{{ _('Gateway de Pagamento') }}</option>
+    </select>
+    {% if form and form.tipo.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.tipo.errors }}</p>{% endif %}
+  </div>
+  <div>
+    <label for="id_base_url" class="block text-sm font-medium">{{ _('Base URL') }}</label>
+    <input id="id_base_url" name="base_url" type="url" class="border p-2 w-full" required {% if integracao %}value="{{ integracao.base_url }}"{% endif %} {% if form and form.base_url.errors %}aria-invalid="true"{% endif %} />
+    {% if form and form.base_url.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.base_url.errors }}</p>{% endif %}
+  </div>
+  <div>
+    <label for="id_credenciais" class="block text-sm font-medium">{{ _('Credenciais') }}</label>
+    <textarea id="id_credenciais" name="credenciais" class="border p-2 w-full" rows="3" {% if form and form.credenciais.errors %}aria-invalid="true"{% endif %}>{% if integracao %}{{ integracao.credenciais_encrypted }}{% endif %}</textarea>
+    {% if form and form.credenciais.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.credenciais.errors }}</p>{% endif %}
+  </div>
+  <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
+</form>

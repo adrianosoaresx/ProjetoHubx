@@ -5,11 +5,14 @@ from datetime import datetime
 from pathlib import Path
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -18,8 +21,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from accounts.models import UserType
+from agenda.models import Evento
+from notificacoes.services.email_client import send_email
+
 
 from ..models import (
     CentroCusto,
@@ -27,6 +32,7 @@ from ..models import (
     FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
+    IntegracaoConfig,
 )
 from ..permissions import (
     IsAssociadoReadOnly,
@@ -374,7 +380,21 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer = AporteSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
-        return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
+        content = render_to_string("financeiro/recibo_aporte.html", {"lancamento": lancamento})
+        filename = f"recibos/aporte_{lancamento.id}.html"
+        saved_path = default_storage.save(filename, ContentFile(content))
+        recibo_url = request.build_absolute_uri(default_storage.url(saved_path))
+        try:
+            send_email(
+                request.user,
+                str(_("Recibo de aporte")),
+                str(_("Seu recibo está disponível em %(url)s")) % {"url": recibo_url},
+            )
+        except Exception:  # pragma: no cover - integração externa
+            pass
+        data = AporteSerializer(lancamento).data
+        data["recibo_url"] = recibo_url
+        return Response(data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
@@ -436,9 +456,26 @@ def centros_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
+
 def centro_form_view(request, pk: int | None = None):
     centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
     return render(request, "financeiro/centro_form.html", {"centro": centro})
+
+def integracoes_list_view(request):
+    limit = 20
+    offset = int(request.GET.get("offset", 0))
+    qs = IntegracaoConfig.objects.all()
+    total = qs.count()
+    integracoes = qs[offset : offset + limit]
+    next_offset = offset + limit if total > offset + limit else None
+    prev_offset = offset - limit if offset - limit >= 0 else None
+    context = {
+        "integracoes": integracoes,
+        "next": next_offset,
+        "prev": prev_offset,
+    }
+    return render(request, "financeiro/integracoes_list.html", context)
+
 
 
 @login_required
@@ -451,6 +488,23 @@ def lancamentos_list_view(request):
         "nucleos": list(nucleos),
     }
     return render(request, "financeiro/lancamentos_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+
+def repasses_view(request):
+    eventos = Evento.objects.all()
+    return render(request, "financeiro/repasses.html", {"eventos": eventos})
+
+def logs_list_view(request):
+    User = get_user_model()
+    context = {
+        "acoes": FinanceiroLog.Acao.choices,
+        "usuarios": User.objects.all(),
+    }
+    return render(request, "financeiro/logs_list.html", context)
+
 
 
 @login_required

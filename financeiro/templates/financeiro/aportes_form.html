@@ -2,7 +2,7 @@
 <form
   hx-post="/api/financeiro/aportes/"
   hx-target="#aportes-messages"
-  hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();document.getElementById('aportes-messages').textContent='{{ _('Aporte registrado com sucesso') }}';}else{document.getElementById('aportes-messages').textContent='{{ _('Erro ao registrar aporte') }}';}"
+  hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();var resp=JSON.parse(event.detail.xhr.response);var msg='{{ _('Aporte registrado com sucesso') }}';if(resp.recibo_url){msg+=' <a href=\"'+resp.recibo_url+'\" target=\"_blank\">{{ _('Baixar recibo') }}</a>'; }document.getElementById('aportes-messages').innerHTML=msg;}else{document.getElementById('aportes-messages').textContent='{{ _('Erro ao registrar aporte') }}';}"
   class="p-4 bg-white rounded shadow max-w-md"
   aria-live="assertive"
 >
@@ -31,4 +31,3 @@
   <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ _('Registrar') }}</button>
   <div id="aportes-messages" class="mt-2 text-sm" aria-live="polite"></div>
 </form>
-
