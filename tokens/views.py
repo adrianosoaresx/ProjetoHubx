@@ -27,6 +27,10 @@ from .forms import (
     ValidarTokenConviteForm,
 )
 
+from .metrics import tokens_invites_revoked_total
+from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
+from .perms import can_issue_invite
+from .services import create_invite_token
 
 from .models import (
     ApiToken,
@@ -42,6 +46,7 @@ from . import services
 from .perms import can_issue_invite
 
 from .services import create_invite_token, list_tokens, revoke_token
+
 
 User = get_user_model()
 
@@ -169,6 +174,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return JsonResponse({"error": _("Não autorizado")}, status=403)
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
+
+            token, codigo = create_invite_token(gerado_por=request.user, tipo_destino=form.cleaned_data["tipo_destino"])
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
@@ -237,7 +244,16 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
             token = form.token
             token.usuario = request.user
             token.estado = TokenAcesso.Estado.USADO
-            token.save()
+            ip = request.META.get("REMOTE_ADDR", "")
+            token.ip_utilizado = ip
+            token.save(update_fields=["usuario", "estado", "ip_utilizado"])
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user,
+                acao=TokenUsoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
             messages.success(request, _("Token validado"))
