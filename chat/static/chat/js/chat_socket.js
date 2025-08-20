@@ -245,11 +245,27 @@
                 btn.setAttribute('aria-expanded', hidden ? 'false' : 'true');
             });
             menu.addEventListener('click', e=>{
-                const opt = e.target.closest('.create-item');
-                if(opt){
+                const createOpt = e.target.closest('.create-item');
+                const flagOpt = e.target.closest('.flag-message');
+                if(createOpt){
                     menu.classList.add('hidden');
                     btn.setAttribute('aria-expanded','false');
                     openItemModal(id);
+                } else if(flagOpt){
+                    menu.classList.add('hidden');
+                    btn.setAttribute('aria-expanded','false');
+                    if(confirm(t('confirmFlag','Tem certeza que deseja denunciar?'))){
+                        fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/flag/`,{
+                            method:'POST',
+                            headers:{'X-CSRFToken':csrfToken}
+                        }).then(r=>{
+                            if(r.ok){
+                                alert(t('flagged','Denúncia enviada'));
+                            }else{
+                                alert(t('flagError','Erro ao denunciar'));
+                            }
+                        });
+                    }
                 }
             });
         }
