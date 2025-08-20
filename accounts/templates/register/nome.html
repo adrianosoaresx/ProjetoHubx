@@ -8,11 +8,11 @@
   <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div class="mb-8">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=3 total=7 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
-        <span class="text-sm text-neutral-500">42%</span>
+        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=3 total=8 %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+        <span class="text-sm text-neutral-500">38%</span>
       </div>
       <div class="h-2 w-full rounded-xl bg-neutral-200">
-        <div class="h-full rounded-xl bg-primary-600 w-[42%]"></div>
+        <div class="h-full rounded-xl bg-primary-600 w-[38%]"></div>
       </div>
     </div>
 
@@ -38,7 +38,7 @@
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'tokens:token' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <a href="{% url 'accounts:usuario' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
         <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
