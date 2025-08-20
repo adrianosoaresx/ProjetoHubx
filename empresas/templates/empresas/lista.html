@@ -34,6 +34,15 @@
       <input type="text" id="estado" name="estado" value="{{ request.GET.estado }}" class="w-full p-2 border rounded" />
     </div>
     <div>
+      <label for="organizacao" class="block text-sm font-medium text-neutral-700">{% translate "Organização" %}</label>
+      <select id="organizacao" name="organizacao" class="w-full p-2 border rounded">
+        <option value="">{% translate "Todas" %}</option>
+        {% for org in organizacoes %}
+          <option value="{{ org.id }}" {% if request.GET.organizacao == org.id|stringformat:'s' %}selected{% endif %}>{{ org.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
       <label for="tags" class="block text-sm font-medium text-neutral-700">{% translate "Tags" %}</label>
       <select id="tags" name="tags" multiple class="w-full p-2 border rounded select2">
         {% for tag in tags %}
