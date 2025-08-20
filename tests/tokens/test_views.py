@@ -1,10 +1,10 @@
 import pytest
-pytestmark = pytest.mark.skip(reason="legacy tests")
-import pytest
+import pyotp
 from django.urls import reverse
 from django.utils import timezone
 
 from accounts.factories import UserFactory
+from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from tokens.models import CodigoAutenticacao, TokenAcesso
@@ -27,7 +27,7 @@ def test_gerar_token_view_creates_token(client):
 
 
 def test_gerar_token_convite_view(client):
-    user = UserFactory(is_staff=True)
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
     nucleo = NucleoFactory(organizacao=org)
@@ -40,8 +40,34 @@ def test_gerar_token_convite_view(client):
     resp = client.post(reverse("tokens:gerar_convite"), data)
     assert resp.status_code == 200
     json = resp.json()
-    token = TokenAcesso.objects.get(codigo=json["codigo"])
+    assert json["codigo"]
+    token = TokenAcesso.objects.get(gerado_por=user)
     assert token.data_expiracao.date() == (timezone.now() + timezone.timedelta(days=30)).date()
+
+
+def test_convite_permission_denied(client):
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    org.users.add(user)
+    _login(client, user)
+    resp = client.post(
+        reverse("tokens:gerar_convite"),
+        {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN, "organizacao": org.pk},
+    )
+    assert resp.status_code == 403
+
+
+def test_convite_daily_limit(client):
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    org.users.add(user)
+    _login(client, user)
+    data = {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO, "organizacao": org.pk}
+    for _ in range(5):
+        resp = client.post(reverse("tokens:gerar_convite"), data)
+        assert resp.status_code == 200
+    resp = client.post(reverse("tokens:gerar_convite"), data)
+    assert resp.status_code == 409
 
 
 def test_validar_token_convite_view(client):

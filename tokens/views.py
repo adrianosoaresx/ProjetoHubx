@@ -25,6 +25,8 @@ from .forms import (
 )
 from accounts.models import SecurityEvent
 from .models import TokenAcesso, TOTPDevice
+from .perms import can_issue_invite
+from .services import create_invite_token
 
 User = get_user_model()
 
@@ -81,18 +83,48 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return JsonResponse({"error": _("Não autorizado")}, status=403)
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
-            token = TokenAcesso(
-                tipo_destino=form.cleaned_data["tipo_destino"],
-                organizacao=form.cleaned_data.get("organizacao"),
+            target_role = form.cleaned_data["tipo_destino"]
+            if not can_issue_invite(request.user, target_role):
+                if request.headers.get("HX-Request") == "true":
+                    return render(
+                        request,
+                        "tokens/_resultado.html",
+                        {"error": _("Não autorizado")},
+                        status=403,
+                    )
+                return JsonResponse({"error": _("Não autorizado")}, status=403)
+
+            start_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            end_day = start_day + timezone.timedelta(days=1)
+            if (
+                TokenAcesso.objects.filter(
+                    gerado_por=request.user,
+                    created_at__gte=start_day,
+                    created_at__lt=end_day,
+                ).count()
+                >= 5
+            ):
+                if request.headers.get("HX-Request") == "true":
+                    return render(
+                        request,
+                        "tokens/_resultado.html",
+                        {"error": _("Limite diário atingido.")},
+                        status=409,
+                    )
+                messages.error(request, _("Limite diário atingido."))
+                return JsonResponse({"error": _("Limite diário atingido.")}, status=409)
+
+            token, codigo = create_invite_token(
                 gerado_por=request.user,
+                tipo_destino=target_role,
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
+                organizacao=form.cleaned_data.get("organizacao"),
+                nucleos=form.cleaned_data["nucleos"],
             )
-            token.save()
-            token.nucleos.set(form.cleaned_data["nucleos"])
             if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"token": token.codigo})
+                return render(request, "tokens/_resultado.html", {"token": codigo})
             messages.success(request, _("Token gerado"))
-            return JsonResponse({"codigo": token.codigo})
+            return JsonResponse({"codigo": codigo})
         if request.headers.get("HX-Request") == "true":
             return render(request, "tokens/_resultado.html", {"error": _("Dados inválidos")}, status=400)
         messages.error(request, _("Dados inválidos"))
