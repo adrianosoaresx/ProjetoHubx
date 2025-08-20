@@ -24,6 +24,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -45,6 +46,7 @@ from .forms import (
     InscricaoEventoForm,
     MaterialDivulgacaoEventoForm,
     ParceriaEventoForm,
+    TarefaForm,
 )
 from .models import (
     BriefingEvento,
@@ -253,6 +255,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         user = self.request.user
         evento: Evento = self.object
         confirmada = evento.inscricoes.filter(
@@ -260,6 +263,27 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         ).exists()
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
+
+        evento = context["object"]
+        context.update(
+            {
+                "local": evento.local,
+                "cidade": evento.cidade,
+                "estado": evento.estado,
+                "cep": evento.cep,
+                "contato_nome": evento.contato_nome,
+                "contato_email": evento.contato_email,
+                "contato_whatsapp": evento.contato_whatsapp,
+                "participantes_maximo": evento.participantes_maximo,
+                "orcamento": evento.orcamento,
+                "orcamento_estimado": evento.orcamento_estimado,
+                "valor_gasto": evento.valor_gasto,
+                "inscricao_confirmada": evento.inscricoes.filter(
+                    user=self.request.user, status="confirmada"
+                ).exists(),
+            }
+        )
+
         return context
 
 
@@ -279,8 +303,91 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         return qs.filter(filtro)
 
 
+class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
+    model = Tarefa
+    template_name = "agenda/tarefa_list.html"
+    context_object_name = "tarefas"
+
+    def get_queryset(self):
+        qs = Tarefa.objects.select_related("organizacao", "responsavel")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            return qs
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(organizacao=user.organizacao)
+        if nucleo_ids:
+            filtro |= Q(nucleo__in=nucleo_ids)
+        return qs.filter(filtro)
+
+
+class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
+    model = Tarefa
+    form_class = TarefaForm
+    template_name = "agenda/tarefa_form.html"
+    success_url = reverse_lazy("agenda:tarefa_list")
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        form.fields["responsavel"].queryset = User.objects.filter(
+            organizacao=user.organizacao
+        )
+        return form
+
+    def form_valid(self, form):
+        form.instance.organizacao = self.request.user.organizacao
+        response = super().form_valid(form)
+        TarefaLog.objects.create(
+            tarefa=self.object, usuario=self.request.user, acao="tarefa_criada"
+        )
+        return response
+
+
+class TarefaUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
+    model = Tarefa
+    form_class = TarefaForm
+    template_name = "agenda/tarefa_form.html"
+    success_url = reverse_lazy("agenda:tarefa_list")
+
+    def get_queryset(self):
+        qs = Tarefa.objects.select_related("organizacao")
+        user = self.request.user
+        if user.user_type == UserType.ROOT:
+            return qs
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        filtro = Q(organizacao=user.organizacao)
+        if nucleo_ids:
+            filtro |= Q(nucleo__in=nucleo_ids)
+        return qs.filter(filtro)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        form.fields["responsavel"].queryset = User.objects.filter(
+            organizacao=user.organizacao
+        )
+        return form
+
+    def form_valid(self, form):
+        old_instance = Tarefa.objects.get(pk=self.object.pk)
+        response = super().form_valid(form)
+        changes = {}
+        for field in form.changed_data:
+            before = getattr(old_instance, field)
+            after = getattr(self.object, field)
+            if before != after:
+                changes[field] = {"antes": before, "depois": after}
+        TarefaLog.objects.create(
+            tarefa=self.object,
+            usuario=self.request.user,
+            acao="tarefa_atualizada",
+            detalhes=changes,
+        )
+        return response
+
+
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
-    """Cancela a inscrição do usuário no evento."""
+    """Inscreve ou cancela a inscrição do usuário no evento."""
 
     def post(self, request, pk):  # pragma: no cover
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
@@ -289,15 +396,23 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 request, _("Administradores não podem se inscrever em eventos.")
             )  # pragma: no cover
             return redirect("agenda:evento_detalhe", pk=pk)
-        inscricao = get_object_or_404(
-            InscricaoEvento, user=request.user, evento=evento
+
+        inscricao, created = InscricaoEvento.objects.get_or_create(
+            user=request.user, evento=evento
         )
-        try:
-            inscricao.cancelar_inscricao()
-        except ValueError as exc:
-            messages.error(request, str(exc))
+        if inscricao.status == "confirmada":
+            try:
+                inscricao.cancelar_inscricao()
+                messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+            except ValueError as exc:
+                messages.error(request, str(exc))
         else:
-            messages.success(request, _("Inscrição cancelada."))  # pragma: no cover
+            inscricao.confirmar_inscricao()
+            check_achievements(request.user)
+            if inscricao.status == "confirmada":
+                messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+            else:
+                messages.success(request, _("Você está na lista de espera."))  # pragma: no cover
         return redirect("agenda:evento_detalhe", pk=pk)
 
 
@@ -790,9 +905,19 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
         briefing.avaliado_em = now
         detalhes = {}
         if status == "orcamentado":
+            prazo_str = request.POST.get("prazo_limite_resposta")
+            if not prazo_str:
+                messages.error(request, _("Informe o prazo limite de resposta."))
+                return redirect("agenda:briefing_list")
+            prazo = parse_datetime(prazo_str)
+            if prazo is None:
+                messages.error(request, _("Prazo limite inválido."))
+                return redirect("agenda:briefing_list")
+            if timezone.is_naive(prazo):
+                prazo = timezone.make_aware(prazo)
             briefing.status = "orcamentado"
             briefing.orcamento_enviado_em = now
-            briefing.prazo_limite_resposta = request.POST.get("prazo_limite_resposta") or briefing.prazo_limite_resposta
+            briefing.prazo_limite_resposta = prazo
             update_fields.extend(["orcamento_enviado_em", "prazo_limite_resposta"])
         elif status == "aprovado":
             briefing.status = "aprovado"
@@ -800,12 +925,16 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
             briefing.coordenadora_aprovou = True
             update_fields.extend(["aprovado_em", "coordenadora_aprovou"])
         elif status == "recusado":
+            motivo = request.POST.get("motivo_recusa", "").strip()
+            if not motivo:
+                messages.error(request, _("Informe o motivo da recusa."))
+                return redirect("agenda:briefing_list")
             briefing.status = "recusado"
             briefing.recusado_em = now
             briefing.recusado_por = request.user
-            briefing.motivo_recusa = request.POST.get("motivo_recusa", "")
+            briefing.motivo_recusa = motivo
             update_fields.extend(["recusado_em", "motivo_recusa", "recusado_por"])
-            detalhes["motivo_recusa"] = briefing.motivo_recusa
+            detalhes["motivo_recusa"] = motivo
         else:
             return HttpResponseBadRequest()
         briefing.save(update_fields=update_fields)

@@ -105,6 +105,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "accounts.middleware.ActiveUserRequiredMiddleware",
     "configuracoes.middleware.RequestInfoMiddleware",
     "configuracoes.middleware.UserLocaleMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -298,9 +299,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "executar_feed_plugins": {  # executa plugins do feed periodicamente
         "task": "feed.tasks.executar_plugins",
-        "schedule": crontab(
-            minute="*" if FEED_PLUGINS_INTERVAL_MINUTES == 1 else f"*/{FEED_PLUGINS_INTERVAL_MINUTES}"
-        ),
+        "schedule": crontab(minute="*" if FEED_PLUGINS_INTERVAL_MINUTES == 1 else f"*/{FEED_PLUGINS_INTERVAL_MINUTES}"),
     },
 }
 

@@ -5,7 +5,7 @@
 
 {% block chat_content %}
 <main class="max-w-4xl mx-auto h-screen flex flex-col p-4">
-  <div id="i18n-data" data-i18n='{"noResults": "{{ _("Nenhum resultado encontrado.")|escapejs }}", "loadMore": "{{ _("Carregar mais")|escapejs }}", "clear": "{{ _("Limpar")|escapejs }}", "addReaction": "{{ _("Adicionar reação")|escapejs }}", "reactWith": "{{ _("Reagir com")|escapejs }}", "pin": "{{ _("Fixar")|escapejs }}", "unpin": "{{ _("Desafixar")|escapejs }}", "pinMessage": "{{ _("Fixar mensagem")|escapejs }}", "unpinMessage": "{{ _("Desafixar mensagem")|escapejs }}", "edit": "{{ _("Editar")|escapejs }}", "uploadError": "{{ _("Erro no upload")|escapejs }}", "videoPlayer": "{{ _("Player de vídeo")|escapejs }}", "itemCreated": "{{ _("Item criado com sucesso")|escapejs }}", "itemCreateError": "{{ _("Erro ao criar item")|escapejs }}", "createItem": "{{ _("Criar evento/tarefa")|escapejs }}", "openMenu": "{{ _("Abrir menu")|escapejs }}"}'></div>
+  <div id="i18n-data" data-i18n='{"noResults": "{{ _("Nenhum resultado encontrado.")|escapejs }}", "loadMore": "{{ _("Carregar mais")|escapejs }}", "clear": "{{ _("Limpar")|escapejs }}", "addReaction": "{{ _("Adicionar reação")|escapejs }}", "reactWith": "{{ _("Reagir com")|escapejs }}", "pin": "{{ _("Fixar")|escapejs }}", "unpin": "{{ _("Desafixar")|escapejs }}", "pinMessage": "{{ _("Fixar mensagem")|escapejs }}", "unpinMessage": "{{ _("Desafixar mensagem")|escapejs }}", "edit": "{{ _("Editar")|escapejs }}", "uploadError": "{{ _("Erro no upload")|escapejs }}", "videoPlayer": "{{ _("Player de vídeo")|escapejs }}", "itemCreated": "{{ _("Item criado com sucesso")|escapejs }}", "itemCreateError": "{{ _("Erro ao criar item")|escapejs }}", "createItem": "{{ _("Criar evento/tarefa")|escapejs }}", "openMenu": "{{ _("Abrir menu")|escapejs }}", "reply": "{{ _("Responder")|escapejs }}", "cancelReply": "{{ _("Cancelar")|escapejs }}"}'></div>
   <div
     id="chat-container"
     data-dest-id="{{ conversation.id }}"
@@ -89,6 +89,8 @@
         <p class="text-neutral-500">{% trans "Nenhuma mensagem." %}</p>
       {% endfor %}
     </section>
+
+    <div id="reply-preview" class="hidden mb-2 text-sm text-neutral-700"></div>
 
     <form id="chat-form" class="mt-auto flex items-center gap-2" aria-label="{% trans 'Enviar mensagem' %}">
       {% csrf_token %}

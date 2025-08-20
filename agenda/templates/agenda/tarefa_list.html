@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Tarefas" %} | Hubx{% endblock %}
+
+{% block content %}
+<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
+  <h1 class="text-2xl font-bold text-neutral-900 mb-6">{% trans "Tarefas" %}</h1>
+  <ul class="space-y-2">
+    {% for tarefa in tarefas %}
+      <li class="p-4 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+        <a href="{% url 'agenda:tarefa_detalhe' tarefa.pk %}" class="font-semibold">{{ tarefa.titulo }}</a>
+        <div class="text-sm text-neutral-600">{{ tarefa.responsavel }} - {{ tarefa.status }}</div>
+      </li>
+    {% empty %}
+      <li>{% trans "Nenhuma tarefa encontrada." %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

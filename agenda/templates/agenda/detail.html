@@ -18,12 +18,37 @@
 
   <!-- Informações -->
   <div class="space-y-2 text-sm text-neutral-800 mb-6">
-    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:"SHORT_DATETIME_FORMAT" }}</p>
-    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:"SHORT_DATETIME_FORMAT" }}</p>
+
+    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</p>
+    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</p>
+    <p><strong>{% trans "Local" %}:</strong> {{ object.local }}</p>
+    <p><strong>{% trans "Cidade" %}:</strong> {{ object.cidade }}</p>
+    <p><strong>{% trans "Estado" %}:</strong> {{ object.estado }}</p>
+    <p><strong>{% trans "CEP" %}:</strong> {{ object.cep }}</p>
+    <p>
+      <strong>{% trans "Contato" %}:</strong>
+      {{ object.contato_nome }}
+      {% if object.contato_email %}- {{ object.contato_email }}{% endif %}
+      {% if object.contato_whatsapp %}- {{ object.contato_whatsapp }}{% endif %}
+    </p>
+    {% if object.participantes_maximo %}
+      <p><strong>{% trans "Participantes máximo" %}:</strong> {{ object.participantes_maximo }}</p>
+    {% endif %}
+    {% if object.orcamento %}
+      <p><strong>{% trans "Orçamento" %}:</strong> {{ object.orcamento }}</p>
+    {% endif %}
+    {% if object.orcamento_estimado %}
+      <p><strong>{% trans "Orçamento estimado" %}:</strong> {{ object.orcamento_estimado }}</p>
+    {% endif %}
+    {% if object.valor_gasto %}
+      <p><strong>{% trans "Valor gasto" %}:</strong> {{ object.valor_gasto }}</p>
+    {% endif %}
+
   </div>
 
   <!-- Inscrição -->
   {% if user.is_authenticated and user.user_type != 'admin' and user.user_type != 'root' %}
+
     {% if inscricao_confirmada %}
       {% if avaliacao_permitida %}
       <div class="mb-10">
@@ -40,6 +65,25 @@
         <a href="{% url 'agenda:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
       </div>
     {% endif %}
+
+
+    {% with inscricao=object.inscricoes.filter(user=user, status='confirmada').first %}
+      {% if inscricao %}
+        <div class="mb-10 space-y-4">
+          <img src="{{ inscricao.qrcode_url }}" alt="{% trans 'QR Code da inscrição' %}" class="mx-auto h-48 w-48" />
+          <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
+          </form>
+        </div>
+      {% else %}
+        <div class="mb-10">
+          <a href="{% url 'agenda:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
+        </div>
+      {% endif %}
+    {% endwith %}
+
+
   {% endif %}
 
   <!-- Lista de Inscritos -->
