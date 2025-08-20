@@ -4,6 +4,7 @@ from django.contrib.messages import get_messages
 from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
+from django.template import Context, Template
 from freezegun import freeze_time
 
 from discussao.forms import RespostaDiscussaoForm
@@ -290,6 +291,52 @@ def test_topico_detail_includes_num_votos(rf, nucleado_user, categoria, topico):
     assert context["topico"].num_votos == 0
     comentario = context["comentarios"][0]
     assert comentario.num_votos == 0
+
+
+def test_topico_detail_sets_user_recursively(rf, nucleado_user, categoria, topico):
+    r1 = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r1")
+    RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r2", reply_to=r1)
+    request = rf.get("/")
+    request.user = nucleado_user
+    view = TopicoDetailView()
+    view.request = request
+    view.kwargs = {"categoria_slug": categoria.slug, "topico_slug": topico.slug}
+    obj = view.get_object()
+    view.object = obj
+    context = view.get_context_data(object=obj)
+    comentario = context["comentarios"][0]
+    assert comentario._user == nucleado_user
+    assert comentario._obj._user == nucleado_user
+    assert comentario.pode_editar
+    filho = comentario.respostas_filhas[0]
+    assert filho._user == nucleado_user
+    assert filho._obj._user == nucleado_user
+    assert filho.pode_editar
+
+
+def test_topico_detail_shows_edit_links_for_author(rf, nucleado_user, categoria, topico):
+    r1 = RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r1")
+    RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r2", reply_to=r1)
+    request = rf.get("/")
+    request.user = nucleado_user
+    view = TopicoDetailView()
+    view.request = request
+    view.kwargs = {"categoria_slug": categoria.slug, "topico_slug": topico.slug}
+    obj = view.get_object()
+    view.object = obj
+    context = view.get_context_data(object=obj)
+    comentario = context["comentarios"][0]
+    child = comentario.respostas_filhas[0]
+
+    tpl = Template("""
+    {% if comentario.pode_editar %}EDIT{% endif %}
+    {% if comentario.pode_editar or user_type in allowed %}DEL{% endif %}
+    """)
+    ctx = {"user_type": nucleado_user.get_tipo_usuario, "allowed": ["admin", "coordenador", "root"]}
+    root_render = tpl.render(Context({"comentario": comentario, **ctx}))
+    child_render = tpl.render(Context({"comentario": child, **ctx}))
+    assert "EDIT" in root_render and "DEL" in root_render
+    assert "EDIT" in child_render and "DEL" in child_render
 
 
 def test_topico_list_includes_num_votos(rf, nucleado_user, categoria, topico):

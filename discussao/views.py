@@ -321,8 +321,18 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         user = self.request.user
+        
+        def atribuir_user(node: RespostaNode):
+            node._user = user
+            node._obj._user = user
+            for filho in node.respostas_filhas:
+                atribuir_user(filho)
+
         for comentario in comentarios:
-            comentario._user = user
+            atribuir_user(comentario)
+        if melhor_node:
+            atribuir_user(melhor_node)
+
         context["comentarios"] = comentarios
         context["melhor_resposta"] = melhor_node
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
