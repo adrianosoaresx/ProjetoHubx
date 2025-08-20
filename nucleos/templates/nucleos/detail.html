@@ -91,7 +91,7 @@
   </div>
   {% endif %}
 
-  {% if request.user.user_type in ('admin','coordenador') %}
+  {% if request.user.user_type == 'admin' %}
   <div class="mt-4">
     <button type="button" class="px-4 py-2 bg-purple-600 text-white rounded" hx-get="{% url 'nucleos:convites_modal' object.pk %}" hx-target="#modal">
       {% trans 'Gerenciar convites' %} ({{ convites_pendentes }})
