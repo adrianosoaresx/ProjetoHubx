@@ -327,10 +327,9 @@ def excluir_conta(request):
             return redirect("accounts:excluir_conta")
         with transaction.atomic():
             user = request.user
-            user.delete()
-            user.exclusao_confirmada = True
+            user.delete()  # marca deleted/deleted_at
             user.is_active = False
-            user.save(update_fields=["exclusao_confirmada", "is_active"])
+            user.save(update_fields=["is_active"])
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="conta_excluida",
@@ -338,7 +337,7 @@ def excluir_conta(request):
             )
         logout(request)
         messages.success(request, _("Sua conta foi excluída com sucesso."))
-        return redirect("core:home")
+        return redirect("/")
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
