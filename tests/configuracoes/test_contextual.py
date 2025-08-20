@@ -45,6 +45,41 @@ def test_signal_creates_log(admin_user):
     assert log.fonte == "import"
 
 
+def test_logs_created_for_push_fields(admin_user):
+    config = ConfiguracaoContextual.objects.create(
+        user=admin_user,
+        escopo_tipo="organizacao",
+        escopo_id=uuid.uuid4(),
+    )
+    config.receber_notificacoes_push = False
+    config.frequencia_notificacoes_push = "diaria"
+    config.save()
+    log_receber = (
+        ConfiguracaoContaLog.objects.filter(
+            user=admin_user,
+            campo="receber_notificacoes_push",
+            valor_novo="False",
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    log_freq = (
+        ConfiguracaoContaLog.objects.filter(
+            user=admin_user,
+            campo="frequencia_notificacoes_push",
+            valor_novo="diaria",
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    assert log_receber is not None
+    assert log_receber.valor_antigo == "True"
+    assert log_receber.fonte == "import"
+    assert log_freq is not None
+    assert log_freq.valor_antigo == "imediata"
+    assert log_freq.fonte == "import"
+
+
 def test_endpoint_testar_notificacao(admin_user, monkeypatch):
     monkeypatch.setattr(enviar_notificacao_async, "delay", lambda *a, **k: None)
     client = APIClient()
