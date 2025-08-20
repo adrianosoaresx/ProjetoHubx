@@ -99,11 +99,13 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
     )
     escopo_tipo = models.CharField(max_length=20, choices=Escopo.choices)
     escopo_id = models.UUIDField()
+    receber_notificacoes_email = models.BooleanField(default=True)
     frequencia_notificacoes_email = models.CharField(
         max_length=8,
         choices=NOTIFICACAO_FREQ_CHOICES,
         default="imediata",
     )
+    receber_notificacoes_whatsapp = models.BooleanField(default=False)
     frequencia_notificacoes_whatsapp = models.CharField(
         max_length=8,
         choices=NOTIFICACAO_FREQ_CHOICES,

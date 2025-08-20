@@ -24,8 +24,13 @@
         const uploadUrl = container.dataset.uploadUrl || '';
         const historyUrl = container.dataset.historyUrl || '';
         const scheme = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-        const hostname = window.location.hostname;
-        const url = scheme + hostname + ':8001/ws/chat/' + destinatarioId + '/';
+        let baseWs = container.dataset.wsUrl || window.CHAT_WS_URL;
+        if (!baseWs) {
+            baseWs = scheme + window.location.host;
+        } else if (!/^wss?:\/\//.test(baseWs)) {
+            baseWs = scheme + baseWs;
+        }
+        const url = baseWs.replace(/\/$/, '') + '/ws/chat/' + destinatarioId + '/';
 
         if(container._chatCleanup){ container._chatCleanup(); }
         const closeSocket = createSocket(container, url);
@@ -60,12 +65,31 @@
                         fetch(`/api/chat/channels/${destinatarioId}/messages/${msgId}/mark-read/`,{
                             method:'POST',
                             headers:{'X-CSRFToken':csrfToken}
+                        }).then(r=>{
+                            if(r.ok){ addReaderIndicator(entry.target); }
                         });
                     }
                     markReadObserver.unobserve(entry.target);
                 }
             });
         },{root: messages});
+
+        function addReaderIndicator(article){
+            const indicator = article.querySelector('.read-status');
+            if(!indicator) return;
+            const list = indicator.querySelector('.reader-icons');
+            const countEl = indicator.querySelector('.reader-count');
+            if(list && countEl && !list.querySelector(`[data-username="${currentUser}"]`)){
+                const li = document.createElement('li');
+                li.className = 'w-4 h-4 rounded-full bg-gray-300 text-[0.5rem] flex items-center justify-center';
+                li.dataset.username = currentUser;
+                li.textContent = currentUser.charAt(0).toUpperCase();
+                list.appendChild(li);
+                const count = parseInt(countEl.textContent || '0') + 1;
+                countEl.textContent = count;
+            }
+            indicator.classList.remove('hidden');
+        }
 
         if(editCancel){
             editCancel.addEventListener('click', ()=> editModal.close());
@@ -156,9 +180,19 @@
         const texts = window.chatTexts || {};
         function t(key, fallback){ return texts[key] || fallback; }
 
-        function encryptMessage(text){
-            const cipher = btoa(unescape(encodeURIComponent(text)));
-            return {cipher, alg:'base64', keyVersion:'1'};
+        async function encryptMessage(text){
+            const keyB64 = window.chatKey || '';
+            const raw = Uint8Array.from(atob(keyB64), c=>c.charCodeAt(0));
+            const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const data = new TextEncoder().encode(text);
+            const encrypted = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, data);
+            const cipherBytes = new Uint8Array(encrypted);
+            const combined = new Uint8Array(iv.length + cipherBytes.length);
+            combined.set(iv);
+            combined.set(cipherBytes, iv.length);
+            const cipher = btoa(String.fromCharCode(...combined));
+            return {cipher, alg:'AES-GCM', keyVersion:'1'};
         }
 
         function renderReactions(div, reactions, userReactions){
@@ -467,7 +501,7 @@
 
             div.innerHTML = `${replyHtml}<div class="msg-body"><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="reply-btn" aria-label="${t('reply','Responder')}">${t('reply','Responder')}</button></li><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
 
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div><button type="button" class="favorite-btn" aria-label="${t('favorite','Favoritar mensagem')}">⭐</button>`;
+            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div><button type="button" class="favorite-btn" aria-label="${t('favorite','Favoritar mensagem')}">⭐</button><div class="read-status hidden text-xs text-gray-500 flex items-center gap-1"><ul class="reader-icons flex -space-x-1"></ul><span class="reader-count">0</span></div>`;
 
 
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
@@ -533,12 +567,12 @@
             }
         };
 
-        form.addEventListener('submit', function(e){
+        form.addEventListener('submit', async function(e){
             e.preventDefault();
             const message = input.value.trim();
             if(message){
                 if(isE2EE){
-                    const {cipher, alg, keyVersion} = encryptMessage(message);
+                    const {cipher, alg, keyVersion} = await encryptMessage(message);
                     const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion, replyTo);
                     div.classList.add('pending');
                     messages.appendChild(div);
@@ -575,10 +609,10 @@
             formData.append('file', file);
             fetch(uploadUrl,{method:'POST',body:formData,headers:{'X-CSRFToken':csrfToken}})
                 .then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
-                .then(data=>{
+                .then(async data=>{
 
                     if(isE2EE){
-                        const {cipher, alg, keyVersion} = encryptMessage(data.url);
+                        const {cipher, alg, keyVersion} = await encryptMessage(data.url);
                         const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion, replyTo);
                         div.classList.add('pending');
                         messages.appendChild(div);

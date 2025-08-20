@@ -142,5 +142,22 @@
         {% endfor %}
       </ul>
     </div>
+    <div class="read-status mt-1 text-xs text-gray-500 flex items-center gap-1 {% if m.lido_por.count == 0 %}hidden{% endif %}">
+      <ul class="reader-icons flex -space-x-1">
+        {% for user in m.lido_por.all %}
+          <li
+            class="w-4 h-4 rounded-full bg-gray-300 text-[0.5rem] flex items-center justify-center"
+            data-username="{{ user.username }}"
+          >
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="w-4 h-4 rounded-full" />
+            {% else %}
+              {{ user.username|first|upper }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <span class="reader-count">{{ m.lido_por.count }}</span>
+    </div>
   </div>
 </article>
