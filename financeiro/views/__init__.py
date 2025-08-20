@@ -7,9 +7,11 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -20,6 +22,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+from notificacoes.services.email_client import send_email
 
 from ..models import (
     CentroCusto,
@@ -374,7 +377,21 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer = AporteSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         lancamento = serializer.save()
-        return Response(AporteSerializer(lancamento).data, status=status.HTTP_201_CREATED)
+        content = render_to_string("financeiro/recibo_aporte.html", {"lancamento": lancamento})
+        filename = f"recibos/aporte_{lancamento.id}.html"
+        saved_path = default_storage.save(filename, ContentFile(content))
+        recibo_url = request.build_absolute_uri(default_storage.url(saved_path))
+        try:
+            send_email(
+                request.user,
+                str(_("Recibo de aporte")),
+                str(_("Seu recibo está disponível em %(url)s")) % {"url": recibo_url},
+            )
+        except Exception:  # pragma: no cover - integração externa
+            pass
+        data = AporteSerializer(lancamento).data
+        data["recibo_url"] = recibo_url
+        return Response(data, status=status.HTTP_201_CREATED)
 
     @action(
         detail=False,
