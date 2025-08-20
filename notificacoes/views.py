@@ -28,6 +28,17 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
 def list_templates(request):
+    codigo_toggle = request.GET.get("toggle")
+    if codigo_toggle:
+        template = get_object_or_404(NotificationTemplate, codigo=codigo_toggle)
+        template.ativo = not template.ativo
+        template.save(update_fields=["ativo"])
+        if template.ativo:
+            messages.success(request, _("Template ativado com sucesso."))
+        else:
+            messages.success(request, _("Template desativado com sucesso."))
+        return redirect("notificacoes:templates_list")
+
     templates = NotificationTemplate.objects.all()
     return render(request, "notificacoes/templates_list.html", {"templates": templates})
 
@@ -135,7 +146,7 @@ def historico_notificacoes(request):
 def delete_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
     if NotificationLog.objects.filter(template=template).exists():
-        messages.error(request, _("Template em uso; não é possível removê-lo."))
+        messages.error(request, _("Template em uso; não é possível removê-lo. Considere desativá-lo."))
 
     else:
         template.delete()
