@@ -19,6 +19,8 @@
     <a href="{% url 'nucleos:metrics' object.pk %}" class="text-blue-600">{% trans 'Ver métricas' %}</a>
   </div>
 
+  <div id="membro-status" class="mt-2 text-sm text-gray-700"></div>
+
   <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
   <ul>
     {% for part in membros_ativos %}
@@ -138,3 +140,27 @@
     <div id="modal"></div>
   </section>
   {% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const statusEl = document.getElementById('membro-status');
+  if (!statusEl) return;
+  const url = "{% url 'nucleos_api:nucleo-membro-status' object.pk %}";
+  function updateStatus() {
+    fetch(url)
+      .then(resp => resp.ok ? resp.json() : null)
+      .then(data => {
+        if (!data) return;
+        let papel = data.papel === 'coordenador' ? 'Coordenador' : 'Membro';
+        let status = data.ativo ? 'Ativo' : 'Inativo';
+        if (data.suspenso) status += ' (Suspenso)';
+        statusEl.textContent = papel + ' - ' + status;
+      })
+      .catch(() => {});
+  }
+  updateStatus();
+  document.body.addEventListener('htmx:afterRequest', updateStatus);
+});
+</script>
+{% endblock %}
