@@ -116,6 +116,15 @@ class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
 
 
 class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
+    def get(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        if (
+            request.user.user_type == UserType.ADMIN
+            and nucleo.organizacao != request.user.organizacao
+        ):
+            return redirect("nucleos:list")
+        return render(request, "nucleos/delete.html", {"object": nucleo})
+
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
