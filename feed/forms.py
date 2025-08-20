@@ -57,6 +57,7 @@ class PostForm(forms.ModelForm):
         else:
             self.user = None
         self.fields["tags"].queryset = Tag.objects.all()
+        self._video_preview_key: str | None = None
 
     def clean(self):
         cleaned_data = super().clean()

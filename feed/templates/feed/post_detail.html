@@ -37,7 +37,11 @@
       </div>
     {% elif post.video %}
       <div class="mt-2">
-        <video src="{{ post.video.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+        {% if post.video_preview %}
+          <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+        {% else %}
+          <video src="{{ post.video.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+        {% endif %}
       </div>
     {% endif %}
 

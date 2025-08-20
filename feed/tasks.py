@@ -75,13 +75,12 @@ def notify_post_moderated(post_id: str, status: str) -> None:
         capture_exception(exc)
         raise
 
-
 @shared_task(
     autoretry_for=(ClientError,),
     retry_backoff=True,
     retry_kwargs={"max_retries": 3},
 )
-def upload_media(data: bytes, name: str, content_type: str) -> str:
+def upload_media(data: bytes, name: str, content_type: str) -> str | tuple[str, str]:
     from django.core.files.uploadedfile import SimpleUploadedFile
     from .services import _upload_media
 
