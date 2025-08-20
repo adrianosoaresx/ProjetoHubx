@@ -6,8 +6,10 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AbstractBaseUser
+
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
+
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
@@ -24,7 +26,11 @@ from configuracoes.forms import (
     ConfiguracaoContextualForm,
 )
 from configuracoes.models import ConfiguracaoContextual
-from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
+from configuracoes.services import (
+    atualizar_preferencias_usuario,
+    get_configuracao_conta,
+    get_autorizacao_rede_url,
+)
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
@@ -65,6 +71,9 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
     def get(self, request: HttpRequest) -> HttpResponse:
         tab = request.GET.get("tab", "informacoes")
+        if tab == "redes" and request.GET.get("action") == "connect":
+            network = request.GET.get("network", "")
+            return redirect(get_autorizacao_rede_url(network))
         context = {
             f"{tab}_form": self.get_form(tab),
             "tab": tab,

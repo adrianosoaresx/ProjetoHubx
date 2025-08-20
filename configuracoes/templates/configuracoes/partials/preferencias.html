@@ -12,9 +12,13 @@
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por e-mail' %}</span>
       </label>
-      {{ preferencias_form.receber_notificacoes_email.errors }}
+      {% for error in preferencias_form.receber_notificacoes_email.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {{ preferencias_form.frequencia_notificacoes_email|add_class:'form-select mt-2' }}
-      {{ preferencias_form.frequencia_notificacoes_email.errors }}
+      {% for error in preferencias_form.frequencia_notificacoes_email.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.frequencia_notificacoes_email.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_email.help_text }}</p>
       {% endif %}
@@ -32,9 +36,13 @@
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações por WhatsApp' %}</span>
       </label>
-      {{ preferencias_form.receber_notificacoes_whatsapp.errors }}
+      {% for error in preferencias_form.receber_notificacoes_whatsapp.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {{ preferencias_form.frequencia_notificacoes_whatsapp|add_class:'form-select mt-2' }}
-      {{ preferencias_form.frequencia_notificacoes_whatsapp.errors }}
+      {% for error in preferencias_form.frequencia_notificacoes_whatsapp.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.frequencia_notificacoes_whatsapp.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_whatsapp.help_text }}</p>
       {% endif %}
@@ -53,9 +61,13 @@
         {% endwith %}
         <span class="text-sm font-medium">{% trans 'Receber notificações push' %}</span>
       </label>
-      {{ preferencias_form.receber_notificacoes_push.errors }}
+      {% for error in preferencias_form.receber_notificacoes_push.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {{ preferencias_form.frequencia_notificacoes_push|add_class:'form-select mt-2' }}
-      {{ preferencias_form.frequencia_notificacoes_push.errors }}
+      {% for error in preferencias_form.frequencia_notificacoes_push.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.frequencia_notificacoes_push.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_push.help_text }}</p>
       {% endif %}
@@ -69,7 +81,9 @@
     <div id="campo-hora-diaria" class="hidden">
       <label for="{{ preferencias_form.hora_notificacao_diaria.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário diário' %}</label>
       {{ preferencias_form.hora_notificacao_diaria|add_class:'form-input mt-1'|attr:'type:time' }}
-      {{ preferencias_form.hora_notificacao_diaria.errors }}
+      {% for error in preferencias_form.hora_notificacao_diaria.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.hora_notificacao_diaria.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_diaria.help_text }}</p>
       {% endif %}
@@ -77,7 +91,9 @@
     <div id="campo-hora-semanal" class="hidden">
       <label for="{{ preferencias_form.hora_notificacao_semanal.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário semanal' %}</label>
       {{ preferencias_form.hora_notificacao_semanal|add_class:'form-input mt-1'|attr:'type:time' }}
-      {{ preferencias_form.hora_notificacao_semanal.errors }}
+      {% for error in preferencias_form.hora_notificacao_semanal.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.hora_notificacao_semanal.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_semanal.help_text }}</p>
       {% endif %}
@@ -85,7 +101,9 @@
     <div id="campo-dia-semanal" class="hidden">
       <label for="{{ preferencias_form.dia_semana_notificacao.id_for_label }}" class="block text-sm font-medium">{% trans 'Dia da semana' %}</label>
       {{ preferencias_form.dia_semana_notificacao|add_class:'form-select mt-1' }}
-      {{ preferencias_form.dia_semana_notificacao.errors }}
+      {% for error in preferencias_form.dia_semana_notificacao.errors %}
+        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+      {% endfor %}
       {% if preferencias_form.dia_semana_notificacao.help_text %}
         <p class="text-xs text-gray-500">{{ preferencias_form.dia_semana_notificacao.help_text }}</p>
       {% endif %}
@@ -94,13 +112,17 @@
   <div>
     <label for="{{ preferencias_form.idioma.id_for_label }}" class="block text-sm font-medium">{% trans 'Idioma' %}</label>
     {{ preferencias_form.idioma|add_class:'form-select mt-1'|attr:'tabindex:0' }}
-    {{ preferencias_form.idioma.errors }}
+    {% for error in preferencias_form.idioma.errors %}
+      <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+    {% endfor %}
     <p class="text-xs text-gray-500">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
   </div>
   <div>
     <label for="{{ preferencias_form.tema.id_for_label }}" class="block text-sm font-medium">{% trans 'Tema' %}</label>
     {{ preferencias_form.tema|add_class:'form-select mt-1'|attr:'tabindex:0' }}
-    {{ preferencias_form.tema.errors }}
+    {% for error in preferencias_form.tema.errors %}
+      <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+    {% endfor %}
   </div>
   <div class="text-right pt-2">
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar Alterações' %}</button>
@@ -114,9 +136,9 @@
       const freqPush = document.getElementById('{{ preferencias_form.frequencia_notificacoes_push.auto_id }}').value;
       const showDaily = freqEmail === 'diaria' || freqWhats === 'diaria' || freqPush === 'diaria';
       const showWeekly = freqEmail === 'semanal' || freqWhats === 'semanal' || freqPush === 'semanal';
-      const hasHoraDiariaError = document.querySelector('#campo-hora-diaria .errorlist') !== null;
-      const hasHoraSemanalError = document.querySelector('#campo-hora-semanal .errorlist') !== null;
-      const hasDiaSemanalError = document.querySelector('#campo-dia-semanal .errorlist') !== null;
+      const hasHoraDiariaError = document.querySelector('#campo-hora-diaria [role="alert"]') !== null;
+      const hasHoraSemanalError = document.querySelector('#campo-hora-semanal [role="alert"]') !== null;
+      const hasDiaSemanalError = document.querySelector('#campo-dia-semanal [role="alert"]') !== null;
       document.getElementById('campo-hora-diaria').classList.toggle('hidden', !(showDaily || hasHoraDiariaError));
       document.getElementById('campo-hora-semanal').classList.toggle('hidden', !(showWeekly || hasHoraSemanalError));
       document.getElementById('campo-dia-semanal').classList.toggle('hidden', !(showWeekly || hasDiaSemanalError));

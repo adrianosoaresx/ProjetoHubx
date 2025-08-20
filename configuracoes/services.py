@@ -94,3 +94,11 @@ def atualizar_preferencias_usuario(usuario: User, dados: dict[str, Any]) -> Conf
     config.save()
     cache.set(CACHE_KEY.format(id=usuario.id), config)
     return config
+
+
+def get_autorizacao_rede_url(rede: str) -> str:
+    """Retorna URL de autorização para conectar uma rede social."""
+    urls = {
+        "github": "https://github.com/login/oauth/authorize",
+    }
+    return urls.get(rede, "/")
