@@ -1,4 +1,5 @@
 import pytest
+import pytest
 import pyotp
 from django.urls import reverse
 from django.utils import timezone
@@ -7,7 +8,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
-from tokens.models import CodigoAutenticacao, TokenAcesso
+from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
 
 pytestmark = pytest.mark.django_db
 
@@ -89,11 +90,18 @@ def test_validar_token_convite_view(client):
 def test_gerar_codigo_autenticacao_view(client):
     user = UserFactory()
     _login(client, user)
-    resp = client.post(reverse("tokens:gerar_codigo"), {"usuario": user.pk})
+    resp = client.post(
+        reverse("tokens:gerar_codigo"),
+        {"usuario": user.pk},
+        HTTP_USER_AGENT="ua-gerar",
+    )
     assert resp.status_code == 200
     json = resp.json()
     assert "codigo" in json
-    assert CodigoAutenticacao.objects.filter(usuario=user).exists()
+    codigo_obj = CodigoAutenticacao.objects.get(usuario=user)
+    log = CodigoAutenticacaoLog.objects.get(codigo=codigo_obj, acao="emissao")
+    assert log.ip == "127.0.0.1"
+    assert log.user_agent == "ua-gerar"
 
 
 def test_validar_codigo_autenticacao_view(client):
@@ -103,10 +111,17 @@ def test_validar_codigo_autenticacao_view(client):
     codigo.set_codigo("123456")
     codigo.expira_em = timezone.now() + timezone.timedelta(minutes=10)
     codigo.save()
-    resp = client.post(reverse("tokens:validar_codigo"), {"codigo": codigo.codigo})
+    resp = client.post(
+        reverse("tokens:validar_codigo"),
+        {"codigo": codigo.codigo},
+        HTTP_USER_AGENT="ua-validar",
+    )
     assert resp.status_code == 200
     codigo.refresh_from_db()
     assert codigo.verificado is True
+    log = CodigoAutenticacaoLog.objects.get(codigo=codigo, acao="validacao")
+    assert log.ip == "127.0.0.1"
+    assert log.user_agent == "ua-validar"
 
     resp = client.post(reverse("tokens:validar_codigo"), {"codigo": "000000"})
     assert resp.status_code == 400
