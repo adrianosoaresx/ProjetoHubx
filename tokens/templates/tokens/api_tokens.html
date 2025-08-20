@@ -24,7 +24,7 @@
             {% if token.revoked_at %}
               <span class="text-neutral-400">{% trans "Revogado" %}</span>
             {% else %}
-            <form method="post" action="{% url 'tokens:revogar_api_token' token.id %}">
+            <form method="post" action="{% url 'tokens:revogar_api_token' token.id %}" hx-confirm="{% trans 'Confirmar revogação?' %}">
               {% csrf_token %}
               <button type="submit" class="text-red-600 hover:underline">{% trans "Revogar" %}</button>
             </form>
