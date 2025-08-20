@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AbstractBaseUser
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -46,8 +46,11 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         return self._user_cache
 
     def get_form(
-        self, tab: str, data: dict[str, Any] | None = None, files: Any | None = None
+        self, tab: str | None, data: dict[str, Any] | None = None, files: Any | None = None
     ) -> forms.Form:
+        tab = tab or "informacoes"
+        if tab not in self.form_classes:
+            raise Http404
         user = self.get_user()
         form_class = self.form_classes[tab]
         if form_class is PasswordChangeForm:
@@ -76,7 +79,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         return render(request, template, context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        tab = request.GET.get("tab", request.POST.get("tab", "informacoes"))
+        tab = request.GET.get("tab") or request.POST.get("tab")
+        tab = tab or "informacoes"
+        if tab not in self.form_classes:
+            raise Http404
         if tab == "redes" and request.POST.get("action") == "disconnect":
             redes = request.user.redes_sociais or {}
             network = request.POST.get("network")

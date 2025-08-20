@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import pytest
 import pytest
+from django.http import Http404
 from django.test import override_settings
 from django.urls import reverse
+from django.test.client import RequestFactory
+
+from configuracoes.views import ConfiguracoesView
 from pathlib import Path
 
 from accounts.forms import InformacoesPessoaisForm
@@ -27,6 +31,20 @@ def test_view_get_redirect_nao_autenticado(client):
     resp = client.get(reverse("configuracoes"))
     assert resp.status_code == 302
     assert "/accounts/login" in resp.headers["Location"]
+
+
+def test_view_invalid_tab_returns_404(admin_user, rf: RequestFactory):
+    request = rf.get("/configuracoes/?tab=invalido")
+    request.user = admin_user
+    with pytest.raises(Http404):
+        ConfiguracoesView.as_view()(request)
+
+
+def test_view_post_invalid_tab_returns_404(admin_user, rf: RequestFactory):
+    request = rf.post("/configuracoes/?tab=invalido", {"tab": "invalido"})
+    request.user = admin_user
+    with pytest.raises(Http404):
+        ConfiguracoesView.as_view()(request)
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
