@@ -17,6 +17,8 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from django.core.exceptions import PermissionDenied, ValidationError
+from sentry_sdk import capture_exception
 
 from accounts.models import UserType
 from agenda.models import Evento
@@ -99,13 +101,23 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
     success_url = reverse_lazy("organizacoes:list")
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        response = super().form_valid(form)
-        messages.success(self.request, _("Organização criada com sucesso."))
-        novo = serialize_organizacao(self.object)
-        registrar_log(self.object, self.request.user, "created", {}, novo)
-        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="created")
-        return response
+        try:
+            form.instance.created_by = self.request.user
+            response = super().form_valid(form)
+            messages.success(self.request, _("Organização criada com sucesso."))
+            novo = serialize_organizacao(self.object)
+            registrar_log(self.object, self.request.user, "created", {}, novo)
+            organizacao_alterada.send(
+                sender=self.__class__, organizacao=self.object, acao="created"
+            )
+            return response
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
+
+    def form_invalid(self, form):
+        capture_exception(ValidationError(form.errors))
+        return super().form_invalid(form)
 
 
 class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -118,37 +130,47 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
         return super().get_queryset().filter(inativa=False)
 
     def form_valid(self, form):
-        antiga = serialize_organizacao(self.get_object())
-        response = super().form_valid(form)
-        nova = serialize_organizacao(self.object)
-        dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
-        dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
-        for campo in [
-            "nome",
-            "tipo",
-            "slug",
-            "cnpj",
-            "contato_nome",
-            "contato_email",
-        ]:
-            if campo in dif_antiga:
-                OrganizacaoChangeLog.objects.create(
-                    organizacao=self.object,
-                    campo_alterado=campo,
-                    valor_antigo=str(dif_antiga[campo]),
-                    valor_novo=str(dif_nova[campo]),
-                    alterado_por=self.request.user,
-                )
-        registrar_log(
-            self.object,
-            self.request.user,
-            "updated",
-            dif_antiga,
-            dif_nova,
-        )
-        organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="updated")
-        messages.success(self.request, _("Organização atualizada com sucesso."))
-        return response
+        try:
+            antiga = serialize_organizacao(self.get_object())
+            response = super().form_valid(form)
+            nova = serialize_organizacao(self.object)
+            dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
+            dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
+            for campo in [
+                "nome",
+                "tipo",
+                "slug",
+                "cnpj",
+                "contato_nome",
+                "contato_email",
+            ]:
+                if campo in dif_antiga:
+                    OrganizacaoChangeLog.objects.create(
+                        organizacao=self.object,
+                        campo_alterado=campo,
+                        valor_antigo=str(dif_antiga[campo]),
+                        valor_novo=str(dif_nova[campo]),
+                        alterado_por=self.request.user,
+                    )
+            registrar_log(
+                self.object,
+                self.request.user,
+                "updated",
+                dif_antiga,
+                dif_nova,
+            )
+            organizacao_alterada.send(
+                sender=self.__class__, organizacao=self.object, acao="updated"
+            )
+            messages.success(self.request, _("Organização atualizada com sucesso."))
+            return response
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
+
+    def form_invalid(self, form):
+        capture_exception(ValidationError(form.errors))
+        return super().form_invalid(form)
 
 
 class OrganizacaoDeleteView(SuperadminRequiredMixin, LoginRequiredMixin, DeleteView):
@@ -237,43 +259,60 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
     def post(self, request, pk, *args, **kwargs):
         try:
             org = Organizacao.all_objects.get(pk=pk)
-        except Organizacao.DoesNotExist:
+        except Organizacao.DoesNotExist as e:
+            capture_exception(e)
             raise Http404
-        antiga = serialize_organizacao(org)
-        if org.inativa:
-            org.inativa = False
-            org.inativada_em = None
-            acao = "reactivated"
-            msg = _("Organização reativada com sucesso.")
-        else:
-            org.inativa = True
-            org.inativada_em = timezone.now()
-            acao = "inactivated"
-            msg = _("Organização inativada com sucesso.")
-        org.save(update_fields=["inativa", "inativada_em"])
-        nova = serialize_organizacao(org)
-        dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
-        dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
-        registrar_log(org, request.user, acao, dif_antiga, dif_nova)
-        organizacao_alterada.send(sender=self.__class__, organizacao=org, acao=acao)
-        messages.success(request, msg)
-        if org.inativa or org.deleted:
-            return redirect("organizacoes:list")
-        return redirect("organizacoes:detail", pk=org.pk)
+        try:
+            antiga = serialize_organizacao(org)
+            if org.inativa:
+                org.inativa = False
+                org.inativada_em = None
+                acao = "reactivated"
+                msg = _("Organização reativada com sucesso.")
+            else:
+                org.inativa = True
+                org.inativada_em = timezone.now()
+                acao = "inactivated"
+                msg = _("Organização inativada com sucesso.")
+            org.save(update_fields=["inativa", "inativada_em"])
+            nova = serialize_organizacao(org)
+            dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
+            dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
+            registrar_log(org, request.user, acao, dif_antiga, dif_nova)
+            organizacao_alterada.send(
+                sender=self.__class__, organizacao=org, acao=acao
+            )
+            messages.success(request, msg)
+            if org.inativa or org.deleted:
+                return redirect("organizacoes:list")
+            return redirect("organizacoes:detail", pk=org.pk)
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
 
 
 class OrganizacaoHistoryView(LoginRequiredMixin, View):
     template_name = "organizacoes/history.html"
 
     def get(self, request, pk, *args, **kwargs):
-        org = get_object_or_404(Organizacao, pk=pk)
-        user = request.user
-        if not (
-            user.is_superuser
-            or getattr(user, "user_type", None) == UserType.ROOT.value
-            or user.get_tipo_usuario == UserType.ROOT.value
-        ):
+
+        try:
+            org = get_object_or_404(Organizacao, pk=pk)
+            user = request.user
+            if not (
+                user.is_superuser
+                or getattr(user, "user_type", None) == UserType.ROOT.value
+                or user.get_tipo_usuario == UserType.ROOT.value
+                or (
+                    (
+                        user.get_tipo_usuario == UserType.ADMIN.value
+                        or getattr(user, "user_type", None) == UserType.ADMIN.value
+                    )
+                    and getattr(user, "organizacao_id", None) == org.id
+                )
+
             return HttpResponseForbidden()
+              
         if request.GET.get("export") == "csv":
             import csv
 
@@ -286,49 +325,72 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             for log in (
                 OrganizacaoChangeLog.all_objects.filter(organizacao=org)
                 .order_by("-created_at")
+
             ):
+                capture_exception(PermissionDenied("historico sem permissão"))
+                return HttpResponseForbidden()
+            if request.GET.get("export") == "csv":
+                import csv
+
+                from django.http import HttpResponse
+
+                response = HttpResponse(content_type="text/csv")
+                response[
+                    "Content-Disposition"
+                ] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
+                writer = csv.writer(response)
                 writer.writerow(
-                    [
-                        "change",
-                        log.campo_alterado,
-                        log.valor_antigo,
-                        log.valor_novo,
-                        getattr(log.alterado_por, "email", ""),
-                        log.created_at.isoformat(),
-                    ]
+                    ["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"]
                 )
-            for log in (
+                for log in (
+                    OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+                    .order_by("-created_at")
+                ):
+                    writer.writerow(
+                        [
+                            "change",
+                            log.campo_alterado,
+                            log.valor_antigo,
+                            log.valor_novo,
+                            getattr(log.alterado_por, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
+                for log in (
+                    OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
+                    .order_by("-created_at")
+                ):
+                    writer.writerow(
+                        [
+                            "activity",
+                            log.acao,
+                            "",
+                            "",
+                            getattr(log.usuario, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
+                return response
+            change_logs = (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
+                .order_by("-created_at")[:10]
+            )
+            atividade_logs = (
                 OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
-                .order_by("-created_at")
-            ):
-                writer.writerow(
-                    [
-                        "activity",
-                        log.acao,
-                        "",
-                        "",
-                        getattr(log.usuario, "email", ""),
-                        log.created_at.isoformat(),
-                    ]
-                )
-            return response
-        change_logs = (
-            OrganizacaoChangeLog.all_objects.filter(organizacao=org)
-            .order_by("-created_at")[:10]
-        )
-        atividade_logs = (
-            OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
-            .order_by("-created_at")[:10]
-        )
-        return render(
-            request,
-            self.template_name,
-            {
-                "organizacao": org,
-                "change_logs": change_logs,
-                "atividade_logs": atividade_logs,
-            },
-        )
+                .order_by("-created_at")[:10]
+            )
+            return render(
+                request,
+                self.template_name,
+                {
+                    "organizacao": org,
+                    "change_logs": change_logs,
+                    "atividade_logs": atividade_logs,
+                },
+            )
+        except Exception as e:  # pragma: no cover - auditing
+            capture_exception(e)
+            raise
 
 
 class OrganizacaoUsuariosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
