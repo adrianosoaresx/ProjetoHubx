@@ -199,10 +199,10 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         request,
                         "tokens/_resultado.html",
                         {"error": _("Limite diário atingido.")},
-                        status=409,
+                        status=429,
                     )
                 messages.error(request, _("Limite diário atingido."))
-                return JsonResponse({"error": _("Limite diário atingido.")}, status=409)
+                return JsonResponse({"error": _("Limite diário atingido.")}, status=429)
 
             token, codigo = create_invite_token(
                 gerado_por=request.user,
