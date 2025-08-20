@@ -6,6 +6,7 @@
       {% if comentario.editado %}
         ({% blocktrans with data=comentario.editado_em|date:"SHORT_DATETIME_FORMAT" %}editado em {{ data }}{% endblocktrans %})
       {% endif %}
+
     </div>
     <div class="flex items-center gap-2">
     {% if comentario.pode_editar %}
