@@ -28,7 +28,15 @@ def test_generate_token_service():
     assert token.token_hash != raw
 
 
-@override_settings(ROOT_URLCONF="Hubx.urls")
+def test_generate_token_without_expires_in():
+    user = UserFactory()
+    raw = generate_token(user, "cli", "read")
+    token_hash = hashlib.sha256(raw.encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+    assert token.expires_at is None
+
+
+@override_settings(ROOT_URLCONF="tokens.api_urls")
 def test_api_token_authentication_and_revocation():
     user = UserFactory()
     raw = generate_token(user, None, "read", timedelta(days=1))
@@ -66,7 +74,7 @@ def test_revogar_tokens_expirados():
     assert token_db.deleted is True
 
 
-@override_settings(ROOT_URLCONF="Hubx.urls")
+@override_settings(ROOT_URLCONF="tokens.api_urls")
 def test_api_view_create_and_destroy():
     user = UserFactory()
     client = APIClient()
@@ -98,3 +106,19 @@ def test_api_view_create_and_destroy():
 
     token_db = ApiToken.all_objects.get(id=token_id)
     assert token_db.revogado_por == user
+
+
+@override_settings(ROOT_URLCONF="tokens.api_urls")
+def test_api_view_create_without_expires_in():
+    user = UserFactory()
+    client = APIClient()
+    client.force_authenticate(user=user)
+    url = reverse("tokens_api:api-token-list")
+    resp = client.post(
+        url,
+        {"scope": "read"},
+        HTTP_USER_AGENT="ua-create-no-exp",
+    )
+    assert resp.status_code == status.HTTP_201_CREATED
+    token = ApiToken.objects.get(id=resp.data["id"])
+    assert token.expires_at is None
