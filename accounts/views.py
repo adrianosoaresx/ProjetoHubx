@@ -363,25 +363,6 @@ def excluir_conta(request):
     messages.success(request, _("Sua conta foi excluída com sucesso."))
     return redirect("core:home")
 
-    if request.method == "POST":
-        if request.POST.get("confirm") != "EXCLUIR":
-            messages.error(request, _("Confirme digitando EXCLUIR."))
-            return redirect("accounts:excluir_conta")
-        with transaction.atomic():
-            user = request.user
-            user.delete()  # marca deleted/deleted_at
-            user.is_active = False
-            user.save(update_fields=["is_active"])
-            SecurityEvent.objects.create(
-                usuario=user,
-                evento="conta_excluida",
-                ip=request.META.get("REMOTE_ADDR"),
-            )
-        logout(request)
-        messages.success(request, _("Sua conta foi excluída com sucesso."))
-
-        return redirect("/")
-
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
