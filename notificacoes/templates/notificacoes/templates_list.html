@@ -27,6 +27,7 @@
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Código' %}</th>
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Assunto' %}</th>
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Canal' %}</th>
+          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ativo' %}</th>
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ações' %}</th>
         </tr>
       </thead>
@@ -36,8 +37,17 @@
           <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
           <td class="px-4 py-2">{{ tpl.assunto }}</td>
           <td class="px-4 py-2">{{ tpl.get_canal_display }}</td>
+          <td class="px-4 py-2">{{ tpl.ativo|yesno:_('Sim,Não') }}</td>
           <td class="px-4 py-2">
-            <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary-600 hover:underline">{% trans 'Editar' %}</a>
+            <div class="flex items-center gap-2">
+              <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary-600 hover:underline">{% trans 'Editar' %}</a>
+              {% if tpl.ativo %}
+                <a href="{% url 'notificacoes:templates_list' %}?toggle={{ tpl.codigo }}" class="text-sm text-neutral-600 hover:underline">{% trans 'Desativar' %}</a>
+              {% else %}
+                <a href="{% url 'notificacoes:templates_list' %}?toggle={{ tpl.codigo }}" class="text-sm text-neutral-600 hover:underline">{% trans 'Ativar' %}</a>
+              {% endif %}
+              <a href="{% url 'notificacoes:template_delete' tpl.codigo %}" class="text-sm text-red-600 hover:underline">{% trans 'Excluir' %}</a>
+            </div>
           </td>
         </tr>
         {% endfor %}
