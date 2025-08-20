@@ -117,9 +117,6 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "estado",
             "cep",
         )
-        widgets = {
-            "data_nascimento": forms.DateInput(attrs={"type": "date"}),
-        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
