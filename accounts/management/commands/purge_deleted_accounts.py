@@ -12,7 +12,7 @@ class Command(BaseCommand):
         User = get_user_model()
         limite = timezone.now() - timezone.timedelta(days=30)
         qs = (
-            User.objects.filter(deleted=True, deleted_at__lt=limite, exclusao_confirmada=True)
+            User.objects.filter(deleted=True, deleted_at__lt=limite)
             .prefetch_related("medias")
         )
         count = 0

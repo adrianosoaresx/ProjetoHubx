@@ -206,6 +206,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             for m in metricas
             if m in metrics
         ]
+        obtidas = UserAchievement.objects.filter(user=self.request.user).count()
+        context["has_pending_achievements"] = Achievement.objects.count() > obtidas
         user = self.request.user
         if user.user_type in {UserType.ROOT, UserType.ADMIN}:
             orgs = Organizacao.objects.all()

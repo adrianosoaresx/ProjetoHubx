@@ -10,7 +10,10 @@
     {% csrf_token %}
     <div>
       <label for="{{ form.contexto_tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contexto_tipo.label }}</label>
-      {{ form.contexto_tipo|add_class:"w-full p-2 border rounded"|attr:"hx-get:/chat/contextos/"|attr:"hx-target:#id_contexto_id"|attr:"hx-trigger:change" }}
+      {% url 'chat:contextos' as contextos_url %}
+      {% with hx_get_attr='hx-get:'|add:contextos_url %}
+      {{ form.contexto_tipo|add_class:"w-full p-2 border rounded"|attr:hx_get_attr|attr:"hx-target:#id_contexto_id"|attr:"hx-trigger:change" }}
+      {% endwith %}
       {% if form.contexto_tipo.errors %}
         <p class="text-red-500 text-sm">{{ form.contexto_tipo.errors }}</p>
       {% endif %}

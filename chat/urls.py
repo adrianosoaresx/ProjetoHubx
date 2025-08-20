@@ -7,6 +7,7 @@ app_name = "chat"
 urlpatterns = [
     path("", views.conversation_list, name="conversation_list"),
     path("nova/", views.nova_conversa, name="nova_conversa"),
+    path("contextos/", views.contextos, name="contextos"),
     path(
         "partials/message/<uuid:message_id>/",
         views.message_partial,

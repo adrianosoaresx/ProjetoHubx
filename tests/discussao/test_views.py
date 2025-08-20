@@ -11,6 +11,7 @@ from discussao.models import (
     CategoriaDiscussao,
     InteracaoDiscussao,
     RespostaDiscussao,
+    Tag,
     TopicoDiscussao,
 )
 from discussao.views import TopicoMarkResolvedView, TopicoDetailView, TopicoListView
@@ -60,6 +61,32 @@ def test_topico_list_view(client, admin_user, categoria, topico):
     resp = client.get(reverse("discussao:topicos", args=[categoria.slug]))
     assert resp.status_code == 200
     assert list(resp.context["topicos"]) == [topico]
+
+
+def test_topico_list_view_filters_by_multiple_tags(admin_user, categoria):
+    tag1 = Tag.objects.create(nome="tag1")
+    tag2 = Tag.objects.create(nome="tag2")
+    t1 = TopicoDiscussao.objects.create(
+        categoria=categoria,
+        titulo="T1",
+        conteudo="c",
+        autor=admin_user,
+        publico_alvo=0,
+    )
+    t1.tags.add(tag1, tag2)
+    t2 = TopicoDiscussao.objects.create(
+        categoria=categoria,
+        titulo="T2",
+        conteudo="c",
+        autor=admin_user,
+        publico_alvo=0,
+    )
+    t2.tags.add(tag1)
+    rf = RequestFactory()
+    request = rf.get("/dummy", {"tags": [tag1.nome, tag2.nome]})
+    request.user = admin_user
+    response = TopicoListView.as_view()(request, categoria_slug=categoria.slug)
+    assert list(response.context_data["topicos"]) == [t1]
 
 
 def test_topico_detail_view_increments(client, admin_user, categoria, topico):
