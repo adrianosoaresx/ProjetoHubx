@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <p class="text-3xl font-bold text-neutral-900" id="{{ id }}" aria-label="{{ title }}">{{ value|localize }}</p>
+  <p class="text-3xl font-bold text-neutral-900" aria-label="{{ title }}">{{ value|localize }}</p>
   {% if crescimento is not None %}
     <p class="flex items-center text-sm font-medium mt-1 {% if crescimento >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
       <i class="fa-solid {% if crescimento >= 0 %}fa-arrow-up{% else %}fa-arrow-down{% endif %} mr-1"></i>
