@@ -44,17 +44,41 @@
         const itemModal = document.getElementById('item-modal');
         const itemForm = itemModal ? itemModal.querySelector('#item-form') : null;
         const itemCancel = itemModal ? itemModal.querySelector('#item-cancel') : null;
+        const replyPreview = container.querySelector('#reply-preview');
         let itemMessageId = null;
         let editState = {id:null, div:null, original:''};
         let oldestId = null;
         let historyEnd = false;
         let historyLoading = false;
+        let replyTo = null;
 
         if(editCancel){
             editCancel.addEventListener('click', ()=> editModal.close());
         }
         if(itemCancel){
             itemCancel.addEventListener('click', ()=> itemModal.close());
+        }
+
+        function clearReply(){
+            replyTo = null;
+            if(replyPreview){
+                replyPreview.classList.add('hidden');
+                replyPreview.innerHTML = '';
+            }
+        }
+
+        function setReply(div,id){
+            replyTo = id;
+            if(!replyPreview) return;
+            const authorEl = div.querySelector('header .font-semibold') || div.querySelector('.msg-body strong') || div.querySelector('strong');
+            const bodyEl = div.querySelector('.msg-body');
+            const author = authorEl ? authorEl.textContent : '';
+            let text = bodyEl ? bodyEl.textContent || '' : '';
+            if(author){ text = text.replace(author + ':', '').trim(); }
+            replyPreview.innerHTML = `<div class="text-sm"><strong>${author}</strong>: ${text.slice(0,100)}</div><button type="button" class="text-xs text-red-600" id="reply-cancel">${t('cancelReply','Cancelar')}</button>`;
+            replyPreview.classList.remove('hidden');
+            const btn = replyPreview.querySelector('#reply-cancel');
+            if(btn){ btn.addEventListener('click', clearReply); }
         }
 
         function openEditModal(div,id,content){
@@ -85,7 +109,7 @@
                     body: JSON.stringify({conteudo: novo})
                 }).then(r=>r.ok?r.json():Promise.reject())
                   .then(data=>{
-                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
                   })
                   .finally(()=> editModal.close());
             });
@@ -254,6 +278,18 @@
             });
         }
 
+        function setupReply(div, id){
+            const btn = div.querySelector('.reply-btn');
+            if(!btn) return;
+            btn.addEventListener('click', ()=>{
+                const menu = div.querySelector('.action-menu');
+                const actionBtn = div.querySelector('.action-btn');
+                if(menu){ menu.classList.add('hidden'); }
+                if(actionBtn){ actionBtn.setAttribute('aria-expanded','false'); }
+                setReply(div, id);
+            });
+        }
+
         function scrollToBottom(){ messages.scrollTop = messages.scrollHeight; }
         const pending = [];
         const favoriteIds = new Set();
@@ -262,6 +298,8 @@
             setupReactionMenu(el, el.dataset.messageId);
 
             setupItemMenu(el, el.dataset.messageId);
+
+            setupReply(el, el.dataset.messageId);
         });
         const pinned = container.querySelector('#pinned');
         if(pinned){
@@ -269,7 +307,7 @@
                 setupReactionMenu(el, el.dataset.messageId);
 
                 setupItemMenu(el, el.dataset.messageId);
-
+                setupReply(el, el.dataset.messageId);
             });
         }
 
@@ -291,7 +329,7 @@
                 const frag = document.createDocumentFragment();
                 const ordered = data.messages.slice().reverse();
                 ordered.forEach(m=>{
-                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version);
+                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to);
                     frag.appendChild(div);
                 });
                 messages.appendChild(frag);
@@ -315,7 +353,7 @@
                     const frag = document.createDocumentFragment();
                     const ordered = data.messages.slice().reverse();
                     ordered.forEach(m=>{
-                        const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version);
+                        const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to);
                         frag.appendChild(div);
                     });
                     messages.insertBefore(frag, first);
@@ -335,7 +373,7 @@
             }
         });
 
-        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions,cipher,alg,keyVersion){
+        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions,cipher,alg,keyVersion,replyTo){
             const div = elem || document.createElement('article');
             div.className = 'message relative p-2';
             if(remetente === currentUser){ div.classList.add('self'); }
@@ -356,7 +394,20 @@
 
             }
 
-            div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
+            let replyHtml = '';
+            if(replyTo){
+                const original = messages.querySelector(`[data-id="${replyTo}"]`) || messages.querySelector(`[data-message-id="${replyTo}"]`);
+                if(original){
+                    const authorEl = original.querySelector('strong');
+                    const bodyEl = original.querySelector('.msg-body');
+                    const author = authorEl ? authorEl.textContent : '';
+                    let text = bodyEl ? bodyEl.textContent || '' : '';
+                    if(author){ text = text.replace(author + ':', '').trim(); }
+                    replyHtml = `<div class="reply-preview border-l-2 pl-2 text-sm text-neutral-600 mb-1"><strong>${author}</strong>: ${text.slice(0,100)}</div>`;
+                }
+            }
+
+            div.innerHTML = `${replyHtml}<div class="msg-body"><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="reply-btn" aria-label="${t('reply','Responder')}">${t('reply','Responder')}</button></li><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
 
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
             if(isAdmin && id){
@@ -390,6 +441,8 @@
 
             setupItemMenu(div,id);
 
+            setupReply(div,id);
+
             if(id && remetente !== currentUser){
                 fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/mark-read/`,{
                     method:'POST',
@@ -404,11 +457,11 @@
             if(data.remetente === currentUser){
 
                 const matchContent = data.conteudo ?? data.conteudo_cifrado;
-                const idx = pending.findIndex(p=>p.tipo===data.tipo && p.conteudo===matchContent);
+                const idx = pending.findIndex(p=>p.tipo===data.tipo && p.conteudo===matchContent && p.reply_to===data.reply_to);
 
                 if(idx!==-1){
                     const placeholder = pending[idx];
-                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
                     placeholder.elem.classList.remove('pending');
                     pending.splice(idx,1);
                     scrollToBottom();
@@ -423,7 +476,7 @@
             if(data.actor && data.actor === currentUser){
                 userReactions = data.user_reactions || [];
             }
-            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions, userReactions, data.conteudo_cifrado, data.alg, data.key_version);
+            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions, userReactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
             if(!existing){
                 messages.appendChild(div);
                 scrollToBottom();
@@ -436,21 +489,26 @@
             if(message){
                 if(isE2EE){
                     const {cipher, alg, keyVersion} = encryptMessage(message);
-                    const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion);
+                    const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion, replyTo);
                     div.classList.add('pending');
                     messages.appendChild(div);
-                    pending.push({tipo:'text', conteudo:cipher, elem:div});
+                    pending.push({tipo:'text', conteudo:cipher, elem:div, reply_to:replyTo});
                     scrollToBottom();
-                    chatSocket.send(JSON.stringify({tipo:'text', conteudo_cifrado:cipher, alg, key_version:keyVersion}));
+                    const payload = {tipo:'text', conteudo_cifrado:cipher, alg, key_version:keyVersion};
+                    if(replyTo){ payload.reply_to = replyTo; }
+                    chatSocket.send(JSON.stringify(payload));
                 }else{
-                    const div = renderMessage(currentUser, 'text', message, null, null, false, {}, []);
+                    const div = renderMessage(currentUser, 'text', message, null, null, false, {}, [], undefined, undefined, undefined, replyTo);
                     div.classList.add('pending');
                     messages.appendChild(div);
-                    pending.push({tipo:'text', conteudo:message, elem:div});
+                    pending.push({tipo:'text', conteudo:message, elem:div, reply_to:replyTo});
                     scrollToBottom();
-                    chatSocket.send(JSON.stringify({tipo:'text', conteudo:message}));
+                    const payload = {tipo:'text', conteudo:message};
+                    if(replyTo){ payload.reply_to = replyTo; }
+                    chatSocket.send(JSON.stringify(payload));
                 }
                 input.value = '';
+                clearReply();
             }
         });
 
@@ -471,20 +529,25 @@
 
                     if(isE2EE){
                         const {cipher, alg, keyVersion} = encryptMessage(data.url);
-                        const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion);
+                        const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion, replyTo);
                         div.classList.add('pending');
                         messages.appendChild(div);
-                        pending.push({tipo:data.tipo,conteudo:cipher,elem:div});
+                        pending.push({tipo:data.tipo,conteudo:cipher,elem:div,reply_to:replyTo});
                         scrollToBottom();
-                        chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo_cifrado:cipher, alg, key_version:keyVersion}));
+                        const payload = {tipo:data.tipo, conteudo_cifrado:cipher, alg, key_version:keyVersion};
+                        if(replyTo){ payload.reply_to = replyTo; }
+                        chatSocket.send(JSON.stringify(payload));
                     }else{
-                        const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, []);
+                        const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, [], undefined, undefined, undefined, replyTo);
                         div.classList.add('pending');
                         messages.appendChild(div);
-                        pending.push({tipo:data.tipo,conteudo:data.url,elem:div});
+                        pending.push({tipo:data.tipo,conteudo:data.url,elem:div,reply_to:replyTo});
                         scrollToBottom();
-                        chatSocket.send(JSON.stringify({tipo:data.tipo, conteudo:data.url}));
+                        const payload = {tipo:data.tipo, conteudo:data.url};
+                        if(replyTo){ payload.reply_to = replyTo; }
+                        chatSocket.send(JSON.stringify(payload));
                     }
+                    clearReply();
 
                 })
                 .catch(()=>{ alert(t('uploadError','Erro no upload')); })
