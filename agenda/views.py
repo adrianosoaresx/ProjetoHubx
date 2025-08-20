@@ -251,6 +251,29 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
             .prefetch_related("inscricoes", "feedbacks")
         )
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        evento = context["object"]
+        context.update(
+            {
+                "local": evento.local,
+                "cidade": evento.cidade,
+                "estado": evento.estado,
+                "cep": evento.cep,
+                "contato_nome": evento.contato_nome,
+                "contato_email": evento.contato_email,
+                "contato_whatsapp": evento.contato_whatsapp,
+                "participantes_maximo": evento.participantes_maximo,
+                "orcamento": evento.orcamento,
+                "orcamento_estimado": evento.orcamento_estimado,
+                "valor_gasto": evento.valor_gasto,
+                "inscricao_confirmada": evento.inscricoes.filter(
+                    user=self.request.user, status="confirmada"
+                ).exists(),
+            }
+        )
+        return context
+
 
 class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Tarefa
