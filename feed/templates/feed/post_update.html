@@ -30,8 +30,16 @@
     </div>
 
     <div>
+
+      <label for="{{ form.tags.id_for_label }}" class="block text-sm font-medium text-neutral-700">{% trans "Tags" %}</label>
+      {{ form.tags|as_widget }}
+    </div>
+
+    <div>
+
       <label for="id_file" class="block text-sm font-medium text-neutral-700">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
       <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf" class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
+
       {% if form.image.errors or form.pdf.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.image.errors }} {{ form.pdf.errors }}</p>
       {% endif %}

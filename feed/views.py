@@ -22,7 +22,7 @@ from nucleos.models import Nucleo
 from agenda.models import Evento
 
 from .forms import CommentForm, LikeForm, PostForm
-from .models import Like, ModeracaoPost, Post
+from .models import Like, ModeracaoPost, Post, Tag
 
 
 @login_required
@@ -170,12 +170,17 @@ class FeedListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
+        context["tags_disponiveis"] = Tag.objects.all()
+
         user = self.request.user
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=user)
         if hasattr(user, "eventos"):
             context["eventos_do_usuario"] = user.eventos.all()
         else:
             context["eventos_do_usuario"] = Evento.objects.none()
+
         return context
 
     def render_to_response(self, context, **response_kwargs):
