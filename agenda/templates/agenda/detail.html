@@ -18,17 +18,23 @@
 
   <!-- Informações -->
   <div class="space-y-2 text-sm text-neutral-800 mb-6">
-    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:SHORT_DATETIME_FORMAT }}</p>
-    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:SHORT_DATETIME_FORMAT }}</p>
+    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:"SHORT_DATETIME_FORMAT" }}</p>
+    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:"SHORT_DATETIME_FORMAT" }}</p>
   </div>
 
   <!-- Inscrição -->
-  {% if user.is_authenticated and user.user_type not in ('admin','root') %}
-    {% if object.inscricoes.filter(user=user, status='confirmada').exists %}
+  {% if user.is_authenticated and user.user_type != 'admin' and user.user_type != 'root' %}
+    {% if inscricao_confirmada %}
+      {% if avaliacao_permitida %}
+      <div class="mb-10">
+        <a href="{% url 'agenda:evento_feedback' object.pk %}" class="btn-primary" aria-label="{% trans 'Avaliar evento' %}">{% trans "Avaliar evento" %}</a>
+      </div>
+      {% else %}
       <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}" class="mb-10">
         {% csrf_token %}
         <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
       </form>
+      {% endif %}
     {% else %}
       <div class="mb-10">
         <a href="{% url 'agenda:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
