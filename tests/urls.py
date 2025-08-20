@@ -56,7 +56,6 @@ urlpatterns = [
         include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
     ),
 
-
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
-
+    path("select2/", include("django_select2.urls")),
 ]
