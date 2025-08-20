@@ -27,7 +27,11 @@ from rest_framework.permissions import IsAuthenticated
 
 from accounts.models import UserType
 from accounts.serializers import UserSerializer
-from accounts.tasks import send_confirmation_email, send_password_reset_email
+from accounts.tasks import (
+    send_cancel_delete_email,
+    send_confirmation_email,
+    send_password_reset_email,
+)
 from core.permissions import IsAdmin, IsCoordenador
 from tokens.models import TokenAcesso, TOTPDevice
 
@@ -358,10 +362,18 @@ def excluir_conta(request):
             evento="conta_excluida",
             ip=request.META.get("REMOTE_ADDR"),
         )
+        token = AccountToken.objects.create(
+            usuario=user,
+            tipo=AccountToken.Tipo.CANCEL_DELETE,
+            expires_at=timezone.now() + timezone.timedelta(days=7),
+            ip_gerado=request.META.get("REMOTE_ADDR"),
+        )
 
+    send_cancel_delete_email.delay(token.id)
     logout(request)
     messages.success(request, _("Sua conta foi excluída com sucesso."))
     return redirect("core:home")
+
 
 def password_reset(request):
     """Solicita redefinição de senha."""
@@ -467,6 +479,37 @@ def confirmar_email(request, token: str):
 
 def onboarding(request):
     return render(request, "register/onboarding.html")
+
+
+def cancel_delete(request, token: str):
+    """Reativa a conta utilizando um token de cancelamento."""
+    try:
+        token_obj = AccountToken.objects.select_related("usuario").get(
+            codigo=token,
+            tipo=AccountToken.Tipo.CANCEL_DELETE,
+        )
+    except AccountToken.DoesNotExist:
+        return render(request, "accounts/cancel_delete.html", {"status": "erro"})
+
+    if token_obj.expires_at < timezone.now() or token_obj.used_at:
+        return render(request, "accounts/cancel_delete.html", {"status": "erro"})
+
+    with transaction.atomic():
+        user = token_obj.usuario
+        user.deleted = False
+        user.deleted_at = None
+        user.is_active = True
+        user.exclusao_confirmada = False
+        user.save(update_fields=["deleted", "deleted_at", "is_active", "exclusao_confirmada"])
+        token_obj.used_at = timezone.now()
+        token_obj.save(update_fields=["used_at"])
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="cancelou_exclusao",
+            ip=request.META.get("REMOTE_ADDR"),
+        )
+
+    return render(request, "accounts/cancel_delete.html", {"status": "sucesso"})
 
 
 def resend_confirmation(request):

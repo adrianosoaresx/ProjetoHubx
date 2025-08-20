@@ -66,5 +66,10 @@ urlpatterns = [
         views.confirmar_email,
         name="confirmar_email",
     ),
+    path(
+        "cancelar-exclusao/<str:token>/",
+        views.cancel_delete,
+        name="cancel_delete",
+    ),
     path("check-2fa/", views.check_2fa, name="check_2fa"),
 ]

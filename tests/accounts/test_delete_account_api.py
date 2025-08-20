@@ -16,7 +16,8 @@ def test_delete_me_sets_user_inactive():
     user.refresh_from_db()
     assert not user.is_active
     assert user.deleted and user.deleted_at is not None
-    assert not user.exclusao_confirmada
+    assert user.exclusao_confirmada
+    assert user.account_tokens.filter(tipo="cancel_delete").exists()
 
 
 @pytest.mark.django_db
@@ -27,7 +28,13 @@ def test_cancel_delete_reactivates_user():
     client.delete(reverse("accounts_api:account-delete-me"))
     user.refresh_from_db()
     assert not user.is_active and user.deleted
-    resp = client.post(reverse("accounts_api:account-cancel-delete"))
+    token = user.account_tokens.get(tipo="cancel_delete")
+    client = APIClient()
+    resp = client.post(
+        reverse("accounts_api:account-cancel-delete"),
+        {"token": token.codigo},
+        format="json",
+    )
     assert resp.status_code == 200
     user.refresh_from_db()
     assert user.is_active
