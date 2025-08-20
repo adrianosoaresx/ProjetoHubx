@@ -1,5 +1,5 @@
 {% load i18n %}
-<article class="p-4 border-b border-neutral-200 {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
+<article class="p-4 border-b border-neutral-200 reply-parent {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
       {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"SHORT_DATETIME_FORMAT" }}
@@ -26,7 +26,11 @@
 
 
     {% if not topico.fechado %}
-      <button type="button" class="text-primary-600 text-xs" hx-on:click="document.getElementById('reply_to').value='{{ comentario.id }}'; document.getElementById('id_conteudo').focus();">
+      <button
+        type="button"
+        class="text-primary-600 text-xs"
+        hx-on:click="document.getElementById('reply_to').value='{{ comentario.id }}'; document.getElementById('id_conteudo').focus(); document.querySelectorAll('.reply-parent').forEach(e=>e.classList.remove('ring-2','ring-primary-600')); document.getElementById('coment-{{ comentario.id }}').classList.add('ring-2','ring-primary-600');"
+      >
         {% trans "Responder" %}
       </button>
     {% endif %}
@@ -53,3 +57,10 @@
     <button type="submit" class="mt-1 bg-red-600 text-white px-3 py-1 text-xs rounded">{% trans "Enviar" %}</button>
   </form>
 </article>
+{% if comentario.respostas_filhas %}
+  <div class="ml-6 border-l border-neutral-200">
+    {% for resposta in comentario.respostas_filhas %}
+      {% include 'discussao/comentario_item.html' with comentario=resposta user=user topico=topico resposta_content_type_id=resposta_content_type_id %}
+    {% endfor %}
+  </div>
+{% endif %}

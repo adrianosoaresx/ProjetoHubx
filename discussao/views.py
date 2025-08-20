@@ -285,22 +285,43 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
                     "partial": True,
                     "user": request.user,
                     "topico": self.object,
-                    "content_type_id": context["resposta_content_type_id"],
+                    "resposta_content_type_id": context["resposta_content_type_id"],
                 },
             )
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        comentarios_qs = self.object.respostas.select_related("autor")
+        respostas_qs = self.object.respostas.select_related("autor")
+        todas_respostas = list(respostas_qs)
+
+        class RespostaNode:
+            def __init__(self, obj):
+                self._obj = obj
+                self.respostas_filhas: list["RespostaNode"] = []
+
+            def __getattr__(self, attr):
+                return getattr(self._obj, attr)
+
+        nodes = {r.pk: RespostaNode(r) for r in todas_respostas}
+        raiz: list[RespostaNode] = []
+        for r in todas_respostas:
+            node = nodes[r.pk]
+            if r.reply_to_id and r.reply_to_id in nodes:
+                nodes[r.reply_to_id].respostas_filhas.append(node)
+            else:
+                raiz.append(node)
+
         melhor = self.object.melhor_resposta
-        if melhor:
-            comentarios_qs = comentarios_qs.exclude(pk=melhor.pk)
-        paginator = Paginator(comentarios_qs, self.paginate_by)
+        melhor_node = nodes.get(melhor.pk) if melhor else None
+        if melhor_node and melhor_node in raiz:
+            raiz.remove(melhor_node)
+
+        paginator = Paginator(raiz, self.paginate_by)
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         context["comentarios"] = comentarios
-        context["melhor_resposta"] = melhor
+        context["melhor_resposta"] = melhor_node
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
         context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
