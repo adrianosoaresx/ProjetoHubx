@@ -24,6 +24,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -810,9 +811,19 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
         briefing.avaliado_em = now
         detalhes = {}
         if status == "orcamentado":
+            prazo_str = request.POST.get("prazo_limite_resposta")
+            if not prazo_str:
+                messages.error(request, _("Informe o prazo limite de resposta."))
+                return redirect("agenda:briefing_list")
+            prazo = parse_datetime(prazo_str)
+            if prazo is None:
+                messages.error(request, _("Prazo limite inválido."))
+                return redirect("agenda:briefing_list")
+            if timezone.is_naive(prazo):
+                prazo = timezone.make_aware(prazo)
             briefing.status = "orcamentado"
             briefing.orcamento_enviado_em = now
-            briefing.prazo_limite_resposta = request.POST.get("prazo_limite_resposta") or briefing.prazo_limite_resposta
+            briefing.prazo_limite_resposta = prazo
             update_fields.extend(["orcamento_enviado_em", "prazo_limite_resposta"])
         elif status == "aprovado":
             briefing.status = "aprovado"
@@ -820,12 +831,16 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
             briefing.coordenadora_aprovou = True
             update_fields.extend(["aprovado_em", "coordenadora_aprovou"])
         elif status == "recusado":
+            motivo = request.POST.get("motivo_recusa", "").strip()
+            if not motivo:
+                messages.error(request, _("Informe o motivo da recusa."))
+                return redirect("agenda:briefing_list")
             briefing.status = "recusado"
             briefing.recusado_em = now
             briefing.recusado_por = request.user
-            briefing.motivo_recusa = request.POST.get("motivo_recusa", "")
+            briefing.motivo_recusa = motivo
             update_fields.extend(["recusado_em", "motivo_recusa", "recusado_por"])
-            detalhes["motivo_recusa"] = briefing.motivo_recusa
+            detalhes["motivo_recusa"] = motivo
         else:
             return HttpResponseBadRequest()
         briefing.save(update_fields=update_fields)
