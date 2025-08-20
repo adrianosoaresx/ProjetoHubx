@@ -77,4 +77,15 @@ document.addEventListener("DOMContentLoaded", () => {
       this.style.height = Math.min(this.scrollHeight, 300) + "px"
     })
   }
+
+  // Atualiza campo oculto com tags selecionadas para o filtro
+  const tagsSelect = document.getElementById("tags-select")
+  const tagsHidden = document.getElementById("filtro-tags")
+
+  if (tagsSelect && tagsHidden) {
+    tagsSelect.addEventListener("change", () => {
+      const values = Array.from(tagsSelect.selectedOptions).map(o => o.value).join(",")
+      tagsHidden.value = values
+    })
+  }
 })
