@@ -229,9 +229,37 @@ class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
     form_class = SuplenteForm
     template_name = "nucleos/suplente_form.html"
 
+    def get_nucleo(self) -> Nucleo:
+        return get_object_or_404(Nucleo, pk=self.kwargs["pk"], deleted=False)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["nucleo"] = self.get_nucleo()
+        return kwargs
+
     def form_valid(self, form):
-        nucleo = get_object_or_404(Nucleo, pk=self.kwargs["pk"], deleted=False)
+        nucleo = self.get_nucleo()
         form.instance.nucleo = nucleo
+        user = form.cleaned_data["usuario"]
+        inicio = form.cleaned_data["periodo_inicio"]
+        fim = form.cleaned_data["periodo_fim"]
+        if not ParticipacaoNucleo.objects.filter(
+            nucleo=nucleo, user=user, status="ativo"
+        ).exists():
+            form.add_error("usuario", _("Usuário não é membro do núcleo."))
+            return self.form_invalid(form)
+        overlap = CoordenadorSuplente.objects.filter(
+            nucleo=nucleo,
+            usuario=user,
+            deleted=False,
+            periodo_inicio__lt=fim,
+            periodo_fim__gt=inicio,
+        ).exists()
+        if overlap:
+            form.add_error(
+                None, _("Usuário já é suplente no período informado.")
+            )
+            return self.form_invalid(form)
         response = super().form_valid(form)
         notify_suplente_designado.delay(nucleo.id, form.instance.usuario.email)
         messages.success(self.request, _("Suplente adicionado."))
