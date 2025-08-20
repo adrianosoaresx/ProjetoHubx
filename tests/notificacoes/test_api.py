@@ -89,3 +89,22 @@ def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
         content_type="application/json",
     )
     assert resp.status_code == 404
+
+
+def test_nao_exclui_template_com_logs(client) -> None:
+    admin_user = UserFactory(is_staff=True)
+    template = NotificationTemplate.objects.create(codigo="t4", assunto="Oi", corpo="C", canal="email")
+    NotificationLog.objects.create(user=admin_user, template=template, canal="email")
+    client.force_login(admin_user)
+    resp = client.delete(f"/api/notificacoes/templates/{template.id}/")
+    assert resp.status_code == 400
+    assert NotificationTemplate.objects.filter(id=template.id).exists()
+
+
+def test_exclui_template_sem_logs(client) -> None:
+    admin_user = UserFactory(is_staff=True)
+    template = NotificationTemplate.objects.create(codigo="t5", assunto="Oi", corpo="C", canal="email")
+    client.force_login(admin_user)
+    resp = client.delete(f"/api/notificacoes/templates/{template.id}/")
+    assert resp.status_code == 204
+    assert not NotificationTemplate.objects.filter(id=template.id).exists()

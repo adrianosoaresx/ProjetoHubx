@@ -30,6 +30,15 @@ class NotificationTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationTemplateSerializer
     permission_classes = [permissions.IsAdminUser]
 
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if NotificationLog.objects.filter(template=obj).exists():
+            return Response(
+                {"detail": _("Template possui logs; desative-o ao invés de excluir.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
 
 class NotificationLogViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = NotificationLogSerializer
