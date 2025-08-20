@@ -25,7 +25,7 @@
         hx-post="{% url 'feed:nova_postagem' %}"
         hx-encoding="multipart/form-data"
         enctype="multipart/form-data"
-        class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+        class="post-form bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
 
     <!-- Conteúdo -->
@@ -41,6 +41,7 @@
         rows="6"
         required
       >{{ form.conteudo.value|default_if_none:"" }}</textarea>
+      <span id="char-count"></span>
       {% if form.conteudo.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.conteudo.errors }}</p>
       {% endif %}
@@ -69,6 +70,7 @@
         <label for="id_file" class="block text-sm font-medium text-neutral-700">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
       <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf"
              class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
+      <span class="file-text">Nenhum arquivo selecionado</span>
       {% if form.image.errors or form.pdf.errors %}
         <p class="text-red-500 text-xs mt-1">
           {{ form.image.errors }} {{ form.pdf.errors }}
