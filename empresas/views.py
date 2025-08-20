@@ -31,6 +31,15 @@ from .models import (
 from .services import list_all_tags, search_empresas
 
 
+@login_required
+def buscar(request):
+    empresas = search_empresas(request.user, request.GET)
+    context = {"empresas": empresas, "q": request.GET.get("q", "")}
+    if request.headers.get("HX-Request"):
+        return render(request, "empresas/includes/empresas_table.html", context)
+    return render(request, "empresas/busca.html", context)
+
+
 class EmpresaListView(LoginRequiredMixin, ListView):
     model = Empresa
     template_name = "empresas/lista.html"
@@ -48,12 +57,21 @@ class EmpresaListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
 
         qs = search_empresas(self.request.user, self.request.GET)
+
         if self.request.user.is_authenticated:
             fav_exists = FavoritoEmpresa.objects.filter(
                 usuario=self.request.user, empresa=OuterRef("pk"), deleted=False
             )
             qs = qs.annotate(favoritado=Exists(fav_exists))
         return qs
+
+        if (
+            self.request.GET.get("mostrar_excluidas") == "1"
+            and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ):
+            return qs
+        return qs.filter(deleted=False)
+
 
         params = self.request.GET.copy()
         if "organizacao" in params and "organizacao_id" not in params:
@@ -336,6 +354,13 @@ def adicionar_contato(request, empresa_id):
             contato = form.save(commit=False)
             contato.empresa = empresa
             contato.save()
+            if request.headers.get("HX-Request"):
+                context = {
+                    "contato": contato,
+                    "empresa": empresa,
+                    "message": "Contato adicionado",
+                }
+                return render(request, "empresas/contato_form.html", context, status=HTTP_201_CREATED)
             return JsonResponse({"message": "Contato adicionado"}, status=HTTP_201_CREATED)
     else:
         form = ContatoEmpresaForm()
@@ -351,7 +376,14 @@ def editar_contato(request, pk):
     if request.method == "POST":
         form = ContatoEmpresaForm(request.POST, instance=contato)
         if form.is_valid():
-            form.save()
+            contato = form.save()
+            if request.headers.get("HX-Request"):
+                context = {
+                    "contato": contato,
+                    "empresa": contato.empresa,
+                    "message": "Contato atualizado",
+                }
+                return render(request, "empresas/contato_form.html", context)
             return JsonResponse({"message": "Contato atualizado"}, status=200)
     else:
         form = ContatoEmpresaForm(instance=contato)
