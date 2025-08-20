@@ -65,11 +65,12 @@
             id="retencao-dias"
             name="retencao_dias"
             class="border rounded p-2 w-24"
-            min="0"
+            min="1"
             value="{{ conversation.retencao_dias|default_if_none:'' }}"
           />
           <button type="submit" class="bg-primary text-white px-3 py-1 rounded">{% trans 'Salvar' %}</button>
         </form>
+        <p class="text-xs text-neutral-500 mt-1">{% trans 'Deixar em branco desativa a retenção.' %}</p>
         <p id="retencao-feedback" class="text-sm mt-2 hidden"></p>
       </section>
     {% endif %}
@@ -218,10 +219,17 @@
       retencaoForm.addEventListener('submit', function(e){
         e.preventDefault();
         retencaoFeedback.classList.add('hidden');
+        const value = retencaoForm.retencao_dias.value;
+        if(value === '0'){
+          retencaoFeedback.textContent = '{% trans "Valor deve ser maior que zero." %}';
+          retencaoFeedback.className = 'text-sm text-red-600 mt-2';
+          retencaoFeedback.classList.remove('hidden');
+          return;
+        }
         fetch(`/api/chat/canais/${channelId}/config-retencao/`, {
           method:'PATCH',
           headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
-          body: JSON.stringify({retencao_dias: retencaoForm.retencao_dias.value})
+          body: JSON.stringify({retencao_dias: value || null})
         })
           .then(r=>r.json().then(data=>({ok:r.ok, data})))
           .then(({ok, data})=>{
