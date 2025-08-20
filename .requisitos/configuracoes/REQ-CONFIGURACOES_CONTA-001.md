@@ -206,8 +206,12 @@ Campos:
 - `user`: ForeignKey(User)
 - `escopo_tipo`: enum('organizacao','nucleo','evento')
 - `escopo_id`: UUID
+- `receber_notificacoes_email`: boolean
 - `frequencia_notificacoes_email`: enum
+- `receber_notificacoes_whatsapp`: boolean
 - `frequencia_notificacoes_whatsapp`: enum
+- `receber_notificacoes_push`: boolean
+- `frequencia_notificacoes_push`: enum
 - `idioma`: string
 - `tema`: enum
 - `deleted`: boolean
