@@ -5,11 +5,17 @@
 {% block content %}
 <main class="max-w-md mx-auto py-8 px-4">
   <h1 class="text-xl font-semibold mb-4">{% trans "Avaliar parceria" %}</h1>
-  <form id="avaliacao-form" method="post" action="{% url 'agenda:parceria_avaliar' parceria.pk %}" class="space-y-4">
+  <form
+    id="avaliacao-form"
+    method="post"
+    action="#"
+    data-api-url="{% url 'agenda_api:parceria-avaliar' parceria.pk %}"
+    class="space-y-4"
+  >
     {% csrf_token %}
     <div>
-      <label for="nota" class="block text-sm font-medium">{% trans "Nota" %}</label>
-      <select id="nota" name="nota" class="form-select w-full" required>
+      <label for="avaliacao" class="block text-sm font-medium">{% trans "Nota" %}</label>
+      <select id="avaliacao" name="avaliacao" class="form-select w-full" required>
         {% for n in '12345' %}
         <option value="{{ n }}">{{ n }}</option>
         {% endfor %}
@@ -29,7 +35,7 @@
 const form = document.getElementById('avaliacao-form');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
-  const response = await fetch(form.action, {
+  const response = await fetch(form.dataset.apiUrl, {
     method: 'POST',
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
