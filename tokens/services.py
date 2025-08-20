@@ -31,7 +31,7 @@ def generate_token(
     user: User | None,
     client_name: str | None,
     scope: str,
-    expires_in: timedelta | None,
+    expires_in: timedelta | None = None,
 ) -> str:
     """Gera um token de API e retorna o valor bruto."""
 
@@ -69,12 +69,20 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     token_revoked(token)
 
 
-
 def list_tokens(user: User) -> Iterable[ApiToken]:
     qs = ApiToken.objects.all()
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
+
+
+
+from datetime import datetime
+from typing import Tuple
+
+from .models import TokenAcesso
+
+
 
 def create_invite_token(
     *,
