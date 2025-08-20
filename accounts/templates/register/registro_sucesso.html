@@ -14,8 +14,11 @@
     </div>
     {% endif %}
     <h1 class="mb-4 text-3xl font-bold text-neutral-900">{% trans "Bem-vindo ao HubX!" %}</h1>
-    <p class="mb-6 text-neutral-600">{% trans "Seu cadastro foi concluído com sucesso." %}</p>
-    <a href="{% url 'accounts:perfil' %}" class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Ir para meu Perfil →" %}</a>
+    <p class="mb-6 text-neutral-600">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
+    <a
+      href="{% url 'accounts:login' %}"
+      class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
+    >{% trans "Ir para login" %}</a>
   </div>
 </section>
 {% endblock %}
