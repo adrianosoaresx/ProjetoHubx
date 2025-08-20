@@ -102,8 +102,18 @@
 
   <div class="mt-6 space-x-2">
     <div class="inline-block relative">
-      <button class="text-blue-600" hx-get="{% url 'nucleos:exportar_membros' object.pk %}?formato=csv" hx-trigger="click" hx-swap="none">{% trans 'Exportar CSV' %}</button>
-      <button class="text-blue-600" hx-get="{% url 'nucleos:exportar_membros' object.pk %}?formato=xls" hx-trigger="click" hx-swap="none">{% trans 'Exportar XLS' %}</button>
+      <a
+        href="{% url 'nucleos:exportar_membros' object.pk %}?formato=csv"
+        class="text-blue-600"
+        hx-boost="false"
+        download="nucleo-{{ object.pk }}-membros.csv"
+      >{% trans 'Exportar CSV' %}</a>
+      <a
+        href="{% url 'nucleos:exportar_membros' object.pk %}?formato=xls"
+        class="text-blue-600"
+        hx-boost="false"
+        download="nucleo-{{ object.pk }}-membros.xlsx"
+      >{% trans 'Exportar XLS' %}</a>
     </div>
     {% if request.user.user_type in ('admin','coordenador','root') %}
     <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
