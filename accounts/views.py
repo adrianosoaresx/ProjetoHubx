@@ -307,8 +307,11 @@ def login_view(request):
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
-        login(request, form.get_user())
-        return redirect("accounts:perfil")
+        user = form.get_user()
+        if user.is_active:
+            login(request, user)
+            return redirect("accounts:perfil")
+        messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
 
     return render(request, "login/login.html", {"form": form})
 
@@ -316,6 +319,13 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("accounts:login")
+
+
+def conta_inativa(request):
+    """Exibe aviso para usuários inativos e encerra a sessão."""
+    if request.user.is_authenticated:
+        logout(request)
+    return render(request, "account_inactive.html")
 
 
 @login_required
@@ -339,6 +349,8 @@ def excluir_conta(request):
         logout(request)
         messages.success(request, _("Sua conta foi excluída com sucesso."))
         return redirect("core:home")
+
+
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
@@ -634,9 +646,8 @@ def termos(request):
             )
             send_confirmation_email.delay(token.id)
 
-            login(request, user)
             request.session["termos"] = True
-            return redirect("accounts:perfil")
+            return redirect("accounts:registro_sucesso")
 
         messages.error(request, "Erro ao criar usuário. Tente novamente.")
         return redirect("accounts:usuario")
