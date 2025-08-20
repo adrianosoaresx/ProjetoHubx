@@ -23,7 +23,7 @@
     <canvas id="comparativoChart" class="mt-4" hidden aria-label="{% trans 'Gráfico comparativo' %}" role="img"></canvas>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{% static 'dashboard/chart.min.js' %}"></script>
   <script src="{% static 'dashboard/layout.js' %}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
