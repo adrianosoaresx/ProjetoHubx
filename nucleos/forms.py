@@ -13,11 +13,25 @@ User = get_user_model()
 class NucleoForm(forms.ModelForm):
     class Meta:
         model = Nucleo
-        fields = ["nome", "slug", "descricao", "avatar", "cover", "ativo"]
+        fields = [
+            "nome",
+            "slug",
+            "descricao",
+            "avatar",
+            "cover",
+            "mensalidade",
+            "ativo",
+        ]
 
     def clean_descricao(self):
         descricao = self.cleaned_data.get("descricao", "")
         return bleach.clean(descricao)
+
+    def clean_mensalidade(self):
+        valor = self.cleaned_data.get("mensalidade")
+        if valor is not None and valor < 0:
+            raise forms.ValidationError(_("Valor inválido"))
+        return valor
 
 
 class NucleoSearchForm(forms.Form):
