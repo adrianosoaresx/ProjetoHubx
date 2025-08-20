@@ -247,7 +247,7 @@ def test_toggle_denied_for_admin(admin_user, organizacao):
 def test_logs_view_permission(superadmin_user, admin_user, organizacao):
     url = reverse("organizacoes:historico", args=[organizacao.pk])
     assert superadmin_user.get(url).status_code == 200
-    assert admin_user.get(url).status_code == 200
+    assert admin_user.get(url).status_code == 403
 
 
 def test_signal_emitted_on_create(monkeypatch, superadmin_user, faker_ptbr):
