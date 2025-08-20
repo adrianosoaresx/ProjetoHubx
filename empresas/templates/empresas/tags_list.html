@@ -32,6 +32,7 @@
       <tr>
         <th class="px-3 py-2 text-left font-semibold">{% translate 'Nome' %}</th>
         <th class="px-3 py-2 text-left font-semibold">{% translate 'Categoria' %}</th>
+        <th class="px-3 py-2 text-left font-semibold">{% translate 'Item Pai' %}</th>
         <th class="px-3 py-2 text-center font-semibold">{% translate 'Ações' %}</th>
       </tr>
     </thead>
@@ -40,6 +41,7 @@
       <tr>
         <td class="px-3 py-2">{{ tag.nome }}</td>
         <td class="px-3 py-2">{{ tag.get_categoria_display }}</td>
+        <td class="px-3 py-2">{{ tag.parent }}</td>
         <td class="px-3 py-2 text-center space-x-2">
           <a href="{% url 'empresas:tags_update' tag.id %}" class="text-blue-600 hover:underline">{% translate 'Editar' %}</a>
           <a href="{% url 'empresas:tags_delete' tag.id %}" class="text-red-600 hover:underline">{% translate 'Remover' %}</a>
