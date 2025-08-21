@@ -10,14 +10,20 @@
     <form id="upload-form" method="post" enctype="multipart/form-data" class="space-y-4 border p-4 rounded-lg bg-white">
       {% csrf_token %}
       <label for="file" class="block text-sm font-medium text-gray-700">{% trans "Arquivo" %}</label>
-      <input id="file" type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required />
+      <input id="file" type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required
+             hx-post="/api/financeiro/importar-pagamentos/"
+             hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+             hx-target="#preview"
+             hx-trigger="change"
+             hx-include="#upload-form"
+             hx-on="htmx:afterRequest: renderPreview(event)" />
     </form>
       <button id="preview-btn"
               class="mt-2 bg-primary text-white px-4 py-2 rounded"
               hx-post="/api/financeiro/importar-pagamentos/"
               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
               hx-target="#preview"
-              hx-trigger="change from:#file"
+              hx-trigger="click"
               hx-include="#upload-form"
               hx-on="htmx:afterRequest: renderPreview(event)">
       {% trans "Pré-visualizar" %}
