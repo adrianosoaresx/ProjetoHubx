@@ -24,16 +24,64 @@
     {% if form and form.tipo.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.tipo.errors }}</p>{% endif %}
   </div>
   <div>
-    <label for="id_organizacao" class="block text-sm font-medium">{{ _('Organização') }}</label>
-    <input id="id_organizacao" name="organizacao" class="border p-2 w-full" {% if centro and centro.organizacao %}value="{{ centro.organizacao }}"{% endif %} />
+    <label for="organizacao-search" class="block text-sm font-medium">{{ _('Organização') }}</label>
+    <input
+      type="text"
+      id="organizacao-search"
+      name="search"
+      class="border p-2 w-full"
+      form="search-organizacao"
+      hx-get="/api/organizacoes/"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#id_organizacao"
+      hx-swap="none"
+      hx-on="htmx:afterRequest: renderOrganizacoes(event)"
+    />
+    <select id="id_organizacao" name="organizacao" class="border p-2 w-full mt-2">
+      {% if centro and centro.organizacao %}
+      <option value="{{ centro.organizacao.id }}" selected>{{ centro.organizacao.nome }}</option>
+      {% endif %}
+    </select>
   </div>
   <div>
-    <label for="id_nucleo" class="block text-sm font-medium">{{ _('Núcleo') }}</label>
-    <input id="id_nucleo" name="nucleo" class="border p-2 w-full" {% if centro and centro.nucleo %}value="{{ centro.nucleo }}"{% endif %} />
+    <label for="nucleo-search" class="block text-sm font-medium">{{ _('Núcleo') }}</label>
+    <input
+      type="text"
+      id="nucleo-search"
+      name="search"
+      class="border p-2 w-full"
+      form="search-nucleo"
+      hx-get="/api/nucleos/"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#id_nucleo"
+      hx-swap="none"
+      hx-on="htmx:afterRequest: renderNucleos(event)"
+    />
+    <select id="id_nucleo" name="nucleo" class="border p-2 w-full mt-2">
+      {% if centro and centro.nucleo %}
+      <option value="{{ centro.nucleo.id }}" selected>{{ centro.nucleo.nome }}</option>
+      {% endif %}
+    </select>
   </div>
   <div>
-    <label for="id_evento" class="block text-sm font-medium">{{ _('Evento') }}</label>
-    <input id="id_evento" name="evento" class="border p-2 w-full" {% if centro and centro.evento %}value="{{ centro.evento }}"{% endif %} />
+    <label for="evento-search" class="block text-sm font-medium">{{ _('Evento') }}</label>
+    <input
+      type="text"
+      id="evento-search"
+      name="search"
+      class="border p-2 w-full"
+      form="search-evento"
+      hx-get="/api/eventos/"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#id_evento"
+      hx-swap="none"
+      hx-on="htmx:afterRequest: renderEventos(event)"
+    />
+    <select id="id_evento" name="evento" class="border p-2 w-full mt-2">
+      {% if centro and centro.evento %}
+      <option value="{{ centro.evento.id }}" selected>{{ centro.evento.titulo }}</option>
+      {% endif %}
+    </select>
   </div>
   <div>
     <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
@@ -42,4 +90,52 @@
   </div>
   <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
 </form>
+
+<script src="{% url 'javascript-catalog' %}"></script>
+<script>
+  function renderOrganizacoes(evt) {
+    const sel = document.querySelector('#id_organizacao');
+    sel.innerHTML = '';
+    try {
+      const data = JSON.parse(evt.detail.xhr.response);
+      const itens = data.results || data;
+      sel.innerHTML =
+        itens
+          .map(o => `<option value="${o.id}">${o.nome}</option>`)
+          .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
+    }
+  }
+
+  function renderNucleos(evt) {
+    const sel = document.querySelector('#id_nucleo');
+    sel.innerHTML = '';
+    try {
+      const data = JSON.parse(evt.detail.xhr.response);
+      const itens = data.results || data;
+      sel.innerHTML =
+        itens
+          .map(n => `<option value="${n.id}">${n.nome}</option>`)
+          .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
+    }
+  }
+
+  function renderEventos(evt) {
+    const sel = document.querySelector('#id_evento');
+    sel.innerHTML = '';
+    try {
+      const data = JSON.parse(evt.detail.xhr.response);
+      const itens = data.results || data;
+      sel.innerHTML =
+        itens
+          .map(e => `<option value="${e.id}">${e.titulo}</option>`)
+          .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
+    }
+  }
+</script>
 
