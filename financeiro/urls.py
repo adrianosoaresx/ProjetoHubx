@@ -12,6 +12,7 @@ from .views import (
     centros_list_view,
     repasses_view,
     integracoes_list_view,
+    integracao_form_view,
     task_log_detail_view,
     task_logs_view,
 )
@@ -25,6 +26,8 @@ urlpatterns = [
     path("centros/form/", centro_form_view, name="centro_form"),
     path("centros/form/<int:pk>/", centro_form_view, name="centro_form_edit"),
     path("centros/", centros_list_view, name="centros"),
+    path("integracoes/form/", integracao_form_view, name="integracao_form"),
+    path("integracoes/form/<uuid:pk>/", integracao_form_view, name="integracao_form_edit"),
     path("integracoes/", integracoes_list_view, name="integracoes"),
     path("lancamentos/", lancamentos_list_view, name="lancamentos"),
     path("repasses/", repasses_view, name="repasses"),

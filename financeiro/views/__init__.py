@@ -477,6 +477,13 @@ def integracoes_list_view(request):
     return render(request, "financeiro/integracoes_list.html", context)
 
 
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def integracao_form_view(request, pk: uuid.UUID | None = None):
+    integracao = get_object_or_404(IntegracaoConfig, pk=pk) if pk is not None else None
+    return render(request, "financeiro/integracao_form.html", {"integracao": integracao})
+
+
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
