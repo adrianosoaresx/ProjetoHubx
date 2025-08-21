@@ -1,20 +1,43 @@
+{% extends 'base.html' %}
 {% load i18n %}
-<h1>{% trans "Métricas de Notificações" %}</h1>
-<form method="get">
-  <label>{% trans "Início" %}: <input type="date" name="inicio" value="{{ request.GET.inicio }}" /></label>
-  <label>{% trans "Fim" %}: <input type="date" name="fim" value="{{ request.GET.fim }}" /></label>
-  <button type="submit">{% trans "Filtrar" %}</button>
-</form>
-<h2>{% trans "Total por canal" %}</h2>
-<ul>
-  <li>{% trans "E-mail" %}: {{ total_por_canal.email|default:0 }}</li>
-  <li>{% trans "Push" %}: {{ total_por_canal.push|default:0 }}</li>
-  <li>{% trans "WhatsApp" %}: {{ total_por_canal.whatsapp|default:0 }}</li>
-</ul>
-<h2>{% trans "Falhas por canal" %}</h2>
-<ul>
-  <li>{% trans "E-mail" %}: {{ falhas_por_canal.email|default:0 }}</li>
-  <li>{% trans "Push" %}: {{ falhas_por_canal.push|default:0 }}</li>
-  <li>{% trans "WhatsApp" %}: {{ falhas_por_canal.whatsapp|default:0 }}</li>
-</ul>
-  <p>{% trans "Total de templates" %}: {{ templates_total|default:0 }}</p>
+
+{% block title %}{% trans 'Métricas de Notificações' %} | HubX{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-10">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Métricas de Notificações' %}</h1>
+  </div>
+  <form method="get" class="bg-white border border-neutral-200 p-6 rounded-2xl shadow-sm mb-6 flex flex-col sm:flex-row gap-4 sm:items-end">
+    <div>
+      <label for="inicio" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Início' %}</label>
+      <input type="date" id="inicio" name="inicio" value="{{ request.GET.inicio }}" class="form-input" />
+    </div>
+    <div>
+      <label for="fim" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Fim' %}</label>
+      <input type="date" id="fim" name="fim" value="{{ request.GET.fim }}" class="form-input" />
+    </div>
+    <div>
+      <button type="submit" class="bg-neutral-200 text-neutral-800 px-4 py-2 rounded-xl text-sm hover:bg-neutral-300">{% trans 'Filtrar' %}</button>
+    </div>
+  </form>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Total por canal' %}</h2>
+      <ul class="list-disc list-inside text-neutral-700 space-y-1">
+        <li>{% trans 'E-mail' %}: {{ total_por_canal.email|default:0 }}</li>
+        <li>{% trans 'Push' %}: {{ total_por_canal.push|default:0 }}</li>
+        <li>{% trans 'WhatsApp' %}: {{ total_por_canal.whatsapp|default:0 }}</li>
+      </ul>
+    </div>
+    <div>
+      <h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Falhas por canal' %}</h2>
+      <ul class="list-disc list-inside text-neutral-700 space-y-1">
+        <li>{% trans 'E-mail' %}: {{ falhas_por_canal.email|default:0 }}</li>
+        <li>{% trans 'Push' %}: {{ falhas_por_canal.push|default:0 }}</li>
+        <li>{% trans 'WhatsApp' %}: {{ falhas_por_canal.whatsapp|default:0 }}</li>
+      </ul>
+    </div>
+    <p class="text-neutral-700">{% trans 'Total de templates' %}: {{ templates_total|default:0 }}</p>
+  </div>
+</div>
+{% endblock %}
