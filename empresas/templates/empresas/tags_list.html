@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
-{% load i18n custom_filters %}
+{% load i18n custom_filters static %}
 {% block title %}{% translate 'Produtos e Serviços' %}{% endblock %}
+{% block extra_css %}
+{{ block.super }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block content %}
 <section class="max-w-6xl mx-auto px-4 py-10 space-y-6">
   <header class="flex items-center justify-between">
@@ -54,4 +58,15 @@
   <p class="text-center text-neutral-500">{% translate 'Nenhum item cadastrado.' %}</p>
   {% endif %}
 </section>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'django_select2/django_select2.js' %}"></script>
+<script>
+  $(function() {
+    $('.django-select2').djangoSelect2();
+  });
+</script>
 {% endblock %}

@@ -6,6 +6,9 @@ from django.core.exceptions import ValidationError
 
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
+
+from accounts.models import UserType
+
 from organizacoes.models import Organizacao
 
 from .models import Comment, Like, Post, Tag
@@ -69,9 +72,20 @@ class PostForm(forms.ModelForm):
                 self.fields["evento"].queryset = user.eventos.all()
             else:
                 self.fields["evento"].queryset = self.fields["evento"].queryset.none()
+            if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+                self.fields["organizacao"].queryset = Organizacao.objects.all()
+            else:
+                org = getattr(user, "organizacao", None)
+                self.fields["organizacao"].queryset = (
+                    Organizacao.objects.filter(pk=org.pk) if org else Organizacao.objects.none()
+                )
         else:
             self.user = None
+
+            self.fields["evento"].queryset = self.fields["evento"].queryset.none()
             self.fields["organizacao"].queryset = Organizacao.objects.none()
+        self.fields["organizacao"].required = False
+
         self.fields["tags"].queryset = Tag.objects.all()
         self._video_preview_key: str | None = None
 
@@ -104,6 +118,7 @@ class PostForm(forms.ModelForm):
         tipo_feed = cleaned_data.get("tipo_feed")
         nucleo = cleaned_data.get("nucleo")
         evento = cleaned_data.get("evento")
+        organizacao = cleaned_data.get("organizacao")
 
         if tipo_feed == "nucleo" and not nucleo:
             self.add_error("nucleo", "Selecione o núcleo.")
@@ -113,6 +128,18 @@ class PostForm(forms.ModelForm):
             self.add_error("nucleo", "Usuário não é membro do núcleo.")
         if tipo_feed == "evento" and not evento:
             self.add_error("evento", "Selecione o evento.")
+
+        if not organizacao:
+            if self.instance.pk:
+                self.add_error("organizacao", "Selecione a organização.")
+            elif self.user:
+                cleaned_data["organizacao"] = getattr(self.user, "organizacao", None)
+        elif (
+            self.user
+            and self.user.user_type not in {UserType.ROOT, UserType.ADMIN}
+            and organizacao != getattr(self.user, "organizacao", None)
+        ):
+            self.add_error("organizacao", "Usuário não pertence à organização.")
 
         decision = pre_analise(conteudo or "")
         self._ai_decision = decision

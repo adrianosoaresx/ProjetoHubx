@@ -13,7 +13,7 @@
 
   {% include 'dashboard/partials/filters_form.html' %}
 
-  <div hx-get="{% url 'dashboard:metrics-partial' %}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
+  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
     {% include 'dashboard/partials/metrics_list.html' %}
   </div>
 

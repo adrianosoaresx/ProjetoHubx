@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
-{% load i18n custom_filters %}
+{% load i18n custom_filters static %}
 {% block title %}{% if form.instance.pk %}{% translate 'Editar Item' %}{% else %}{% translate 'Novo Item' %}{% endif %}{% endblock %}
+{% block extra_css %}
+{{ block.super }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 {% block content %}
 <section class="max-w-xl mx-auto px-4 py-10 space-y-6">
   <header>
@@ -24,10 +28,21 @@
       {{ form.parent|add_class:'w-full p-2 border rounded' }}
       {% if form.parent.errors %}<p class="text-sm text-red-600">{{ form.parent.errors }}</p>{% endif %}
     </div>
-    <div class="flex justify-end gap-3 border-t pt-4">
+  <div class="flex justify-end gap-3 border-t pt-4">
       <a href="{% url 'empresas:tags_list' %}" class="px-4 py-2 text-sm border rounded">{% translate 'Cancelar' %}</a>
       <button type="submit" class="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700">{% translate 'Salvar' %}</button>
     </div>
   </form>
 </section>
+{% endblock %}
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'django_select2/django_select2.js' %}"></script>
+<script>
+  $(function() {
+    $('.django-select2').djangoSelect2();
+  });
+</script>
 {% endblock %}

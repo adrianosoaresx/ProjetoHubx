@@ -36,6 +36,18 @@ def test_layout_crud(client, admin_user):
 
 
 @pytest.mark.django_db
+def test_layout_create_with_default_json(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.post(
+        reverse("dashboard:layout-create"),
+        {"nome": "Def", "publico": False, "layout_json": "[]"},
+    )
+    assert resp.status_code == 302
+    layout = DashboardLayout.objects.get(nome="Def")
+    assert layout.layout_json == "[]"
+
+
+@pytest.mark.django_db
 def test_layout_permission(client, admin_user, cliente_user):
     layout = DashboardLayout.objects.create(user=admin_user, nome='X', layout_json='[]')
     client.force_login(cliente_user)
@@ -61,6 +73,19 @@ def test_layout_list_includes_public(client, admin_user, cliente_user):
     assert own_layout in layouts
     assert public_layout in layouts
     assert private_layout not in layouts
+
+
+@pytest.mark.django_db
+def test_layout_list_permissions(client, admin_user, cliente_user):
+    own = DashboardLayout.objects.create(user=cliente_user, nome="Own", layout_json="[]")
+    other = DashboardLayout.objects.create(user=admin_user, nome="Other", layout_json="[]")
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:layouts"))
+    content = resp.content.decode()
+    assert reverse("dashboard:layout-edit", args=[own.pk]) in content
+    assert reverse("dashboard:layout-delete", args=[own.pk]) in content
+    assert reverse("dashboard:layout-edit", args=[other.pk]) not in content
+    assert reverse("dashboard:layout-delete", args=[other.pk]) not in content
 
 
 @pytest.mark.django_db

@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q, OuterRef, Subquery, Count
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -145,7 +145,23 @@ class FeedListView(LoginRequiredMixin, ListView):
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
             "reacoes", "comments", "tags"
         )
-        qs = qs.filter(deleted=False).annotate(mod_status=Subquery(latest_status)).exclude(mod_status="rejeitado")
+        qs = (
+            qs.filter(deleted=False)
+            .annotate(mod_status=Subquery(latest_status))
+            .exclude(mod_status="rejeitado")
+            .annotate(
+                like_count=Count(
+                    "reacoes",
+                    filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                    distinct=True,
+                ),
+                share_count=Count(
+                    "reacoes",
+                    filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                    distinct=True,
+                ),
+            )
+        )
         if not user.is_staff:
             qs = qs.filter(Q(mod_status="aprovado") | Q(autor=user))
         qs = qs.distinct()
@@ -302,7 +318,23 @@ class PostDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
-        qs = qs.filter(deleted=False).annotate(mod_status=Subquery(latest_status)).exclude(mod_status="rejeitado")
+        qs = (
+            qs.filter(deleted=False)
+            .annotate(mod_status=Subquery(latest_status))
+            .exclude(mod_status="rejeitado")
+            .annotate(
+                like_count=Count(
+                    "reacoes",
+                    filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                    distinct=True,
+                ),
+                share_count=Count(
+                    "reacoes",
+                    filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                    distinct=True,
+                ),
+            )
+        )
         if not self.request.user.is_staff:
             qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
         return qs
@@ -361,7 +393,6 @@ def post_update(request, pk):
                     setattr(form.instance, field, value)
             if getattr(form, "_video_preview_key", None):
                 form.instance.video_preview = form._video_preview_key
-            form.instance.organizacao = request.user.organizacao
             form.save()
             if request.headers.get("HX-Request"):
                 return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:post_detail", args=[post.pk])})

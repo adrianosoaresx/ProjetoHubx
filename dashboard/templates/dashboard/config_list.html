@@ -11,8 +11,10 @@
         <span>{{ cfg.nome }}</span>
         <div class="space-x-2">
           <a href="{% url 'dashboard:config-apply' cfg.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Aplicar configuração' %}">{% trans 'Aplicar' %}</a>
-          <a href="{% url 'dashboard:config-edit' cfg.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar configuração' %}">{% trans 'Editar' %}</a>
-          <a href="{% url 'dashboard:config-delete' cfg.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir configuração' %}">{% trans 'Excluir' %}</a>
+          {% if cfg.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+            <a href="{% url 'dashboard:config-edit' cfg.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar configuração' %}">{% trans 'Editar' %}</a>
+            <a href="{% url 'dashboard:config-delete' cfg.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir configuração' %}">{% trans 'Excluir' %}</a>
+          {% endif %}
         </div>
       </li>
     {% empty %}
