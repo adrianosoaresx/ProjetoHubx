@@ -10,13 +10,7 @@
     <a href="{% url 'agenda:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
   </header>
 
-  {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
-      {% endfor %}
-    </div>
-  {% endif %}
+{% include "agenda/_messages.html" %}
 
   <form
     hx-get="{% url 'agenda:material_list' %}"
@@ -53,49 +47,7 @@
         </thead>
         <tbody class="divide-y divide-neutral-200">
           {% for material in materiais %}
-            <tr>
-              <td class="px-4 py-2">{{ material.titulo }}</td>
-              <td class="px-4 py-2">{{ material.descricao }}</td>
-              <td class="px-4 py-2">{{ material.get_status_display }}</td>
-              <td class="px-4 py-2">{{ material.arquivo.name }}</td>
-              <td class="px-4 py-2">
-                <div class="flex flex-col gap-1">
-                  <a
-                    href="{{ material.arquivo.url }}"
-                    class="text-blue-600 hover:underline"
-                  >
-                    {% trans "Download" %}
-                  </a>
-                  {% if user.user_type in ('admin','coordenador','root') %}
-                  <form
-                    hx-post="{% url 'agenda_api:material-aprovar' material.pk %}"
-                    hx-on="htmx:afterRequest: location.reload()"
-                    hx-swap="none"
-                    class="inline"
-                  >
-                    {% csrf_token %}
-                    <button type="submit" class="text-green-600 hover:underline">{% trans "Aprovar" %}</button>
-                  </form>
-                  <form
-                    hx-post="{% url 'agenda_api:material-devolver' material.pk %}"
-                    hx-on="htmx:afterRequest: location.reload()"
-                    hx-swap="none"
-                    class="inline-flex items-center gap-1"
-                  >
-                    {% csrf_token %}
-                    <input
-                      type="text"
-                      name="motivo_devolucao"
-                      placeholder="{% trans 'Motivo' %}"
-                      class="border rounded px-1 py-0.5 text-xs"
-                      required
-                    />
-                    <button type="submit" class="text-red-600 hover:underline">{% trans "Devolver" %}</button>
-                  </form>
-                  {% endif %}
-                </div>
-              </td>
-            </tr>
+            {% include "agenda/_material_row.html" with material=material %}
           {% empty %}
             <tr>
               <td colspan="5" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhum material disponível." %}</td>

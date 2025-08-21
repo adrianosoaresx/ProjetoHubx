@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from django.db.models import Q
 from django.utils import timezone
+from django.contrib import messages
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.utils.translation import gettext as _
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -171,6 +175,13 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
             usuario=request.user,
             acao="material_aprovado",
         )
+        if request.headers.get("HX-Request"):
+            messages.success(request, _("Material aprovado com sucesso."))
+            row_html = render_to_string(
+                "agenda/_material_row.html", {"material": material}, request=request
+            )
+            messages_html = render_to_string("agenda/_messages.html", request=request)
+            return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 
     @action(detail=True, methods=["post"])
@@ -178,6 +189,15 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         material = self.get_object()
         motivo = request.data.get("motivo_devolucao", "").strip()
         if not motivo:
+            if request.headers.get("HX-Request"):
+                messages.error(request, _("Motivo de devolução é obrigatório."))
+                row_html = render_to_string(
+                    "agenda/_material_row.html", {"material": material}, request=request
+                )
+                messages_html = render_to_string(
+                    "agenda/_messages.html", request=request
+                )
+                return HttpResponse(row_html + messages_html, status=status.HTTP_400_BAD_REQUEST)
             return Response(
                 {"detail": "Motivo de devolução é obrigatório."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -201,6 +221,13 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
             acao="material_devolvido",
             detalhes={"motivo_devolucao": material.motivo_devolucao},
         )
+        if request.headers.get("HX-Request"):
+            messages.success(request, _("Material devolvido com sucesso."))
+            row_html = render_to_string(
+                "agenda/_material_row.html", {"material": material}, request=request
+            )
+            messages_html = render_to_string("agenda/_messages.html", request=request)
+            return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 
 
