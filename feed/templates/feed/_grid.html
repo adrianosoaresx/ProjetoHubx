@@ -60,14 +60,16 @@
             {% include 'feed/_like_button.html' with post=post %}
           </div>
           <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.reacoes.filter(vote='share', user=user).exists %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
-            <i class="fa-solid fa-share"></i>
+            <i class="fa-solid fa-share" aria-hidden="true"></i>
             <span class="share-count">{{ post.share_count }}</span>
           </button>
+
           <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
             <i class="fa-solid fa-bookmark"></i>
           </button>
           <button type="button" data-post-id="{{ post.id }}" class="flag-btn hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
             <i class="fa-solid fa-flag"></i>
+
           </button>
         </div>
         <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
@@ -83,7 +85,10 @@
     btn.addEventListener('click', async () => {
       const postId = btn.dataset.postId;
       const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert('{% trans "Erro ao salvar" %}');
+        return;
+      }
       const data = await res.json();
       btn.classList.toggle('text-yellow-600', data.bookmarked);
     });
@@ -92,10 +97,12 @@
     btn.addEventListener('click', async () => {
       const postId = btn.dataset.postId;
       const res = await fetch(`/api/feed/posts/${postId}/flag/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (res.ok) {
-        btn.classList.add('text-red-600', 'cursor-not-allowed');
-        btn.setAttribute('disabled', 'disabled');
+      if (!res.ok) {
+        alert('{% trans "Erro ao denunciar" %}');
+        return;
       }
+      btn.classList.add('text-red-600', 'cursor-not-allowed');
+      btn.setAttribute('disabled', 'disabled');
     });
   });
   document.querySelectorAll('.share-btn').forEach(btn => {
@@ -107,6 +114,10 @@
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
         body: JSON.stringify({vote: 'share'})
       });
+      if (!res.ok) {
+        alert('{% trans "Erro ao compartilhar" %}');
+        return;
+      }
       if (res.status === 201) {
         btn.classList.add('text-blue-600');
         countSpan.textContent = parseInt(countSpan.textContent || '0') + 1;
