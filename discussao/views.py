@@ -68,7 +68,7 @@ class CategoriaListView(LoginRequiredMixin, ListView):
             super()
             .get_queryset()
             .select_related("organizacao", "nucleo", "evento")
-            .prefetch_related("topicos")
+            .annotate(num_topicos=Count("topicos"))
             .order_by("nome")
         )
         user = self.request.user
@@ -337,7 +337,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         page = self.request.GET.get("page")
         comentarios = paginator.get_page(page)
         user = self.request.user
-        
+
         def atribuir_user(node: RespostaNode):
             node._user = user
             node._obj._user = user
@@ -353,10 +353,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["melhor_resposta"] = melhor_node
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
-
-        context["resposta_content_type_id"] = ContentType.objects.get_for_model(
-            RespostaDiscussao
-        ).id
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
         is_admin = user.user_type in {UserType.ADMIN, UserType.ROOT}
         dentro_prazo = timezone.now() - self.object.created_at <= timedelta(minutes=15)
         context["pode_editar_topico"] = is_admin or (user == self.object.autor and dentro_prazo)
