@@ -382,6 +382,20 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
+        methods=["get"],
+        url_path=r"resumos/(?P<resumo_id>[0-9a-f-]+)",
+        permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
+    )
+    def resumo_detail(
+        self, request: Request, pk: str | None = None, resumo_id: str | None = None
+    ) -> Response:
+        channel = self.get_object()
+        resumo = get_object_or_404(channel.resumos, pk=resumo_id)
+        serializer = ResumoChatSerializer(resumo)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
         methods=["post"],
         permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
         url_path="gerar-resumo",
