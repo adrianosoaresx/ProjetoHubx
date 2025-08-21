@@ -29,6 +29,7 @@ from .models import (
     Tag,
 )
 from .services import list_all_tags, search_empresas
+from empresas.tasks import nova_avaliacao
 
 
 @login_required
@@ -258,6 +259,7 @@ class AvaliacaoCreateView(LoginRequiredMixin, CreateView):
         form.instance.empresa = self.empresa
         response = super().form_valid(form)
         messages.success(self.request, _("Avaliação registrada com sucesso."))
+        nova_avaliacao.send(sender=self.__class__, avaliacao=self.object)
         if self.request.headers.get("HX-Request"):
             avaliacoes = self.empresa.avaliacoes.filter(deleted=False).select_related("usuario")
             context = {
@@ -285,6 +287,7 @@ class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, _("Avaliação atualizada com sucesso."))
+        nova_avaliacao.send(sender=self.__class__, avaliacao=self.object)
         if self.request.headers.get("HX-Request"):
             avaliacoes = self.empresa.avaliacoes.filter(deleted=False).select_related("usuario")
             context = {
