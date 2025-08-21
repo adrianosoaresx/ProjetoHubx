@@ -134,24 +134,21 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
             antiga = serialize_organizacao(self.get_object())
             response = super().form_valid(form)
             nova = serialize_organizacao(self.object)
-            dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
-            dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
-            for campo in [
-                "nome",
-                "tipo",
-                "slug",
-                "cnpj",
-                "contato_nome",
-                "contato_email",
-            ]:
-                if campo in dif_antiga:
-                    OrganizacaoChangeLog.objects.create(
-                        organizacao=self.object,
-                        campo_alterado=campo,
-                        valor_antigo=str(dif_antiga[campo]),
-                        valor_novo=str(dif_nova[campo]),
-                        alterado_por=self.request.user,
-                    )
+            campos_alterados = [
+                campo
+                for campo in form.changed_data
+                if antiga.get(campo) != nova.get(campo)
+            ]
+            dif_antiga = {campo: antiga[campo] for campo in campos_alterados}
+            dif_nova = {campo: nova[campo] for campo in campos_alterados}
+            for campo in campos_alterados:
+                OrganizacaoChangeLog.objects.create(
+                    organizacao=self.object,
+                    campo_alterado=campo,
+                    valor_antigo=str(dif_antiga[campo]),
+                    valor_novo=str(dif_nova[campo]),
+                    alterado_por=self.request.user,
+                )
             registrar_log(
                 self.object,
                 self.request.user,
