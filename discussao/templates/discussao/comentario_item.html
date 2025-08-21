@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n markdown_extras %}
 <article class="p-4 border-b border-neutral-200 reply-parent {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
@@ -49,7 +49,7 @@
 
     </div>
   </header>
-  <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
+  <div class="prose max-w-none text-sm">{{ comentario.conteudo|markdown }}</div>
   {% if topico.melhor_resposta_id == comentario.id %}
     <div class="text-xs text-green-700 font-semibold mt-2">{% trans "Melhor resposta" %}</div>
   {% endif %}
