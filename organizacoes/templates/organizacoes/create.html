@@ -120,6 +120,14 @@
     </div>
 
     <div>
+      <label for="{{ form.indice_reajuste.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.indice_reajuste.label }}</label>
+      {{ form.indice_reajuste }}
+      {% if form.indice_reajuste.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ form.indice_reajuste.errors }}</p>
+      {% endif %}
+    </div>
+
+    <div>
       <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
       {{ form.avatar }}
       {% if form.avatar.errors %}
