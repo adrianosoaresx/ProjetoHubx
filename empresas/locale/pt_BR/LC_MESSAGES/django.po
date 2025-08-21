@@ -83,8 +83,8 @@ msgid "Remover"
 msgstr ""
 
 #: empresas/templates/empresas/contato_form.html:3
-#: empresas/templates/empresas/detail.htm:37
-#: empresas/templates/empresas/detail.htm:39
+#: empresas/templates/empresas/detail.html:37
+#: empresas/templates/empresas/detail.html:39
 msgid "Contato"
 msgstr ""
 
@@ -112,65 +112,65 @@ msgstr ""
 msgid "Contato principal"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:24
+#: empresas/templates/empresas/detail.html:24
 msgid "CNPJ"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:25
+#: empresas/templates/empresas/detail.html:25
 msgid "Status de validação"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:27
+#: empresas/templates/empresas/detail.html:27
 #, python-format
 msgid "Validado em %(date)s (%(source)s)"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:31
+#: empresas/templates/empresas/detail.html:31
 msgid "Pendente"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:34
+#: empresas/templates/empresas/detail.html:34
 msgid "Localização"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:39
+#: empresas/templates/empresas/detail.html:39
 msgid "Nenhum contato cadastrado"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:46
+#: empresas/templates/empresas/detail.html:46
 #: empresas/templates/empresas/includes/empresas_table.html:10
 #: empresas/templates/empresas/lista.html:37
 msgid "Tags"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:56
+#: empresas/templates/empresas/detail.html:56
 #: empresas/templates/empresas/tags_list.html:16
 msgid "Produtos"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:63
+#: empresas/templates/empresas/detail.html:63
 msgid "Nenhum produto cadastrado."
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:69
+#: empresas/templates/empresas/detail.html:69
 #: empresas/templates/empresas/tags_list.html:17
 msgid "Serviços"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:76
+#: empresas/templates/empresas/detail.html:76
 msgid "Nenhum serviço cadastrado."
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:86
+#: empresas/templates/empresas/detail.html:86
 #: empresas/templates/empresas/nova.html:9
 msgid "Voltar"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:88
+#: empresas/templates/empresas/detail.html:88
 msgid "Histórico"
 msgstr ""
 
-#: empresas/templates/empresas/detail.htm:91
+#: empresas/templates/empresas/detail.html:91
 #: empresas/templates/empresas/includes/empresas_table.html:31
 #: empresas/templates/empresas/tag_form.html:7
 #: empresas/templates/empresas/tags_list.html:44
