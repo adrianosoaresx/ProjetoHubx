@@ -61,7 +61,7 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
     except Exception as exc:  # pragma: no cover - integração externa
         log.status = NotificationStatus.FALHA
         log.erro = str(exc)
-        metrics.notificacoes_falhas_total.labels(canal=canal).inc()
+        metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
         log.data_envio = timezone.now()
         log.save(update_fields=["status", "erro", "data_envio"])
         with sentry_sdk.push_scope() as scope:

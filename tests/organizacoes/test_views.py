@@ -4,13 +4,14 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.cache import cache
 
 from accounts.models import User, UserType
 from agenda.models import Evento
 from empresas.models import Empresa
 from feed.models import Post
 from nucleos.models import Nucleo
-from organizacoes.models import Organizacao
+from organizacoes.models import Organizacao, OrganizacaoChangeLog
 
 pytestmark = pytest.mark.django_db
 
@@ -119,6 +120,36 @@ def test_update_view_superadmin(superadmin_user, organizacao):
     assert organizacao.nome == "Editada"
     msgs = list(response.context["messages"])
     assert any("atualizada" in m.message.lower() for m in msgs)
+
+
+def test_change_logs_on_update_view(superadmin_user, organizacao):
+    url = reverse("organizacoes:update", args=[organizacao.pk])
+    data = {
+        "nome": "Editada",
+        "cnpj": organizacao.cnpj,
+        "slug": "editada",
+        "rua": "Rua X",
+        "cidade": "Cidade Y",
+        "estado": "ST",
+        "contato_nome": "Fulano",
+        "contato_email": "fulano@example.com",
+        "contato_telefone": "123456",
+    }
+    resp = superadmin_user.post(url, data=data, follow=True)
+    assert resp.status_code == 200
+    fields = [
+        "nome",
+        "rua",
+        "cidade",
+        "estado",
+        "contato_nome",
+        "contato_email",
+        "contato_telefone",
+    ]
+    for campo in fields:
+        assert OrganizacaoChangeLog.all_objects.filter(
+            organizacao=organizacao, campo_alterado=campo
+        ).exists()
 
 
 def test_update_view_denied_for_admin(admin_user, organizacao):
@@ -303,3 +334,25 @@ def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
     resp = superadmin_user.get(reverse("organizacoes:detail", args=[org.pk]))
     content = resp.content.decode()
     assert "Membros" in content and "Núcleos" in content and "Eventos" in content
+
+
+def test_list_view_caching(superadmin_user, organizacao):
+    cache.clear()
+    url = reverse("organizacoes:list")
+    resp1 = superadmin_user.get(url)
+    assert resp1["X-Cache"] == "MISS"
+    resp2 = superadmin_user.get(url)
+    assert resp2["X-Cache"] == "HIT"
+
+
+def test_list_view_cache_invalidation(superadmin_user, organizacao, faker_ptbr):
+    cache.clear()
+    url = reverse("organizacoes:list")
+    superadmin_user.get(url)
+    superadmin_user.get(url)
+    Organizacao.objects.create(
+        nome="Nova", cnpj=faker_ptbr.cnpj(), slug="nova"
+    )
+    resp = superadmin_user.get(url)
+    assert resp["X-Cache"] == "MISS"
+    assert "Nova" in resp.content.decode()

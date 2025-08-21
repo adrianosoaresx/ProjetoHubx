@@ -83,9 +83,11 @@
               <td class="px-3 py-2">${l.status}</td>
               <td class="px-3 py-2">${l.data_vencimento || ''}</td>
               <td class="px-3 py-2 space-x-2">
-                <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"pago"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
+                ${l.status === 'pendente' ? `
+                <button hx-post="/api/financeiro/lancamentos/${l.id}/pagar/" hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
                 <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"cancelado"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-red-600 hover:underline">{% trans "Cancelar" %}</button>
-                <button hx-post="/api/financeiro/lancamentos/${l.id}/ajustar/" hx-vals='js:{valor_corrigido: prompt(gettext("Valor corrigido?")), descricao_motivo: prompt(gettext("Motivo?"))}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
+                <button hx-get="/financeiro/lancamentos/${l.id}/ajustar/" hx-target="#modal" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
+
               </td>
             </tr>
           `)

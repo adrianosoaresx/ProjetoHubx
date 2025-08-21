@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from agenda.factories import EventoFactory
-from financeiro.models import CentroCusto, LancamentoFinanceiro
+from financeiro.models import CentroCusto, LancamentoFinanceiro, FinanceiroLog
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -50,6 +50,28 @@ def test_quitar_lancamento(api_client):
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
     assert centro.saldo == 50
     assert conta.saldo == 50
+
+
+def test_pagar_endpoint(api_client):
+    admin = UserFactory(user_type=UserType.ADMIN)
+    api_client.force_authenticate(user=admin)
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
+    conta = admin.contas_financeiras.create()
+    lanc = LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        conta_associado=conta,
+        tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+        valor=50,
+        data_lancamento=timezone.now(),
+        status=LancamentoFinanceiro.Status.PENDENTE,
+    )
+    url = reverse("financeiro_api:lancamento-pagar", args=[lanc.id])
+    resp = api_client.post(url)
+    assert resp.status_code == 200
+    lanc.refresh_from_db()
+    assert lanc.status == LancamentoFinanceiro.Status.PAGO
+    assert FinanceiroLog.objects.filter(acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)).exists()
 
 
 def test_distribuicao_ingresso():

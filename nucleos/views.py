@@ -10,9 +10,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db.models import Count, Q
 from django.http import HttpResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
     CreateView,
@@ -34,6 +36,7 @@ from .forms import (
     SuplenteForm,
 )
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
+from .services import gerar_convite_nucleo
 from .tasks import (
     notify_exportacao_membros,
     notify_participacao_aprovada,
@@ -188,7 +191,7 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:list")
 
 
-class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -206,7 +209,11 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         nucleo = self.object
         ctx["membros_ativos"] = nucleo.participacoes.filter(status="ativo")
         ctx["coordenadores"] = nucleo.participacoes.filter(status="ativo", papel="coordenador")
-        if self.request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+        if self.request.user.user_type in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.ROOT,
+        }:
             ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
             ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
             ctx["convites_pendentes"] = nucleo.convitenucleo_set.filter(usado_em__isnull=True).count()
@@ -220,7 +227,7 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         return ctx
 
 
-class NucleoMetricsView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoMetricsView(LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/metrics.html"
 
@@ -267,8 +274,46 @@ class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
         return render(
             request,
             "nucleos/convites_modal.html",
-            {"nucleo": nucleo, "convites": convites, "convites_restantes": restantes},
+            {
+                "nucleo": nucleo,
+                "convites": convites,
+                "convites_restantes": restantes,
+                "create_url": reverse("nucleos:convite_create", args=[nucleo.pk]),
+            },
         )
+
+
+class ConviteCreateView(GerenteRequiredMixin, LoginRequiredMixin, View):
+    def post(self, request, pk):
+        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
+        email = request.POST.get("email", "")
+        papel = request.POST.get("papel", "membro")
+        try:
+            convite = gerar_convite_nucleo(request.user, nucleo, email, papel)
+        except ValueError as exc:
+            return HttpResponse(str(exc), status=429)
+        csrf_token = get_token(request)
+        delete_url = reverse(
+            "nucleos_api:nucleo-revogar-convite", args=[nucleo.pk, convite.pk]
+        )
+        li_html = format_html(
+            '<li id="convite-{}" class="flex justify-between items-center">'
+            '<span>{} - {}</span>'
+            '<form hx-delete="{}" hx-target="#convite-{}" hx-swap="outerHTML" '
+            'hx-confirm="{}">'
+            '<input type="hidden" name="csrfmiddlewaretoken" value="{}" />'
+            '<button type="submit" class="text-red-600">{}</button>'
+            '</form></li>',
+            convite.id,
+            convite.email,
+            convite.papel,
+            delete_url,
+            convite.id,
+            _("Confirmar revogação?"),
+            csrf_token,
+            _("Revogar"),
+        )
+        return HttpResponse(li_html, status=201)
 
 
 class ParticipacaoCreateView(LoginRequiredMixin, View):

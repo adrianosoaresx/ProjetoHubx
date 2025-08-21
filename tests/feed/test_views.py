@@ -4,6 +4,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponseForbidden
 from django.urls import reverse
 
+from rest_framework.test import APIClient
+
 from feed.models import Comment, Post, Reacao, Tag
 
 pytestmark = pytest.mark.django_db
@@ -83,12 +85,12 @@ def test_novapostagem_file_upload(client, associado_user):
     assert post.pdf
 
 
-def test_create_comment(client, nucleado_user, posts):
-    client.force_login(nucleado_user)
+def test_create_comment(nucleado_user, posts):
+    client = APIClient()
+    client.force_authenticate(nucleado_user)
     post = posts[0]
-    url = reverse("feed:create_comment", args=[post.id])
-    resp = client.post(url, {"texto": "Oi"})
-    assert resp.status_code == 302
+    resp = client.post("/api/feed/comments/", {"post": post.id, "texto": "Oi"}, format="json")
+    assert resp.status_code == 201
     comment = Comment.objects.get(post=post, user=nucleado_user)
     assert comment.texto == "Oi"
 

@@ -50,7 +50,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
     serializer_class = LancamentoFinanceiroSerializer
 
     def get_permissions(self):  # type: ignore[override]
-        if self.action in {"partial_update", "ajustar"}:
+        if self.action in {"partial_update", "ajustar", "pagar"}:
             self.permission_classes = [IsAuthenticated, IsFinanceiroOrAdmin]
         else:
             self.permission_classes = [
@@ -128,6 +128,37 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             request.user,
             antigo,
             {"status": novo_status, "id": str(lancamento.id)},
+        )
+        serializer = self.get_serializer(lancamento)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def pagar(self, request, *args, **kwargs):
+        """Marca um lançamento como pago."""
+        lancamento = self.get_object()
+        if lancamento.status != LancamentoFinanceiro.Status.PENDENTE:
+            return Response(
+                {"detail": _("Apenas lançamentos pendentes podem ser pagos")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        antigo = {"status": lancamento.status}
+        with transaction.atomic():
+            lancamento.status = LancamentoFinanceiro.Status.PAGO
+            lancamento.save(update_fields=["status"])
+            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(
+                saldo=F("saldo") + lancamento.valor
+            )
+            if lancamento.conta_associado_id:
+                ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
+                    saldo=F("saldo") + lancamento.valor
+                )
+            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
+                repassar_receita_ingresso(lancamento)
+        log_financeiro(
+            FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+            request.user,
+            antigo,
+            {"status": LancamentoFinanceiro.Status.PAGO, "id": str(lancamento.id)},
         )
         serializer = self.get_serializer(lancamento)
         return Response(serializer.data)

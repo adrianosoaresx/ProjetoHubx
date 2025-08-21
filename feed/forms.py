@@ -118,8 +118,10 @@ class PostForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ["texto", "reply_to"]
+        fields = ["post", "texto", "reply_to"]
         widgets = {
+            "post": forms.HiddenInput(),
+            "reply_to": forms.HiddenInput(),
             "texto": forms.Textarea(
                 attrs={
                     "class": "mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm",

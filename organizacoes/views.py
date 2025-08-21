@@ -17,6 +17,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from sentry_sdk import capture_exception
 
@@ -36,9 +37,26 @@ User = get_user_model()
 
 
 class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+    """Listagem de organizações com resposta em cache."""
+
     model = Organizacao
     template_name = "organizacoes/list.html"
     paginate_by = 10
+    cache_timeout = 60
+
+    def _cache_key(self) -> str:
+        params = self.request.GET
+        keys = [
+            str(getattr(self.request.user, "pk", "")),
+            params.get("search", ""),
+            params.get("tipo", ""),
+            params.get("cidade", ""),
+            params.get("estado", ""),
+            params.get("ordering", ""),
+            params.get("page", ""),
+            params.get("inativa", ""),
+        ]
+        return "organizacoes_list_" + "_".join(keys)
 
     def get_queryset(self):
         qs = (
@@ -94,6 +112,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
+
         if self.request.headers.get("HX-Request"):
             return render(
                 self.request,
@@ -102,6 +121,18 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
                 **response_kwargs,
             )
         return super().render_to_response(context, **response_kwargs)
+
+        key = self._cache_key()
+        cached = cache.get(key)
+        if cached is not None:
+            cached["X-Cache"] = "HIT"
+            return cached
+        response = super().render_to_response(context, **response_kwargs)
+        response.render()
+        cache.set(key, response, self.cache_timeout)
+        response["X-Cache"] = "MISS"
+        return response
+
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -144,24 +175,21 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
             antiga = serialize_organizacao(self.get_object())
             response = super().form_valid(form)
             nova = serialize_organizacao(self.object)
-            dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
-            dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
-            for campo in [
-                "nome",
-                "tipo",
-                "slug",
-                "cnpj",
-                "contato_nome",
-                "contato_email",
-            ]:
-                if campo in dif_antiga:
-                    OrganizacaoChangeLog.objects.create(
-                        organizacao=self.object,
-                        campo_alterado=campo,
-                        valor_antigo=str(dif_antiga[campo]),
-                        valor_novo=str(dif_nova[campo]),
-                        alterado_por=self.request.user,
-                    )
+            campos_alterados = [
+                campo
+                for campo in form.changed_data
+                if antiga.get(campo) != nova.get(campo)
+            ]
+            dif_antiga = {campo: antiga[campo] for campo in campos_alterados}
+            dif_nova = {campo: nova[campo] for campo in campos_alterados}
+            for campo in campos_alterados:
+                OrganizacaoChangeLog.objects.create(
+                    organizacao=self.object,
+                    campo_alterado=campo,
+                    valor_antigo=str(dif_antiga[campo]),
+                    valor_novo=str(dif_nova[campo]),
+                    alterado_por=self.request.user,
+                )
             registrar_log(
                 self.object,
                 self.request.user,

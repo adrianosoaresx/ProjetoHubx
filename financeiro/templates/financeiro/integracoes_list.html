@@ -35,7 +35,8 @@
                     hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
             <button class="text-red-600 underline"
                     hx-delete="/api/financeiro/integracoes/{{ i.id }}/"
-                    hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}'>{% trans "Excluir" %}</button>
+                    hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}'
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans "Excluir" %}</button>
           </td>
         </tr>
         {% empty %}

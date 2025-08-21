@@ -24,8 +24,24 @@
     {% if form and form.tipo.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.tipo.errors }}</p>{% endif %}
   </div>
   <div>
-    <label for="id_organizacao" class="block text-sm font-medium">{{ _('Organização') }}</label>
-    <input id="id_organizacao" name="organizacao" class="border p-2 w-full" {% if integracao and integracao.organizacao %}value="{{ integracao.organizacao }}"{% endif %} {% if form and form.organizacao.errors %}aria-invalid="true"{% endif %} />
+    <label for="integracao-organizacao-search" class="block text-sm font-medium">{{ _('Organização') }}</label>
+    <input
+      type="text"
+      id="integracao-organizacao-search"
+      name="search"
+      class="border p-2 w-full"
+      form="search-organizacao"
+      hx-get="/api/organizacoes/"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#id_organizacao"
+      hx-swap="none"
+      hx-on="htmx:afterRequest: renderOrganizacoes(event)"
+    />
+    <select id="id_organizacao" name="organizacao" class="border p-2 w-full mt-2" {% if form and form.organizacao.errors %}aria-invalid="true"{% endif %}>
+      {% if integracao and integracao.organizacao %}
+      <option value="{{ integracao.organizacao.id }}" selected>{{ integracao.organizacao.nome }}</option>
+      {% endif %}
+    </select>
     {% if form and form.organizacao.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.organizacao.errors }}</p>{% endif %}
   </div>
   <div>
@@ -45,3 +61,21 @@
   </div>
   <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
 </form>
+
+<script src="{% url 'javascript-catalog' %}"></script>
+<script>
+  function renderOrganizacoes(evt) {
+    const sel = document.querySelector('#id_organizacao');
+    sel.innerHTML = '';
+    try {
+      const data = JSON.parse(evt.detail.xhr.response);
+      const itens = data.results || data;
+      sel.innerHTML =
+        itens
+          .map(o => `<option value="${o.id}">${o.nome}</option>`)
+          .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
+    } catch (err) {
+      sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
+    }
+  }
+</script>

@@ -112,12 +112,24 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
+#: templates/notificacoes/logs_list.html:8
+msgid "Baixar CSV completo"
+msgstr "Download full CSV"
+
 #: templates/notificacoes/logs_list.html:31
-msgid "Enviada"
+msgid "Pendente"
 msgstr ""
 
 #: templates/notificacoes/logs_list.html:32
+msgid "Enviada"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:33
 msgid "Falha"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:34
+msgid "Lida"
 msgstr ""
 
 #: templates/notificacoes/logs_list.html:42
