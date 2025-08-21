@@ -18,11 +18,11 @@ def test_dashboard_redirect_admin(client, admin_user):
     assert resp.url == reverse("dashboard:admin")
 
 
-def test_dashboard_redirect_gerente(client, gerente_user):
+def test_dashboard_redirect_coordenador(client, gerente_user):
     client.force_login(gerente_user)
     resp = client.get(reverse("dashboard:dashboard"))
     assert resp.status_code == 302
-    assert resp.url == reverse("dashboard:gerente")
+    assert resp.url == reverse("dashboard:coordenador")
 
 
 def test_dashboard_redirect_cliente(client, cliente_user):
