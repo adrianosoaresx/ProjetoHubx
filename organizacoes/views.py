@@ -302,13 +302,6 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 user.is_superuser
                 or getattr(user, "user_type", None) == UserType.ROOT.value
                 or user.get_tipo_usuario == UserType.ROOT.value
-                or (
-                    (
-                        user.get_tipo_usuario == UserType.ADMIN.value
-                        or getattr(user, "user_type", None) == UserType.ADMIN.value
-                    )
-                    and getattr(user, "organizacao_id", None) == org.id
-                )
             ):
                 return HttpResponseForbidden()
 
