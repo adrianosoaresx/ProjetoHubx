@@ -112,6 +112,16 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
+
+        if self.request.headers.get("HX-Request"):
+            return render(
+                self.request,
+                "organizacoes/partials/list_section.html",
+                context,
+                **response_kwargs,
+            )
+        return super().render_to_response(context, **response_kwargs)
+
         key = self._cache_key()
         cached = cache.get(key)
         if cached is not None:
@@ -122,6 +132,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         cache.set(key, response, self.cache_timeout)
         response["X-Cache"] = "MISS"
         return response
+
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
