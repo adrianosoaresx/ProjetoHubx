@@ -75,7 +75,7 @@ def test_parceria_create_requires_admin(client, organizacao):
         email="u@ex.com",
         password="pass",
         organizacao=organizacao,
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
     )
     client.force_login(user)
     resp = client.get(reverse("agenda:parceria_criar"))
