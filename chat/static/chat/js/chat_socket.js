@@ -148,7 +148,7 @@
                     body: JSON.stringify({conteudo: novo})
                 }).then(r=>r.ok?r.json():Promise.reject())
                   .then(data=>{
-                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, editState.div, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to, data.hidden_at);
                   })
                   .finally(()=> editModal.close());
             });
@@ -416,16 +416,7 @@
                 } else if(flagOpt){
                     closeMenu();
                     if(confirm(t('confirmFlag','Tem certeza que deseja denunciar?'))){
-                        fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/flag/`,{
-                            method:'POST',
-                            headers:{'X-CSRFToken':csrfToken}
-                        }).then(r=>{
-                            if(r.ok){
-                                alert(t('flagged','Denúncia enviada'));
-                            }else{
-                                alert(t('flagError','Erro ao denunciar'));
-                            }
-                        });
+                        chatSocket.send(JSON.stringify({tipo:'flag', mensagem_id:id}));
                     }
                 }
             });
@@ -511,7 +502,7 @@
                 const frag = document.createDocumentFragment();
                 const ordered = data.messages.slice().reverse();
                 ordered.forEach(m=>{
-                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to);
+                    const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to, m.hidden_at);
                     frag.appendChild(div);
                 });
                 messages.appendChild(frag);
@@ -535,7 +526,7 @@
                     const frag = document.createDocumentFragment();
                     const ordered = data.messages.slice().reverse();
                     ordered.forEach(m=>{
-                        const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to);
+                        const div = renderMessage(m.remetente, m.tipo, m.conteudo, null, m.id, m.pinned_at, m.reactions, m.user_reactions, m.conteudo_cifrado, m.alg, m.key_version, m.reply_to, m.hidden_at);
                         frag.appendChild(div);
                     });
                     messages.insertBefore(frag, first);
@@ -555,11 +546,12 @@
             }
         });
 
-        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions,cipher,alg,keyVersion,replyTo){
+        function renderMessage(remetente,tipo,conteudo,elem,id,pinned,reactions,userReactions,cipher,alg,keyVersion,replyTo,hiddenAt){
             const div = elem || document.createElement('article');
             div.className = 'message relative p-2';
             if(remetente === currentUser){ div.classList.add('self'); }
             if(pinned){ div.classList.add('pinned'); }
+            if(hiddenAt){ div.classList.add('opacity-60','hidden-message'); }
 
             let content;
             if(cipher){
@@ -593,6 +585,12 @@
             div.innerHTML = `${replyHtml}<div class="msg-body"><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="reply-btn" aria-label="${t('reply','Responder')}">${t('reply','Responder')}</button></li><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div>`;
 
             div.innerHTML = `<div><strong>${remetente}</strong>: ${content}</div><ul class="reactions flex gap-2 ml-2"></ul><div class="reaction-container relative"><button type="button" class="reaction-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('addReaction','Adicionar reação')}">🙂</button><ul class="reaction-menu hidden absolute bg-white border rounded p-1 flex gap-1" role="menu"><li><button type="button" class="react-option" data-emoji="🙂" aria-label="${t('reactWith','Reagir com')} 🙂">🙂</button></li><li><button type="button" class="react-option" data-emoji="❤️" aria-label="${t('reactWith','Reagir com')} ❤️">❤️</button></li><li><button type="button" class="react-option" data-emoji="👍" aria-label="${t('reactWith','Reagir com')} 👍">👍</button></li><li><button type="button" class="react-option" data-emoji="😂" aria-label="${t('reactWith','Reagir com')} 😂">😂</button></li><li><button type="button" class="react-option" data-emoji="🎉" aria-label="${t('reactWith','Reagir com')} 🎉">🎉</button></li><li><button type="button" class="react-option" data-emoji="😢" aria-label="${t('reactWith','Reagir com')} 😢">😢</button></li><li><button type="button" class="react-option" data-emoji="😡" aria-label="${t('reactWith','Reagir com')} 😡">😡</button></li></ul></div><div class="action-container relative"><button type="button" class="action-btn" aria-haspopup="true" aria-expanded="false" aria-label="${t('openMenu','Abrir menu')}">⋮</button><ul class="action-menu hidden absolute bg-white border rounded p-1 flex flex-col" role="menu"><li><button type="button" class="create-item" aria-label="${t('createItem','Criar evento/tarefa')}">${t('createItem','Criar evento/tarefa')}</button></li></ul></div><button type="button" class="favorite-btn" aria-label="${t('favorite','Favoritar mensagem')}">⭐</button><div class="read-status hidden text-xs text-gray-500 flex items-center gap-1"><ul class="reader-icons flex -space-x-1"></ul><span class="reader-count">0</span></div>`;
+            if(hiddenAt){
+                const strong = div.querySelector('strong');
+                if(strong){
+                    strong.insertAdjacentHTML('afterend', ` <span class="hidden-icon text-red-500" aria-label="${t('hidden','Oculta')}">🚫</span>`);
+                }
+            }
 
 
             if(id){ div.dataset.id = id; div.dataset.messageId = id; }
@@ -631,6 +629,14 @@
 
         chatSocket.onmessage = function(e){
             const data = JSON.parse(e.data);
+            if(data.type === 'flag-message'){
+                if(data.success){
+                    alert(t('flagged','Denúncia enviada'));
+                }else{
+                    alert(t('flagError','Erro ao denunciar'));
+                }
+                return;
+            }
             if(data.remetente === currentUser){
 
                 const matchContent = data.conteudo ?? data.conteudo_cifrado;
@@ -638,7 +644,7 @@
 
                 if(idx!==-1){
                     const placeholder = pending[idx];
-                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
+                    renderMessage(data.remetente, data.tipo, data.conteudo, placeholder.elem, data.id, data.pinned_at, data.reactions, data.user_reactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to, data.hidden_at);
                     placeholder.elem.classList.remove('pending');
                     pending.splice(idx,1);
                     scrollToBottom();
@@ -653,7 +659,7 @@
             if(data.actor && data.actor === currentUser){
                 userReactions = data.user_reactions || [];
             }
-            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions, userReactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to);
+            const div = renderMessage(data.remetente, data.tipo, data.conteudo, existing, data.id, data.pinned_at, data.reactions, userReactions, data.conteudo_cifrado, data.alg, data.key_version, data.reply_to, data.hidden_at);
             if(!existing){
                 messages.appendChild(div);
                 scrollToBottom();
@@ -666,7 +672,7 @@
             if(message){
                 if(isE2EE){
                     const {cipher, alg, keyVersion} = await encryptMessage(message);
-                    const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion, replyTo);
+                    const div = renderMessage(currentUser, 'text', '', null, null, false, {}, [], cipher, alg, keyVersion, replyTo, undefined);
                     div.classList.add('pending');
                     messages.appendChild(div);
                     pending.push({tipo:'text', conteudo:cipher, elem:div, reply_to:replyTo});
@@ -675,7 +681,7 @@
                     if(replyTo){ payload.reply_to = replyTo; }
                     chatSocket.send(JSON.stringify(payload));
                 }else{
-                    const div = renderMessage(currentUser, 'text', message, null, null, false, {}, [], undefined, undefined, undefined, replyTo);
+                    const div = renderMessage(currentUser, 'text', message, null, null, false, {}, [], undefined, undefined, undefined, replyTo, undefined);
                     div.classList.add('pending');
                     messages.appendChild(div);
                     pending.push({tipo:'text', conteudo:message, elem:div, reply_to:replyTo});
@@ -710,7 +716,7 @@
 
                     if(isE2EE){
                         const {cipher, alg, keyVersion} = await encryptMessage(data.url);
-                        const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion, replyTo);
+                        const div = renderMessage(currentUser,data.tipo,'',null,null,false,{}, [], cipher, alg, keyVersion, replyTo, undefined);
                         div.classList.add('pending');
                         messages.appendChild(div);
                         pending.push({tipo:data.tipo,conteudo:cipher,elem:div,reply_to:replyTo});
@@ -719,7 +725,7 @@
                         if(replyTo){ payload.reply_to = replyTo; }
                         chatSocket.send(JSON.stringify(payload));
                     }else{
-                        const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, [], undefined, undefined, undefined, replyTo);
+                        const div = renderMessage(currentUser,data.tipo,data.url,null,null,false,{}, [], undefined, undefined, undefined, replyTo, undefined);
                         div.classList.add('pending');
                         messages.appendChild(div);
                         pending.push({tipo:data.tipo,conteudo:data.url,elem:div,reply_to:replyTo});

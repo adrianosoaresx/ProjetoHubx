@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<article role="article" data-message-id="{{ m.id }}" class="flex gap-2 p-2 rounded-lg bg-gray-50 {% if m.pinned_at %}border-l-4 border-yellow-400 bg-yellow-50 pinned{% endif %} {% if m.hidden_at %}opacity-60{% endif %}" tabindex="0">
+<article role="article" data-message-id="{{ m.id }}" class="flex gap-2 p-2 rounded-lg bg-gray-50 {% if m.pinned_at %}border-l-4 border-yellow-400 bg-yellow-50 pinned{% endif %} {% if m.hidden_at %}opacity-60 hidden-message{% endif %}" tabindex="0">
   <div class="flex-shrink-0">
     {% if m.remetente.profile.avatar %}
       {% blocktrans with username=m.remetente.username asvar alt_text %}Avatar de {{ username }}{% endblocktrans %}
@@ -14,7 +14,7 @@
       <span class="font-semibold text-gray-700">{{ m.remetente.username }}</span>
       <time datetime="{{ m.created_at|date:'c' }}">{{ m.created_at|date:'SHORT_DATETIME_FORMAT' }}</time>
       {% if m.pinned_at %}<span class="text-primary" aria-label="{% trans 'Mensagem fixada' %}">📌</span>{% endif %}
-      {% if m.hidden_at %}<span class="text-red-500">{% trans "Oculta" %}</span>{% endif %}
+      {% if m.hidden_at %}<span class="hidden-icon text-red-500" aria-label="{% trans 'Mensagem oculta' %}">🚫</span>{% endif %}
     </header>
     {% if m.reply_to %}
       <div class="reply-preview border-l-2 pl-2 text-sm text-neutral-600 mb-1">

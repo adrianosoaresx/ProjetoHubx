@@ -191,13 +191,18 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         elif message_type == "flag":
             msg_id = data.get("mensagem_id")
             if not msg_id:
+                await self.send_json({"type": "flag-message", "success": False})
                 return
             msg = await database_sync_to_async(ChatMessage.objects.get)(pk=msg_id)
             try:
                 await database_sync_to_async(sinalizar_mensagem)(msg, user)
             except ValueError:
+                await self.send_json({"type": "flag-message", "success": False})
                 return
+            await self.send_json({"type": "flag-message", "success": True})
+            await database_sync_to_async(msg.refresh_from_db)()
             if msg.hidden_at:
+                reactions = await database_sync_to_async(msg.reaction_counts)()
                 payload = {
                     "type": "chat.message",
                     "id": str(msg.id),
@@ -206,7 +211,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     "conteudo": msg.conteudo,
                     "arquivo_url": msg.arquivo.url if msg.arquivo else None,
                     "created_at": msg.created_at.isoformat(),
-                    "reactions": msg.reaction_counts(),
+                    "reactions": reactions,
                     "hidden_at": msg.hidden_at.isoformat(),
                     "reply_to": str(msg.reply_to_id) if msg.reply_to_id else None,
                 }
