@@ -215,7 +215,6 @@ class DashboardService:
             qs = qs.filter(evento_id=evento_id)
         return qs.count()
 
-
     @staticmethod
     def calcular_topicos_discussao(
         organizacao_id: Optional[int] = None,
@@ -527,17 +526,6 @@ class DashboardMetricsService:
                 raise ValueError("data_fim inválida")
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
-        cache_filters = {
-            "periodo": periodo,
-            "inicio": inicio.isoformat(),
-            "fim": fim.isoformat(),
-            **{k: str(v) for k, v in filters.items()},
-        }
-        cache_key = f"dashboard-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
-        cached = cache.get(cache_key)
-        if cached:
-            return cached
-
         organizacao_id = filters.get("organizacao_id")
         nucleo_id = filters.get("nucleo_id")
         evento_id = filters.get("evento_id")
@@ -571,6 +559,22 @@ class DashboardMetricsService:
             nucleo_id = nucleo_id or evento.nucleo_id
         elif escopo not in {"auto", "global", "organizacao", "nucleo", "evento"}:
             raise ValueError("Escopo inválido")
+
+        # cache key composed only after authorization (RNF-07)
+        extra_filters = {k: v for k, v in filters.items() if k not in {"organizacao_id", "nucleo_id", "evento_id"}}
+        cache_filters = {
+            "periodo": periodo,
+            "inicio": inicio.isoformat(),
+            "fim": fim.isoformat(),
+            "organizacao_id": str(organizacao_id) if organizacao_id is not None else None,
+            "nucleo_id": str(nucleo_id) if nucleo_id is not None else None,
+            "evento_id": str(evento_id) if evento_id is not None else None,
+            **{k: str(v) for k, v in extra_filters.items()},
+        }
+        cache_key = f"dashboard-{user.pk}-{user.user_type}-{escopo}-" f"{json.dumps(cache_filters, sort_keys=True)}"
+        cached = cache.get(cache_key)
+        if cached:
+            return cached
 
         metricas = filters.get("metricas")
 
@@ -763,12 +767,11 @@ class DashboardMetricsService:
         cache.set(cache_key, metrics, 300)
         return metrics
 
+
 def check_achievements(user) -> None:
     """Verifica e registra conquistas atingidas pelo usuário."""
 
-    achieved = set(
-        UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True)
-    )
+    achieved = set(UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True))
     achievements = {a.code: a for a in Achievement.objects.all()}
 
     if (
