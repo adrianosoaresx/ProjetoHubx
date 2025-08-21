@@ -44,6 +44,13 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
         related_name="api_tokens_revogados",
     )
+    anterior = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="substituido_por",
+    )
     last_used_at = models.DateTimeField(null=True, blank=True)
 
     @property
