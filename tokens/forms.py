@@ -2,11 +2,12 @@ import pyotp
 from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .models import CodigoAutenticacao, TokenAcesso
+from .models import ApiToken, CodigoAutenticacao, TokenAcesso
 from .services import find_token_by_code
 
 User = get_user_model()
@@ -32,6 +33,16 @@ class GerarTokenConviteForm(forms.Form):
         if user:
             self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
             self.fields["nucleos"].queryset = Nucleo.objects.filter(organizacao__users=user)
+
+
+class GerarApiTokenForm(forms.Form):
+    client_name = forms.CharField(max_length=100, required=False, label=_("Nome do cliente"))
+    scope = forms.ChoiceField(choices=ApiToken._meta.get_field("scope").choices, label=_("Escopo"))
+    expires_in = forms.IntegerField(
+        required=False,
+        min_value=1,
+        label=_("Validade (dias)"),
+    )
 
 
 class ValidarTokenConviteForm(forms.Form):

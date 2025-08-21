@@ -1,4 +1,5 @@
 import pytest
+import hashlib
 import pytest
 import pyotp
 from django.urls import reverse
@@ -8,7 +9,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
-from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
+from tokens.models import ApiToken, ApiTokenLog, CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
 
 pytestmark = pytest.mark.django_db
 
@@ -147,3 +148,23 @@ def test_ativar_e_desativar_2fa_views(client):
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled is False and user.two_factor_secret is None
+
+
+def test_gerar_api_token_view(client):
+    user = UserFactory()
+    _login(client, user)
+    data = {"scope": "read", "client_name": "cli", "expires_in": 1}
+    resp = client.post(
+        reverse("tokens:gerar_api_token"),
+        data,
+        HTTP_USER_AGENT="ua-gen",
+    )
+    assert resp.status_code == 200
+    json = resp.json()
+    assert "token" in json
+    token_hash = hashlib.sha256(json["token"].encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+    assert token.user == user
+    log = ApiTokenLog.objects.get(token=token, acao="geracao")
+    assert log.user_agent == "ua-gen"
+    assert log.ip == "127.0.0.1"
