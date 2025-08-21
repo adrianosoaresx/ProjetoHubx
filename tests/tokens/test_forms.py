@@ -3,11 +3,14 @@ pytestmark = pytest.mark.skip(reason="legacy tests")
 import pytest
 from django.utils import timezone
 
+from django.core.exceptions import PermissionDenied
+
 from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from tokens.forms import (
     Ativar2FAForm,
+    GerarCodigoAutenticacaoAdminForm,
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     TokenAcessoForm,
@@ -62,11 +65,23 @@ def test_validar_token_convite_form_success():
 
 def test_gerar_codigo_autenticacao_form_save():
     user = UserFactory()
-    form = GerarCodigoAutenticacaoForm({"usuario": user.pk})
+    form = GerarCodigoAutenticacaoForm({}, usuario=user)
     assert form.is_valid()
     codigo = form.save()
     assert codigo.usuario == user
     assert codigo.codigo.isdigit() and len(codigo.codigo) == 6
+
+
+def test_gerar_codigo_autenticacao_admin_form_permission():
+    sem_perm = UserFactory()
+    target = UserFactory()
+    with pytest.raises(PermissionDenied):
+        GerarCodigoAutenticacaoAdminForm({"usuario": target.pk}, user=sem_perm)
+    admin = UserFactory(is_superuser=True)
+    form = GerarCodigoAutenticacaoAdminForm({"usuario": target.pk}, user=admin)
+    assert form.is_valid()
+    codigo = form.save()
+    assert codigo.usuario == target
 
 
 def test_validar_codigo_autenticacao_form_flow():

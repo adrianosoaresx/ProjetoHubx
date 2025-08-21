@@ -226,7 +226,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
 
 class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        form = GerarCodigoAutenticacaoForm(request.POST)
+        form = GerarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
             codigo = form.save()
             ip = request.META.get("REMOTE_ADDR", "")

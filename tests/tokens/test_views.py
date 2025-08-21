@@ -96,7 +96,7 @@ def test_gerar_codigo_autenticacao_view(client):
     _login(client, user)
     resp = client.post(
         reverse("tokens:gerar_codigo"),
-        {"usuario": user.pk},
+        {},
         HTTP_USER_AGENT="ua-gerar",
     )
     assert resp.status_code == 200
