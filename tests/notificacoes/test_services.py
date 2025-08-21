@@ -1,16 +1,13 @@
 import pytest
 
 from accounts.factories import UserFactory
-
-from configuracoes.models import ConfiguracaoConta
-from configuracoes.services import atualizar_preferencias_usuario
 from notificacoes.models import (
+    Canal,
     NotificationLog,
     NotificationStatus,
     NotificationTemplate,
     UserNotificationPreference,
 )
-
 from notificacoes.services import notificacoes as svc
 from notificacoes.services.whatsapp_client import send_whatsapp
 
@@ -85,6 +82,25 @@ def test_enviar_multiplos_canais(monkeypatch) -> None:
 
     assert called.get("count") == 3
     assert NotificationLog.objects.count() == 3
+
+
+def test_enviar_todos_sem_canais() -> None:
+    user = UserFactory()
+    NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
+    prefs = UserNotificationPreference.objects.get(user=user)
+    prefs.email = False
+    prefs.push = False
+    prefs.whatsapp = False
+    prefs.save(update_fields=["email", "push", "whatsapp"])
+
+    svc.enviar_para_usuario(user, "t", {})
+
+    logs = NotificationLog.objects.all()
+    assert logs.count() == 3
+    assert {log.canal for log in logs} == {Canal.EMAIL, Canal.PUSH, Canal.WHATSAPP}
+    for log in logs:
+        assert log.status == NotificationStatus.FALHA
+        assert log.erro == "Canais desabilitados pelo usuário"
 
 
 def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
