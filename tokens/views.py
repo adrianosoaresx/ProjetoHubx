@@ -210,7 +210,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
             TokenUsoLog.objects.create(
                 token=token,
                 usuario=request.user,
-                acao=TokenUsoLog.Acao.VALIDACAO,
+                acao=TokenUsoLog.Acao.USO,
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
