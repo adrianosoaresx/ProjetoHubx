@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 from io import BytesIO
 
 import pyotp
@@ -21,6 +22,7 @@ from . import services
 from .forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoForm,
+    GerarApiTokenForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
@@ -44,7 +46,7 @@ from .metrics import tokens_invites_revoked_total
 from . import services
 from .perms import can_issue_invite
 
-from .services import create_invite_token, list_tokens, revoke_token
+from .services import create_invite_token, generate_token, list_tokens, revoke_token
 
 
 User = get_user_model()
@@ -98,7 +100,8 @@ def revogar_convite(request, token_id: int):
 @login_required
 def listar_api_tokens(request):
     tokens = list_tokens(request.user)
-    return render(request, "tokens/api_tokens.html", {"tokens": tokens})
+    form = GerarApiTokenForm()
+    return render(request, "tokens/api_tokens.html", {"tokens": tokens, "form": form})
 
 
 @login_required
@@ -117,6 +120,42 @@ def revogar_api_token(request, token_id: str):
         )
         messages.success(request, _("Token revogado."))
     return redirect("tokens:listar_api_tokens")
+
+
+@login_required
+def gerar_api_token(request):
+    if request.method != "POST":
+        return JsonResponse({"error": _("Método não permitido")}, status=405)
+
+    form = GerarApiTokenForm(request.POST)
+    if form.is_valid():
+        scope = form.cleaned_data["scope"]
+        if scope == "admin" and not request.user.is_superuser:
+            if request.headers.get("HX-Request") == "true":
+                return render(request, "tokens/_resultado.html", {"error": _("Não autorizado")}, status=403)
+            return JsonResponse({"error": _("Não autorizado")}, status=403)
+
+        client_name = form.cleaned_data["client_name"]
+        expires_in = form.cleaned_data.get("expires_in")
+        expires_delta = timezone.timedelta(days=expires_in) if expires_in else None
+
+        raw_token = generate_token(request.user, client_name, scope, expires_delta)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        token = ApiToken.objects.get(token_hash=token_hash)
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.GERACAO,
+            ip=request.META.get("REMOTE_ADDR", ""),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+        if request.headers.get("HX-Request") == "true":
+            return render(request, "tokens/_resultado.html", {"token": raw_token})
+        return JsonResponse({"token": raw_token})
+
+    if request.headers.get("HX-Request") == "true":
+        return render(request, "tokens/_resultado.html", {"error": _("Dados inválidos")}, status=400)
+    return JsonResponse({"error": _("Dados inválidos")}, status=400)
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
@@ -204,6 +243,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
 
 
 class ValidarTokenConviteView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = ValidarTokenConviteForm()
+        return render(request, "tokens/validar_token.html", {"form": form})
     def post(self, request, *args, **kwargs):
         form = ValidarTokenConviteForm(request.POST)
         if form.is_valid():
@@ -216,7 +258,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
             TokenUsoLog.objects.create(
                 token=token,
                 usuario=request.user,
-                acao=TokenUsoLog.Acao.VALIDACAO,
+                acao=TokenUsoLog.Acao.USO,
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
@@ -231,8 +273,11 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
 
 
 class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = GerarCodigoAutenticacaoForm()
+        return render(request, "tokens/gerar_codigo_autenticacao.html", {"form": form})
     def post(self, request, *args, **kwargs):
-        form = GerarCodigoAutenticacaoForm(request.POST)
+        form = GerarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
             codigo = form.save()
             ip = request.META.get("REMOTE_ADDR", "")
@@ -256,6 +301,9 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
 
 
 class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = ValidarCodigoAutenticacaoForm(usuario=request.user)
+        return render(request, "tokens/validar_codigo_autenticacao.html", {"form": form})
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():

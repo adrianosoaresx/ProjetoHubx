@@ -20,6 +20,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Automação de inadimplências e API para lançamentos financeiros
 - Denúncia e moderação básica de posts do feed
 - Dashboard com métricas do feed e gráficos interativos
+- Rotação automática de tokens de API
 
 ### Limitações de Design
 
