@@ -65,6 +65,23 @@ def test_crud_empresa(api_client, gerente_user, tag_factory):
     EmpresaChangeLog.objects.get(empresa=empresa, campo_alterado="deleted", valor_novo="True")
 
 
+def test_criar_empresa_sem_permissao(api_client, associado_user):
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("empresas_api:empresa-list")
+    data = {
+        "usuario": associado_user.id,
+        "organizacao": associado_user.organizacao.id,
+        "nome": "Empresa Y",
+        "cnpj": CNPJ().generate(),
+        "tipo": "mei",
+        "municipio": "Florianópolis",
+        "estado": "SC",
+    }
+    resp = api_client.post(url, data, format="json")
+    assert resp.status_code == status.HTTP_403_FORBIDDEN
+    assert not Empresa.objects.filter(nome="Empresa Y").exists()
+
+
 def test_busca_por_tag_e_palavra(api_client, gerente_user, tag_factory):
     api_client.force_authenticate(user=gerente_user)
     t1 = tag_factory(nome="servico", categoria="serv")
