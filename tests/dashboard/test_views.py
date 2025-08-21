@@ -327,3 +327,17 @@ def test_filter_save_and_apply(client, admin_user, gerente_user):
     resp = client.get(reverse("dashboard:filter-apply", args=[filtro.pk]))
     assert resp.status_code == 302
     assert "metricas=num_users" in resp["Location"]
+
+
+@pytest.mark.django_db
+@pytest.mark.urls("tests.dashboard.urls")
+def test_config_list_permissions(client, admin_user, cliente_user):
+    own = DashboardConfig.objects.create(user=cliente_user, nome="Own", config={})
+    other = DashboardConfig.objects.create(user=admin_user, nome="Other", config={})
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:configs"))
+    content = resp.content.decode()
+    assert reverse("dashboard:config-edit", args=[own.pk]) in content
+    assert reverse("dashboard:config-delete", args=[own.pk]) in content
+    assert reverse("dashboard:config-edit", args=[other.pk]) not in content
+    assert reverse("dashboard:config-delete", args=[other.pk]) not in content

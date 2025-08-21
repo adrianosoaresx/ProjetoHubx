@@ -11,10 +11,13 @@
         <span>{{ f.nome }}</span>
         <span class="flex gap-2">
           <a href="{% url 'dashboard:filter-apply' f.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Aplicar filtro' %}">{% trans 'Aplicar' %}</a>
-          <form method="post" action="{% url 'dashboard:filter-delete' f.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="text-red-600 underline" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
-          </form>
+          {% if f.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+            <a href="{% url 'dashboard:filter-edit' f.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar filtro' %}">{% trans 'Editar' %}</a>
+            <form method="post" action="{% url 'dashboard:filter-delete' f.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="text-red-600 underline" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
+            </form>
+          {% endif %}
         </span>
       </li>
     {% empty %}

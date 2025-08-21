@@ -4,9 +4,17 @@
 {% block content %}
 <main class="max-w-3xl mx-auto p-4" role="main" aria-label="{% trans 'Layouts' %}">
   <h1 class="text-2xl mb-4">{% trans "Meus Layouts" %}</h1>
-  <ul>
+  <ul class="space-y-2">
     {% for layout in object_list %}
-      <li class="mb-2"><a href="{% url 'dashboard:layout-edit' layout.pk %}" class="text-blue-600">{{ layout.nome }}</a></li>
+      <li class="flex justify-between items-center p-2 bg-white rounded shadow">
+        <span>{{ layout.nome }}</span>
+        {% if layout.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+          <span class="flex gap-2">
+            <a href="{% url 'dashboard:layout-edit' layout.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar layout' %}">{% trans 'Editar' %}</a>
+            <a href="{% url 'dashboard:layout-delete' layout.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir layout' %}">{% trans 'Excluir' %}</a>
+          </span>
+        {% endif %}
+      </li>
     {% empty %}
       <li>{% trans "Nenhum layout" %}</li>
     {% endfor %}
