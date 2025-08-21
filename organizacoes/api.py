@@ -79,8 +79,16 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         if search:
             qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
         inativa = self.request.query_params.get("inativa")
-        if inativa is not None:
-            qs = qs.filter(inativa=inativa.lower() == "true")
+        if inativa not in (None, ""):
+            value = inativa.lower()
+            truthy = {"1", "true", "t", "yes"}
+            falsy = {"0", "false", "f", "no"}
+            if value in truthy:
+                qs = qs.filter(inativa=True)
+            elif value in falsy:
+                qs = qs.filter(inativa=False)
+            else:
+                qs = qs.filter(inativa=False)
         else:
             qs = qs.filter(inativa=False)
         ordering = self.request.query_params.get("ordering")
