@@ -446,7 +446,7 @@ class DashboardService:
         )
         atual = aggregates["atual"] or 0
         anterior = aggregates["anterior"] or 0
-        crescimento = get_variation(anterior, atual) if anterior else (100.0 if atual else 0.0)
+        crescimento = get_variation(anterior, atual)
         return {"total": atual, "crescimento": crescimento}
 
     @staticmethod
