@@ -12,7 +12,7 @@
     {% if comentario.pode_editar %}
       <a href="{% url 'discussao:resposta_editar' comentario.id %}" class="text-blue-600 text-xs">{% trans "Editar" %}</a>
     {% endif %}
-    {% if comentario.pode_editar or user.get_tipo_usuario in ['admin','coordenador','root'] %}
+    {% if comentario.pode_editar or user.get_tipo_usuario in ['admin', 'coordenador', 'root'] %}
       <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
         {% csrf_token %}
         <button type="submit" class="text-red-600 text-xs">{% trans "Remover" %}</button>
@@ -48,16 +48,24 @@
 
 
     </div>
-  </header>
-  <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
-  {% if topico.melhor_resposta_id == comentario.id %}
-    <div class="text-xs text-green-700 font-semibold mt-2">{% trans "Melhor resposta" %}</div>
-  {% endif %}
-  <form id="denuncia-comentario-{{ comentario.id }}" class="hidden mt-2" hx-post="{% url 'discussao_api:denuncia-list' %}" hx-swap="none" hx-on:afterRequest="this.reset(); this.classList.add('hidden'); alert('{% trans "Denúncia enviada" %}');" hx-on:error="alert('{% trans "Erro ao enviar denúncia" %}');">
-    {% csrf_token %}
-    <input type="hidden" name="content_type_id" value="{{ resposta_content_type_id }}">
-    <input type="hidden" name="object_id" value="{{ comentario.id }}">
-    <textarea name="motivo" required class="form-textarea w-full" placeholder="{% trans "Motivo da denúncia" %}"></textarea>
+    </header>
+    <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
+    {% if comentario.arquivo %}
+      <div class="mt-2 text-sm">
+        <a href="{{ comentario.arquivo.url }}" class="text-blue-600 flex items-center gap-1" download>
+          <i class="fas fa-paperclip"></i>
+          {{ comentario.arquivo.name }} ({{ comentario.arquivo.size|filesizeformat }})
+        </a>
+      </div>
+    {% endif %}
+    {% if topico.melhor_resposta_id == comentario.id %}
+      <div class="text-xs text-green-700 font-semibold mt-2">{% trans "Melhor resposta" %}</div>
+    {% endif %}
+    <form id="denuncia-comentario-{{ comentario.id }}" class="hidden mt-2" hx-post="{% url 'discussao_api:denuncia-list' %}" hx-swap="none" hx-on:afterRequest="this.reset(); this.classList.add('hidden'); alert('{% trans "Denúncia enviada" %}');" hx-on:error="alert('{% trans "Erro ao enviar denúncia" %}');">
+      {% csrf_token %}
+      <input type="hidden" name="content_type_id" value="{{ resposta_content_type_id }}">
+      <input type="hidden" name="object_id" value="{{ comentario.id }}">
+      <textarea name="motivo" required class="form-textarea w-full" placeholder="{% trans "Motivo da denúncia" %}"></textarea>
     <button type="submit" class="mt-1 bg-red-600 text-white px-3 py-1 text-xs rounded">{% trans "Enviar" %}</button>
   </form>
 </article>
