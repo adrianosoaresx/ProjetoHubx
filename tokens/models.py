@@ -53,6 +53,25 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
         ordering = ["-created_at"]
 
 
+class ApiTokenIp(TimeStampedModel, SoftDeleteModel):
+    class Tipo(models.TextChoices):
+        PERMITIDO = "permitido", _("Permitido")
+        NEGADO = "negado", _("Negado")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.ForeignKey(
+        ApiToken,
+        on_delete=models.CASCADE,
+        related_name="ips",
+    )
+    ip = models.GenericIPAddressField()
+    tipo = models.CharField(max_length=10, choices=Tipo.choices)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("token", "ip", "tipo")
+
+
 class ApiTokenLog(TimeStampedModel, SoftDeleteModel):
     class Acao(models.TextChoices):
         GERACAO = "geracao", _("Geração")
