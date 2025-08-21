@@ -64,6 +64,7 @@ class ApiTokenSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "client_name",
+            "device_fingerprint",
             "scope",
             "expires_at",
             "revoked_at",
@@ -71,4 +72,7 @@ class ApiTokenSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "revoked_at", "last_used_at", "created_at"]
-        extra_kwargs = {"expires_at": {"allow_null": True, "required": False}}
+        extra_kwargs = {
+            "expires_at": {"allow_null": True, "required": False},
+            "device_fingerprint": {"allow_null": True, "required": False},
+        }

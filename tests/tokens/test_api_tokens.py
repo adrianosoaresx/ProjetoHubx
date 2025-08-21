@@ -36,6 +36,15 @@ def test_generate_token_without_expires_in():
     assert token.expires_at is None
 
 
+def test_generate_token_with_device_fingerprint():
+    user = UserFactory()
+    fingerprint = "abc123"
+    raw = generate_token(user, "cli", "read", timedelta(days=1), fingerprint)
+    token_hash = hashlib.sha256(raw.encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+    assert token.device_fingerprint == fingerprint
+
+
 @override_settings(ROOT_URLCONF="tokens.api_urls")
 def test_api_token_authentication_and_revocation():
     user = UserFactory()
@@ -59,6 +68,34 @@ def test_api_token_authentication_and_revocation():
     assert token_db.revogado_por == user
     resp = client.get(url)
     assert resp.status_code in {status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN}
+
+
+@override_settings(ROOT_URLCONF="tokens.api_urls")
+def test_api_token_authentication_with_device_fingerprint():
+    user = UserFactory()
+    fingerprint = "abc123"
+    raw = generate_token(user, None, "read", timedelta(days=1), fingerprint)
+    client = APIClient()
+    url = reverse("tokens_api:api-token-list")
+
+    client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT=fingerprint
+    )
+    assert client.get(url).status_code == 200
+
+    client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT="wrong"
+    )
+    assert client.get(url).status_code in {
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    }
+
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}")
+    assert client.get(url).status_code in {
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    }
 
 
 def test_revogar_tokens_expirados():
