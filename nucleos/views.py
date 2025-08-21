@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 
-import tablib
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -10,11 +9,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.db.models import Count, Q
 from django.http import HttpResponse
-from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
     CreateView,
@@ -29,7 +26,6 @@ from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
 
 from .forms import (
-    MembroRoleForm,
     NucleoForm,
     NucleoSearchForm,
     ParticipacaoDecisaoForm,
@@ -38,7 +34,6 @@ from .forms import (
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from .services import gerar_convite_nucleo
 from .tasks import (
-    notify_exportacao_membros,
     notify_participacao_aprovada,
     notify_participacao_recusada,
     notify_suplente_designado,
@@ -278,42 +273,8 @@ class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
                 "nucleo": nucleo,
                 "convites": convites,
                 "convites_restantes": restantes,
-                "create_url": reverse("nucleos:convite_create", args=[nucleo.pk]),
             },
         )
-
-
-class ConviteCreateView(GerenteRequiredMixin, LoginRequiredMixin, View):
-    def post(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        email = request.POST.get("email", "")
-        papel = request.POST.get("papel", "membro")
-        try:
-            convite = gerar_convite_nucleo(request.user, nucleo, email, papel)
-        except ValueError as exc:
-            return HttpResponse(str(exc), status=429)
-        csrf_token = get_token(request)
-        delete_url = reverse(
-            "nucleos_api:nucleo-revogar-convite", args=[nucleo.pk, convite.pk]
-        )
-        li_html = format_html(
-            '<li id="convite-{}" class="flex justify-between items-center">'
-            '<span>{} - {}</span>'
-            '<form hx-delete="{}" hx-target="#convite-{}" hx-swap="outerHTML" '
-            'hx-confirm="{}">'
-            '<input type="hidden" name="csrfmiddlewaretoken" value="{}" />'
-            '<button type="submit" class="text-red-600">{}</button>'
-            '</form></li>',
-            convite.id,
-            convite.email,
-            convite.papel,
-            delete_url,
-            convite.id,
-            _("Confirmar revogação?"),
-            csrf_token,
-            _("Revogar"),
-        )
-        return HttpResponse(li_html, status=201)
 
 
 class ParticipacaoCreateView(LoginRequiredMixin, View):
@@ -350,17 +311,24 @@ class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         participacao.delete()
+        if request.headers.get("HX-Request"):
+            return HttpResponse("")
         messages.success(request, _("Membro removido do núcleo."))
         return redirect("nucleos:detail", pk=pk)
 
-
-class MembroRoleView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroPromoverView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
-        form = MembroRoleForm(request.POST, instance=participacao)
-        if form.is_valid():
-            form.save()
+        novo_papel = "membro" if participacao.papel == "coordenador" else "coordenador"
+        participacao.papel = novo_papel
+        participacao.save(update_fields=["papel"])
+        if request.headers.get("HX-Request"):
+            return render(
+                request,
+                "nucleos/partials/membro.html",
+                {"part": participacao, "object": nucleo},
+            )
         return redirect("nucleos:detail", pk=pk)
 
 
@@ -417,59 +385,6 @@ class SuplenteDeleteView(GerenteRequiredMixin, LoginRequiredMixin, View):
         suplente.delete()
         messages.success(request, _("Suplente removido."))
         return redirect("nucleos:detail", pk=pk)
-
-
-class ExportarMembrosView(GerenteRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        formato = request.GET.get("formato", "csv")
-        participacoes = nucleo.participacoes.select_related("user")
-        now = timezone.now()
-        suplentes = set(
-            CoordenadorSuplente.objects.filter(
-                nucleo=nucleo,
-                periodo_inicio__lte=now,
-                periodo_fim__gte=now,
-                deleted=False,
-            ).values_list("usuario_id", flat=True)
-        )
-        data = tablib.Dataset(
-            headers=[
-                "Nome",
-                "Email",
-                "Status",
-                "papel",
-                "is_suplente",
-                "data_ingresso",
-            ]
-        )
-        for p in participacoes:
-            nome = p.user.get_full_name() or p.user.username
-            data.append(
-                [
-                    nome,
-                    p.user.email,
-                    p.status,
-                    p.papel,
-                    p.user_id in suplentes,
-                    (p.data_decisao or p.data_solicitacao).isoformat(),
-                ]
-            )
-        notify_exportacao_membros.delay(nucleo.id)
-        logger.info(
-            "Exportação de membros",
-            extra={"nucleo_id": nucleo.id, "user_id": request.user.id, "formato": formato},
-        )
-        if formato == "xls":
-            response = HttpResponse(
-                data.export("xlsx"),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            response["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.xlsx"
-            return response
-        response = HttpResponse(data.export("csv"), content_type="text/csv")
-        response["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
-        return response
 
 
 class NucleoToggleActiveView(GerenteRequiredMixin, LoginRequiredMixin, View):

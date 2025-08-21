@@ -75,6 +75,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             e = PermissionDenied()
             capture_exception(e)
             raise e
+
         params = self.request.query_params
         search = params.get("search")
         tipo = params.get("tipo")
@@ -83,6 +84,22 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         inativa = params.get("inativa")
         if inativa is not None:
             qs = qs.filter(inativa=inativa.lower() == "true")
+
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
+        inativa = self.request.query_params.get("inativa")
+        if inativa not in (None, ""):
+            value = inativa.lower()
+            truthy = {"1", "true", "t", "yes"}
+            falsy = {"0", "false", "f", "no"}
+            if value in truthy:
+                qs = qs.filter(inativa=True)
+            elif value in falsy:
+                qs = qs.filter(inativa=False)
+            else:
+                qs = qs.filter(inativa=False)
+
         else:
             qs = qs.filter(inativa=False)
         if search:

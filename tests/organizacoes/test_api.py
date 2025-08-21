@@ -114,6 +114,21 @@ def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
     assert str(org1.id) in ids and str(org2.id) not in ids
 
 
+def test_list_filter_inativa_tokens(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    active = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="aa")
+    inactive = Organizacao.objects.create(
+        nome="B", cnpj=faker_ptbr.cnpj(), slug="bb", inativa=True
+    )
+    url = reverse("organizacoes_api:organizacao-list")
+    resp = api_client.get(url + "?inativa=yes")
+    ids = [o["id"] for o in resp.data]
+    assert str(inactive.id) in ids and str(active.id) not in ids
+    resp = api_client.get(url + "?inativa=no")
+    ids = [o["id"] for o in resp.data]
+    assert str(active.id) in ids and str(inactive.id) not in ids
+
+
 def test_list_permissions(api_client, faker_ptbr, root_user):
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
     user_common = User.objects.create_user(

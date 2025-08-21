@@ -88,10 +88,10 @@
             {% if perms.organizacoes.change_organizacao %}
             <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
             {% endif %}
-            {% if perms.organizacoes.delete_organizacao %}
-            <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
-            {% endif %}
             {% if request.user.user_type == 'root' %}
+              {% if perms.organizacoes.delete_organizacao %}
+              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
+              {% endif %}
               <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
                 {% csrf_token %}
                 {% if organizacao.inativa %}
