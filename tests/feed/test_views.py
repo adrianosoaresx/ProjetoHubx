@@ -60,6 +60,13 @@ def test_feedlist_search(client, nucleado_user, posts):
     assert all("busca" in p.conteudo for p in resp.context["posts"])
 
 
+def test_feed_grid_links_to_public_profile(client, nucleado_user, posts):
+    client.force_login(nucleado_user)
+    resp = client.get(reverse("feed:listar"))
+    expected = reverse("accounts:perfil_publico", args=[posts[0].autor.pk])
+    assert expected in resp.content.decode()
+
+
 def test_novapostagem_root_forbidden(client, root_user):
     client.force_login(root_user)
     resp = client.get(reverse("feed:nova_postagem"))
