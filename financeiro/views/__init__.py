@@ -545,3 +545,15 @@ def forecast_view(request):
 def aportes_form_view(request):
     centros = CentroCusto.objects.all()
     return render(request, "financeiro/aportes_form.html", {"centros": centros})
+
+
+@login_required
+@user_passes_test(_is_associado)
+def extrato_view(request):
+    """Lista os lançamentos financeiros do associado."""
+    lancamentos = (
+        LancamentoFinanceiro.objects.filter(conta_associado__user=request.user)
+        .select_related("centro_custo")
+        .order_by("-data_lancamento")
+    )
+    return render(request, "financeiro/extrato.html", {"lancamentos": lancamentos})

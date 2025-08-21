@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     aportes_form_view,
+    extrato_view,
     forecast_view,
     importar_pagamentos_view,
     inadimplencias_view,
@@ -21,6 +22,7 @@ app_name = "financeiro"
 urlpatterns = [
     path("importar/", importar_pagamentos_view, name="importar_pagamentos"),
     path("aportes/", aportes_form_view, name="aportes_form"),
+    path("extrato/", extrato_view, name="extrato"),
     path("relatorios/", relatorios_view, name="relatorios"),
     path("centros/form/", centro_form_view, name="centro_form"),
     path("centros/form/<int:pk>/", centro_form_view, name="centro_form_edit"),
