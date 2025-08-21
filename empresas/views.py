@@ -80,6 +80,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         context["tags"] = list_all_tags()
         context["selected_tags"] = self.request.GET.getlist("tags")
         context["empresas"] = context.get("object_list")
+        context["mostrar_excluidas"] = self.request.GET.get("mostrar_excluidas", "")
         if self.request.user.is_superuser or self.request.user.user_type == UserType.ADMIN:
             context["organizacoes"] = Organizacao.objects.all()
         else:

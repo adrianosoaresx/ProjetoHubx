@@ -108,6 +108,16 @@ def test_admin_can_list_deleted(client, admin_user):
 
 
 @pytest.mark.django_db
+def test_admin_sees_restore_and_purge_actions(client, admin_user):
+    emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
+    client.force_login(admin_user)
+    resp = client.get(reverse("empresas:lista"), {"mostrar_excluidas": "1"})
+    content = resp.content.decode()
+    assert "Restaurar" in content
+    assert "Purgar" in content
+
+
+@pytest.mark.django_db
 def test_admin_excludes_deleted_by_default(client, admin_user):
     emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
     client.force_login(admin_user)
