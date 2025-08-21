@@ -1,8 +1,15 @@
 {% if partial %}
+  {% load i18n %}
   {% for topico in topicos %}
   <tr>
     <td class="px-4 py-2">
       <a href="{% url 'discussao:topico_detalhe' categoria.slug topico.slug %}" class="text-primary-600 hover:underline">{{ topico.titulo }}</a>
+      {% if topico.resolvido %}
+      <span class="ml-1 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded">{% trans "Resolvido" %}</span>
+      {% endif %}
+      {% if topico.fechado %}
+      <span class="ml-1 px-2 py-0.5 text-xs font-semibold bg-neutral-200 text-neutral-800 rounded">{% trans "Fechado" %}</span>
+      {% endif %}
       <div class="mt-1 space-x-1">
         {% for tag in topico.tags.all %}
         <a href="?tags={{ tag.nome }}" class="text-xs bg-neutral-100 px-2 py-0.5 rounded">{{ tag.nome }}</a>
