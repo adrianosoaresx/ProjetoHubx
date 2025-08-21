@@ -35,10 +35,11 @@ class GerenteRequiredMixin(UserPassesTestMixin):
 
 
 class ClienteRequiredMixin(UserPassesTestMixin):
-    """Permite acesso apenas a clientes."""
+    """Permite acesso a associados e nucleados."""
 
     def test_func(self):
-        return self.request.user.user_type == UserType.CONVIDADO
+        user = self.request.user
+        return user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}
 
 
 class NoSuperadminMixin(UserPassesTestMixin):
@@ -151,7 +152,4 @@ class IsOrgAdminOrSuperuser(BasePermission):
         org_id = getattr(obj, "pk", None)
         if org_id is None:
             org_id = getattr(obj, "organizacao_id", None)
-        return (
-            user.get_tipo_usuario == UserType.ADMIN.value
-            and getattr(user, "organizacao_id", None) == org_id
-        )
+        return user.get_tipo_usuario == UserType.ADMIN.value and getattr(user, "organizacao_id", None) == org_id

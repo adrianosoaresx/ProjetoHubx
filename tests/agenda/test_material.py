@@ -38,7 +38,7 @@ def cliente_user(organizacao):
         username="cliente",
         email="cliente@example.com",
         password="pass",
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
         organizacao=organizacao,
     )
 
@@ -137,9 +137,7 @@ def test_list_view_filtra_por_organizacao(client, admin_user, organizacao):
 
 def test_material_api_rejeita_extensao_invalida(api_client, admin_user):
     evento = EventoFactory(organizacao=admin_user.organizacao, coordenador=admin_user)
-    arquivo = SimpleUploadedFile(
-        "malware.exe", b"xx", content_type="application/octet-stream"
-    )
+    arquivo = SimpleUploadedFile("malware.exe", b"xx", content_type="application/octet-stream")
     data = _form_data(evento)
     data["arquivo"] = arquivo
     api_client.force_authenticate(admin_user)

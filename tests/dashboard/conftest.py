@@ -52,16 +52,16 @@ def gerente_user(organizacao):
 
 
 @pytest.fixture
-def cliente_user():
+def cliente_user(organizacao):
     return User.objects.create_user(
         username="cliente",
         email="cliente@example.com",
         password="pass",
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
     )
 
 
 @pytest.fixture
 def evento(admin_user, organizacao):
     return EventoFactory(organizacao=organizacao, coordenador=admin_user)
-
