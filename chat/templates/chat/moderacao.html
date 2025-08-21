@@ -8,8 +8,8 @@
     <div class="border p-2 mb-2" id="msg-{{ m.id }}">
       <p><strong>{{ m.remetente.username }}</strong>: {{ m.conteudo }}</p>
       <p>{% trans "Flags" %}: {{ m.flags_count }}</p>
-      <button hx-post="/api/chat/moderacao/messages/{{ m.id }}/approve/" hx-target="#msg-{{ m.id }}" hx-swap="outerHTML remove" class="text-green-600">{% trans "Aprovar" %}</button>
-      <button hx-post="/api/chat/moderacao/messages/{{ m.id }}/remove/" hx-target="#msg-{{ m.id }}" hx-swap="outerHTML remove" class="text-red-600 ml-2">{% trans "Remover" %}</button>
+      <button hx-post="/api/chat/moderacao/messages/{{ m.id }}/approve/" hx-target="#msg-{{ m.id }}" hx-swap="outerHTML remove" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-green-600">{% trans "Aprovar" %}</button>
+      <button hx-post="/api/chat/moderacao/messages/{{ m.id }}/remove/" hx-target="#msg-{{ m.id }}" hx-swap="outerHTML remove" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="text-red-600 ml-2">{% trans "Remover" %}</button>
     </div>
   {% empty %}
     <p>{% trans "Nenhuma mensagem sinalizada." %}</p>

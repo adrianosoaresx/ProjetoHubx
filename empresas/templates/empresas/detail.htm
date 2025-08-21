@@ -124,6 +124,7 @@
       {% else %}
         hx-post="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
       {% endif %}
+      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
       hx-swap="none"
       hx-on:afterRequest="
         if (event.detail.xhr.status === 201) {

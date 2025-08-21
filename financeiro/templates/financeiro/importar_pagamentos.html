@@ -12,13 +12,14 @@
       <label for="file" class="block text-sm font-medium text-gray-700">{% trans "Arquivo" %}</label>
       <input id="file" type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required />
     </form>
-    <button id="preview-btn"
-            class="mt-2 bg-primary text-white px-4 py-2 rounded"
-            hx-post="/api/financeiro/importar-pagamentos/"
-            hx-target="#preview"
-            hx-trigger="change from:#file"
-            hx-include="#upload-form"
-            hx-on="htmx:afterRequest: renderPreview(event)">
+      <button id="preview-btn"
+              class="mt-2 bg-primary text-white px-4 py-2 rounded"
+              hx-post="/api/financeiro/importar-pagamentos/"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+              hx-target="#preview"
+              hx-trigger="change from:#file"
+              hx-include="#upload-form"
+              hx-on="htmx:afterRequest: renderPreview(event)">
       {% trans "Pré-visualizar" %}
     </button>
     <div id="preview" class="mt-6" aria-live="polite"></div>
@@ -29,18 +30,20 @@
       <input type="hidden" id="confirm-id" name="id" />
     </form>
     <div class="mt-4 flex items-center gap-2">
-      <button id="confirm-btn" disabled
-              hx-post="/api/financeiro/importar-pagamentos/confirmar/"
-              hx-target="#messages"
-              hx-include="#confirm-form"
-              hx-indicator="#loading"
-              class="bg-secondary text-white px-4 py-2 rounded">
+        <button id="confirm-btn" disabled
+                hx-post="/api/financeiro/importar-pagamentos/confirmar/"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                hx-target="#messages"
+                hx-include="#confirm-form"
+                hx-indicator="#loading"
+                class="bg-secondary text-white px-4 py-2 rounded">
         {% trans "Confirmar Importação" %}
       </button>
       <span id="loading" class="htmx-indicator text-sm">{% trans "Processando..." %}</span>
     </div>
   </section>
   <script>
+    const csrfToken = "{{ csrf_token }}";
     function renderPreview(evt) {
       const preview = document.getElementById('preview');
       const messages = document.getElementById('messages');
@@ -64,7 +67,7 @@
         }
         if (data.token_erros) {
           const token = data.token_erros;
-          reprocess.innerHTML = `<div class="space-y-2"><a href="/media/importacoes/${token}.errors.csv" download class="text-blue-600 underline">{% trans "Baixar arquivo de erros" %}</a><form id="reprocess-form" class="space-y-2" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required /><button type="submit" class="bg-primary text-white px-4 py-2 rounded" hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/" hx-target="#messages" hx-include="#reprocess-form" hx-encoding="multipart/form-data">{% trans "Reprocessar" %}</button></form></div>`;
+            reprocess.innerHTML = `<div class="space-y-2"><a href="/media/importacoes/${token}.errors.csv" download class="text-blue-600 underline">{% trans "Baixar arquivo de erros" %}</a><form id="reprocess-form" class="space-y-2" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-2 rounded" required /><button type="submit" class="bg-primary text-white px-4 py-2 rounded" hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/" hx-target="#messages" hx-include="#reprocess-form" hx-encoding="multipart/form-data" hx-headers='{"X-CSRFToken": "${csrfToken}"}'>{% trans "Reprocessar" %}</button></form></div>`;
         }
       } catch (e) {
         messages.textContent = '{% trans "Erro ao processar pré-visualização" %}';
