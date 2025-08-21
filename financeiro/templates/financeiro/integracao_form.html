@@ -24,9 +24,19 @@
     {% if form and form.tipo.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.tipo.errors }}</p>{% endif %}
   </div>
   <div>
+    <label for="id_organizacao" class="block text-sm font-medium">{{ _('Organização') }}</label>
+    <input id="id_organizacao" name="organizacao" class="border p-2 w-full" {% if integracao and integracao.organizacao %}value="{{ integracao.organizacao }}"{% endif %} {% if form and form.organizacao.errors %}aria-invalid="true"{% endif %} />
+    {% if form and form.organizacao.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.organizacao.errors }}</p>{% endif %}
+  </div>
+  <div>
     <label for="id_base_url" class="block text-sm font-medium">{{ _('Base URL') }}</label>
     <input id="id_base_url" name="base_url" type="url" class="border p-2 w-full" required {% if integracao %}value="{{ integracao.base_url }}"{% endif %} {% if form and form.base_url.errors %}aria-invalid="true"{% endif %} />
     {% if form and form.base_url.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.base_url.errors }}</p>{% endif %}
+  </div>
+  <div>
+    <label for="id_autenticacao" class="block text-sm font-medium">{{ _('Autenticação') }}</label>
+    <input id="id_autenticacao" name="autenticacao" type="text" class="border p-2 w-full" {% if integracao %}value="{{ integracao.autenticacao }}"{% endif %} {% if form and form.autenticacao.errors %}aria-invalid="true"{% endif %} />
+    {% if form and form.autenticacao.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.autenticacao.errors }}</p>{% endif %}
   </div>
   <div>
     <label for="id_credenciais" class="block text-sm font-medium">{{ _('Credenciais') }}</label>
