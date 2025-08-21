@@ -27,7 +27,12 @@ from nucleos.serializers import NucleoSerializer
 
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 
-from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoRecurso
+from .models import (
+    Organizacao,
+    OrganizacaoAtividadeLog,
+    OrganizacaoChangeLog,
+    OrganizacaoRecurso,
+)
 from .serializers import (
     FeedPluginConfigSerializer,
     OrganizacaoAtividadeLogSerializer,
@@ -123,9 +128,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             "update",
             "inativar",
             "reativar",
+            "history",
         }:
             self.permission_classes = [IsAuthenticated, IsRoot]
-        elif self.action in {"history", "list", "retrieve"}:
+        elif self.action in {"list", "retrieve"}:
             self.permission_classes = [IsAuthenticated, IsOrgAdminOrSuperuser]
         return super().get_permissions()
 

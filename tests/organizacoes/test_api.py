@@ -140,40 +140,21 @@ def test_list_permissions(api_client, faker_ptbr, root_user):
     assert resp.status_code == status.HTTP_200_OK
 
 
-def test_history_access_restricted(api_client, root_user, faker_ptbr):
-    other_user = User.objects.create_user(
-        username="x",
-        email="x@example.com",
-        password="pass",
-        user_type=UserType.ADMIN,
-    )
-    org_admin = User.objects.create_user(
+def test_history_requires_root(api_client, root_user, faker_ptbr):
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="l")
+    admin_user = User.objects.create_user(
         username="adm",
         email="adm@example.com",
         password="pass",
         user_type=UserType.ADMIN,
-        organizacao=None,
+        organizacao=org,
     )
-    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="l")
-    org_admin.organizacao = org
-    org_admin.save()
     OrganizacaoAtividadeLog.objects.create(organizacao=org, acao="created")
     url = reverse("organizacoes_api:organizacao-history", args=[org.pk])
-    # unauthorized
-    resp = api_client.get(url)
-    assert resp.status_code == status.HTTP_403_FORBIDDEN
-    # non-admin of org denied
-    auth(api_client, other_user)
-    resp = api_client.get(url)
-    assert resp.status_code == status.HTTP_403_FORBIDDEN
-    # admin of org allowed
-    auth(api_client, org_admin)
-    resp = api_client.get(url)
-    assert resp.status_code == status.HTTP_200_OK
-    # root allowed
+    auth(api_client, admin_user)
+    assert api_client.get(url).status_code == status.HTTP_403_FORBIDDEN
     auth(api_client, root_user)
-    resp = api_client.get(url)
-    assert resp.status_code == status.HTTP_200_OK
+    assert api_client.get(url).status_code == status.HTTP_200_OK
 
 
 def test_change_log_created_on_update(api_client, root_user, faker_ptbr):
