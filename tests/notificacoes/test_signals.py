@@ -47,3 +47,40 @@ def test_atualizar_templates_total_atualiza_gauge() -> None:
         using="default",
     )
     assert metrics.templates_total._value.get() == before
+
+
+def test_templates_total_atualizado_em_post_save() -> None:
+    before = NotificationTemplate.objects.filter(ativo=True).count()
+    metrics.templates_total.set(0)
+
+    template = NotificationTemplate.objects.create(
+        codigo="novo",
+        assunto="Oi",
+        corpo="{{ nome }}",
+        canal="email",
+    )
+
+    assert metrics.templates_total._value.get() == before + 1
+
+    template.ativo = False
+    template.save()
+
+    assert metrics.templates_total._value.get() == before
+
+
+def test_templates_total_atualizado_em_post_delete() -> None:
+    before = NotificationTemplate.objects.filter(ativo=True).count()
+    metrics.templates_total.set(0)
+
+    template = NotificationTemplate.objects.create(
+        codigo="novo",
+        assunto="Oi",
+        corpo="{{ nome }}",
+        canal="email",
+    )
+
+    assert metrics.templates_total._value.get() == before + 1
+
+    template.delete()
+
+    assert metrics.templates_total._value.get() == before
