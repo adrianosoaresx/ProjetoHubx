@@ -1,21 +1,12 @@
 from __future__ import annotations
 
-from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-
-from .models import PushSubscription
 
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
         user = self.scope.get("user")
         if not user or not user.is_authenticated:
-            await self.close()
-            return
-        has_sub = await database_sync_to_async(
-            PushSubscription.objects.filter(user=user, ativo=True).exists
-        )()
-        if not has_sub:
             await self.close()
             return
         self.group_name = f"notificacoes_{user.id}"
