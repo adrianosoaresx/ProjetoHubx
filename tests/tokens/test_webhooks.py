@@ -4,8 +4,6 @@ import json
 from datetime import timedelta
 
 import pytest
-import requests
-from django.apps import apps
 from django.test import override_settings
 
 from accounts.factories import UserFactory
@@ -17,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 
 @override_settings(
-    TOKEN_CREATED_WEBHOOK_URL="https://example.com/created",
+    TOKENS_WEBHOOK_URL="https://example.com/hook",
     TOKEN_WEBHOOK_SECRET="segredo",
 )
 def test_generate_token_triggers_webhook(monkeypatch):
@@ -33,8 +31,7 @@ def test_generate_token_triggers_webhook(monkeypatch):
 
         return Resp()
 
-    monkeypatch.setattr(requests, "post", fake_post)
-    apps.get_app_config("tokens").ready()
+    monkeypatch.setattr("tokens.services.requests.post", fake_post)
 
     user = UserFactory()
     raw = generate_token(user, None, "read", timedelta(days=1))
@@ -42,16 +39,19 @@ def test_generate_token_triggers_webhook(monkeypatch):
     token_hash = hashlib.sha256(raw.encode()).hexdigest()
     token = ApiToken.objects.get(token_hash=token_hash)
 
-    assert calls["url"] == "https://example.com/created"
-    assert json.loads(calls["data"].decode()) == {"id": str(token.id), "token": raw}
+    assert calls["url"] == "https://example.com/hook"
+    assert json.loads(calls["data"].decode()) == {
+        "event": "created",
+        "id": str(token.id),
+        "token": raw,
+    }
 
     expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
     assert calls["headers"]["X-Hubx-Signature"] == expected_sig
 
 
 @override_settings(
-    TOKEN_CREATED_WEBHOOK_URL="https://example.com/created",
-    TOKEN_REVOKED_WEBHOOK_URL="https://example.com/revoked",
+    TOKENS_WEBHOOK_URL="https://example.com/hook",
     TOKEN_WEBHOOK_SECRET="segredo",
 )
 def test_revoke_token_triggers_webhook(monkeypatch):
@@ -65,8 +65,7 @@ def test_revoke_token_triggers_webhook(monkeypatch):
 
         return Resp()
 
-    monkeypatch.setattr(requests, "post", fake_post)
-    apps.get_app_config("tokens").ready()
+    monkeypatch.setattr("tokens.services.requests.post", fake_post)
 
     user = UserFactory()
     raw = generate_token(user, None, "read", timedelta(days=1))
@@ -78,8 +77,8 @@ def test_revoke_token_triggers_webhook(monkeypatch):
 
     assert len(calls) == 1
     url, data, headers = calls[0]
-    assert url == "https://example.com/revoked"
-    assert json.loads(data.decode()) == {"id": str(token.id)}
+    assert url == "https://example.com/hook"
+    assert json.loads(data.decode()) == {"event": "revoked", "id": str(token.id)}
     expected_sig = hmac.new(b"segredo", data, hashlib.sha256).hexdigest()
     assert headers["X-Hubx-Signature"] == expected_sig
 

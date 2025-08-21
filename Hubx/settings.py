@@ -175,8 +175,9 @@ TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
 TOKENS_RATE_LIMIT_ENABLED = True
 
 # Configuração de webhooks para tokens
-TOKEN_CREATED_WEBHOOK_URL = os.getenv("TOKEN_CREATED_WEBHOOK_URL")
-TOKEN_REVOKED_WEBHOOK_URL = os.getenv("TOKEN_REVOKED_WEBHOOK_URL")
+# ``TOKENS_WEBHOOK_URL`` define o endpoint que receberá eventos de criação e
+# revogação de tokens. Caso não definido, nenhum webhook será enviado.
+TOKENS_WEBHOOK_URL = os.getenv("TOKENS_WEBHOOK_URL")
 TOKEN_WEBHOOK_SECRET = os.getenv("TOKEN_WEBHOOK_SECRET", "")
 
 # Password validation
