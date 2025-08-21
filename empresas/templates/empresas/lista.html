@@ -58,6 +58,14 @@
       <label for="q" class="block text-sm font-medium text-neutral-700">{% translate "Busca" %}</label>
       <input type="text" id="q" name="q" value="{{ request.GET.q }}" class="w-full p-2 border rounded" />
     </div>
+    {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+    <div class="flex items-end">
+      <label for="mostrar_excluidas" class="inline-flex items-center text-sm font-medium text-neutral-700">
+        <input type="checkbox" id="mostrar_excluidas" name="mostrar_excluidas" value="1" class="mr-2" {% if mostrar_excluidas == '1' %}checked{% endif %}>
+        {% translate "Mostrar excluídas" %}
+      </label>
+    </div>
+    {% endif %}
     <div class="flex items-end">
       <button type="submit" class="w-full bg-primary-600 text-white p-2 rounded hover:bg-primary-700">{% translate "Filtrar" %}</button>
     </div>

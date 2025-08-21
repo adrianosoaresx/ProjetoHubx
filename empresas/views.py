@@ -80,6 +80,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         context["tags"] = list_all_tags()
         context["selected_tags"] = self.request.GET.getlist("tags")
         context["empresas"] = context.get("object_list")
+        context["mostrar_excluidas"] = self.request.GET.get("mostrar_excluidas", "")
         if self.request.user.is_superuser or self.request.user.user_type == UserType.ADMIN:
             context["organizacoes"] = Organizacao.objects.all()
         else:
@@ -323,6 +324,10 @@ def detalhes_empresa(request, pk):
     avaliacao_usuario = None
     if request.user.is_authenticated:
         avaliacao_usuario = avaliacoes.filter(usuario=request.user).first()
+    pode_visualizar_contatos = pode_crud_empresa(request.user, empresa)
+    contatos = []
+    if pode_visualizar_contatos:
+        contatos = list(empresa.contatos.filter(deleted=False))
     context = {
         "empresa": empresa,
         "empresa_tags": empresa.tags.all(),
@@ -331,6 +336,8 @@ def detalhes_empresa(request, pk):
         "avaliacoes": avaliacoes,
         "media_avaliacoes": empresa.media_avaliacoes(),
         "avaliacao_usuario": avaliacao_usuario,
+        "contatos": contatos,
+        "pode_visualizar_contatos": pode_visualizar_contatos,
     }
     return render(request, "empresas/detail.html", context)
 
