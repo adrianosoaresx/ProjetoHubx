@@ -107,7 +107,8 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-  const socket = new WebSocket(`ws://${window.location.host}/ws/discussao/{{ topico.id }}/`);
+  const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const socket = new WebSocket(`${scheme}://${window.location.host}/ws/discussao/{{ topico.id }}/`);
   socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     if (data.evento === 'nova_resposta') {
