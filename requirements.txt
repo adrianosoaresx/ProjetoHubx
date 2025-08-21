@@ -40,6 +40,7 @@ django-model-utils==5.0.0
 django-phonenumber-field==8.1.0
 django-prometheus==2.4.1
 django-ratelimit==4.1.0
+django-redis==6.0.0
 django-select2==8.4.1
 django-silk==5.4.0
 django-simple-history==3.10.1
@@ -75,7 +76,7 @@ jsonschema==4.24.0
 jsonschema-specifications==2025.4.1
 kiwisolver==1.4.8
 kombu==5.5.4
-Markdown==3.6
+Markdown==3.8.2
 markdown-it-py==3.0.0
 matplotlib==3.10.5
 mdurl==0.1.2
