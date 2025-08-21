@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import hashlib
+import hmac
+import json
 import secrets
+import time
 import uuid
 from datetime import datetime, timedelta
 from typing import Iterable, Tuple
 
+import requests
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
@@ -13,18 +18,63 @@ from .metrics import (
     tokens_api_tokens_created_total,
     tokens_api_tokens_revoked_total,
 )
-from .models import ApiToken, TokenAcesso
+from .models import ApiToken, TokenAcesso, TokenWebhookEvent
 
 User = get_user_model()
 
 
-# Callbacks para webhooks, sobrescritos em ``apps.py``
+# Rotinas de envio de webhooks -------------------------------------------------
+
+def _send_webhook(payload: dict[str, object]) -> None:
+    """Envia ``payload`` para o endpoint configurado.
+
+    Caso todas as tentativas falhem, registra o evento para reprocessamento
+    posterior em :class:`TokenWebhookEvent`.
+    """
+
+    url = getattr(settings, "TOKENS_WEBHOOK_URL", None)
+    if not url:
+        return
+
+    data = json.dumps(payload).encode()
+    headers = {"Content-Type": "application/json"}
+
+    secret = getattr(settings, "TOKEN_WEBHOOK_SECRET", "")
+    if secret:
+        signature = hmac.new(secret.encode(), data, hashlib.sha256).hexdigest()
+        headers["X-Hubx-Signature"] = signature
+
+    attempts = 0
+    delay = 1
+    while attempts < 3:
+        try:
+            response = requests.post(url, data=data, headers=headers, timeout=5)
+            if response.status_code < 400:
+                return
+        except Exception:  # pragma: no cover - falha de rede é ignorada
+            pass
+        attempts += 1
+        if attempts < 3:
+            time.sleep(delay)
+            delay *= 2
+
+    TokenWebhookEvent.objects.create(
+        url=url,
+        payload=payload,
+        delivered=False,
+        attempts=attempts,
+        last_attempt_at=timezone.now(),
+    )
+
+
 def token_created(token: ApiToken, raw: str) -> None:
-    pass
+    """Dispara webhook para notificar criação de ``token``."""
+    _send_webhook({"event": "created", "id": str(token.id), "token": raw})
 
 
 def token_revoked(token: ApiToken) -> None:
-    pass
+    """Dispara webhook para notificar revogação de ``token``."""
+    _send_webhook({"event": "revoked", "id": str(token.id)})
 
 
 def generate_token(
