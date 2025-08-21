@@ -28,19 +28,22 @@ logger = logging.getLogger(__name__)
 @login_required
 @permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
 def list_templates(request):
-    codigo_toggle = request.GET.get("toggle")
-    if codigo_toggle:
-        template = get_object_or_404(NotificationTemplate, codigo=codigo_toggle)
+    templates = NotificationTemplate.objects.all()
+    return render(request, "notificacoes/templates_list.html", {"templates": templates})
+
+
+@login_required
+@permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
+def toggle_template(request, codigo: str):
+    template = get_object_or_404(NotificationTemplate, codigo=codigo)
+    if request.method == "POST":
         template.ativo = not template.ativo
         template.save(update_fields=["ativo"])
         if template.ativo:
             messages.success(request, _("Template ativado com sucesso."))
         else:
             messages.success(request, _("Template desativado com sucesso."))
-        return redirect("notificacoes:templates_list")
-
-    templates = NotificationTemplate.objects.all()
-    return render(request, "notificacoes/templates_list.html", {"templates": templates})
+    return redirect("notificacoes:templates_list")
 
 
 @login_required
