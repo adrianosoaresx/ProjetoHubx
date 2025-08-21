@@ -138,25 +138,43 @@
 </form>
 <script>
   (function() {
+    const chkEmail = document.getElementById('{{ preferencias_form.receber_notificacoes_email.auto_id }}');
+    const chkWhats = document.getElementById('{{ preferencias_form.receber_notificacoes_whatsapp.auto_id }}');
+    const chkPush = document.getElementById('{{ preferencias_form.receber_notificacoes_push.auto_id }}');
+    const selEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}');
+    const selWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}');
+    const selPush = document.getElementById('{{ preferencias_form.frequencia_notificacoes_push.auto_id }}');
+
     function toggleFields() {
-      const freqEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}').value;
-      const freqWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}').value;
-      const freqPush = document.getElementById('{{ preferencias_form.frequencia_notificacoes_push.auto_id }}').value;
+      selEmail.disabled = !chkEmail.checked;
+      selEmail.classList.toggle('hidden', !chkEmail.checked);
+      selWhats.disabled = !chkWhats.checked;
+      selWhats.classList.toggle('hidden', !chkWhats.checked);
+      selPush.disabled = !chkPush.checked;
+      selPush.classList.toggle('hidden', !chkPush.checked);
+
+      const freqEmail = chkEmail.checked ? selEmail.value : '';
+      const freqWhats = chkWhats.checked ? selWhats.value : '';
+      const freqPush = chkPush.checked ? selPush.value : '';
+
       const showDaily = freqEmail === 'diaria' || freqWhats === 'diaria' || freqPush === 'diaria';
       const showWeekly = freqEmail === 'semanal' || freqWhats === 'semanal' || freqPush === 'semanal';
       const hasHoraDiariaError = document.querySelector('#campo-hora-diaria [role="alert"]') !== null;
       const hasHoraSemanalError = document.querySelector('#campo-hora-semanal [role="alert"]') !== null;
       const hasDiaSemanalError = document.querySelector('#campo-dia-semanal [role="alert"]') !== null;
+
       document.getElementById('campo-hora-diaria').classList.toggle('hidden', !(showDaily || hasHoraDiariaError));
       document.getElementById('campo-hora-semanal').classList.toggle('hidden', !(showWeekly || hasHoraSemanalError));
       document.getElementById('campo-dia-semanal').classList.toggle('hidden', !(showWeekly || hasDiaSemanalError));
     }
-    const selEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}');
-    const selWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}');
-    const selPush = document.getElementById('{{ preferencias_form.frequencia_notificacoes_push.auto_id }}');
+
     selEmail.addEventListener('change', toggleFields);
     selWhats.addEventListener('change', toggleFields);
     selPush.addEventListener('change', toggleFields);
+    chkEmail.addEventListener('change', toggleFields);
+    chkWhats.addEventListener('change', toggleFields);
+    chkPush.addEventListener('change', toggleFields);
+
     toggleFields();
   })();
 </script>
