@@ -23,6 +23,7 @@ from .api import _post_rate, _read_rate
 from accounts.models import UserType
 from nucleos.models import Nucleo
 from agenda.models import Evento
+from organizacoes.models import Organizacao
 
 
 from .forms import CommentForm, PostForm
@@ -138,6 +139,7 @@ class FeedListView(LoginRequiredMixin, ListView):
         tipo_feed = self.request.GET.get("tipo_feed", "global")
         q = self.request.GET.get("q", "").strip()
         user = self.request.user
+        organizacao_id = self.request.GET.get("organizacao")
 
         latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
@@ -147,6 +149,9 @@ class FeedListView(LoginRequiredMixin, ListView):
         if not user.is_staff:
             qs = qs.filter(Q(mod_status="aprovado") | Q(autor=user))
         qs = qs.distinct()
+
+        if organizacao_id:
+            qs = qs.filter(organizacao_id=organizacao_id)
 
         if tipo_feed == "usuario":
             qs = qs.filter(Q(autor=user) | Q(tipo_feed="global", organizacao=user.organizacao))
@@ -162,7 +167,7 @@ class FeedListView(LoginRequiredMixin, ListView):
             qs = qs.filter(tipo_feed="evento", evento_id=evento_id)
         else:  # global
             qs = qs.filter(tipo_feed="global")
-            if user.user_type != UserType.ROOT:
+            if not organizacao_id and user.user_type != UserType.ROOT:
                 qs = qs.filter(organizacao=user.organizacao)
 
         if q:
@@ -211,15 +216,20 @@ class FeedListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
-        context["tags_disponiveis"] = Tag.objects.all()
-
         user = self.request.user
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=user)
+        context["tags_disponiveis"] = Tag.objects.all()
         if hasattr(user, "eventos"):
             context["eventos_do_usuario"] = user.eventos.all()
         else:
             context["eventos_do_usuario"] = Evento.objects.none()
+        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            context["organizacoes_do_usuario"] = Organizacao.objects.all()
+        else:
+            org = getattr(user, "organizacao", None)
+            context["organizacoes_do_usuario"] = (
+                Organizacao.objects.filter(pk=org.pk) if org else Organizacao.objects.none()
+            )
 
         return context
 
