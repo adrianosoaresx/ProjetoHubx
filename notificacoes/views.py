@@ -157,17 +157,24 @@ def delete_template(request, codigo: str):
 @login_required
 @staff_member_required
 def metrics_dashboard(request):
-    logs = NotificationLog.objects.all()
+    logs = NotificationLog.objects.filter(data_envio__isnull=False)
     inicio = request.GET.get("inicio")
     fim = request.GET.get("fim")
     if inicio:
-        logs = logs.filter(created_at__date__gte=inicio)
+        logs = logs.filter(data_envio__date__gte=inicio)
     if fim:
-        logs = logs.filter(created_at__date__lte=fim)
-    total_por_canal = {item["canal"]: item["total"] for item in logs.values("canal").annotate(total=Count("id"))}
+        logs = logs.filter(data_envio__date__lte=fim)
+    total_por_canal = {
+        item["canal"]: item["total"]
+        for item in logs.filter(status=NotificationStatus.ENVIADA)
+        .values("canal")
+        .annotate(total=Count("id"))
+    }
     falhas_por_canal = {
         item["canal"]: item["total"]
-        for item in logs.filter(status=NotificationStatus.FALHA).values("canal").annotate(total=Count("id"))
+        for item in logs.filter(status=NotificationStatus.FALHA)
+        .values("canal")
+        .annotate(total=Count("id"))
     }
     templates_total = NotificationTemplate.objects.filter(ativo=True).count()
     context = {
