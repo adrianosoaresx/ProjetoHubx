@@ -610,6 +610,10 @@
             fetch(uploadUrl,{method:'POST',body:formData,headers:{'X-CSRFToken':csrfToken}})
                 .then(r=>{ if(!r.ok) throw new Error(); return r.json(); })
                 .then(async data=>{
+                    if(data.infected){
+                        alert(t('fileInfected','Arquivo infectado'));
+                        return;
+                    }
 
                     if(isE2EE){
                         const {cipher, alg, keyVersion} = await encryptMessage(data.url);
