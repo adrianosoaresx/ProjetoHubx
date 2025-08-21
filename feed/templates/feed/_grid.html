@@ -60,14 +60,14 @@
             {% include 'feed/_like_button.html' with post=post %}
           </div>
           <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.reacoes.filter(vote='share', user=user).exists %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
-            <i class="fa-solid fa-share"></i>
+            <i class="fa-solid fa-share" aria-hidden="true"></i>
             <span class="share-count">{{ post.share_count }}</span>
           </button>
           <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded {% if post.bookmarks.filter(user=user).exists %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
-            <i class="fa-solid fa-bookmark"></i>
+            <i class="fa-solid fa-bookmark" aria-hidden="true"></i>
           </button>
           <button type="button" data-post-id="{{ post.id }}" class="flag-btn hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded {% if post.flags.filter(user=user).exists %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.flags.filter(user=user).exists %}disabled{% endif %}>
-            <i class="fa-solid fa-flag"></i>
+            <i class="fa-solid fa-flag" aria-hidden="true"></i>
           </button>
         </div>
         <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
