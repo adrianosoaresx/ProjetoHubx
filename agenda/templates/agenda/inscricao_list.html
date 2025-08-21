@@ -46,6 +46,7 @@
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Usuário" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Status" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Posição na espera" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Presente" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Valor Pago" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Método de Pagamento" %}</th>
@@ -60,6 +61,13 @@
               <td class="px-4 py-2">{{ inscricao.user }}</td>
               <td class="px-4 py-2">{{ inscricao.evento }}</td>
               <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
+              <td class="px-4 py-2">
+                {% if inscricao.status == 'pendente' %}
+                  {{ inscricao.posicao_espera }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
               <td class="px-4 py-2">{{ inscricao.presente }}</td>
               <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
               <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
@@ -89,7 +97,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="9" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
+              <td colspan="10" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
             </tr>
           {% endfor %}
         </tbody>
