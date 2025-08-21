@@ -47,12 +47,12 @@
           <button id="resumo-gerar" class="text-blue-600 hover:underline text-sm" type="button">{% trans 'Gerar resumo' %}</button>
         {% endif %}
       </div>
-      <ul id="resumos-list" class="pl-5 list-disc text-sm text-neutral-700"></ul>
+      <ul id="resumos-list" class="pl-5 list-disc text-sm text-neutral-700" aria-live="polite"></ul>
     </section>
 
     <section id="trending" class="mb-4" aria-label="{% trans 'Tópicos em alta' %}">
       <h3 class="text-sm font-semibold text-neutral-600">{% trans 'Tópicos em alta' %}</h3>
-      <ul id="trending-list" class="pl-5 list-disc text-sm text-neutral-700"></ul>
+      <ul id="trending-list" class="pl-5 list-disc text-sm text-neutral-700" aria-live="polite"></ul>
     </section>
 
     {% if is_admin %}
@@ -179,12 +179,19 @@
     const retencaoFeedback = document.getElementById('retencao-feedback');
     const leaveBtn = document.getElementById('leave-channel');
 
+    function showMessage(list, message){
+      list.replaceChildren();
+      const li = document.createElement('li');
+      li.textContent = message;
+      list.appendChild(li);
+    }
+
     async function carregarResumos(){
-      resumosList.innerHTML = '<li>{% trans "Carregando..." %}</li>';
+      showMessage(resumosList, '{% trans "Carregando..." %}');
       try{
         const r = await fetch(`/api/chat/channels/${channelId}/resumos/`);
         const data = await r.json();
-        resumosList.innerHTML='';
+        resumosList.replaceChildren();
         data.forEach(item=>{
           const li=document.createElement('li');
           const dt=new Date(item.created_at).toLocaleString();
@@ -192,23 +199,23 @@
           resumosList.appendChild(li);
         });
       }catch(e){
-        resumosList.innerHTML = '<li>{% trans "Erro ao carregar" %}</li>';
+        showMessage(resumosList, '{% trans "Erro ao carregar" %}');
       }
     }
 
     async function carregarTrending(){
-      trendingList.innerHTML = '<li>{% trans "Carregando..." %}</li>';
+      showMessage(trendingList, '{% trans "Carregando..." %}');
       try{
         const r = await fetch(`/api/chat/trending/?canal=${channelId}`);
         const data = await r.json();
-        trendingList.innerHTML='';
+        trendingList.replaceChildren();
         data.forEach(item=>{
           const li=document.createElement('li');
           li.textContent=`${item.palavra} (${item.frequencia})`;
           trendingList.appendChild(li);
         });
       }catch(e){
-        trendingList.innerHTML = '<li>{% trans "Erro ao carregar" %}</li>';
+        showMessage(trendingList, '{% trans "Erro ao carregar" %}');
       }
     }
 
