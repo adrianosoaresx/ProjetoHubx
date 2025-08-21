@@ -63,5 +63,28 @@ def cliente_user(organizacao):
 
 
 @pytest.fixture
+def nucleado_user(organizacao, nucleo):
+    return User.objects.create_user(
+        username="nucleado",
+        email="nucleado@example.com",
+        password="pass",
+        user_type=UserType.NUCLEADO,
+        organizacao=organizacao,
+        nucleo=nucleo,
+    )
+
+
+@pytest.fixture
+def convidado_user(organizacao):
+    return User.objects.create_user(
+        username="convidado",
+        email="convidado@example.com",
+        password="pass",
+        user_type=UserType.CONVIDADO,
+        organizacao=organizacao,
+    )
+
+
+@pytest.fixture
 def evento(admin_user, organizacao):
     return EventoFactory(organizacao=organizacao, coordenador=admin_user)

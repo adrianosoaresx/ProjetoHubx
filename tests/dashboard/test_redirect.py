@@ -32,6 +32,20 @@ def test_dashboard_redirect_cliente(client, cliente_user):
     assert resp.url == reverse("dashboard:cliente")
 
 
+def test_dashboard_redirect_nucleado(client, nucleado_user):
+    client.force_login(nucleado_user)
+    resp = client.get(reverse("dashboard:dashboard"))
+    assert resp.status_code == 302
+    assert resp.url == reverse("dashboard:cliente")
+
+
+def test_dashboard_redirect_unknown_type(client, convidado_user):
+    client.force_login(convidado_user)
+    resp = client.get(reverse("dashboard:dashboard"))
+    assert resp.status_code == 302
+    assert resp.url == reverse("accounts:perfil")
+
+
 def test_dashboard_redirect_anonymous(client):
     resp = client.get(reverse("dashboard:dashboard"))
     assert resp.status_code == 302

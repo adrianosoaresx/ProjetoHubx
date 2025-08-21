@@ -269,11 +269,7 @@ def dashboard_redirect(request):
     if user.user_type == UserType.ADMIN:
         return redirect("dashboard:admin")
     if user.user_type == UserType.COORDENADOR:
-
         return redirect("dashboard:coordenador")
-    return redirect("dashboard:cliente")
-
-        
     if user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
         return redirect("dashboard:cliente")
     return redirect("accounts:perfil")
