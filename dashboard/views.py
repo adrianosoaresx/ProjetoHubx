@@ -250,8 +250,8 @@ class AdminDashboardView(AdminRequiredMixin, DashboardBaseView):
     template_name = "dashboard/admin.html"
 
 
-class GerenteDashboardView(GerenteRequiredMixin, DashboardBaseView):
-    template_name = "dashboard/gerente.html"
+class CoordenadorDashboardView(GerenteRequiredMixin, DashboardBaseView):
+    template_name = "dashboard/coordenador.html"
 
 
 class ClienteDashboardView(ClienteRequiredMixin, DashboardBaseView):
@@ -269,10 +269,15 @@ def dashboard_redirect(request):
     if user.user_type == UserType.ADMIN:
         return redirect("dashboard:admin")
     if user.user_type == UserType.COORDENADOR:
-        return redirect("dashboard:gerente")
+
+        return redirect("dashboard:coordenador")
+    return redirect("dashboard:cliente")
+
+        
     if user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
         return redirect("dashboard:cliente")
     return redirect("accounts:perfil")
+
 
 
 def metrics_partial(request):

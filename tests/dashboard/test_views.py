@@ -27,7 +27,7 @@ from dashboard.views import (
     AdminDashboardView,
     ClienteDashboardView,
     DashboardBaseView,
-    GerenteDashboardView,
+    CoordenadorDashboardView,
     RootDashboardView,
 )
 
@@ -53,7 +53,7 @@ def test_base_view_mixins():
 def test_view_mixins():
     assert issubclass(RootDashboardView, SuperadminRequiredMixin)
     assert issubclass(AdminDashboardView, AdminRequiredMixin)
-    assert issubclass(GerenteDashboardView, GerenteRequiredMixin)
+    assert issubclass(CoordenadorDashboardView, GerenteRequiredMixin)
     assert issubclass(ClienteDashboardView, ClienteRequiredMixin)
 
 
@@ -75,13 +75,13 @@ def test_admin_dashboard_view(client, admin_user):
     assert "Dashboard Administrativo" in resp.content.decode()
 
 
-def test_gerente_dashboard_view(client, gerente_user):
+def test_coordenador_dashboard_view(client, gerente_user):
     client.force_login(gerente_user)
-    resp = client.get(reverse("dashboard:gerente"))
+    resp = client.get(reverse("dashboard:coordenador"))
     assert resp.status_code == 200
-    assert "dashboard/gerente.html" in [t.name for t in resp.templates]
+    assert "dashboard/coordenador.html" in [t.name for t in resp.templates]
     _assert_metrics_in_context(resp.context)
-    assert "Dashboard Gerente" in resp.content.decode()
+    assert "Dashboard Coordenador" in resp.content.decode()
 
 
 def test_cliente_dashboard_view(client, cliente_user):
@@ -98,7 +98,7 @@ def test_cliente_dashboard_view(client, cliente_user):
     [
         ("root_user", "dashboard:root"),
         ("admin_user", "dashboard:admin"),
-        ("gerente_user", "dashboard:gerente"),
+        ("gerente_user", "dashboard:coordenador"),
     ],
 )
 def test_can_export_true_for_privileged_users(client, request, user_fixture, url_name):
