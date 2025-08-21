@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 <div class="container mx-auto p-4" hx-boost="true">
   <form id="filters" class="space-y-4" hx-get="{% url 'financeiro_api:forecast-list' %}" hx-trigger="change,submit" hx-swap="none" hx-on:afterRequest="renderForecast(event.detail.xhr)">
     <div>
@@ -38,7 +38,7 @@
     <a href="#" onclick="exportData('xlsx');return false;" class="bg-gray-200 px-3 py-1 rounded">{% trans "Exportar XLSX" %}</a>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/vendor/chart-4.5.0.min.js' %}"></script>
 <script>
 let lastParams = null;
 
