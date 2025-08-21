@@ -52,6 +52,13 @@ class NucleoListView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        user = self.request.user
+        q = self.request.GET.get("q", "")
+        cache_key = f"nucleos_list:{user.id}:{q}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         qs = (
             Nucleo.objects.select_related("organizacao")
             .prefetch_related("participacoes")
@@ -67,15 +74,18 @@ class NucleoListView(LoginRequiredMixin, ListView):
                 )
             )
         )
-        user = self.request.user
+
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(participacoes__user=user)
-        q = self.request.GET.get("q")
+
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
-        return qs.order_by("nome").distinct()
+
+        result = list(qs.order_by("nome").distinct())
+        cache.set(cache_key, result, 300)
+        return result
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -89,12 +99,19 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
+        user = self.request.user
+        q = self.request.GET.get("q", "")
+        cache_key = f"nucleos_meus:{user.id}:{q}"
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         qs = (
             Nucleo.objects.select_related("organizacao")
             .prefetch_related("participacoes")
             .filter(
                 deleted=False,
-                participacoes__user=self.request.user,
+                participacoes__user=user,
                 participacoes__status="ativo",
                 participacoes__status_suspensao=False,
             )
@@ -109,10 +126,13 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
                 )
             )
         )
-        q = self.request.GET.get("q")
+
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
-        return qs.order_by("nome").distinct()
+
+        result = list(qs.order_by("nome").distinct())
+        cache.set(cache_key, result, 300)
+        return result
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -155,10 +175,7 @@ class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
 class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        if (
-            request.user.user_type == UserType.ADMIN
-            and nucleo.organizacao != request.user.organizacao
-        ):
+        if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
         return render(request, "nucleos/delete.html", {"object": nucleo})
 
@@ -199,9 +216,7 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
             ctx["convites_restantes"] = max(limite - count, 0)
         part = nucleo.participacoes.filter(user=self.request.user).first()
         ctx["mostrar_solicitar"] = not part or part.status == "inativo"
-        ctx["pode_postar"] = bool(
-            part and part.status == "ativo" and not part.status_suspensao
-        )
+        ctx["pode_postar"] = bool(part and part.status == "ativo" and not part.status_suspensao)
         return ctx
 
 
@@ -323,9 +338,7 @@ class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
         user = form.cleaned_data["usuario"]
         inicio = form.cleaned_data["periodo_inicio"]
         fim = form.cleaned_data["periodo_fim"]
-        if not ParticipacaoNucleo.objects.filter(
-            nucleo=nucleo, user=user, status="ativo"
-        ).exists():
+        if not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=user, status="ativo").exists():
             form.add_error("usuario", _("Usuário não é membro do núcleo."))
             return self.form_invalid(form)
         overlap = CoordenadorSuplente.objects.filter(
@@ -336,9 +349,7 @@ class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
             periodo_fim__gt=inicio,
         ).exists()
         if overlap:
-            form.add_error(
-                None, _("Usuário já é suplente no período informado.")
-            )
+            form.add_error(None, _("Usuário já é suplente no período informado."))
             return self.form_invalid(form)
         response = super().form_valid(form)
         notify_suplente_designado.delay(nucleo.id, form.instance.usuario.email)
