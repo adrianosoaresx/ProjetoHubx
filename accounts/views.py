@@ -572,6 +572,11 @@ def resend_confirmation(request):
                     ip_gerado=request.META.get("REMOTE_ADDR"),
                 )
                 send_confirmation_email.delay(token.id)
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="resend_confirmation",
+                    ip=request.META.get("REMOTE_ADDR"),
+                )
         messages.success(
             request,
             _("Se o e-mail estiver cadastrado, enviaremos nova confirmação."),
