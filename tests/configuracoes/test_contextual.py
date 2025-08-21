@@ -10,6 +10,9 @@ from configuracoes.models import (
     ConfiguracaoContextual,
     ConfiguracaoContaLog,
 )
+from organizacoes.factories import OrganizacaoFactory
+from nucleos.factories import NucleoFactory
+from agenda.factories import EventoFactory
 
 User = get_user_model()
 
@@ -35,11 +38,7 @@ def test_signal_creates_log(admin_user):
     config = admin_user.configuracao
     config.tema = "escuro"
     config.save()
-    log = (
-        ConfiguracaoContaLog.objects.filter(user=admin_user, campo="tema")
-        .order_by("-created_at")
-        .first()
-    )
+    log = ConfiguracaoContaLog.objects.filter(user=admin_user, campo="tema").order_by("-created_at").first()
     assert log is not None
     assert log.valor_novo == "escuro"
     assert log.fonte == "import"
@@ -96,3 +95,33 @@ def test_endpoint_respeita_preferencias(admin_user, monkeypatch):
     admin_user.configuracao.save(update_fields=["receber_notificacoes_email"])
     resp = client.post("/api/configuracoes/testar/", {"canal": "email"}, format="json")
     assert resp.status_code == 400
+
+
+def test_escopo_nome_organizacao(admin_user):
+    organizacao = OrganizacaoFactory()
+    config = ConfiguracaoContextual.objects.create(
+        user=admin_user,
+        escopo_tipo="organizacao",
+        escopo_id=organizacao.id,
+    )
+    assert config.escopo_nome == organizacao.nome
+
+
+def test_escopo_nome_nucleo(admin_user):
+    nucleo = NucleoFactory()
+    config = ConfiguracaoContextual.objects.create(
+        user=admin_user,
+        escopo_tipo="nucleo",
+        escopo_id=nucleo.id,
+    )
+    assert config.escopo_nome == nucleo.nome
+
+
+def test_escopo_nome_evento(admin_user):
+    evento = EventoFactory()
+    config = ConfiguracaoContextual.objects.create(
+        user=admin_user,
+        escopo_tipo="evento",
+        escopo_id=evento.id,
+    )
+    assert config.escopo_nome == evento.titulo
