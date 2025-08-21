@@ -57,7 +57,9 @@ Reações permitem registrar `like` ou `share` em posts através dos endpoints:
 
 - `POST /api/feed/posts/{post_id}/reacoes/` com corpo `{ "vote": "like" | "share" }`
 - `GET /api/feed/posts/{post_id}/reacoes/` retorna contagem agregada e reação do usuário
-- `DELETE /api/feed/posts/{post_id}/reacoes/{vote}/` remove a reação do usuário
+- Repetir o `POST` com o mesmo `vote` remove a reação existente
+
+O endpoint dedicado `toggle_like` foi removido; para curtir utilize o `POST` acima com `vote="like"`.
 
 ## Visualizações
 
