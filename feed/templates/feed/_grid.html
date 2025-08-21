@@ -83,7 +83,10 @@
     btn.addEventListener('click', async () => {
       const postId = btn.dataset.postId;
       const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (!res.ok) return;
+      if (!res.ok) {
+        alert('{% trans "Erro ao salvar" %}');
+        return;
+      }
       const data = await res.json();
       btn.classList.toggle('text-yellow-600', data.bookmarked);
     });
@@ -92,10 +95,12 @@
     btn.addEventListener('click', async () => {
       const postId = btn.dataset.postId;
       const res = await fetch(`/api/feed/posts/${postId}/flag/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
-      if (res.ok) {
-        btn.classList.add('text-red-600', 'cursor-not-allowed');
-        btn.setAttribute('disabled', 'disabled');
+      if (!res.ok) {
+        alert('{% trans "Erro ao denunciar" %}');
+        return;
       }
+      btn.classList.add('text-red-600', 'cursor-not-allowed');
+      btn.setAttribute('disabled', 'disabled');
     });
   });
   document.querySelectorAll('.share-btn').forEach(btn => {
@@ -107,6 +112,10 @@
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
         body: JSON.stringify({vote: 'share'})
       });
+      if (!res.ok) {
+        alert('{% trans "Erro ao compartilhar" %}');
+        return;
+      }
       if (res.status === 201) {
         btn.classList.add('text-blue-600');
         countSpan.textContent = parseInt(countSpan.textContent || '0') + 1;
