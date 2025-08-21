@@ -1,6 +1,9 @@
 import datetime as dt
 
 import pytest
+
+from django.core.cache import cache
+
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
@@ -167,7 +170,7 @@ def test_get_metrics_cache_differentiates(admin_user):
     assert metrics1["num_users"]["total"] < metrics2["num_users"]["total"]
 
 
-def test_get_metrics_cache_shared_between_users(admin_user, django_assert_num_queries):
+def test_get_metrics_cache_not_shared_between_users(admin_user):
     other = User.objects.create_user(
         email="same@example.com",
         username="same",
@@ -175,9 +178,21 @@ def test_get_metrics_cache_shared_between_users(admin_user, django_assert_num_qu
         user_type=UserType.ADMIN,
         organizacao=admin_user.organizacao,
     )
-    DashboardMetricsService.get_metrics(admin_user, escopo="organizacao", organizacao_id=admin_user.organizacao_id)
-    with django_assert_num_queries(0):
-        DashboardMetricsService.get_metrics(other, escopo="organizacao", organizacao_id=admin_user.organizacao_id)
+    cache.clear()
+    DashboardMetricsService.get_metrics(
+        admin_user,
+        escopo="organizacao",
+        organizacao_id=admin_user.organizacao_id,
+        metricas=["num_users"],
+    )
+    keys_before = len(cache._cache)
+    DashboardMetricsService.get_metrics(
+        other,
+        escopo="organizacao",
+        organizacao_id=admin_user.organizacao_id,
+        metricas=["num_users"],
+    )
+    assert len(cache._cache) == keys_before + 1
 
 
 def test_get_metrics_permission_denied(cliente_user, admin_user):
