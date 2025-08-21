@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n l10n %}
 {% block title %}{{ empresa.nome }} | Hubx{% endblock %}
 
 {% block content %}
@@ -32,14 +32,41 @@
       {% endif %}
     </p>
     <p><strong>{% trans "Localização" %}:</strong> {{ empresa.municipio }}, {{ empresa.estado }}</p>
-    {% with empresa.get_contato_principal as contato %}
-      {% if contato %}
-        <p><strong>{% trans "Contato" %}:</strong> {{ contato.nome }}</p>
-      {% else %}
-        <p><strong>{% trans "Contato" %}:</strong> {% trans "Nenhum contato cadastrado" %}</p>
-      {% endif %}
-    {% endwith %}
+    {% if pode_visualizar_contatos %}
+      {% with empresa.get_contato_principal as contato %}
+        {% if contato %}
+          <p><strong>{% trans "Contato" %}:</strong> {{ contato.nome }}</p>
+        {% else %}
+          <p><strong>{% trans "Contato" %}:</strong> {% trans "Nenhum contato cadastrado" %}</p>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
   </div>
+
+  {% if pode_visualizar_contatos %}
+    <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Contatos" %}</h2>
+    <div class="mt-4 space-y-4">
+      {% for contato in contatos %}
+        <div class="flex justify-between items-start bg-white border border-neutral-200 rounded-xl p-4">
+          <div class="text-sm">
+            <p class="font-medium text-neutral-800">{{ contato.nome }}</p>
+            <p class="text-neutral-600">{{ contato.cargo }}</p>
+            <p class="text-neutral-600">{{ contato.email }}</p>
+            <p class="text-neutral-600">{{ contato.telefone }}</p>
+          </div>
+          <div class="flex gap-2">
+            <a href="{% url 'empresas:contato_editar' contato.id %}" class="text-sm px-3 py-1 rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Editar" %}</a>
+            <a href="{% url 'empresas:contato_remover' contato.id %}" class="text-sm px-3 py-1 rounded-lg border border-red-300 text-red-700 hover:bg-red-100">{% trans "Remover" %}</a>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-sm text-neutral-500">{% trans "Nenhum contato cadastrado." %}</p>
+      {% endfor %}
+      <div>
+        <a href="{% url 'empresas:contato_novo' empresa.id %}" class="inline-block text-sm mt-2 px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Adicionar" %}</a>
+      </div>
+    </div>
+  {% endif %}
 
   {% if empresa_tags %}
     <div class="mt-4">

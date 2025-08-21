@@ -323,6 +323,10 @@ def detalhes_empresa(request, pk):
     avaliacao_usuario = None
     if request.user.is_authenticated:
         avaliacao_usuario = avaliacoes.filter(usuario=request.user).first()
+    pode_visualizar_contatos = pode_crud_empresa(request.user, empresa)
+    contatos = []
+    if pode_visualizar_contatos:
+        contatos = list(empresa.contatos.filter(deleted=False))
     context = {
         "empresa": empresa,
         "empresa_tags": empresa.tags.all(),
@@ -331,6 +335,8 @@ def detalhes_empresa(request, pk):
         "avaliacoes": avaliacoes,
         "media_avaliacoes": empresa.media_avaliacoes(),
         "avaliacao_usuario": avaliacao_usuario,
+        "contatos": contatos,
+        "pode_visualizar_contatos": pode_visualizar_contatos,
     }
     return render(request, "empresas/detail.htm", context)
 
