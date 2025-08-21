@@ -2,9 +2,11 @@ import base64
 import os
 import uuid
 from io import BytesIO
+from pathlib import Path
 
 import pyotp
 import qrcode
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -260,9 +262,21 @@ def perfil_midias(request):
     else:
         form = MediaForm()
 
-    medias = request.user.medias.order_by("-created_at")
+    medias_qs = request.user.medias.order_by("-created_at")
     if q:
-        medias = medias.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+        medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+
+    medias = list(medias_qs)
+    for m in medias:
+        ext = Path(m.file.name).suffix.lower()
+        if ext in {".jpg", ".jpeg", ".png", ".gif"}:
+            m.media_type = "image"
+        elif ext in {".mp4", ".webm"}:
+            m.media_type = "video"
+        elif ext == ".pdf":
+            m.media_type = "pdf"
+        else:
+            m.media_type = "other"
 
     return render(
         request,
@@ -272,6 +286,7 @@ def perfil_midias(request):
             "medias": medias,
             "show_form": show_form,
             "q": q,
+            "allowed_exts": getattr(settings, "USER_MEDIA_ALLOWED_EXTS", []),
         },
     )
 
