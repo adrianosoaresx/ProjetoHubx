@@ -135,6 +135,16 @@ class EmpresaViewSet(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
+    def create(self, request, *args, **kwargs):
+        """Cria uma empresa após checar permissões.
+
+        Verifica ``pode_crud_empresa(request.user)`` antes de salvar a empresa,
+        retornando ``403 Forbidden`` caso o usuário não esteja autorizado.
+        """
+        if not pode_crud_empresa(request.user):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return super().create(request, *args, **kwargs)
+
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
         if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
