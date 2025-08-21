@@ -188,7 +188,7 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:list")
 
 
-class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoDetailView(LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -206,7 +206,11 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         nucleo = self.object
         ctx["membros_ativos"] = nucleo.participacoes.filter(status="ativo")
         ctx["coordenadores"] = nucleo.participacoes.filter(status="ativo", papel="coordenador")
-        if self.request.user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
+        if self.request.user.user_type in {
+            UserType.ADMIN,
+            UserType.COORDENADOR,
+            UserType.ROOT,
+        }:
             ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
             ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
             ctx["convites_pendentes"] = nucleo.convitenucleo_set.filter(usado_em__isnull=True).count()
@@ -220,7 +224,7 @@ class NucleoDetailView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
         return ctx
 
 
-class NucleoMetricsView(GerenteRequiredMixin, LoginRequiredMixin, DetailView):
+class NucleoMetricsView(LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/metrics.html"
 
