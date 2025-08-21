@@ -11,10 +11,16 @@
   <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
     {% csrf_token %}
 
-    <div>
-      {{ form.redes_sociais.label_tag }}
-      {{ form.redes_sociais }}
-    </div>
+      <div>
+        {{ form.redes_sociais.label_tag }}
+        {{ form.redes_sociais }}
+        {% if form.redes_sociais.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.redes_sociais.errors }}</p>
+        {% endif %}
+        {% if form.non_field_errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.non_field_errors }}</p>
+        {% endif %}
+      </div>
 
     <div class="pt-4">
       <button type="submit"
