@@ -178,7 +178,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
-<
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
