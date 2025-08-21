@@ -132,6 +132,41 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
             )
         ]
 
+    @property
+    def escopo_nome(self) -> str | None:
+        """Retorna o nome do escopo associado ao ``escopo_id``.
+
+        O campo retornado varia conforme o tipo de escopo:
+
+        - ``organizacao``: ``Organizacao.nome``
+        - ``nucleo``: ``Nucleo.nome``
+        - ``evento``: ``Evento.titulo``
+
+        Caso o registro não seja encontrado, retorna ``None``.
+        """
+
+        from organizacoes.models import Organizacao
+        from nucleos.models import Nucleo
+        from agenda.models import Evento
+
+        model_info = {
+            self.Escopo.ORGANIZACAO: (Organizacao, "nome"),
+            self.Escopo.NUCLEO: (Nucleo, "nome"),
+            self.Escopo.EVENTO: (Evento, "titulo"),
+        }.get(self.escopo_tipo)
+
+        if not model_info:
+            return None
+
+        model, attr = model_info
+
+        try:
+            obj = model.objects.get(pk=self.escopo_id)
+        except model.DoesNotExist:  # type: ignore[attr-defined]
+            return None
+
+        return getattr(obj, attr, None)
+
 
 class ConfiguracaoContaLog(TimeStampedModel):
     """Registro de alterações nas configurações de conta."""
