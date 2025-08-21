@@ -8,7 +8,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
-from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
+from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
 
 pytestmark = pytest.mark.django_db
 
@@ -61,6 +61,21 @@ def test_convite_permission_denied(client):
     )
     assert resp.status_code == 403
 
+def test_convite_permission_denied_no_side_effects(client):
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    org.users.add(user)
+    _login(client, user)
+    assert TokenAcesso.objects.count() == 0
+    assert TokenUsoLog.objects.count() == 0
+    resp = client.post(
+        reverse("tokens:gerar_convite"),
+        {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN, "organizacao": org.pk},
+    )
+    assert resp.status_code == 403
+    assert TokenAcesso.objects.count() == 0
+    assert TokenUsoLog.objects.count() == 0
+
 
 def test_convite_daily_limit(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
@@ -71,8 +86,10 @@ def test_convite_daily_limit(client):
     for _ in range(5):
         resp = client.post(reverse("tokens:gerar_convite"), data)
         assert resp.status_code == 200
+    assert TokenAcesso.objects.count() == 5
     resp = client.post(reverse("tokens:gerar_convite"), data)
-    assert resp.status_code == 409
+    assert resp.status_code == 429
+    assert TokenAcesso.objects.count() == 5
 
 
 def test_validar_token_convite_view(client):
