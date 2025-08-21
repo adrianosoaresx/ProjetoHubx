@@ -1,4 +1,5 @@
 import pytest
+import hashlib
 import pytest
 import pyotp
 from django.urls import reverse
@@ -8,8 +9,12 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
+
 from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
 from tokens.services import create_invite_token
+
+from tokens.models import ApiToken, ApiTokenLog, CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
+
 
 pytestmark = pytest.mark.django_db
 
@@ -76,6 +81,13 @@ def test_convite_daily_limit(client):
     assert resp.status_code == 409
 
 
+def test_validar_token_convite_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:validar_token"))
+    assert resp.status_code == 200
+
+
 def test_validar_token_convite_view(client):
     user = UserFactory()
     gerador = UserFactory(is_staff=True)
@@ -100,7 +112,7 @@ def test_gerar_codigo_autenticacao_view(client):
     _login(client, user)
     resp = client.post(
         reverse("tokens:gerar_codigo"),
-        {"usuario": user.pk},
+        {},
         HTTP_USER_AGENT="ua-gerar",
     )
     assert resp.status_code == 200
@@ -110,6 +122,13 @@ def test_gerar_codigo_autenticacao_view(client):
     log = CodigoAutenticacaoLog.objects.get(codigo=codigo_obj, acao="emissao")
     assert log.ip == "127.0.0.1"
     assert log.user_agent == "ua-gerar"
+
+
+def test_gerar_codigo_autenticacao_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:gerar_codigo"))
+    assert resp.status_code == 200
 
 
 def test_validar_codigo_autenticacao_view(client):
@@ -135,6 +154,13 @@ def test_validar_codigo_autenticacao_view(client):
     assert resp.status_code == 400
 
 
+def test_validar_codigo_autenticacao_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:validar_codigo"))
+    assert resp.status_code == 200
+
+
 def test_ativar_e_desativar_2fa_views(client):
     user = UserFactory()
     _login(client, user)
@@ -151,3 +177,23 @@ def test_ativar_e_desativar_2fa_views(client):
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled is False and user.two_factor_secret is None
+
+
+def test_gerar_api_token_view(client):
+    user = UserFactory()
+    _login(client, user)
+    data = {"scope": "read", "client_name": "cli", "expires_in": 1}
+    resp = client.post(
+        reverse("tokens:gerar_api_token"),
+        data,
+        HTTP_USER_AGENT="ua-gen",
+    )
+    assert resp.status_code == 200
+    json = resp.json()
+    assert "token" in json
+    token_hash = hashlib.sha256(json["token"].encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+    assert token.user == user
+    log = ApiTokenLog.objects.get(token=token, acao="geracao")
+    assert log.user_agent == "ua-gen"
+    assert log.ip == "127.0.0.1"
