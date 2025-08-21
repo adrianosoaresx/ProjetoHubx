@@ -21,8 +21,10 @@
   </div>
   <div class="mb-2">
     <span class="block text-sm font-medium">{{ _('Tipo') }}</span>
-    <label class="mr-4"><input type="radio" name="tipo" value="aporte_interno" checked /> {{ _('Interno') }}</label>
-    <label><input type="radio" name="tipo" value="aporte_externo" /> {{ _('Externo') }}</label>
+    {% if request.user.user_type == 'admin' %}
+    <label class="mr-4"><input type="radio" name="tipo" value="aporte_interno" /> {{ _('Interno') }}</label>
+    {% endif %}
+    <label><input type="radio" name="tipo" value="aporte_externo" checked /> {{ _('Externo') }}</label>
   </div>
   <div class="mb-2">
     <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
