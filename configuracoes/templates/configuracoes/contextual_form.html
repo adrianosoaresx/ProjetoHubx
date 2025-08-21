@@ -30,4 +30,38 @@
     </div>
   </form>
 </div>
+<script>
+  (function () {
+    const escopoTipo = document.getElementById('id_escopo_tipo');
+    const escopoSelect = document.getElementById('id_escopo_id');
+    const endpoints = {
+      organizacao: '/api/organizacoes/organizacoes/?page_size=100',
+      nucleo: '/api/nucleos/nucleos/?page_size=100',
+      evento: '/api/agenda/eventos/?page_size=100'
+    };
+
+    function loadEscopoOptions() {
+      const tipo = escopoTipo.value;
+      escopoSelect.innerHTML = '<option value="">---------</option>';
+      if (!endpoints[tipo]) {
+        return;
+      }
+      fetch(endpoints[tipo])
+        .then(r => r.json())
+        .then(data => {
+          const results = data.results || data;
+          results.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.nome || item.titulo;
+            escopoSelect.appendChild(opt);
+          });
+        })
+        .catch(() => {});
+    }
+
+    escopoTipo.addEventListener('change', loadEscopoOptions);
+    document.addEventListener('DOMContentLoaded', loadEscopoOptions);
+  })();
+</script>
 {% endblock %}
