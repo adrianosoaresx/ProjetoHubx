@@ -44,3 +44,12 @@ Revoga o token antigo e retorna um novo valor.
 - Revogue tokens comprometidos imediatamente.
 - A validade máxima recomendada é de 1 ano.
 
+## Tarefas periódicas
+
+O Celery Beat executa diariamente duas tarefas de manutenção:
+
+- `revogar_tokens_expirados`: revoga automaticamente tokens cuja data de expiração já passou.
+- `remover_logs_antigos`: limpa logs de uso com mais de um ano.
+
+Ambas são agendadas para rodar todos os dias à meia-noite.
+

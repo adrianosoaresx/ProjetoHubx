@@ -32,6 +32,7 @@ def generate_token(
     client_name: str | None,
     scope: str,
     expires_in: timedelta | None = None,
+    device_fingerprint: str | None = None,
 ) -> str:
     """Gera um token de API e retorna o valor bruto."""
 
@@ -42,6 +43,7 @@ def generate_token(
         user=user,
         client_name=client_name or "",
         token_hash=token_hash,
+        device_fingerprint=device_fingerprint,
         scope=scope,
         expires_at=expires_at,
     )

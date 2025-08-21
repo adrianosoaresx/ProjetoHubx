@@ -28,12 +28,19 @@ class ApiTokenViewSet(viewsets.ViewSet):
         scope = request.data.get("scope")
         expires_in = request.data.get("expires_in")
         client_name = request.data.get("client_name")
+        device_fingerprint = request.data.get("device_fingerprint")
         if scope == "admin" and not request.user.is_superuser:
             return Response(status=status.HTTP_403_FORBIDDEN)
         expires_delta = timedelta(days=int(expires_in)) if expires_in else None
 
         with tokens_api_latency_seconds.time():
-            raw_token = generate_token(request.user, client_name, scope, expires_delta)
+            raw_token = generate_token(
+                request.user,
+                client_name,
+                scope,
+                expires_delta,
+                device_fingerprint,
+            )
             token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
             api_token = ApiToken.objects.get(token_hash=token_hash)
             ApiTokenLog.objects.create(

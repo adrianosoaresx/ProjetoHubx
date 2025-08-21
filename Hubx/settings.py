@@ -277,6 +277,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "tokens.tasks.revogar_tokens_expirados",
         "schedule": crontab(minute=0, hour=0),
     },
+    "remover_logs_antigos": {
+        "task": "tokens.tasks.remover_logs_antigos",
+        "schedule": crontab(minute=0, hour=0),
+    },
     "enviar_relatorios_diarios": {
         "task": "notificacoes.tasks.enviar_relatorios_diarios",
         "schedule": crontab(minute="*"),

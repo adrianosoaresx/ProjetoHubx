@@ -30,6 +30,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
     )
     client_name = models.CharField(max_length=100, blank=True)
     token_hash = models.CharField(max_length=64, unique=True)
+    device_fingerprint = models.CharField(max_length=255, null=True, blank=True)
     scope = models.CharField(
         max_length=20,
         choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],
@@ -58,6 +59,25 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class ApiTokenIp(TimeStampedModel, SoftDeleteModel):
+    class Tipo(models.TextChoices):
+        PERMITIDO = "permitido", _("Permitido")
+        NEGADO = "negado", _("Negado")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.ForeignKey(
+        ApiToken,
+        on_delete=models.CASCADE,
+        related_name="ips",
+    )
+    ip = models.GenericIPAddressField()
+    tipo = models.CharField(max_length=10, choices=Tipo.choices)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("token", "ip", "tipo")
 
 
 class ApiTokenLog(TimeStampedModel, SoftDeleteModel):
