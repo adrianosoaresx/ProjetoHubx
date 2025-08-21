@@ -440,6 +440,22 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
 class EventoFeedbackView(LoginRequiredMixin, View):
     """Registra feedback pós-evento."""
 
+    def get(self, request, pk):
+        evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
+        usuario = request.user
+
+        if not InscricaoEvento.objects.filter(
+            user=usuario, evento=evento, status="confirmada"
+        ).exists():
+            return HttpResponseForbidden("Apenas inscritos podem enviar feedback.")
+
+        if timezone.now() < evento.data_fim:
+            return HttpResponseForbidden(
+                "Feedback só pode ser enviado após o evento."
+            )
+
+        return render(request, "agenda/avaliacao_form.html", {"evento": evento})
+
     def post(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
         usuario = request.user

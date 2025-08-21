@@ -62,7 +62,7 @@ def test_avaliacao_permitida_pos_evento(client, usuario, organizacao):
     response = client.get(reverse("agenda:evento_detalhe", args=[evento.pk]))
     assert response.status_code == 200
     assert response.context["avaliacao_permitida"] is True
-    assert "Avaliar evento" in response.content.decode()
+    assert "Enviar avaliação" in response.content.decode()
 
 
 def test_avaliacao_negada_evento_future(client, usuario, organizacao):
@@ -82,4 +82,4 @@ def test_avaliacao_negada_evento_future(client, usuario, organizacao):
     response = client.get(reverse("agenda:evento_detalhe", args=[evento.pk]))
     assert response.status_code == 200
     assert response.context["avaliacao_permitida"] is False
-    assert "Avaliar evento" not in response.content.decode()
+    assert "Enviar avaliação" not in response.content.decode()

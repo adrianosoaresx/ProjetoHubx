@@ -61,7 +61,24 @@
         <div class="mb-10 space-y-4">
           <img src="{{ inscricao.qrcode_url }}" alt="{% trans 'QR Code da inscrição' %}" class="mx-auto h-48 w-48" />
           {% if avaliacao_permitida %}
-            <a href="{% url 'agenda:evento_feedback' object.pk %}" class="btn-primary" aria-label="{% trans 'Avaliar evento' %}">{% trans "Avaliar evento" %}</a>
+            <form method="post" action="{% url 'agenda:evento_feedback' object.pk %}" class="space-y-4">
+              {% csrf_token %}
+              <div>
+                <label for="nota" class="block text-sm font-medium">{% trans "Nota" %}</label>
+                <select id="nota" name="nota" class="form-select w-full" required>
+                  {% for n in '12345' %}
+                  <option value="{{ n }}">{{ n }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div>
+                <label for="comentario" class="block text-sm font-medium">{% trans "Comentário" %}</label>
+                <textarea id="comentario" name="comentario" rows="4" class="form-textarea w-full" placeholder="{% trans 'Opcional' %}"></textarea>
+              </div>
+              <div class="text-right">
+                <button type="submit" class="btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+              </div>
+            </form>
           {% else %}
             <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}">
               {% csrf_token %}
