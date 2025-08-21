@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
 from django.db.models import Exists, OuterRef
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
@@ -280,7 +280,15 @@ class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):  # type: ignore[override]
         self.empresa = get_object_or_404(Empresa, pk=self.kwargs["empresa_id"])
-        return get_object_or_404(AvaliacaoEmpresa, empresa=self.empresa, usuario=self.request.user)
+        avaliacao = AvaliacaoEmpresa.objects.filter(
+            empresa=self.empresa, usuario=self.request.user, deleted=False
+        ).first()
+        if not avaliacao:
+            messages.error(
+                self.request, _("Você não possui nenhuma avaliação ativa para esta empresa.")
+            )
+            raise Http404
+        return avaliacao
 
     def form_valid(self, form):
         response = super().form_valid(form)

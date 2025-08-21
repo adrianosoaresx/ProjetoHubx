@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.messages import get_messages
 from django.urls import reverse
 from validate_docbr import CNPJ
 
@@ -113,6 +114,20 @@ def test_avaliacao_comentario_hx_request(client, nucleado_user):
     avaliacao = AvaliacaoEmpresa.objects.get(empresa=empresa, usuario=nucleado_user)
     assert avaliacao.nota == 5
     assert avaliacao.comentario == "Ótimo"
+
+
+@pytest.mark.django_db
+def test_avaliacao_update_requires_active(client, nucleado_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    AvaliacaoEmpresa.objects.create(
+        empresa=empresa, usuario=nucleado_user, nota=5, deleted=True
+    )
+    client.force_login(nucleado_user)
+    url = reverse("empresas:avaliacao_editar", args=[empresa.pk])
+    resp = client.get(url)
+    assert resp.status_code == 404
+    msgs = [m.message for m in get_messages(resp.wsgi_request)]
+    assert any("nenhuma avaliação ativa" in m.lower() for m in msgs)
 
 
 @pytest.mark.django_db
