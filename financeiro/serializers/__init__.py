@@ -236,9 +236,11 @@ class IntegracaoConfigSerializer(serializers.ModelSerializer):
         model = IntegracaoConfig
         fields = [
             "id",
+            "organizacao",
             "nome",
             "tipo",
             "base_url",
+            "autenticacao",
             "credenciais",
             "created_at",
             "updated_at",

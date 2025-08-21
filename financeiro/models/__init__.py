@@ -256,10 +256,16 @@ class IntegracaoConfig(TimeStampedModel, SoftDeleteModel):
         GATEWAY = "gateway", "Gateway de Pagamento"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organizacao = models.ForeignKey(
+        "organizacoes.Organizacao",
+        on_delete=models.CASCADE,
+        related_name="integracoes",
+    )
     nome = models.CharField(max_length=255)
     tipo = models.CharField(max_length=20, choices=Tipo.choices)
     base_url = URLField(max_length=255)
     credenciais_encrypted = EncryptedCharField(max_length=512, blank=True)
+    autenticacao = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ["nome"]

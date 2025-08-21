@@ -129,10 +129,13 @@ def test_lancamento_negativo_outro_tipo():
 
 
 def test_integracao_config_soft_delete():
+    org = OrganizacaoFactory()
     config = IntegracaoConfig.objects.create(
+        organizacao=org,
         nome="ERP Hub",
         tipo=IntegracaoConfig.Tipo.ERP,
         base_url="https://example.com",
+        autenticacao="token",
     )
     config.soft_delete()
     config.refresh_from_db()
