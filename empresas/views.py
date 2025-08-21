@@ -332,7 +332,7 @@ def detalhes_empresa(request, pk):
         "media_avaliacoes": empresa.media_avaliacoes(),
         "avaliacao_usuario": avaliacao_usuario,
     }
-    return render(request, "empresas/detail.htm", context)
+    return render(request, "empresas/detail.html", context)
 
 
 # ------------------------------------------------------------------
