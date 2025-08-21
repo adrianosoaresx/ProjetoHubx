@@ -22,6 +22,18 @@ class PostFormTest(TestCase):
         )
         self.assertTrue(form.is_valid())
 
+    def test_form_text_only_valid(self):
+        form = PostForm(
+            data={"tipo_feed": "global", "conteudo": "Olá"},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_form_no_content_no_media_invalid(self):
+        form = PostForm(data={"tipo_feed": "global"}, user=self.user)
+        self.assertFalse(form.is_valid())
+        self.assertIn("__all__", form.errors)
+
     @override_settings(FEED_IMAGE_MAX_SIZE=1)
     def test_form_image_too_large(self):
         img_io = io.BytesIO()
