@@ -129,11 +129,15 @@ class NucleoViewSet(viewsets.ModelViewSet):
         return [p() for p in perms]
 
     def get_queryset(self):
-        return (
+        qs = (
             Nucleo.objects.filter(deleted=False)
             .select_related("organizacao")
             .prefetch_related("coordenadores_suplentes")
         )
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(nome__icontains=search)
+        return qs
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

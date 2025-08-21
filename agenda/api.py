@@ -6,7 +6,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from django.db.models import Q
+
 from accounts.models import UserType
 
 from .models import (
@@ -59,6 +59,9 @@ class EventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = self.filter_by_organizacao(qs)
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(titulo__icontains=search)
         ordering = self.request.query_params.get("ordering")
         if ordering in {"data_inicio", "-data_inicio", "data_fim", "-data_fim"}:
             qs = qs.order_by(ordering)
@@ -116,9 +119,7 @@ class TarefaViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return self.filter_by_organizacao(qs)
 
     def perform_destroy(self, instance: Tarefa) -> None:
-        TarefaLog.objects.create(
-            tarefa=instance, usuario=self.request.user, acao="tarefa_excluida"
-        )
+        TarefaLog.objects.create(tarefa=instance, usuario=self.request.user, acao="tarefa_excluida")
         instance.soft_delete()
 
     @action(detail=True, methods=["post"])
@@ -126,9 +127,7 @@ class TarefaViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         tarefa = self.get_object()
         tarefa.status = "concluida"
         tarefa.save(update_fields=["status", "updated_at"])
-        TarefaLog.objects.create(
-            tarefa=tarefa, usuario=request.user, acao="tarefa_concluida"
-        )
+        TarefaLog.objects.create(tarefa=tarefa, usuario=request.user, acao="tarefa_concluida")
         return Response(self.get_serializer(tarefa).data)
 
 

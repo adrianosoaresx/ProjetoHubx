@@ -38,19 +38,11 @@ class ConfiguracaoContaForm(forms.ModelForm):
             "dia_semana_notificacao": forms.Select(),
         }
         help_texts = {
-            "frequencia_notificacoes_email": _(
-                "Aplicável apenas se notificações por e-mail estiverem ativas."
-            ),
-            "frequencia_notificacoes_whatsapp": _(
-                "Aplicável apenas se notificações por WhatsApp estiverem ativas."
-            ),
-            "frequencia_notificacoes_push": _(
-                "Aplicável apenas se notificações push estiverem ativas."
-            ),
+            "frequencia_notificacoes_email": _("Aplicável apenas se notificações por e-mail estiverem ativas."),
+            "frequencia_notificacoes_whatsapp": _("Aplicável apenas se notificações por WhatsApp estiverem ativas."),
+            "frequencia_notificacoes_push": _("Aplicável apenas se notificações push estiverem ativas."),
             "hora_notificacao_diaria": _("Horário para envio das notificações diárias."),
-            "hora_notificacao_semanal": _(
-                "Horário para envio das notificações semanais."
-            ),
+            "hora_notificacao_semanal": _("Horário para envio das notificações semanais."),
             "dia_semana_notificacao": _("Dia da semana para notificações semanais."),
         }
 
@@ -59,45 +51,29 @@ class ConfiguracaoContaForm(forms.ModelForm):
         if not data.get("receber_notificacoes_email"):
             data["frequencia_notificacoes_email"] = self.instance.frequencia_notificacoes_email
         if not data.get("receber_notificacoes_whatsapp"):
-            data["frequencia_notificacoes_whatsapp"] = (
-                self.instance.frequencia_notificacoes_whatsapp
-            )
+            data["frequencia_notificacoes_whatsapp"] = self.instance.frequencia_notificacoes_whatsapp
         if not data.get("receber_notificacoes_push"):
-            data["frequencia_notificacoes_push"] = (
-                self.instance.frequencia_notificacoes_push
-            )
+            data["frequencia_notificacoes_push"] = self.instance.frequencia_notificacoes_push
 
         freq_email = data.get("frequencia_notificacoes_email")
         freq_whats = data.get("frequencia_notificacoes_whatsapp")
         freq_push = data.get("frequencia_notificacoes_push")
 
-        if (
-            freq_email == "diaria"
-            or freq_whats == "diaria"
-            or freq_push == "diaria"
-        ):
+        if freq_email == "diaria" or freq_whats == "diaria" or freq_push == "diaria":
             if not data.get("hora_notificacao_diaria"):
-                self.add_error(
-                    "hora_notificacao_diaria", _("Obrigatório para frequência diária.")
-                )
-        if (
-            freq_email == "semanal"
-            or freq_whats == "semanal"
-            or freq_push == "semanal"
-        ):
+                self.add_error("hora_notificacao_diaria", _("Obrigatório para frequência diária."))
+        if freq_email == "semanal" or freq_whats == "semanal" or freq_push == "semanal":
             if not data.get("hora_notificacao_semanal"):
-                self.add_error(
-                    "hora_notificacao_semanal", _("Obrigatório para frequência semanal.")
-                )
+                self.add_error("hora_notificacao_semanal", _("Obrigatório para frequência semanal."))
             if data.get("dia_semana_notificacao") is None:
-                self.add_error(
-                    "dia_semana_notificacao", _("Obrigatório para frequência semanal.")
-                )
+                self.add_error("dia_semana_notificacao", _("Obrigatório para frequência semanal."))
         return data
 
 
 class ConfiguracaoContextualForm(forms.ModelForm):
     """Formulário simples para CRUD de ``ConfiguracaoContextual``."""
+
+    escopo_id = forms.UUIDField(required=True, widget=forms.Select())
 
     class Meta:
         model = ConfiguracaoContextual
@@ -114,6 +90,7 @@ class ConfiguracaoContextualForm(forms.ModelForm):
             "tema",
         )
         widgets = {
+            "escopo_id": forms.Select(),
             "receber_notificacoes_email": forms.CheckboxInput(),
             "receber_notificacoes_whatsapp": forms.CheckboxInput(),
             "receber_notificacoes_push": forms.CheckboxInput(),
@@ -124,29 +101,17 @@ class ConfiguracaoContextualForm(forms.ModelForm):
             "tema": forms.Select(),
         }
         help_texts = {
-            "frequencia_notificacoes_email": _(
-                "Aplicável apenas se notificações por e-mail estiverem ativas."
-            ),
-            "frequencia_notificacoes_whatsapp": _(
-                "Aplicável apenas se notificações por WhatsApp estiverem ativas."
-            ),
-            "frequencia_notificacoes_push": _(
-                "Aplicável apenas se notificações push estiverem ativas."
-            ),
+            "frequencia_notificacoes_email": _("Aplicável apenas se notificações por e-mail estiverem ativas."),
+            "frequencia_notificacoes_whatsapp": _("Aplicável apenas se notificações por WhatsApp estiverem ativas."),
+            "frequencia_notificacoes_push": _("Aplicável apenas se notificações push estiverem ativas."),
         }
 
     def clean(self) -> dict[str, object]:
         data = super().clean()
         if not data.get("receber_notificacoes_email"):
-            data["frequencia_notificacoes_email"] = (
-                self.instance.frequencia_notificacoes_email
-            )
+            data["frequencia_notificacoes_email"] = self.instance.frequencia_notificacoes_email
         if not data.get("receber_notificacoes_whatsapp"):
-            data["frequencia_notificacoes_whatsapp"] = (
-                self.instance.frequencia_notificacoes_whatsapp
-            )
+            data["frequencia_notificacoes_whatsapp"] = self.instance.frequencia_notificacoes_whatsapp
         if not data.get("receber_notificacoes_push"):
-            data["frequencia_notificacoes_push"] = (
-                self.instance.frequencia_notificacoes_push
-            )
+            data["frequencia_notificacoes_push"] = self.instance.frequencia_notificacoes_push
         return data
