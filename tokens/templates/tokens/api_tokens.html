@@ -62,9 +62,7 @@
       </div>
     </form>
     <div id="resultado" class="mt-6 text-center" aria-live="polite">
-      {% if token %}
-        {% include "tokens/_resultado.html" with token=token %}
-      {% endif %}
+      {% include "tokens/_resultado.html" %}
     </div>
   </div>
   <div class="mt-6 text-center">

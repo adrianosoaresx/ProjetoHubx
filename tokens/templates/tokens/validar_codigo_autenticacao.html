@@ -27,7 +27,9 @@
     </div>
   </form>
 
-  <div id="resultado" class="mt-6 text-center" aria-live="polite"></div>
+  <div id="resultado" class="mt-6 text-center" aria-live="polite">
+    {% include "tokens/_resultado.html" %}
+  </div>
 
   <footer class="mt-6 text-center">
     <a href="{% url 'accounts:seguranca' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
