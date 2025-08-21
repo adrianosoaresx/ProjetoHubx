@@ -8,8 +8,7 @@
   <form
     id="avaliacao-form"
     method="post"
-    action="#"
-    data-api-url="{% url 'agenda_api:parceria-avaliar' parceria.pk %}"
+    action="{% url 'agenda_api:parceria-avaliar' parceria.pk %}"
     class="space-y-4"
   >
     {% csrf_token %}
@@ -38,7 +37,7 @@ form.addEventListener('submit', async function(e) {
   const msg = document.getElementById('message');
   msg.textContent = '';
   try {
-    const response = await fetch(form.dataset.apiUrl, {
+    const response = await fetch(form.action, {
       method: 'POST',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
