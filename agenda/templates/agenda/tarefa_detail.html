@@ -1,20 +1,50 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{{ object.titulo }} | Hubx{% endblock %}
-{% block content %}
-<h1>{{ object.titulo }}</h1>
-<p>{{ object.descricao }}</p>
-<p><strong>{% trans "Data de início" %}:</strong> {{ object.data_inicio }}</p>
-<p><strong>{% trans "Data de fim" %}:</strong> {{ object.data_fim }}</p>
-<p><strong>{% trans "Responsável" %}:</strong> {{ object.responsavel }}</p>
-<p><strong>{% trans "Status" %}:</strong> {{ object.get_status_display }}</p>
 
-<h2>{% trans "Logs" %}</h2>
-<ul>
-  {% for log in logs %}
-    <li>{{ log.created_at }} - {{ log.usuario }} - {{ log.acao }}</li>
-  {% empty %}
-    <li>{% trans "Nenhum log disponível." %}</li>
-  {% endfor %}
-</ul>
+{% block content %}
+<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
+  <header class="mb-6 flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-neutral-900">{{ object.titulo }}</h1>
+    <a href="{% url 'agenda:tarefa_list' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+  </header>
+
+  {% if object.descricao %}
+    <p class="text-sm text-neutral-600 mb-4">{{ object.descricao }}</p>
+  {% endif %}
+
+  <div class="space-y-2 text-sm text-neutral-800 mb-6">
+    <p><strong>{% trans "Data de início" %}:</strong> {{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</p>
+    <p><strong>{% trans "Data de fim" %}:</strong> {{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</p>
+    <p><strong>{% trans "Responsável" %}:</strong> {{ object.responsavel }}</p>
+    <p><strong>{% trans "Status" %}:</strong> {{ object.get_status_display }}</p>
+  </div>
+
+  <h2 class="text-lg font-semibold text-neutral-900 mb-4">{% trans "Logs" %}</h2>
+  {% if logs %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-neutral-200 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+        <thead class="bg-neutral-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500">{% trans "Data" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500">{% trans "Usuário" %}</th>
+            <th class="px-4 py-2 text-left text-xs font-medium text-neutral-500">{% trans "Ação" %}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-200">
+          {% for log in logs %}
+          <tr>
+            <td class="px-4 py-2 text-sm text-neutral-800">{{ log.created_at|date:'SHORT_DATETIME_FORMAT' }}</td>
+            <td class="px-4 py-2 text-sm text-neutral-800">{{ log.usuario }}</td>
+            <td class="px-4 py-2 text-sm text-neutral-800">{{ log.acao }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-sm text-neutral-500">{% trans "Nenhum log disponível." %}</p>
+  {% endif %}
+</section>
 {% endblock %}
+
