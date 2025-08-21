@@ -42,6 +42,7 @@ def gerar_relatorio(
     periodo_inicial: datetime | None = None,
     periodo_final: datetime | None = None,
     tipo: str | None = None,
+    status: str | None = None,
 ) -> dict[str, Any]:
     """Computa séries temporais e dados de inadimplência."""
     qs = _base_queryset(centro, nucleo, periodo_inicial, periodo_final)
@@ -49,6 +50,8 @@ def gerar_relatorio(
         qs = qs.filter(valor__gt=0)
     elif tipo == "despesas":
         qs = qs.filter(valor__lt=0)
+    if status:
+        qs = qs.filter(status=status)
 
     valores = (
         qs.annotate(mes=TruncMonth("data_lancamento"))
