@@ -13,6 +13,7 @@
       {% endfor %}
     </div>
   {% endif %}
+
     <div class="flex flex-wrap gap-4 border-b mb-4 text-sm">
       <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4">
         <button role="tab" aria-selected="{% if tab == 'informacoes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
@@ -23,6 +24,7 @@
       <a href="{% url 'configuracoes-contextual-list' %}" class="py-2 px-3 rounded-t-md bg-gray-100">{% trans 'Configurações Contextuais' %}</a>
     </div>
     <div id="content" role="tabpanel" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
+
       {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
     </div>
   </div>

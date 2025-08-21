@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 <aside
   id="room-modal"
   class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
@@ -7,7 +7,14 @@
   hx-target="this"
   hx-swap="outerHTML"
 >
-  <section id="chat-container" class="relative bg-white rounded-lg max-w-lg w-full p-6 space-y-4" tabindex="-1">
+  <section
+    id="chat-container"
+    class="relative bg-white rounded-lg max-w-lg w-full p-6 space-y-4"
+    tabindex="-1"
+    data-dest-id="{{ messages.0.channel.id }}"
+    data-current-user="{{ request.user.username }}"
+    data-csrf-token="{{ csrf_token }}"
+  >
     <button
       type="button"
       class="absolute top-2 right-2 text-neutral-500 hover:text-neutral-700"
@@ -27,5 +34,44 @@
         <li class="text-neutral-500">{% trans "Nenhuma mensagem." %}</li>
       {% endfor %}
     </ul>
+    <div id="reply-preview" class="hidden text-sm text-neutral-700"></div>
+    <form id="chat-form" class="mt-2 flex items-center gap-2" aria-label="{% trans 'Enviar mensagem' %}">
+      {% csrf_token %}
+      <input
+        type="text"
+        id="chat-input"
+        class="flex-1 border rounded p-2"
+        placeholder="{% trans 'Mensagem' %}"
+      />
+      <input type="file" id="file-input" class="hidden" />
+      <button
+        type="button"
+        id="upload-btn"
+        class="p-2 border rounded"
+        aria-label="{% trans 'Enviar arquivo' %}"
+      >📎</button>
+      <button
+        type="submit"
+        class="bg-primary text-white px-4 py-2 rounded"
+        aria-label="{% trans 'Enviar mensagem' %}"
+      >{% trans 'Enviar' %}</button>
+    </form>
+    <script>
+      (function () {
+        function init() {
+          if (window.HubXChatRoom) {
+            HubXChatRoom.init(document.getElementById('chat-container'));
+          }
+        }
+        if (!window.HubXChatRoom) {
+          var s = document.createElement('script');
+          s.src = '{% static 'chat/js/chat_socket.js' %}';
+          s.onload = init;
+          document.head.appendChild(s);
+        } else {
+          init();
+        }
+      })();
+    </script>
   </section>
 </aside>

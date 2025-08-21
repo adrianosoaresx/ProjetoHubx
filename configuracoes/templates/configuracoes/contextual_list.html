@@ -19,7 +19,7 @@
 
       <li class="p-4 bg-white rounded-lg shadow space-y-2">
         <div class="flex items-center justify-between">
-          <span>{{ cfg.escopo_tipo }} {{ cfg.escopo_id }} - {{ cfg.tema }}</span>
+          <span>{{ cfg.get_escopo_tipo_display }} {{ cfg.escopo_id }} - {{ cfg.tema }}</span>
           <span class="space-x-2">
             <a
               href="{% url 'configuracoes-contextual-update' cfg.id %}"
