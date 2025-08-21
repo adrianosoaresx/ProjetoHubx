@@ -3,8 +3,20 @@
   <h3 class="text-lg font-semibold mb-2">{% trans 'Gerenciar empresas' %}</h3>
   <form hx-post="/api/organizacoes/{{ organizacao.id }}/empresas/" hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#empresas-section'); this.closest('#modal').innerHTML='';" class="space-y-2">
     {% csrf_token %}
-    <label class="block text-sm" for="empresa_id">{% trans 'ID da empresa' %}</label>
-    <input type="text" name="empresa_id" class="w-full border px-2 py-1 rounded">
+    <label class="block text-sm" for="empresa-search">{% trans 'Buscar empresa' %}</label>
+    <input
+      type="text"
+      id="empresa-search"
+      name="search"
+      class="w-full border px-2 py-1 rounded"
+      hx-get="{{ api_url }}"
+      hx-trigger="keyup changed delay:500ms"
+      hx-target="#empresa-options"
+      hx-swap="none"
+      hx-include="[name=search]"
+      hx-on="htmx:afterRequest: renderEmpresas(event)"
+    >
+    <select name="empresa_id" id="empresa-options" class="w-full border px-2 py-1 rounded mt-2"></select>
     <button type="submit" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Adicionar' %}</button>
   </form>
   <ul class="mt-4 space-y-1">
@@ -17,4 +29,21 @@
       <li class="text-neutral-500 text-sm">{% trans 'Nenhuma empresa associada.' %}</li>
     {% endfor %}
   </ul>
+  <script src="{% url 'javascript-catalog' %}"></script>
+  <script>
+    function renderEmpresas(evt) {
+      const sel = document.querySelector('#empresa-options');
+      sel.innerHTML = '';
+      try {
+        const data = JSON.parse(evt.detail.xhr.response);
+        const itens = data.results || data;
+        sel.innerHTML =
+          itens
+            .map(e => `<option value="${e.id}">${e.nome}</option>`)
+            .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
+      } catch (err) {
+        sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
+      }
+    }
+  </script>
 </div>

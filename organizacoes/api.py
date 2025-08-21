@@ -297,6 +297,23 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
         org = self.get_organizacao()
         return org.users.all()
 
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        qs = get_user_model().objects.filter(organizacao__isnull=True)
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(username__icontains=search)
+            )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
         user_id = request.data.get("user_id")
@@ -327,6 +344,19 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
         org = self.get_organizacao()
         return Nucleo.objects.filter(organizacao=org, deleted=False)
 
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        qs = Nucleo.objects.filter(deleted=False).exclude(organizacao=org)
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(nome__icontains=search)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
         nucleo_id = request.data.get("nucleo_id")
@@ -349,6 +379,19 @@ class OrganizacaoEventoViewSet(OrganizacaoRelatedModelViewSet):
     def get_queryset(self):
         org = self.get_organizacao()
         return Evento.objects.filter(organizacao=org, deleted=False)
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        qs = Evento.objects.filter(deleted=False).exclude(organizacao=org)
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(titulo__icontains=search)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
@@ -373,6 +416,19 @@ class OrganizacaoEmpresaViewSet(OrganizacaoRelatedModelViewSet):
         org = self.get_organizacao()
         return Empresa.objects.filter(organizacao=org, deleted=False)
 
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        qs = Empresa.objects.filter(deleted=False).exclude(organizacao=org)
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(nome__icontains=search)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
         empresa_id = request.data.get("empresa_id")
@@ -395,6 +451,19 @@ class OrganizacaoPostViewSet(OrganizacaoRelatedModelViewSet):
     def get_queryset(self):
         org = self.get_organizacao()
         return Post.objects.filter(organizacao=org, deleted=False)
+
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        org = self.get_organizacao()
+        qs = Post.objects.filter(deleted=False).exclude(organizacao=org)
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(conteudo__icontains=search)
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
