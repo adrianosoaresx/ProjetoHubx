@@ -139,3 +139,14 @@ def test_integracao_config_soft_delete():
     assert config.deleted is True
     assert IntegracaoConfig.objects.count() == 0
     assert IntegracaoConfig.all_objects.count() == 1
+
+
+def test_centro_custo_descricao():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(
+        nome="Org",
+        tipo=CentroCusto.Tipo.ORGANIZACAO,
+        organizacao=org,
+        descricao="Descricao teste",
+    )
+    assert centro.descricao == "Descricao teste"
