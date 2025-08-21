@@ -109,12 +109,17 @@
 <script>
   const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
   const socket = new WebSocket(`${scheme}://${window.location.host}/ws/discussao/{{ topico.id }}/`);
+  const comentarioUrlTemplate = "{% url 'discussao:resposta_detalhe' 0 %}";
   socket.onmessage = function(e) {
     const data = JSON.parse(e.data);
     if (data.evento === 'nova_resposta') {
       const lista = document.getElementById('lista-comentarios');
       if (lista) {
-        lista.insertAdjacentHTML('beforeend', `<div>${data.conteudo}</div>`);
+        const el = document.createElement('div');
+        el.setAttribute('hx-get', comentarioUrlTemplate.replace('0', data.id));
+        el.setAttribute('hx-trigger', 'load');
+        el.setAttribute('hx-swap', 'outerHTML');
+        lista.appendChild(el);
       }
     } else if (data.evento === 'atualizacao_votos') {
       const score = document.getElementById('topic-score');

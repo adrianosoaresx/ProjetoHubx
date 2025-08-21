@@ -12,6 +12,7 @@ from .views import (
     DenunciaRemoveContentView,
     InteracaoView,
     RespostaCreateView,
+    RespostaDetailView,
     RespostaDeleteView,
     RespostaUpdateView,
     TagCreateView,
@@ -41,6 +42,11 @@ urlpatterns = [
     path("categorias/novo/", CategoriaCreateView.as_view(), name="categoria_criar"),
     path("categorias/<slug:slug>/editar/", CategoriaUpdateView.as_view(), name="categoria_editar"),
     path("categorias/<slug:slug>/remover/", CategoriaDeleteView.as_view(), name="categoria_remover"),
+    path(
+        "comentario/<int:pk>/",
+        RespostaDetailView.as_view(),
+        name="resposta_detalhe",
+    ),
     path(
         "comentario/<int:pk>/editar/",
         RespostaUpdateView.as_view(),
