@@ -31,6 +31,8 @@
   <p id="message" class="mt-4 text-sm"></p>
 </main>
 <script>
+const successMessage = gettext('Avaliação enviada com sucesso.');
+const errorMessage = gettext('Erro ao enviar avaliação.');
 const form = document.getElementById('avaliacao-form');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -46,13 +48,13 @@ form.addEventListener('submit', async function(e) {
       body: new FormData(form),
     });
     if (response.ok) {
-      msg.textContent = 'Avaliação enviada com sucesso.';
+      msg.textContent = successMessage;
       form.reset();
     } else {
-      msg.textContent = 'Erro ao enviar avaliação.';
+      msg.textContent = errorMessage;
     }
   } catch (error) {
-    msg.textContent = 'Erro ao enviar avaliação.';
+    msg.textContent = errorMessage;
   }
 });
 </script>
