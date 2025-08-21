@@ -72,22 +72,25 @@ def test_convite_daily_limit(client):
         resp = client.post(reverse("tokens:gerar_convite"), data)
         assert resp.status_code == 200
     resp = client.post(reverse("tokens:gerar_convite"), data)
-    assert resp.status_code == 409
+    assert resp.status_code == 429
 
 
 def test_validar_token_convite_view(client):
     user = UserFactory()
     gerador = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    token = TokenAcesso(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    codigo = "a" * 32
+    token.set_codigo(codigo)
+    token.save()
 
     _login(client, user)
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
     assert resp.status_code == 200
     token.refresh_from_db()
     assert token.estado == TokenAcesso.Estado.USADO
     assert token.usuario == user
 
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
     assert resp.status_code == 400
 
 
