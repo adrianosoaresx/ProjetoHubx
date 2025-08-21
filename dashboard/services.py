@@ -22,7 +22,6 @@ from organizacoes.models import Organizacao
 from tokens.models import TokenAcesso as InviteToken
 from tokens.models import TokenUsoLog as UserToken
 
-from .utils import get_variation
 from .models import (
     Achievement,
     DashboardConfig,
@@ -30,6 +29,7 @@ from .models import (
     DashboardLayout,
     UserAchievement,
 )
+from .utils import get_variation
 
 
 def log_filter_action(
@@ -214,7 +214,6 @@ class DashboardService:
         if evento_id:
             qs = qs.filter(evento_id=evento_id)
         return qs.count()
-
 
     @staticmethod
     def calcular_topicos_discussao(
@@ -543,6 +542,9 @@ class DashboardMetricsService:
         evento_id = filters.get("evento_id")
 
         # determine filtering based on scope
+        if escopo == "global" and user.user_type != UserType.ROOT:
+            raise PermissionError("Escopo global não permitido")
+
         if escopo == "auto":
             if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
                 organizacao_id = organizacao_id or getattr(user.organizacao, "pk", None)
@@ -763,12 +765,11 @@ class DashboardMetricsService:
         cache.set(cache_key, metrics, 300)
         return metrics
 
+
 def check_achievements(user) -> None:
     """Verifica e registra conquistas atingidas pelo usuário."""
 
-    achieved = set(
-        UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True)
-    )
+    achieved = set(UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True))
     achievements = {a.code: a for a in Achievement.objects.all()}
 
     if (
