@@ -2,7 +2,7 @@
 <div class="p-4 bg-white rounded shadow max-w-md" id="convites-modal">
   <h2 class="text-lg font-semibold mb-2">{% trans 'Convites do núcleo' %}</h2>
   <p class="text-sm text-gray-600">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
-  <form class="mt-2 flex flex-col gap-2" hx-post="{{ create_url }}" hx-target="#convites-list" hx-swap="afterbegin">
+  <form id="convite-form" class="mt-2 flex flex-col gap-2" hx-post="{% url 'nucleos_api:nucleo-convites' nucleo.pk %}" hx-swap="none">
     {% csrf_token %}
     <input type="email" name="email" class="border rounded px-2 py-1" placeholder="{% trans 'email@example.com' %}" required />
     <select name="papel" class="border rounded px-2 py-1">
@@ -29,4 +29,21 @@
     <li class="text-sm text-gray-500">{% trans 'Nenhum convite pendente.' %}</li>
     {% endfor %}
   </ul>
+  <script>
+    document.getElementById('convite-form').addEventListener('htmx:afterRequest', function (event) {
+      if (event.detail.xhr.status === 201) {
+        const data = JSON.parse(event.detail.xhr.responseText);
+        const csrfToken = document.querySelector('#convite-form input[name="csrfmiddlewaretoken"]').value;
+        const deleteUrl = "{% url 'nucleos_api:nucleo-revogar-convite' nucleo.pk 0 %}".replace(/0\/$/, `${data.id}/`);
+        const li = document.createElement('li');
+        li.id = `convite-${data.id}`;
+        li.className = 'flex justify-between items-center';
+        li.innerHTML = `\n        <span>${data.email} - ${data.papel}</span>\n        <form hx-delete="${deleteUrl}" hx-target="#convite-${data.id}" hx-swap="outerHTML" hx-confirm="{% trans 'Confirmar revogação?' %}">\n          <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}" />\n          <button type="submit" class="text-red-600">{% trans 'Revogar' %}</button>\n        </form>\n      `;
+        document.getElementById('convites-list').prepend(li);
+        event.target.reset();
+      } else if (event.detail.xhr.status === 429) {
+        alert(event.detail.xhr.responseText);
+      }
+    });
+  </script>
 </div>

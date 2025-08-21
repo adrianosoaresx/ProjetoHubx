@@ -34,19 +34,14 @@ urlpatterns = [
         name="convites_modal",
     ),
     path(
-        "<int:pk>/convites/novo/",
-        views.ConviteCreateView.as_view(),
-        name="convite_create",
-    ),
-    path(
         "<int:pk>/membro/<int:participacao_id>/remover/",
         views.MembroRemoveView.as_view(),
         name="membro_remover",
     ),
     path(
-        "<int:pk>/membro/<int:participacao_id>/role/",
-        views.MembroRoleView.as_view(),
-        name="membro_role",
+        "<int:pk>/membro/<int:participacao_id>/promover/",
+        views.MembroPromoverView.as_view(),
+        name="membro_promover",
     ),
     path(
         "<int:pk>/suplentes/adicionar/",
@@ -57,11 +52,6 @@ urlpatterns = [
         "<int:pk>/suplentes/<uuid:suplente_id>/remover/",
         views.SuplenteDeleteView.as_view(),
         name="suplente_remover",
-    ),
-    path(
-        "<int:pk>/membros/exportar/",
-        views.ExportarMembrosView.as_view(),
-        name="exportar_membros",
     ),
     path(
         "<int:pk>/toggle-active/",

@@ -416,6 +416,48 @@ class NucleoViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
+        methods=["post"],
+        url_path="membros/(?P<user_id>[^/.]+)/promover",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def promover_membro(
+        self,
+        request,
+        pk: str | None = None,
+        user_id: str | None = None,
+    ):
+        return self.coordenador(request, pk=pk, user_id=user_id)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="membros/(?P<user_id>[^/.]+)/remover",
+        permission_classes=[IsAdminOrCoordenador],
+    )
+    def remover_membro(
+        self,
+        request,
+        pk: str | None = None,
+        user_id: str | None = None,
+    ):
+        nucleo = self.get_object()
+        participacao = get_object_or_404(
+            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
+        )
+        user_pk = participacao.user_id
+        participacao.delete()
+        atualizar_cobranca(nucleo.id, user_pk, "inativo")
+        logger.info(
+            "membro_removido",
+            extra={
+                "nucleo_id": str(nucleo.pk),
+                "user_id": str(user_pk),
+            },
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
         methods=["get"],
         url_path="membro-status",
         permission_classes=[IsAuthenticated],

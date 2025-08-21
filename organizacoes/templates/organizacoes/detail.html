@@ -18,7 +18,12 @@
         {{ object.nome|make_list|first|upper }}
       </div>
     {% endif %}
-    <h1 class="text-2xl font-bold text-neutral-900">{{ object.nome }}</h1>
+    <div class="flex items-center justify-center">
+      <h1 class="text-2xl font-bold text-neutral-900">{{ object.nome }}</h1>
+      {% if object.inativa %}
+        <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
+      {% endif %}
+    </div>
   </div>
 
   <section>
@@ -79,10 +84,10 @@
     {% if perms.organizacoes.change_organizacao %}
       <a href="{% url 'organizacoes:update' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">{% trans 'Editar' %}</a>
     {% endif %}
-    {% if perms.organizacoes.delete_organizacao %}
-      <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">{% trans 'Excluir' %}</a>
-    {% endif %}
     {% if request.user.user_type == 'root' %}
+      {% if perms.organizacoes.delete_organizacao %}
+        <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">{% trans 'Excluir' %}</a>
+      {% endif %}
       <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
         {% csrf_token %}
         <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">

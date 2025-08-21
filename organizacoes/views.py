@@ -60,7 +60,13 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return "organizacoes_list_" + "_".join(keys)
 
     def get_queryset(self):
+
         qs = super().get_queryset().select_related("created_by").prefetch_related("evento_set", "nucleos", "users")
+
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(pk=user.organizacao_id)
+
         search = self.request.GET.get("search")
         tipo = self.request.GET.get("tipo")
         cidade = self.request.GET.get("cidade")
@@ -90,16 +96,18 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tipos"] = Organizacao._meta.get_field("tipo").choices
+        qs = Organizacao.objects.filter(inativa=False)
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(pk=user.organizacao_id)
         context["cidades"] = (
-            Organizacao.objects.filter(inativa=False)
-            .exclude(cidade="")
+            qs.exclude(cidade="")
             .values_list("cidade", flat=True)
             .distinct()
             .order_by("cidade")
         )
         context["estados"] = (
-            Organizacao.objects.filter(inativa=False)
-            .exclude(estado="")
+            qs.exclude(estado="")
             .values_list("estado", flat=True)
             .distinct()
             .order_by("estado")
@@ -109,12 +117,24 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 
     def render_to_response(self, context, **response_kwargs):
         key = self._cache_key()
+
         cached = cache.get(key)
         if cached is not None:
             cached["X-Cache"] = "HIT"
             return cached
 
         if self.request.headers.get("HX-Request"):
+
+        is_htmx = self.request.headers.get("HX-Request")
+
+        if not is_htmx:
+            cached = cache.get(key)
+            if cached is not None:
+                cached["X-Cache"] = "HIT"
+                return cached
+
+        if is_htmx:
+
             response = render(
                 self.request,
                 "organizacoes/partials/list_section.html",
@@ -127,6 +147,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if hasattr(response, "render"):
             response.render()
         cache.set(key, response, self.cache_timeout)
+
         response["X-Cache"] = "MISS"
         return response
 

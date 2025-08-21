@@ -287,6 +287,27 @@ def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
     assert not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=outro_user).exists()
 
 
+def test_promover_membro(api_client, admin_user, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N14", slug="n14", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-promover-membro", args=[nucleo.pk, outro_user.pk])
+    resp = api_client.post(url)
+    assert resp.status_code == 200
+    part = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=outro_user)
+    assert part.papel == "coordenador"
+
+
+def test_remover_membro(api_client, admin_user, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N15", slug="n15", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    _auth(api_client, admin_user)
+    url = reverse("nucleos_api:nucleo-remover-membro", args=[nucleo.pk, outro_user.pk])
+    resp = api_client.delete(url)
+    assert resp.status_code == 204
+    assert not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=outro_user).exists()
+
+
 def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N12", slug="n12", organizacao=organizacao)
     Nucleo.objects.create(nome="N13", slug="n13", organizacao=organizacao)
