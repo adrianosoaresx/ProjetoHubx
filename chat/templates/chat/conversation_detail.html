@@ -227,7 +227,7 @@
           retencaoFeedback.classList.remove('hidden');
           return;
         }
-        fetch(`/api/chat/canais/${channelId}/config-retencao/`, {
+        fetch(`/api/chat/channels/${channelId}/config-retention/`, {
           method:'PATCH',
           headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
           body: JSON.stringify({retencao_dias: value || null})

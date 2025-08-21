@@ -325,7 +325,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["patch"],
-        url_path="config-retencao",
+        url_path="config-retention",
         permission_classes=[permissions.IsAuthenticated, IsChannelAdminOrOwner],
     )
     def config_retencao(self, request: Request, pk: str | None = None) -> Response:
