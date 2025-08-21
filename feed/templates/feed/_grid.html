@@ -14,7 +14,7 @@
         {% endif %}
       </p>
       <div class="flex items-center gap-4">
-        <a href="{% url 'accounts:perfil' %}">
+        <a href="{% url 'accounts:perfil_publico' post.autor.pk %}">
           {% if post.autor.avatar %}
             <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
           {% else %}

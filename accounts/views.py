@@ -57,6 +57,11 @@ def perfil_home(request):
     return redirect("accounts:informacoes_pessoais")
 
 
+def perfil_publico(request, pk):
+    perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
+    return render(request, "perfil/publico.html", {"perfil": perfil})
+
+
 @login_required
 def perfil_informacoes(request):
     if request.method == "POST":

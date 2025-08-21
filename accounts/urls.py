@@ -29,6 +29,7 @@ urlpatterns = [
     path("conta-inativa/", views.conta_inativa, name="inactive"),
     # Perfil
     path("perfil/", views.perfil_home, name="perfil"),
+    path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
     path("perfil/informacoes/", views.perfil_informacoes, name="informacoes_pessoais"),
     path("perfil/redes-sociais/", views.perfil_redes_sociais, name="redes_sociais"),
     path("perfil/seguranca/", views.perfil_seguranca, name="seguranca"),
