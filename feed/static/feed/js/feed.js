@@ -52,19 +52,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (postForm) {
     postForm.addEventListener("submit", (e) => {
-      const content = textarea.value.trim()
+      const content = textarea ? textarea.value.trim() : ""
+      const hasFile = fileInput && fileInput.files.length > 0
 
-      if (content.length === 0) {
+      if (content.length === 0 && !hasFile) {
         e.preventDefault()
-        alert("Por favor, escreva algo antes de publicar.")
-        textarea.focus()
+        alert("Por favor, escreva algo ou selecione um arquivo antes de publicar.")
+        if (textarea) textarea.focus()
         return false
       }
 
       if (content.length > 500) {
         e.preventDefault()
         alert("O conteúdo deve ter no máximo 500 caracteres.")
-        textarea.focus()
+        if (textarea) textarea.focus()
         return false
       }
     })

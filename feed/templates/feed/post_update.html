@@ -23,7 +23,7 @@
       <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-neutral-700">
         {{ form.conteudo.label }}
       </label>
-      <textarea id="{{ form.conteudo.id_for_label }}" name="{{ form.conteudo.name }}" class="mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm" rows="6" required>{{ form.conteudo.value|default_if_none:"" }}</textarea>
+        <textarea id="{{ form.conteudo.id_for_label }}" name="{{ form.conteudo.name }}" class="mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm" rows="6">{{ form.conteudo.value|default_if_none:"" }}</textarea>
       <span id="char-count"></span>
       {% if form.conteudo.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.conteudo.errors }}</p>
