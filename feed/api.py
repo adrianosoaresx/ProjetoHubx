@@ -21,6 +21,8 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
@@ -541,6 +543,16 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer: serializers.ModelSerializer) -> None:
         serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):  # type: ignore[override]
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        if request.headers.get("HX-Request"):
+            html = render_to_string("feed/_comment.html", {"comment": serializer.instance}, request=request)
+            return HttpResponse(html, status=status.HTTP_201_CREATED)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class LikeSerializer(serializers.ModelSerializer):

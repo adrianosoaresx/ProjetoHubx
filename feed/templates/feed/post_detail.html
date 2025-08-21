@@ -77,9 +77,10 @@
 
     <div class="mt-6">
       <h3 class="text-lg font-medium">{% trans "Comentários" %}</h3>
-      <form id="comment-form" method="post" action="{% url 'feed:create_comment' post.id %}" hx-post="{% url 'feed:create_comment' post.id %}" hx-target="#comments" hx-swap="afterbegin" class="space-y-2" hx-on:afterRequest="this.reset(); setReplyTo(null)">
+      <form id="comment-form" method="post" action="/api/feed/comments/" hx-post="/api/feed/comments/" hx-target="#comments" hx-swap="afterbegin" class="space-y-2" hx-on:afterRequest="this.reset(); setReplyTo(null)">
         {% csrf_token %}
-        {{ comment_form.reply_to.as_hidden }}
+        {{ comment_form.post }}
+        {{ comment_form.reply_to }}
         {{ comment_form.texto }}
         {% if comment_form.texto.errors %}
           <p class="text-red-500 text-xs">{{ comment_form.texto.errors }}</p>

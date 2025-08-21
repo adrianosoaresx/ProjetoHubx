@@ -299,31 +299,8 @@ class PostDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["comment_form"] = CommentForm()
+        context["comment_form"] = CommentForm(initial={"post": self.object.id})
         return context
-
-
-@login_required
-def create_comment(request, pk):
-    post = get_object_or_404(Post.objects.filter(deleted=False), id=pk)
-    form = CommentForm(request.POST)
-    if form.is_valid():
-        comment = form.save(commit=False)
-        comment.user = request.user
-        comment.post = post
-        comment.save()
-        if request.headers.get("HX-Request"):
-            html = render_to_string("feed/_comment.html", {"comment": comment}, request=request)
-            return HttpResponse(html)
-        return redirect("feed:post_detail", pk=post.id)
-    if request.headers.get("HX-Request"):
-        html = render_to_string(
-            "feed/post_detail.html",
-            {"post": post, "comment_form": form},
-            request=request,
-        )
-        return HttpResponse(html, status=400)
-    return render(request, "feed/post_detail.html", {"post": post, "comment_form": form})
 
 
 @login_required
