@@ -152,6 +152,13 @@ class EmpresaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):  # type: ignore[override]
         empresa = self.get_object()
         empresa.soft_delete()
+        EmpresaChangeLog.objects.create(
+            empresa=empresa,
+            usuario=request.user,
+            campo_alterado="deleted",
+            valor_antigo="False",
+            valor_novo="True",
+        )
         if request.headers.get("HX-Request"):
             return JsonResponse({"message": "Empresa removida com sucesso."}, status=HTTP_204_NO_CONTENT)
         messages.success(request, _("Empresa removida com sucesso."))
