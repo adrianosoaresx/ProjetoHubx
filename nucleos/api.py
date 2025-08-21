@@ -44,11 +44,12 @@ from .tasks import (
 )
 
 logger = logging.getLogger(__name__)
+
+
 class NucleoPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = "page_size"
     max_page_size = 100
-
 
 
 class IsAdminOrCoordenador(IsAuthenticated):
@@ -117,14 +118,23 @@ class AceitarConviteAPIView(APIView):
 
 class NucleoViewSet(viewsets.ModelViewSet):
     serializer_class = NucleoSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenador]
     pagination_class = NucleoPagination
+
+    def get_permissions(self):
+        if self.action in {"create", "update", "partial_update", "destroy"}:
+            perms = [IsAdmin]
+        else:
+            perms = self.permission_classes
+        return [p() for p in perms]
+
     def get_queryset(self):
         return (
             Nucleo.objects.filter(deleted=False)
             .select_related("organizacao")
             .prefetch_related("coordenadores_suplentes")
         )
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         org_param = request.query_params.get("organizacao")
@@ -159,15 +169,11 @@ class NucleoViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def meus(self, request):
-        qs = self.get_queryset().filter(
-            participacoes__user=request.user, participacoes__status="ativo"
-        )
+        qs = self.get_queryset().filter(participacoes__user=request.user, participacoes__status="ativo")
         qs = qs.distinct()
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
-
-
 
     def perform_destroy(self, instance: Nucleo) -> None:
         instance.delete()
@@ -202,9 +208,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         url_path="convites/(?P<convite_id>[^/.]+)",
         permission_classes=[IsAdmin],
     )
-    def revogar_convite(
-        self, request, pk: str | None = None, convite_id: str | None = None
-    ):
+    def revogar_convite(self, request, pk: str | None = None, convite_id: str | None = None):
         nucleo = self.get_object()
         convite = get_object_or_404(ConviteNucleo, pk=convite_id, nucleo=nucleo)
         agora = timezone.now()
@@ -246,9 +250,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="solicitar", permission_classes=[IsAuthenticated])
     def solicitar(self, request, pk: str | None = None):
         nucleo = self.get_object()
-        participacao, created = ParticipacaoNucleo.objects.get_or_create(
-            user=request.user, nucleo=nucleo
-        )
+        participacao, created = ParticipacaoNucleo.objects.get_or_create(user=request.user, nucleo=nucleo)
         if not created:
             if participacao.status == "pendente":
                 return Response({"detail": _("Já solicitado.")}, status=400)
@@ -283,19 +285,17 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def aprovar_membro(self, request, pk: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if participacao.status != "pendente":
             return Response({"detail": _("Solicitação já decidida.")}, status=400)
         participacao.status = "ativo"
         participacao.data_decisao = timezone.now()
         participacao.decidido_por = request.user
         participacao.justificativa = ""
-        participacao.save(
-            update_fields=["status", "data_decisao", "decidido_por", "justificativa"]
+        participacao.save(update_fields=["status", "data_decisao", "decidido_por", "justificativa"])
+        logger.info(
+            "Participação aprovada", extra={"participacao_id": participacao.id, "decidido_por": request.user.id}
         )
-        logger.info("Participação aprovada", extra={"participacao_id": participacao.id, "decidido_por": request.user.id})
         notify_participacao_aprovada.delay(participacao.id)
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data)
@@ -308,9 +308,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def recusar_membro(self, request, pk: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if participacao.status != "pendente":
             return Response({"detail": _("Solicitação já decidida.")}, status=400)
         justificativa = request.data.get("justificativa", "")
@@ -318,9 +316,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao.data_decisao = timezone.now()
         participacao.decidido_por = request.user
         participacao.justificativa = justificativa
-        participacao.save(
-            update_fields=["status", "data_decisao", "decidido_por", "justificativa"]
-        )
+        participacao.save(update_fields=["status", "data_decisao", "decidido_por", "justificativa"])
         logger.info(
             "Participação recusada",
             extra={"participacao_id": participacao.id, "decidido_por": request.user.id},
@@ -337,9 +333,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def suspender_membro(self, request, pk: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo")
         if participacao.status_suspensao:
             return Response({"detail": _("Membro já suspenso.")}, status=400)
         participacao.status_suspensao = True
@@ -366,9 +360,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def reativar_membro(self, request, pk: str | None = None, user_id: str | None = None):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id)
         if not participacao.status_suspensao:
             return Response({"detail": _("Membro não está suspenso.")}, status=400)
         participacao.status_suspensao = False
@@ -398,9 +390,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         user_id: str | None = None,
     ):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo")
         if request.method == "POST":
             if participacao.papel == "coordenador":
                 return Response({"detail": _("Membro já é coordenador.")}, status=400)
@@ -491,9 +481,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         data = serializer.validated_data
         if data["periodo_inicio"] >= data["periodo_fim"]:
             return Response({"detail": _("Período inválido.")}, status=400)
-        if not ParticipacaoNucleo.objects.filter(
-            nucleo=nucleo, user=data["usuario"], status="ativo"
-        ).exists():
+        if not ParticipacaoNucleo.objects.filter(nucleo=nucleo, user=data["usuario"], status="ativo").exists():
             return Response({"detail": _("Usuário não é membro do núcleo.")}, status=400)
         overlap = CoordenadorSuplente.objects.filter(
             nucleo=nucleo,
@@ -553,9 +541,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
     )
     def membros_ativos(self, request, pk: str | None = None):
         nucleo = self.get_object()
-        qs = nucleo.participacoes.select_related("user").filter(
-            status="ativo", status_suspensao=False
-        )
+        qs = nucleo.participacoes.select_related("user").filter(status="ativo", status_suspensao=False)
         page = self.paginate_queryset(qs)
         data = [
             {
@@ -619,9 +605,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 data.export("xlsx"),
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-            resp["Content-Disposition"] = (
-                f"attachment; filename=nucleo-{nucleo.id}-membros.xlsx"
-            )
+            resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.xlsx"
             return resp
         resp = HttpResponse(data.export("csv"), content_type="text/csv")
         resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
@@ -663,9 +647,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         for n in nucleos:
             membros = n.participacoes.filter(status="ativo").count()
             eventos = Evento.objects.filter(nucleo=n)
-            datas = ";".join(
-                e.data_inicio.isoformat() for e in eventos if getattr(e, "data_inicio", None)
-            )
+            datas = ";".join(e.data_inicio.isoformat() for e in eventos if getattr(e, "data_inicio", None))
             dados.append([n.nome, membros, eventos.count(), datas])
 
         if formato == "pdf":
@@ -677,9 +659,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
             p.drawString(50, y, "Relatório de Núcleos")
             y -= 20
             for row in dados:
-                p.drawString(
-                    50, y, f"{row[0]} - Membros: {row[1]} Eventos: {row[2]} Datas: {row[3]}"
-                )
+                p.drawString(50, y, f"{row[0]} - Membros: {row[1]} Eventos: {row[2]} Datas: {row[3]}")
                 y -= 20
             p.showPage()
             p.save()
