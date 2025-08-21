@@ -13,7 +13,9 @@
     <label for="escopo" class="block text-sm font-medium text-neutral-700">{% trans 'Escopo' %}</label>
     <select id="escopo" name="escopo" class="mt-1 block border-gray-300 rounded" aria-label="{% trans 'Selecionar escopo' %}">
       <option value="auto" {% if escopo == 'auto' %}selected{% endif %}>{% trans 'Automático' %}</option>
+      {% if request.user.user_type == 'root' %}
       <option value="global" {% if escopo == 'global' %}selected{% endif %}>{% trans 'Global' %}</option>
+      {% endif %}
       <option value="organizacao" {% if escopo == 'organizacao' %}selected{% endif %}>{% trans 'Organização' %}</option>
       <option value="nucleo" {% if escopo == 'nucleo' %}selected{% endif %}>{% trans 'Núcleo' %}</option>
       <option value="evento" {% if escopo == 'evento' %}selected{% endif %}>{% trans 'Evento' %}</option>

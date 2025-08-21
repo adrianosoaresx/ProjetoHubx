@@ -33,6 +33,7 @@ from django.views.generic import (
 from openpyxl import Workbook
 
 from accounts.models import UserType
+from agenda.models import Evento
 from audit.services import hash_ip, log_audit
 from core.permissions import (
     AdminRequiredMixin,
@@ -40,7 +41,8 @@ from core.permissions import (
     GerenteRequiredMixin,
     SuperadminRequiredMixin,
 )
-
+from nucleos.models import Nucleo
+from organizacoes.models import Organizacao
 
 from .forms import (
     DashboardConfigForm,
@@ -48,12 +50,6 @@ from .forms import (
     DashboardFilterForm,
     DashboardLayoutForm,
 )
-
-from agenda.models import Evento
-from nucleos.models import Nucleo
-from organizacoes.models import Organizacao
-
-
 from .models import (
     Achievement,
     DashboardConfig,
@@ -254,8 +250,8 @@ class AdminDashboardView(AdminRequiredMixin, DashboardBaseView):
     template_name = "dashboard/admin.html"
 
 
-class GerenteDashboardView(GerenteRequiredMixin, DashboardBaseView):
-    template_name = "dashboard/gerente.html"
+class CoordenadorDashboardView(GerenteRequiredMixin, DashboardBaseView):
+    template_name = "dashboard/coordenador.html"
 
 
 class ClienteDashboardView(ClienteRequiredMixin, DashboardBaseView):
@@ -273,8 +269,15 @@ def dashboard_redirect(request):
     if user.user_type == UserType.ADMIN:
         return redirect("dashboard:admin")
     if user.user_type == UserType.COORDENADOR:
-        return redirect("dashboard:gerente")
+
+        return redirect("dashboard:coordenador")
     return redirect("dashboard:cliente")
+
+        
+    if user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
+        return redirect("dashboard:cliente")
+    return redirect("accounts:perfil")
+
 
 
 def metrics_partial(request):
@@ -391,9 +394,7 @@ class DashboardExportView(LoginRequiredMixin, View):
         def _response_with_message(msg: str, status: int) -> HttpResponse:
             messages.error(request, msg)
             if request.headers.get("Hx-Request") == "true":
-                html = render_to_string(
-                    "dashboard/partials/messages.html", request=request
-                )
+                html = render_to_string("dashboard/partials/messages.html", request=request)
                 return HttpResponse(html, status=status)
             return HttpResponse(msg, status=status)
 

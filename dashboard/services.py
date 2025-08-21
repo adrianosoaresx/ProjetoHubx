@@ -22,7 +22,6 @@ from organizacoes.models import Organizacao
 from tokens.models import TokenAcesso as InviteToken
 from tokens.models import TokenUsoLog as UserToken
 
-from .utils import get_variation
 from .models import (
     Achievement,
     DashboardConfig,
@@ -30,6 +29,7 @@ from .models import (
     DashboardLayout,
     UserAchievement,
 )
+from .utils import get_variation
 
 
 def log_filter_action(
@@ -446,7 +446,7 @@ class DashboardService:
         )
         atual = aggregates["atual"] or 0
         anterior = aggregates["anterior"] or 0
-        crescimento = get_variation(anterior, atual) if anterior else (100.0 if atual else 0.0)
+        crescimento = get_variation(anterior, atual)
         return {"total": atual, "crescimento": crescimento}
 
     @staticmethod
@@ -531,6 +531,9 @@ class DashboardMetricsService:
         evento_id = filters.get("evento_id")
 
         # determine filtering based on scope
+        if escopo == "global" and user.user_type != UserType.ROOT:
+            raise PermissionError("Escopo global não permitido")
+
         if escopo == "auto":
             if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
                 organizacao_id = organizacao_id or getattr(user.organizacao, "pk", None)

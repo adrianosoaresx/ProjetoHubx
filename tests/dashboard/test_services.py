@@ -1,9 +1,11 @@
 import datetime as dt
 
 import pytest
+
 from django.core.cache import cache
-from django.utils import timezone
+
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 from accounts.models import User, UserType
 from agenda.factories import EventoFactory
@@ -215,14 +217,14 @@ def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
         email="other@example.com",
         username="other",
         password="x",
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
         organizacao=evento.organizacao,
     )
     prev_user = User.objects.create_user(
         email="prev@example.com",
         username="prev",
         password="x",
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
         organizacao=evento.organizacao,
     )
 

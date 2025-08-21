@@ -81,7 +81,7 @@ msgstr ""
 msgid "Top autores"
 msgstr ""
 
-#: templates/dashboard/admin.html:95 templates/dashboard/gerente.html:25
+#: templates/dashboard/admin.html:95 templates/dashboard/coordenador.html:25
 #: templates/dashboard/root.html:55
 msgid "Ações Rápidas"
 msgstr ""
@@ -215,15 +215,15 @@ msgstr ""
 msgid "Nenhum filtro salvo."
 msgstr ""
 
-#: templates/dashboard/gerente.html:5 templates/dashboard/gerente.html:9
-msgid "Dashboard Gerente"
+#: templates/dashboard/coordenador.html:5 templates/dashboard/coordenador.html:9
+msgid "Dashboard Coordenador"
 msgstr ""
 
-#: templates/dashboard/gerente.html:29
+#: templates/dashboard/coordenador.html:29
 msgid "Aprovar Tarefas"
 msgstr ""
 
-#: templates/dashboard/gerente.html:33
+#: templates/dashboard/coordenador.html:33
 msgid "Gerenciar Eventos"
 msgstr ""
 

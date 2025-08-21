@@ -52,13 +52,14 @@ def admin_user(organizacao):
 
 
 @pytest.fixture
-def cliente_user():
+def cliente_user(organizacao):
     User = get_user_model()
     return User.objects.create_user(
         username="cliente",
         email="cliente@example.com",
         password="pass",
-        user_type=UserType.CONVIDADO,
+        user_type=UserType.ASSOCIADO,
+        organizacao=organizacao,
     )
 
 
