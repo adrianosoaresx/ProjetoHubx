@@ -36,6 +36,18 @@ def test_layout_crud(client, admin_user):
 
 
 @pytest.mark.django_db
+def test_layout_create_with_default_json(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.post(
+        reverse("dashboard:layout-create"),
+        {"nome": "Def", "publico": False, "layout_json": "[]"},
+    )
+    assert resp.status_code == 302
+    layout = DashboardLayout.objects.get(nome="Def")
+    assert layout.layout_json == "[]"
+
+
+@pytest.mark.django_db
 def test_layout_permission(client, admin_user, cliente_user):
     layout = DashboardLayout.objects.create(user=admin_user, nome='X', layout_json='[]')
     client.force_login(cliente_user)
