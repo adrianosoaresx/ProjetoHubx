@@ -493,6 +493,22 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.topico.slug])
 
 
+class RespostaDetailView(LoginRequiredMixin, DetailView):
+    model = RespostaDiscussao
+    template_name = "discussao/comentario_item.html"
+    context_object_name = "comentario"
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("topico", "autor")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["topico"] = self.object.topico
+        context["user"] = self.request.user
+        context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
+        return context
+
+
 class RespostaDeleteView(LoginRequiredMixin, DeleteView):
     model = RespostaDiscussao
 

@@ -23,7 +23,7 @@ def resposta_nova(sender, instance: RespostaDiscussao, created: bool, **kwargs) 
             {
                 "evento": "nova_resposta",
                 "topico_id": instance.topico_id,
-                "resposta_id": instance.id,
+                "id": instance.id,
                 "conteudo": instance.conteudo[:100],
             },
         )
