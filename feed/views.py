@@ -393,7 +393,6 @@ def post_update(request, pk):
                     setattr(form.instance, field, value)
             if getattr(form, "_video_preview_key", None):
                 form.instance.video_preview = form._video_preview_key
-            form.instance.organizacao = request.user.organizacao
             form.save()
             if request.headers.get("HX-Request"):
                 return HttpResponse(status=204, headers={"HX-Redirect": reverse("feed:post_detail", args=[post.pk])})
