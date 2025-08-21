@@ -278,13 +278,16 @@
         fetch(`/api/chat/channels/${channelId}/leave/`, {
           method: 'POST',
           headers: {'X-CSRFToken': csrfToken}
-        }).then(r => {
-          if(r.ok){
-            leaveBtn.outerHTML = `<span class="text-green-600">${leaveBtn.dataset.success}</span>`;
-          }else{
-            r.json().then(data=>{alert(data.erro || 'Erro');});
-          }
-        }).catch(()=>alert('{% trans "Erro ao sair do canal." %}'));
+        })
+          .then(r => r.json().then(data => ({ok: r.ok, data})))
+          .then(({ok, data}) => {
+            if(ok && data.status === 'ok'){
+              window.location.href = '{% url "chat:conversation_list" %}';
+            }else{
+              alert(data.erro || 'Erro');
+            }
+          })
+          .catch(() => alert('{% trans "Erro ao sair do canal." %}'));
       });
     }
 
