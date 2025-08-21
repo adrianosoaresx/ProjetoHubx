@@ -30,6 +30,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
     )
     client_name = models.CharField(max_length=100, blank=True)
     token_hash = models.CharField(max_length=64, unique=True)
+    device_fingerprint = models.CharField(max_length=255, null=True, blank=True)
     scope = models.CharField(
         max_length=20,
         choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],
@@ -43,6 +44,13 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
         on_delete=models.SET_NULL,
         related_name="api_tokens_revogados",
     )
+    anterior = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="substituido_por",
+    )
     last_used_at = models.DateTimeField(null=True, blank=True)
 
     @property
@@ -51,6 +59,25 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class ApiTokenIp(TimeStampedModel, SoftDeleteModel):
+    class Tipo(models.TextChoices):
+        PERMITIDO = "permitido", _("Permitido")
+        NEGADO = "negado", _("Negado")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    token = models.ForeignKey(
+        ApiToken,
+        on_delete=models.CASCADE,
+        related_name="ips",
+    )
+    ip = models.GenericIPAddressField()
+    tipo = models.CharField(max_length=10, choices=Tipo.choices)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("token", "ip", "tipo")
 
 
 class ApiTokenLog(TimeStampedModel, SoftDeleteModel):
@@ -205,6 +232,20 @@ class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
     acao = models.CharField(max_length=20, choices=Acao.choices)
     ip = EncryptedCharField(max_length=128, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class TokenWebhookEvent(TimeStampedModel):
+    """Evento de webhook que falhou e aguarda reprocessamento."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    url = models.URLField()
+    payload = models.JSONField()
+    delivered = models.BooleanField(default=False)
+    attempts = models.PositiveIntegerField(default=0)
+    last_attempt_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

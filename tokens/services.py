@@ -32,6 +32,7 @@ def generate_token(
     client_name: str | None,
     scope: str,
     expires_in: timedelta | None = None,
+    device_fingerprint: str | None = None,
 ) -> str:
     """Gera um token de API e retorna o valor bruto."""
 
@@ -42,6 +43,7 @@ def generate_token(
         user=user,
         client_name=client_name or "",
         token_hash=token_hash,
+        device_fingerprint=device_fingerprint,
         scope=scope,
         expires_at=expires_at,
     )
@@ -67,6 +69,24 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     tokens_api_tokens_revoked_total.inc()
 
     token_revoked(token)
+
+
+def rotate_token(token_id: uuid.UUID, revogado_por: User | None = None) -> str:
+    """Gera novo token e revoga o anterior automaticamente."""
+    token = ApiToken.objects.get(id=token_id)
+    expires_in: timedelta | None = None
+    if token.expires_at:
+        delta = token.expires_at - timezone.now()
+        if delta.total_seconds() > 0:
+            expires_in = delta
+
+    raw_token = generate_token(token.user, token.client_name, token.scope, expires_in)
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    novo_token = ApiToken.objects.get(token_hash=token_hash)
+    novo_token.anterior = token
+    novo_token.save(update_fields=["anterior"])
+    revoke_token(token.id, revogado_por)
+    return raw_token
 
 
 def list_tokens(user: User) -> Iterable[ApiToken]:
