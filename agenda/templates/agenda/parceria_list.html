@@ -17,6 +17,8 @@
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Empresa" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Tipo" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Avaliação" %}</th>
+            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comentário" %}</th>
             <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
           </tr>
         </thead>
@@ -26,6 +28,13 @@
               <td class="px-4 py-2">{{ parceria.empresa.nome }}</td>
               <td class="px-4 py-2">{{ parceria.evento.titulo }}</td>
               <td class="px-4 py-2">{{ parceria.get_tipo_parceria_display }}</td>
+              {% if parceria.avaliacao is not None %}
+                <td class="px-4 py-2">{{ parceria.avaliacao }}</td>
+                <td class="px-4 py-2">{{ parceria.comentario }}</td>
+              {% else %}
+                <td class="px-4 py-2">-</td>
+                <td class="px-4 py-2">-</td>
+              {% endif %}
               <td class="px-4 py-2 space-x-2">
                 {% if parceria.avaliacao is None %}
                   <a
@@ -48,7 +57,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="4" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
+              <td colspan="6" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
             </tr>
           {% endfor %}
         </tbody>
