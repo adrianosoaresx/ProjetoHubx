@@ -4,6 +4,7 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.cache import cache
 
 from accounts.models import User, UserType
 from agenda.models import Evento
@@ -303,3 +304,25 @@ def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
     resp = superadmin_user.get(reverse("organizacoes:detail", args=[org.pk]))
     content = resp.content.decode()
     assert "Membros" in content and "Núcleos" in content and "Eventos" in content
+
+
+def test_list_view_caching(superadmin_user, organizacao):
+    cache.clear()
+    url = reverse("organizacoes:list")
+    resp1 = superadmin_user.get(url)
+    assert resp1["X-Cache"] == "MISS"
+    resp2 = superadmin_user.get(url)
+    assert resp2["X-Cache"] == "HIT"
+
+
+def test_list_view_cache_invalidation(superadmin_user, organizacao, faker_ptbr):
+    cache.clear()
+    url = reverse("organizacoes:list")
+    superadmin_user.get(url)
+    superadmin_user.get(url)
+    Organizacao.objects.create(
+        nome="Nova", cnpj=faker_ptbr.cnpj(), slug="nova"
+    )
+    resp = superadmin_user.get(url)
+    assert resp["X-Cache"] == "MISS"
+    assert "Nova" in resp.content.decode()

@@ -17,6 +17,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from sentry_sdk import capture_exception
 
@@ -36,9 +37,26 @@ User = get_user_model()
 
 
 class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
+    """Listagem de organizações com resposta em cache."""
+
     model = Organizacao
     template_name = "organizacoes/list.html"
     paginate_by = 10
+    cache_timeout = 60
+
+    def _cache_key(self) -> str:
+        params = self.request.GET
+        keys = [
+            str(getattr(self.request.user, "pk", "")),
+            params.get("search", ""),
+            params.get("tipo", ""),
+            params.get("cidade", ""),
+            params.get("estado", ""),
+            params.get("ordering", ""),
+            params.get("page", ""),
+            params.get("inativa", ""),
+        ]
+        return "organizacoes_list_" + "_".join(keys)
 
     def get_queryset(self):
         qs = (
@@ -92,6 +110,18 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         )
         context["inativa"] = self.request.GET.get("inativa", "")
         return context
+
+    def render_to_response(self, context, **response_kwargs):
+        key = self._cache_key()
+        cached = cache.get(key)
+        if cached is not None:
+            cached["X-Cache"] = "HIT"
+            return cached
+        response = super().render_to_response(context, **response_kwargs)
+        response.render()
+        cache.set(key, response, self.cache_timeout)
+        response["X-Cache"] = "MISS"
+        return response
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
