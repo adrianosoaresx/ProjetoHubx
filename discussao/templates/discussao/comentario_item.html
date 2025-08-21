@@ -2,7 +2,7 @@
 <article class="p-4 border-b border-neutral-200 reply-parent {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
-      {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created|date:"SHORT_DATETIME_FORMAT" }}
+      {{ comentario.autor.get_full_name|default:comentario.autor.username }} - {{ comentario.created_at|date:"SHORT_DATETIME_FORMAT" }}
       {% if comentario.editado %}
         ({% blocktrans with data=comentario.editado_em|date:"SHORT_DATETIME_FORMAT" %}editado em {{ data }}{% endblocktrans %})
       {% endif %}
