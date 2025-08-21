@@ -19,7 +19,7 @@
     <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
       {% for u in users %}
         <button
-          hx-post="/chat/iniciar/{{ u.id }}/"
+          hx-get="{% url 'chat:modal_room' u.id %}"
           hx-target="body"
           class="w-full text-left cursor-pointer group border border-neutral-200 rounded-2xl p-4 bg-white shadow-sm hover:shadow-md transition-all flex items-center gap-4"
         >
