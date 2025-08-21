@@ -210,6 +210,20 @@ class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
         ordering = ["-created_at"]
 
 
+class TokenWebhookEvent(TimeStampedModel):
+    """Evento de webhook que falhou e aguarda reprocessamento."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    url = models.URLField()
+    payload = models.JSONField()
+    delivered = models.BooleanField(default=False)
+    attempts = models.PositiveIntegerField(default=0)
+    last_attempt_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
 class CodigoAutenticacao(TimeStampedModel, SoftDeleteModel):
     usuario = models.ForeignKey(
         get_user_model(),
