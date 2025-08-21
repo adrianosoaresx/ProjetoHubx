@@ -18,19 +18,28 @@ class PostFormTest(TestCase):
     def test_form_video_valid(self):
         video = SimpleUploadedFile("v.mp4", b"00", content_type="video/mp4")
         form = PostForm(
-            data={"tipo_feed": "global"}, files={"video": video}, user=self.user
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"video": video},
+            user=self.user,
         )
         self.assertTrue(form.is_valid())
 
     def test_form_text_only_valid(self):
         form = PostForm(
-            data={"tipo_feed": "global", "conteudo": "Olá"},
+            data={
+                "tipo_feed": "global",
+                "organizacao": str(self.user.organizacao.id),
+                "conteudo": "Olá",
+            },
             user=self.user,
         )
         self.assertTrue(form.is_valid())
 
     def test_form_no_content_no_media_invalid(self):
-        form = PostForm(data={"tipo_feed": "global"}, user=self.user)
+        form = PostForm(
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            user=self.user,
+        )
         self.assertFalse(form.is_valid())
         self.assertIn("__all__", form.errors)
 
@@ -40,7 +49,9 @@ class PostFormTest(TestCase):
         Image.new("RGB", (1, 1)).save(img_io, format="PNG")
         image = SimpleUploadedFile("big.png", img_io.getvalue(), content_type="image/png")
         form = PostForm(
-            data={"tipo_feed": "global"}, files={"image": image}, user=self.user
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"image": image},
+            user=self.user,
         )
         self.assertFalse(form.is_valid())
         self.assertIn("image", form.errors)

@@ -48,13 +48,23 @@ class AIModerationFormTest(TestCase):
 
     def test_form_rejects_content(self):
         form = PostForm(
-            data={"tipo_feed": "global", "conteudo": "ruim ruim"}, user=self.user
+            data={
+                "tipo_feed": "global",
+                "organizacao": str(self.user.organizacao.id),
+                "conteudo": "ruim ruim",
+            },
+            user=self.user,
         )
         self.assertFalse(form.is_valid())
 
     def test_form_flags_suspect(self):
         form = PostForm(
-            data={"tipo_feed": "global", "conteudo": "ruim"}, user=self.user
+            data={
+                "tipo_feed": "global",
+                "organizacao": str(self.user.organizacao.id),
+                "conteudo": "ruim",
+            },
+            user=self.user,
         )
         self.assertTrue(form.is_valid())
         post = form.save()
