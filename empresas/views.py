@@ -357,7 +357,7 @@ def detalhes_empresa(request, pk):
         "contatos": contatos,
         "pode_visualizar_contatos": pode_visualizar_contatos,
     }
-    return render(request, "empresas/detail.htm", context)
+    return render(request, "empresas/detail.html", context)
 
 
 # ------------------------------------------------------------------
