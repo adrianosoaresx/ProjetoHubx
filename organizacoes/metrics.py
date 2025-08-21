@@ -11,3 +11,13 @@ membros_notificacao_latency = Histogram(
     "organizacoes_membros_notificacao_latency_seconds",
     "Tempo para enviar notificações aos membros de organizações",
 )
+
+list_latency_seconds = Histogram(
+    "organizacoes_list_latency_seconds",
+    "Latência das requisições de listagem de organizações",
+)
+
+detail_latency_seconds = Histogram(
+    "organizacoes_detail_latency_seconds",
+    "Latência das requisições de detalhe de organizações",
+)

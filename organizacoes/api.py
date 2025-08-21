@@ -36,6 +36,7 @@ from .serializers import (
     OrganizacaoSerializer,
 )
 from .tasks import organizacao_alterada
+from .metrics import list_latency_seconds, detail_latency_seconds
 
 
 class OrganizacaoViewSet(viewsets.ModelViewSet):
@@ -98,16 +99,21 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         return "organizacoes_list_" + "_".join(keys)
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
-        key = self._cache_key(request)
-        cached = cache.get(key)
-        if cached is not None:
-            response = Response(cached)
-            response["X-Cache"] = "HIT"
+        with list_latency_seconds.time():
+            key = self._cache_key(request)
+            cached = cache.get(key)
+            if cached is not None:
+                response = Response(cached)
+                response["X-Cache"] = "HIT"
+                return response
+            response = super().list(request, *args, **kwargs)
+            cache.set(key, response.data, self.cache_timeout)
+            response["X-Cache"] = "MISS"
             return response
-        response = super().list(request, *args, **kwargs)
-        cache.set(key, response.data, self.cache_timeout)
-        response["X-Cache"] = "MISS"
-        return response
+
+    def retrieve(self, request, *args, **kwargs):  # type: ignore[override]
+        with detail_latency_seconds.time():
+            return super().retrieve(request, *args, **kwargs)
 
     def get_permissions(self):
         if self.action in {
