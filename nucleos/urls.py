@@ -34,6 +34,11 @@ urlpatterns = [
         name="convites_modal",
     ),
     path(
+        "<int:pk>/convites/novo/",
+        views.ConviteCreateView.as_view(),
+        name="convite_create",
+    ),
+    path(
         "<int:pk>/membro/<int:participacao_id>/remover/",
         views.MembroRemoveView.as_view(),
         name="membro_remover",
