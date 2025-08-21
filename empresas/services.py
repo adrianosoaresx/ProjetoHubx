@@ -7,6 +7,7 @@ manutenção das views.
 
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.db import connection
+from django.db.models import Q
 from django.utils import timezone
 
 from accounts.models import UserType
@@ -69,6 +70,7 @@ def search_empresas(user, params):
         if connection.vendor == "postgresql":
             vector = (
                 SearchVector("nome", weight="A")
+                + SearchVector("cnpj", weight="A")
                 + SearchVector("descricao", weight="B")
                 + SearchVector("palavras_chave", weight="B")
                 + SearchVector("tags__nome", weight="C")
@@ -76,7 +78,7 @@ def search_empresas(user, params):
             query = SearchQuery(q)
             qs = qs.annotate(rank=SearchRank(vector, query)).filter(rank__gt=0).order_by("-rank")
         else:
-            qs = qs.filter(search_vector__icontains=q)
+            qs = qs.filter(Q(search_vector__icontains=q) | Q(cnpj__icontains=q))
     return qs.distinct()
 
 

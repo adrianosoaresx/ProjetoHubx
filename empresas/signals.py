@@ -11,7 +11,13 @@ from .tasks import criar_post_empresa, validar_cnpj_empresa
 def _update_search_vector(instance: Empresa) -> None:
     """Atualiza o campo ``search_vector`` com os textos relevantes."""
     tags_text = " ".join(instance.tags.values_list("nome", flat=True))
-    parts = [instance.nome, instance.descricao, instance.palavras_chave, tags_text]
+    parts = [
+        instance.nome,
+        instance.cnpj,
+        instance.descricao,
+        instance.palavras_chave,
+        tags_text,
+    ]
     texto = " ".join(filter(None, parts))
     Empresa.objects.filter(pk=instance.pk).update(search_vector=texto)
 

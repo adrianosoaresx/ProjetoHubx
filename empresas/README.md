@@ -6,7 +6,7 @@ fornecendo campos padronizados de criação/atualização e exclusão lógica.
 
 ## Rotas principais
 
-- `/empresas/` – listagem com filtros por nome, município, estado, tags e busca textual (`q`). Administradores podem visualizar registros excluídos passando `?mostrar_excluidas=1`.
+- `/empresas/` – listagem com filtros por nome, município, estado, tags e busca textual (`q`) que procura em nome, CNPJ, descrição, palavras-chave e tags. Administradores podem visualizar registros excluídos passando `?mostrar_excluidas=1`.
 - `/empresas/nova/` – criação.
 - `/empresas/<id>/editar/` – edição.
 - `/empresas/<id>/` – detalhes da empresa com avaliações e ações.
