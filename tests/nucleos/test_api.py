@@ -2,6 +2,7 @@ import csv
 from datetime import timedelta
 
 import pytest
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -79,9 +80,7 @@ def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizac
     assert resp.status_code == 201
 
     _auth(api_client, admin_user)
-    url_aprovar = reverse(
-        "nucleos_api:nucleo-aprovar-membro", args=[nucleo.pk, outro_user.pk]
-    )
+    url_aprovar = reverse("nucleos_api:nucleo-aprovar-membro", args=[nucleo.pk, outro_user.pk])
     resp = api_client.post(url_aprovar)
     assert resp.status_code == 200
     p = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=outro_user)
@@ -94,9 +93,7 @@ def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizac
     resp = api_client.post(url)
     assert resp.status_code == 201
     _auth(api_client, admin_user)
-    url_recusar = reverse(
-        "nucleos_api:nucleo-recusar-membro", args=[nucleo.pk, novo.pk]
-    )
+    url_recusar = reverse("nucleos_api:nucleo-recusar-membro", args=[nucleo.pk, novo.pk])
     resp = api_client.post(url_recusar, {"justificativa": "motivo"})
     assert resp.status_code == 200
     p2 = ParticipacaoNucleo.objects.get(nucleo=nucleo, user=novo)
@@ -114,9 +111,7 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
 
 def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(
-        user=coord_user, nucleo=nucleo, status="ativo"
-    )
+    ParticipacaoNucleo.objects.create(user=coord_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
     data = {
@@ -137,9 +132,7 @@ def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
 
 def test_suplente_validations(api_client, admin_user, coord_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N5", slug="n5", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(
-        user=coord_user, nucleo=nucleo, status="ativo"
-    )
+    ParticipacaoNucleo.objects.create(user=coord_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
     now = timezone.now()
@@ -186,10 +179,7 @@ def test_exportar_membros(api_client, admin_user, outro_user, organizacao):
     assert "True" in rows[1] or "False" in rows[1]
     resp = api_client.get(url + "?formato=xls")
     assert resp.status_code == 200
-    assert (
-        resp["Content-Type"]
-        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    assert resp["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def test_permission_denied(api_client, outro_user, organizacao):
@@ -243,9 +233,7 @@ def test_list_forbidden_organizacao(api_client, organizacao, django_user_model):
 def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N9", slug="n9", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo", papel="coordenador")
-    ParticipacaoNucleo.objects.create(
-        user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True
-    )
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-membros-ativos", args=[nucleo.pk])
     resp = api_client.get(url)
@@ -264,12 +252,11 @@ def test_financeiro_signal(api_client, admin_user, outro_user, organizacao, monk
     api_client.post(url)
     assert calls and calls[0][2] == "ativo"
 
+
 def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user):
     nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")
-    ParticipacaoNucleo.objects.create(
-        user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True
-    )
+    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
     resp = api_client.get(url)
@@ -278,7 +265,6 @@ def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user)
     assert resp.data["total_membros"] == 1
     resp2 = api_client.get(url)
     assert resp2["X-Cache"] == "HIT"
-
 
 
 def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
@@ -311,6 +297,7 @@ def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
     assert resp.status_code == 200
     assert resp.data["results"][0]["id"] == str(nucleo.id)
 
+
 def test_nucleo_ativo_api(api_client, admin_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
     _auth(api_client, admin_user)
@@ -320,3 +307,17 @@ def test_nucleo_ativo_api(api_client, admin_user, organizacao):
     nucleo.refresh_from_db()
     assert nucleo.ativo is False
 
+
+@override_settings(ROOT_URLCONF="tests.nucleos.urls")
+def test_usuario_comum_nao_pode_alterar_nucleo(api_client, outro_user, organizacao):
+    _auth(api_client, outro_user)
+    list_url = reverse("nucleos_api:nucleo-list")
+    resp = api_client.post(
+        list_url,
+        {"nome": "N1", "slug": "n1", "organizacao": organizacao.pk},
+    )
+    assert resp.status_code == 403
+    nucleo = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    detail_url = reverse("nucleos_api:nucleo-detail", args=[nucleo.pk])
+    assert api_client.patch(detail_url, {"nome": "new"}).status_code == 403
+    assert api_client.delete(detail_url).status_code == 403
