@@ -79,10 +79,10 @@
     {% if perms.organizacoes.change_organizacao %}
       <a href="{% url 'organizacoes:update' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-yellow-100 text-yellow-700 hover:bg-yellow-200">{% trans 'Editar' %}</a>
     {% endif %}
-    {% if perms.organizacoes.delete_organizacao %}
-      <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">{% trans 'Excluir' %}</a>
-    {% endif %}
     {% if request.user.user_type == 'root' %}
+      {% if perms.organizacoes.delete_organizacao %}
+        <a href="{% url 'organizacoes:delete' object.id %}" class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200">{% trans 'Excluir' %}</a>
+      {% endif %}
       <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
         {% csrf_token %}
         <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-neutral-100 text-neutral-700 hover:bg-neutral-200">
