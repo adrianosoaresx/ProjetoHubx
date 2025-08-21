@@ -75,15 +75,25 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             e = PermissionDenied()
             capture_exception(e)
             raise e
-        search = self.request.query_params.get("search")
-        if search:
-            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
-        inativa = self.request.query_params.get("inativa")
+        params = self.request.query_params
+        search = params.get("search")
+        tipo = params.get("tipo")
+        cidade = params.get("cidade")
+        estado = params.get("estado")
+        inativa = params.get("inativa")
         if inativa is not None:
             qs = qs.filter(inativa=inativa.lower() == "true")
         else:
             qs = qs.filter(inativa=False)
-        ordering = self.request.query_params.get("ordering")
+        if search:
+            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+        if cidade:
+            qs = qs.filter(cidade=cidade)
+        if estado:
+            qs = qs.filter(estado=estado)
+        ordering = params.get("ordering")
         allowed = {"nome", "tipo", "cidade", "estado", "created_at"}
         if ordering and ordering.lstrip("-") in allowed:
             qs = qs.order_by(ordering)
@@ -96,6 +106,9 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         keys = [
             str(getattr(request.user, "pk", "")),
             params.get("search", ""),
+            params.get("tipo", ""),
+            params.get("cidade", ""),
+            params.get("estado", ""),
             params.get("inativa", ""),
             params.get("ordering", ""),
             params.get("page", ""),
