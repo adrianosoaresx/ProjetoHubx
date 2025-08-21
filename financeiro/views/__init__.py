@@ -484,6 +484,13 @@ def integracao_form_view(request, pk: uuid.UUID | None = None):
     return render(request, "financeiro/integracao_form.html", {"integracao": integracao})
 
 
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def importacoes_list_view(request):
+    """Lista de importações de pagamentos."""
+    return render(request, "financeiro/importacoes_list.html")
+
+
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
