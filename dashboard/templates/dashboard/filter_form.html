@@ -10,7 +10,7 @@
       <label for="id_nome" class="block text-sm font-medium text-neutral-700">{% trans 'Nome' %}</label>
       {{ form.nome }}
     </div>
-    {% if request.user.user_type in ['ROOT','ADMIN'] %}
+    {% if request.user.user_type in ['root','admin'] %}
     <div class="flex items-center gap-2">
       {{ form.publico }}
       <label for="id_publico" class="text-sm text-neutral-700">{% trans 'Público' %}</label>
