@@ -43,9 +43,7 @@
   </form>
 
   <div id="resultado" class="mt-6 text-center" aria-live="polite">
-    {% if token %}
-      {% include "tokens/_resultado.html" with token=token.codigo %}
-    {% endif %}
+    {% include "tokens/_resultado.html" %}
   </div>
 
   <footer class="mt-6 text-center">

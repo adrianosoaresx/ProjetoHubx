@@ -125,15 +125,35 @@ def revogar_api_token(request, token_id: str):
 @login_required
 def gerar_api_token(request):
     if request.method != "POST":
-        return JsonResponse({"error": _("Método não permitido")}, status=405)
+        tokens = list_tokens(request.user)
+        form = GerarApiTokenForm()
+        messages.error(request, _("Método não permitido"))
+        return render(
+            request,
+            "tokens/api_tokens.html",
+            {"tokens": tokens, "form": form},
+            status=405,
+        )
 
     form = GerarApiTokenForm(request.POST)
     if form.is_valid():
         scope = form.cleaned_data["scope"]
         if scope == "admin" and not request.user.is_superuser:
             if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"error": _("Não autorizado")}, status=403)
-            return JsonResponse({"error": _("Não autorizado")}, status=403)
+                return render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": _("Não autorizado")},
+                    status=403,
+                )
+            messages.error(request, _("Não autorizado"))
+            tokens = list_tokens(request.user)
+            return render(
+                request,
+                "tokens/api_tokens.html",
+                {"tokens": tokens, "form": form, "error": _("Não autorizado")},
+                status=403,
+            )
 
         client_name = form.cleaned_data["client_name"]
         expires_in = form.cleaned_data.get("expires_in")
@@ -151,11 +171,30 @@ def gerar_api_token(request):
         )
         if request.headers.get("HX-Request") == "true":
             return render(request, "tokens/_resultado.html", {"token": raw_token})
-        return JsonResponse({"token": raw_token})
+        messages.success(request, _("Token gerado"))
+        tokens = list_tokens(request.user)
+        form = GerarApiTokenForm()
+        return render(
+            request,
+            "tokens/api_tokens.html",
+            {"tokens": tokens, "form": form, "token": raw_token},
+        )
 
     if request.headers.get("HX-Request") == "true":
-        return render(request, "tokens/_resultado.html", {"error": _("Dados inválidos")}, status=400)
-    return JsonResponse({"error": _("Dados inválidos")}, status=400)
+        return render(
+            request,
+            "tokens/_resultado.html",
+            {"error": _("Dados inválidos")},
+            status=400,
+        )
+    messages.error(request, _("Dados inválidos"))
+    tokens = list_tokens(request.user)
+    return render(
+        request,
+        "tokens/api_tokens.html",
+        {"tokens": tokens, "form": form, "error": _("Dados inválidos")},
+        status=400,
+    )
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
@@ -177,8 +216,13 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         form = GerarTokenConviteForm(request.POST, user=request.user)
+        choices = [
+            choice
+            for choice in TokenAcesso.TipoUsuario.choices
+            if can_issue_invite(request.user, choice[0])
+        ]
+        form.fields["tipo_destino"].choices = choices
         if form.is_valid():
-<
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
@@ -188,8 +232,14 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         {"error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
                         status=403,
                     )
-                return JsonResponse(
-                    {"error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
+                messages.error(
+                    request,
+                    _("Seu perfil não permite gerar convites para este tipo de usuário."),
+                )
+                return render(
+                    request,
+                    "tokens/gerar_token.html",
+                    {"form": form, "error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
                     status=403,
                 )
 
@@ -211,7 +261,12 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                         status=429,
                     )
                 messages.error(request, _("Limite diário atingido."))
-                return JsonResponse({"error": _("Limite diário atingido.")}, status=429)
+                return render(
+                    request,
+                    "tokens/gerar_token.html",
+                    {"form": form, "error": _("Limite diário atingido.")},
+                    status=429,
+                )
 
             token, codigo = create_invite_token(
                 gerado_por=request.user,
@@ -236,11 +291,27 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"token": codigo})
             messages.success(request, _("Token gerado"))
-            return JsonResponse({"codigo": codigo})
+            form = GerarTokenConviteForm(user=request.user)
+            form.fields["tipo_destino"].choices = choices
+            return render(
+                request,
+                "tokens/gerar_token.html",
+                {"form": form, "token": codigo},
+            )
         if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"error": _("Dados inválidos")}, status=400)
+            return render(
+                request,
+                "tokens/_resultado.html",
+                {"error": _("Dados inválidos")},
+                status=400,
+            )
         messages.error(request, _("Dados inválidos"))
-        return JsonResponse({"error": _("Dados inválidos")}, status=400)
+        return render(
+            request,
+            "tokens/gerar_token.html",
+            {"form": form, "error": _("Dados inválidos")},
+            status=400,
+        )
 
 
 class ValidarTokenConviteView(LoginRequiredMixin, View):
@@ -266,11 +337,26 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
             messages.success(request, _("Token validado"))
-            return JsonResponse({"success": _("Token validado")})
+            form = ValidarTokenConviteForm()
+            return render(
+                request,
+                "tokens/validar_token.html",
+                {"form": form, "success": _("Token validado")},
+            )
         if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
+            return render(
+                request,
+                "tokens/_resultado.html",
+                {"error": form.errors.as_text()},
+                status=400,
+            )
         messages.error(request, form.errors.as_text())
-        return JsonResponse({"error": form.errors.as_text()}, status=400)
+        return render(
+            request,
+            "tokens/validar_token.html",
+            {"form": form, "error": form.errors.as_text()},
+            status=400,
+        )
 
 
 class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
@@ -294,11 +380,26 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
             messages.success(request, _("Código gerado"))
-            return JsonResponse({"codigo": codigo.codigo})
+            form = GerarCodigoAutenticacaoForm()
+            return render(
+                request,
+                "tokens/gerar_codigo_autenticacao.html",
+                {"form": form, "codigo": codigo.codigo},
+            )
         if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"error": _("Dados inválidos")}, status=400)
+            return render(
+                request,
+                "tokens/_resultado.html",
+                {"error": _("Dados inválidos")},
+                status=400,
+            )
         messages.error(request, _("Dados inválidos"))
-        return JsonResponse({"error": _("Dados inválidos")}, status=400)
+        return render(
+            request,
+            "tokens/gerar_codigo_autenticacao.html",
+            {"form": form, "error": _("Dados inválidos")},
+            status=400,
+        )
 
 
 class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
@@ -322,11 +423,26 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Código validado")})
             messages.success(request, _("Código validado"))
-            return JsonResponse({"success": _("Código validado")})
+            form = ValidarCodigoAutenticacaoForm(usuario=request.user)
+            return render(
+                request,
+                "tokens/validar_codigo_autenticacao.html",
+                {"form": form, "success": _("Código validado")},
+            )
         if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"error": form.errors.as_text()}, status=400)
+            return render(
+                request,
+                "tokens/_resultado.html",
+                {"error": form.errors.as_text()},
+                status=400,
+            )
         messages.error(request, form.errors.as_text())
-        return JsonResponse({"error": form.errors.as_text()}, status=400)
+        return render(
+            request,
+            "tokens/validar_codigo_autenticacao.html",
+            {"form": form, "error": form.errors.as_text()},
+            status=400,
+        )
 
 
 class Ativar2FAView(LoginRequiredMixin, View):
