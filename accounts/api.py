@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pyotp
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -108,6 +110,10 @@ class AccountViewSet(viewsets.GenericViewSet):
         if token.expires_at < timezone.now() or token.used_at:
             return Response({"detail": _("Token inválido ou expirado.")}, status=400)
         user = token.usuario
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            return Response({"detail": e.messages}, status=400)
         user.failed_login_attempts = 0
         user.lock_expires_at = None
         user.set_password(new_password)
