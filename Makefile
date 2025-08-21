@@ -1,9 +1,9 @@
 LINT_EXCLUDE=.venv,migrations,static
 
-.PHONY: format vet test security all
+.PHONY: format vet test security collectstatic all
 
-# Executa tudo: formatadores, linters, testes e segurança
-all: format vet test security
+# Executa tudo: formatadores, linters, testes, segurança e coleta de assets
+all: format vet test security collectstatic
 
 # Formata o código
 format:
@@ -21,8 +21,12 @@ test:
 
 # Verificação de segurança com Bandit
 security:
-	bandit -r . --exclude $(LINT_EXCLUDE) --severity-level medium -f short
+        bandit -r . --exclude $(LINT_EXCLUDE) --severity-level medium -f short
 
 .PHONY: openapi
 openapi:
-	python manage.py spectacular --file openapi-schema.yml
+        python manage.py spectacular --file openapi-schema.yml
+
+.PHONY: collectstatic
+collectstatic:
+	python manage.py collectstatic --noinput
