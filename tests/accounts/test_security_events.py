@@ -1,6 +1,7 @@
 import pyotp
 import pytest
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -65,11 +66,13 @@ def test_reset_password_logs_security_event():
 
 
 @pytest.mark.django_db
+@override_settings(ROOT_URLCONF="tests.urls_accounts_api_only")
 def test_resend_confirmation_logs_security_event():
     user = User.objects.create_user(email="inactive@example.com", username="i", is_active=False)
     client = APIClient()
     resp = client.post(reverse("accounts_api:account-resend-confirmation"), {"email": user.email})
     assert resp.status_code == 204
+    assert resp.wsgi_request.user.is_anonymous
     assert SecurityEvent.objects.filter(usuario=user, evento="resend_confirmation").exists()
 
 

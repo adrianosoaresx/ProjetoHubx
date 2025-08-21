@@ -195,6 +195,59 @@
             return {cipher, alg:'AES-GCM', keyVersion:'1'};
         }
 
+        async function decryptMessage(container){
+            const keyB64 = window.chatKey;
+            if(!keyB64) return;
+            let key;
+            try{
+                const raw = Uint8Array.from(atob(keyB64), c=>c.charCodeAt(0));
+                key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+            }catch(err){
+                console.error('Invalid key', err);
+                container.querySelectorAll('[data-cipher]').forEach(el=>{
+                    el.textContent = t('invalidKey','Chave inválida');
+                });
+                return;
+            }
+            const elements = container.querySelectorAll('[data-cipher]');
+            elements.forEach(async el=>{
+                const cipher = el.dataset.cipher;
+                const alg = el.dataset.alg || 'AES-GCM';
+                try{
+                    const data = Uint8Array.from(atob(cipher), c=>c.charCodeAt(0));
+                    const iv = data.slice(0,12);
+                    const enc = data.slice(12);
+                    const decrypted = await crypto.subtle.decrypt({name:alg, iv}, key, enc);
+                    const text = new TextDecoder().decode(decrypted);
+                    const tipo = el.dataset.type || 'text';
+                    if(tipo === 'image'){
+                        const img = document.createElement('img');
+                        img.src = text;
+                        img.alt = 'imagem';
+                        img.className = 'w-full max-w-xs h-auto rounded';
+                        el.replaceWith(img);
+                    }else if(tipo === 'video'){
+                        const video = document.createElement('video');
+                        video.src = text;
+                        video.controls = true;
+                        video.className = 'w-full max-w-xs h-auto';
+                        video.setAttribute('aria-label', t('videoPlayer','Player de vídeo'));
+                        el.replaceWith(video);
+                    }else if(tipo === 'file'){
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'chat-file';
+                        fileDiv.innerHTML = `<a href="${text}" target="_blank">📎 ${t('downloadFile','Baixar arquivo')}</a>`;
+                        el.replaceWith(fileDiv);
+                    }else{
+                        el.textContent = text;
+                    }
+                }catch(err){
+                    console.error('Decrypt failed', err);
+                    el.textContent = t('invalidKey','Chave inválida');
+                }
+            });
+        }
+
         function renderReactions(div, reactions, userReactions){
             const list = div.querySelector('.reactions');
             if(!list) return;
@@ -313,20 +366,55 @@
             const btn = div.querySelector('.action-btn');
             const menu = div.querySelector('.action-menu');
             if(!btn || !menu || !id) return;
+            function focusableItems(){
+                return Array.from(menu.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'));
+            }
+            function openMenu(){
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded','true');
+                const first = focusableItems()[0];
+                if(first){ first.focus(); }
+            }
+            function closeMenu(){
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded','false');
+                btn.focus();
+            }
             btn.addEventListener('click', ()=>{
-                const hidden = menu.classList.toggle('hidden');
-                btn.setAttribute('aria-expanded', hidden ? 'false' : 'true');
+                if(menu.classList.contains('hidden')){
+                    openMenu();
+                }else{
+                    closeMenu();
+                }
+            });
+            menu.addEventListener('keydown', e=>{
+                const items = focusableItems();
+                const index = items.indexOf(document.activeElement);
+                if(e.key === 'Escape'){
+                    e.preventDefault();
+                    closeMenu();
+                }else if(e.key === 'Tab'){
+                    e.preventDefault();
+                    const next = (index + (e.shiftKey ? -1 : 1) + items.length) % items.length;
+                    items[next].focus();
+                }else if(e.key === 'ArrowDown'){
+                    e.preventDefault();
+                    const next = (index + 1) % items.length;
+                    items[next].focus();
+                }else if(e.key === 'ArrowUp'){
+                    e.preventDefault();
+                    const next = (index - 1 + items.length) % items.length;
+                    items[next].focus();
+                }
             });
             menu.addEventListener('click', e=>{
                 const createOpt = e.target.closest('.create-item');
                 const flagOpt = e.target.closest('.flag-message');
                 if(createOpt){
-                    menu.classList.add('hidden');
-                    btn.setAttribute('aria-expanded','false');
+                    closeMenu();
                     openItemModal(id);
                 } else if(flagOpt){
-                    menu.classList.add('hidden');
-                    btn.setAttribute('aria-expanded','false');
+                    closeMenu();
                     if(confirm(t('confirmFlag','Tem certeza que deseja denunciar?'))){
                         fetch(`/api/chat/channels/${destinatarioId}/messages/${id}/flag/`,{
                             method:'POST',
@@ -402,6 +490,9 @@
             });
         }
 
+        decryptMessage(messages);
+        if(pinned){ decryptMessage(pinned); }
+
         fetch('/api/chat/favorites/')
             .then(r=>r.ok ? r.json() : {})
             .then(data=>{
@@ -472,7 +563,7 @@
 
             let content;
             if(cipher){
-                content = `<span class="encrypted" data-cipher="${cipher}" data-alg="${alg||''}" data-key-version="${keyVersion||''}">🔒</span>`;
+                content = `<span class="encrypted" data-cipher="${cipher}" data-alg="${alg||''}" data-key-version="${keyVersion||''}" data-type="${tipo}">🔒</span>`;
             }else{
                 content = conteudo;
                 if(tipo === 'image'){
@@ -533,6 +624,8 @@
             if(id && remetente !== currentUser){
                 markReadObserver.observe(div);
             }
+
+            decryptMessage(div);
             return div;
         }
 

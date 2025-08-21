@@ -400,13 +400,16 @@ def excluir_conta(request):
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.CANCEL_DELETE,
-            expires_at=timezone.now() + timezone.timedelta(days=7),
+            expires_at=timezone.now() + timezone.timedelta(days=30),
             ip_gerado=request.META.get("REMOTE_ADDR"),
         )
 
     send_cancel_delete_email.delay(token.id)
     logout(request)
-    messages.success(request, _("Sua conta foi excluída com sucesso."))
+    messages.success(
+        request,
+        _("Sua conta foi excluída com sucesso. Você pode reativá-la em até 30 dias."),
+    )
     return redirect("core:home")
 
 
@@ -572,6 +575,11 @@ def resend_confirmation(request):
                     ip_gerado=request.META.get("REMOTE_ADDR"),
                 )
                 send_confirmation_email.delay(token.id)
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="resend_confirmation",
+                    ip=request.META.get("REMOTE_ADDR"),
+                )
         messages.success(
             request,
             _("Se o e-mail estiver cadastrado, enviaremos nova confirmação."),
