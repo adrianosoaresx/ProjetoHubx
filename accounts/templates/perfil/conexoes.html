@@ -21,10 +21,16 @@
 
     <!-- MINHAS CONEXÕES -->
     <div class="tab-pane" id="minhas-conexoes">
-      <div class="flex gap-2 mb-4">
-        <input type="text" placeholder="{% trans 'Buscar conexões...' %}" class="flex-grow border rounded-lg p-2 text-sm" />
-        <button class="text-gray-600 text-sm" aria-label="{% trans 'Buscar' %}">🔍</button>
-      </div>
+      <form method="get" class="flex gap-2 mb-4">
+        <input
+          type="text"
+          name="q"
+          value="{{ q }}"
+          placeholder="{% trans 'Buscar conexões...' %}"
+          class="flex-grow border rounded-lg p-2 text-sm"
+        />
+        <button type="submit" class="text-gray-600 text-sm" aria-label="{% trans 'Buscar' %}">🔍</button>
+      </form>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for connection in connections %}
