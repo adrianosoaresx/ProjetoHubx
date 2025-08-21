@@ -197,12 +197,16 @@ class TagUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
     form_class = TagForm
     template_name = "discussao/tag_form.html"
     success_url = reverse_lazy("discussao:tags")
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
 
 
 class TagDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     model = Tag
     template_name = "discussao/tag_confirm_delete.html"
     success_url = reverse_lazy("discussao:tags")
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
 
 
 @method_decorator(cache_page(60), name="dispatch")

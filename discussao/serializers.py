@@ -18,7 +18,7 @@ from .services import denunciar_conteudo, DiscussaoError
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ["id", "nome"]
+        fields = ["id", "nome", "slug"]
 
 
 class CategoriaDiscussaoSerializer(serializers.ModelSerializer):
@@ -114,7 +114,7 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
         tags_data = request.data.getlist("tags") if request else []
         topico = TopicoDiscussao.objects.create(**validated_data)
         if tags_data:
-            topico.tags.set(Tag.objects.filter(pk__in=tags_data))
+            topico.tags.set(Tag.objects.filter(slug__in=tags_data))
         return topico
 
     def update(self, instance: TopicoDiscussao, validated_data: dict) -> TopicoDiscussao:
@@ -122,7 +122,7 @@ class TopicoDiscussaoSerializer(serializers.ModelSerializer):
         tags_data = request.data.getlist("tags") if request else []
         instance = super().update(instance, validated_data)
         if tags_data:
-            instance.tags.set(Tag.objects.filter(pk__in=tags_data))
+            instance.tags.set(Tag.objects.filter(slug__in=tags_data))
         return instance
 
 
