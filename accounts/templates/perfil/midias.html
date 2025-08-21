@@ -15,15 +15,24 @@
     {% csrf_token %}
     <div>
       <label for="id_file" class="block text-sm font-medium text-gray-700">{% trans "Enviar arquivo" %}</label>
-      <input type="file" id="id_file" name="file" class="mt-1 block w-full border rounded-lg p-2 text-sm" required>
+      <input type="file" id="id_file" name="file" class="mt-1 block w-full border rounded-lg p-2 text-sm" required accept="{{ allowed_exts|join:',' }}">
+      {% if form.file.errors %}
+        <div class="text-sm text-red-600">{{ form.file.errors }}</div>
+      {% endif %}
     </div>
     <div>
       <label for="id_descricao" class="block text-sm font-medium text-gray-700">{% trans "Descrição" %}</label>
       <input type="text" id="id_descricao" name="descricao" class="mt-1 block w-full border rounded-lg p-2 text-sm">
+      {% if form.descricao.errors %}
+        <div class="text-sm text-red-600">{{ form.descricao.errors }}</div>
+      {% endif %}
     </div>
     <div>
       <label for="id_tags_field" class="block text-sm font-medium text-gray-700">{% trans "Tags" %}</label>
       <input type="text" id="id_tags_field" name="tags_field" class="mt-1 block w-full border rounded-lg p-2 text-sm" placeholder="{% trans 'paisagem, viagem' %}">
+      {% if form.tags_field.errors %}
+        <div class="text-sm text-red-600">{{ form.tags_field.errors }}</div>
+      {% endif %}
     </div>
     <div>
       <button type="submit" class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
@@ -51,7 +60,15 @@
         <a href="{% url 'accounts:midia_delete' media.pk %}" class="text-sm text-red-600 hover:underline" aria-label="{% trans 'Excluir' %}">🗑️</a>
       </div>
       <a href="{% url 'accounts:midia_detail' media.pk %}">
-        <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded">
+        {% if media.media_type == 'image' %}
+          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded">
+        {% elif media.media_type == 'video' %}
+          <video src="{{ media.file.url }}" class="w-full h-40 object-cover rounded" controls></video>
+        {% elif media.media_type == 'pdf' %}
+          <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
+        {% else %}
+          <span class="text-sm text-gray-500">{{ media.file.name }}</span>
+        {% endif %}
       </a>
       <div class="mt-2">
         <p class="text-sm font-medium text-gray-700">{{ media.descricao }}</p>
