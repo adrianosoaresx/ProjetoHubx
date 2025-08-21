@@ -8,7 +8,11 @@
   <header class="mb-4">
     <h1 class="text-2xl font-bold text-neutral-900">{% translate "Empresas Favoritas" %}</h1>
   </header>
-  <ul class="space-y-4" id="lista-favoritos">
+  <ul
+    class="space-y-4"
+    id="lista-favoritos"
+    hx-on:afterRequest="if (this.children.length === 0) { const li=document.createElement('li'); li.className='text-neutral-600'; li.textContent='{{ _('Nenhuma empresa favorita.')|escapejs }}'; this.appendChild(li); }"
+  >
     {% for empresa in empresas %}
       <li id="empresa-{{ empresa.id }}" class="p-4 bg-white rounded shadow">
         <h2 class="text-lg font-semibold">{{ empresa.nome }}</h2>
