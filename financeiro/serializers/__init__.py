@@ -141,9 +141,9 @@ class AporteSerializer(serializers.ModelSerializer):
         extra_kwargs = {"tipo": {"required": False}}
 
     def validate_valor(self, value: Any) -> Any:  # type: ignore[override]
-        """Valida que o valor informado é positivo."""
-        if value <= 0:
-            raise serializers.ValidationError(_("Valor deve ser positivo"))
+        """Garante que o valor não seja negativo."""
+        if value < 0:
+            raise serializers.ValidationError(_("Valor não pode ser negativo"))
         return value
 
     def validate_tipo(self, value: str) -> str:  # type: ignore[override]
