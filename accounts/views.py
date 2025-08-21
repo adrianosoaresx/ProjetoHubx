@@ -8,7 +8,7 @@ import pyotp
 import qrcode
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.hashers import make_password
@@ -356,11 +356,19 @@ def login_view(request):
 
     form = EmailLoginForm(request=request, data=request.POST or None)
     if request.method == "POST" and form.is_valid():
-        user = form.get_user()
-        if user.is_active:
+        user = authenticate(
+            request,
+            username=form.cleaned_data["email"],
+            password=form.cleaned_data["password"],
+            totp=form.cleaned_data.get("totp"),
+        )
+        if user and user.is_active:
             login(request, user)
             return redirect("accounts:perfil")
-        messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
+        if user and not user.is_active:
+            messages.error(request, _("Conta inativa. Verifique seu e-mail para ativá-la."))
+        else:
+            messages.error(request, _("Credenciais inválidas."))
 
     return render(request, "login/login.html", {"form": form})
 
