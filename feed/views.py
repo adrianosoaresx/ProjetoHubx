@@ -16,6 +16,9 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
+from django_ratelimit.core import is_ratelimited
+
+from .api import _post_rate, _read_rate
 
 from accounts.models import UserType
 from nucleos.models import Nucleo
@@ -113,6 +116,15 @@ class FeedListView(LoginRequiredMixin, ListView):
         return "feed:list:" + ":".join(keys)
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
+        if is_ratelimited(
+            request,
+            group="feed_posts_list",
+            key="user",
+            rate=_read_rate(None, request),
+            method="GET",
+            increment=True,
+        ):
+            return HttpResponse(_("Limite de requisições excedido."), status=429)
         key = self._cache_key(request)
         cached = cache.get(key)
         if cached:
@@ -226,6 +238,16 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.user_type == UserType.ROOT:
             return HttpResponseForbidden("Usuário root não pode publicar no feed.")
+        if request.method == "POST" and is_ratelimited(
+            request,
+            group="feed_posts_create",
+            key="user",
+            rate=_post_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            messages.error(request, _("Limite de postagens excedido."))
+            return HttpResponse(_("Limite de requisições excedido."), status=429)
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
