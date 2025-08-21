@@ -61,7 +61,7 @@
           </div>
           <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.reacoes.filter(vote='share', user=user).exists %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
             <i class="fa-solid fa-share"></i>
-            <span class="share-count">{{ post.reacoes.filter(vote='share').count }}</span>
+            <span class="share-count">{{ post.share_count }}</span>
           </button>
           <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded {% if post.bookmarks.filter(user=user).exists %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
             <i class="fa-solid fa-bookmark"></i>
