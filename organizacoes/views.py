@@ -373,6 +373,9 @@ class OrganizacaoUsuariosModalView(AdminRequiredMixin, LoginRequiredMixin, View)
                 "organizacao": org,
                 "usuarios": usuarios,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=usuarios",
+                "api_url": reverse(
+                    "organizacoes_api:organizacao-usuarios-list", kwargs={"organizacao_pk": org.pk}
+                ),
             },
         )
 
@@ -388,6 +391,9 @@ class OrganizacaoNucleosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "nucleos": nucleos,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=nucleos",
+                "api_url": reverse(
+                    "organizacoes_api:organizacao-nucleos-list", kwargs={"organizacao_pk": org.pk}
+                ),
             },
         )
 
@@ -403,6 +409,9 @@ class OrganizacaoEventosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "eventos": eventos,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=eventos",
+                "api_url": reverse(
+                    "organizacoes_api:organizacao-eventos-list", kwargs={"organizacao_pk": org.pk}
+                ),
             },
         )
 
@@ -418,6 +427,9 @@ class OrganizacaoEmpresasModalView(AdminRequiredMixin, LoginRequiredMixin, View)
                 "organizacao": org,
                 "empresas": empresas,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=empresas",
+                "api_url": reverse(
+                    "organizacoes_api:organizacao-empresas-list", kwargs={"organizacao_pk": org.pk}
+                ),
             },
         )
 
@@ -433,5 +445,8 @@ class OrganizacaoPostsModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "posts": posts,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=posts",
+                "api_url": reverse(
+                    "organizacoes_api:organizacao-posts-list", kwargs={"organizacao_pk": org.pk}
+                ),
             },
         )
