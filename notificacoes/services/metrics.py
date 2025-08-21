@@ -7,8 +7,8 @@ notificacoes_enviadas_total = Counter(
     ["canal"],
 )
 
-notificacoes_falhas_total = Counter(
-    "notificacoes_falhas_total",
+notificacoes_falhadas_total = Counter(
+    "notificacoes_falhadas_total",
     "Número de notificações com falha",
     ["canal"],
 )

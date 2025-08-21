@@ -417,7 +417,7 @@ O usuário pode acompanhar suas mensagens enviadas em `/notificacoes/historico/`
 ### Métricas e logs das tarefas
 
 As tarefas Celery de notificações expõem métricas Prometheus como
-`notificacoes_enviadas_total`, `notificacoes_falhas_total` e
+`notificacoes_enviadas_total`, `notificacoes_falhadas_total` e
 `notificacao_task_duration_seconds`. Para coletá-las, execute o worker com o
 `PrometheusExporter` habilitado.
 
