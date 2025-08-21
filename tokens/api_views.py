@@ -5,12 +5,13 @@ from datetime import timedelta
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import ApiToken, ApiTokenLog
 from .serializers import ApiTokenSerializer
-from .services import generate_token, list_tokens, revoke_token
+from .services import generate_token, list_tokens, revoke_token, rotate_token
 from .metrics import tokens_api_latency_seconds
 
 
@@ -61,4 +62,32 @@ class ApiTokenViewSet(viewsets.ViewSet):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"])
+    def rotate(self, request, pk: str | None = None):
+        token = get_object_or_404(ApiToken, pk=pk)
+        if not request.user.is_superuser and token.user != request.user:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        with tokens_api_latency_seconds.time():
+            raw_token = rotate_token(token.id, request.user)
+            new_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+            novo_token = ApiToken.objects.get(token_hash=new_hash)
+            ApiTokenLog.objects.create(
+                token=novo_token,
+                usuario=request.user,
+                acao=ApiTokenLog.Acao.GERACAO,
+                ip=request.META.get("REMOTE_ADDR", ""),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+            ApiTokenLog.objects.create(
+                token=token,
+                usuario=request.user,
+                acao=ApiTokenLog.Acao.REVOGACAO,
+                ip=request.META.get("REMOTE_ADDR", ""),
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+            data = ApiTokenSerializer(novo_token).data
+            data["token"] = raw_token
+            return Response(data, status=status.HTTP_201_CREATED)
 

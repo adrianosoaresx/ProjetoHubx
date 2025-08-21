@@ -30,6 +30,14 @@ Authorization: Bearer <token>
 DELETE /api/api-tokens/<id>/
 ```
 
+### Rotação
+
+```http
+POST /api/api-tokens/<id>/rotate/
+```
+
+Revoga o token antigo e retorna um novo valor.
+
 ### Segurança
 
 - Utilize sempre HTTPS.

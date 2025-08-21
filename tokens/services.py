@@ -69,6 +69,24 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     token_revoked(token)
 
 
+def rotate_token(token_id: uuid.UUID, revogado_por: User | None = None) -> str:
+    """Gera novo token e revoga o anterior automaticamente."""
+    token = ApiToken.objects.get(id=token_id)
+    expires_in: timedelta | None = None
+    if token.expires_at:
+        delta = token.expires_at - timezone.now()
+        if delta.total_seconds() > 0:
+            expires_in = delta
+
+    raw_token = generate_token(token.user, token.client_name, token.scope, expires_in)
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    novo_token = ApiToken.objects.get(token_hash=token_hash)
+    novo_token.anterior = token
+    novo_token.save(update_fields=["anterior"])
+    revoke_token(token.id, revogado_por)
+    return raw_token
+
+
 def list_tokens(user: User) -> Iterable[ApiToken]:
     qs = ApiToken.objects.all()
     if not user.is_superuser:
