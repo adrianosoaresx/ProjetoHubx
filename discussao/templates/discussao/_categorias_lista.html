@@ -1,0 +1,32 @@
+{% load i18n %}
+<ul class="space-y-3">
+  {% for categoria in categorias %}
+  <li class="p-4 bg-white border border-neutral-200 rounded-xl flex flex-col sm:flex-row sm:justify-between gap-4">
+    <div class="flex items-start gap-4 flex-1">
+      {% if categoria.icone %}
+      <img src="{{ categoria.icone.url }}" alt="{{ categoria.nome }}" class="w-10 h-10 object-contain" />
+      {% endif %}
+      <div>
+        <a href="{% url 'discussao:topicos' categoria.slug %}" class="text-primary-600 font-medium">{{ categoria.nome }}</a>
+        {% if categoria.descricao %}
+        <p class="text-sm text-neutral-600">{{ categoria.descricao }}</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-sm text-neutral-600">{{ categoria.topicos.count }}</span>
+      {% if user.user_type == 'admin' or user.user_type == 'coordenador' or user.user_type == 'root' %}
+      <a href="{% url 'discussao:categoria_editar' categoria.slug %}" class="text-sm text-neutral-600">{% trans 'Editar' %}</a>
+      <a href="{% url 'discussao:categoria_remover' categoria.slug %}" class="text-sm text-red-600">{% trans 'Remover' %}</a>
+      {% endif %}
+    </div>
+  </li>
+  {% empty %}
+  <li class="text-neutral-600">{% trans 'Nenhuma categoria cadastrada.' %}</li>
+  {% endfor %}
+</ul>
+{% if is_paginated %}
+<div class="mt-6">
+  {% include 'pagination.html' %}
+</div>
+{% endif %}

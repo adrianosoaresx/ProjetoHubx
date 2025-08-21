@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n markdown_extras %}
 <article class="p-4 border-b border-neutral-200 reply-parent {% if melhor %}bg-green-50{% endif %}" id="coment-{{ comentario.id }}">
   <header class="mb-2 flex items-center justify-between">
     <div class="text-sm text-neutral-700">
@@ -48,6 +48,7 @@
 
 
     </div>
+
     </header>
     <div class="prose max-w-none text-sm">{{ comentario.conteudo|linebreaks }}</div>
     {% if comentario.arquivo %}
@@ -66,6 +67,7 @@
       <input type="hidden" name="content_type_id" value="{{ resposta_content_type_id }}">
       <input type="hidden" name="object_id" value="{{ comentario.id }}">
       <textarea name="motivo" required class="form-textarea w-full" placeholder="{% trans "Motivo da denúncia" %}"></textarea>
+
     <button type="submit" class="mt-1 bg-red-600 text-white px-3 py-1 text-xs rounded">{% trans "Enviar" %}</button>
   </form>
 </article>
