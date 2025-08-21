@@ -179,40 +179,61 @@
     const retencaoFeedback = document.getElementById('retencao-feedback');
     const leaveBtn = document.getElementById('leave-channel');
 
-    function carregarResumos(){
-      fetch(`/api/chat/channels/${channelId}/resumos/`)
-        .then(r=>r.json())
-        .then(data=>{
-          resumosList.innerHTML='';
-          data.forEach(item=>{
-            const li=document.createElement('li');
-            const dt=new Date(item.created_at).toLocaleString();
-            li.textContent=`${item.periodo} - ${dt}`;
-            resumosList.appendChild(li);
-          });
+    async function carregarResumos(){
+      resumosList.innerHTML = '<li>{% trans "Carregando..." %}</li>';
+      try{
+        const r = await fetch(`/api/chat/channels/${channelId}/resumos/`);
+        const data = await r.json();
+        resumosList.innerHTML='';
+        data.forEach(item=>{
+          const li=document.createElement('li');
+          const dt=new Date(item.created_at).toLocaleString();
+          li.textContent=`${item.periodo} - ${dt}`;
+          resumosList.appendChild(li);
         });
+      }catch(e){
+        resumosList.innerHTML = '<li>{% trans "Erro ao carregar" %}</li>';
+      }
     }
 
-    function carregarTrending(){
-      fetch(`/api/chat/trending/?canal=${channelId}`)
-        .then(r=>r.json())
-        .then(data=>{
-          trendingList.innerHTML='';
-          data.forEach(item=>{
-            const li=document.createElement('li');
-            li.textContent=`${item.palavra} (${item.frequencia})`;
-            trendingList.appendChild(li);
-          });
+    async function carregarTrending(){
+      trendingList.innerHTML = '<li>{% trans "Carregando..." %}</li>';
+      try{
+        const r = await fetch(`/api/chat/trending/?canal=${channelId}`);
+        const data = await r.json();
+        trendingList.innerHTML='';
+        data.forEach(item=>{
+          const li=document.createElement('li');
+          li.textContent=`${item.palavra} (${item.frequencia})`;
+          trendingList.appendChild(li);
         });
+      }catch(e){
+        trendingList.innerHTML = '<li>{% trans "Erro ao carregar" %}</li>';
+      }
     }
 
     if(isAdmin && gerarBtn){
-      gerarBtn.addEventListener('click', function(){
-        fetch(`/api/chat/channels/${channelId}/gerar-resumo/`, {
-          method:'POST',
-          headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
-          body: JSON.stringify({periodo:'diario'})
-        }).then(r=>{ if(r.ok){carregarResumos();} });
+      gerarBtn.addEventListener('click', async function(){
+        const originalText = gerarBtn.textContent;
+        gerarBtn.disabled = true;
+        gerarBtn.textContent = '{% trans "Gerando..." %}';
+        try{
+          const r = await fetch(`/api/chat/channels/${channelId}/gerar-resumo/`, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+            body: JSON.stringify({periodo:'diario'})
+          });
+          if(r.ok){
+            carregarResumos();
+          }else{
+            alert('{% trans "Erro ao gerar resumo." %}');
+          }
+        }catch(e){
+          alert('{% trans "Erro ao gerar resumo." %}');
+        }finally{
+          gerarBtn.disabled = false;
+          gerarBtn.textContent = originalText;
+        }
       });
     }
 
@@ -263,7 +284,7 @@
           }else{
             r.json().then(data=>{alert(data.erro || 'Erro');});
           }
-        });
+        }).catch(()=>alert('{% trans "Erro ao sair do canal." %}'));
       });
     }
 
@@ -313,12 +334,19 @@
         nextUrl = null;
       }
     }
-    searchForm.addEventListener('submit', function(e){
+    searchForm.addEventListener('submit', async function(e){
       e.preventDefault();
       const params = new URLSearchParams(new FormData(searchForm));
-      fetch(`/api/chat/channels/${searchForm.dataset.channel}/messages/search/?${params.toString()}`)
-        .then(r=>r.json())
-        .then(data=>render(data,false));
+      results.innerHTML = '<p>{% trans "Carregando..." %}</p>';
+      try{
+        const r = await fetch(`/api/chat/channels/${searchForm.dataset.channel}/messages/search/?${params.toString()}`);
+        const data = await r.json();
+        render(data,false);
+      }catch(err){
+        results.innerHTML = '';
+        feedback.textContent = '{% trans "Erro ao buscar mensagens." %}';
+        feedback.classList.remove('hidden');
+      }
     });
     clearBtn.addEventListener('click', function(){
       searchForm.reset();
@@ -337,10 +365,19 @@
           setTimeout(()=>msg.classList.remove('bg-yellow-100'),2000);
         }
       } else if(e.target.id === 'search-more' && nextUrl){
-        fetch(nextUrl).then(r=>r.json()).then(data=>{
-          e.target.remove();
-          render(data,true);
-        });
+        const moreBtn = e.target;
+        moreBtn.disabled = true;
+        moreBtn.textContent = '{% trans "Carregando..." %}';
+        fetch(nextUrl)
+          .then(r=>r.json())
+          .then(data=>{
+            moreBtn.remove();
+            render(data,true);
+          })
+          .catch(()=>{
+            moreBtn.disabled = false;
+            moreBtn.textContent = '{% trans "Erro ao carregar" %}';
+          });
       }
     });
   });
