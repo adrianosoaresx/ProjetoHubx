@@ -198,6 +198,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
 
 
 class ValidarTokenConviteView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = ValidarTokenConviteForm()
+        return render(request, "tokens/validar_token.html", {"form": form})
     def post(self, request, *args, **kwargs):
         form = ValidarTokenConviteForm(request.POST)
         if form.is_valid():
@@ -225,6 +228,9 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
 
 
 class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = GerarCodigoAutenticacaoForm()
+        return render(request, "tokens/gerar_codigo_autenticacao.html", {"form": form})
     def post(self, request, *args, **kwargs):
         form = GerarCodigoAutenticacaoForm(request.POST)
         if form.is_valid():
@@ -250,6 +256,9 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
 
 
 class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        form = ValidarCodigoAutenticacaoForm(usuario=request.user)
+        return render(request, "tokens/validar_codigo_autenticacao.html", {"form": form})
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():

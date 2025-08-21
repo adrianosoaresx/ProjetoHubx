@@ -75,6 +75,13 @@ def test_convite_daily_limit(client):
     assert resp.status_code == 409
 
 
+def test_validar_token_convite_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:validar_token"))
+    assert resp.status_code == 200
+
+
 def test_validar_token_convite_view(client):
     user = UserFactory()
     gerador = UserFactory(is_staff=True)
@@ -108,6 +115,13 @@ def test_gerar_codigo_autenticacao_view(client):
     assert log.user_agent == "ua-gerar"
 
 
+def test_gerar_codigo_autenticacao_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:gerar_codigo"))
+    assert resp.status_code == 200
+
+
 def test_validar_codigo_autenticacao_view(client):
     user = UserFactory()
     _login(client, user)
@@ -129,6 +143,13 @@ def test_validar_codigo_autenticacao_view(client):
 
     resp = client.post(reverse("tokens:validar_codigo"), {"codigo": "000000"})
     assert resp.status_code == 400
+
+
+def test_validar_codigo_autenticacao_get(client):
+    user = UserFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:validar_codigo"))
+    assert resp.status_code == 200
 
 
 def test_ativar_e_desativar_2fa_views(client):
