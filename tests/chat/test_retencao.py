@@ -21,7 +21,7 @@ def test_config_retencao_updates_value(api_client: APIClient, admin_user) -> Non
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:chat-channel-config-retencao", args=[channel.pk])
+    url = reverse("chat_api:chat-channel-config-retention", args=[channel.pk])
     resp = api_client.patch(url, {"retencao_dias": 30}, format="json")
     assert resp.status_code == 200
     channel.refresh_from_db()
@@ -33,7 +33,7 @@ def test_config_retencao_requires_admin(api_client: APIClient, admin_user, coord
     ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
     ChatParticipant.objects.create(channel=channel, user=coordenador_user)
     api_client.force_authenticate(coordenador_user)
-    url = reverse("chat_api:chat-channel-config-retencao", args=[channel.pk])
+    url = reverse("chat_api:chat-channel-config-retention", args=[channel.pk])
     resp = api_client.patch(url, {"retencao_dias": 10}, format="json")
     assert resp.status_code == 403
 
@@ -42,7 +42,7 @@ def test_config_retencao_validation(api_client: APIClient, admin_user) -> None:
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
     api_client.force_authenticate(admin_user)
-    url = reverse("chat_api:chat-channel-config-retencao", args=[channel.pk])
+    url = reverse("chat_api:chat-channel-config-retention", args=[channel.pk])
     resp = api_client.patch(url, {"retencao_dias": 400}, format="json")
     assert resp.status_code == 400
 

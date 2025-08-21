@@ -67,6 +67,17 @@ GET /api/chat/channels/<id>/export/?formato=csv
 A chamada cria um `RelatorioChatExport` e, após processamento assíncrono,
 disponibiliza um arquivo JSON ou CSV com as mensagens visíveis.
 
+### Configurar política de retenção
+
+```http
+PATCH /api/chat/channels/<id>/config-retention/
+Content-Type: application/json
+
+{"retencao_dias": 30}
+```
+
+Define ou remove (`null`) o limite de dias para exclusão automática de mensagens do canal. Somente administradores podem alterar a configuração.
+
 ## Criptografia de ponta a ponta (E2EE)
 
 Quando um canal tem `e2ee_habilitado` ativado, o cliente deve cifrar o conteúdo
