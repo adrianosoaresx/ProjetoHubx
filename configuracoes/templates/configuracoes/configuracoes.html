@@ -13,14 +13,18 @@
       {% endfor %}
     </div>
   {% endif %}
-    <nav class="flex flex-wrap gap-4 border-b mb-4 text-sm" aria-label="{% trans 'Seções de Configuração' %}" role="tablist">
-      <button type="button" id="tab-informacoes" role="tab" aria-selected="{% if tab == 'informacoes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
-      <button type="button" id="tab-seguranca" role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
-      <button type="button" id="tab-redes" role="tab" aria-selected="{% if tab == 'redes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
-      <button type="button" id="tab-preferencias" role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
+
+    <div class="flex flex-wrap gap-4 border-b mb-4 text-sm">
+      <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4">
+        <button role="tab" aria-selected="{% if tab == 'informacoes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=informacoes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'informacoes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Informações Pessoais' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'seguranca' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Segurança' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'redes' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=redes" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'redes' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Conexões Sociais' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" class="py-2 px-3 rounded-t-md {% if tab == 'preferencias' %}bg-white border border-b-0{% else %}bg-gray-100{% endif %}">{% trans 'Preferências' %}</button>
+      </nav>
       <a href="{% url 'configuracoes-contextual-list' %}" class="py-2 px-3 rounded-t-md bg-gray-100">{% trans 'Configurações Contextuais' %}</a>
-    </nav>
-    <div id="content" role="tabpanel" aria-labelledby="tab-{{ tab }}" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
+    </div>
+    <div id="content" role="tabpanel" class="bg-white p-6 rounded-b-md shadow" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
+
       {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
     </div>
   </div>
