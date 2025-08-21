@@ -254,11 +254,17 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     def avaliar(self, request, pk=None):
         parceria = self.get_object()
         if parceria.avaliacao is not None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Parceria já avaliada."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         try:
             parceria.avaliacao = int(request.data.get("avaliacao"))
         except (TypeError, ValueError):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Avaliação inválida."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         parceria.comentario = request.data.get("comentario", "")
         parceria.save(update_fields=["avaliacao", "comentario", "updated_at"])
         EventoLog.objects.create(
@@ -271,7 +277,9 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
                 "comentario": parceria.comentario,
             },
         )
-        return Response(self.get_serializer(parceria).data)
+        data = self.get_serializer(parceria).data
+        data["success"] = "Avaliação registrada com sucesso."
+        return Response(data)
 
 
 class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):

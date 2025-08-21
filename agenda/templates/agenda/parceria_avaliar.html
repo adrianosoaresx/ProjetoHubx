@@ -35,21 +35,25 @@
 const form = document.getElementById('avaliacao-form');
 form.addEventListener('submit', async function(e) {
   e.preventDefault();
-  const response = await fetch(form.dataset.apiUrl, {
-    method: 'POST',
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-    },
-    body: new FormData(form)
-  });
-  const data = await response.json();
   const msg = document.getElementById('message');
-  if (response.ok && data.success) {
-    msg.textContent = data.success;
-    form.reset();
-  } else {
-    msg.textContent = data.error || 'Erro.';
+  msg.textContent = '';
+  try {
+    const response = await fetch(form.dataset.apiUrl, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: new FormData(form),
+    });
+    if (response.ok) {
+      msg.textContent = 'Avaliação enviada com sucesso.';
+      form.reset();
+    } else {
+      msg.textContent = 'Erro ao enviar avaliação.';
+    }
+  } catch (error) {
+    msg.textContent = 'Erro ao enviar avaliação.';
   }
 });
 </script>
