@@ -32,6 +32,7 @@ class CentroCustoSerializer(serializers.ModelSerializer):
             "organizacao",
             "nucleo",
             "evento",
+            "descricao",
             "saldo",
             "created_at",
             "updated_at",

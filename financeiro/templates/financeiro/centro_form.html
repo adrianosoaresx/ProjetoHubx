@@ -35,6 +35,11 @@
     <label for="id_evento" class="block text-sm font-medium">{{ _('Evento') }}</label>
     <input id="id_evento" name="evento" class="border p-2 w-full" {% if centro and centro.evento %}value="{{ centro.evento }}"{% endif %} />
   </div>
+  <div>
+    <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
+    <textarea id="id_descricao" name="descricao" class="border p-2 w-full" {% if form and form.descricao.errors %}aria-invalid="true"{% endif %}>{% if centro %}{{ centro.descricao }}{% endif %}</textarea>
+    {% if form and form.descricao.errors %}<p class="text-red-600 text-sm" aria-live="polite">{{ form.descricao.errors }}</p>{% endif %}
+  </div>
   <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
 </form>
 
