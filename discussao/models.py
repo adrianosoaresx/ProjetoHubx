@@ -10,16 +10,19 @@ from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-from accounts.models import UserType
 
+from accounts.models import UserType
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
+
 from .validators import validar_arquivo_discussao
 
 
 class SearchVectorField(models.TextField):
     def db_type(self, connection):  # type: ignore[override]
         if connection.vendor == "postgresql":
-            from django.contrib.postgres.search import SearchVectorField as PGSearchVectorField
+            from django.contrib.postgres.search import (
+                SearchVectorField as PGSearchVectorField,
+            )
 
             return PGSearchVectorField().db_type(connection)
         return "text"
@@ -98,7 +101,6 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     PUBLICO_ALVO_CHOICES = [
         (0, _("Todos")),
         (1, _("Apenas nucleados")),
-        (2, _("Apenas associados")),
         (3, _("Apenas organizadores")),
         (4, _("Apenas parceiros")),
     ]
@@ -177,6 +179,7 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
     def num_votos(self) -> int:
         return self.interacoes.count()
 
+
 class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
     topico = models.ForeignKey(
         TopicoDiscussao,
@@ -228,9 +231,7 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         if connection.vendor == "postgresql":
             from django.contrib.postgres.search import SearchVector
 
-            type(self).objects.filter(pk=self.pk).update(
-                search_vector=SearchVector("conteudo")
-            )
+            type(self).objects.filter(pk=self.pk).update(search_vector=SearchVector("conteudo"))
 
     @property
     def score(self) -> int:
@@ -288,9 +289,7 @@ class Denuncia(TimeStampedModel, SoftDeleteModel):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
     motivo = models.TextField()
-    status = models.CharField(
-        max_length=20, choices=Status.choices, default=Status.PENDENTE
-    )
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDENTE)
     log = models.ForeignKey(
         "DiscussionModerationLog",
         null=True,
