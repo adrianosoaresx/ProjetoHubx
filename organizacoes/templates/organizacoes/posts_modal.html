@@ -1,7 +1,8 @@
 {% load i18n %}
+{% url 'organizacoes_api:organizacao-posts-list' organizacao_pk=organizacao.id as api_url %}
 <div class="bg-white p-4 rounded shadow" hx-target="this">
   <h3 class="text-lg font-semibold mb-2">{% trans 'Gerenciar posts' %}</h3>
-  <form hx-post="/api/organizacoes/{{ organizacao.id }}/posts/" hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section'); this.closest('#modal').innerHTML='';" class="space-y-2">
+  <form hx-post="{{ api_url }}" hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section'); this.closest('#modal').innerHTML='';" class="space-y-2">
     {% csrf_token %}
     <label class="block text-sm" for="post-search">{% trans 'Buscar post' %}</label>
     <input
@@ -23,7 +24,7 @@
     {% for post in posts %}
       <li class="flex justify-between items-center">
         {{ post.conteudo|truncatewords:10 }}
-        <button hx-delete="/api/organizacoes/{{ organizacao.id }}/posts/{{ post.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section');" class="text-red-600 text-sm">{% trans 'Remover' %}</button>
+        <button hx-delete="{{ api_url }}{{ post.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section');" class="text-red-600 text-sm">{% trans 'Remover' %}</button>
       </li>
     {% empty %}
       <li class="text-neutral-500 text-sm">{% trans 'Nenhum post associado.' %}</li>
