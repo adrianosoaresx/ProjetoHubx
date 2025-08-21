@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="flex items-center gap-4">
-      <span class="text-sm text-neutral-600">{{ categoria.topicos.count }}</span>
+      <span class="text-sm text-neutral-600">{{ categoria.num_topicos }}</span>
       {% if user.user_type == 'admin' or user.user_type == 'coordenador' or user.user_type == 'root' %}
       <a href="{% url 'discussao:categoria_editar' categoria.slug %}" class="text-sm text-neutral-600">{% trans 'Editar' %}</a>
       <a href="{% url 'discussao:categoria_remover' categoria.slug %}" class="text-sm text-red-600">{% trans 'Remover' %}</a>
