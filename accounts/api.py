@@ -32,7 +32,7 @@ class AccountViewSet(viewsets.GenericViewSet):
 
     def get_permissions(self):
 
-        if self.action in {"delete_me", "enable_2fa", "disable_2fa", "resend_confirmation"}:
+        if self.action in {"delete_me", "enable_2fa", "disable_2fa"}:
 
             return [IsAuthenticated()]
         return [AllowAny()]
