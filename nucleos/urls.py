@@ -44,9 +44,9 @@ urlpatterns = [
         name="membro_remover",
     ),
     path(
-        "<int:pk>/membro/<int:participacao_id>/role/",
-        views.MembroRoleView.as_view(),
-        name="membro_role",
+        "<int:pk>/membro/<int:participacao_id>/promover/",
+        views.MembroPromoverView.as_view(),
+        name="membro_promover",
     ),
     path(
         "<int:pk>/suplentes/adicionar/",

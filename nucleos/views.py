@@ -29,7 +29,6 @@ from accounts.models import UserType
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
 
 from .forms import (
-    MembroRoleForm,
     NucleoForm,
     NucleoSearchForm,
     ParticipacaoDecisaoForm,
@@ -350,17 +349,24 @@ class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
         participacao.delete()
+        if request.headers.get("HX-Request"):
+            return HttpResponse("")
         messages.success(request, _("Membro removido do núcleo."))
         return redirect("nucleos:detail", pk=pk)
 
-
-class MembroRoleView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroPromoverView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
-        form = MembroRoleForm(request.POST, instance=participacao)
-        if form.is_valid():
-            form.save()
+        novo_papel = "membro" if participacao.papel == "coordenador" else "coordenador"
+        participacao.papel = novo_papel
+        participacao.save(update_fields=["papel"])
+        if request.headers.get("HX-Request"):
+            return render(
+                request,
+                "nucleos/partials/membro.html",
+                {"part": participacao, "object": nucleo},
+            )
         return redirect("nucleos:detail", pk=pk)
 
 

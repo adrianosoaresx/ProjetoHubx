@@ -1,0 +1,35 @@
+{% load i18n %}
+<li id="membro-{{ part.id }}">
+  {{ part.user.get_full_name|default:part.user.username }}{% if part.papel == 'coordenador' %} - {% trans 'Coordenador' %}{% endif %}
+  {% if part.status_suspensao %}<span class="text-red-600">({% trans 'Suspenso' %})</span>{% endif %}
+  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+    <button class="text-sm text-blue-600"
+            hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
+            hx-target="#membro-{{ part.id }}"
+            hx-swap="outerHTML"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      {% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}
+    </button>
+    <button class="text-sm text-red-600"
+            hx-post="{% url 'nucleos:membro_remover' object.pk part.pk %}"
+            hx-target="#membro-{{ part.id }}"
+            hx-swap="outerHTML"
+            hx-confirm="{% trans 'Confirmar remoção?' %}"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+      {% trans 'Remover' %}
+    </button>
+    {% if part.status_suspensao %}
+      <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}"
+            hx-on="htmx:afterRequest: location.reload()"
+            class="inline">{% csrf_token %}
+        <button class="text-sm text-green-600">{% trans 'Reativar' %}</button>
+      </form>
+    {% else %}
+      <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}"
+            hx-on="htmx:afterRequest: location.reload()"
+            class="inline">{% csrf_token %}
+        <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
+      </form>
+    {% endif %}
+  {% endif %}
+</li>
