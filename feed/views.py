@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q, OuterRef, Subquery, Count
+from django.db.models import Q, OuterRef, Subquery, Count, Exists
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -26,11 +26,8 @@ from agenda.models import Evento
 from organizacoes.models import Organizacao
 
 
-from .forms import CommentForm, PostForm
-from .models import ModeracaoPost, Post, Reacao, Tag
-
 from .forms import CommentForm, LikeForm, PostForm
-from .models import Bookmark, Like, ModeracaoPost, Post, Tag
+from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
 
 
 
@@ -143,7 +140,11 @@ class FeedListView(LoginRequiredMixin, ListView):
 
         latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
-            "reacoes", "comments", "tags"
+            "reacoes",
+            "comments",
+            "tags",
+            "bookmarks",
+            "flags",
         )
         qs = (
             qs.filter(deleted=False)
@@ -159,6 +160,12 @@ class FeedListView(LoginRequiredMixin, ListView):
                     "reacoes",
                     filter=Q(reacoes__vote="share", reacoes__deleted=False),
                     distinct=True,
+                ),
+                is_bookmarked=Exists(
+                    Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)
+                ),
+                is_flagged=Exists(
+                    Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)
                 ),
             )
         )
