@@ -82,6 +82,13 @@ def test_soft_delete_marks_deleted(client, nucleado_user):
     assert resp.status_code in (302, 200)
     empresa.refresh_from_db()
     assert empresa.deleted
+    EmpresaChangeLog.objects.get(
+        empresa=empresa,
+        usuario=nucleado_user,
+        campo_alterado="deleted",
+        valor_antigo="False",
+        valor_novo="True",
+    )
     resp = client.get(reverse("empresas:lista"))
     assert empresa.nome not in resp.content.decode()
 
