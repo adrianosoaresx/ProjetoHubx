@@ -1,4 +1,5 @@
 import pytest
+from django.test.utils import override_settings
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
@@ -89,6 +90,25 @@ def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
         content_type="application/json",
     )
     assert resp.status_code == 404
+
+
+@override_settings(ROOT_URLCONF="notificacoes.api_urls")
+def test_usuario_staff_nao_marca_notificacao_de_outro(client) -> None:
+    staff = UserFactory(is_staff=True)
+    other = UserFactory()
+    template = NotificationTemplate.objects.create(
+        codigo="t8", assunto="Oi", corpo="C", canal="email"
+    )
+    log = NotificationLog.objects.create(
+        user=other, template=template, canal="email", status=NotificationStatus.ENVIADA
+    )
+    client.force_login(staff)
+    resp = client.patch(
+        f"/logs/{log.id}/",
+        {"status": NotificationStatus.LIDA},
+        content_type="application/json",
+    )
+    assert resp.status_code == 403
 
 
 def test_nao_exclui_template_com_logs(client) -> None:
