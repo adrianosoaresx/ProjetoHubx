@@ -180,12 +180,32 @@ def check_2fa(request):
 
 @login_required
 def perfil_conexoes(request):
-    connections = request.user.connections.all() if hasattr(request.user, "connections") else []
-    connection_requests = request.user.followers.all() if hasattr(request.user, "followers") else []
+    q = request.GET.get("q", "").strip()
+    connections = (
+        request.user.connections.all()
+        if hasattr(request.user, "connections")
+        else User.objects.none()
+    )
+    connection_requests = (
+        request.user.followers.all()
+        if hasattr(request.user, "followers")
+        else User.objects.none()
+    )
+
+    if q:
+        filters = (
+            Q(username__icontains=q)
+            | Q(first_name__icontains=q)
+            | Q(last_name__icontains=q)
+            | Q(nome_completo__icontains=q)
+        )
+        connections = connections.filter(filters)
+        connection_requests = connection_requests.filter(filters)
 
     context = {
         "connections": connections,
         "connection_requests": connection_requests,
+        "q": q,
     }
 
     return render(request, "perfil/conexoes.html", context)
