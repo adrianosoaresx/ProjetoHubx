@@ -10,10 +10,14 @@
       <label for="id_nome" class="block text-sm font-medium text-neutral-700">{% trans 'Nome' %}</label>
       {{ form.nome }}
     </div>
+    {% if request.user.user_type in ['ROOT','ADMIN'] %}
     <div class="flex items-center gap-2">
       {{ form.publico }}
       <label for="id_publico" class="text-sm text-neutral-700">{% trans 'Público' %}</label>
     </div>
+    {% else %}
+    <p class="text-sm text-neutral-700">{% trans 'Apenas administradores podem publicar itens.' %}</p>
+    {% endif %}
     <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro' %}">{% trans 'Salvar' %}</button>
   </form>
 </main>
