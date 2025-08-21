@@ -28,6 +28,7 @@
     <form id="confirm-form">
       {% csrf_token %}
       <input type="hidden" id="confirm-id" name="id" />
+      <input type="hidden" id="confirm-importacao-id" name="importacao_id" />
     </form>
     <div class="mt-4 flex items-center gap-2">
         <button id="confirm-btn" disabled
@@ -57,6 +58,7 @@
           const rows = data.preview.map(r => `<tr><td class="px-2 py-1">${r.centro_custo}</td><td class="px-2 py-1">${r.conta_associado || ''}</td><td class="px-2 py-1">${r.tipo}</td><td class="px-2 py-1">${r.valor}</td><td class="px-2 py-1">${r.data_lancamento}</td></tr>`).join('');
           preview.innerHTML = `<table class="min-w-full divide-y divide-gray-200"><thead><tr><th class="px-2 py-1 text-left text-xs font-medium text-gray-500">{% trans "Centro de Custo" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-gray-500">{% trans "Conta" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-gray-500">{% trans "Tipo" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-gray-500">{% trans "Valor" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-gray-500">{% trans "Data" %}</th></tr></thead><tbody>${rows}</tbody></table>`;
           document.getElementById('confirm-id').value = data.id;
+          document.getElementById('confirm-importacao-id').value = data.importacao_id;
           document.getElementById('confirm-btn').disabled = false;
         }
         if (data.erros && data.erros.length) {
