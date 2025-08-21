@@ -66,8 +66,8 @@
         <td>{{ part.user.get_full_name|default:part.user.username }}</td>
         <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
         <td class="space-x-2">
-          <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}">{% trans 'Aprovar' %}</button>
-          <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}">{% trans 'Recusar' %}</button>
+          <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
+          <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
         </td>
       </tr>
     {% endfor %}

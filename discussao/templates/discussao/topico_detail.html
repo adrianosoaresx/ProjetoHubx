@@ -33,18 +33,20 @@
     </form>
     {% endif %}
     <div class="flex items-center space-x-1 mt-2">
-      <button
-        hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}"
-        hx-swap="none"
-        hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('topic-score').innerText=r.score;document.getElementById('topic-votes').innerText=r.num_votos"
-      >&#9650;</button>
+        <button
+          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}"
+          hx-swap="none"
+          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('topic-score').innerText=r.score;document.getElementById('topic-votes').innerText=r.num_votos"
+          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+        >&#9650;</button>
       <span id="topic-score">{{ topico.score }}</span>
       (<span id="topic-votes">{{ topico.num_votos }}</span>)
-      <button
-        hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}"
-        hx-swap="none"
-        hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('topic-score').innerText=r.score;document.getElementById('topic-votes').innerText=r.num_votos"
-      >&#9660;</button>
+        <button
+          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}"
+          hx-swap="none"
+          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('topic-score').innerText=r.score;document.getElementById('topic-votes').innerText=r.num_votos"
+          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+        >&#9660;</button>
     </div>
     <div class="mt-2">
       <button type="button" class="text-xs text-red-600" onclick="document.getElementById('denuncia-topico-form').classList.toggle('hidden')">{% trans "Denunciar" %}</button>

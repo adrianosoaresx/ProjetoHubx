@@ -19,21 +19,23 @@
     <td class="px-4 py-2">{{ topico.autor.get_full_name|default:topico.autor.username }}</td>
     <td class="px-4 py-2">{{ topico.created_at|date:SHORT_DATE_FORMAT }}</td>
     <td class="px-4 py-2 text-center">
-      <div class="flex items-center justify-center space-x-1">
-        <button
-          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}"
-          hx-swap="none"
-          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
-        >&#9650;</button>
-        <span id="score-{{ topico.id }}">{{ topico.score }}</span>
-        (<span id="votes-{{ topico.id }}">{{ topico.num_votos }}</span>)
-        <button
-          hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}"
-          hx-swap="none"
-          hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
-        >&#9660;</button>
-      </div>
-    </td>
+        <div class="flex items-center justify-center space-x-1">
+          <button
+            hx-post="{% url 'discussao:interacao' content_type_id topico.id 'up' %}"
+            hx-swap="none"
+            hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+          >&#9650;</button>
+          <span id="score-{{ topico.id }}">{{ topico.score }}</span>
+          (<span id="votes-{{ topico.id }}">{{ topico.num_votos }}</span>)
+          <button
+            hx-post="{% url 'discussao:interacao' content_type_id topico.id 'down' %}"
+            hx-swap="none"
+            hx-on:afterRequest="const r=event.detail.xhr.responseJSON;document.getElementById('score-{{topico.id}}').innerText=r.score;document.getElementById('votes-{{topico.id}}').innerText=r.num_votos"
+            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+          >&#9660;</button>
+        </div>
+      </td>
     <td class="px-4 py-2 text-center">{{ topico.num_comentarios }}</td>
     <td class="px-4 py-2 text-center">{{ topico.numero_visualizacoes }}</td>
     <td class="px-4 py-2">{{ topico.last_activity|date:SHORT_DATETIME_FORMAT }}</td>

@@ -40,10 +40,10 @@
     {% endif %}
 
       <div class="flex items-center gap-1">
-        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos">&#9650;</button>
+        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'up' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>&#9650;</button>
         <span id="comment-score-{{ comentario.id }}">{{ comentario.score }}</span>
         <span class="text-xs">(<span id="comment-votes-{{ comentario.id }}">{{ comentario.num_votos }}</span>)</span>
-        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos">&#9660;</button>
+        <button hx-post="{% url 'discussao:interacao' resposta_content_type_id comentario.id 'down' %}" hx-swap="none" hx-on:afterRequest="document.getElementById('comment-score-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.score; document.getElementById('comment-votes-{{ comentario.id }}').innerText = event.detail.xhr.responseJSON.num_votos" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>&#9660;</button>
       </div>
 
 
