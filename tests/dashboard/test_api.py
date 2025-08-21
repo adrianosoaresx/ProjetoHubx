@@ -5,6 +5,7 @@ import csv
 import pytest
 from django.core.cache import cache
 from django.urls import reverse
+from django.test.utils import override_settings
 from rest_framework.test import APIClient
 from unittest.mock import patch
 
@@ -39,11 +40,28 @@ def test_get_variation_function() -> None:
 
 def test_export_csv(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)
-    url = reverse("dashboard_api:dashboard-export") + "?formato=csv"
-    resp = api_client.get(url)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        url = (
+            reverse("dashboard-export")
+            + f"?formato=csv&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
+        )
+        with patch.object(
+            DashboardMetricsService,
+            "get_metrics",
+            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+        ) as mock_get:
+            resp = api_client.get(url)
     assert resp.status_code == 200
     rows = list(csv.reader(resp.content.decode().splitlines()))
     assert rows[0] == ["Métrica", "Total", "Crescimento"]
+    mock_get.assert_called_once_with(
+        admin_user,
+        "mensal",
+        None,
+        None,
+        organizacao_id=str(admin_user.organizacao_id),
+        metricas=["num_users"],
+    )
 
 
 def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
@@ -53,25 +71,54 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
         pytest.skip("weasyprint não instalado")
     _auth(api_client, admin_user)
     monkeypatch.setattr("weasyprint.HTML.write_pdf", lambda self: b"pdf")
-    url = reverse("dashboard_api:dashboard-export") + "?formato=pdf"
-    resp = api_client.get(url)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        url = (
+            reverse("dashboard-export")
+            + f"?formato=pdf&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
+        )
+        with patch.object(
+            DashboardMetricsService,
+            "get_metrics",
+            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+        ) as mock_get:
+            resp = api_client.get(url)
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/pdf"
+    mock_get.assert_called_once_with(
+        admin_user,
+        "mensal",
+        None,
+        None,
+        organizacao_id=str(admin_user.organizacao_id),
+        metricas=["num_users"],
+    )
 
 
 def test_export_xlsx(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)
-    url = reverse("dashboard_api:dashboard-export") + "?formato=xlsx"
-    with patch.object(
-        DashboardMetricsService,
-        "get_metrics",
-        return_value={"num_users": {"total": 1, "crescimento": 0.0}},
-    ):
-        resp = api_client.get(url)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        url = (
+            reverse("dashboard-export")
+            + f"?formato=xlsx&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
+        )
+        with patch.object(
+            DashboardMetricsService,
+            "get_metrics",
+            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+        ) as mock_get:
+            resp = api_client.get(url)
     assert resp.status_code == 200
     assert (
         resp["Content-Type"]
         == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    mock_get.assert_called_once_with(
+        admin_user,
+        "mensal",
+        None,
+        None,
+        organizacao_id=str(admin_user.organizacao_id),
+        metricas=["num_users"],
     )
 
 
