@@ -28,3 +28,16 @@ def test_filter_crud_with_audit(client, admin_user):
     assert not DashboardFilter.objects.filter(pk=filtro.pk).exists()
     assert AuditLog.objects.filter(action="DELETE_FILTER", object_id=str(filtro.pk)).exists()
 
+
+@pytest.mark.django_db
+def test_filter_list_permissions(client, admin_user, cliente_user):
+    own = DashboardFilter.objects.create(user=cliente_user, nome="Own", filtros={})
+    other = DashboardFilter.objects.create(user=admin_user, nome="Other", filtros={})
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:filters"))
+    content = resp.content.decode()
+    assert reverse("dashboard:filter-edit", args=[own.pk]) in content
+    assert reverse("dashboard:filter-delete", args=[own.pk]) in content
+    assert reverse("dashboard:filter-edit", args=[other.pk]) not in content
+    assert reverse("dashboard:filter-delete", args=[other.pk]) not in content
+

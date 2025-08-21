@@ -76,6 +76,19 @@ def test_layout_list_includes_public(client, admin_user, cliente_user):
 
 
 @pytest.mark.django_db
+def test_layout_list_permissions(client, admin_user, cliente_user):
+    own = DashboardLayout.objects.create(user=cliente_user, nome="Own", layout_json="[]")
+    other = DashboardLayout.objects.create(user=admin_user, nome="Other", layout_json="[]")
+    client.force_login(cliente_user)
+    resp = client.get(reverse("dashboard:layouts"))
+    content = resp.content.decode()
+    assert reverse("dashboard:layout-edit", args=[own.pk]) in content
+    assert reverse("dashboard:layout-delete", args=[own.pk]) in content
+    assert reverse("dashboard:layout-edit", args=[other.pk]) not in content
+    assert reverse("dashboard:layout-delete", args=[other.pk]) not in content
+
+
+@pytest.mark.django_db
 def test_comparativo_endpoint(client, admin_user):
     org2 = OrganizacaoFactory()
     User.objects.create_user(username='admin2', email='a2@example.com', password='pass', user_type=UserType.ADMIN, organizacao=org2)
