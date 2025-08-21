@@ -29,7 +29,6 @@ chat_message_list = ChatMessageViewSet.as_view({"get": "list", "post": "create"}
 chat_message_detail = ChatMessageViewSet.as_view(
     {
         "get": "retrieve",
-        "put": "update",
         "patch": "partial_update",
         "delete": "destroy",
     }
