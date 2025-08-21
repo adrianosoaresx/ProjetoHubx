@@ -121,6 +121,8 @@
     </form>
   </div>
   <div id="modal"></div>
+  <dialog id="resumo-modal" class="p-4 rounded max-w-xl w-full"></dialog>
+  <template id="resumo-template">{% include "chat/partials/resumo_detail.html" %}</template>
   <dialog id="item-modal" class="p-4 rounded max-w-md w-full">
     <form method="dialog" class="space-y-2" id="item-form">
       <label class="block" for="item-type">{% trans 'Tipo' %}
@@ -178,6 +180,29 @@
     const retencaoForm = document.getElementById('retencao-form');
     const retencaoFeedback = document.getElementById('retencao-feedback');
     const leaveBtn = document.getElementById('leave-channel');
+    const resumoModal = document.getElementById('resumo-modal');
+    const resumoTemplate = document.getElementById('resumo-template');
+
+    resumosList.addEventListener('click', async function(e){
+      const btn = e.target.closest('button[data-id]');
+      if(!btn) return;
+      const id = btn.dataset.id;
+      resumoModal.innerHTML = '<p>{% trans "Carregando..." %}</p>';
+      try{
+        const r = await fetch(`/api/chat/channels/${channelId}/resumos/${id}/`);
+        const data = await r.json();
+        const frag = resumoTemplate.content.cloneNode(true);
+        frag.getElementById('resumo-conteudo').textContent = data.conteudo;
+        frag.getElementById('resumo-detalhes').textContent = JSON.stringify(data.detalhes, null, 2);
+        resumoModal.innerHTML = '';
+        resumoModal.appendChild(frag);
+      }catch(err){
+        resumoModal.innerHTML = '<p>{% trans "Erro ao carregar" %}</p>';
+      }
+      const closeBtn = resumoModal.querySelector('[data-close]');
+      if(closeBtn){ closeBtn.addEventListener('click', ()=>resumoModal.close()); }
+      resumoModal.showModal();
+    });
 
     async function carregarResumos(){
       resumosList.innerHTML = '<li>{% trans "Carregando..." %}</li>';
@@ -188,7 +213,12 @@
         data.forEach(item=>{
           const li=document.createElement('li');
           const dt=new Date(item.created_at).toLocaleString();
-          li.textContent=`${item.periodo} - ${dt}`;
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='text-blue-600 hover:underline';
+          btn.dataset.id=item.id;
+          btn.textContent=`${item.periodo} - ${dt}`;
+          li.appendChild(btn);
           resumosList.appendChild(li);
         });
       }catch(e){
