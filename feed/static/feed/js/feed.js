@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = e.target.files[0]
 
       if (file) {
-        fileText.textContent = `Selecionado: ${file.name}`
+        const selectedText = window.gettext ? gettext('Selecionado:') : 'Selecionado:'
+        fileText.textContent = `${selectedText} ${file.name}`
         fileText.style.color = "var(--success-color)"
       } else {
         fileText.textContent = originalText
@@ -57,14 +58,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (content.length === 0 && !hasFile) {
         e.preventDefault()
-        alert("Por favor, escreva algo ou selecione um arquivo antes de publicar.")
+        const msg = window.gettext ? gettext('Por favor, escreva algo ou selecione um arquivo antes de publicar.') : 'Por favor, escreva algo ou selecione um arquivo antes de publicar.'
+        alert(msg)
         if (textarea) textarea.focus()
         return false
       }
 
       if (content.length > 500) {
         e.preventDefault()
-        alert("O conteúdo deve ter no máximo 500 caracteres.")
+        const msg = window.gettext ? gettext('O conteúdo deve ter no máximo 500 caracteres.') : 'O conteúdo deve ter no máximo 500 caracteres.'
+        alert(msg)
         if (textarea) textarea.focus()
         return false
       }
