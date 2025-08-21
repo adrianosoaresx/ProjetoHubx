@@ -150,14 +150,19 @@ document.addEventListener('DOMContentLoaded', function () {
   const statusEl = document.getElementById('membro-status');
   if (!statusEl) return;
   const url = "{% url 'nucleos_api:nucleo-membro-status' object.pk %}";
+  const papelCoordenador = gettext('Coordenador');
+  const papelMembro = gettext('Membro');
+  const statusAtivo = gettext('Ativo');
+  const statusInativo = gettext('Inativo');
+  const statusSuspenso = gettext('Suspenso');
   function updateStatus() {
     fetch(url)
       .then(resp => resp.ok ? resp.json() : null)
       .then(data => {
         if (!data) return;
-        let papel = data.papel === 'coordenador' ? 'Coordenador' : 'Membro';
-        let status = data.ativo ? 'Ativo' : 'Inativo';
-        if (data.suspenso) status += ' (Suspenso)';
+        let papel = data.papel === 'coordenador' ? papelCoordenador : papelMembro;
+        let status = data.ativo ? statusAtivo : statusInativo;
+        if (data.suspenso) status += ' (' + statusSuspenso + ')';
         statusEl.textContent = papel + ' - ' + status;
       })
       .catch(() => {});
