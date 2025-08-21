@@ -499,6 +499,13 @@ def lancamentos_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
+def lancamento_ajuste_modal_view(request, pk: int):
+    lancamento = get_object_or_404(LancamentoFinanceiro, pk=pk)
+    return render(request, "financeiro/lancamento_ajuste_modal.html", {"lancamento": lancamento})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
 
 def repasses_view(request):
     eventos = Evento.objects.all()
