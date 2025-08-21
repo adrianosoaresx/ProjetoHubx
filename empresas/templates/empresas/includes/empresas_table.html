@@ -30,9 +30,6 @@
       <td class="px-3 py-2 text-center space-x-2">
         <a href="{% url 'empresas:empresa_editar' empresa.pk %}" class="text-blue-600 hover:underline">{% translate "Editar" %}</a>
 
-        <a href="{% url 'empresas:remover' empresa.pk %}" class="text-red-600 hover:underline">
-          {% translate "Remover" %}
-        </a>
         {% translate "Favoritar" as txt_favoritar %}
         {% translate "Desfavoritar" as txt_desfavoritar %}
         <button
