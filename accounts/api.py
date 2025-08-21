@@ -189,7 +189,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.CANCEL_DELETE,
-            expires_at=timezone.now() + timezone.timedelta(days=7),
+            expires_at=timezone.now() + timezone.timedelta(days=30),
             ip_gerado=request.META.get("REMOTE_ADDR"),
         )
         send_cancel_delete_email.delay(token.id)
