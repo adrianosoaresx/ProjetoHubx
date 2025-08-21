@@ -30,6 +30,7 @@ class ApiToken(TimeStampedModel, SoftDeleteModel):
     )
     client_name = models.CharField(max_length=100, blank=True)
     token_hash = models.CharField(max_length=64, unique=True)
+    device_fingerprint = models.CharField(max_length=255, null=True, blank=True)
     scope = models.CharField(
         max_length=20,
         choices=[("read", "Read"), ("write", "Write"), ("admin", "Admin")],

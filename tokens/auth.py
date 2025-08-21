@@ -27,12 +27,21 @@ class ApiTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Token expirado")
         if api_token.user is None or getattr(api_token.user, "deleted", False):
             raise AuthenticationFailed("Usuário desativado")
+
+        device_fingerprint = request.headers.get("X-Device-Fingerprint")
+        if (
+            api_token.device_fingerprint
+            and api_token.device_fingerprint != device_fingerprint
+        ):
+            raise AuthenticationFailed("Fingerprint inválido")
+
         ip_address = request.META.get("REMOTE_ADDR", "")
         if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip_address).exists():
             raise AuthenticationFailed("IP bloqueado")
         allowed_qs = api_token.ips.filter(tipo=ApiTokenIp.Tipo.PERMITIDO)
         if allowed_qs.exists() and not allowed_qs.filter(ip=ip_address).exists():
             raise AuthenticationFailed("IP não permitido")
+
         api_token.last_used_at = timezone.now()
         api_token.save(update_fields=["last_used_at"])
         ApiTokenLog.objects.create(
