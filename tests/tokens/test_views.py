@@ -9,7 +9,12 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
+
+from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
+from tokens.services import create_invite_token
+
 from tokens.models import ApiToken, ApiTokenLog, CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso
+
 
 pytestmark = pytest.mark.django_db
 
@@ -86,14 +91,17 @@ def test_validar_token_convite_get(client):
 def test_validar_token_convite_view(client):
     user = UserFactory()
     gerador = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    token, codigo = create_invite_token(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
 
     _login(client, user)
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
     assert resp.status_code == 200
     token.refresh_from_db()
     assert token.estado == TokenAcesso.Estado.USADO
     assert token.usuario == user
+    log = TokenUsoLog.objects.get(token=token)
+    assert log.acao == TokenUsoLog.Acao.USO
+    assert log.usuario == user
 
     resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
     assert resp.status_code == 400
