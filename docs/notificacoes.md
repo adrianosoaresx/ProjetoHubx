@@ -48,7 +48,7 @@ Se todos os canais preferidos do usuário estiverem desabilitados, um `Notificat
 ### Métricas
 
 Métricas Prometheus disponíveis em `notificacoes.services.metrics`:
-`notificacoes_enviadas_total`, `notificacoes_falhas_total` (por canal),
+`notificacoes_enviadas_total`, `notificacoes_falhadas_total` (por canal),
 `notificacao_task_duration_seconds` e `templates_total`. Consulte o endpoint
 `/metrics`.
 
