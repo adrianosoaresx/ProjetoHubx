@@ -683,7 +683,12 @@ class DashboardMetricsService:
                 qs = qs.filter(evento__nucleo_id=nucleo_id)
             if evento_id:
                 qs = qs.filter(evento_id=evento_id)
-            metrics["inscricoes_confirmadas"] = {"total": qs.count(), "crescimento": 0.0}
+            metrics["inscricoes_confirmadas"] = DashboardService.calcular_crescimento(
+                qs,
+                inicio,
+                fim,
+                campo="data_confirmacao",
+            )
 
         if not metricas or "num_posts_feed_recent" in metricas:
             metrics["num_posts_feed_recent"] = {
