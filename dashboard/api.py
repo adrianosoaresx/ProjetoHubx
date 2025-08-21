@@ -74,12 +74,24 @@ class DashboardViewSet(viewsets.ViewSet):
         fim = request.query_params.get("fim")
         inicio_dt = datetime.fromisoformat(inicio) if inicio else None
         fim_dt = datetime.fromisoformat(fim) if fim else None
+        filters = {}
+        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
+            val = request.query_params.get(key)
+            if val:
+                filters[key] = val
+        metricas_list = request.query_params.getlist("metricas")
+        if metricas_list:
+            filters["metricas"] = metricas_list
         filtros = request.query_params.dict()
+        if metricas_list:
+            filtros["metricas"] = metricas_list
         filtros.pop("formato", None)
         metadata = {"filtros": filtros, "formato": formato}
         ip_hash = hash_ip(request.META.get("REMOTE_ADDR", ""))
         try:
-            data = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt)
+            data = DashboardMetricsService.get_metrics(
+                request.user, periodo, inicio_dt, fim_dt, **filters
+            )
         except PermissionError:
             log_audit(
                 request.user,
