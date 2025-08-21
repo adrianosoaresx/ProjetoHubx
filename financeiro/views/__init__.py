@@ -274,9 +274,10 @@ class FinanceiroViewSet(viewsets.ViewSet):
                     centro_id = centros_user
 
         tipo = params.get("tipo")
+        status = params.get("status")
         cache_centro = "|".join(sorted(centro_id)) if isinstance(centro_id, list) else centro_id
         cache_key = (
-            f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}"
+            f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}:{status}"
         )
         result = cache.get(cache_key)
         if result is None:
@@ -286,6 +287,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 periodo_inicial=inicio,
                 periodo_final=fim,
                 tipo=tipo,
+                status=status,
             )
             cache.set(cache_key, result, 600)
 
@@ -296,6 +298,8 @@ class FinanceiroViewSet(viewsets.ViewSet):
                 qs_csv = qs_csv.filter(valor__gt=0)
             elif tipo == "despesas":
                 qs_csv = qs_csv.filter(valor__lt=0)
+            if status:
+                qs_csv = qs_csv.filter(status=status)
             linhas = [
                 [
                     lanc.data_lancamento.date(),
