@@ -7,7 +7,7 @@
   {% endfor %}
 {% else %}
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n markdown_extras %}
 {% block title %}{{ topico.titulo }} | HubX{% endblock %}
 {% block content %}
 <article id="topico-container" class="max-w-3xl mx-auto px-4 py-10">
@@ -57,7 +57,7 @@
       </form>
     </div>
   </header>
-  <div class="prose max-w-none mb-10">{{ topico.conteudo|linebreaks }}</div>
+  <div class="prose max-w-none mb-10">{{ topico.conteudo|markdown }}</div>
   <section aria-labelledby="comentarios" class="space-y-4">
     <h2 id="comentarios" class="text-xl font-semibold">{% trans "Coment\u00e1rios" %}</h2>
     {% if melhor_resposta %}
