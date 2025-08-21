@@ -100,6 +100,22 @@ def test_avaliacao_unica_e_media(client, nucleado_user, admin_user):
 
 
 @pytest.mark.django_db
+def test_avaliacao_comentario_hx_request(client, nucleado_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    client.force_login(nucleado_user)
+    url = reverse("empresas:avaliacao_criar", args=[empresa.pk])
+    resp = client.post(
+        url,
+        {"nota": 5, "comentario": "Ótimo"},
+        HTTP_HX_REQUEST="true",
+    )
+    assert resp.status_code == 200
+    avaliacao = AvaliacaoEmpresa.objects.get(empresa=empresa, usuario=nucleado_user)
+    assert avaliacao.nota == 5
+    assert avaliacao.comentario == "Ótimo"
+
+
+@pytest.mark.django_db
 def test_admin_can_list_deleted(client, admin_user):
     emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
     client.force_login(admin_user)
