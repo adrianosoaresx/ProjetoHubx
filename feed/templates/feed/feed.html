@@ -41,6 +41,21 @@
       </select>
     </div>
     <div>
+      <label class="font-semibold" for="filtro-organizacao">{% trans "Organização" %}:</label>
+      <select id="filtro-organizacao" name="organizacao"
+              hx-get="{% url 'feed:listar' %}"
+              hx-target="#feed-grid"
+              hx-trigger="change"
+              hx-indicator="#feed-loading"
+              hx-include="#feed-filters,#feed-search,#tags"
+              class="rounded border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">{% trans "Selecione" %}</option>
+        {% for o in organizacoes_do_usuario %}
+          <option value="{{ o.id }}">{{ o.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
       <label class="font-semibold" for="filtro-nucleo">{% trans "Núcleo" %}:</label>
       <select id="filtro-nucleo" name="nucleo"
               hx-get="{% url 'feed:listar' %}"
