@@ -1,0 +1,26 @@
+{% load i18n %}
+<div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+  <table class="min-w-full divide-y divide-neutral-200 text-sm">
+    <thead class="bg-neutral-50">
+      <tr>
+        <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Enviado em' %}</th>
+        <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Referência' %}</th>
+        <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Canal' %}</th>
+        <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Frequência' %}</th>
+        <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Conteúdo' %}</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-neutral-200">
+      {% include 'notificacoes/historico_rows.html' %}
+    </tbody>
+  </table>
+</div>
+<div class="mt-4 flex justify-center gap-3">
+  {% if historicos.has_previous %}
+    <a hx-get="?page={{ historicos.previous_page_number }}&{{ request.GET.urlencode }}" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">{% trans 'Anterior' %}</a>
+  {% endif %}
+  <span class="px-3 py-1 text-sm">{% blocktrans %}Página {{ historicos.number }} de {{ historicos.paginator.num_pages }}{% endblocktrans %}</span>
+  {% if historicos.has_next %}
+    <a hx-get="?page={{ historicos.next_page_number }}&{{ request.GET.urlencode }}" hx-include="closest form" class="px-3 py-1 rounded-xl border border-neutral-300 text-sm">{% trans 'Próxima' %}</a>
+  {% endif %}
+</div>

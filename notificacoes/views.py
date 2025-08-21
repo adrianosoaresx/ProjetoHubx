@@ -107,7 +107,7 @@ def list_logs(request):
 
     context = {"logs": page_obj}
     template_name = (
-        "notificacoes/logs_rows.html" if request.headers.get("HX-Request") else "notificacoes/logs_list.html"
+        "notificacoes/logs_table.html" if request.headers.get("HX-Request") else "notificacoes/logs_list.html"
     )
     return render(request, template_name, context)
 
@@ -136,7 +136,7 @@ def historico_notificacoes(request):
     page_obj = paginator.get_page(request.GET.get("page"))
     context = {"historicos": page_obj}
     template_name = (
-        "notificacoes/historico_rows.html" if request.headers.get("HX-Request") else "notificacoes/historico_list.html"
+        "notificacoes/historico_table.html" if request.headers.get("HX-Request") else "notificacoes/historico_list.html"
     )
     return render(request, template_name, context)
 
