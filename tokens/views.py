@@ -18,7 +18,6 @@ from django.views import View
 
 from accounts.models import SecurityEvent
 
-from . import services
 from .forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoForm,
@@ -27,26 +26,22 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-
 from .metrics import tokens_invites_revoked_total
-from .models import ApiToken, ApiTokenLog, TokenAcesso, TokenUsoLog, TOTPDevice
-from .perms import can_issue_invite
-from .services import create_invite_token
-
 from .models import (
     ApiToken,
     ApiTokenLog,
+    CodigoAutenticacaoLog,
     TokenAcesso,
     TokenUsoLog,
-    CodigoAutenticacaoLog,
     TOTPDevice,
 )
-from .services import create_invite_token
-from .metrics import tokens_invites_revoked_total
-from . import services
 from .perms import can_issue_invite
-
-from .services import create_invite_token, generate_token, list_tokens, revoke_token
+from .services import (
+    create_invite_token,
+    generate_token,
+    list_tokens,
+    revoke_token,
+)
 
 
 User = get_user_model()
