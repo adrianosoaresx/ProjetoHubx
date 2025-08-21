@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const dailyCheckbox = document.getElementById('pref-daily');
   const weeklyCheckbox = document.getElementById('pref-weekly');
   const searchesInput = document.getElementById('pref-searches');
+  const publicKeyInput = document.getElementById('pref-public-key');
+  const saveKeyBtn = document.getElementById('pref-save-key');
+  const keyStatus = document.getElementById('pref-key-status');
+  const currentUserId = publicKeyInput ? publicKeyInput.dataset.userId : null;
 
   function getCookie(name) {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -28,6 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
         weeklyCheckbox.checked = !!data.resumo_semanal;
         searchesInput.value = (data.buscas_salvas || []).join(', ');
         applyTheme(data.tema);
+      });
+  }
+
+  function loadPublicKey() {
+    if (!publicKeyInput || !currentUserId) return;
+    fetch(`/api/chat/usuarios/${currentUserId}/chave-publica/`)
+      .then(resp => resp.json())
+      .then(data => {
+        publicKeyInput.value = data.chave_publica || '';
       });
   }
 
@@ -70,5 +83,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (saveKeyBtn && publicKeyInput) {
+    saveKeyBtn.addEventListener('click', () => {
+      const chave = publicKeyInput.value.trim();
+      fetch('/api/chat/usuarios/chave-publica/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({ chave_publica: chave }),
+      })
+        .then(resp => resp.json().then(data => ({ ok: resp.ok, data })))
+        .then(result => {
+          if (keyStatus) {
+            if (result.ok) {
+              keyStatus.textContent = (window.gettext ? gettext('Chave salva com sucesso.') : 'Chave salva com sucesso.');
+              keyStatus.className = 'text-green-600 text-sm mt-1';
+            } else {
+              const msg = result.data && result.data.erro ? result.data.erro : (window.gettext ? gettext('Erro ao salvar chave.') : 'Erro ao salvar chave.');
+              keyStatus.textContent = msg;
+              keyStatus.className = 'text-red-600 text-sm mt-1';
+            }
+          }
+        })
+        .catch(() => {
+          if (keyStatus) {
+            keyStatus.textContent = (window.gettext ? gettext('Erro ao salvar chave.') : 'Erro ao salvar chave.');
+            keyStatus.className = 'text-red-600 text-sm mt-1';
+          }
+        });
+    });
+  }
+
   loadPreferences();
+  loadPublicKey();
 });
