@@ -31,7 +31,7 @@ msgid "Valor negativo não permitido para este tipo"
 msgstr ""
 
 #: serializers/__init__.py:142
-msgid "Valor deve ser positivo"
+msgid "Valor não pode ser negativo"
 msgstr ""
 
 #: serializers/__init__.py:151

@@ -38,7 +38,7 @@ def _create_centro(user) -> CentroCusto:
     return CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
 
 
-def test_valor_invalido(api_client, admin_user):
+def test_valor_negativo(api_client, admin_user):
     auth(api_client, admin_user)
     centro = _create_centro(admin_user)
     url = reverse("financeiro_api:financeiro-aportes")
@@ -46,7 +46,7 @@ def test_valor_invalido(api_client, admin_user):
         url,
         {
             "centro_custo": str(centro.id),
-            "valor": "0",
+            "valor": "-5",
             "descricao": "x",
         },
     )
@@ -67,6 +67,21 @@ def test_tipo_invalido(api_client, admin_user):
         },
     )
     assert resp.status_code == 400
+
+
+def test_valor_zero_valido(api_client, admin_user):
+    auth(api_client, admin_user)
+    centro = _create_centro(admin_user)
+    url = reverse("financeiro_api:financeiro-aportes")
+    resp = api_client.post(
+        url,
+        {
+            "centro_custo": str(centro.id),
+            "valor": "0",
+            "descricao": "x",
+        },
+    )
+    assert resp.status_code == 201, resp.data
 
 
 def test_aporte_interno_registra_originador(api_client, admin_user):
