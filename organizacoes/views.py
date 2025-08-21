@@ -123,18 +123,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             cached["X-Cache"] = "HIT"
             return cached
 
-        if self.request.headers.get("HX-Request"):
-
         is_htmx = self.request.headers.get("HX-Request")
 
-        if not is_htmx:
-            cached = cache.get(key)
-            if cached is not None:
-                cached["X-Cache"] = "HIT"
-                return cached
-
         if is_htmx:
-
             response = render(
                 self.request,
                 "organizacoes/partials/list_section.html",
