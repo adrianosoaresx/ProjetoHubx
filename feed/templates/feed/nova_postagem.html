@@ -52,6 +52,10 @@
       {{ form.tipo_feed|as_widget }}
     </div>
     <div class="mb-4">
+        <label for="id_organizacao" class="font-semibold mb-1 block">{% trans "Organização" %}</label>
+      {{ form.organizacao|as_widget }}
+    </div>
+    <div class="mb-4">
         <label for="id_nucleo" class="font-semibold mb-1 block">{% trans "Núcleo" %}</label>
       {{ form.nucleo|as_widget }}
     </div>

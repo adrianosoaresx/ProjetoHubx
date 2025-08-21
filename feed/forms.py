@@ -6,7 +6,9 @@ from django.core.exceptions import ValidationError
 
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
+
 from accounts.models import UserType
+
 from organizacoes.models import Organizacao
 
 from .models import Comment, Like, Post, Tag
@@ -19,6 +21,7 @@ class PostForm(forms.ModelForm):
     """Formulário para criação e edição de ``Post``."""
 
     tipo_feed = forms.ChoiceField(choices=Post.TIPO_FEED_CHOICES)
+    organizacao = forms.ModelChoiceField(queryset=None)
 
     class Meta:
         model = Post
@@ -62,6 +65,8 @@ class PostForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user:
             self.user = user
+            self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
+            self.initial.setdefault("organizacao", getattr(user, "organizacao", None))
             self.fields["nucleo"].queryset = user.nucleos.all()
             if hasattr(user, "eventos"):
                 self.fields["evento"].queryset = user.eventos.all()
@@ -76,9 +81,11 @@ class PostForm(forms.ModelForm):
                 )
         else:
             self.user = None
+
             self.fields["evento"].queryset = self.fields["evento"].queryset.none()
             self.fields["organizacao"].queryset = Organizacao.objects.none()
         self.fields["organizacao"].required = False
+
         self.fields["tags"].queryset = Tag.objects.all()
         self._video_preview_key: str | None = None
 

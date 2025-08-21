@@ -304,7 +304,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         if getattr(form, "_video_preview_key", None):
             form.instance.video_preview = form._video_preview_key
         form.instance.autor = self.request.user
-        form.instance.organizacao = self.request.user.organizacao
+        form.instance.organizacao = form.cleaned_data.get("organizacao")
         response = super().form_valid(form)
         if self.request.headers.get("HX-Request") == "true":
             return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
