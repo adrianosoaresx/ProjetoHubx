@@ -14,7 +14,7 @@
       <label for="id_publico" class="block">{{ form.publico.label }}</label>
       {{ form.publico }}
     </div>
-    <input type="hidden" name="layout_json" id="layout_json" value="{{ object.layout_json|default:'{}' }}">
+    <input type="hidden" name="layout_json" id="layout_json" value="{{ object.layout_json|default:'[]'|escapejs }}">
     <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
   </form>
   {% include 'dashboard/partials/metrics_list.html' %}
