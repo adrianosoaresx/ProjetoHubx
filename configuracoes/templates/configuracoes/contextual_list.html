@@ -36,9 +36,12 @@
           </span>
         </div>
         <div>
-          {% trans "E-mail" %}: {{ cfg.receber_notificacoes_email|yesno:_("Sim,Não") }} -
-          {% trans "WhatsApp" %}: {{ cfg.receber_notificacoes_whatsapp|yesno:_("Sim,Não") }} -
-          {% trans "Push" %}: {{ cfg.receber_notificacoes_push|yesno:_("Sim,Não") }}
+          {% trans "E-mail" %}:
+          {% if cfg.receber_notificacoes_email %}{% trans "Sim" %}{% else %}{% trans "Não" %}{% endif %} -
+          {% trans "WhatsApp" %}:
+          {% if cfg.receber_notificacoes_whatsapp %}{% trans "Sim" %}{% else %}{% trans "Não" %}{% endif %} -
+          {% trans "Push" %}:
+          {% if cfg.receber_notificacoes_push %}{% trans "Sim" %}{% else %}{% trans "Não" %}{% endif %}
         </div>
       </li>
     {% empty %}
