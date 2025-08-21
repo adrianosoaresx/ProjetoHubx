@@ -68,6 +68,7 @@ class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = "slug"
 
 
 @method_decorator(cache_page(60), name="list")

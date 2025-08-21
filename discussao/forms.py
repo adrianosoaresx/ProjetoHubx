@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import slugify
 from django_select2 import forms as s2forms
 
 from .models import CategoriaDiscussao, Denuncia, RespostaDiscussao, Tag, TopicoDiscussao
@@ -22,7 +23,7 @@ class CategoriaDiscussaoForm(forms.ModelForm):
 class TagForm(forms.ModelForm):
     class Meta:
         model = Tag
-        fields = ["nome"]
+        fields = ["nome", "slug"]
 
 
 class TopicoDiscussaoForm(forms.ModelForm):
@@ -63,7 +64,9 @@ class TopicoDiscussaoForm(forms.ModelForm):
         existing_ids = {str(tag.id) for tag in tags}
         for value in raw_values:
             if value and value not in existing_ids:
-                tag, _ = Tag.objects.get_or_create(nome=value)
+                tag, _ = Tag.objects.get_or_create(
+                    nome=value, defaults={"slug": slugify(value)}
+                )
                 tags.append(tag)
         return tags
 

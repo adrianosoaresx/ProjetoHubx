@@ -71,14 +71,20 @@ class CategoriaDiscussao(TimeStampedModel, SoftDeleteModel):
 class Tag(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
 
     class Meta:
         ordering = ["nome"]
         verbose_name = "Tag"
         verbose_name_plural = "Tags"
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.nome)
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:  # pragma: no cover - simples
-        return self.nome
+        return self.slug
 
 
 class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
