@@ -93,6 +93,16 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         context["inativa"] = self.request.GET.get("inativa", "")
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("HX-Request"):
+            return render(
+                self.request,
+                "organizacoes/partials/list_section.html",
+                context,
+                **response_kwargs,
+            )
+        return super().render_to_response(context, **response_kwargs)
+
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Organizacao
