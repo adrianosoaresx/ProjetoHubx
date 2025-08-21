@@ -2,6 +2,7 @@ import datetime as dt
 
 import pytest
 from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 from accounts.models import User, UserType
 from agenda.factories import EventoFactory
@@ -197,11 +198,51 @@ def test_get_metrics_invalid_date(admin_user):
 
 
 def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
-    InscricaoEvento.objects.create(evento=evento, user=cliente_user, status="confirmada")
-    metrics = DashboardMetricsService.get_metrics(
-        admin_user, metricas=["inscricoes_confirmadas"], escopo="organizacao", organizacao_id=evento.organizacao_id
+    another_user = User.objects.create_user(
+        email="other@example.com",
+        username="other",
+        password="x",
+        user_type=UserType.CONVIDADO,
+        organizacao=evento.organizacao,
     )
-    assert metrics["inscricoes_confirmadas"]["total"] >= 1
+    prev_user = User.objects.create_user(
+        email="prev@example.com",
+        username="prev",
+        password="x",
+        user_type=UserType.CONVIDADO,
+        organizacao=evento.organizacao,
+    )
+
+    now = timezone.now()
+    prev_month = now - relativedelta(months=1)
+
+    InscricaoEvento.objects.create(
+        evento=evento,
+        user=cliente_user,
+        status="confirmada",
+        data_confirmacao=now,
+    )
+    InscricaoEvento.objects.create(
+        evento=evento,
+        user=another_user,
+        status="confirmada",
+        data_confirmacao=now,
+    )
+    InscricaoEvento.objects.create(
+        evento=evento,
+        user=prev_user,
+        status="confirmada",
+        data_confirmacao=prev_month,
+    )
+
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user,
+        metricas=["inscricoes_confirmadas"],
+        escopo="organizacao",
+        organizacao_id=evento.organizacao_id,
+    )
+    assert metrics["inscricoes_confirmadas"]["total"] == 2
+    assert metrics["inscricoes_confirmadas"]["crescimento"] == pytest.approx(100.0)
 
 
 def test_get_metrics_lancamentos_pendentes(admin_user, organizacao):
