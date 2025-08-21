@@ -97,6 +97,7 @@ def test_convite_daily_limit(client):
     assert TokenAcesso.objects.count() == 5
 
 
+
 def test_validar_token_convite_get(client):
     user = UserFactory()
     _login(client, user)
@@ -107,7 +108,12 @@ def test_validar_token_convite_get(client):
 def test_validar_token_convite_view(client):
     user = UserFactory()
     gerador = UserFactory(is_staff=True)
-    token, codigo = create_invite_token(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+
+    token = TokenAcesso(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
+    codigo = "a" * 32
+    token.set_codigo(codigo)
+    token.save()
+
 
     _login(client, user)
     resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
@@ -119,7 +125,7 @@ def test_validar_token_convite_view(client):
     assert log.acao == TokenUsoLog.Acao.USO
     assert log.usuario == user
 
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": token.codigo})
+    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
     assert resp.status_code == 400
 
 

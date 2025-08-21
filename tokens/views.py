@@ -160,30 +160,38 @@ def gerar_api_token(request):
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            messages.error(request, _("Você não tem permissão para gerar tokens."))
+        choices = [
+            choice
+            for choice in TokenAcesso.TipoUsuario.choices
+            if can_issue_invite(request.user, choice[0])
+        ]
+        if not choices:
+            messages.error(
+                request,
+                _("Seu perfil não permite gerar convites."),
+            )
             return redirect("accounts:perfil")
         form = GerarTokenConviteForm(user=request.user)
+        form.fields["tipo_destino"].choices = choices
         return render(request, "tokens/gerar_token.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"error": _("Não autorizado")}, status=403)
-            return JsonResponse({"error": _("Não autorizado")}, status=403)
         form = GerarTokenConviteForm(request.POST, user=request.user)
         if form.is_valid():
-
+<
             target_role = form.cleaned_data["tipo_destino"]
             if not can_issue_invite(request.user, target_role):
                 if request.headers.get("HX-Request") == "true":
                     return render(
                         request,
                         "tokens/_resultado.html",
-                        {"error": _("Não autorizado")},
+                        {"error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
                         status=403,
                     )
-                return JsonResponse({"error": _("Não autorizado")}, status=403)
+                return JsonResponse(
+                    {"error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
+                    status=403,
+                )
 
             start_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
             end_day = start_day + timezone.timedelta(days=1)
