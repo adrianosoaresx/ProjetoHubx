@@ -55,16 +55,12 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             params.get("ordering", ""),
             params.get("page", ""),
             params.get("inativa", ""),
+            "hx" if self.request.headers.get("HX-Request") else "full",
         ]
         return "organizacoes_list_" + "_".join(keys)
 
     def get_queryset(self):
-        qs = (
-            super()
-            .get_queryset()
-            .select_related("created_by")
-            .prefetch_related("evento_set", "nucleos", "users")
-        )
+        qs = super().get_queryset().select_related("created_by").prefetch_related("evento_set", "nucleos", "users")
         search = self.request.GET.get("search")
         tipo = self.request.GET.get("tipo")
         cidade = self.request.GET.get("cidade")
@@ -73,7 +69,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         inativa = self.request.GET.get("inativa")
 
         if inativa is not None and inativa != "":
-            qs = qs.filter(inativa=inativa.lower() in ["1", "true", "t", "yes"]) 
+            qs = qs.filter(inativa=inativa.lower() in ["1", "true", "t", "yes"])
         else:
             qs = qs.filter(inativa=False)
 
@@ -112,27 +108,27 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return context
 
     def render_to_response(self, context, **response_kwargs):
-
-        if self.request.headers.get("HX-Request"):
-            return render(
-                self.request,
-                "organizacoes/partials/list_section.html",
-                context,
-                **response_kwargs,
-            )
-        return super().render_to_response(context, **response_kwargs)
-
         key = self._cache_key()
         cached = cache.get(key)
         if cached is not None:
             cached["X-Cache"] = "HIT"
             return cached
-        response = super().render_to_response(context, **response_kwargs)
-        response.render()
+
+        if self.request.headers.get("HX-Request"):
+            response = render(
+                self.request,
+                "organizacoes/partials/list_section.html",
+                context,
+                **response_kwargs,
+            )
+        else:
+            response = super().render_to_response(context, **response_kwargs)
+
+        if hasattr(response, "render"):
+            response.render()
         cache.set(key, response, self.cache_timeout)
         response["X-Cache"] = "MISS"
         return response
-
 
 
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
@@ -148,9 +144,7 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
             messages.success(self.request, _("Organização criada com sucesso."))
             novo = serialize_organizacao(self.object)
             registrar_log(self.object, self.request.user, "created", {}, novo)
-            organizacao_alterada.send(
-                sender=self.__class__, organizacao=self.object, acao="created"
-            )
+            organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="created")
             return response
         except Exception as e:  # pragma: no cover - auditing
             capture_exception(e)
@@ -175,11 +169,7 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
             antiga = serialize_organizacao(self.get_object())
             response = super().form_valid(form)
             nova = serialize_organizacao(self.object)
-            campos_alterados = [
-                campo
-                for campo in form.changed_data
-                if antiga.get(campo) != nova.get(campo)
-            ]
+            campos_alterados = [campo for campo in form.changed_data if antiga.get(campo) != nova.get(campo)]
             dif_antiga = {campo: antiga[campo] for campo in campos_alterados}
             dif_nova = {campo: nova[campo] for campo in campos_alterados}
             for campo in campos_alterados:
@@ -197,9 +187,7 @@ class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateV
                 dif_antiga,
                 dif_nova,
             )
-            organizacao_alterada.send(
-                sender=self.__class__, organizacao=self.object, acao="updated"
-            )
+            organizacao_alterada.send(sender=self.__class__, organizacao=self.object, acao="updated")
             messages.success(self.request, _("Organização atualizada com sucesso."))
             return response
         except Exception as e:  # pragma: no cover - auditing
@@ -317,9 +305,7 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
             dif_antiga = {k: v for k, v in antiga.items() if antiga[k] != nova[k]}
             dif_nova = {k: v for k, v in nova.items() if antiga[k] != nova[k]}
             registrar_log(org, request.user, acao, dif_antiga, dif_nova)
-            organizacao_alterada.send(
-                sender=self.__class__, organizacao=org, acao=acao
-            )
+            organizacao_alterada.send(sender=self.__class__, organizacao=org, acao=acao)
             messages.success(request, msg)
             if org.inativa or org.deleted:
                 return redirect("organizacoes:list")
@@ -352,33 +338,31 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 writer = csv.writer(response)
                 writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
                 for log in OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow([
-                        "change",
-                        log.campo_alterado,
-                        log.valor_antigo,
-                        log.valor_novo,
-                        getattr(log.alterado_por, "email", ""),
-                        log.created_at.isoformat(),
-                    ])
+                    writer.writerow(
+                        [
+                            "change",
+                            log.campo_alterado,
+                            log.valor_antigo,
+                            log.valor_novo,
+                            getattr(log.alterado_por, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
                 for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow([
-                        "activity",
-                        log.acao,
-                        "",
-                        "",
-                        getattr(log.usuario, "email", ""),
-                        log.created_at.isoformat(),
-                    ])
+                    writer.writerow(
+                        [
+                            "activity",
+                            log.acao,
+                            "",
+                            "",
+                            getattr(log.usuario, "email", ""),
+                            log.created_at.isoformat(),
+                        ]
+                    )
                 return response
 
-            change_logs = (
-                OrganizacaoChangeLog.all_objects.filter(organizacao=org)
-                .order_by("-created_at")[:10]
-            )
-            atividade_logs = (
-                OrganizacaoAtividadeLog.all_objects.filter(organizacao=org)
-                .order_by("-created_at")[:10]
-            )
+            change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
+            atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
             return render(
                 request,
                 self.template_name,
@@ -404,9 +388,7 @@ class OrganizacaoUsuariosModalView(AdminRequiredMixin, LoginRequiredMixin, View)
                 "organizacao": org,
                 "usuarios": usuarios,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=usuarios",
-                "api_url": reverse(
-                    "organizacoes_api:organizacao-usuarios-list", kwargs={"organizacao_pk": org.pk}
-                ),
+                "api_url": reverse("organizacoes_api:organizacao-usuarios-list", kwargs={"organizacao_pk": org.pk}),
             },
         )
 
@@ -422,9 +404,7 @@ class OrganizacaoNucleosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "nucleos": nucleos,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=nucleos",
-                "api_url": reverse(
-                    "organizacoes_api:organizacao-nucleos-list", kwargs={"organizacao_pk": org.pk}
-                ),
+                "api_url": reverse("organizacoes_api:organizacao-nucleos-list", kwargs={"organizacao_pk": org.pk}),
             },
         )
 
@@ -440,9 +420,7 @@ class OrganizacaoEventosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "eventos": eventos,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=eventos",
-                "api_url": reverse(
-                    "organizacoes_api:organizacao-eventos-list", kwargs={"organizacao_pk": org.pk}
-                ),
+                "api_url": reverse("organizacoes_api:organizacao-eventos-list", kwargs={"organizacao_pk": org.pk}),
             },
         )
 
@@ -458,9 +436,7 @@ class OrganizacaoEmpresasModalView(AdminRequiredMixin, LoginRequiredMixin, View)
                 "organizacao": org,
                 "empresas": empresas,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=empresas",
-                "api_url": reverse(
-                    "organizacoes_api:organizacao-empresas-list", kwargs={"organizacao_pk": org.pk}
-                ),
+                "api_url": reverse("organizacoes_api:organizacao-empresas-list", kwargs={"organizacao_pk": org.pk}),
             },
         )
 
@@ -476,8 +452,6 @@ class OrganizacaoPostsModalView(AdminRequiredMixin, LoginRequiredMixin, View):
                 "organizacao": org,
                 "posts": posts,
                 "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=posts",
-                "api_url": reverse(
-                    "organizacoes_api:organizacao-posts-list", kwargs={"organizacao_pk": org.pk}
-                ),
+                "api_url": reverse("organizacoes_api:organizacao-posts-list", kwargs={"organizacao_pk": org.pk}),
             },
         )
