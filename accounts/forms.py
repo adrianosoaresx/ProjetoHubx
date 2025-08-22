@@ -205,12 +205,19 @@ class MediaForm(forms.ModelForm):
         instance = super().save(commit=False)
         if commit:
             instance.save()
-        tags_names = [t.strip() for t in self.cleaned_data.get("tags_field", "").split(",") if t.strip()]
+        tags_field = self.cleaned_data.get("tags_field", "")
+        tags_names: list[str] = []
+        for t in tags_field.split(","):
+            name = t.strip().lower()
+            if name and name not in tags_names:
+                tags_names.append(name)
         from .models import MediaTag
 
         tags = []
         for name in tags_names:
-            tag, _ = MediaTag.objects.get_or_create(nome=name)
+            tag, _ = MediaTag.objects.get_or_create(
+                nome__iexact=name, defaults={"nome": name}
+            )
             tags.append(tag)
         if commit:
             instance.tags.set(tags)
