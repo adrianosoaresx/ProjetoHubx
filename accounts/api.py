@@ -11,6 +11,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
@@ -58,6 +60,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         return Response({"detail": _("Email confirmado.")})
 
     @action(detail=False, methods=["post"], url_path="resend-confirmation")
+    @method_decorator(ratelimit(key="ip", rate="5/h", method="POST", block=True))
     def resend_confirmation(self, request):
         email = request.data.get("email")
         if not email:
@@ -83,6 +86,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="request-password-reset")
+    @method_decorator(ratelimit(key="ip", rate="5/h", method="POST", block=True))
     def request_password_reset(self, request):
         email = request.data.get("email")
         if not email:

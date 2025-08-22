@@ -24,6 +24,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -426,6 +427,7 @@ def excluir_conta(request):
     return redirect("core:home")
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
@@ -563,6 +565,7 @@ def cancel_delete(request, token: str):
     return render(request, "accounts/cancel_delete.html", {"status": "sucesso"})
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def resend_confirmation(request):
     if request.method == "POST":
         email = request.POST.get("email")
