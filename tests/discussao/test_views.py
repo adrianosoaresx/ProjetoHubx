@@ -90,6 +90,38 @@ def test_topico_list_view_filters_by_multiple_tags(admin_user, categoria):
     assert list(response.context_data["topicos"]) == [t1]
 
 
+def test_topico_list_prefetches_tags(django_assert_num_queries, rf, nucleado_user, categoria):
+    tag1 = Tag.objects.create(nome="t1")
+    tag2 = Tag.objects.create(nome="t2")
+    t1 = TopicoDiscussao.objects.create(
+        categoria=categoria,
+        titulo="T1",
+        conteudo="c",
+        autor=nucleado_user,
+        publico_alvo=0,
+    )
+    t1.tags.add(tag1, tag2)
+    t2 = TopicoDiscussao.objects.create(
+        categoria=categoria,
+        titulo="T2",
+        conteudo="c",
+        autor=nucleado_user,
+        publico_alvo=0,
+    )
+    t2.tags.add(tag1)
+
+    request = rf.get("/")
+    request.user = nucleado_user
+    view = TopicoListView()
+    view.request = request
+    view.categoria = categoria
+
+    topicos = list(view.get_queryset())
+    with django_assert_num_queries(0):
+        for topico in topicos:
+            list(topico.tags.all())
+
+
 def test_topico_detail_view_increments(client, admin_user, categoria, topico):
     client.force_login(admin_user)
     resp = client.get(reverse("discussao:topico_detalhe", args=[categoria.slug, topico.slug]))
@@ -374,6 +406,19 @@ def test_topico_search(client, admin_user, categoria):
     resp = client.get(url)
     expected = TopicoDiscussao.objects.get(titulo="Teste A")
     assert list(resp.context["topicos"]) == [expected]
+
+
+def test_topico_search_no_duplicates(rf, admin_user, nucleado_user, categoria):
+    topico = TopicoDiscussao.objects.create(
+        categoria=categoria, titulo="T", conteudo="c", autor=admin_user, publico_alvo=0
+    )
+    RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="foo")
+    RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="foo again")
+
+    request = rf.get("/dummy", {"q": "foo"})
+    request.user = admin_user
+    response = TopicoListView.as_view()(request, categoria_slug=categoria.slug)
+    assert list(response.context_data["topicos"]) == [topico]
 
 
 def test_resposta_edicao_limite(client, nucleado_user, categoria, topico):
