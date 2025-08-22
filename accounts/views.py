@@ -778,13 +778,18 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
+    def get_permission_classes(self):
+        """Retorna lista de classes de permissão baseadas na ação atual."""
+        permission_classes = [IsAuthenticated]
         if self.action in ["create", "update", "partial_update"]:
             if self.request.user.get_tipo_usuario == "admin":
-                self.permission_classes.append(IsAdmin)
+                permission_classes.append(IsAdmin)
             elif self.request.user.get_tipo_usuario == "coordenador":
-                self.permission_classes.append(IsCoordenador)
-        return super().get_permissions()
+                permission_classes.append(IsCoordenador)
+        return permission_classes
+
+    def get_permissions(self):
+        return [permission() for permission in self.get_permission_classes()]
 
     def perform_create(self, serializer):
         organizacao = self.request.user.organizacao
