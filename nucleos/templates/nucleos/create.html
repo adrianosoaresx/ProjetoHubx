@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load custom_filters i18n %}
 
 {% block title %}{% trans 'Novo Núcleo' %}{% endblock %}
 
@@ -7,13 +7,41 @@
 <section class="max-w-2xl mx-auto py-8">
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
-    <p>{{ form.nome.label_tag }} {{ form.nome }} {{ form.nome.errors }}</p>
-    <p>{{ form.slug.label_tag }} {{ form.slug }} {{ form.slug.errors }}</p>
-    <p>{{ form.descricao.label_tag }} {{ form.descricao }} {{ form.descricao.errors }}</p>
-    <p>{{ form.avatar.label_tag }} {{ form.avatar }} {{ form.avatar.errors }}</p>
-    <p>{{ form.cover.label_tag }} {{ form.cover }} {{ form.cover.errors }}</p>
-    <p>{{ form.mensalidade.label_tag }} {{ form.mensalidade }} {{ form.mensalidade.errors }}</p>
-    <p>{{ form.ativo.label_tag }} {{ form.ativo }} {{ form.ativo.errors }}</p>
+    <div>
+      <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.nome.label }}</label>
+      {{ form.nome|add_class:'w-full p-2 border rounded' }}
+      {{ form.nome.errors }}
+    </div>
+    <div>
+      <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.slug.label }}</label>
+      {{ form.slug|add_class:'w-full p-2 border rounded' }}
+      {{ form.slug.errors }}
+    </div>
+    <div>
+      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.descricao.label }}</label>
+      {{ form.descricao|add_class:'w-full p-2 border rounded' }}
+      {{ form.descricao.errors }}
+    </div>
+    <div>
+      <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
+      {{ form.avatar|add_class:'w-full p-2 border rounded' }}
+      {{ form.avatar.errors }}
+    </div>
+    <div>
+      <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cover.label }}</label>
+      {{ form.cover|add_class:'w-full p-2 border rounded' }}
+      {{ form.cover.errors }}
+    </div>
+    <div>
+      <label for="{{ form.mensalidade.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.mensalidade.label }}</label>
+      {{ form.mensalidade|add_class:'w-full p-2 border rounded' }}
+      {{ form.mensalidade.errors }}
+    </div>
+    <div class="flex items-center gap-2">
+      <label for="{{ form.ativo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.ativo.label }}</label>
+      {{ form.ativo|add_class:'border rounded' }}
+      {{ form.ativo.errors }}
+    </div>
     <div class="flex justify-end gap-2">
       <a href="{% url 'nucleos:list' %}" class="px-4 py-2 border rounded">{% trans 'Cancelar' %}</a>
       <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">{% trans 'Salvar' %}</button>
