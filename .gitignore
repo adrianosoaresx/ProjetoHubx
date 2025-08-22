@@ -134,3 +134,4 @@ next-env.d.ts
 *.jpeg
 *.webp
 *.gif
+*.woff2
