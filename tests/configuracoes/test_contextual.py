@@ -3,6 +3,8 @@ import uuid  # required for uuid4 usage in tests
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django.test import override_settings
+from rest_framework.settings import api_settings
 from rest_framework.test import APIClient
 from notificacoes.tasks import enviar_notificacao_async
 
@@ -95,6 +97,33 @@ def test_endpoint_respeita_preferencias(admin_user, monkeypatch):
     admin_user.configuracao.save(update_fields=["receber_notificacoes_email"])
     resp = client.post("/api/configuracoes/testar/", {"canal": "email"}, format="json")
     assert resp.status_code == 400
+
+
+@override_settings(
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+)
+def test_testar_notificacao_throttling(admin_user, monkeypatch):
+    monkeypatch.setattr(enviar_notificacao_async, "delay", lambda *a, **k: None)
+    from configuracoes.throttles import TestarNotificacaoThrottle
+    from django.core.cache import cache
+
+    client = APIClient()
+    client.force_authenticate(user=admin_user)
+    cache.clear()
+    url = "/api/configuracoes/testar/"
+    original = api_settings.DEFAULT_THROTTLE_RATES.copy()
+    api_settings.DEFAULT_THROTTLE_RATES["testar_notificacao"] = "5/minute"
+    TestarNotificacaoThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
+    try:
+        for _ in range(5):
+            resp = client.post(url, {"canal": "email"}, format="json")
+            assert resp.status_code == 200
+        resp = client.post(url, {"canal": "email"}, format="json")
+        assert resp.status_code == 429
+    finally:
+        api_settings.DEFAULT_THROTTLE_RATES = original
+        TestarNotificacaoThrottle.THROTTLE_RATES = api_settings.DEFAULT_THROTTLE_RATES
+        cache.clear()
 
 
 def test_escopo_nome_organizacao(admin_user):

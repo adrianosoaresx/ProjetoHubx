@@ -19,6 +19,8 @@ from notificacoes.models import NotificationTemplate, Canal
 from notificacoes.services.notificacoes import enviar_para_usuario
 from notificacoes.services.whatsapp_client import send_whatsapp
 
+from .throttles import TestarNotificacaoThrottle
+
 
 class ConfiguracaoContaViewSet(ViewSet):
     """ViewSet para leitura e atualização das preferências do usuário."""
@@ -122,6 +124,7 @@ class ConfiguracaoContextualViewSet(ModelViewSet):
 
 class TestarNotificacaoView(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [TestarNotificacaoThrottle]
 
     def post(self, request):
         canal = request.data.get("canal", Canal.EMAIL)
