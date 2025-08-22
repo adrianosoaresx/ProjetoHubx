@@ -13,6 +13,8 @@ from . import metrics
 from .models import ConfiguracaoConta, ConfiguracaoContextual
 
 CACHE_KEY = "configuracao_conta:{id}"
+CONTEXT_CACHE_KEY = "config_context:{user_id}:{escopo_tipo}:{escopo_id}"
+_CACHE_MISS = object()
 
 
 def get_configuracao_conta(usuario: User) -> ConfiguracaoConta:
@@ -44,12 +46,19 @@ def get_configuracao_contextual(
     usuario: User, escopo_tipo: str, escopo_id: str
 ) -> ConfiguracaoContextual | None:
     """Retorna configurações específicas de um escopo, se existirem."""
-    try:
-        return ConfiguracaoContextual.objects.get(
-            user=usuario, escopo_tipo=escopo_tipo, escopo_id=escopo_id
-        )
-    except ConfiguracaoContextual.DoesNotExist:
-        return None
+    key = CONTEXT_CACHE_KEY.format(
+        user_id=usuario.id, escopo_tipo=escopo_tipo, escopo_id=escopo_id
+    )
+    config = cache.get(key, _CACHE_MISS)
+    if config is _CACHE_MISS:
+        try:
+            config = ConfiguracaoContextual.objects.get(
+                user=usuario, escopo_tipo=escopo_tipo, escopo_id=escopo_id
+            )
+        except ConfiguracaoContextual.DoesNotExist:
+            config = None
+        cache.set(key, config)
+    return config
 
 
 def merge_preferences(

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch import receiver
 from django.core.cache import cache
 from asgiref.sync import async_to_sync
@@ -12,7 +12,7 @@ from .models import (
     ConfiguracaoContextual,
     ConfiguracaoContaLog,
 )
-from .services import CACHE_KEY
+from .services import CACHE_KEY, CONTEXT_CACHE_KEY
 
 CONTA_FIELDS = [
     "receber_notificacoes_email",
@@ -53,7 +53,8 @@ def capture_old_values(sender, instance, **kwargs):
 
 @receiver(post_save, sender=ConfiguracaoConta)
 @receiver(post_save, sender=ConfiguracaoContextual)
-def log_changes(sender, instance, created, **kwargs):
+@receiver(post_delete, sender=ConfiguracaoContextual)
+def log_changes(sender, instance, created=False, **kwargs):
     fields = CONTA_FIELDS if sender is ConfiguracaoConta else CONTEXT_FIELDS
     old_values = getattr(instance, "_old_values", {})
     ip, agent, fonte = get_request_info()
@@ -83,3 +84,11 @@ def log_changes(sender, instance, created, **kwargs):
             pass
     if sender is ConfiguracaoConta:
         cache.set(CACHE_KEY.format(id=instance.user_id), instance)
+    else:
+        cache.delete(
+            CONTEXT_CACHE_KEY.format(
+                user_id=instance.user_id,
+                escopo_tipo=instance.escopo_tipo,
+                escopo_id=instance.escopo_id,
+            )
+        )
