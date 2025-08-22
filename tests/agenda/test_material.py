@@ -63,7 +63,15 @@ def test_material_form_rejeita_extensao_invalida(admin_user):
     arquivo = SimpleUploadedFile("malware.exe", b"xx", content_type="application/octet-stream")
     form = MaterialDivulgacaoEventoForm(data=_form_data(evento), files={"arquivo": arquivo})
     assert not form.is_valid()
-    assert "Formato" in form.errors["arquivo"][0]
+    assert "Tipo" in form.errors["arquivo"][0]
+
+
+def test_material_form_rejeita_mime_divergente(admin_user):
+    evento = EventoFactory(organizacao=admin_user.organizacao, coordenador=admin_user)
+    arquivo = SimpleUploadedFile("img.png", b"%PDF-1.4", content_type="application/pdf")
+    form = MaterialDivulgacaoEventoForm(data=_form_data(evento), files={"arquivo": arquivo})
+    assert not form.is_valid()
+    assert "Extensão" in form.errors["arquivo"][0]
 
 
 def test_material_form_limita_tamanho_imagem(admin_user):
@@ -144,7 +152,19 @@ def test_material_api_rejeita_extensao_invalida(api_client, admin_user):
     url = reverse("agenda_api:material-list")
     resp = api_client.post(url, data, format="multipart")
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
-    assert "Formato" in resp.data["arquivo"][0]
+    assert "Tipo" in resp.data["arquivo"][0]
+
+
+def test_material_api_rejeita_mime_divergente(api_client, admin_user):
+    evento = EventoFactory(organizacao=admin_user.organizacao, coordenador=admin_user)
+    arquivo = SimpleUploadedFile("img.png", b"%PDF-1.4", content_type="application/pdf")
+    data = _form_data(evento)
+    data["arquivo"] = arquivo
+    api_client.force_authenticate(admin_user)
+    url = reverse("agenda_api:material-list")
+    resp = api_client.post(url, data, format="multipart")
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Extensão" in resp.data["arquivo"][0]
 
 
 def test_material_api_limita_tamanho_imagem(api_client, admin_user):
