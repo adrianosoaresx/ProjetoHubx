@@ -3,6 +3,7 @@ from __future__ import annotations
 import mimetypes
 from datetime import timedelta
 from io import BytesIO
+import sentry_sdk
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -73,7 +74,8 @@ def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external ser
         result = cd.scan(path)
         if result:
             return any(status == "FOUND" for _, (status, _) in result.items())
-    except Exception:
+    except Exception as exc:
+        sentry_sdk.capture_exception(exc)
         return False
     return False
 
