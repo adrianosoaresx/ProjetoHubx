@@ -4,6 +4,7 @@ import json
 
 import requests
 from celery import shared_task
+from django.conf import settings
 from django.utils import timezone
 
 from .models import WebhookEvent
@@ -34,3 +35,14 @@ def deliver_webhook(self, event_id: str) -> None:
     event.attempts += 1
     event.last_attempt_at = timezone.now()
     event.save(update_fields=["delivered", "attempts", "last_attempt_at"])
+
+
+@shared_task
+def remover_eventos_antigos() -> int:
+    """Remove eventos entregues com idade superior à retenção configurada."""
+    limite = timezone.now() - timezone.timedelta(
+        days=settings.WEBHOOK_EVENT_RETENTION_DAYS
+    )
+    qs = WebhookEvent.objects.filter(delivered=True, created_at__lt=limite)
+    count, _ = qs.delete()
+    return count
