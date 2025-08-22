@@ -43,6 +43,9 @@ from .serializers import (
 )
 from .tasks import organizacao_alterada
 
+from .metrics import list_latency_seconds, detail_latency_seconds
+from .services import exportar_logs_csv
+
 
 class OrganizacaoViewSet(viewsets.ModelViewSet):
     queryset = Organizacao.objects.all()
@@ -235,41 +238,17 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
         try:
             organizacao = self.get_object()
             if request.query_params.get("export") == "csv":
-                import csv
 
-                from django.http import HttpResponse
-
-                response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
-                writer = csv.writer(response)
-                writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-                for log in OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "change",
-                            log.campo_alterado,
-                            log.valor_antigo,
-                            log.valor_novo,
-                            getattr(log.alterado_por, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "activity",
-                            log.acao,
-                            "",
-                            "",
-                            getattr(log.usuario, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                return response
-            change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at")[:10]
-            atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by(
-                "-created_at"
-            )[:10]
+                return exportar_logs_csv(organizacao)
+            change_logs = (
+                OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+                .order_by("-created_at")[:10]
+            )
+            atividade_logs = (
+                OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+                .order_by("-created_at")[:10]
+            )
+         
             change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
             atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
             return Response({"changes": change_ser.data, "activities": atividade_ser.data})

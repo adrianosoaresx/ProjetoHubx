@@ -230,11 +230,23 @@ def test_invalid_cnpj_api(api_client, root_user):
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_history_export_csv(api_client, root_user, faker_ptbr):
+def test_history_export_csv(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="csv")
     OrganizacaoAtividadeLog.objects.create(organizacao=org, acao="created")
+    called = {}
+
+    def fake_exportar_logs_csv(org_arg):
+        from django.http import HttpResponse
+
+        called["org"] = org_arg
+        return HttpResponse("csv", content_type="text/csv")
+
+    monkeypatch.setattr(
+        "organizacoes.api.exportar_logs_csv", fake_exportar_logs_csv
+    )
     url = reverse("organizacoes_api:organizacao-history", args=[org.pk]) + "?export=csv"
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_200_OK
     assert resp["Content-Type"] == "text/csv"
+    assert called["org"] == org
