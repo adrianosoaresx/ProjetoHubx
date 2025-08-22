@@ -11,11 +11,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 @pytest.mark.xfail(reason="Pending database issue with soft delete migrations")
-def test_upload_and_notification(admin_user, coordenador_user, client):
+def test_upload_and_notification(admin_user, coordenador_user, client, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],

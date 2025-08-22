@@ -4,7 +4,7 @@ from django.utils.timezone import now
 
 from accounts.models import UserType
 from agenda.models import Evento
-from nucleos.models import Nucleo
+from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao
 
 User = get_user_model()
@@ -27,6 +27,16 @@ def celery_eager(settings):
 @pytest.fixture(autouse=True)
 def in_memory_channel_layer(settings):
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+@pytest.fixture(autouse=True)
+def default_participacoes(admin_user, coordenador_user, nucleo):
+    ParticipacaoNucleo.objects.get_or_create(
+        user=admin_user, nucleo=nucleo, defaults={"status": "ativo"}
+    )
+    ParticipacaoNucleo.objects.get_or_create(
+        user=coordenador_user, nucleo=nucleo, defaults={"status": "ativo"}
+    )
 
 
 @pytest.fixture

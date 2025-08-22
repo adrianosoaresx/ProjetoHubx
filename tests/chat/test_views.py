@@ -105,11 +105,11 @@ def test_modal_users_lists_other_users(client, admin_user, coordenador_user):
     assert admin_user not in users
 
 
-def test_modal_room_loads_messages(client, admin_user, coordenador_user):
+def test_modal_room_loads_messages(client, admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="",
         descricao="",
         participantes=[coordenador_user],
