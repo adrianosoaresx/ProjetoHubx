@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
+from django.conf import settings
 
 from accounts.models import UserType
 from agenda.models import Evento
@@ -24,10 +25,9 @@ from core.cache import get_cache_version
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .forms import CommentForm, PostForm
-from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
-
-
+from .forms import CommentForm, LikeForm, PostForm
+from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
+from feed.tasks import notify_post_moderated
 
 @login_required
 def meu_mural(request):
@@ -430,12 +430,16 @@ def moderar_post(request, pk):
     if request.method == "POST":
         acao = request.POST.get("acao")
         if acao == "aprovar":
-            ModeracaoPost.objects.create(
+            moderacao = ModeracaoPost.objects.create(
                 post=post,
                 status="aprovado",
                 avaliado_por=request.user,
                 avaliado_em=timezone.now(),
             )
+            if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+                notify_post_moderated(str(post.id), moderacao.status)
+            else:
+                notify_post_moderated.delay(str(post.id), moderacao.status)
             post.refresh_from_db()
             message = _("Post aprovado com sucesso.")
             if request.headers.get("HX-Request"):
@@ -451,13 +455,17 @@ def moderar_post(request, pk):
                     return HttpResponse(html, status=400)
                 messages.error(request, error)
             else:
-                ModeracaoPost.objects.create(
+                moderacao = ModeracaoPost.objects.create(
                     post=post,
                     status="rejeitado",
                     motivo=motivo,
                     avaliado_por=request.user,
                     avaliado_em=timezone.now(),
                 )
+                if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+                    notify_post_moderated(str(post.id), moderacao.status)
+                else:
+                    notify_post_moderated.delay(str(post.id), moderacao.status)
                 post.refresh_from_db()
                 message = _("Post rejeitado.")
                 if request.headers.get("HX-Request"):
