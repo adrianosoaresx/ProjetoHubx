@@ -1,6 +1,6 @@
 import calendar
 from datetime import date, timedelta
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from typing import Any
 
 from django.contrib import messages
@@ -11,6 +11,7 @@ from django.contrib.auth.mixins import (
     PermissionRequiredMixin,
     UserPassesTestMixin,
 )
+from django import forms
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Q
 from django.http import (
@@ -505,12 +506,37 @@ def evento_orcamento(request, pk: int):
     if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
         return HttpResponseForbidden()
     if request.method == "POST":
-        try:
-            evento.orcamento_estimado = Decimal(request.POST.get("orcamento_estimado", 0))
-            evento.valor_gasto = Decimal(request.POST.get("valor_gasto", 0))
-            evento.save(update_fields=["orcamento_estimado", "valor_gasto", "updated_at"])
-        except (TypeError, InvalidOperation):
-            return HttpResponse(status=400)
+        class _Form(forms.Form):
+            orcamento_estimado = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+            valor_gasto = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+        form = _Form(request.POST)
+        if not form.is_valid():
+            return JsonResponse({"errors": form.errors}, status=400)
+
+        orcamento_estimado = form.cleaned_data.get("orcamento_estimado") or Decimal("0")
+        valor_gasto = form.cleaned_data.get("valor_gasto") or Decimal("0")
+
+        old_orcamento = evento.orcamento_estimado
+        old_valor = evento.valor_gasto
+
+        evento.orcamento_estimado = orcamento_estimado
+        evento.valor_gasto = valor_gasto
+        evento.save(update_fields=["orcamento_estimado", "valor_gasto", "updated_at"])
+
+        detalhes: dict[str, dict[str, Decimal]] = {}
+        if old_orcamento != orcamento_estimado:
+            detalhes["orcamento_estimado"] = {"antes": old_orcamento, "depois": orcamento_estimado}
+        if old_valor != valor_gasto:
+            detalhes["valor_gasto"] = {"antes": old_valor, "depois": valor_gasto}
+        if detalhes:
+            EventoLog.objects.create(
+                evento=evento,
+                usuario=request.user,
+                acao="orcamento_atualizado",
+                detalhes=detalhes,
+            )
+
     data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
     return JsonResponse(data)
 
@@ -923,6 +949,9 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
             ),
             pk=pk,
         )
+        if not briefing.can_transition_to(status):
+            messages.error(request, _("Transição de status inválida."))
+            return redirect("agenda:briefing_list")
         now = timezone.now()
         update_fields = ["status", "avaliado_por", "avaliado_em", "updated_at"]
         briefing.avaliado_por = request.user

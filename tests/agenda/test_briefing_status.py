@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.messages import get_messages
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
@@ -21,6 +22,7 @@ def test_aprovar_briefing(client):
         objetivos="obj",
         publico_alvo="pub",
         requisitos_tecnicos="req",
+        status="orcamentado",
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "aprovado"])
     with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
@@ -70,6 +72,7 @@ def test_recusar_briefing_com_motivo(client):
         objetivos="obj",
         publico_alvo="pub",
         requisitos_tecnicos="req",
+        status="orcamentado",
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "recusado"])
     motivo = "Sem orçamento"
@@ -83,3 +86,23 @@ def test_recusar_briefing_com_motivo(client):
     assert briefing.recusado_em is not None
     assert EventoLog.objects.filter(evento=evento, acao="briefing_recusado").exists()
     mock_delay.assert_called_once_with(briefing.pk, "recusado")
+
+
+@pytest.mark.django_db
+def test_transicao_fora_de_ordem(client):
+    org = OrganizacaoFactory()
+    user = UserFactory(user_type=UserType.ADMIN, organizacao=org)
+    client.force_login(user)
+    evento = EventoFactory(organizacao=org, coordenador=user)
+    briefing = BriefingEvento.objects.create(
+        evento=evento,
+        objetivos="obj",
+        publico_alvo="pub",
+        requisitos_tecnicos="req",
+    )
+    url = reverse("agenda:briefing_status", args=[briefing.pk, "aprovado"])
+    resp = client.post(url)
+    briefing.refresh_from_db()
+    assert briefing.status == "rascunho"
+    msgs = [m.message for m in get_messages(resp.wsgi_request)]
+    assert "Transição de status inválida." in msgs

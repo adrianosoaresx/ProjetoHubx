@@ -8,11 +8,11 @@ from chat.services import criar_canal, enviar_mensagem
 pytestmark = pytest.mark.django_db
 
 
-def test_repeated_messages_marked_as_spam(admin_user, coordenador_user):
+def test_repeated_messages_marked_as_spam(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -24,11 +24,11 @@ def test_repeated_messages_marked_as_spam(admin_user, coordenador_user):
     assert ChatModerationLog.objects.filter(message=msg, action="spam").exists()
 
 
-def test_many_links_marked_as_spam(admin_user, coordenador_user):
+def test_many_links_marked_as_spam(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],

@@ -33,10 +33,11 @@ def test_scan_file_logs_exception(monkeypatch, module_path):
 
 
 def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenador_user):
+
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -55,11 +56,11 @@ def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenado
     assert rel.arquivo_path
 
 
-def test_exportar_historico_chat_com_filtro(media_root, admin_user, coordenador_user):
+def test_exportar_historico_chat_com_filtro(media_root, admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -84,11 +85,11 @@ def test_exportar_historico_chat_com_filtro(media_root, admin_user, coordenador_
     assert len(data) == 1 and data[0]["tipo"] == "image"
 
 
-def test_limpar_exports_antigos_remove_arquivos(media_root, admin_user, coordenador_user):
+def test_limpar_exports_antigos_remove_arquivos(media_root, admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],

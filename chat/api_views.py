@@ -62,8 +62,10 @@ from .serializers import (
 from .services import criar_item_de_mensagem, sinalizar_mensagem
 from .tasks import exportar_historico_chat, gerar_resumo_chat
 from .throttles import FlagRateThrottle, UploadRateThrottle
+from .utils import _scan_file
 
 User = get_user_model()
+
 
 
 def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external service
@@ -78,6 +80,7 @@ def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external ser
         sentry_sdk.capture_exception(exc)
         return False
     return False
+
 
 
 class ChatChannelCategoryViewSet(viewsets.ModelViewSet):

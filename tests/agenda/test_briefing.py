@@ -20,6 +20,7 @@ def test_briefing_status_updates(client):
         objetivos="obj",
         publico_alvo="pub",
         requisitos_tecnicos="req",
+        status="orcamentado",
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "aprovado"])
     with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
