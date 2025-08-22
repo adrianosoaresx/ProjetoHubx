@@ -8,7 +8,7 @@
       {% if perfil.avatar %}
         <img src="{{ perfil.avatar.url }}" alt="{{ perfil.username }}" class="w-20 h-20 rounded-full object-cover">
       {% else %}
-        <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-primary">
+        <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-primary" role="img" aria-label="{{ perfil.username }}">
           {{ perfil.username|first|upper }}
         </div>
       {% endif %}

@@ -6,7 +6,7 @@
       {% blocktrans with username=m.remetente.username asvar alt_text %}Avatar de {{ username }}{% endblocktrans %}
       <img src="{{ m.remetente.profile.avatar.url }}" alt="{{ alt_text }}" class="w-8 h-8 rounded-full" />
       {% else %}
-      <span class="inline-block w-8 h-8 rounded-full bg-gray-300 text-sm flex items-center justify-center">{{ m.remetente.username|first|upper }}</span>
+      <span class="inline-block w-8 h-8 rounded-full bg-gray-300 text-sm flex items-center justify-center" role="img" aria-label="{{ m.remetente.username }}">{{ m.remetente.username|first|upper }}</span>
     {% endif %}
   </div>
   <div class="flex-1">
@@ -147,7 +147,7 @@
         {% for user in m.lido_por.all %}
           <li
             class="w-4 h-4 rounded-full bg-gray-300 text-[0.5rem] flex items-center justify-center"
-            data-username="{{ user.username }}"
+            data-username="{{ user.username }}" {% if not user.profile.avatar %}role="img" aria-label="{{ user.username }}"{% endif %}
           >
             {% if user.profile.avatar %}
               <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="w-4 h-4 rounded-full" />
