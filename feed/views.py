@@ -24,9 +24,9 @@ from core.cache import get_cache_version
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .api import _post_rate, _read_rate
-from .forms import CommentForm, LikeForm, PostForm
-from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
+from .forms import CommentForm, PostForm
+from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
+
 
 
 @login_required
