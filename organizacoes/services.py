@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from typing import Any, Dict
 import uuid
+
 import json
+import csv
+
 
 from django.db.models import Model
+from django.http import HttpResponse
 
-from .models import Organizacao, OrganizacaoAtividadeLog
+from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
 
 
 def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
@@ -33,7 +37,7 @@ def registrar_log(
     dados_anteriores: Dict[str, Any] | None = None,
     dados_novos: Dict[str, Any] | None = None,
 ) -> None:
-    detalhes = {}
+    detalhes: Dict[str, Any] = {}
     if dados_anteriores is not None:
         detalhes["antes"] = dados_anteriores
     if dados_novos is not None:
@@ -42,5 +46,50 @@ def registrar_log(
         organizacao=organizacao,
         usuario=usuario,
         acao=acao,
-        detalhes=json.dumps(detalhes) if detalhes else "",
+        detalhes=detalhes or {},
     )
+
+
+def exportar_logs_csv(organizacao: Organizacao) -> HttpResponse:
+    response = HttpResponse(content_type="text/csv")
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        "tipo",
+        "campo/acao",
+        "valor_antigo",
+        "valor_novo",
+        "usuario",
+        "data",
+    ])
+    for log in (
+        OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+        .order_by("-created_at")
+    ):
+        writer.writerow(
+            [
+                "change",
+                log.campo_alterado,
+                log.valor_antigo,
+                log.valor_novo,
+                getattr(log.alterado_por, "email", ""),
+                log.created_at.isoformat(),
+            ]
+        )
+    for log in (
+        OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+        .order_by("-created_at")
+    ):
+        writer.writerow(
+            [
+                "activity",
+                log.acao,
+                "",
+                "",
+                getattr(log.usuario, "email", ""),
+                log.created_at.isoformat(),
+            ]
+        )
+    return response

@@ -36,6 +36,7 @@ class FeedPluginConfig(TimeStampedModel):
     )
     module_path = models.CharField(max_length=255)
     frequency = models.PositiveIntegerField(default=0)
+    last_run = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Configuração de Plugin"

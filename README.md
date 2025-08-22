@@ -56,6 +56,10 @@ python manage.py migrate
 
 Essa etapa garante que bibliotecas como Pillow e clamd estejam disponíveis no ambiente virtual.
 
+Além disso, o Hubx depende do utilitário de linha de comando `ffmpeg` para gerar previews de vídeos.
+Instale-o no sistema operacional (ex.: `sudo apt-get install ffmpeg` no Debian/Ubuntu ou
+`brew install ffmpeg` no macOS) antes de enviar vídeos.
+
 > Isso criará o usuário padrão `root` necessário para alguns comandos administrativos.
 
 ---

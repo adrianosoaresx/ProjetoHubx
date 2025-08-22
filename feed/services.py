@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import mimetypes
+import shutil
 import subprocess
 import uuid
 from pathlib import Path
@@ -20,6 +21,8 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     Retorna o caminho/chave gerado. Para vídeos, retorna também a chave do preview.
     """
 
+    ffmpeg_available = shutil.which("ffmpeg") is not None
+
     content_type = getattr(file, "content_type", "") or mimetypes.guess_type(file.name)[0] or ""
     size = getattr(file, "size", 0)
     ext = Path(file.name).suffix.lower()
@@ -38,6 +41,9 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
         is_video = True
     else:
         raise ValidationError("Formato de arquivo não suportado")
+
+    if is_video and not ffmpeg_available:
+        raise ValidationError("O binário 'ffmpeg' é necessário para gerar previews de vídeo")
 
     if size > max_size:
         raise ValidationError("Arquivo maior que o limite permitido")

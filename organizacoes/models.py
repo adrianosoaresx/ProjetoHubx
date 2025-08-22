@@ -121,7 +121,7 @@ class OrganizacaoAtividadeLog(TimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
     )
-    detalhes = models.TextField(blank=True)
+    detalhes = models.JSONField(blank=True, default=dict)
 
     class Meta:
         ordering = ["-created_at"]

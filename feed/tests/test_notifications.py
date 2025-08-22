@@ -63,12 +63,12 @@ class FeedNotificationTest(TestCase):
 
     @patch("feed.tasks.enviar_para_usuario")
     def test_notify_like_once(self, enviar) -> None:
-        from feed.models import Like, Post
+        from feed.models import Post, Reacao
 
         post = Post.objects.create(
             autor=self.other, organizacao=self.other.organizacao, conteudo="ola"
         )
-        Like.objects.create(post=post, user=self.user)
+        Reacao.objects.create(post=post, user=self.user, vote="like")
         self.assertEqual(enviar.call_count, 1)
 
     @patch("feed.tasks.enviar_para_usuario")

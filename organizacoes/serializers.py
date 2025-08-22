@@ -147,6 +147,7 @@ class OrganizacaoChangeLogSerializer(serializers.ModelSerializer):
 
 class OrganizacaoAtividadeLogSerializer(serializers.ModelSerializer):
     usuario_email = serializers.EmailField(source="usuario.email", default=None)
+    detalhes = serializers.JSONField(default=dict)
 
     class Meta:
         model = OrganizacaoAtividadeLog
