@@ -40,14 +40,15 @@ def aplicar_politica_retencao() -> None:
     agora = timezone.now()
     for canal in ChatChannel.objects.filter(retencao_dias__isnull=False):
         limite = agora - timedelta(days=canal.retencao_dias or 0)
-        mensagens = list(canal.messages.filter(created_at__lt=limite))
-        if not mensagens:
+        mensagens_qs = canal.messages.filter(created_at__lt=limite)
+        ids = list(mensagens_qs.values_list("id", flat=True).iterator())
+        if not ids:
             continue
-        ids = [m.id for m in mensagens]
-        for msg in mensagens:
-            msg.delete()
-        for att in ChatAttachment.objects.filter(mensagem_id__in=ids):
-            att.delete()
+
+        # Remove anexos associados às mensagens, garantindo cascata controlada
+        ChatAttachment.objects.filter(mensagem_id__in=ids).delete()
+        mensagens_qs.delete()
+
         chat_mensagens_removidas_retencao_total.inc(len(ids))
         moderator = canal.participants.filter(is_admin=True).first()
         user = moderator.user if moderator else User.objects.filter(is_staff=True).first()
@@ -81,7 +82,9 @@ def gerar_resumo_chat(canal_id: str, periodo: str) -> str:
     inicio = timezone.now()
     channel = ChatChannel.objects.get(pk=canal_id)
     limite = timezone.now() - (timedelta(days=1) if periodo == "diario" else timedelta(days=7))
-    mensagens = channel.messages.filter(created_at__gte=limite, hidden_at__isnull=True, tipo="text").order_by("created_at")
+    mensagens = channel.messages.filter(created_at__gte=limite, hidden_at__isnull=True, tipo="text").order_by(
+        "created_at"
+    )
     texto = "\n".join(m.conteudo for m in mensagens)
     resumo = texto[:500]
     resumo_obj = ResumoChat.objects.create(
@@ -183,9 +186,7 @@ def calcular_trending_topics(canal_id: str, dias: int = 7) -> list[tuple[str, in
 
     channel = ChatChannel.objects.get(pk=canal_id)
     inicio = timezone.now() - timedelta(days=dias)
-    mensagens = channel.messages.filter(
-        created_at__gte=inicio, hidden_at__isnull=True, tipo="text"
-    )
+    mensagens = channel.messages.filter(created_at__gte=inicio, hidden_at__isnull=True, tipo="text")
     counter: Counter[str] = Counter()
     stop_words = {
         "de",
