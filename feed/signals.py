@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from django.conf import settings
-from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -9,6 +8,7 @@ from core.cache import bump_cache_version
 
 from .models import Comment, Post, Reacao
 from .tasks import notificar_autor_sobre_interacao
+from .cache import invalidate_feed_cache
 
 
 @receiver(post_save, sender=Reacao)
@@ -31,5 +31,6 @@ def notificar_comment(sender, instance, created, **kwargs):
 
 @receiver([post_save, post_delete], sender=Post)
 def limpar_cache_feed(**_kwargs) -> None:
-    """Atualiza a versão do cache do feed após alterações em posts."""
-    bump_cache_version("feed_list")
+    """Remove entradas de cache relacionadas ao feed."""
+    invalidate_feed_cache()
+
