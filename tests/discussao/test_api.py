@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from freezegun import freeze_time
 from rest_framework.test import APIClient
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from discussao.models import RespostaDiscussao, Tag, TopicoDiscussao
 
@@ -21,6 +22,20 @@ def create_topico(categoria, autor, title="T"):
         autor=autor,
         publico_alvo=0,
     )
+
+
+def test_rejeita_arquivo_invalido(api_client, categoria, associado_user):
+    topico = create_topico(categoria, associado_user)
+    api_client.force_authenticate(user=associado_user)
+    url = reverse("resposta-list", urlconf="discussao.api_urls")
+    invalido = SimpleUploadedFile("evil.txt", b"data", content_type="text/plain")
+    resp = api_client.post(
+        "/api/discussao" + url,
+        {"topico": topico.id, "conteudo": "c", "arquivo": invalido},
+        format="multipart",
+    )
+    assert resp.status_code == 400
+    assert RespostaDiscussao.objects.count() == 0
 
 
 def test_topico_serializer_includes_score(api_client, categoria, associado_user):

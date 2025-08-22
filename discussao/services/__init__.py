@@ -17,6 +17,7 @@ from ..models import (
     RespostaDiscussao,
     TopicoDiscussao,
 )
+from ..validators import validar_arquivo_discussao
 
 
 class DiscussaoError(Exception):
@@ -54,13 +55,17 @@ def responder_topico(
     """Cria uma resposta para um tópico, permitindo respostas encadeadas e upload de arquivos."""
     if topico.fechado:
         raise DiscussaoError(_("Tópico fechado para novas respostas."))
-    return RespostaDiscussao.objects.create(
+    validar_arquivo_discussao(arquivo)
+    resposta = RespostaDiscussao(
         topico=topico,
         autor=autor,
         conteudo=conteudo,
         reply_to=reply_to,
         arquivo=arquivo,
     )
+    resposta.full_clean()
+    resposta.save()
+    return resposta
 
 
 def votar_interacao(*, user: User, obj: models.Model, valor: int) -> InteracaoDiscussao:
