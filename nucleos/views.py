@@ -23,14 +23,10 @@ from django.views.generic import (
 )
 
 from accounts.models import UserType
+from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
 
-from .forms import (
-    NucleoForm,
-    NucleoSearchForm,
-    ParticipacaoDecisaoForm,
-    SuplenteForm,
-)
+from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from .services import gerar_convite_nucleo
 from .tasks import (
@@ -52,7 +48,8 @@ class NucleoListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         q = self.request.GET.get("q", "")
-        cache_key = f"nucleos_list:{user.id}:{q}"
+        version = get_cache_version("nucleos_list")
+        cache_key = f"nucleos_list:v{version}:{user.id}:{q}"
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
@@ -99,7 +96,8 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         user = self.request.user
         q = self.request.GET.get("q", "")
-        cache_key = f"nucleos_meus:{user.id}:{q}"
+        version = get_cache_version("nucleos_meus")
+        cache_key = f"nucleos_meus:v{version}:{user.id}:{q}"
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
@@ -315,6 +313,7 @@ class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
             return HttpResponse("")
         messages.success(request, _("Membro removido do núcleo."))
         return redirect("nucleos:detail", pk=pk)
+
 
 class MembroPromoverView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):

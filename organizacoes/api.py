@@ -1,21 +1,23 @@
 from __future__ import annotations
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.core.cache import cache
-from sentry_sdk import capture_exception
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from sentry_sdk import capture_exception
 
 from accounts.models import UserType
 from accounts.serializers import UserSerializer
 from agenda.models import Evento
 from agenda.serializers import EventoSerializer
+from core.cache import get_cache_version
+from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 from empresas.models import Empresa
 from empresas.serializers import EmpresaSerializer
 from feed.api import PostSerializer
@@ -25,8 +27,7 @@ from financeiro.serializers import CentroCustoSerializer
 from nucleos.models import Nucleo
 from nucleos.serializers import NucleoSerializer
 
-from core.permissions import IsOrgAdminOrSuperuser, IsRoot
-
+from .metrics import detail_latency_seconds, list_latency_seconds
 from .models import (
     Organizacao,
     OrganizacaoAtividadeLog,
@@ -41,7 +42,6 @@ from .serializers import (
     OrganizacaoSerializer,
 )
 from .tasks import organizacao_alterada
-from .metrics import list_latency_seconds, detail_latency_seconds
 
 
 class OrganizacaoViewSet(viewsets.ModelViewSet):
@@ -51,12 +51,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     cache_timeout = 60
 
     def get_queryset(self):
-        qs = (
-            super()
-            .get_queryset()
-            .select_related("created_by")
-            .prefetch_related("users")
-        )
+        qs = super().get_queryset().select_related("created_by").prefetch_related("users")
         user = self.request.user
         if (
             user.is_superuser
@@ -120,6 +115,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
 
     def _cache_key(self, request) -> str:
         params = request.query_params
+        version = get_cache_version("organizacoes_list")
         keys = [
             str(getattr(request.user, "pk", "")),
             params.get("search", ""),
@@ -131,7 +127,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             params.get("page", ""),
             params.get("page_size", ""),
         ]
-        return "organizacoes_list_" + "_".join(keys)
+        return f"organizacoes_list_v{version}_" + "_".join(keys)
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
         with list_latency_seconds.time():
@@ -207,9 +203,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                 usuario=request.user,
                 acao="inactivated",
             )
-            organizacao_alterada.send(
-                sender=self.__class__, organizacao=organizacao, acao="inactivated"
-            )
+            organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="inactivated")
             serializer = self.get_serializer(organizacao)
             return Response(serializer.data)
         except Exception as e:  # pragma: no cover - auditing
@@ -229,9 +223,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                 usuario=request.user,
                 acao="reactivated",
             )
-            organizacao_alterada.send(
-                sender=self.__class__, organizacao=organizacao, acao="reactivated"
-            )
+            organizacao_alterada.send(sender=self.__class__, organizacao=organizacao, acao="reactivated")
             serializer = self.get_serializer(organizacao)
             return Response(serializer.data)
         except Exception as e:  # pragma: no cover - auditing
@@ -248,17 +240,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                 from django.http import HttpResponse
 
                 response = HttpResponse(content_type="text/csv")
-                response[
-                    "Content-Disposition"
-                ] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+                response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
                 writer = csv.writer(response)
-                writer.writerow(
-                    ["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"]
-                )
-                for log in (
-                    OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-                    .order_by("-created_at")
-                ):
+                writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
+                for log in OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
                     writer.writerow(
                         [
                             "change",
@@ -269,10 +254,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                             log.created_at.isoformat(),
                         ]
                     )
-                for log in (
-                    OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-                    .order_by("-created_at")
-                ):
+                for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
                     writer.writerow(
                         [
                             "activity",
@@ -284,14 +266,10 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
                         ]
                     )
                 return response
-            change_logs = (
-                OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")[:10]
-            )
-            atividade_logs = (
-                OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")[:10]
-            )
+            change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at")[:10]
+            atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by(
+                "-created_at"
+            )[:10]
             change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
             atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
             return Response({"changes": change_ser.data, "activities": atividade_ser.data})
@@ -339,9 +317,7 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
         search = request.query_params.get("search")
         if search:
             qs = qs.filter(
-                Q(first_name__icontains=search)
-                | Q(last_name__icontains=search)
-                | Q(username__icontains=search)
+                Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(username__icontains=search)
             )
         page = self.paginate_queryset(qs)
         if page is not None:

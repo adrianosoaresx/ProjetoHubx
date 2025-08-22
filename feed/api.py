@@ -12,7 +12,9 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.storage import default_storage
 from django.db import connection
-from django.db.models import Count, Q, OuterRef, Subquery
+from django.db.models import Count, OuterRef, Q, Subquery
+from django.http import HttpResponse
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ratelimit.core import is_ratelimited
@@ -21,24 +23,17 @@ from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from django.http import HttpResponse
-from django.template.loader import render_to_string
 
+from core.cache import get_cache_version
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
 from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
-REACTIONS_TOTAL = Counter(
-    "feed_reactions_total", "Total de reações registradas", ["vote"]
-)
-POST_VIEWS_TOTAL = Counter(
-    "feed_post_views_total", "Total de visualizações de posts"
-)
-POST_VIEW_DURATION = Histogram(
-    "feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos"
-)
+REACTIONS_TOTAL = Counter("feed_reactions_total", "Total de reações registradas", ["vote"])
+POST_VIEWS_TOTAL = Counter("feed_post_views_total", "Total de visualizações de posts")
+POST_VIEW_DURATION = Histogram("feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos")
 LIKES_TOTAL = Counter("feed_likes_total", "Total de curtidas registradas")
 
 
@@ -49,7 +44,6 @@ def _dec_counter(metric: Counter) -> None:
 class CanModerate(permissions.BasePermission):
     def has_permission(self, request, view):  # pragma: no cover - simples
         return request.user.has_perm("feed.change_moderacaopost")
-
 
 
 class IsCommentAuthorOrModerator(permissions.BasePermission):
@@ -74,13 +68,12 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class CanEditPost(permissions.BasePermission):
     """Permite edição apenas ao autor ou a quem possui ``feed.change_post``."""
 
     def has_object_permission(self, request, view, obj):
         return obj.autor == request.user or request.user.has_perm("feed.change_post")
-
-
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -315,6 +308,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def _cache_key(self, request) -> str:
         params = request.query_params
+        version = get_cache_version("feed_list")
         keys = [
             str(request.user.pk),
             *(
@@ -330,7 +324,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 ]
             ),
         ]
-        return "feed:api:" + ":".join(keys)
+        return f"feed:api:v{version}:" + ":".join(keys)
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
         if is_ratelimited(
@@ -409,9 +403,7 @@ class PostViewSet(viewsets.ModelViewSet):
         vote = request.data.get("vote")
         if vote not in Reacao.Tipo.values:
             return Response({"detail": "Voto inválido."}, status=status.HTTP_400_BAD_REQUEST)
-        reacao = Reacao.all_objects.filter(
-            post=post, user=request.user, vote=vote
-        ).first()
+        reacao = Reacao.all_objects.filter(post=post, user=request.user, vote=vote).first()
         if reacao and not reacao.deleted:
             reacao.deleted = True
             reacao.save(update_fields=["deleted"])
@@ -431,9 +423,7 @@ class PostViewSet(viewsets.ModelViewSet):
             reacao.deleted = False
             reacao.save(update_fields=["deleted"])
         else:
-            reacao = Reacao.all_objects.create(
-                post=post, user=request.user, vote=vote
-            )
+            reacao = Reacao.all_objects.create(post=post, user=request.user, vote=vote)
         REACTIONS_TOTAL.labels(vote=vote).inc()
         cache.delete(f"post_reacoes:{post.id}")
         return Response({"vote": vote}, status=status.HTTP_201_CREATED)
@@ -444,19 +434,13 @@ class PostViewSet(viewsets.ModelViewSet):
         cache_key = f"post_reacoes:{post.id}"
         data = cache.get(cache_key)
         if data is None:
-            counts = (
-                Reacao.objects.filter(post=post, deleted=False)
-                .values("vote")
-                .annotate(count=Count("id"))
-            )
+            counts = Reacao.objects.filter(post=post, deleted=False).values("vote").annotate(count=Count("id"))
             data = {c["vote"]: c["count"] for c in counts}
             cache.set(cache_key, data, self.cache_timeout)
         user_reaction = None
         if request.user.is_authenticated:
             user_reaction = (
-                Reacao.objects.filter(
-                    post=post, user=request.user, deleted=False
-                )
+                Reacao.objects.filter(post=post, user=request.user, deleted=False)
                 .values_list("vote", flat=True)
                 .first()
             )
@@ -471,9 +455,7 @@ class PostViewSet(viewsets.ModelViewSet):
     )
     def open_view(self, request, pk=None):
         post = self.get_object()
-        PostView.objects.create(
-            post=post, user=request.user, opened_at=timezone.now()
-        )
+        PostView.objects.create(post=post, user=request.user, opened_at=timezone.now())
         POST_VIEWS_TOTAL.inc()
         return Response(status=status.HTTP_201_CREATED)
 
@@ -486,11 +468,7 @@ class PostViewSet(viewsets.ModelViewSet):
     def close_view(self, request, pk=None):
         post = self.get_object()
         view = (
-            PostView.objects.filter(
-                post=post, user=request.user, closed_at__isnull=True
-            )
-            .order_by("-opened_at")
-            .first()
+            PostView.objects.filter(post=post, user=request.user, closed_at__isnull=True).order_by("-opened_at").first()
         )
         if not view:
             return Response(status=status.HTTP_404_NOT_FOUND)
