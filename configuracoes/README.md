@@ -87,3 +87,9 @@ Para gerar e compilar as traduções (inglês e espanhol):
 python manage.py makemessages -l en -l es
 python manage.py compilemessages
 ```
+
+## Frontend
+
+A lógica de alternância de campos e atualização de idioma/tema da aba
+**Preferências** está localizada em `static/configuracoes/preferencias.js` e é
+incluída nos templates via tag `{% static %}`.

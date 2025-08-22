@@ -1,4 +1,4 @@
-{% load widget_tweaks i18n %}
+{% load widget_tweaks i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
 <form method="post" hx-post="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" class="space-y-4">
   {% csrf_token %}
@@ -135,62 +135,16 @@
   <div class="text-right pt-2">
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar Alterações' %}</button>
   </div>
+  <div id="preferencias-config"
+       data-chk-email="{{ preferencias_form.receber_notificacoes_email.auto_id }}"
+       data-chk-whats="{{ preferencias_form.receber_notificacoes_whatsapp.auto_id }}"
+       data-chk-push="{{ preferencias_form.receber_notificacoes_push.auto_id }}"
+       data-sel-email="{{ preferencias_form.frequencia_notificacoes_email.auto_id }}"
+       data-sel-whats="{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}"
+       data-sel-push="{{ preferencias_form.frequencia_notificacoes_push.auto_id }}"
+       data-tema="{{ preferencias_form.instance.tema }}"
+       data-idioma="{{ preferencias_form.instance.idioma }}"
+       data-updated-preferences="{{ updated_preferences|yesno:'true,false' }}">
+  </div>
+  <script src="{% static 'configuracoes/preferencias.js' %}"></script>
 </form>
-<script>
-  (function() {
-    const chkEmail = document.getElementById('{{ preferencias_form.receber_notificacoes_email.auto_id }}');
-    const chkWhats = document.getElementById('{{ preferencias_form.receber_notificacoes_whatsapp.auto_id }}');
-    const chkPush = document.getElementById('{{ preferencias_form.receber_notificacoes_push.auto_id }}');
-    const selEmail = document.getElementById('{{ preferencias_form.frequencia_notificacoes_email.auto_id }}');
-    const selWhats = document.getElementById('{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}');
-    const selPush = document.getElementById('{{ preferencias_form.frequencia_notificacoes_push.auto_id }}');
-
-    function toggleFields() {
-      selEmail.disabled = !chkEmail.checked;
-      selEmail.classList.toggle('hidden', !chkEmail.checked);
-      selWhats.disabled = !chkWhats.checked;
-      selWhats.classList.toggle('hidden', !chkWhats.checked);
-      selPush.disabled = !chkPush.checked;
-      selPush.classList.toggle('hidden', !chkPush.checked);
-
-      const freqEmail = chkEmail.checked ? selEmail.value : '';
-      const freqWhats = chkWhats.checked ? selWhats.value : '';
-      const freqPush = chkPush.checked ? selPush.value : '';
-
-      const showDaily = freqEmail === 'diaria' || freqWhats === 'diaria' || freqPush === 'diaria';
-      const showWeekly = freqEmail === 'semanal' || freqWhats === 'semanal' || freqPush === 'semanal';
-      const hasHoraDiariaError = document.querySelector('#campo-hora-diaria [role="alert"]') !== null;
-      const hasHoraSemanalError = document.querySelector('#campo-hora-semanal [role="alert"]') !== null;
-      const hasDiaSemanalError = document.querySelector('#campo-dia-semanal [role="alert"]') !== null;
-
-      document.getElementById('campo-hora-diaria').classList.toggle('hidden', !(showDaily || hasHoraDiariaError));
-      document.getElementById('campo-hora-semanal').classList.toggle('hidden', !(showWeekly || hasHoraSemanalError));
-      document.getElementById('campo-dia-semanal').classList.toggle('hidden', !(showWeekly || hasDiaSemanalError));
-    }
-
-    selEmail.addEventListener('change', toggleFields);
-    selWhats.addEventListener('change', toggleFields);
-    selPush.addEventListener('change', toggleFields);
-    chkEmail.addEventListener('change', toggleFields);
-    chkWhats.addEventListener('change', toggleFields);
-    chkPush.addEventListener('change', toggleFields);
-
-    toggleFields();
-  })();
-</script>
-{% if updated_preferences %}
-<script>
-  (function () {
-    const tema = "{{ preferencias_form.instance.tema }}";
-    const idioma = "{{ preferencias_form.instance.idioma }}";
-    localStorage.setItem('tema', tema);
-    document.cookie = `tema=${tema};path=/`;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme = tema === 'automatico' ? (prefersDark ? 'escuro' : 'claro') : tema;
-    document.documentElement.classList.toggle('dark', theme === 'escuro');
-    localStorage.setItem('idioma', idioma);
-    document.cookie = `django_language=${idioma};path=/`;
-    document.documentElement.setAttribute('lang', idioma);
-  })();
-</script>
-{% endif %}
