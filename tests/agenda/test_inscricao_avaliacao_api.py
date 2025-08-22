@@ -8,7 +8,7 @@ from rest_framework import status
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
 from agenda.factories import EventoFactory
-from agenda.models import InscricaoEvento
+from agenda.models import FeedbackNota, InscricaoEvento
 
 pytestmark = pytest.mark.django_db
 
@@ -33,9 +33,9 @@ def test_avaliar_inscricao(api_client: APIClient) -> None:
     url = reverse("agenda_api:inscricao-avaliar", args=[inscricao.pk])
     resp = api_client.post(url, {"nota": 5, "feedback": "Ótimo"})
     assert resp.status_code == status.HTTP_200_OK
-    inscricao.refresh_from_db()
-    assert inscricao.avaliacao == 5
-    assert inscricao.feedback == "Ótimo"
+    feedback = FeedbackNota.objects.get(evento=evento, usuario=user)
+    assert feedback.nota == 5
+    assert feedback.comentario == "Ótimo"
     evento_url = reverse("agenda_api:evento-detail", args=[evento.pk])
     resp_evento = api_client.get(evento_url)
     assert resp_evento.status_code == status.HTTP_200_OK
@@ -58,8 +58,7 @@ def test_avaliar_inscricao_antes_evento(api_client: APIClient) -> None:
     url = reverse("agenda_api:inscricao-avaliar", args=[inscricao.pk])
     resp = api_client.post(url, {"nota": 4})
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
-    inscricao.refresh_from_db()
-    assert inscricao.avaliacao is None
+    assert not FeedbackNota.objects.filter(evento=evento, usuario=user).exists()
 
 
 def test_reavaliar_inscricao(api_client: APIClient) -> None:
@@ -79,5 +78,5 @@ def test_reavaliar_inscricao(api_client: APIClient) -> None:
     assert resp1.status_code == status.HTTP_200_OK
     resp2 = api_client.post(url, {"nota": 4})
     assert resp2.status_code == status.HTTP_400_BAD_REQUEST
-    inscricao.refresh_from_db()
-    assert inscricao.avaliacao == 5
+    feedback = FeedbackNota.objects.get(evento=evento, usuario=user)
+    assert feedback.nota == 5

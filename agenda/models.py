@@ -83,24 +83,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     qrcode_url = models.URLField(null=True, blank=True)
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
     posicao_espera = models.PositiveIntegerField(null=True, blank=True)
-    avaliacao = models.PositiveSmallIntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-    )
-    feedback = models.TextField(blank=True)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
 
     class Meta:
         unique_together = ("user", "evento")
-        constraints = [
-            models.CheckConstraint(
-                check=Q(avaliacao__gte=1, avaliacao__lte=5) | Q(avaliacao__isnull=True),
-                name="inscricao_avaliacao_valida",
-            )
-        ]
 
     def confirmar_inscricao(self) -> None:
         if self.evento.participantes_maximo and self.evento.espera_habilitada:
