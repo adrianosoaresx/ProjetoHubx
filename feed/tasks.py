@@ -10,9 +10,13 @@ from botocore.exceptions import ClientError
 from notificacoes.services.notificacoes import enviar_para_usuario
 from organizacoes.models import Organizacao
 
+from datetime import timedelta
+
+from django.utils import timezone
+
 from feed.application.plugins_loader import load_plugins_for
 
-from .models import Post
+from .models import FeedPluginConfig, Post
 
 POSTS_CREATED = Counter("feed_posts_created_total", "Total de posts criados")
 NOTIFICATIONS_SENT = Counter(
@@ -111,9 +115,21 @@ def executar_plugins() -> None:
         user = User.objects.filter(organizacao=org).first()
         if not user:
             continue
+        configs = {
+            c.module_path: c for c in FeedPluginConfig.objects.filter(organizacao=org)
+        }
         for plugin in load_plugins_for(org):
+            module_path = f"{plugin.__class__.__module__}.{plugin.__class__.__name__}"
+            config = configs.get(module_path)
+            if not config:
+                continue
+            now = timezone.now()
+            if config.last_run and now - config.last_run < timedelta(minutes=config.frequency):
+                continue
             try:
                 plugin.render(user)
             except Exception:  # pragma: no cover - melhor esforço
                 continue
+            config.last_run = now
+            config.save(update_fields=["last_run"])
 
