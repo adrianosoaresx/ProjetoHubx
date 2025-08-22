@@ -168,6 +168,7 @@
   <script src="{% static 'notificacoes/js/push_socket.js' %}"></script>
   <script src="{% static 'js/vendor/htmx-1.9.12.min.js' %}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
+  <script src="{% static 'js/chat_modal.js' %}"></script>
   <script>
     document.body.addEventListener('htmx:responseError', function (evt) {
       if (evt.detail.xhr.status === 403) {
