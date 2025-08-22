@@ -48,6 +48,7 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .permissions import publicos_permitidos
 from .services import responder_topico
 from .tasks import (
     notificar_melhor_resposta,
@@ -232,6 +233,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
                 score_total=Coalesce(Sum("interacoes__valor"), 0),
             )
         )
+        qs = qs.filter(publico_alvo__in=publicos_permitidos(self.request.user.user_type))
         tags_param = self.request.GET.getlist("tags")
         if tags_param:
             names = [t.strip() for t in tags_param if t.strip()]
@@ -282,6 +284,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
             TopicoDiscussao.objects.select_related("categoria", "autor").prefetch_related("respostas__autor"),
             categoria=categoria,
             slug=self.kwargs["topico_slug"],
+            publico_alvo__in=publicos_permitidos(self.request.user.user_type),
         )
         return obj
 

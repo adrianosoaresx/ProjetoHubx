@@ -28,6 +28,7 @@ from .models import (
     Tag,
     TopicoDiscussao,
 )
+from .permissions import publicos_permitidos
 from .serializers import (
     CategoriaDiscussaoSerializer,
     DenunciaSerializer,
@@ -83,6 +84,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        qs = qs.filter(publico_alvo__in=publicos_permitidos(self.request.user.user_type))
         search = self.request.query_params.get("search")
         if search:
             if connection.vendor == "postgresql":
@@ -114,6 +116,13 @@ class TopicoViewSet(viewsets.ModelViewSet):
                 "-score" if ordering == "score" else "score"
             )
         return qs
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.publico_alvo not in publicos_permitidos(request.user.user_type):
+            raise PermissionDenied()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(autor=self.request.user)
