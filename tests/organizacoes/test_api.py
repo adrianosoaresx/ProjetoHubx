@@ -223,6 +223,47 @@ def test_filter_tipo_cidade_estado(api_client, root_user, faker_ptbr):
     assert str(o1.id) in ids and str(o2.id) not in ids
 
 
+def test_combined_filters(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    o1 = Organizacao.objects.create(
+        nome="Org1",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org1",
+        tipo="ong",
+        cidade="Cidade1",
+        estado="SP",
+    )
+    o2 = Organizacao.objects.create(
+        nome="Org2",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org2",
+        tipo="ong",
+        cidade="Cidade1",
+        estado="SP",
+        inativa=True,
+    )
+    Organizacao.objects.create(
+        nome="Org3",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org3",
+        tipo="empresa",
+        cidade="Cidade2",
+        estado="RJ",
+    )
+    url = reverse("organizacoes_api:organizacao-list")
+    resp = api_client.get(
+        url
+        + "?search=org2&tipo=ong&cidade=Cidade1&estado=SP&inativa=yes"
+    )
+    ids = [o["id"] for o in resp.data]
+    assert ids == [str(o2.id)]
+    resp = api_client.get(
+        url + "?search=org1&tipo=ong&cidade=Cidade1&estado=SP"
+    )
+    ids = [o["id"] for o in resp.data]
+    assert ids == [str(o1.id)]
+
+
 def test_invalid_cnpj_api(api_client, root_user):
     auth(api_client, root_user)
     url = reverse("organizacoes_api:organizacao-list")

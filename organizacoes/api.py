@@ -75,39 +75,36 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             raise e
 
         params = self.request.query_params
-        search = params.get("search")
-        tipo = params.get("tipo")
-        cidade = params.get("cidade")
-        estado = params.get("estado")
-        inativa = params.get("inativa")
-        if inativa is not None:
-            qs = qs.filter(inativa=inativa.lower() == "true")
 
-        search = self.request.query_params.get("search")
-        if search:
-            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
-        inativa = self.request.query_params.get("inativa")
-        if inativa not in (None, ""):
-            value = inativa.lower()
+        action = getattr(self, "action", "")
+
+        def _filter_inativa(queryset, value):
             truthy = {"1", "true", "t", "yes"}
             falsy = {"0", "false", "f", "no"}
-            if value in truthy:
-                qs = qs.filter(inativa=True)
-            elif value in falsy:
-                qs = qs.filter(inativa=False)
-            else:
-                qs = qs.filter(inativa=False)
+            if value not in (None, ""):
+                v = value.lower()
+                if v in truthy:
+                    return queryset.filter(inativa=True)
+                if v in falsy:
+                    return queryset.filter(inativa=False)
+            if action == "list":
+                return queryset.filter(inativa=False)
+            return queryset
 
-        else:
-            qs = qs.filter(inativa=False)
-        if search:
-            qs = qs.filter(Q(nome__icontains=search) | Q(slug__icontains=search))
-        if tipo:
-            qs = qs.filter(tipo=tipo)
-        if cidade:
-            qs = qs.filter(cidade=cidade)
-        if estado:
-            qs = qs.filter(estado=estado)
+        filters = {
+            "search": lambda q, v: q.filter(
+                Q(nome__icontains=v) | Q(slug__icontains=v)
+            ),
+            "tipo": lambda q, v: q.filter(tipo=v),
+            "cidade": lambda q, v: q.filter(cidade=v),
+            "estado": lambda q, v: q.filter(estado=v),
+            "inativa": _filter_inativa,
+        }
+
+        for key, func in filters.items():
+            value = params.get(key)
+            if value not in (None, "") or key == "inativa":
+                qs = func(qs, value)
         ordering = params.get("ordering")
         allowed = {"nome", "tipo", "cidade", "estado", "created_at"}
         if ordering and ordering.lstrip("-") in allowed:
