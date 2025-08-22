@@ -924,6 +924,9 @@ class BriefingEventoStatusView(LoginRequiredMixin, View):
             ),
             pk=pk,
         )
+        if not briefing.can_transition_to(status):
+            messages.error(request, _("Transição de status inválida."))
+            return redirect("agenda:briefing_list")
         now = timezone.now()
         update_fields = ["status", "avaliado_por", "avaliado_em", "updated_at"]
         briefing.avaliado_por = request.user
