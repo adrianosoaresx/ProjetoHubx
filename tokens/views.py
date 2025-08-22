@@ -424,6 +424,20 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
                 "tokens/validar_codigo_autenticacao.html",
                 {"form": form, "success": _("Código validado")},
             )
+        ip = request.META.get("REMOTE_ADDR", "")
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        codigo = getattr(form, "codigo_obj", None)
+        if codigo:
+            if "Código incorreto" not in form.errors.get("codigo", []):
+                codigo.tentativas += 1
+                codigo.save(update_fields=["tentativas"])
+            CodigoAutenticacaoLog.objects.create(
+                codigo=codigo,
+                usuario=request.user,
+                acao=CodigoAutenticacaoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=user_agent,
+            )
         if request.headers.get("HX-Request") == "true":
             return render(
                 request,

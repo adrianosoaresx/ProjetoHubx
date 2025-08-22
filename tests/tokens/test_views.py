@@ -176,6 +176,26 @@ def test_validar_codigo_autenticacao_view(client):
     assert resp.status_code == 400
 
 
+def test_validar_codigo_autenticacao_view_invalido_log(client):
+    user = UserFactory()
+    _login(client, user)
+    codigo = CodigoAutenticacao(usuario=user)
+    codigo.set_codigo("123456")
+    codigo.expira_em = timezone.now() - timezone.timedelta(minutes=1)
+    codigo.save()
+    resp = client.post(
+        reverse("tokens:validar_codigo"),
+        {"codigo": "123456"},
+        HTTP_USER_AGENT="ua-invalid",
+    )
+    assert resp.status_code == 400
+    codigo.refresh_from_db()
+    assert codigo.tentativas == 1
+    log = CodigoAutenticacaoLog.objects.get(codigo=codigo, acao="validacao")
+    assert log.ip == "127.0.0.1"
+    assert log.user_agent == "ua-invalid"
+
+
 def test_validar_codigo_autenticacao_get(client):
     user = UserFactory()
     _login(client, user)
