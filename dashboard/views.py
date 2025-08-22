@@ -586,8 +586,12 @@ class DashboardExportedImageView(LoginRequiredMixin, View):
     def get(self, request, filename: str):
         if request.user.user_type not in {UserType.ROOT, UserType.ADMIN, UserType.COORDENADOR}:
             return HttpResponse(status=403)
-        path = EXPORT_DIR / filename
-        if not path.exists():
+        try:
+            path = (EXPORT_DIR / filename).resolve(strict=True)
+            path.relative_to(EXPORT_DIR.resolve())
+        except (FileNotFoundError, ValueError):
+            return HttpResponse(status=404)
+        if not path.is_file():
             return HttpResponse(status=404)
         return FileResponse(open(path, "rb"), content_type="image/png")
 
