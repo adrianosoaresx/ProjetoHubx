@@ -1,11 +1,12 @@
 import pytest
 from django.urls import reverse
-
-from agenda.models import InscricaoEvento
+from django.utils import timezone
 from datetime import datetime, timedelta
 from django.utils.timezone import make_aware
+from unittest.mock import patch
+
 from accounts.models import User, UserType
-from agenda.models import Evento
+from agenda.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 
@@ -72,3 +73,36 @@ def test_lista_espera(client, usuario_comum, gerente, evento):
     promover_lista_espera(evento.pk)
     ins2.refresh_from_db()
     assert ins2.status == "confirmada"
+
+
+def test_promover_lista_espera_enqueued_on_cancel(gerente, evento):
+    ins = InscricaoEvento.objects.create(
+        user=gerente,
+        evento=evento,
+        status="confirmada",
+        data_confirmacao=timezone.now(),
+    )
+    with patch("agenda.tasks.promover_lista_espera.delay") as delay:
+        ins.cancelar_inscricao()
+    delay.assert_called_once_with(str(evento.pk))
+
+
+def test_promover_lista_espera_enqueued_on_delete(gerente, evento):
+    ins = InscricaoEvento.objects.create(
+        user=gerente,
+        evento=evento,
+        status="confirmada",
+        data_confirmacao=timezone.now(),
+    )
+    with patch("agenda.tasks.promover_lista_espera.delay") as delay:
+        ins.delete()
+    delay.assert_called_once_with(str(evento.pk))
+
+
+def test_promover_lista_espera_enqueued_on_increase(evento):
+    evento.participantes_maximo = 1
+    evento.save()
+    with patch("agenda.tasks.promover_lista_espera.delay") as delay:
+        evento.participantes_maximo = 2
+        evento.save()
+    delay.assert_called_once_with(str(evento.pk))
