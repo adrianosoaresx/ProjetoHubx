@@ -1,9 +1,11 @@
 from django.urls import include, path
+from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog
 
 from configuracoes.views import ConfiguracoesView
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("core/", include(("core.urls", "core"), namespace="core")),
     path("api/notificacoes/", include("notificacoes.api_urls")),

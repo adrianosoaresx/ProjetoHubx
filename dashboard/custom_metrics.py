@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Iterable
 
 from django.db.models import Avg, Sum
 
@@ -41,4 +41,16 @@ class DashboardCustomMetricService:
         if agg == "avg":
             return qs.aggregate(total=Avg(field))["total"] or 0
         raise ValueError("Agregação inválida")
+
+
+DEFAULT_ICON = "fa-chart-bar"
+
+
+def get_metrics_info(metrics: Iterable[Any]) -> Dict[str, Dict[str, str]]:
+    info: Dict[str, Dict[str, str]] = {}
+    for metric in metrics:
+        query = metric.query_spec if isinstance(metric.query_spec, dict) else {}
+        icon = query.get("icon", DEFAULT_ICON)
+        info[metric.code] = {"label": metric.nome, "icon": icon}
+    return info
 

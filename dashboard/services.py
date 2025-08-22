@@ -25,11 +25,16 @@ from tokens.models import TokenUsoLog as UserToken
 from .models import (
     Achievement,
     DashboardConfig,
+    DashboardCustomMetric,
     DashboardFilter,
     DashboardLayout,
     UserAchievement,
 )
 from .utils import get_variation
+from .custom_metrics import (
+    DashboardCustomMetricService,
+    get_metrics_info as get_custom_metrics_info,
+)
 
 
 def log_filter_action(
@@ -589,14 +594,14 @@ class DashboardMetricsService:
                 Empresa.objects.select_related("usuario", "usuario__organizacao"),
                 "created_at",
             ),
-            "num_eventos": (Evento.objects.select_related("nucleo"), "created"),
+            "num_eventos": (Evento.objects.select_related("nucleo"), "created_at"),
             "num_posts_feed_total": (
                 Post.objects.select_related("organizacao", "nucleo", "evento", "autor__organizacao"),
                 "created_at",
             ),
             "num_mensagens_chat": (
                 ChatMessage.objects.select_related("channel"),
-                "created",
+                "created_at",
             ),
             "num_topicos": (
                 TopicoDiscussao.objects.select_related(
@@ -604,7 +609,7 @@ class DashboardMetricsService:
                     "nucleo",
                     "evento",
                 ),
-                "created",
+                "created_at",
             ),
             "num_respostas": (
                 RespostaDiscussao.objects.select_related(
@@ -612,7 +617,7 @@ class DashboardMetricsService:
                     "topico__nucleo",
                     "topico__evento",
                 ),
-                "created",
+                "created_at",
             ),
             "lancamentos_pendentes": (
                 LancamentoFinanceiro.objects.select_related("centro_custo").filter(
@@ -766,6 +771,33 @@ class DashboardMetricsService:
                 ),
                 "crescimento": 0.0,
             }
+
+        # custom metrics
+        metric_scope = escopo
+        if metric_scope == "auto":
+            if evento_id:
+                metric_scope = "evento"
+            elif nucleo_id:
+                metric_scope = "nucleo"
+            elif organizacao_id:
+                metric_scope = "organizacao"
+            else:
+                metric_scope = "global"
+
+        custom_qs = DashboardCustomMetric.objects.filter(escopo=metric_scope)
+        if metricas:
+            custom_qs = custom_qs.filter(code__in=metricas)
+
+        custom_metrics_info = get_custom_metrics_info(custom_qs)
+        exec_params = {k: v for k, v in filters.items() if k != "metricas"}
+        for metric in custom_qs:
+            total = DashboardCustomMetricService.execute(metric.query_spec, **exec_params)
+            metrics[metric.code] = {"total": total, "crescimento": 0.0}
+
+        if custom_metrics_info:
+            from .views import METRICAS_INFO  # type: ignore
+
+            METRICAS_INFO.update(custom_metrics_info)
 
         cache.set(cache_key, metrics, 300)
         return metrics
