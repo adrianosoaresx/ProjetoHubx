@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 from feed.factories import PostFactory
 from dashboard.models import DashboardCustomMetric
 from dashboard.custom_metrics import DashboardCustomMetricService
+from dashboard.services import DashboardMetricsService
 
 pytestmark = pytest.mark.django_db
 
@@ -50,4 +51,29 @@ def test_custom_metric_api(admin_user):
     resp = client.get(url)
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
+    PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
+    metric = DashboardCustomMetric.objects.create(
+        code="post_count",
+        nome="Total Posts",
+        descricao="",
+        query_spec={
+            "source": "posts",
+            "aggregation": "count",
+            "filters": {"organizacao_id": "$organizacao_id"},
+            "icon": "fa-star",
+        },
+        escopo="organizacao",
+    )
+    from dashboard import views
+
+    monkeypatch.setattr(views, "METRICAS_INFO", views.METRICAS_INFO.copy())
+    metrics = DashboardMetricsService.get_metrics(
+        admin_user, metricas=[metric.code], organizacao_id=admin_user.organizacao_id
+    )
+    assert metrics[metric.code]["total"] == 1
+    assert views.METRICAS_INFO[metric.code]["label"] == "Total Posts"
+    assert views.METRICAS_INFO[metric.code]["icon"] == "fa-star"
 
