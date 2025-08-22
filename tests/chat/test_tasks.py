@@ -1,7 +1,10 @@
-import pytest
-
+import importlib
+import sys
 from datetime import timedelta
+from unittest.mock import Mock
+import types
 
+import pytest
 from django.core.files.storage import default_storage
 from django.utils import timezone
 
@@ -12,7 +15,25 @@ from chat.tasks import exportar_historico_chat, limpar_exports_antigos
 pytestmark = pytest.mark.django_db
 
 
-def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenador_user, nucleo):
+@pytest.mark.parametrize("module_path", ["chat.tasks", "chat.api_views"])
+def test_scan_file_logs_exception(monkeypatch, module_path):
+    class DummySocket:
+        def scan(self, path):  # pragma: no cover - test stub
+            raise RuntimeError("fail")
+
+    dummy_module = types.SimpleNamespace(ClamdNetworkSocket=DummySocket)
+    monkeypatch.setitem(sys.modules, "clamd", dummy_module)
+
+    captured = Mock()
+    monkeypatch.setattr(f"{module_path}.sentry_sdk.capture_exception", captured)
+
+    mod = importlib.import_module(module_path)
+    assert mod._scan_file("/tmp/test") is False
+    assert captured.call_count == 1
+
+
+def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenador_user):
+
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
