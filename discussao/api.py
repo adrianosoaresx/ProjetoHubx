@@ -5,6 +5,7 @@ from datetime import timedelta
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import connection, transaction
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
@@ -14,7 +15,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -232,13 +233,16 @@ class RespostaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         data = serializer.validated_data
-        resposta = responder_topico(
-            topico=data["topico"],
-            autor=self.request.user,
-            conteudo=data["conteudo"],
-            reply_to=data.get("reply_to"),
-            arquivo=data.get("arquivo"),
-        )
+        try:
+            resposta = responder_topico(
+                topico=data["topico"],
+                autor=self.request.user,
+                conteudo=data["conteudo"],
+                reply_to=data.get("reply_to"),
+                arquivo=data.get("arquivo"),
+            )
+        except DjangoValidationError as exc:
+            raise ValidationError(exc.messages)
         serializer.instance = resposta
         notificar_nova_resposta.delay(resposta.id)
         cache.clear()
