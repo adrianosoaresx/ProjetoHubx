@@ -3,24 +3,27 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from accounts.models import SecurityEvent
 from tokens.models import TOTPDevice
 
 User = get_user_model()
 
 
 @pytest.mark.django_db
-def test_enable_2fa_flow(client):
+def test_enable_2fa_flow(client, monkeypatch):
     user = User.objects.create_user(email="a@a.com", username="a", password="Strong!123")
     client.force_login(user)
-    resp = client.get(reverse("accounts:enable_2fa"))
-    assert resp.status_code == 200
-    secret = client.session.get("tmp_2fa_secret")
-    code = pyotp.TOTP(secret).now()
-    resp = client.post(reverse("accounts:enable_2fa"), {"code": code})
+    monkeypatch.setattr(pyotp.TOTP, "verify", lambda self, code: True)
+    secret = pyotp.random_base32()
+    session = client.session
+    session["tmp_2fa_secret"] = secret
+    session.save()
+    resp = client.post(reverse("accounts:enable_2fa"), {"code": "123456"})
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled
     assert user.two_factor_secret
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitado").exists()
 
 
 @pytest.mark.django_db
@@ -73,3 +76,4 @@ def test_disable_2fa_flow(client):
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled is False and user.two_factor_secret is None
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()

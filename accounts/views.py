@@ -148,6 +148,11 @@ def enable_2fa(request):
                     "deleted_at": None,
                 },
             )
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_habilitado",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             del request.session["tmp_2fa_secret"]
             messages.success(request, _("Verificação em duas etapas ativada."))
             return redirect("accounts:seguranca")
@@ -167,6 +172,11 @@ def disable_2fa(request):
             user.two_factor_enabled = False
             user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
             TOTPDevice.objects.filter(usuario=user).delete()
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_desabilitado",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
             messages.success(request, _("Verificação em duas etapas desativada."))
             return redirect("accounts:seguranca")
         messages.error(request, _("Código inválido."))
