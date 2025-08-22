@@ -85,14 +85,12 @@ class EventoSerializer(serializers.ModelSerializer):
         )
 
     def get_nota_media(self, obj: Evento):
-        notas = obj.inscricoes.filter(avaliacao__isnull=False).values_list("avaliacao", flat=True)
-        if not notas:
-            return None
-        return round(sum(notas) / len(notas), 2)
+        media = obj.calcular_media_feedback()
+        return round(media, 2) if media else None
 
     def get_distribuicao_notas(self, obj: Evento):
         dist = {str(i): 0 for i in range(1, 6)}
-        for nota in obj.inscricoes.filter(avaliacao__isnull=False).values_list("avaliacao", flat=True):
+        for nota in obj.feedbacks.values_list("nota", flat=True):
             dist[str(nota)] += 1
         return dist
 
@@ -135,8 +133,6 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             "qrcode_url",
             "check_in_realizado_em",
             "posicao_espera",
-            "avaliacao",
-            "feedback",
             "created_at",
             "updated_at",
         )

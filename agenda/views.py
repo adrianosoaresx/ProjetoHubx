@@ -473,14 +473,13 @@ class EventoFeedbackView(LoginRequiredMixin, View):
 
         if nota not in range(1, 6):
             return HttpResponseForbidden("Nota fora do intervalo permitido (1–5).")
-
-        FeedbackNota.objects.update_or_create(
+        if FeedbackNota.objects.filter(evento=evento, usuario=usuario).exists():
+            return HttpResponseForbidden("Feedback já enviado.")
+        FeedbackNota.objects.create(
             evento=evento,
             usuario=usuario,
-            defaults={
-                "nota": nota,
-                "comentario": request.POST.get("comentario", ""),
-            },
+            nota=nota,
+            comentario=request.POST.get("comentario", ""),
         )
         EventoLog.objects.create(
             evento=evento,
