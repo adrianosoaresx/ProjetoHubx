@@ -225,7 +225,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
         qs = (
             TopicoDiscussao.objects.filter(categoria=self.categoria)
             .select_related("categoria", "autor")
-            .prefetch_related("respostas")
+            .prefetch_related("tags")
             .annotate(
                 num_comentarios=Count("respostas"),
                 last_activity=Max("respostas__created_at"),
@@ -246,10 +246,17 @@ class TopicoListView(LoginRequiredMixin, ListView):
                     + SearchVector("respostas__conteudo", weight="C")
                 )
                 search_query = SearchQuery(query)
-                qs = qs.annotate(rank=SearchRank(vector, search_query)).filter(rank__gt=0).order_by("-rank")
+                qs = (
+                    qs.annotate(rank=SearchRank(vector, search_query))
+                    .filter(rank__gt=0)
+                    .order_by("-rank")
+                    .distinct()
+                )
             else:
                 qs = qs.filter(
-                    Q(titulo__icontains=query) | Q(conteudo__icontains=query) | Q(respostas__conteudo__icontains=query)
+                    Q(titulo__icontains=query)
+                    | Q(conteudo__icontains=query)
+                    | Q(respostas__conteudo__icontains=query)
                 ).distinct()
         if ordenacao == "comentados":
             qs = qs.order_by("-num_comentarios")
