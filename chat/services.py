@@ -69,7 +69,12 @@ def _usuario_no_contexto(user: User, contexto_tipo: str, contexto_id: Optional[s
     """Retorna ``True`` se o ``user`` pertence ao contexto especificado."""
     if contexto_tipo == "organizacao":
         return str(user.organizacao_id) == str(contexto_id)
-    if contexto_tipo in {"nucleo", "privado"}:
+    if contexto_tipo == "privado":
+        if not contexto_id:
+            return False
+        participa, info, suspenso = user_belongs_to_nucleo(user, contexto_id)
+        return participa and info.endswith("ativo") and not suspenso
+    if contexto_tipo == "nucleo":
         if not contexto_id:
             return True
         participa, info, suspenso = user_belongs_to_nucleo(user, contexto_id)

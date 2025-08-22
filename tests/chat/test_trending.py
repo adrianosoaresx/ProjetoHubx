@@ -4,15 +4,17 @@ from django.urls import reverse
 from chat.models import TrendingTopic
 from chat.services import criar_canal, enviar_mensagem
 from chat.tasks import calcular_trending_topics
+from django.test import override_settings
 
 pytestmark = pytest.mark.django_db
 
 
-def test_calcular_trending_topics_endpoint(admin_user, coordenador_user, client):
+@override_settings(ROOT_URLCONF="chat.api_urls")
+def test_calcular_trending_topics_endpoint(admin_user, coordenador_user, client, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -26,7 +28,7 @@ def test_calcular_trending_topics_endpoint(admin_user, coordenador_user, client)
     assert any(t.palavra == "legal" and t.frequencia == 3 for t in topics)
 
     client.force_login(admin_user)
-    url = reverse("chat_api:chat-trending")
+    url = reverse("chat-trending")
     resp = client.get(url, {"canal": canal.id, "dias": 30})
     assert resp.status_code == 200
     data = resp.json()

@@ -22,12 +22,12 @@ def in_memory_channel_layer(settings):
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
-def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user):
+def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[coordenador_user],
@@ -51,12 +51,12 @@ def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user
     asyncio.run(inner())
 
 
-def test_consumer_send_file_url(admin_user, coordenador_user):
+def test_consumer_send_file_url(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[coordenador_user],
@@ -76,12 +76,12 @@ def test_consumer_send_file_url(admin_user, coordenador_user):
     asyncio.run(inner())
 
 
-def test_consumer_send_reply(admin_user, coordenador_user):
+def test_consumer_send_reply(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[coordenador_user],
@@ -102,12 +102,12 @@ def test_consumer_send_reply(admin_user, coordenador_user):
     asyncio.run(inner())
 
 
-def test_consumer_rejects_non_participant(admin_user, associado_user):
+def test_consumer_rejects_non_participant(admin_user, associado_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[],
@@ -121,7 +121,7 @@ def test_consumer_rejects_non_participant(admin_user, associado_user):
     asyncio.run(inner())
 
 
-def test_flag_via_websocket_hides_message(admin_user):
+def test_flag_via_websocket_hides_message(admin_user, nucleo):
     from django.contrib.auth import get_user_model
 
     async def inner():
@@ -129,10 +129,19 @@ def test_flag_via_websocket_hides_message(admin_user):
         u2 = User.objects.create_user(username="u2", email="u2@x.com", password="x")
         u3 = User.objects.create_user(username="u3", email="u3@x.com", password="x")
         u4 = User.objects.create_user(username="u4", email="u4@x.com", password="x")
+        await database_sync_to_async(ParticipacaoNucleo.objects.create)(
+            user=u2, nucleo=nucleo, status="ativo"
+        )
+        await database_sync_to_async(ParticipacaoNucleo.objects.create)(
+            user=u3, nucleo=nucleo, status="ativo"
+        )
+        await database_sync_to_async(ParticipacaoNucleo.objects.create)(
+            user=u4, nucleo=nucleo, status="ativo"
+        )
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[u2, u3, u4],
@@ -166,12 +175,12 @@ def test_flag_via_websocket_hides_message(admin_user):
     asyncio.run(inner())
 
 
-def test_notification_consumer_receives(admin_user, coordenador_user):
+def test_notification_consumer_receives(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[coordenador_user],
@@ -195,11 +204,11 @@ def test_notification_consumer_receives(admin_user, coordenador_user):
     asyncio.run(inner())
 
 
-def test_react_endpoint_broadcasts(admin_user, coordenador_user, client):
+def test_react_endpoint_broadcasts(admin_user, coordenador_user, client, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -223,12 +232,12 @@ def test_react_endpoint_broadcasts(admin_user, coordenador_user, client):
     asyncio.run(inner())
 
 
-def test_typing_indicator_broadcasts_and_auto_stops(admin_user, coordenador_user):
+def test_typing_indicator_broadcasts_and_auto_stops(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=nucleo.id,
             titulo="Privado",
             descricao="",
             participantes=[coordenador_user],

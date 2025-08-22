@@ -12,11 +12,11 @@ User = get_user_model()
 pytestmark = pytest.mark.django_db
 
 
-def test_criar_canal_adiciona_participantes(admin_user, coordenador_user):
+def test_criar_canal_adiciona_participantes(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -27,16 +27,22 @@ def test_criar_canal_adiciona_participantes(admin_user, coordenador_user):
     assert owner.is_owner and owner.is_admin
 
 
+def test_criar_canal_privado_sem_nucleo(admin_user):
+    with pytest.raises(PermissionError):
+        criar_canal(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=None,
+            titulo="Privado",
+            descricao="",
+            participantes=[],
+        )
+
+
 def test_criar_canal_valida_contexto_nucleo(
     coordenador_user, admin_user, associado_user, nucleo
 ):
     """Garante que apenas usuários do núcleo informado participem."""
-    ParticipacaoNucleo.objects.create(
-        user=coordenador_user, nucleo=nucleo, status="ativo"
-    )
-    ParticipacaoNucleo.objects.create(
-        user=admin_user, nucleo=nucleo, status="ativo"
-    )
     criar_canal(
         criador=coordenador_user,
         contexto_tipo="nucleo",
@@ -68,10 +74,6 @@ def test_criar_canal_valida_contexto_nucleo(
 def test_criar_canal_privado_valida_nucleo(
     admin_user, coordenador_user, associado_user, nucleo
 ):
-    ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")
-    ParticipacaoNucleo.objects.create(
-        user=coordenador_user, nucleo=nucleo, status="ativo"
-    )
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
@@ -101,11 +103,11 @@ def test_criar_canal_privado_valida_nucleo(
         )
 
 
-def test_enviar_mensagem_valida_participacao(admin_user, coordenador_user, associado_user):
+def test_enviar_mensagem_valida_participacao(admin_user, coordenador_user, associado_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -116,11 +118,11 @@ def test_enviar_mensagem_valida_participacao(admin_user, coordenador_user, assoc
         enviar_mensagem(canal, associado_user, "text", conteudo="ola")
 
 
-def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user):
+def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -132,11 +134,11 @@ def test_enviar_mensagem_url_sem_arquivo(admin_user, coordenador_user):
         enviar_mensagem(canal, admin_user, "image", conteudo="not-url")
 
 
-def test_enviar_mensagem_reply_to(admin_user, coordenador_user):
+def test_enviar_mensagem_reply_to(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -146,11 +148,11 @@ def test_enviar_mensagem_reply_to(admin_user, coordenador_user):
     assert msg2.reply_to == msg1
 
 
-def test_enviar_mensagem_reply_to_invalid_channel(admin_user, coordenador_user):
+def test_enviar_mensagem_reply_to_invalid_channel(admin_user, coordenador_user, nucleo):
     canal1 = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -158,7 +160,7 @@ def test_enviar_mensagem_reply_to_invalid_channel(admin_user, coordenador_user):
     canal2 = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado2",
         descricao="",
         participantes=[coordenador_user],
@@ -168,11 +170,11 @@ def test_enviar_mensagem_reply_to_invalid_channel(admin_user, coordenador_user):
         enviar_mensagem(canal2, admin_user, "text", conteudo="ola", reply_to=msg1)
 
 
-def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user):
+def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],
@@ -186,11 +188,11 @@ def test_adicionar_reacao_incrementa_e_limita(admin_user, coordenador_user):
     assert msg.reaction_counts()["👍"] == 1
 
 
-def test_enviar_mensagem_com_attachment_id(admin_user, coordenador_user):
+def test_enviar_mensagem_com_attachment_id(admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
-        contexto_id=None,
+        contexto_id=nucleo.id,
         titulo="Privado",
         descricao="",
         participantes=[coordenador_user],

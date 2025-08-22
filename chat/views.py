@@ -224,7 +224,7 @@ def modal_room(request, user_id):
         channel = criar_canal(
             criador=request.user,
             contexto_tipo="privado",
-            contexto_id=None,
+            contexto_id=request.user.nucleo_id,
             titulo="",
             descricao="",
             participantes=[other],

@@ -27,6 +27,7 @@ from chat.models import (
     ResumoChat,
 )
 from chat.throttles import UploadRateThrottle
+from nucleos.models import ParticipacaoNucleo
 
 User = get_user_model()
 
@@ -45,7 +46,7 @@ def test_list_channels_returns_only_participated(api_client: APIClient, admin_us
     ChatParticipant.objects.create(channel=c2, user=coordenador_user)
     api_client.force_authenticate(admin_user)
     cache.clear()
-    url = reverse("chat_api:chat-channel-list")
+    url = reverse("chat-channel-list")
     resp = api_client.get(url)
     assert resp.status_code == 200
     ids = [item["id"] for item in resp.json()]
@@ -65,16 +66,23 @@ def test_upload_endpoint_saves_metadata(api_client: APIClient, admin_user):
     assert ChatAttachment.objects.filter(id=data["attachment_id"]).exists()
 
 
+@override_settings(ROOT_URLCONF="chat.api_urls")
 def test_create_channel_requires_permission(api_client: APIClient, associado_user):
     api_client.force_authenticate(associado_user)
-    url = reverse("chat_api:chat-channel-list")
-    resp = api_client.post(url, {"contexto_tipo": "privado", "titulo": "x"})
-    assert resp.status_code == 201
-    resp2 = api_client.post(
+    url = reverse("chat-channel-list")
+    resp = api_client.post(
         url,
-        {"contexto_tipo": "nucleo", "contexto_id": uuid.uuid4()},
+        {"contexto_tipo": "nucleo", "contexto_id": str(uuid.uuid4())},
     )
-    assert resp2.status_code == 403
+    assert resp.status_code == 403
+
+
+@override_settings(ROOT_URLCONF="chat.api_urls")
+def test_create_private_channel_requires_context(api_client: APIClient, associado_user):
+    api_client.force_authenticate(associado_user)
+    url = reverse("chat-channel-list")
+    resp = api_client.post(url, {"contexto_tipo": "privado", "titulo": "x"})
+    assert resp.status_code == 400
 
 
 def test_add_and_remove_participant(api_client: APIClient, admin_user, coordenador_user):

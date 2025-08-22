@@ -50,6 +50,15 @@ class ChatChannelSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at", "e2ee_habilitado"]
 
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        contexto_tipo = attrs.get("contexto_tipo")
+        contexto_id = attrs.get("contexto_id")
+        if contexto_tipo == "privado" and not contexto_id:
+            raise serializers.ValidationError(
+                {"contexto_id": "Obrigatório para canal privado"}
+            )
+        return attrs
+
     def create(self, validated_data: dict[str, Any]) -> ChatChannel:
         request = self.context["request"]
         participantes_ids = self.initial_data.get("participantes") or []
