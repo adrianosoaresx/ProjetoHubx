@@ -3,6 +3,8 @@ from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 import os
 
+from .validators import validate_uploaded_file
+
 from .models import (
     BriefingEvento,
     Evento,
@@ -106,15 +108,7 @@ class InscricaoEventoForm(forms.ModelForm):
         arquivo = self.cleaned_data.get("comprovante_pagamento")
         if not arquivo:
             return arquivo
-        ext = os.path.splitext(arquivo.name)[1].lower()
-        if ext in {".jpg", ".jpeg", ".png"}:
-            max_size = 10 * 1024 * 1024
-        elif ext == ".pdf":
-            max_size = 20 * 1024 * 1024
-        else:
-            raise forms.ValidationError(_("Formato de arquivo não permitido."))
-        if arquivo.size > max_size:
-            raise forms.ValidationError(_("Arquivo excede o tamanho máximo permitido."))
+        validate_uploaded_file(arquivo)
         return arquivo
 
 
@@ -141,15 +135,7 @@ class MaterialDivulgacaoEventoForm(forms.ModelForm):
         arquivo = self.cleaned_data.get("arquivo")
         if not arquivo:
             return arquivo
-        ext = os.path.splitext(arquivo.name)[1].lower()
-        if ext in {".jpg", ".jpeg", ".png"}:
-            max_size = 10 * 1024 * 1024
-        elif ext == ".pdf":
-            max_size = 20 * 1024 * 1024
-        else:
-            raise forms.ValidationError(_("Formato de arquivo não permitido."))
-        if arquivo.size > max_size:
-            raise forms.ValidationError(_("Arquivo excede o tamanho máximo permitido."))
+        validate_uploaded_file(arquivo)
         return arquivo
 
     def clean_imagem_thumb(self):
