@@ -16,10 +16,12 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator,
 )
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
@@ -243,6 +245,27 @@ class Evento(TimeStampedModel, SoftDeleteModel):
 
     def endereco_completo(self) -> str:
         return f"{self.local}, {self.cidade} - {self.estado}, {self.cep}"
+
+    def clean(self):
+        super().clean()
+        errors = {}
+        if self.data_fim and self.data_inicio and self.data_fim <= self.data_inicio:
+            errors["data_fim"] = _("A data de fim deve ser posterior à data de início.")
+        positive_fields = [
+            "numero_convidados",
+            "numero_presentes",
+            "valor_ingresso",
+            "orcamento",
+            "orcamento_estimado",
+            "valor_gasto",
+            "participantes_maximo",
+        ]
+        for field in positive_fields:
+            value = getattr(self, field)
+            if value is not None and value <= 0:
+                errors[field] = _("Deve ser um valor positivo.")
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         if self.pk:
