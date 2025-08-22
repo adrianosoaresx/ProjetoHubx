@@ -256,6 +256,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "chat_upload": "20/hour",
         "chat_flag": "10/minute",
+        "testar_notificacao": "5/minute",
     },
 }
 
