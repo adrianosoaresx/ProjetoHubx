@@ -3,6 +3,8 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Q
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -17,20 +19,21 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
-from django.core.cache import cache
-from django.core.exceptions import PermissionDenied, ValidationError
 from sentry_sdk import capture_exception
 
 from accounts.models import UserType
 from agenda.models import Evento
+from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
 from empresas.models import Empresa
 from feed.models import Post
 from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
+
 from .models import Organizacao, OrganizacaoChangeLog, OrganizacaoAtividadeLog
-from .services import registrar_log, serialize_organizacao
+from .services import exportar_logs_csv, registrar_log, serialize_organizacao
+
 from .tasks import organizacao_alterada
 
 User = get_user_model()
@@ -46,6 +49,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 
     def _cache_key(self) -> str:
         params = self.request.GET
+        version = get_cache_version("organizacoes_list")
         keys = [
             str(getattr(self.request.user, "pk", "")),
             params.get("search", ""),
@@ -57,10 +61,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
             params.get("inativa", ""),
             "hx" if self.request.headers.get("HX-Request") else "full",
         ]
-        return "organizacoes_list_" + "_".join(keys)
+        return f"organizacoes_list_v{version}_" + "_".join(keys)
 
     def get_queryset(self):
-
         qs = super().get_queryset().select_related("created_by").prefetch_related("evento_set", "nucleos", "users")
 
         user = self.request.user
@@ -100,18 +103,8 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(pk=user.organizacao_id)
-        context["cidades"] = (
-            qs.exclude(cidade="")
-            .values_list("cidade", flat=True)
-            .distinct()
-            .order_by("cidade")
-        )
-        context["estados"] = (
-            qs.exclude(estado="")
-            .values_list("estado", flat=True)
-            .distinct()
-            .order_by("estado")
-        )
+        context["cidades"] = qs.exclude(cidade="").values_list("cidade", flat=True).distinct().order_by("cidade")
+        context["estados"] = qs.exclude(estado="").values_list("estado", flat=True).distinct().order_by("estado")
         context["inativa"] = self.request.GET.get("inativa", "")
         return context
 
@@ -342,36 +335,8 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 return HttpResponseForbidden()
 
             if request.GET.get("export") == "csv":
-                import csv
-                from django.http import HttpResponse
+                return exportar_logs_csv(org)
 
-                response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
-                writer = csv.writer(response)
-                writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-                for log in OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "change",
-                            log.campo_alterado,
-                            log.valor_antigo,
-                            log.valor_novo,
-                            getattr(log.alterado_por, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "activity",
-                            log.acao,
-                            "",
-                            "",
-                            getattr(log.usuario, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                return response
 
             change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
             atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]

@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.cache import get_cache_version
 from feed.api import NucleoPostSerializer
 from financeiro import atualizar_cobranca
 from services.nucleos import user_belongs_to_nucleo
@@ -153,7 +154,8 @@ class NucleoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(organizacao_id=org)
         page_number = request.query_params.get("page", "1")
         page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
-        cache_key = f"nucleos_list_{org}_{page_number}_{page_size}"
+        version = get_cache_version(f"nucleos_list_{org}")
+        cache_key = f"nucleos_list_{org}_v{version}_{page_number}_{page_size}"
         data = cache.get(cache_key)
         if data is not None:
             resp = Response(data)
@@ -441,9 +443,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
         user_id: str | None = None,
     ):
         nucleo = self.get_object()
-        participacao = get_object_or_404(
-            ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo"
-        )
+        participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo")
         user_pk = participacao.user_id
         participacao.delete()
         atualizar_cobranca(nucleo.id, user_pk, "inativo")
@@ -565,7 +565,8 @@ class NucleoViewSet(viewsets.ModelViewSet):
         nucleo = self.get_object()
         page_number = request.query_params.get("page", "1")
         page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
-        cache_key = f"nucleo_{nucleo.id}_membros_{page_number}_{page_size}"
+        version = get_cache_version(f"nucleo_{nucleo.id}_membros")
+        cache_key = f"nucleo_{nucleo.id}_membros_v{version}_{page_number}_{page_size}"
         data = cache.get(cache_key)
         if data is not None:
             resp = Response(data)
@@ -660,7 +661,8 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
     def metrics(self, request, pk: str | None = None):
         nucleo = self.get_object()
-        cache_key = f"nucleo_{nucleo.id}_metrics"
+        version = get_cache_version(f"nucleo_{nucleo.id}_metrics")
+        cache_key = f"nucleo_{nucleo.id}_metrics_v{version}"
         data = cache.get(cache_key)
         from_cache = True
         if data is None:

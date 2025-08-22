@@ -4,11 +4,13 @@ import subprocess
 import tempfile
 
 import pytest
+from botocore.exceptions import ClientError
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from unittest.mock import Mock
 
-from feed.services import upload_media
+from feed.services import _upload_media, upload_media
 
 @pytest.mark.django_db
 def test_upload_media_capture_exception(monkeypatch, settings):
@@ -46,7 +48,8 @@ def test_upload_media_retries(monkeypatch, settings):
     url = upload_media(file)
     assert url == "ok"
     assert calls["n"] == 3
-=======
+
+
 def _make_video_file() -> SimpleUploadedFile:
     tmp = tempfile.NamedTemporaryFile(suffix=".mp4")
     subprocess.run(
@@ -88,3 +91,11 @@ def test_upload_media_invalid_size():
     )
     with pytest.raises(ValidationError):
         upload_media(big)
+
+
+@pytest.mark.django_db
+def test_upload_media_requires_ffmpeg(monkeypatch):
+    video = _make_video_file()
+    monkeypatch.setattr("feed.services.shutil.which", lambda _: None)
+    with pytest.raises(ValidationError):
+        _upload_media(video)
