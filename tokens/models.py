@@ -222,6 +222,8 @@ class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
         TokenAcesso,
         on_delete=models.CASCADE,
         related_name="logs",
+        null=True,
+        blank=True,
     )
     usuario = models.ForeignKey(
         get_user_model(),
