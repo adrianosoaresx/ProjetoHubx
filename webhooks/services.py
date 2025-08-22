@@ -8,7 +8,6 @@ from typing import Any
 import requests
 
 from .models import WebhookEvent, WebhookSubscription
-from .tasks import deliver_webhook
 
 
 def create_subscription(user, url: str, secret: str) -> WebhookSubscription:
@@ -26,6 +25,8 @@ def emit_event(subscription: WebhookSubscription, event: str, payload: dict[str,
     webhook_event = WebhookEvent.objects.create(
         subscription=subscription, event=event, payload=payload
     )
+    from .tasks import deliver_webhook
+
     deliver_webhook.delay(webhook_event.id)
     return webhook_event
 

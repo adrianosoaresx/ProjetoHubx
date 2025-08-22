@@ -302,6 +302,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "audit.tasks.cleanup_old_logs",
         "schedule": crontab(minute=0, hour=0, day_of_week="sun"),
     },
+    "remover_eventos_antigos": {
+        "task": "webhooks.tasks.remover_eventos_antigos",
+        "schedule": crontab(minute=0, hour=0),
+    },
     "executar_feed_plugins": {  # executa plugins do feed periodicamente
         "task": "feed.tasks.executar_plugins",
         "schedule": crontab(minute="*" if FEED_PLUGINS_INTERVAL_MINUTES == 1 else f"*/{FEED_PLUGINS_INTERVAL_MINUTES}"),
@@ -333,3 +337,4 @@ RATELIMIT_VIEW = "feed.api.ratelimit_exceeded"
 RATELIMIT_CACHE = "default"
 
 AUDIT_LOG_RETENTION_YEARS = int(os.getenv("AUDIT_LOG_RETENTION_YEARS", "5"))
+WEBHOOK_EVENT_RETENTION_DAYS = int(os.getenv("WEBHOOK_EVENT_RETENTION_DAYS", "30"))
