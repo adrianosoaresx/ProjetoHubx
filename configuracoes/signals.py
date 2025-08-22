@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.core.cache import cache
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+import sentry_sdk
 
 from .middleware import get_request_info
 from .models import (
@@ -79,7 +80,7 @@ def log_changes(sender, instance, created, **kwargs):
                 f"configuracoes_{instance.user.id}",
                 {"type": "configuracoes.message", "data": changes},
             )
-        except Exception:
-            pass
+        except Exception as exc:  # pragma: no cover - channels layer failure
+            sentry_sdk.capture_exception(exc)
     if sender is ConfiguracaoConta:
         cache.set(CACHE_KEY.format(id=instance.user_id), instance)
