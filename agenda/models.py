@@ -399,6 +399,17 @@ class BriefingEvento(TimeStampedModel, SoftDeleteModel):
     )
     avaliado_em = models.DateTimeField(null=True, blank=True)
 
+    STATUS_TRANSITIONS = {
+        "rascunho": {"orcamentado"},
+        "orcamentado": {"aprovado", "recusado"},
+        "aprovado": set(),
+        "recusado": set(),
+    }
+
+    def can_transition_to(self, new_status: str) -> bool:
+        """Return whether status can transition to ``new_status``."""
+        return new_status in self.STATUS_TRANSITIONS.get(self.status, set())
+
     objects = SoftDeleteManager()
     all_objects = models.Manager()
 

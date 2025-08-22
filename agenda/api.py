@@ -334,6 +334,8 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def orcamentar(self, request, pk=None):
         briefing = self.get_object()
+        if not briefing.can_transition_to("orcamentado"):
+            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
         briefing.status = "orcamentado"
         briefing.orcamento_enviado_em = timezone.now()
         prazo = request.data.get("prazo_limite_resposta")
@@ -351,6 +353,8 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def aprovar(self, request, pk=None):
         briefing = self.get_object()
+        if not briefing.can_transition_to("aprovado"):
+            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
         briefing.status = "aprovado"
         briefing.aprovado_em = timezone.now()
         briefing.coordenadora_aprovou = True
@@ -366,6 +370,8 @@ class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def recusar(self, request, pk=None):
         briefing = self.get_object()
+        if not briefing.can_transition_to("recusado"):
+            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
         briefing.status = "recusado"
         briefing.motivo_recusa = request.data.get("motivo_recusa", "")
         briefing.recusado_em = timezone.now()
