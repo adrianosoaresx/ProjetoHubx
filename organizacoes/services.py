@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from typing import Any, Dict
 import uuid
+
 import json
 import csv
+
 
 from django.db.models import Model
 from django.http import HttpResponse
@@ -35,7 +37,7 @@ def registrar_log(
     dados_anteriores: Dict[str, Any] | None = None,
     dados_novos: Dict[str, Any] | None = None,
 ) -> None:
-    detalhes = {}
+    detalhes: Dict[str, Any] = {}
     if dados_anteriores is not None:
         detalhes["antes"] = dados_anteriores
     if dados_novos is not None:
@@ -44,7 +46,7 @@ def registrar_log(
         organizacao=organizacao,
         usuario=usuario,
         acao=acao,
-        detalhes=json.dumps(detalhes) if detalhes else "",
+        detalhes=detalhes or {},
     )
 
 

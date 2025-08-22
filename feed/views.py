@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Q, OuterRef, Subquery, Count, Exists
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -18,17 +18,15 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
 
-from .api import _post_rate, _read_rate
-
 from accounts.models import UserType
-from nucleos.models import Nucleo
 from agenda.models import Evento
+from core.cache import get_cache_version
+from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-
+from .api import _post_rate, _read_rate
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
-
 
 
 @login_required
@@ -94,6 +92,7 @@ class FeedListView(LoginRequiredMixin, ListView):
 
     def _cache_key(self, request) -> str:
         params = request.GET
+        version = get_cache_version("feed_list")
         keys = [
             str(request.user.pk),
             *(
@@ -111,7 +110,7 @@ class FeedListView(LoginRequiredMixin, ListView):
                 ]
             ),
         ]
-        return "feed:list:" + ":".join(keys)
+        return f"feed:list:v{version}:" + ":".join(keys)
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
         if is_ratelimited(
@@ -161,12 +160,8 @@ class FeedListView(LoginRequiredMixin, ListView):
                     filter=Q(reacoes__vote="share", reacoes__deleted=False),
                     distinct=True,
                 ),
-                is_bookmarked=Exists(
-                    Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)
-                ),
-                is_flagged=Exists(
-                    Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)
-                ),
+                is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+                is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
             )
         )
         if not user.is_staff:
@@ -365,9 +360,7 @@ def toggle_like(request, pk):
     else:
         Reacao.objects.create(post=post, user=request.user, vote="like")
     if request.headers.get("HX-Request"):
-        html = render_to_string(
-            "feed/_like_button.html", {"post": post, "user": request.user}, request=request
-        )
+        html = render_to_string("feed/_like_button.html", {"post": post, "user": request.user}, request=request)
         return HttpResponse(html)
     return redirect("feed:post_detail", pk=post.id)
 
