@@ -3,12 +3,14 @@ from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from feed.models import FeedPluginConfig
+from freezegun import freeze_time
+from django.utils import timezone
 import feed.tests.sample_plugin as sample_plugin
 
 
 def test_executar_plugins_scheduled(monkeypatch, db, settings):
     org = OrganizacaoFactory()
-    FeedPluginConfig.objects.create(
+    config = FeedPluginConfig.objects.create(
         organizacao=org,
         module_path="feed.tests.sample_plugin.DummyPlugin",
         frequency=1,
@@ -25,7 +27,10 @@ def test_executar_plugins_scheduled(monkeypatch, db, settings):
     schedule = settings.CELERY_BEAT_SCHEDULE["executar_feed_plugins"]
     assert schedule["task"] == "feed.tasks.executar_plugins"
 
-    celery_app.tasks[schedule["task"]].apply()
+    with freeze_time("2024-01-01 00:00:00"):
+        celery_app.tasks[schedule["task"]].apply()
+        config.refresh_from_db()
+        assert config.last_run == timezone.now()
 
     assert called["user"] == user
 
@@ -49,7 +54,14 @@ def test_executar_plugins_periodic(monkeypatch, db):
     monkeypatch.setattr(sample_plugin.DummyPlugin, "render", fake_render, raising=False)
 
     task = celery_app.tasks["feed.tasks.executar_plugins"]
-    task.apply()
-    task.apply()
+    with freeze_time("2024-01-01 00:00:00"):
+        task.apply()
+    with freeze_time("2024-01-01 00:00:30"):
+        task.apply()
+
+    assert calls == [user]
+
+    with freeze_time("2024-01-01 00:01:30"):
+        task.apply()
 
     assert calls == [user, user]
