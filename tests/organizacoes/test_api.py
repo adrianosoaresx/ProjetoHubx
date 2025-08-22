@@ -223,6 +223,47 @@ def test_filter_tipo_cidade_estado(api_client, root_user, faker_ptbr):
     assert str(o1.id) in ids and str(o2.id) not in ids
 
 
+def test_combined_filters(api_client, root_user, faker_ptbr):
+    auth(api_client, root_user)
+    o1 = Organizacao.objects.create(
+        nome="Org1",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org1",
+        tipo="ong",
+        cidade="Cidade1",
+        estado="SP",
+    )
+    o2 = Organizacao.objects.create(
+        nome="Org2",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org2",
+        tipo="ong",
+        cidade="Cidade1",
+        estado="SP",
+        inativa=True,
+    )
+    Organizacao.objects.create(
+        nome="Org3",
+        cnpj=faker_ptbr.cnpj(),
+        slug="org3",
+        tipo="empresa",
+        cidade="Cidade2",
+        estado="RJ",
+    )
+    url = reverse("organizacoes_api:organizacao-list")
+    resp = api_client.get(
+        url
+        + "?search=org2&tipo=ong&cidade=Cidade1&estado=SP&inativa=yes"
+    )
+    ids = [o["id"] for o in resp.data]
+    assert ids == [str(o2.id)]
+    resp = api_client.get(
+        url + "?search=org1&tipo=ong&cidade=Cidade1&estado=SP"
+    )
+    ids = [o["id"] for o in resp.data]
+    assert ids == [str(o1.id)]
+
+
 def test_invalid_cnpj_api(api_client, root_user):
     auth(api_client, root_user)
     url = reverse("organizacoes_api:organizacao-list")
@@ -230,11 +271,23 @@ def test_invalid_cnpj_api(api_client, root_user):
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_history_export_csv(api_client, root_user, faker_ptbr):
+def test_history_export_csv(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="csv")
     OrganizacaoAtividadeLog.objects.create(organizacao=org, acao="created")
+    called = {}
+
+    def fake_exportar_logs_csv(org_arg):
+        from django.http import HttpResponse
+
+        called["org"] = org_arg
+        return HttpResponse("csv", content_type="text/csv")
+
+    monkeypatch.setattr(
+        "organizacoes.api.exportar_logs_csv", fake_exportar_logs_csv
+    )
     url = reverse("organizacoes_api:organizacao-history", args=[org.pk]) + "?export=csv"
     resp = api_client.get(url)
     assert resp.status_code == status.HTTP_200_OK
     assert resp["Content-Type"] == "text/csv"
+    assert called["org"] == org

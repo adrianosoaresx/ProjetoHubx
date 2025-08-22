@@ -4,6 +4,8 @@ from django.conf import settings
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from core.cache import bump_cache_version
+
 from .models import Comment, Post, Reacao
 from .tasks import notificar_autor_sobre_interacao
 from .cache import invalidate_feed_cache
@@ -31,3 +33,4 @@ def notificar_comment(sender, instance, created, **kwargs):
 def limpar_cache_feed(**_kwargs) -> None:
     """Remove entradas de cache relacionadas ao feed."""
     invalidate_feed_cache()
+
