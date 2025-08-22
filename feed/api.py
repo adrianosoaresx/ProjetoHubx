@@ -27,7 +27,7 @@ from django.template.loader import render_to_string
 from feed.application.denunciar_post import DenunciarPost
 from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
-from .models import Bookmark, Comment, Like, ModeracaoPost, Post, PostView, Reacao, Tag
+from .models import Bookmark, Comment, ModeracaoPost, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
 REACTIONS_TOTAL = Counter(
@@ -39,7 +39,6 @@ POST_VIEWS_TOTAL = Counter(
 POST_VIEW_DURATION = Histogram(
     "feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos"
 )
-LIKES_TOTAL = Counter("feed_likes_total", "Total de curtidas registradas")
 
 
 def _dec_counter(metric: Counter) -> None:
@@ -529,7 +528,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
+        model = Reacao
         fields = ["id", "post", "user", "created_at", "updated_at"]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
 
@@ -539,24 +538,33 @@ class LikeViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):  # pragma: no cover - simples
-        return Like.objects.select_related("post", "user").filter(user=self.request.user)
+        return Reacao.objects.select_related("post", "user").filter(
+            user=self.request.user, vote="like"
+        )
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         post = serializer.validated_data["post"]
-        existing = Like.objects.filter(post=post, user=request.user).first()
-        if existing:
-            existing.delete()
-            _dec_counter(LIKES_TOTAL)
+        existing = Reacao.all_objects.filter(
+            post=post, user=request.user, vote="like"
+        ).first()
+        if existing and not existing.deleted:
+            existing.deleted = True
+            existing.save(update_fields=["deleted"])
+            _dec_counter(REACTIONS_TOTAL.labels(vote="like"))
             return Response({"liked": False}, status=status.HTTP_200_OK)
-        serializer.save(user=request.user)
-        LIKES_TOTAL.inc()
+        if existing:
+            existing.deleted = False
+            existing.save(update_fields=["deleted"])
+        else:
+            serializer.save(user=request.user, vote="like")
+        REACTIONS_TOTAL.labels(vote="like").inc()
         return Response({"liked": True}, status=status.HTTP_201_CREATED)
 
-    def perform_destroy(self, instance: Like) -> None:
+    def perform_destroy(self, instance: Reacao) -> None:
         instance.delete()
-        _dec_counter(LIKES_TOTAL)
+        _dec_counter(REACTIONS_TOTAL.labels(vote="like"))
 
 
 class BookmarkSerializer(serializers.ModelSerializer):

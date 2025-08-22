@@ -1,6 +1,6 @@
 # Feed API
 
-Endpoints under `/api/feed/` provide CRUD access to posts, comments, likes and moderações.
+Endpoints under `/api/feed/` provide CRUD access to posts, comments, reações e moderações.
 
 ## Posts
 
@@ -46,10 +46,10 @@ Após a criação de um post, uma tarefa Celery envia notificações para usuár
 mesma organização. Métricas Prometheus acompanham a quantidade de posts e
 notificações enviadas.
 
-## Comments and Likes
+## Comments
 
-`/api/feed/comments/` and `/api/feed/likes/` allow creating and removing comments and likes
-for posts. Authentication is required for all endpoints.
+`/api/feed/comments/` permite criar e remover comentários em posts. Autenticação é
+obrigatória para todos os endpoints.
 
 ## Reações
 
@@ -59,7 +59,9 @@ Reações permitem registrar `like` ou `share` em posts através dos endpoints:
 - `GET /api/feed/posts/{post_id}/reacoes/` retorna contagem agregada e reação do usuário
 - Repetir o `POST` com o mesmo `vote` remove a reação existente
 
-O endpoint dedicado `toggle_like` foi removido; para curtir utilize o `POST` acima com `vote="like"`.
+O endpoint dedicado `toggle_like` foi removido; para curtir utilize o `POST` acima com
+`vote="like"`. O antigo `/api/feed/likes/` permanece disponível apenas para
+retrocompatibilidade e agora utiliza internamente `Reacao` com `vote="like"`.
 
 ## Visualizações
 

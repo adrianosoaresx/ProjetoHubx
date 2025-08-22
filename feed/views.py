@@ -26,8 +26,8 @@ from agenda.models import Evento
 from organizacoes.models import Organizacao
 
 
-from .forms import CommentForm, LikeForm, PostForm
-from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
+from .forms import CommentForm, PostForm
+from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
 
 
 
