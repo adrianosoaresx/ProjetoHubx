@@ -123,6 +123,10 @@ def test_revogar_tokens_expirados():
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.revoked_at is not None
     assert token_db.deleted is True
+    assert token_db.revogado_por == user
+    log = ApiTokenLog.objects.get(token=token_db, acao=ApiTokenLog.Acao.REVOGACAO)
+    assert log.usuario is None
+    assert log.ip is None
 
 
 @override_settings(ROOT_URLCONF="tokens.api_urls")

@@ -23,10 +23,22 @@ def remover_logs_antigos() -> None:
 @shared_task
 def revogar_tokens_expirados() -> None:
     now = timezone.now()
-    ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True).update(
-        revoked_at=now, deleted=True, deleted_at=now
-    )
 
+    tokens = ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True)
+    for token in tokens:
+        token.revoked_at = now
+        token.revogado_por = token.user  # automatic revocation by owner, if any
+        token.deleted = True
+        token.deleted_at = now
+        token.save(
+            update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"]
+        )
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=None,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=None,
+        )
 
 @shared_task
 def send_webhook(payload: dict[str, object]) -> None:
@@ -97,3 +109,4 @@ def reenviar_webhooks_pendentes() -> None:
         if sucesso:
             evento.delivered = True
         evento.save(update_fields=["delivered", "attempts", "last_attempt_at"])
+
