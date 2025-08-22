@@ -135,21 +135,49 @@ class TokenViewSet(viewsets.GenericViewSet):
         try:
             token = find_token_by_code(codigo)
         except TokenAcesso.DoesNotExist:
+            TokenUsoLog.objects.create(
+                token=None,
+                usuario=request.user if request.user.is_authenticated else None,
+                acao=TokenUsoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             tokens_validation_fail_total.inc()
             tokens_validation_latency_seconds.observe(time.perf_counter() - start)
             return Response({"detail": _("Token inválido.")}, status=404)
 
         if token.estado == TokenAcesso.Estado.REVOGADO:
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user if request.user.is_authenticated else None,
+                acao=TokenUsoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             tokens_validation_fail_total.inc()
             tokens_validation_latency_seconds.observe(time.perf_counter() - start)
             return Response({"detail": _("Token revogado.")}, status=status.HTTP_409_CONFLICT)
         if token.estado != TokenAcesso.Estado.NOVO:
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user if request.user.is_authenticated else None,
+                acao=TokenUsoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             tokens_validation_fail_total.inc()
             tokens_validation_latency_seconds.observe(time.perf_counter() - start)
             return Response({"detail": _("Token inválido.")}, status=status.HTTP_409_CONFLICT)
         if token.data_expiracao and token.data_expiracao < timezone.now():
             token.estado = TokenAcesso.Estado.EXPIRADO
             token.save(update_fields=["estado"])
+            TokenUsoLog.objects.create(
+                token=token,
+                usuario=request.user if request.user.is_authenticated else None,
+                acao=TokenUsoLog.Acao.VALIDACAO,
+                ip=ip,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
             tokens_validation_fail_total.inc()
             tokens_validation_latency_seconds.observe(time.perf_counter() - start)
             return Response({"detail": _("Token expirado.")}, status=status.HTTP_409_CONFLICT)
