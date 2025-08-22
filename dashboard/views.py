@@ -435,6 +435,7 @@ class DashboardExportView(LoginRequiredMixin, View):
         periodo = request.GET.get("periodo", "mensal")
         escopo = request.GET.get("escopo", "auto")
         formato = request.GET.get("formato", "csv")
+        audit_action = f"EXPORT_{formato.upper()}"
         inicio_str = request.GET.get("data_inicio")
         fim_str = request.GET.get("data_fim")
         inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
@@ -459,14 +460,41 @@ class DashboardExportView(LoginRequiredMixin, View):
                 **filters,
             )
         except PermissionError:
+            log_audit(
+                user=request.user,
+                action=audit_action,
+                object_type="DashboardMetrics",
+                object_id="",
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                status="ERROR",
+                metadata={"formato": formato, **filters},
+            )
             return _response_with_message(_("Acesso negado"), 403)
         except ValueError as exc:
+            log_audit(
+                user=request.user,
+                action=audit_action,
+                object_type="DashboardMetrics",
+                object_id="",
+                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                status="ERROR",
+                metadata={"formato": formato, **filters},
+            )
             return _response_with_message(str(exc), 400)
 
         if formato == "pdf":
             try:
                 from weasyprint import HTML
             except Exception:
+                log_audit(
+                    user=request.user,
+                    action="EXPORT_PDF",
+                    object_type="DashboardMetrics",
+                    object_id="",
+                    ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                    status="ERROR",
+                    metadata={"formato": formato, **filters},
+                )
                 return _response_with_message(_("PDF indisponível"), 500)
             html = render_to_string("dashboard/export_pdf.html", {"metrics": metrics})
             pdf_bytes = HTML(string=html).write_pdf()
