@@ -20,6 +20,7 @@ channels==4.1.0
 channels_redis==4.2.1
 chardet==5.2.0
 charset-normalizer==3.4.2
+clamd==1.0.2
 click==8.2.1
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
@@ -90,7 +91,7 @@ pbr==6.1.1
 pdfminer.six==20250506
 pdfplumber==0.11.7
 phonenumbers==9.0.7
-pillow==11.2.1
+Pillow==11.3.0
 platformdirs==4.3.8
 pluggy==1.6.0
 prometheus_client==0.20.0
