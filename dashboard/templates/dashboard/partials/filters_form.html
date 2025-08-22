@@ -1,4 +1,13 @@
 {% load i18n %}
+{% if messages %}
+<div id="filter-errors" class="mb-4" aria-live="polite">
+  {% for message in messages %}
+    <div class="bg-red-100 text-red-800 p-2 rounded" role="alert">{{ message }}</div>
+  {% endfor %}
+</div>
+{% else %}
+<div id="filter-errors" aria-live="polite"></div>
+{% endif %}
 <form method="get" class="mb-6 flex flex-wrap gap-4 items-end" aria-label="{% trans 'Filtros do dashboard' %}">
   <div>
     <label for="periodo" class="block text-sm font-medium text-neutral-700">{% trans 'Período' %}</label>

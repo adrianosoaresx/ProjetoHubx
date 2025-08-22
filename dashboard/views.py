@@ -113,13 +113,21 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         except PermissionError:
             messages.error(request, _("Acesso negado"))
             if request.headers.get("Hx-Request") == "true":
-                html = render_to_string("dashboard/partials/messages.html", request=request)
+                html = render_to_string(
+                    "dashboard/partials/filters_form.html",
+                    self.get_filters_context(),
+                    request=request,
+                )
                 return HttpResponse(html, status=403)
             return HttpResponseForbidden(_("Acesso negado"))
         except ValueError as exc:
             messages.error(request, str(exc))
             if request.headers.get("Hx-Request") == "true":
-                html = render_to_string("dashboard/partials/messages.html", request=request)
+                html = render_to_string(
+                    "dashboard/partials/filters_form.html",
+                    self.get_filters_context(),
+                    request=request,
+                )
                 return HttpResponse(html, status=400)
             return HttpResponseBadRequest(str(exc))
 
@@ -171,32 +179,83 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             **filters,
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        metrics = self.get_metrics()
-        context.update(metrics)
-        context["metrics_data"] = metrics
-        context["periodo"] = getattr(self, "periodo", "mensal")
-        context["escopo"] = getattr(self, "escopo", "auto")
-        context["filtros"] = getattr(self, "filters", {})
-        context["can_export"] = self.request.user.user_type in {
+    def get_filters_context(self):
+        request = self.request
+        periodo = request.GET.get("periodo", "mensal")
+        escopo = request.GET.get("escopo", "auto")
+        filtros = {
+            "organizacao_id": request.GET.get("organizacao_id"),
+            "nucleo_id": request.GET.get("nucleo_id"),
+            "evento_id": request.GET.get("evento_id"),
+            "data_inicio": request.GET.get("data_inicio"),
+            "data_fim": request.GET.get("data_fim"),
+        }
+        can_export = request.user.user_type in {
             UserType.ROOT,
             UserType.ADMIN,
             UserType.COORDENADOR,
         }
-        metricas = self.filters.get("metricas") if hasattr(self, "filters") else None
-        metricas = metricas or [
+        metricas = request.GET.getlist("metricas") or [
             "num_users",
             "inscricoes_confirmadas",
             "lancamentos_pendentes",
             "num_eventos",
             "num_posts_feed_total",
         ]
-        context["metricas_selecionadas"] = metricas
-        context["chart_data"] = [
-            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
+        metricas_disponiveis = [
+            {"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()
         ]
-        context["metricas_disponiveis"] = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
+        user = request.user
+        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            orgs = Organizacao.objects.all()
+            nucleos = Nucleo.objects.all()
+            eventos = Evento.objects.all()
+        else:
+            org_id = getattr(user.organizacao, "pk", None)
+            orgs = (
+                Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            )
+            nucleos = (
+                Nucleo.objects.filter(
+                    participacoes__user=user,
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                ).distinct()
+            )
+            eventos = (
+                Evento.objects.filter(
+                    Q(coordenador=user)
+                    | Q(
+                        nucleo__participacoes__user=user,
+                        nucleo__participacoes__status="ativo",
+                        nucleo__participacoes__status_suspensao=False,
+                    )
+                ).distinct()
+            )
+        return {
+            "periodo": periodo,
+            "escopo": escopo,
+            "filtros": filtros,
+            "can_export": can_export,
+            "metricas_selecionadas": metricas,
+            "metricas_disponiveis": metricas_disponiveis,
+            "organizacoes_permitidas": orgs,
+            "nucleos_permitidos": nucleos,
+            "eventos_permitidos": eventos,
+        }
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        metrics = self.get_metrics()
+        context.update(metrics)
+        context["metrics_data"] = metrics
+        context.update(self.get_filters_context())
+        metricas = context["metricas_selecionadas"]
+        context["chart_data"] = [
+            metrics[m]["total"]
+            for m in metricas
+            if m in metrics and isinstance(metrics[m]["total"], (int, float))
+        ]
         context["metricas_iter"] = [
             {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
             for m in metricas
@@ -204,30 +263,6 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         ]
         obtidas = UserAchievement.objects.filter(user=self.request.user).count()
         context["has_pending_achievements"] = Achievement.objects.count() > obtidas
-        user = self.request.user
-        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
-            orgs = Organizacao.objects.all()
-            nucleos = Nucleo.objects.all()
-            eventos = Evento.objects.all()
-        else:
-            org_id = getattr(user.organizacao, "pk", None)
-            orgs = Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
-            nucleos = Nucleo.objects.filter(
-                participacoes__user=user,
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
-            ).distinct()
-            eventos = Evento.objects.filter(
-                Q(coordenador=user)
-                | Q(
-                    nucleo__participacoes__user=user,
-                    nucleo__participacoes__status="ativo",
-                    nucleo__participacoes__status_suspensao=False,
-                )
-            ).distinct()
-        context["organizacoes_permitidas"] = orgs
-        context["nucleos_permitidos"] = nucleos
-        context["eventos_permitidos"] = eventos
         return context
 
 
