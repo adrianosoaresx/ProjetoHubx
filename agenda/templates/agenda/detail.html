@@ -7,7 +7,7 @@
 
   <!-- Cabeçalho -->
   <div class="text-center mb-6">
-    <div class="mx-auto w-20 h-20 bg-neutral-100 rounded-xl flex items-center justify-center text-2xl font-bold text-neutral-700 mb-4">
+    <div class="mx-auto w-20 h-20 bg-neutral-100 rounded-xl flex items-center justify-center text-2xl font-bold text-neutral-700 mb-4" role="img" aria-label="{{ object.titulo }}">
       {{ object.titulo|make_list|first|upper }}
     </div>
     <h1 class="text-2xl font-semibold text-neutral-900">{{ object.titulo }}</h1>
@@ -105,7 +105,7 @@
           {% if inscrito.avatar %}
             <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
           {% else %}
-            <div class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-sm font-semibold text-neutral-700">
+            <div class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-sm font-semibold text-neutral-700" role="img" aria-label="{{ inscrito.username }}">
               {{ inscrito.username|make_list|first|upper }}
             </div>
           {% endif %}

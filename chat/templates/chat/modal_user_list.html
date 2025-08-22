@@ -23,7 +23,7 @@
           hx-target="body"
           class="w-full text-left cursor-pointer group border border-neutral-200 rounded-2xl p-4 bg-white shadow-sm hover:shadow-md transition-all flex items-center gap-4"
         >
-          <div class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-100 overflow-hidden">
+          <div class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-100 overflow-hidden" {% if not u.avatar %}role="img" aria-label="{{ u.username }}"{% endif %}>
             {% if u.avatar %}
               <img src="{{ u.avatar.url }}" alt="{{ u.username }}" class="w-full h-full object-cover rounded-full" />
             {% else %}

@@ -13,7 +13,7 @@
       {% if post.autor.avatar %}
         <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
       {% else %}
-        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold">
+        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold" role="img" aria-label="{{ post.autor.username }}">
           {{ post.autor.username|first|upper }}
         </div>
       {% endif %}

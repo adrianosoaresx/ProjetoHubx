@@ -14,7 +14,7 @@
     {% if object.avatar %}
       <img src="{{ object.avatar.url }}" alt="{{ object.nome }}" class="w-24 h-24 rounded-full object-cover mx-auto mb-4">
     {% else %}
-      <div class="w-24 h-24 bg-neutral-200 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-semibold text-neutral-600">
+      <div class="w-24 h-24 bg-neutral-200 rounded-full flex items-center justify-center mx-auto mb-4 text-xl font-semibold text-neutral-600" role="img" aria-label="{{ object.nome }}">
         {{ object.nome|make_list|first|upper }}
       </div>
     {% endif %}
