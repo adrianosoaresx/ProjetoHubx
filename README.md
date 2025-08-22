@@ -54,6 +54,8 @@ pip install -r requirements.txt
 python manage.py migrate
 ```
 
+Essa etapa garante que bibliotecas como Pillow e clamd estejam disponíveis no ambiente virtual.
+
 > Isso criará o usuário padrão `root` necessário para alguns comandos administrativos.
 
 ---
@@ -318,6 +320,8 @@ ProjetoHubx/
 - Tailwind CSS 3
 - HTMX
 - Font Awesome 6
+- Pillow
+- clamd
 
 ---
 
