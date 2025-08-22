@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import Any, Dict
 import uuid
 import json
+import csv
 
 from django.db.models import Model
+from django.http import HttpResponse
 
-from .models import Organizacao, OrganizacaoAtividadeLog
+from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
 
 
 def serialize_organizacao(org: Organizacao) -> Dict[str, Any]:
@@ -44,3 +46,48 @@ def registrar_log(
         acao=acao,
         detalhes=json.dumps(detalhes) if detalhes else "",
     )
+
+
+def exportar_logs_csv(organizacao: Organizacao) -> HttpResponse:
+    response = HttpResponse(content_type="text/csv")
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+    writer = csv.writer(response)
+    writer.writerow([
+        "tipo",
+        "campo/acao",
+        "valor_antigo",
+        "valor_novo",
+        "usuario",
+        "data",
+    ])
+    for log in (
+        OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
+        .order_by("-created_at")
+    ):
+        writer.writerow(
+            [
+                "change",
+                log.campo_alterado,
+                log.valor_antigo,
+                log.valor_novo,
+                getattr(log.alterado_por, "email", ""),
+                log.created_at.isoformat(),
+            ]
+        )
+    for log in (
+        OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
+        .order_by("-created_at")
+    ):
+        writer.writerow(
+            [
+                "activity",
+                log.acao,
+                "",
+                "",
+                getattr(log.usuario, "email", ""),
+                log.created_at.isoformat(),
+            ]
+        )
+    return response

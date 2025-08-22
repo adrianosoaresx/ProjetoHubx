@@ -30,7 +30,7 @@ from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
 from .models import Organizacao, OrganizacaoChangeLog, OrganizacaoAtividadeLog
-from .services import registrar_log, serialize_organizacao
+from .services import exportar_logs_csv, registrar_log, serialize_organizacao
 from .tasks import organizacao_alterada
 
 User = get_user_model()
@@ -342,36 +342,7 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 return HttpResponseForbidden()
 
             if request.GET.get("export") == "csv":
-                import csv
-                from django.http import HttpResponse
-
-                response = HttpResponse(content_type="text/csv")
-                response["Content-Disposition"] = f'attachment; filename="organizacao_{org.pk}_logs.csv"'
-                writer = csv.writer(response)
-                writer.writerow(["tipo", "campo/acao", "valor_antigo", "valor_novo", "usuario", "data"])
-                for log in OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "change",
-                            log.campo_alterado,
-                            log.valor_antigo,
-                            log.valor_novo,
-                            getattr(log.alterado_por, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at"):
-                    writer.writerow(
-                        [
-                            "activity",
-                            log.acao,
-                            "",
-                            "",
-                            getattr(log.usuario, "email", ""),
-                            log.created_at.isoformat(),
-                        ]
-                    )
-                return response
+                return exportar_logs_csv(org)
 
             change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
             atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
