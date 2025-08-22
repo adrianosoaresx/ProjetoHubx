@@ -10,6 +10,10 @@
     <label for="code" class="block text-sm font-medium text-gray-700">{% trans "Código" %}</label>
     <input type="text" name="code" id="code" class="mt-1 block w-full border rounded-lg p-2 text-sm" required />
   </div>
+  <div>
+    <label for="password" class="block text-sm font-medium text-gray-700">{% trans "Senha" %}</label>
+    <input type="password" name="password" id="password" class="mt-1 block w-full border rounded-lg p-2 text-sm" required />
+  </div>
   <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg text-sm">{% trans "Desativar" %}</button>
 </form>
 {% endblock %}

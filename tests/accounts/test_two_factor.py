@@ -13,12 +13,20 @@ User = get_user_model()
 def test_enable_2fa_flow(client, monkeypatch):
     user = User.objects.create_user(email="a@a.com", username="a", password="Strong!123")
     client.force_login(user)
+
     monkeypatch.setattr(pyotp.TOTP, "verify", lambda self, code: True)
     secret = pyotp.random_base32()
     session = client.session
     session["tmp_2fa_secret"] = secret
     session.save()
     resp = client.post(reverse("accounts:enable_2fa"), {"code": "123456"})
+
+    resp = client.get(reverse("accounts:enable_2fa"))
+    assert resp.status_code == 200
+    secret = client.session.get("tmp_2fa_secret")
+    code = pyotp.TOTP(secret).now()
+    resp = client.post(reverse("accounts:enable_2fa"), {"code": code, "password": "Strong!123"})
+
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled
@@ -72,8 +80,44 @@ def test_disable_2fa_flow(client):
     TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     client.force_login(user)
     code = pyotp.TOTP(secret).now()
-    resp = client.post(reverse("accounts:disable_2fa"), {"code": code})
+    resp = client.post(reverse("accounts:disable_2fa"), {"code": code, "password": "Strong!123"})
     assert resp.status_code == 302
     user.refresh_from_db()
     assert user.two_factor_enabled is False and user.two_factor_secret is None
+
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()
+
+
+
+@pytest.mark.django_db
+def test_enable_2fa_wrong_password(client):
+    user = User.objects.create_user(email="e@e.com", username="e", password="Strong!123")
+    client.force_login(user)
+    resp = client.get(reverse("accounts:enable_2fa"))
+    assert resp.status_code == 200
+    secret = client.session.get("tmp_2fa_secret")
+    code = pyotp.TOTP(secret).now()
+    resp = client.post(reverse("accounts:enable_2fa"), {"code": code, "password": "WrongPass1!"})
+    assert resp.status_code == 200
+    user.refresh_from_db()
+    assert user.two_factor_enabled is False
+
+
+@pytest.mark.django_db
+def test_disable_2fa_wrong_password(client):
+    secret = pyotp.random_base32()
+    user = User.objects.create_user(
+        email="f@f.com",
+        username="f",
+        password="Strong!123",
+        two_factor_enabled=True,
+        two_factor_secret=secret,
+    )
+    TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
+    client.force_login(user)
+    code = pyotp.TOTP(secret).now()
+    resp = client.post(reverse("accounts:disable_2fa"), {"code": code, "password": "WrongPass1!"})
+    assert resp.status_code == 200
+    user.refresh_from_db()
+    assert user.two_factor_enabled is True
+

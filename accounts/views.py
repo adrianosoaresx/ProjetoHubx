@@ -24,6 +24,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -133,6 +134,7 @@ def enable_2fa(request):
     img.save(buffer, format="PNG")
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
     if request.method == "POST":
+
         code = request.POST.get("code")
         if code and totp.verify(code):
             user = request.user
@@ -157,6 +159,31 @@ def enable_2fa(request):
             messages.success(request, _("Verificação em duas etapas ativada."))
             return redirect("accounts:seguranca")
         messages.error(request, _("Código inválido."))
+
+        password = request.POST.get("password")
+        if request.user.check_password(password):
+            code = request.POST.get("code")
+            if code and totp.verify(code):
+                user = request.user
+                user.two_factor_secret = secret
+                user.two_factor_enabled = True
+                user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+                TOTPDevice.all_objects.update_or_create(
+                    usuario=user,
+                    defaults={
+                        "secret": user.two_factor_secret,
+                        "confirmado": True,
+                        "deleted": False,
+                        "deleted_at": None,
+                    },
+                )
+                del request.session["tmp_2fa_secret"]
+                messages.success(request, _("Verificação em duas etapas ativada."))
+                return redirect("accounts:seguranca")
+            messages.error(request, _("Código inválido."))
+        else:
+            messages.error(request, _("Senha incorreta."))
+
     return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64})
 
 
@@ -165,6 +192,7 @@ def disable_2fa(request):
     if not request.user.two_factor_enabled:
         return redirect("accounts:seguranca")
     if request.method == "POST":
+
         code = request.POST.get("code")
         if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
             user = request.user
@@ -180,6 +208,22 @@ def disable_2fa(request):
             messages.success(request, _("Verificação em duas etapas desativada."))
             return redirect("accounts:seguranca")
         messages.error(request, _("Código inválido."))
+
+        password = request.POST.get("password")
+        if request.user.check_password(password):
+            code = request.POST.get("code")
+            if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
+                user = request.user
+                user.two_factor_secret = None
+                user.two_factor_enabled = False
+                user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
+                TOTPDevice.objects.filter(usuario=user).delete()
+                messages.success(request, _("Verificação em duas etapas desativada."))
+                return redirect("accounts:seguranca")
+            messages.error(request, _("Código inválido."))
+        else:
+            messages.error(request, _("Senha incorreta."))
+
     return render(request, "perfil/disable_2fa.html")
 
 
@@ -198,16 +242,8 @@ def check_2fa(request):
 @login_required
 def perfil_conexoes(request):
     q = request.GET.get("q", "").strip()
-    connections = (
-        request.user.connections.all()
-        if hasattr(request.user, "connections")
-        else User.objects.none()
-    )
-    connection_requests = (
-        request.user.followers.all()
-        if hasattr(request.user, "followers")
-        else User.objects.none()
-    )
+    connections = request.user.connections.all() if hasattr(request.user, "connections") else User.objects.none()
+    connection_requests = request.user.followers.all() if hasattr(request.user, "followers") else User.objects.none()
 
     if q:
         filters = (
@@ -436,6 +472,7 @@ def excluir_conta(request):
     return redirect("core:home")
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def password_reset(request):
     """Solicita redefinição de senha."""
     if request.method == "POST":
@@ -573,6 +610,7 @@ def cancel_delete(request, token: str):
     return render(request, "accounts/cancel_delete.html", {"status": "sucesso"})
 
 
+@ratelimit(key="ip", rate="5/h", method="POST", block=True)
 def resend_confirmation(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -785,13 +823,18 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_permissions(self):
+    def get_permission_classes(self):
+        """Retorna lista de classes de permissão baseadas na ação atual."""
+        permission_classes = [IsAuthenticated]
         if self.action in ["create", "update", "partial_update"]:
             if self.request.user.get_tipo_usuario == "admin":
-                self.permission_classes.append(IsAdmin)
+                permission_classes.append(IsAdmin)
             elif self.request.user.get_tipo_usuario == "coordenador":
-                self.permission_classes.append(IsCoordenador)
-        return super().get_permissions()
+                permission_classes.append(IsCoordenador)
+        return permission_classes
+
+    def get_permissions(self):
+        return [permission() for permission in self.get_permission_classes()]
 
     def perform_create(self, serializer):
         organizacao = self.request.user.organizacao
