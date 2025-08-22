@@ -1,24 +1,26 @@
 from __future__ import annotations
-from rest_framework import filters, status, viewsets
-from django.shortcuts import get_object_or_404
-from django.http import QueryDict
-from rest_framework import status, viewsets
 
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
-
+from core.permissions import pode_crud_empresa
 from .metrics import (
     empresas_favoritos_total,
     empresas_purgadas_total,
     empresas_restauradas_total,
 )
-
-from .models import AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa, Tag
-from core.permissions import pode_crud_empresa
-from .models import ContatoEmpresa, AvaliacaoEmpresa, Empresa, EmpresaChangeLog, FavoritoEmpresa
+from .models import (
+    AvaliacaoEmpresa,
+    ContatoEmpresa,
+    Empresa,
+    EmpresaChangeLog,
+    FavoritoEmpresa,
+    Tag,
+)
 from .serializers import (
     AvaliacaoEmpresaSerializer,
     ContatoEmpresaSerializer,
@@ -26,12 +28,8 @@ from .serializers import (
     EmpresaSerializer,
     TagSerializer,
 )
-
-from .services import verificar_cnpj
-from .tasks import nova_avaliacao
-
-from .tasks import nova_avaliacao
 from .services import search_empresas, verificar_cnpj
+from .tasks import nova_avaliacao
 
 
 class ContatoEmpresaViewSet(viewsets.ModelViewSet):
