@@ -8,7 +8,8 @@ from django.contrib.auth import get_user_model
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import Evento, MaterialDivulgacaoEvento, BriefingEvento
+from .models import Evento, MaterialDivulgacaoEvento, BriefingEvento, EventoLog
+from notificacoes.services.notificacoes import enviar_para_usuario
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,20 @@ def promover_lista_espera(evento_id: int) -> None:
         ins.posicao_espera = None
         ins.data_confirmacao = timezone.now()
         ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "updated_at"])
+
+        enviar_para_usuario(
+            ins.user,
+            "evento_lista_espera_promovido",
+            {"evento": {"id": evento.pk, "titulo": evento.titulo}},
+            escopo_tipo="agenda.Evento",
+            escopo_id=str(evento.pk),
+        )
+        EventoLog.objects.create(
+            evento=evento,
+            usuario=ins.user,
+            acao="inscricao_promovida",
+            detalhes={"notificacao": True},
+        )
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
