@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -39,8 +41,9 @@ class OrganizacaoForm(forms.ModelForm):
             field.widget.attrs["class"] = f"{existing} {base_cls}".strip()
         self.fields["slug"].required = False
         self.fields["indice_reajuste"].widget.attrs["min"] = 0
+        self.fields["indice_reajuste"].widget.attrs["max"] = 1
         self.fields["indice_reajuste"].min_value = 0
-
+        self.fields["indice_reajuste"].max_value = 1
 
     def clean_rate_limit_multiplier(self):
         mult = self.cleaned_data.get("rate_limit_multiplier")
@@ -50,8 +53,8 @@ class OrganizacaoForm(forms.ModelForm):
 
     def clean_indice_reajuste(self):
         indice = self.cleaned_data.get("indice_reajuste")
-        if indice is not None and indice < 0:
-            raise forms.ValidationError(_("Deve ser maior ou igual a zero."))
+        if indice is not None and not (Decimal("0") <= indice <= Decimal("1")):
+            raise forms.ValidationError(_("Deve ser entre 0 e 1."))
         return indice
 
     def clean_cnpj(self):
