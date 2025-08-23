@@ -143,7 +143,15 @@ class UploadArquivoAPIView(APIView):
 
         infected = _scan_file(attachment.arquivo.path)
         attachment.infected = infected
-        if content_type.startswith("image") and not infected:
+        if infected:
+            attachment.arquivo.delete(save=False)
+            attachment.removed = True
+            attachment.save()
+            return Response(
+                {"erro": "Arquivo infectado removido"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if content_type.startswith("image"):
             attachment.preview_ready = True
         attachment.save()
         chat_attachments_total.inc()
@@ -163,10 +171,10 @@ class UploadArquivoAPIView(APIView):
             {
                 "attachment_id": str(attachment.id),
                 "tipo": tipo,
-                "url": url if not infected else "",
+                "url": url,
                 "mime_type": content_type,
                 "tamanho": attachment.tamanho,
-                "thumb_url": thumb_url if not infected else "",
+                "thumb_url": thumb_url,
                 "infected": infected,
             }
         )
