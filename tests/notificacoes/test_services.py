@@ -44,8 +44,6 @@ def test_enviar_para_usuario(monkeypatch) -> None:
     assert log.destinatario.startswith(user.email[:2])
 
 
-
-
 def test_enviar_sem_canais() -> None:
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
@@ -103,6 +101,35 @@ def test_enviar_todos_sem_canais() -> None:
         assert log.erro == "Canais desabilitados pelo usuário"
 
 
+def test_enviar_todos_com_canais_desativados(monkeypatch) -> None:
+    user = UserFactory()
+    NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
+    prefs = UserNotificationPreference.objects.get(user=user)
+    prefs.push = False
+    prefs.save(update_fields=["push"])
+
+    called = {}
+
+    def fake_delay(*args, **kwargs):
+        called["count"] = called.get("count", 0) + 1
+
+    monkeypatch.setattr(
+        "notificacoes.services.notificacoes.enviar_notificacao_async.delay",
+        fake_delay,
+    )
+
+    svc.enviar_para_usuario(user, "t", {})
+
+    assert called.get("count") == 2
+
+    logs = NotificationLog.objects.all()
+    assert logs.count() == 3
+    status_por_canal = {log.canal: log.status for log in logs}
+    assert status_por_canal[Canal.PUSH] == NotificationStatus.FALHA
+    assert status_por_canal[Canal.EMAIL] == NotificationStatus.PENDENTE
+    assert status_por_canal[Canal.WHATSAPP] == NotificationStatus.PENDENTE
+
+
 def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="p", assunto="Oi", corpo="C", canal="push")
@@ -147,9 +174,7 @@ def test_send_whatsapp_ok(admin_user, settings, monkeypatch):
         def create(self, **kwargs):  # pragma: no cover - simples
             called["msg"] = kwargs
 
-    monkeypatch.setattr(
-        "notificacoes.services.whatsapp_client.TwilioClient", DummyClient
-    )
+    monkeypatch.setattr("notificacoes.services.whatsapp_client.TwilioClient", DummyClient)
 
     admin_user.whatsapp = "+551199999999"
     send_whatsapp(admin_user, "oi")
