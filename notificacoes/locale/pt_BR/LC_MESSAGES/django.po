@@ -185,8 +185,9 @@ msgstr ""
 msgid "Template '%(codigo)s' não encontrado"
 msgstr ""
 
-#: notificacoes/services/notificacoes.py:76
-msgid "Canais desabilitados pelo usuário"
+#: notificacoes/services/notificacoes.py:86
+#, python-format
+msgid "Canal %(canal)s desabilitado pelo usuário"
 msgstr ""
 
 #: notificacoes/tasks.py:113
