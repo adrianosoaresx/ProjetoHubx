@@ -78,6 +78,13 @@ Content-Type: application/json
 
 Define ou remove (`null`) o limite de dias para exclusão automática de mensagens do canal. Somente administradores podem alterar a configuração.
 
+### Limpeza automática de anexos
+
+Ao excluir mensagens ou anexos, os arquivos correspondentes são removidos do
+storage automaticamente por um sinal `post_delete` do modelo
+`ChatAttachment`. Isso vale também para mensagens eliminadas pela política de
+retenção, evitando a criação de arquivos órfãos.
+
 ## Criptografia de ponta a ponta (E2EE)
 
 Quando um canal tem `e2ee_habilitado` ativado, o cliente deve cifrar o conteúdo

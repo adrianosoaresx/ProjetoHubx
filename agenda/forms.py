@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
+from validate_docbr import CNPJ
 import os
 
 from .validators import validate_uploaded_file
@@ -186,6 +187,14 @@ class ParceriaEventoForm(forms.ModelForm):
             "descricao",
             "acordo",
         ]
+
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get("cnpj", "")
+        if not cnpj.isdigit() or len(cnpj) != 14:
+            raise forms.ValidationError(_("CNPJ deve conter 14 dígitos."))
+        if not CNPJ().validate(cnpj):
+            raise forms.ValidationError(_("CNPJ inválido."))
+        return cnpj
 
     def clean_acordo(self):
         arquivo = self.cleaned_data.get("acordo")

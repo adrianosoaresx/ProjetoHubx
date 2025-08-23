@@ -99,9 +99,46 @@ def upload_media(data: bytes, name: str, content_type: str) -> str | tuple[str, 
         capture_exception(exc)
         raise
 
-        NOTIFICATIONS_SENT.inc()
-    except Exception:  # pragma: no cover - melhor esforço
-        pass
+
+@shared_task
+def finalize_upload(result: str | tuple[str, str], pending_id: str) -> None:
+    """Atualiza posts com o resultado do upload assíncrono."""
+
+    from django.db.models import Q
+
+    from .models import PendingUpload, Post
+
+    try:
+        pending = PendingUpload.objects.get(id=pending_id)
+    except PendingUpload.DoesNotExist:  # pragma: no cover - simples
+        return
+
+    key = result
+    preview_key = None
+    if isinstance(result, (list, tuple)):
+        key, preview_key = result
+
+    identifier = f"pending:{pending_id}"
+    posts = Post.objects.filter(Q(image=identifier) | Q(pdf=identifier) | Q(video=identifier))
+    for post in posts:
+        updated_fields = []
+        if post.image == identifier:
+            post.image = key
+            updated_fields.append("image")
+        if post.pdf == identifier:
+            post.pdf = key
+            updated_fields.append("pdf")
+        if post.video == identifier:
+            post.video = key
+            updated_fields.append("video")
+            if preview_key:
+                post.video_preview = preview_key
+                updated_fields.append("video_preview")
+        if updated_fields:
+            post.save(update_fields=updated_fields)
+
+    pending.delete()
+
 
 
 @shared_task

@@ -20,7 +20,7 @@ from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import HttpResponseNotAllowed, JsonResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -102,6 +102,11 @@ def perfil_seguranca(request):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
+            AccountToken.objects.filter(
+                usuario=user,
+                tipo=AccountToken.Tipo.PASSWORD_RESET,
+                used_at__isnull=True,
+            ).update(used_at=timezone.now())
             update_session_auth_hash(request, user)
             SecurityEvent.objects.create(
                 usuario=user,
@@ -161,8 +166,18 @@ def enable_2fa(request):
                 del request.session["tmp_2fa_secret"]
                 messages.success(request, _("Verificação em duas etapas ativada."))
                 return redirect("accounts:seguranca")
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Código inválido."))
         else:
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Senha incorreta."))
 
     return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64})
@@ -189,8 +204,18 @@ def disable_2fa(request):
                 )
                 messages.success(request, _("Verificação em duas etapas desativada."))
                 return redirect("accounts:seguranca")
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Código inválido."))
         else:
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Senha incorreta."))
 
     return render(request, "perfil/disable_2fa.html")
@@ -198,15 +223,8 @@ def disable_2fa(request):
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)
 def check_2fa(request):
-    email = request.GET.get("email")
-    enabled = False
-    if email:
-        try:
-            user = User.objects.get(email__iexact=email)
-            enabled = user.two_factor_enabled and TOTPDevice.objects.filter(usuario=user).exists()
-        except User.DoesNotExist:
-            pass
-    return JsonResponse({"enabled": enabled})
+    """Return neutral response without revealing 2FA status or email existence."""
+    return HttpResponse(status=204)
 
 
 @login_required

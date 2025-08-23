@@ -84,15 +84,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             window_start = now - MESSAGE_WINDOW_SECONDS
             timestamps = [ts for ts in timestamps if ts > window_start]
             if len(timestamps) >= MESSAGE_RATE_LIMIT:
-                wait_time = MESSAGE_WINDOW_SECONDS - (now - timestamps[0])
-                if wait_time > 0:
-                    await asyncio.sleep(wait_time)
-                now = time.time()
-                window_start = now - MESSAGE_WINDOW_SECONDS
-                timestamps = [ts for ts in timestamps if ts > window_start]
-                if len(timestamps) >= MESSAGE_RATE_LIMIT:
-                    await self.close(code=4008)
-                    return
+                await self.close(code=4008)
+                return
             timestamps.append(now)
             await cache.aset(cache_key, timestamps, MESSAGE_WINDOW_SECONDS)
             # Limite de mensagens aplicado antes da detecção de spam
@@ -111,7 +104,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     return
                 exists = await database_sync_to_async(
                     ChatAttachment.objects.filter(
-                        id=attachment_id, usuario=user, mensagem__isnull=True
+                        id=attachment_id,
+                        usuario=user,
+                        mensagem__isnull=True,
+                        infected=False,
                     ).exists
                 )()
                 if not exists:

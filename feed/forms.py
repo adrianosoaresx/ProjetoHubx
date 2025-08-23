@@ -4,14 +4,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
-from feed.application.moderar_ai import aplicar_decisao, pre_analise
-
-
 from accounts.models import UserType
-
+from feed.application.moderar_ai import aplicar_decisao, pre_analise
 from organizacoes.models import Organizacao
 
-from .models import Comment, Like, Post, Tag
+from .models import Comment, Post, Tag
 from .services import upload_media
 
 User = get_user_model()
@@ -103,7 +100,7 @@ class PostForm(forms.ModelForm):
 
         for field in ["image", "pdf", "video"]:
             file = cleaned_data.get(field)
-            if file:
+            if file and not isinstance(file, str):
                 try:
                     result = upload_media(file)
                 except ValidationError as e:
@@ -114,6 +111,8 @@ class PostForm(forms.ModelForm):
                     self._video_preview_key = result[1]
                 else:
                     cleaned_data[field] = result
+            elif isinstance(file, str):
+                cleaned_data[field] = file
 
         tipo_feed = cleaned_data.get("tipo_feed")
         nucleo = cleaned_data.get("nucleo")
@@ -122,9 +121,7 @@ class PostForm(forms.ModelForm):
 
         if tipo_feed == "nucleo" and not nucleo:
             self.add_error("nucleo", "Selecione o núcleo.")
-        if (
-            tipo_feed == "nucleo" and self.user and nucleo and nucleo not in self.user.nucleos.all()
-        ):
+        if tipo_feed == "nucleo" and self.user and nucleo and nucleo not in self.user.nucleos.all():
             self.add_error("nucleo", "Usuário não é membro do núcleo.")
         if tipo_feed == "evento" and not evento:
             self.add_error("evento", "Selecione o evento.")
@@ -173,12 +170,3 @@ class CommentForm(forms.ModelForm):
                 }
             ),
         }
-
-
-class LikeForm(forms.ModelForm):
-    class Meta:
-        model = Like
-        fields = ["post"]
-        widgets = {"post": forms.HiddenInput()}
-
-

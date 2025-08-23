@@ -10,6 +10,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
@@ -90,7 +91,10 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return qs.order_by("-created_at")
 
     def perform_destroy(self, instance: InscricaoEvento) -> None:
-        instance.soft_delete()
+        try:
+            instance.cancelar_inscricao()
+        except ValueError as exc:
+            raise ValidationError(str(exc))
 
     @action(detail=True, methods=["post"])
     def avaliar(self, request, pk=None):

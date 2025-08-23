@@ -12,7 +12,7 @@ from accounts.models import UserType
 from financeiro.models import CentroCusto, LancamentoFinanceiro
 from financeiro.services.relatorios import gerar_relatorio
 from financeiro.services.exportacao import exportar_para_arquivo
-from financeiro.views import FinanceiroViewSet, parse_periodo
+from financeiro.views.api import FinanceiroViewSet, parse_periodo
 from organizacoes.factories import OrganizacaoFactory
 
 pytestmark = pytest.mark.django_db
@@ -31,7 +31,7 @@ def test_cache_key_multiplos_centros():
     c2 = CentroCusto.objects.create(nome="C2", tipo="organizacao")
     factory = APIRequestFactory()
     view = FinanceiroViewSet.as_view({"get": "relatorios"})
-    with patch("financeiro.views.gerar_relatorio") as mock_rel:
+    with patch("financeiro.views.api.gerar_relatorio") as mock_rel:
         mock_rel.return_value = {"saldo_atual": 0, "serie": [], "inadimplencia": [], "total_inadimplentes": 0}
         req1 = factory.get(
             "/api/financeiro/relatorios/", {"centro": [str(c1.id), str(c2.id)]}

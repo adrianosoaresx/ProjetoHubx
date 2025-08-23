@@ -104,6 +104,7 @@ class ChatAttachmentSerializer(serializers.ModelSerializer):
             "thumb_url",
             "preview_url",
             "infected",
+            "removed",
             "created_at",
         ]
         read_only_fields = fields

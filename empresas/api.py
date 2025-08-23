@@ -151,13 +151,20 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ):
             return Response(status=403)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or request.user.is_superuser
+        ):
             return Response(status=403)
         return super().destroy(request, *args, **kwargs)
 
@@ -171,7 +178,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def favoritos(self, request):
-        empresas = self.get_queryset().filter(favoritos__usuario=request.user, favoritos__deleted=False)
+        empresas = Empresa.objects.filter(
+            favoritos__usuario=request.user, favoritos__deleted=False
+        )
         serializer = self.get_serializer(empresas, many=True)
         return Response(serializer.data)
 
@@ -220,6 +229,24 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         serializer = AvaliacaoEmpresaSerializer(avals, many=True)
         return Response(serializer.data)
 
+    @avaliacoes.mapping.put
+    @avaliacoes.mapping.patch
+    def atualizar_avaliacao(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if request.user.organizacao != empresa.organizacao:
+            return Response({"detail": "Usuário não pertence à organização."}, status=403)
+        aval = AvaliacaoEmpresa.objects.filter(
+            empresa=empresa, usuario=request.user, deleted=False
+        ).first()
+        if not aval:
+            return Response({"detail": "Avaliação não encontrada."}, status=404)
+        partial = request.method == "PATCH"
+        serializer = AvaliacaoEmpresaSerializer(aval, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        nova_avaliacao.send(sender=self.__class__, avaliacao=aval)
+        return Response(serializer.data)
+
     @avaliacoes.mapping.delete
     def remover_avaliacao(self, request, pk: str | None = None):
         empresa = self.get_object()
@@ -235,7 +262,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def historico(self, request, pk: str | None = None):
-        if not request.user.is_staff:
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return Response(status=403)
         empresa = self.get_object()
         logs = empresa.logs.filter(deleted=False).select_related("usuario")
@@ -247,7 +274,11 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if not empresa.deleted:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or request.user.is_superuser
+        ):
             return Response(status=403)
         empresa.undelete()
         EmpresaChangeLog.objects.create(
@@ -265,7 +296,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if not empresa.deleted:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT} and not request.user.is_superuser:
             return Response(status=403)
         EmpresaChangeLog.objects.create(
             empresa=empresa,
