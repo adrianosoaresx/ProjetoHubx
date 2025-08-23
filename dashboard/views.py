@@ -193,7 +193,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         self.escopo = escopo
         self.filters = {**filters, "data_inicio": inicio_str, "data_fim": fim_str}
 
-        return DashboardMetricsService.get_metrics(
+        metrics, metricas_info = DashboardMetricsService.get_metrics(
             self.request.user,
             periodo=periodo,
             inicio=inicio,
@@ -201,6 +201,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             escopo=escopo,
             **filters,
         )
+        self.metricas_info = metricas_info
+        return metrics, metricas_info
 
     def get_filters_context(self):
         request = self.request
@@ -225,7 +227,10 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             "num_eventos",
             "num_posts_feed_total",
         ]
-        metricas_disponiveis = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
+        metricas_info = getattr(self, "metricas_info", METRICAS_INFO)
+        metricas_disponiveis = [
+            {"key": key, "label": data["label"]} for key, data in metricas_info.items()
+        ]
         user = request.user
         def limit_with_selected(qs, selected_id, limit=50):
             if selected_id:
@@ -307,19 +312,27 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        metrics = self.get_metrics()
+        metrics, metricas_info = self.get_metrics()
         context.update(metrics)
         context["metrics_data"] = metrics
         context.update(self.get_filters_context())
         metricas = context["metricas_selecionadas"]
         context["chart_data"] = [
-            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
+            metrics[m]["total"]
+            for m in metricas
+            if m in metrics and isinstance(metrics[m]["total"], (int, float))
         ]
         context["metricas_iter"] = [
-            {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
+            {
+                "key": m,
+                "data": metrics[m],
+                "label": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("label"),
+                "icon": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("icon"),
+            }
             for m in metricas
             if m in metrics
         ]
+        context["metricas_info"] = metricas_info
         obtidas = UserAchievement.objects.filter(user=self.request.user).count()
         context["has_pending_achievements"] = Achievement.objects.count() > obtidas
         return context
@@ -377,13 +390,15 @@ def metrics_partial(request):
         return HttpResponse(status=403)
     try:
         metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
-        metrics = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
+        metrics, metricas_info = DashboardMetricsService.get_metrics(
+            request.user, metricas=metricas
+        )
         metricas_iter = [
             {
                 "key": m,
                 "data": metrics[m],
-                "label": METRICAS_INFO[m]["label"],
-                "icon": METRICAS_INFO[m]["icon"],
+                "label": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("label"),
+                "icon": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("icon"),
             }
             for m in metricas
             if m in metrics
@@ -1049,13 +1064,15 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["layout_save_url"] = "#"
         metricas = list(METRICAS_INFO.keys())
-        metrics = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
+        metrics, metricas_info = DashboardMetricsService.get_metrics(
+            self.request.user, metricas=metricas
+        )
         context["metricas_iter"] = [
             {
                 "key": m,
                 "data": metrics[m],
-                "label": METRICAS_INFO[m]["label"],
-                "icon": METRICAS_INFO[m]["icon"],
+                "label": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("label"),
+                "icon": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("icon"),
             }
             for m in metricas
             if m in metrics
@@ -1101,13 +1118,15 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
             metricas = layout_data or []
         if not metricas:
             metricas = list(METRICAS_INFO.keys())
-        metrics = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
+        metrics, metricas_info = DashboardMetricsService.get_metrics(
+            self.request.user, metricas=metricas
+        )
         context["metricas_iter"] = [
             {
                 "key": m,
                 "data": metrics[m],
-                "label": METRICAS_INFO[m]["label"],
-                "icon": METRICAS_INFO[m]["icon"],
+                "label": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("label"),
+                "icon": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("icon"),
             }
             for m in metricas
             if m in metrics

@@ -16,6 +16,7 @@ from dashboard.utils import get_variation
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from dashboard.services import DashboardMetricsService
+from dashboard.constants import METRICAS_INFO
 
 pytestmark = pytest.mark.django_db
 
@@ -51,7 +52,7 @@ def test_export_csv(api_client: APIClient, admin_user) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
@@ -82,7 +83,7 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
@@ -107,7 +108,7 @@ def test_export_xlsx(api_client: APIClient, admin_user) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
