@@ -538,6 +538,7 @@ class LikeViewSet(viewsets.ModelViewSet):
             existing.deleted = True
             existing.save(update_fields=["deleted"])
             _dec_counter(REACTIONS_TOTAL.labels(vote="like"))
+            cache.delete(f"post_reacoes:{post.id}")
             return Response({"liked": False}, status=status.HTTP_200_OK)
         if existing:
             existing.deleted = False
@@ -545,11 +546,14 @@ class LikeViewSet(viewsets.ModelViewSet):
         else:
             serializer.save(user=request.user, vote="like")
         REACTIONS_TOTAL.labels(vote="like").inc()
+        cache.delete(f"post_reacoes:{post.id}")
         return Response({"liked": True}, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance: Reacao) -> None:
+        post_id = instance.post_id
         instance.delete()
         _dec_counter(REACTIONS_TOTAL.labels(vote="like"))
+        cache.delete(f"post_reacoes:{post_id}")
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
