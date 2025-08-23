@@ -10,6 +10,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
+from nucleos.factories import NucleoFactory
 from financeiro.models import CentroCusto, LancamentoFinanceiro
 import financeiro.viewsets as v
 
@@ -128,8 +129,14 @@ def test_cache(api_client, admin_user, monkeypatch):
 def test_forecast_organizacao_forbidden(api_client):
     org1 = OrganizacaoFactory()
     org2 = OrganizacaoFactory()
+
     user = UserFactory(
         user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
+
+    nucleo1 = NucleoFactory(organizacao=org1)
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=nucleo1
+
     )
     auth(api_client, user)
     url = reverse("financeiro_api:forecast-list")
@@ -140,6 +147,7 @@ def test_forecast_organizacao_forbidden(api_client):
 def test_forecast_nucleo_forbidden(api_client):
     org1 = OrganizacaoFactory()
     org2 = OrganizacaoFactory()
+
     nucleo = NucleoFactory(organizacao=org2)
     user = UserFactory(
         user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
@@ -147,16 +155,34 @@ def test_forecast_nucleo_forbidden(api_client):
     auth(api_client, user)
     url = reverse("financeiro_api:forecast-list")
     resp = api_client.get(url, {"escopo": "nucleo", "id": str(nucleo.id)})
+
+    nucleo1 = NucleoFactory(organizacao=org1)
+    nucleo2 = NucleoFactory(organizacao=org2)
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=nucleo1
+    )
+    auth(api_client, user)
+    url = reverse("financeiro_api:forecast-list")
+    resp = api_client.get(url, {"escopo": "nucleo", "id": str(nucleo2.id)})
+
     assert resp.status_code == 403
 
 
 def test_forecast_centro_forbidden(api_client):
     org1 = OrganizacaoFactory()
     org2 = OrganizacaoFactory()
+
     centro = CentroCusto.objects.create(nome="X", tipo="organizacao", organizacao=org2)
     user = UserFactory(
         user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
     )
+
+    nucleo1 = NucleoFactory(organizacao=org1)
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=nucleo1
+    )
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org2)
+
     auth(api_client, user)
     url = reverse("financeiro_api:forecast-list")
     resp = api_client.get(url, {"escopo": "centro", "id": str(centro.id)})

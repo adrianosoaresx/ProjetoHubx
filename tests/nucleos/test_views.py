@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from accounts.models import UserType
 from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
-from nucleos.views import SuplenteCreateView
+from nucleos.views import NucleoDetailView, SuplenteCreateView
 from nucleos.forms import SuplenteForm
 from organizacoes.models import Organizacao
 
@@ -211,3 +211,57 @@ def test_meus_nucleos_view(client, membro_user, organizacao):
     resp = client.get(reverse("nucleos:meus"))
     assert resp.status_code == 200
     assert list(resp.context["object_list"]) == [nucleo1]
+
+
+def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_queries):
+    User = get_user_model()
+    nucleo = Nucleo.objects.create(nome="NQ", slug="nq", organizacao=organizacao)
+    members = []
+    for i in range(3):
+        u = User.objects.create_user(
+            username=f"m{i}",
+            email=f"m{i}@example.com",
+            password="pass",
+            user_type=UserType.NUCLEADO,
+            organizacao=organizacao,
+        )
+        ParticipacaoNucleo.objects.create(
+            nucleo=nucleo,
+            user=u,
+            status="ativo",
+            papel="coordenador" if i == 0 else "membro",
+        )
+        members.append(u)
+    pend = User.objects.create_user(
+        username="pendente",
+        email="pendente@example.com",
+        password="pass",
+        user_type=UserType.NUCLEADO,
+        organizacao=organizacao,
+    )
+    ParticipacaoNucleo.objects.create(nucleo=nucleo, user=pend, status="pendente")
+    CoordenadorSuplente.objects.create(
+        nucleo=nucleo,
+        usuario=members[0],
+        periodo_inicio=timezone.now(),
+        periodo_fim=timezone.now(),
+    )
+    request = RequestFactory().get("/")
+    request.user = admin_user
+    view = NucleoDetailView()
+    view.request = request
+    view.kwargs = {"pk": nucleo.pk}
+    with django_assert_num_queries(14):
+        qs = view.get_queryset()
+        obj = qs.get()
+        view.object = obj
+        ctx = view.get_context_data()
+        for p in ctx["membros_ativos"]:
+            _ = p.user
+        for p in ctx["coordenadores"]:
+            _ = p.user
+        for p in ctx["membros_pendentes"]:
+            _ = p.user
+        suplentes = ctx["suplentes"]
+        bool(suplentes)
+        list(suplentes)

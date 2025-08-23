@@ -148,13 +148,23 @@ def historico_notificacoes(request):
 @permission_required("notificacoes.delete_notificationtemplate", raise_exception=True)
 def delete_template(request, codigo: str):
     template = get_object_or_404(NotificationTemplate, codigo=codigo)
-    if NotificationLog.objects.filter(template=template).exists():
-        messages.error(request, _("Template em uso; não é possível removê-lo. Considere desativá-lo."))
 
-    else:
-        template.delete()
-        messages.success(request, _("Template excluído com sucesso."))
-    return redirect("notificacoes:templates_list")
+    if request.method == "POST":
+        if NotificationLog.objects.filter(template=template).exists():
+            messages.error(
+                request,
+                _("Template em uso; não é possível removê-lo. Considere desativá-lo."),
+            )
+        else:
+            template.delete()
+            messages.success(request, _("Template excluído com sucesso."))
+        return redirect("notificacoes:templates_list")
+
+    return render(
+        request,
+        "notificacoes/template_confirm_delete.html",
+        {"template": template},
+    )
 
 
 @login_required

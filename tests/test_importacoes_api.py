@@ -74,3 +74,14 @@ def test_fluxo_importacao_listagem(api_client, settings):
     resp = api_client.get(detail_url)
     assert resp.status_code == 200
     assert resp.data["id"] == str(importacao_id)
+
+
+def test_rejects_large_file(api_client):
+    user = UserFactory(user_type=UserType.ADMIN)
+    api_client.force_authenticate(user=user)
+    big_content = b"0" * (5 * 1024 * 1024 + 1)
+    file = SimpleUploadedFile("data.csv", big_content, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 400
+    assert "file" in resp.data

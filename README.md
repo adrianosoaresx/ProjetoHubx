@@ -51,6 +51,7 @@ Antes de executar comandos de teste ou popular dados, instale as dependências e
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # dependências de desenvolvimento
 python manage.py migrate
 ```
 
@@ -79,6 +80,7 @@ Verifique o ambiente virtual e reinstale os pacotes com:
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # se estiver desenvolvendo
 ```
 
 ---
@@ -313,7 +315,8 @@ ProjetoHubx/
 ├── templates/             # Templates HTML com Tailwind
 ├── static/                # CSS compilado e assets
 ├── manage.py
-├── requirements.txt
+├── requirements.txt       # Dependências básicas
+├── requirements-dev.txt   # Dependências de desenvolvimento
 ├── AGENTS.md              # Manifesto para agentes Codex
 ├── README.md              # Este arquivo
 ```

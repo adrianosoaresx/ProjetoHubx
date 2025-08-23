@@ -50,14 +50,11 @@ class NucleoListView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q", "")
         version = get_cache_version("nucleos_list")
         cache_key = f"nucleos_list:v{version}:{user.id}:{q}"
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
+        cached_ids = cache.get(cache_key)
 
-        qs = (
+        base_qs = (
             Nucleo.objects.select_related("organizacao")
             .prefetch_related("participacoes")
-            .filter(deleted=False)
             .annotate(
                 membros_count=Count(
                     "participacoes",
@@ -70,6 +67,12 @@ class NucleoListView(LoginRequiredMixin, ListView):
             )
         )
 
+        if cached_ids is not None:
+            qs = base_qs.filter(pk__in=cached_ids).order_by("nome")
+            return list(qs)
+
+        qs = base_qs.filter(deleted=False)
+
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
@@ -78,9 +81,10 @@ class NucleoListView(LoginRequiredMixin, ListView):
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
 
-        result = list(qs.order_by("nome").distinct())
-        cache.set(cache_key, result, 300)
-        return result
+        ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
+        cache.set(cache_key, ids, 300)
+
+        return list(base_qs.filter(pk__in=ids).order_by("nome"))
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -98,19 +102,11 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
         q = self.request.GET.get("q", "")
         version = get_cache_version("nucleos_meus")
         cache_key = f"nucleos_meus:v{version}:{user.id}:{q}"
-        cached = cache.get(cache_key)
-        if cached is not None:
-            return cached
+        cached_ids = cache.get(cache_key)
 
-        qs = (
+        base_qs = (
             Nucleo.objects.select_related("organizacao")
             .prefetch_related("participacoes")
-            .filter(
-                deleted=False,
-                participacoes__user=user,
-                participacoes__status="ativo",
-                participacoes__status_suspensao=False,
-            )
             .annotate(
                 membros_count=Count(
                     "participacoes",
@@ -123,12 +119,24 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
             )
         )
 
+        if cached_ids is not None:
+            qs = base_qs.filter(pk__in=cached_ids).order_by("nome")
+            return list(qs)
+
+        qs = base_qs.filter(
+            deleted=False,
+            participacoes__user=user,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        )
+
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
 
-        result = list(qs.order_by("nome").distinct())
-        cache.set(cache_key, result, 300)
-        return result
+        ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
+        cache.set(cache_key, ids, 300)
+
+        return list(base_qs.filter(pk__in=ids).order_by("nome"))
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -189,7 +197,9 @@ class NucleoDetailView(LoginRequiredMixin, DetailView):
     template_name = "nucleos/detail.html"
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False)
+        qs = Nucleo.objects.filter(deleted=False).prefetch_related(
+            "participacoes__user", "coordenadores_suplentes"
+        )
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)

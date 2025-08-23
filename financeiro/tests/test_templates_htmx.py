@@ -107,3 +107,11 @@ def test_centro_form_contem_descricao(client_logged):
     assert resp.status_code == 200
     html = resp.content.decode()
     assert 'name="descricao"' in html
+
+
+def test_importar_pagamentos_template_sanitizes_errors(client_logged):
+    resp = client_logged.get(reverse("financeiro:importar_pagamentos"))
+    html = resp.content.decode()
+    assert "document.createElement('li')" in html
+    assert "li.textContent = err" in html
+    assert "<li>${e}</li>" not in html

@@ -20,6 +20,7 @@
              hx-trigger="change"
              hx-include="#upload-form"
              hx-on="htmx:afterRequest: renderPreview(event)" />
+      <p class="text-sm text-gray-500">{% trans "Apenas CSV ou XLSX até 5MB" %}</p>
     </form>
       <button id="preview-btn"
               class="mt-2 bg-primary text-white px-4 py-2 rounded"
@@ -71,7 +72,14 @@
           document.getElementById('confirm-btn').disabled = false;
         }
         if (data.erros && data.erros.length) {
-          messages.innerHTML = `<ul class="list-disc text-red-600 pl-5">${data.erros.map(e => `<li>${e}</li>`).join('')}</ul>`;
+          const ul = document.createElement('ul');
+          ul.className = 'list-disc text-red-600 pl-5';
+          data.erros.forEach((err) => {
+            const li = document.createElement('li');
+            li.textContent = err;
+            ul.appendChild(li);
+          });
+          messages.appendChild(ul);
           if (!data.preview || !data.preview.length) {
             document.getElementById('confirm-btn').disabled = true;
           }

@@ -18,7 +18,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+
 from agenda.models import Evento
+
 from nucleos.models import Nucleo
 
 from .models import (
@@ -311,6 +313,7 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
         crescimento = float(params.get("crescimento_receita", 0))
         reducao = float(params.get("reducao_despesa", 0))
         user = request.user
+
         autorizado = False
         if escopo == "organizacao":
             autorizado = str(user.organizacao_id) == id_ref
@@ -331,6 +334,31 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
             return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
         if not autorizado:
             return Response({"detail": _("Acesso negado")}, status=status.HTTP_403_FORBIDDEN)
+
+        permitido = False
+        if escopo == "organizacao":
+            permitido = str(getattr(user, "organizacao_id", "")) == id_ref
+        elif escopo == "nucleo":
+            permitido = Nucleo.objects.filter(
+                id=id_ref, organizacao_id=getattr(user, "organizacao_id", None)
+            ).exists()
+        elif escopo == "centro":
+            permitido = (
+                CentroCusto.objects.filter(id=id_ref)
+                .filter(
+                    Q(organizacao_id=getattr(user, "organizacao_id", None))
+                    | Q(nucleo__organizacao_id=getattr(user, "organizacao_id", None))
+                    | Q(evento__organizacao_id=getattr(user, "organizacao_id", None))
+                    | Q(evento__nucleo__organizacao_id=getattr(user, "organizacao_id", None))
+                )
+                .exists()
+            )
+        if not permitido:
+            return Response(
+                {"detail": _("Você não tem permissão para acessar este recurso.")},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         cache_key = f"fin:forecast:{escopo}:{id_ref}:{periodos}:{crescimento}:{reducao}"
         data = cache.get(cache_key)
         if not data:

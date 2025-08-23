@@ -14,6 +14,11 @@ class NotificationTemplateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["corpo"].widget.attrs.setdefault("rows", 4)
         if self.instance and self.instance.pk:
-            self.fields["codigo"].widget.attrs["readonly"] = True
+            self.fields["codigo"].disabled = True
+
+    def clean_codigo(self) -> str:
+        if self.instance and self.instance.pk:
+            return self.instance.codigo
+        return self.cleaned_data["codigo"]
 
 
