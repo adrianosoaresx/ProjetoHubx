@@ -44,6 +44,7 @@ from .services import (
     list_tokens,
     revoke_token,
 )
+from .utils import get_client_ip
 
 
 User = get_user_model()
@@ -84,7 +85,7 @@ def revogar_convite(request, token_id: int):
             token=token,
             usuario=request.user,
             acao=TokenUsoLog.Acao.REVOGACAO,
-            ip=request.META.get("REMOTE_ADDR", ""),
+            ip=get_client_ip(request),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         tokens_invites_revoked_total.inc()
@@ -112,7 +113,7 @@ def revogar_api_token(request, token_id: str):
             token=token,
             usuario=request.user,
             acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=request.META.get("REMOTE_ADDR", ""),
+            ip=get_client_ip(request),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         messages.success(request, _("Token revogado."))
@@ -163,7 +164,7 @@ def gerar_api_token(request):
             token=token,
             usuario=request.user,
             acao=ApiTokenLog.Acao.GERACAO,
-            ip=request.META.get("REMOTE_ADDR", ""),
+            ip=get_client_ip(request),
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         if request.headers.get("HX-Request") == "true":
@@ -273,7 +274,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 nucleos=form.cleaned_data["nucleos"],
             )
 
-            ip = request.META.get("REMOTE_ADDR", "")
+            ip = get_client_ip(request)
             token.ip_gerado = ip
             token.save(update_fields=["ip_gerado"])
             TokenUsoLog.objects.create(
@@ -321,7 +322,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
             token = form.token
             token.usuario = request.user
             token.estado = TokenAcesso.Estado.USADO
-            ip = request.META.get("REMOTE_ADDR", "")
+            ip = get_client_ip(request)
             token.ip_utilizado = ip
             token.save(update_fields=["usuario", "estado", "ip_utilizado"])
             TokenUsoLog.objects.create(
@@ -364,7 +365,7 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
         form = GerarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
             codigo = form.save()
-            ip = request.META.get("REMOTE_ADDR", "")
+            ip = get_client_ip(request)
             user_agent = request.META.get("HTTP_USER_AGENT", "")
             log = CodigoAutenticacaoLog.objects.create(
                 codigo=codigo,
@@ -429,7 +430,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
-            ip = request.META.get("REMOTE_ADDR", "")
+            ip = get_client_ip(request)
             user_agent = request.META.get("HTTP_USER_AGENT", "")
             codigo = getattr(form, "codigo_obj", None)
             if codigo:
@@ -449,7 +450,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
                 "tokens/validar_codigo_autenticacao.html",
                 {"form": form, "success": _("Código validado")},
             )
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         codigo = getattr(form, "codigo_obj", None)
         if codigo:
@@ -522,7 +523,7 @@ class Ativar2FAView(LoginRequiredMixin, View):
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="2fa_habilitado",
-                ip=request.META.get("REMOTE_ADDR"),
+                ip=get_client_ip(request),
             )
             messages.success(request, _("2FA ativado"))
             return redirect("accounts:seguranca")
@@ -549,7 +550,7 @@ class Desativar2FAView(LoginRequiredMixin, View):
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_desabilitado",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         messages.success(request, _("2FA desativado"))
         return redirect("accounts:seguranca")

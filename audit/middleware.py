@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from sentry_sdk import capture_exception
 
 from .services import hash_ip, log_audit_async
+from tokens.utils import get_client_ip
 
 
 class AuditMiddleware:
@@ -18,7 +19,7 @@ class AuditMiddleware:
         try:
             if request.path.startswith("/dashboard"):
                 user = request.user if request.user.is_authenticated else None
-                ip = request.META.get("REMOTE_ADDR", "")
+                ip = get_client_ip(request)
                 metadata = (
                     request.GET.dict() if request.method == "GET" else request.POST.dict()
                 )

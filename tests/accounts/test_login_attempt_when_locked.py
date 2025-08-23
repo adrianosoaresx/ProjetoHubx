@@ -17,7 +17,11 @@ def test_login_attempt_created_when_account_locked(rf):
     user.lock_expires_at = timezone.now() + timezone.timedelta(minutes=1)
     user.save()
 
-    request = rf.post("/login/")
+    request = rf.post(
+        "/login/",
+        REMOTE_ADDR="10.0.0.1",
+        HTTP_X_FORWARDED_FOR="2.2.2.2",
+    )
     form = EmailLoginForm(request, data={"email": "lock@example.com", "password": "pass"})
 
     assert not form.is_valid()
@@ -25,5 +29,5 @@ def test_login_attempt_created_when_account_locked(rf):
     assert SecurityEvent.objects.filter(
         usuario=user,
         evento="login_bloqueado",
-        ip=request.META.get("REMOTE_ADDR"),
+        ip="2.2.2.2",
     ).exists()

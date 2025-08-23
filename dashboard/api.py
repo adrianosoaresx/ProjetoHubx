@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 from audit.services import hash_ip, log_audit
+from tokens.utils import get_client_ip
 
 from .models import DashboardFilter, DashboardCustomMetric
 from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
@@ -94,7 +95,7 @@ class DashboardViewSet(viewsets.ViewSet):
             filtros["metricas"] = metricas_list
         filtros.pop("formato", None)
         metadata = {"filtros": filtros, "formato": formato}
-        ip_hash = hash_ip(request.META.get("REMOTE_ADDR", ""))
+        ip_hash = hash_ip(get_client_ip(request))
         inicio_dt = parse_datetime(inicio) if inicio else None
         if inicio and inicio_dt is None:
             log_audit(

@@ -6,6 +6,7 @@ from django.utils import timezone
 from tokens.models import TOTPDevice
 
 from .models import LoginAttempt
+from tokens.utils import get_client_ip
 
 
 class EmailBackend(ModelBackend):
@@ -17,7 +18,7 @@ class EmailBackend(ModelBackend):
             username = kwargs.get(UserModel.USERNAME_FIELD)
         if not username:
             return None
-        ip = request.META.get("REMOTE_ADDR") if request else None
+        ip = get_client_ip(request) if request else None
         try:
             user = UserModel._default_manager.get(email__iexact=username)
         except UserModel.DoesNotExist:

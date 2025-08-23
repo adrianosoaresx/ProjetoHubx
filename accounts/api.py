@@ -18,6 +18,7 @@ from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 from .models import AccountToken, SecurityEvent
 from tokens.models import TOTPDevice
+from tokens.utils import get_client_ip
 from .serializers import UserSerializer
 from .tasks import (
     send_cancel_delete_email,
@@ -55,7 +56,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         SecurityEvent.objects.create(
             usuario=token.usuario,
             evento="email_confirmado",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         return Response({"detail": _("Email confirmado.")})
 
@@ -75,13 +76,13 @@ class AccountViewSet(viewsets.GenericViewSet):
             usuario=user,
             tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
             expires_at=timezone.now() + timezone.timedelta(hours=24),
-            ip_gerado=request.META.get("REMOTE_ADDR"),
+            ip_gerado=get_client_ip(request),
         )
         send_confirmation_email.delay(token.id)
         SecurityEvent.objects.create(
             usuario=user,
             evento="resend_confirmation",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         return Response(status=204)
 
@@ -99,7 +100,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             usuario=user,
             tipo=AccountToken.Tipo.PASSWORD_RESET,
             expires_at=timezone.now() + timezone.timedelta(hours=1),
-            ip_gerado=request.META.get("REMOTE_ADDR"),
+            ip_gerado=get_client_ip(request),
         )
         send_password_reset_email.delay(token.id)
         return Response(status=204)
@@ -125,7 +126,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         SecurityEvent.objects.create(
             usuario=user,
             evento="senha_redefinida",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
@@ -161,7 +162,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_habilitado",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         return Response({"detail": _("2FA habilitado.")})
 
@@ -180,7 +181,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         SecurityEvent.objects.create(
             usuario=user,
             evento="2fa_desabilitado",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         return Response({"detail": _("2FA desabilitado.")})
 
@@ -198,7 +199,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="conta_exclusao_falha",
-                ip=request.META.get("REMOTE_ADDR"),
+                ip=get_client_ip(request),
             )
             return Response({"detail": _("Senha ou confirmação inválida.")}, status=400)
         user.delete()
@@ -208,13 +209,13 @@ class AccountViewSet(viewsets.GenericViewSet):
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.CANCEL_DELETE,
             expires_at=timezone.now() + timezone.timedelta(days=30),
-            ip_gerado=request.META.get("REMOTE_ADDR"),
+            ip_gerado=get_client_ip(request),
         )
         send_cancel_delete_email.delay(token.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -242,7 +243,7 @@ class AccountViewSet(viewsets.GenericViewSet):
         user.save(update_fields=["deleted", "deleted_at", "is_active", "exclusao_confirmada"])
         token.used_at = timezone.now()
         token.save(update_fields=["used_at"])
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",
