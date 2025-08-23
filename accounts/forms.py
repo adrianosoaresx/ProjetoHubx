@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from tokens.models import TOTPDevice
+from tokens.utils import get_client_ip
 
 from .models import AccountToken, SecurityEvent, UserMedia
 from .tasks import send_confirmation_email
@@ -254,7 +255,7 @@ class EmailLoginForm(forms.Form):
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="login_bloqueado",
-                ip=self.request.META.get("REMOTE_ADDR") if self.request else None,
+                ip=get_client_ip(self.request) if self.request else None,
             )
             raise forms.ValidationError(
                 f"Conta bloqueada. Tente novamente após {user.lock_expires_at.strftime('%H:%M')}"

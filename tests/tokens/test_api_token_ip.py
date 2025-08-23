@@ -21,7 +21,9 @@ def test_token_authentication_allowed_ip():
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}")
     url = reverse("tokens_api:api-token-list")
-    resp = client.get(url, REMOTE_ADDR="1.1.1.1")
+    resp = client.get(
+        url, REMOTE_ADDR="10.0.0.1", HTTP_X_FORWARDED_FOR="1.1.1.1"
+    )
     assert resp.status_code == 200
 
 
@@ -34,7 +36,9 @@ def test_token_authentication_blocked_ip():
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}")
     url = reverse("tokens_api:api-token-list")
-    resp = client.get(url, REMOTE_ADDR="2.2.2.2")
+    resp = client.get(
+        url, REMOTE_ADDR="10.0.0.1", HTTP_X_FORWARDED_FOR="2.2.2.2"
+    )
     assert resp.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -47,5 +51,7 @@ def test_token_authentication_not_in_allowed_list():
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}")
     url = reverse("tokens_api:api-token-list")
-    resp = client.get(url, REMOTE_ADDR="4.4.4.4")
+    resp = client.get(
+        url, REMOTE_ADDR="10.0.0.1", HTTP_X_FORWARDED_FOR="4.4.4.4"
+    )
     assert resp.status_code == status.HTTP_403_FORBIDDEN

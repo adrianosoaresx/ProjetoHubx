@@ -5,6 +5,7 @@ from django.utils import translation
 import threading
 
 from configuracoes.services import get_configuracao_conta
+from tokens.utils import get_client_ip
 
 _local = threading.local()
 
@@ -15,7 +16,7 @@ def get_request_info() -> tuple[str | None, str | None, str]:
         return None, None, "import"
     fonte = "API" if request.path.startswith("/api/") else "UI"
     info = (
-        request.META.get("REMOTE_ADDR"),
+        get_client_ip(request),
         request.META.get("HTTP_USER_AGENT", ""),
         fonte,
     )

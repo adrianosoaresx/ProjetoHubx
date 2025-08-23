@@ -30,6 +30,7 @@ from .perms import can_issue_invite
 from .ratelimit import check_rate_limit
 from .serializers import TokenAcessoSerializer, TokenUsoLogSerializer
 from .services import create_invite_token, find_token_by_code
+from .utils import get_client_ip
 
 
 class TokenViewSet(viewsets.GenericViewSet):
@@ -44,7 +45,7 @@ class TokenViewSet(viewsets.GenericViewSet):
 
     def create(self, request):
         start_time = time.perf_counter()
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         target_role = request.data.get("tipo_destino")
         if not can_issue_invite(request.user, target_role):
             with sentry_sdk.push_scope() as scope:
@@ -120,7 +121,7 @@ class TokenViewSet(viewsets.GenericViewSet):
         if not codigo:
             tokens_validation_fail_total.inc()
             return Response({"detail": _("Código ausente.")}, status=400)
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         code_hash = hashlib.sha256(codigo.encode()).hexdigest()
         rl1 = check_rate_limit(f"code:{code_hash}:{ip}")
         rl2 = check_rate_limit(f"user:{request.user.id}:{ip}") if request.user.is_authenticated else None
@@ -200,7 +201,7 @@ class TokenViewSet(viewsets.GenericViewSet):
     def use(self, request, pk: str | None = None):
         start_time = time.perf_counter()
         token = self.get_object()
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         rl1 = check_rate_limit(f"token:{token.id}:{ip}")
         rl2 = check_rate_limit(f"user:{request.user.id}:{ip}")
         if not rl1.allowed or not rl2.allowed:
@@ -257,7 +258,7 @@ class TokenViewSet(viewsets.GenericViewSet):
             tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response({"detail": _("Token já revogado.")}, status=status.HTTP_409_CONFLICT)
         now = timezone.now()
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         with transaction.atomic():
             token.estado = TokenAcesso.Estado.REVOGADO
             token.revogado_em = now

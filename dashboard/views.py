@@ -40,6 +40,7 @@ from openpyxl import Workbook
 from accounts.models import UserType
 from agenda.models import Evento
 from audit.services import hash_ip, log_audit
+from tokens.utils import get_client_ip
 from core.permissions import (
     AdminRequiredMixin,
     ClienteRequiredMixin,
@@ -578,7 +579,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 action=audit_action,
                 object_type="DashboardMetrics",
                 object_id="",
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                ip_hash=hash_ip(get_client_ip(request)),
                 status="ERROR",
                 metadata={"formato": formato, **filters},
             )
@@ -589,7 +590,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 action=audit_action,
                 object_type="DashboardMetrics",
                 object_id="",
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                ip_hash=hash_ip(get_client_ip(request)),
                 status="ERROR",
                 metadata={"formato": formato, **filters},
             )
@@ -604,7 +605,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                     action="EXPORT_PDF",
                     object_type="DashboardMetrics",
                     object_id="",
-                    ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                    ip_hash=hash_ip(get_client_ip(request)),
                     status="ERROR",
                     metadata={"formato": formato, **filters},
                 )
@@ -619,7 +620,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 action="EXPORT_PDF",
                 object_type="DashboardMetrics",
                 object_id="",
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                ip_hash=hash_ip(get_client_ip(request)),
                 status="SUCCESS",
                 metadata={"formato": formato, **filters},
             )
@@ -645,7 +646,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 action="EXPORT_XLSX",
                 object_type="DashboardMetrics",
                 object_id="",
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                ip_hash=hash_ip(get_client_ip(request)),
                 status="SUCCESS",
                 metadata={"formato": formato, **filters},
             )
@@ -667,7 +668,7 @@ class DashboardExportView(LoginRequiredMixin, View):
                 action="EXPORT_PNG",
                 object_type="DashboardMetrics",
                 object_id="",
-                ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+                ip_hash=hash_ip(get_client_ip(request)),
                 status="SUCCESS",
                 metadata={"formato": formato, **filters},
             )
@@ -686,7 +687,7 @@ class DashboardExportView(LoginRequiredMixin, View):
             action="EXPORT_CSV",
             object_type="DashboardMetrics",
             object_id="",
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            ip_hash=hash_ip(get_client_ip(request)),
             status="SUCCESS",
             metadata={"formato": formato, **filters},
         )
@@ -762,7 +763,7 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
             action=action,
             object_type="DashboardConfig",
             object_id=str(self.object.pk),
-            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            ip_hash=hash_ip(get_client_ip(self.request)),
             status="SUCCESS",
             metadata=config_data,
         )
@@ -808,7 +809,7 @@ class DashboardConfigApplyView(LoginRequiredMixin, View):
             action="APPLY_CONFIG",
             object_type="DashboardConfig",
             object_id=str(cfg.pk),
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            ip_hash=hash_ip(get_client_ip(request)),
             status="SUCCESS",
             metadata=params,
         )
@@ -863,7 +864,7 @@ class DashboardConfigUpdateView(LoginRequiredMixin, UpdateView):
             action="UPDATE_CONFIG",
             object_type="DashboardConfig",
             object_id=str(self.object.pk),
-            ip_hash=hash_ip(self.request.META.get("REMOTE_ADDR", "")),
+            ip_hash=hash_ip(get_client_ip(self.request)),
             status="SUCCESS",
             metadata=config_data,
         )
@@ -895,7 +896,7 @@ class DashboardConfigDeleteView(LoginRequiredMixin, DeleteView):
             action="DELETE_CONFIG",
             object_type="DashboardConfig",
             object_id=pk,
-            ip_hash=hash_ip(request.META.get("REMOTE_ADDR", "")),
+            ip_hash=hash_ip(get_client_ip(request)),
             status="SUCCESS",
             metadata={},
         )
@@ -922,7 +923,7 @@ class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
             user=self.request.user,
             action="CREATE_FILTER",
             filtro=self.object,
-            ip_address=self.request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(self.request),
             metadata=filtros_data,
         )
         return redirect(self.get_success_url())
@@ -959,7 +960,7 @@ class DashboardFilterApplyView(LoginRequiredMixin, View):
             user=request.user,
             action="APPLY_FILTER",
             filtro=filtro,
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             metadata={"filtros": filtro.filtros},
         )
         return redirect(url)
@@ -991,7 +992,7 @@ class DashboardFilterUpdateView(LoginRequiredMixin, UpdateView):
             user=self.request.user,
             action="UPDATE_FILTER",
             filtro=self.object,
-            ip_address=self.request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(self.request),
             metadata=filtros_data,
         )
         return redirect(self.get_success_url())
@@ -1009,7 +1010,7 @@ class DashboardFilterDeleteView(LoginRequiredMixin, View):
             user=request.user,
             action="DELETE_FILTER",
             filtro=filtro,
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
             metadata={"filtros": filtro.filtros},
         )
         return redirect("dashboard:filters")
@@ -1056,7 +1057,7 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
             user=self.request.user,
             action="CREATE_LAYOUT",
             layout=self.object,
-            ip_address=self.request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(self.request),
         )
         return redirect(self.get_success_url())
 
@@ -1110,7 +1111,7 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
             user=self.request.user,
             action="UPDATE_LAYOUT",
             layout=self.object,
-            ip_address=self.request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(self.request),
         )
         return redirect(self.get_success_url())
 
@@ -1127,7 +1128,7 @@ class DashboardLayoutDeleteView(LoginRequiredMixin, View):
             user=request.user,
             action="DELETE_LAYOUT",
             layout=layout,
-            ip_address=request.META.get("REMOTE_ADDR", ""),
+            ip_address=get_client_ip(request),
         )
         return redirect("/dashboard/layouts/")
 
@@ -1147,7 +1148,7 @@ class DashboardLayoutSaveView(LoginRequiredMixin, View):
                 user=request.user,
                 action="SAVE_LAYOUT",
                 layout=layout,
-                ip_address=request.META.get("REMOTE_ADDR", ""),
+                ip_address=get_client_ip(request),
             )
         return HttpResponse(status=204)
 

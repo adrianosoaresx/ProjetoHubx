@@ -13,6 +13,7 @@ from .models import ApiToken, ApiTokenLog
 from .serializers import ApiTokenSerializer
 from .services import generate_token, list_tokens, revoke_token, rotate_token
 from .metrics import tokens_api_latency_seconds
+from .utils import get_client_ip
 
 
 class ApiTokenViewSet(viewsets.ViewSet):
@@ -47,7 +48,7 @@ class ApiTokenViewSet(viewsets.ViewSet):
                 token=api_token,
                 usuario=request.user,
                 acao=ApiTokenLog.Acao.GERACAO,
-                ip=request.META.get("REMOTE_ADDR", ""),
+                ip=get_client_ip(request),
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             data = ApiTokenSerializer(api_token).data
@@ -65,7 +66,7 @@ class ApiTokenViewSet(viewsets.ViewSet):
                 token=token,
                 usuario=request.user,
                 acao=ApiTokenLog.Acao.REVOGACAO,
-                ip=request.META.get("REMOTE_ADDR", ""),
+                ip=get_client_ip(request),
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -80,18 +81,19 @@ class ApiTokenViewSet(viewsets.ViewSet):
             raw_token = rotate_token(token.id, request.user)
             new_hash = hashlib.sha256(raw_token.encode()).hexdigest()
             novo_token = ApiToken.objects.get(token_hash=new_hash)
+            ip = get_client_ip(request)
             ApiTokenLog.objects.create(
                 token=novo_token,
                 usuario=request.user,
                 acao=ApiTokenLog.Acao.GERACAO,
-                ip=request.META.get("REMOTE_ADDR", ""),
+                ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             ApiTokenLog.objects.create(
                 token=token,
                 usuario=request.user,
                 acao=ApiTokenLog.Acao.REVOGACAO,
-                ip=request.META.get("REMOTE_ADDR", ""),
+                ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             data = ApiTokenSerializer(novo_token).data

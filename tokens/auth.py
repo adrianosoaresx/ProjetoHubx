@@ -8,6 +8,7 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from .metrics import tokens_api_tokens_used_total
 from .models import ApiToken, ApiTokenIp, ApiTokenLog
+from .utils import get_client_ip
 
 
 class ApiTokenAuthentication(BaseAuthentication):
@@ -35,7 +36,7 @@ class ApiTokenAuthentication(BaseAuthentication):
         ):
             raise AuthenticationFailed("Fingerprint inválido")
 
-        ip_address = request.META.get("REMOTE_ADDR", "")
+        ip_address = get_client_ip(request)
         if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip_address).exists():
             raise AuthenticationFailed("IP bloqueado")
         allowed_qs = api_token.ips.filter(tipo=ApiTokenIp.Tipo.PERMITIDO)
@@ -48,7 +49,7 @@ class ApiTokenAuthentication(BaseAuthentication):
             token=api_token,
             usuario=api_token.user,
             acao=ApiTokenLog.Acao.USO,
-            ip=request.META.get("REMOTE_ADDR", ""),
+            ip=ip_address,
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         tokens_api_tokens_used_total.inc()

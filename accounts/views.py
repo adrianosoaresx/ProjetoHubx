@@ -37,6 +37,7 @@ from accounts.tasks import (
 )
 from core.permissions import IsAdmin, IsCoordenador
 from tokens.models import TokenAcesso, TOTPDevice
+from tokens.utils import get_client_ip
 
 from .forms import (
     CustomUserChangeForm,
@@ -104,7 +105,7 @@ def perfil_seguranca(request):
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="senha_alterada",
-                ip=request.META.get("REMOTE_ADDR"),
+                ip=get_client_ip(request),
             )
             messages.success(request, "Senha alterada com sucesso.")
             return redirect("accounts:seguranca")
@@ -154,7 +155,7 @@ def enable_2fa(request):
                 SecurityEvent.objects.create(
                     usuario=user,
                     evento="2fa_habilitado",
-                    ip=request.META.get("REMOTE_ADDR"),
+                    ip=get_client_ip(request),
                 )
                 del request.session["tmp_2fa_secret"]
                 messages.success(request, _("Verificação em duas etapas ativada."))
@@ -183,7 +184,7 @@ def disable_2fa(request):
                 SecurityEvent.objects.create(
                     usuario=user,
                     evento="2fa_desabilitado",
-                    ip=request.META.get("REMOTE_ADDR"),
+                    ip=get_client_ip(request),
                 )
                 messages.success(request, _("Verificação em duas etapas desativada."))
                 return redirect("accounts:seguranca")
@@ -422,13 +423,13 @@ def excluir_conta(request):
         SecurityEvent.objects.create(
             usuario=user,
             evento="conta_excluida",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.CANCEL_DELETE,
             expires_at=timezone.now() + timezone.timedelta(days=30),
-            ip_gerado=request.META.get("REMOTE_ADDR"),
+            ip_gerado=get_client_ip(request),
         )
 
     send_cancel_delete_email.delay(token.id)
@@ -455,7 +456,7 @@ def password_reset(request):
                     usuario=user,
                     tipo=AccountToken.Tipo.PASSWORD_RESET,
                     expires_at=timezone.now() + timezone.timedelta(hours=1),
-                    ip_gerado=request.META.get("REMOTE_ADDR"),
+                    ip_gerado=get_client_ip(request),
                 )
                 send_password_reset_email.delay(token.id)
         messages.success(
@@ -478,7 +479,7 @@ def password_reset_confirm(request, code: str):
         SecurityEvent.objects.create(
             usuario=token.usuario,
             evento="senha_redefinicao_falha",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         messages.error(request, _("Token inv\u00e1lido ou expirado."))
         return redirect("accounts:password_reset")
@@ -496,7 +497,7 @@ def password_reset_confirm(request, code: str):
             SecurityEvent.objects.create(
                 usuario=user,
                 evento="senha_redefinida",
-                ip=request.META.get("REMOTE_ADDR"),
+                ip=get_client_ip(request),
             )
             messages.success(request, _("Senha redefinida com sucesso."))
             return redirect("accounts:login")
@@ -524,7 +525,7 @@ def confirmar_email(request, token: str):
         SecurityEvent.objects.create(
             usuario=token_obj.usuario,
             evento="email_confirmacao_falha",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
         return render(request, "accounts/email_confirm.html", {"status": "erro"})
 
@@ -538,7 +539,7 @@ def confirmar_email(request, token: str):
         SecurityEvent.objects.create(
             usuario=user,
             evento="email_confirmado",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
     return render(request, "accounts/email_confirm.html", {"status": "sucesso"})
 
@@ -572,7 +573,7 @@ def cancel_delete(request, token: str):
         SecurityEvent.objects.create(
             usuario=user,
             evento="cancelou_exclusao",
-            ip=request.META.get("REMOTE_ADDR"),
+            ip=get_client_ip(request),
         )
 
     return render(request, "accounts/cancel_delete.html", {"status": "sucesso"})
@@ -601,13 +602,13 @@ def resend_confirmation(request):
                     usuario=user,
                     tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
                     expires_at=timezone.now() + timezone.timedelta(hours=24),
-                    ip_gerado=request.META.get("REMOTE_ADDR"),
+                    ip_gerado=get_client_ip(request),
                 )
                 send_confirmation_email.delay(token.id)
                 SecurityEvent.objects.create(
                     usuario=user,
                     evento="resend_confirmation",
-                    ip=request.META.get("REMOTE_ADDR"),
+                    ip=get_client_ip(request),
                 )
         messages.success(
             request,
@@ -780,7 +781,7 @@ def termos(request):
                 usuario=user,
                 tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
                 expires_at=timezone.now() + timezone.timedelta(hours=24),
-                ip_gerado=request.META.get("REMOTE_ADDR"),
+                ip_gerado=get_client_ip(request),
             )
             send_confirmation_email.delay(token.id)
 
@@ -851,7 +852,7 @@ class ChangePasswordView(LoginRequiredMixin, View):
             SecurityEvent.objects.create(
                 usuario=request.user,
                 evento="senha_alterada",
-                ip=request.META.get("REMOTE_ADDR"),
+                ip=get_client_ip(request),
             )
             return redirect("user_profile")
         return render(request, "accounts/change_password.html", {"form": form})

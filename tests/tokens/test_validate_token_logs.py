@@ -12,7 +12,12 @@ pytestmark = [pytest.mark.django_db, pytest.mark.urls("tests.urls_tokens")]
 
 def _validate(client, code, ip="1.1.1.1", ua="test-agent"):
     url = reverse("tokens_api:token-validate") + f"?codigo={code}"
-    return client.get(url, REMOTE_ADDR=ip, HTTP_USER_AGENT=ua)
+    return client.get(
+        url,
+        REMOTE_ADDR="10.0.0.1",
+        HTTP_X_FORWARDED_FOR=ip,
+        HTTP_USER_AGENT=ua,
+    )
 
 
 def _setup_client(user=None):
