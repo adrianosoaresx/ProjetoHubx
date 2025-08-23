@@ -36,11 +36,13 @@ class ApiTokenAuthentication(BaseAuthentication):
         if api_token.device_fingerprint and api_token.device_fingerprint != device_fingerprint:
             raise AuthenticationFailed("Fingerprint inválido")
 
+        ip_address = get_client_ip(request)
 
         ip = get_client_ip(request)
         if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip).exists():
             raise AuthenticationFailed("IP bloqueado")
         ip_address = request.META.get("REMOTE_ADDR", "")
+
         ip_rules = list(api_token.ips.all())
         if any(rule.tipo == ApiTokenIp.Tipo.NEGADO and rule.ip == ip_address for rule in ip_rules):
             raise AuthenticationFailed("IP bloqueado")
