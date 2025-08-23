@@ -20,7 +20,7 @@ from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.db.models import Q
-from django.http import HttpResponseNotAllowed, JsonResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -198,15 +198,8 @@ def disable_2fa(request):
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)
 def check_2fa(request):
-    email = request.GET.get("email")
-    enabled = False
-    if email:
-        try:
-            user = User.objects.get(email__iexact=email)
-            enabled = user.two_factor_enabled and TOTPDevice.objects.filter(usuario=user).exists()
-        except User.DoesNotExist:
-            pass
-    return JsonResponse({"enabled": enabled})
+    """Return neutral response without revealing 2FA status or email existence."""
+    return HttpResponse(status=204)
 
 
 @login_required
