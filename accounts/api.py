@@ -96,6 +96,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(status=204)
+        AccountToken.objects.filter(
+            usuario=user,
+            tipo=AccountToken.Tipo.PASSWORD_RESET,
+            used_at__isnull=True,
+        ).update(used_at=timezone.now())
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.PASSWORD_RESET,
