@@ -143,6 +143,12 @@ class EmpresaViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         return super().create(request, *args, **kwargs)
 
+    def perform_create(self, serializer):
+        serializer.save(
+            usuario=self.request.user,
+            organizacao=self.request.user.organizacao,
+        )
+
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
         if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):

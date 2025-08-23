@@ -42,6 +42,8 @@ class EmpresaSerializer(serializers.ModelSerializer):
             "deleted",
         ]
         read_only_fields = [
+            "usuario",
+            "organizacao",
             "deleted",
             "versao",
             "favoritado",
