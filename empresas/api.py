@@ -119,8 +119,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted
-        instance.deleted = True
-        instance.save(update_fields=["deleted"])
+        instance.soft_delete()
         EmpresaChangeLog.objects.create(
             empresa=instance,
             usuario=self.request.user,
