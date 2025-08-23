@@ -3,8 +3,6 @@ import pytest
 import hashlib
 
 from datetime import timedelta
-
-import hashlib
 from django.urls import reverse
 from django.utils import timezone
 from django.test import override_settings
@@ -14,7 +12,7 @@ from rest_framework.test import APIClient
 from accounts.factories import UserFactory
 from tokens.models import ApiToken, ApiTokenLog
 from tokens.services import generate_token, revoke_token, rotate_token
-from tokens.tasks import revogar_tokens_expirados
+from tokens.tasks import revogar_tokens_expirados, rotacionar_tokens_proximos_da_expiracao
 
 pytestmark = pytest.mark.django_db
 
@@ -198,3 +196,18 @@ def test_api_view_rotate():
     assert token_db.revoked_at is not None
     assert ApiTokenLog.objects.filter(token=new_token, acao="geracao").exists()
     assert ApiTokenLog.objects.filter(token=token, acao="revogacao").exists()
+
+
+def test_rotacionar_tokens_proximos_da_expiracao():
+    user = UserFactory()
+    raw = generate_token(user, "cli", "read", timedelta(days=1))
+    token = ApiToken.objects.get(token_hash=hashlib.sha256(raw.encode()).hexdigest())
+
+    rotacionar_tokens_proximos_da_expiracao()
+
+    novo_token = ApiToken.objects.get(anterior=token)
+    token_db = ApiToken.all_objects.get(id=token.id)
+
+    assert token_db.revoked_at is not None
+    assert ApiTokenLog.objects.filter(token=novo_token, acao="geracao").exists()
+    assert ApiTokenLog.objects.filter(token=token_db, acao="revogacao").exists()

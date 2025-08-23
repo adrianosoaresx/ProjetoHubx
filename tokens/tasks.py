@@ -40,6 +40,39 @@ def revogar_tokens_expirados() -> None:
             ip=None,
         )
 
+
+@shared_task
+def rotacionar_tokens_proximos_da_expiracao() -> None:
+    """Rotaciona tokens próximos da expiração."""
+    from .services import rotate_token
+
+    margem_dias = getattr(settings, "TOKENS_ROTATE_BEFORE_DAYS", 7)
+    now = timezone.now()
+    limite = now + timezone.timedelta(days=margem_dias)
+    tokens = ApiToken.objects.filter(
+        revoked_at__isnull=True,
+        anterior__isnull=True,
+        expires_at__isnull=False,
+        expires_at__gt=now,
+        expires_at__lt=limite,
+    )
+    for token in tokens:
+        raw = rotate_token(token.id)
+        new_hash = hashlib.sha256(raw.encode()).hexdigest()
+        novo_token = ApiToken.objects.get(token_hash=new_hash)
+        ApiTokenLog.objects.create(
+            token=novo_token,
+            usuario=None,
+            acao=ApiTokenLog.Acao.GERACAO,
+            ip=None,
+        )
+        ApiTokenLog.objects.create(
+            token=token,
+            usuario=None,
+            acao=ApiTokenLog.Acao.REVOGACAO,
+            ip=None,
+        )
+
 @shared_task
 def send_webhook(payload: dict[str, object]) -> None:
     url = getattr(settings, "TOKENS_WEBHOOK_URL", None)
