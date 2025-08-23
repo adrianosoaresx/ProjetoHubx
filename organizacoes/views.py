@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -321,23 +321,16 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
             raise
 
 
-class OrganizacaoHistoryView(LoginRequiredMixin, View):
+class OrganizacaoHistoryView(SuperadminRequiredMixin, LoginRequiredMixin, View):
+    raise_exception = True
     template_name = "organizacoes/history.html"
 
     def get(self, request, pk, *args, **kwargs):
         try:
             org = get_object_or_404(Organizacao, pk=pk)
-            user = request.user
-            if not (
-                user.is_superuser
-                or getattr(user, "user_type", None) == UserType.ROOT.value
-                or user.get_tipo_usuario == UserType.ROOT.value
-            ):
-                return HttpResponseForbidden()
 
             if request.GET.get("export") == "csv":
                 return exportar_logs_csv(org)
-
 
             change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
             atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]

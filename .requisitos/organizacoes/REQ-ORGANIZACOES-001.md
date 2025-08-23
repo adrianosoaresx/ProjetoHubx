@@ -149,6 +149,7 @@ O App Organizações gerencia o ciclo de vida de entidades no Hubx. Permite cada
 - Apenas usuários root podem criar, editar, inativar, reativar e excluir organizações.
 - Organizações marcadas como `deleted` não aparecem nas buscas.
 - Logs de alterações e atividades são imutáveis.
+- O campo `indice_reajuste` deve estar entre 0 e 1.
 
 ## 7. Modelo de Dados
 

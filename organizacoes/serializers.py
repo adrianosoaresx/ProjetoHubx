@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from .models import (
@@ -37,6 +40,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "avatar",
             "cover",
             "rate_limit_multiplier",
+            "indice_reajuste",
             "inativa",
             "inativada_em",
             "created_by",
@@ -46,7 +50,12 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
 
     def validate_rate_limit_multiplier(self, value: float) -> float:
         if value <= 0:
-            raise serializers.ValidationError("Deve ser maior que zero.")
+            raise serializers.ValidationError(_("Deve ser maior que zero."))
+        return value
+
+    def validate_indice_reajuste(self, value: Decimal) -> Decimal:
+        if not (Decimal("0") <= value <= Decimal("1")):
+            raise serializers.ValidationError(_("Deve ser entre 0 e 1."))
         return value
 
     def create(self, validated_data: dict) -> Organizacao:
@@ -104,6 +113,7 @@ class OrganizacaoSerializer(serializers.ModelSerializer):
             "contato_email",
             "inativa",
             "rate_limit_multiplier",
+            "indice_reajuste",
         ]
         for campo in campos_relevantes:
             if campo in validated_data:

@@ -129,21 +129,29 @@ def test_validar_token_convite_view(client):
     assert resp.status_code == 400
 
 
-def test_gerar_codigo_autenticacao_view(client):
+def test_gerar_codigo_autenticacao_view(client, monkeypatch):
     user = UserFactory()
     _login(client, user)
+    monkeypatch.setattr(
+        "notificacoes.services.email_client.send_email", lambda *args, **kwargs: None
+    )
+    monkeypatch.setattr(
+        "notificacoes.services.whatsapp_client.send_whatsapp",
+        lambda *args, **kwargs: None,
+    )
     resp = client.post(
         reverse("tokens:gerar_codigo"),
         {},
         HTTP_USER_AGENT="ua-gerar",
+        HTTP_HX_REQUEST="true",
     )
     assert resp.status_code == 200
-    json = resp.json()
-    assert "codigo" in json
+    assert "Código gerado" in resp.content.decode()
     codigo_obj = CodigoAutenticacao.objects.get(usuario=user)
     log = CodigoAutenticacaoLog.objects.get(codigo=codigo_obj, acao="emissao")
     assert log.ip == "127.0.0.1"
     assert log.user_agent == "ua-gerar"
+    assert log.status_envio == CodigoAutenticacaoLog.StatusEnvio.SUCESSO
 
 
 def test_gerar_codigo_autenticacao_get(client):

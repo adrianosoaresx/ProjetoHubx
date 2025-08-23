@@ -254,9 +254,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             raise
 
 
-class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated]
-
+class OrganizacaoContextMixin:
     def get_organizacao(self):
         org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
         perm = IsOrgAdminOrSuperuser()
@@ -267,17 +265,12 @@ class OrganizacaoRelatedViewSet(viewsets.ReadOnlyModelViewSet):
         return org
 
 
-class OrganizacaoRelatedModelViewSet(viewsets.ModelViewSet):
+class OrganizacaoRelatedViewSet(OrganizacaoContextMixin, viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get_organizacao(self):
-        org = get_object_or_404(Organizacao, pk=self.kwargs["organizacao_pk"])
-        perm = IsOrgAdminOrSuperuser()
-        if not perm.has_object_permission(self.request, self, org):
-            e = PermissionDenied()
-            capture_exception(e)
-            raise e
-        return org
+
+class OrganizacaoRelatedModelViewSet(OrganizacaoContextMixin, viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
 
 
 class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
