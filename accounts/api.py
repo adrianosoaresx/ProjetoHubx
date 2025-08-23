@@ -103,6 +103,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             ip_gerado=get_client_ip(request),
         )
         send_password_reset_email.delay(token.id)
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="senha_reset_solicitada",
+            ip=get_client_ip(request),
+        )
         return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="reset-password")

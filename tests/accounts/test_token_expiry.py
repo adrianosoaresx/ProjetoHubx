@@ -125,6 +125,9 @@ def test_password_reset_token_default_expiry_and_invalidation(client, monkeypatc
             "accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None
         )
         client.post(reverse("accounts:password_reset"), {"email": user.email})
+        assert SecurityEvent.objects.filter(
+            usuario=user, evento="senha_reset_solicitada"
+        ).exists()
         token = AccountToken.objects.get(
             usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET
         )

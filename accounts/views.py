@@ -458,6 +458,11 @@ def password_reset(request):
                     expires_at=timezone.now() + timezone.timedelta(hours=1),
                     ip_gerado=get_client_ip(request),
                 )
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="senha_reset_solicitada",
+                    ip=get_client_ip(request),
+                )
                 send_password_reset_email.delay(token.id)
         messages.success(
             request,

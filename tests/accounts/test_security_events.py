@@ -89,6 +89,23 @@ def test_resend_confirmation_logs_security_event():
 
 @pytest.mark.django_db
 @override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
+def test_request_password_reset_logs_security_event(monkeypatch):
+    user = User.objects.create_user(email="pw@example.com", username="pw")
+    monkeypatch.setattr(
+        "accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None
+    )
+    client = APIClient()
+    resp = client.post(
+        reverse("accounts_api:account-request-password-reset"), {"email": user.email}
+    )
+    assert resp.status_code == 204
+    assert SecurityEvent.objects.filter(
+        usuario=user, evento="senha_reset_solicitada"
+    ).exists()
+
+
+@pytest.mark.django_db
+@override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_disable_2fa_requires_code():
     user = User.objects.create_user(email="tfa@example.com", username="t", password="pass", two_factor_enabled=True, two_factor_secret=pyotp.random_base32())
     TOTPDevice.objects.create(usuario=user, secret=user.two_factor_secret, confirmado=True)
