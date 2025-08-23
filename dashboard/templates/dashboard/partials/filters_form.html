@@ -1,4 +1,7 @@
-{% load i18n %}
+{% load i18n static %}
+<link href="{% static 'css/vendor/select2-4.1.0-rc.0.min.css' %}" rel="stylesheet" />
+<script src="{% static 'js/vendor/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'js/vendor/select2-4.1.0-rc.0.min.js' %}"></script>
 {% if messages %}
 <div id="filter-errors" class="mb-4" aria-live="polite">
   {% for message in messages %}
@@ -94,3 +97,43 @@
     <a href="{% url 'dashboard:configs' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver configurações salvas' %}">{% trans 'Minhas configurações' %}</a>
   </div>
 </form>
+<script>
+  $(function () {
+    $('#organizacao_id').select2({
+      ajax: {
+        url: '{% url "dashboard:search-organizacoes" %}',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { q: params.term }; },
+        processResults: function (data) { return { results: data.results }; },
+        cache: true
+      },
+      width: 'resolve',
+      allowClear: true
+    });
+    $('#nucleo_id').select2({
+      ajax: {
+        url: '{% url "dashboard:search-nucleos" %}',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { q: params.term }; },
+        processResults: function (data) { return { results: data.results }; },
+        cache: true
+      },
+      width: 'resolve',
+      allowClear: true
+    });
+    $('#evento_id').select2({
+      ajax: {
+        url: '{% url "dashboard:search-eventos" %}',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { q: params.term }; },
+        processResults: function (data) { return { results: data.results }; },
+        cache: true
+      },
+      width: 'resolve',
+      allowClear: true
+    });
+  });
+</script>

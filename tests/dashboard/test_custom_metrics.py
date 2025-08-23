@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from feed.factories import PostFactory
+from feed.models import Post
 from dashboard.models import DashboardCustomMetric
 from dashboard.custom_metrics import DashboardCustomMetricService
 from dashboard.services import DashboardMetricsService
@@ -76,4 +77,32 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
     assert metrics[metric.code]["total"] == 1
     assert views.METRICAS_INFO[metric.code]["label"] == "Total Posts"
     assert views.METRICAS_INFO[metric.code]["icon"] == "fa-star"
+
+
+def test_register_source_and_execute(admin_user, monkeypatch):
+    monkeypatch.setattr(
+        DashboardCustomMetricService,
+        "SOURCES",
+        DashboardCustomMetricService.SOURCES.copy(),
+    )
+    DashboardCustomMetricService.register_source("runtime_posts", Post, {"id"})
+    PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
+    query = {
+        "source": "runtime_posts",
+        "aggregation": "count",
+        "filters": {"organizacao_id": admin_user.organizacao_id},
+    }
+    assert (
+        DashboardCustomMetricService.execute(query) == 1
+    )
+
+
+def test_register_source_invalid_field(monkeypatch):
+    monkeypatch.setattr(
+        DashboardCustomMetricService,
+        "SOURCES",
+        DashboardCustomMetricService.SOURCES.copy(),
+    )
+    with pytest.raises(ValueError):
+        DashboardCustomMetricService.register_source("invalid", Post, {"foo"})
 
