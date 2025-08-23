@@ -102,6 +102,11 @@ def perfil_seguranca(request):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
+            AccountToken.objects.filter(
+                usuario=user,
+                tipo=AccountToken.Tipo.PASSWORD_RESET,
+                used_at__isnull=True,
+            ).update(used_at=timezone.now())
             update_session_auth_hash(request, user)
             SecurityEvent.objects.create(
                 usuario=user,
