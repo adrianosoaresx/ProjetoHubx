@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 
 from accounts.models import AccountToken
 
@@ -11,9 +12,10 @@ User = get_user_model()
 @pytest.mark.django_db
 def test_password_reset_clears_lock(client):
     user = User.objects.create_user(email="u@example.com", username="u")
-    user.failed_login_attempts = 2
-    user.lock_expires_at = timezone.now() + timezone.timedelta(minutes=30)
-    user.save()
+    cache.set(f"failed_login_attempts_user_{user.pk}", 2, 900)
+    cache.set(
+        f"lockout_user_{user.pk}", timezone.now() + timezone.timedelta(minutes=30), 1800
+    )
     token = AccountToken.objects.create(
         usuario=user,
         tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -25,4 +27,5 @@ def test_password_reset_clears_lock(client):
         {"new_password1": "NovaSenha123", "new_password2": "NovaSenha123"},
     )
     assert resp.status_code in {200, 302}
-    user.refresh_from_db()
+    assert cache.get(f"failed_login_attempts_user_{user.pk}") is None
+    assert cache.get(f"lockout_user_{user.pk}") is None

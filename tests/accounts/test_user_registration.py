@@ -21,8 +21,6 @@ def test_user_creation_creates_inactive_and_token():
     assert form.is_valid(), form.errors
     user = form.save()
     assert not user.is_active
-    assert user.failed_login_attempts == 0
-    assert user.lock_expires_at is None
     token = AccountToken.objects.get(usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION)
     assert token.expires_at > timezone.now()
 
