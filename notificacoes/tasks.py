@@ -120,13 +120,21 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
         logs.update(status=NotificationStatus.ENVIADA, data_envio=agora)
         envio = agora.replace(second=0, microsecond=0)
         data_ref = agora.date()
-        HistoricoNotificacao.objects.get_or_create(
+        historico, created = HistoricoNotificacao.objects.update_or_create(
             user=config.user,
             canal=canal,
             frequencia=tipo,
             data_referencia=data_ref,
             defaults={"conteudo": mensagens, "enviado_em": envio},
         )
+        if not created:
+            logger.info(
+                "historico_resumo_atualizado",
+                historico_id=historico.id,
+                user_id=config.user.id,
+                canal=canal,
+                tipo_frequencia=tipo,
+            )
         if config.receber_notificacoes_push and config.frequencia_notificacoes_push == tipo:
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
