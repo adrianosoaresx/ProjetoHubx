@@ -211,8 +211,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["patch"], permission_classes=[IsAuthenticated, IsRoot])
     def reativar(self, request, pk: str | None = None):
         try:
-            organizacao = Organizacao.objects.get(pk=pk)
-            self.check_object_permissions(request, organizacao)
+            organizacao = self.get_object()
             organizacao.inativa = False
             organizacao.inativada_em = None
             organizacao.save(update_fields=["inativa", "inativada_em"])
