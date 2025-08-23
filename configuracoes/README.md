@@ -61,6 +61,13 @@ Resposta:
 Use `PATCH /configuracoes/api/` para atualizar campos específicos. Consulte a
 documentação OpenAPI gerada para exemplos completos.
 
+## Cookies
+
+Ao salvar as preferências pelo formulário, o sistema envia os cookies
+`tema` e `django_language` com `SameSite=Lax`. O atributo `secure` é
+ativado automaticamente em conexões HTTPS e `HttpOnly` permanece
+desabilitado para permitir acesso via JavaScript.
+
 ## Fixtures de exemplo
 
 Para demonstrar diferentes combinações de preferências é possível carregar os
