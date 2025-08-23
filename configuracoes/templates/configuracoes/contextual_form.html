@@ -47,12 +47,23 @@
     function loadEscopoOptions() {
       const tipo = escopoTipo.value;
       escopoSelect.innerHTML = '<option value="">---------</option>';
+
+      const existingError = document.getElementById('escopo-error');
+      if (existingError) {
+        existingError.remove();
+      }
+
       if (!endpoints[tipo]) {
         return;
       }
+
+      escopoSelect.disabled = true;
+      escopoSelect.innerHTML = '<option>Carregando...</option>';
+
       fetch(endpoints[tipo])
         .then(r => r.json())
         .then(data => {
+          escopoSelect.innerHTML = '<option value="">---------</option>';
           const results = data.results || data;
           results.forEach(item => {
             const opt = document.createElement('option');
@@ -61,7 +72,18 @@
             escopoSelect.appendChild(opt);
           });
         })
-        .catch(() => {});
+        .catch(() => {
+          escopoSelect.innerHTML = '<option value="">---------</option>';
+          const error = document.createElement('span');
+          error.id = 'escopo-error';
+          error.setAttribute('role', 'alert');
+          error.className = 'text-red-600 text-sm';
+          error.textContent = 'Erro ao carregar opções.';
+          escopoSelect.insertAdjacentElement('afterend', error);
+        })
+        .finally(() => {
+          escopoSelect.disabled = false;
+        });
     }
 
     escopoTipo.addEventListener('change', loadEscopoOptions);
