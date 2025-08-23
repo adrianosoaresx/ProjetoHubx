@@ -85,7 +85,10 @@ from ..services.cobrancas import _nucleos_do_usuario
 from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
-from ..tasks.importar_pagamentos import importar_pagamentos_async
+from ..tasks.importar_pagamentos import (
+    importar_pagamentos_async,
+    reprocessar_importacao_async,
+)
 from ..tasks.relatorios import gerar_relatorio_async
 
 
@@ -273,12 +276,8 @@ class FinanceiroViewSet(viewsets.ViewSet):
             return Response({"detail": _("Arquivo ausente")}, status=status.HTTP_400_BAD_REQUEST)
         saved = default_storage.save(f"importacoes/{uuid.uuid4().hex}_{uploaded.name}", uploaded)
         full_path = default_storage.path(saved)
-        service = ImportadorPagamentos(full_path)
-        total, errors = service.process()
-        if errors:
-            return Response({"erros": errors}, status=status.HTTP_400_BAD_REQUEST)
-        err_file.unlink(missing_ok=True)
-        return Response({"detail": _("Reprocessamento concluído"), "total": total})
+        reprocessar_importacao_async.delay(str(err_file), full_path)
+        return Response({"detail": _("Reprocessamento iniciado")}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["get"], url_path="relatorios")
     def relatorios(self, request):

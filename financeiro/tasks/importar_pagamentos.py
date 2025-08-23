@@ -82,3 +82,37 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
             status=status,
             detalhes=detalhes,
         )
+
+
+@shared_task
+def reprocessar_importacao_async(err_file_path: str, file_path: str) -> None:
+    """Reprocessa importações corrigidas de forma assíncrona."""
+    logger.info("Iniciando reprocessamento de importação %s", file_path)
+    metrics.financeiro_tasks_total.inc()
+    status = "sucesso"
+    detalhes = ""
+    try:
+        service = ImportadorPagamentos(file_path)
+        total, errors = service.process()
+        log_path = Path(file_path).with_suffix(".log")
+        if errors:
+            log_path.write_text("\n".join(errors), encoding="utf-8")
+            detalhes = "\n".join(errors)
+            status = "erro"
+            metrics.financeiro_importacoes_erros_total.inc()
+        else:
+            log_path.write_text("ok", encoding="utf-8")
+            Path(err_file_path).unlink(missing_ok=True)
+        logger.info("Reprocessamento concluído: %s registros", total)
+        metrics.importacao_pagamentos_total.inc(total)
+    except Exception as exc:  # pragma: no cover - exceção inesperada
+        logger.exception("Erro no reprocessamento de importação: %s", exc)
+        status = "erro"
+        detalhes = str(exc)
+        raise
+    finally:
+        FinanceiroTaskLog.objects.create(
+            nome_tarefa="reprocessar_importacao_async",
+            status=status,
+            detalhes=detalhes,
+        )
