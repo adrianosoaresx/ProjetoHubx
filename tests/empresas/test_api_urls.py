@@ -20,6 +20,24 @@ def test_tag_list_endpoint(api_client, admin_user, tag_factory):
 
 
 @pytest.mark.django_db
+def test_tag_list_endpoint_gerente(api_client, gerente_user, tag_factory):
+    api_client.force_authenticate(user=gerente_user)
+    tag_factory(nome="servico", categoria="serv")
+    url = reverse("empresas_api:tag-list")
+    resp = api_client.get(url)
+    assert resp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_tag_list_endpoint_permission_denied(api_client, associado_user, tag_factory):
+    api_client.force_authenticate(user=associado_user)
+    tag_factory(nome="servico", categoria="serv")
+    url = reverse("empresas_api:tag-list")
+    resp = api_client.get(url)
+    assert resp.status_code == 403
+
+
+@pytest.mark.django_db
 def test_contato_list_endpoint(api_client, admin_user):
     empresa = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
     api_client.force_authenticate(user=admin_user)
