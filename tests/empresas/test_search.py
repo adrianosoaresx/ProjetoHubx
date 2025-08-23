@@ -31,13 +31,17 @@ def test_filter_by_single_tag(admin_user, tag_factory):
 def test_filter_by_multiple_tags_and(admin_user, tag_factory):
     t1 = tag_factory(nome="Tech")
     t2 = tag_factory(nome="Food")
+    t3 = tag_factory(nome="Health")
     e1 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
-    e1.tags.add(t1, t2)
+    e1.tags.add(t1, t2, t3)
     e2 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
-    e2.tags.add(t1)
+    e2.tags.add(t1, t2)
     e3 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
-    e3.tags.add(t2)
-    qs = search_empresas(admin_user, QueryDict(f"tags={t1.id}&tags={t2.id}"))
+    e3.tags.add(t2, t3)
+    qs = search_empresas(
+        admin_user,
+        QueryDict(f"tags={t1.id}&tags={t2.id}&tags={t3.id}"),
+    )
     assert set(qs) == {e1}
 
 
@@ -45,9 +49,15 @@ def test_filter_by_multiple_tags_and(admin_user, tag_factory):
 def test_filter_by_multiple_tags_requires_all(admin_user, tag_factory):
     t1 = tag_factory(nome="Tech")
     t2 = tag_factory(nome="Food")
+    t3 = tag_factory(nome="Health")
     e1 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
     e1.tags.add(t1)
     e2 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
     e2.tags.add(t2)
-    qs = search_empresas(admin_user, QueryDict(f"tags={t1.id}&tags={t2.id}"))
+    e3 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao)
+    e3.tags.add(t3)
+    qs = search_empresas(
+        admin_user,
+        QueryDict(f"tags={t1.id}&tags={t2.id}&tags={t3.id}"),
+    )
     assert list(qs) == []
