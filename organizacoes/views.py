@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -113,8 +113,9 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 
         cached = cache.get(key)
         if cached is not None:
-            cached["X-Cache"] = "HIT"
-            return cached
+            response = HttpResponse(cached)
+            response["X-Cache"] = "HIT"
+            return response
 
         is_htmx = self.request.headers.get("HX-Request")
 
@@ -130,7 +131,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 
         if hasattr(response, "render"):
             response.render()
-        cache.set(key, response, self.cache_timeout)
+        cache.set(key, response.content, self.cache_timeout)
 
         response["X-Cache"] = "MISS"
         return response
