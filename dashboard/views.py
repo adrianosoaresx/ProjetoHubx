@@ -315,6 +315,8 @@ def metrics_partial(request):
     """Retorna HTML com métricas para HTMX."""
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
+    if not request.user.has_perm("dashboard.view_metrics"):
+        return HttpResponse(status=403)
     try:
         metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
         metrics = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
@@ -352,6 +354,8 @@ def lancamentos_partial(request):
     """Últimos lançamentos financeiros."""
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
+    if not request.user.has_perm("dashboard.view_metrics"):
+        return HttpResponse(status=403)
     try:
         lancamentos = DashboardService.ultimos_lancamentos(request.user)
         html = render_to_string(
@@ -369,6 +373,8 @@ def notificacoes_partial(request):
     """Notificações recentes para HTMX."""
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
+    if not request.user.has_perm("dashboard.view_metrics"):
+        return HttpResponse(status=403)
     try:
         notificacoes = DashboardService.ultimas_notificacoes(request.user)
         html = render_to_string(
@@ -386,6 +392,8 @@ def tarefas_partial(request):
     """Tarefas pendentes para HTMX."""
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
+    if not request.user.has_perm("dashboard.view_metrics"):
+        return HttpResponse(status=403)
     try:
         tarefas = DashboardService.tarefas_pendentes(request.user)
         html = render_to_string(
@@ -403,6 +411,8 @@ def eventos_partial(request):
     """Próximos eventos para HTMX."""
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
+    if not request.user.has_perm("dashboard.view_metrics"):
+        return HttpResponse(status=403)
     try:
         eventos = DashboardService.proximos_eventos(request.user)
         html = render_to_string(
