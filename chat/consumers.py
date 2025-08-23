@@ -111,7 +111,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                     return
                 exists = await database_sync_to_async(
                     ChatAttachment.objects.filter(
-                        id=attachment_id, usuario=user, mensagem__isnull=True
+                        id=attachment_id,
+                        usuario=user,
+                        mensagem__isnull=True,
+                        infected=False,
                     ).exists
                 )()
                 if not exists:

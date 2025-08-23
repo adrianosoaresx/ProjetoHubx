@@ -110,6 +110,8 @@ def enviar_mensagem(
     if attachment_id:
         attachment = ChatAttachment.objects.filter(id=attachment_id).first()
         if attachment:
+            if attachment.infected:
+                raise ValueError("Anexo infectado")
             arquivo = arquivo or attachment.arquivo
     if tipo in {"image", "video", "file"} and not arquivo:
         from django.core.exceptions import ValidationError
