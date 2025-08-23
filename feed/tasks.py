@@ -140,6 +140,7 @@ def finalize_upload(result: str | tuple[str, str], pending_id: str) -> None:
     pending.delete()
 
 
+
 @shared_task
 def executar_plugins() -> None:
     """Carrega e executa plugins registrados para organizações.
