@@ -86,6 +86,7 @@ class NotificationLog(TimeStampedModel):
     data_envio: models.DateTimeField = models.DateTimeField(null=True, blank=True)
     data_leitura: models.DateTimeField = models.DateTimeField(null=True, blank=True)
     erro: models.TextField | None = models.TextField(null=True, blank=True)
+    corpo_renderizado: models.TextField | None = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("Log de Notificação")
