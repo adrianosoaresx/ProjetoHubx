@@ -138,18 +138,16 @@ def test_convite_quota_diaria(api_client, admin_user, organizacao):
         assert resp2.status_code == 429
 
 
-def test_convite_limite_uso_diario(api_client, membro_user, organizacao):
-    from django.core.cache import cache
-
+def test_convite_nao_pode_ser_reutilizado(api_client, membro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
     convite = ConviteNucleo.objects.create(
-        email=membro_user.email, papel="membro", nucleo=nucleo, limite_uso_diario=1
+        email=membro_user.email, papel="membro", nucleo=nucleo
     )
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
-    cache.clear()
     resp1 = api_client.get(url)
     assert resp1.status_code == 200
     resp2 = api_client.get(url)
-    assert resp2.status_code == 429
+    assert resp2.status_code == 400
+    assert resp2.data["detail"] == "Convite já utilizado."
 
