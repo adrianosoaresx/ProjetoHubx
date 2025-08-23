@@ -56,6 +56,11 @@ chat_mensagens_removidas_retencao_total = Counter(
     "Total de mensagens removidas pela política de retenção",
 )
 
+chat_retencao_canal_segundos = Histogram(
+    "chat_retencao_canal_segundos",
+    "Tempo de execução da política de retenção por canal em segundos",
+)
+
 chat_attachments_total = Counter(
     "chat_attachments_total",
     "Total de anexos enviados",
