@@ -99,10 +99,6 @@ def upload_media(data: bytes, name: str, content_type: str) -> str | tuple[str, 
         capture_exception(exc)
         raise
 
-        NOTIFICATIONS_SENT.inc()
-    except Exception:  # pragma: no cover - melhor esforço
-        pass
-
 
 @shared_task
 def executar_plugins() -> None:
