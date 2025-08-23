@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
+from django.core.cache import cache
 from rest_framework.test import APIClient
 
 from accounts.models import AccountToken, SecurityEvent
@@ -58,9 +59,10 @@ def test_security_events_flow():
 @override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_reset_password_logs_security_event():
     user = User.objects.create_user(email="reset@example.com", username="r", password="old")
-    user.failed_login_attempts = 3
-    user.lock_expires_at = timezone.now() + timezone.timedelta(minutes=30)
-    user.save()
+    cache.set(f"failed_login_attempts_user_{user.pk}", 3, 900)
+    cache.set(
+        f"lockout_user_{user.pk}", timezone.now() + timezone.timedelta(minutes=30), 1800
+    )
     token = AccountToken.objects.create(
         usuario=user,
         tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -70,9 +72,8 @@ def test_reset_password_logs_security_event():
     url = reverse("accounts_api:account-reset-password")
     resp = client.post(url, {"token": token.codigo, "password": "newpass"})
     assert resp.status_code == 200
-    user.refresh_from_db()
-    assert user.failed_login_attempts == 0
-    assert user.lock_expires_at is None
+    assert cache.get(f"failed_login_attempts_user_{user.pk}") is None
+    assert cache.get(f"lockout_user_{user.pk}") is None
     assert SecurityEvent.objects.filter(usuario=user, evento="senha_redefinida").exists()
 
 

@@ -14,6 +14,7 @@ from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -489,9 +490,8 @@ def password_reset_confirm(request, code: str):
         if form.is_valid():
             form.save()
             user = token.usuario
-            user.failed_login_attempts = 0
-            user.lock_expires_at = None
-            user.save(update_fields=["failed_login_attempts", "lock_expires_at"])
+            cache.delete(f"failed_login_attempts_user_{user.pk}")
+            cache.delete(f"lockout_user_{user.pk}")
             token.used_at = timezone.now()
             token.save(update_fields=["used_at"])
             SecurityEvent.objects.create(

@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.core.cache import cache
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -119,10 +120,10 @@ class AccountViewSet(viewsets.GenericViewSet):
             validate_password(new_password, user)
         except ValidationError as e:
             return Response({"detail": e.messages}, status=400)
-        user.failed_login_attempts = 0
-        user.lock_expires_at = None
+        cache.delete(f"failed_login_attempts_user_{user.pk}")
+        cache.delete(f"lockout_user_{user.pk}")
         user.set_password(new_password)
-        user.save(update_fields=["password", "failed_login_attempts", "lock_expires_at"])
+        user.save(update_fields=["password"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="senha_redefinida",
