@@ -29,17 +29,15 @@ class ApiTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Usuário desativado")
 
         device_fingerprint = request.headers.get("X-Device-Fingerprint")
-        if (
-            api_token.device_fingerprint
-            and api_token.device_fingerprint != device_fingerprint
-        ):
+        if api_token.device_fingerprint and api_token.device_fingerprint != device_fingerprint:
             raise AuthenticationFailed("Fingerprint inválido")
 
         ip_address = request.META.get("REMOTE_ADDR", "")
-        if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip_address).exists():
+        ip_rules = list(api_token.ips.all())
+        if any(rule.tipo == ApiTokenIp.Tipo.NEGADO and rule.ip == ip_address for rule in ip_rules):
             raise AuthenticationFailed("IP bloqueado")
-        allowed_qs = api_token.ips.filter(tipo=ApiTokenIp.Tipo.PERMITIDO)
-        if allowed_qs.exists() and not allowed_qs.filter(ip=ip_address).exists():
+        allowed_ips = [rule.ip for rule in ip_rules if rule.tipo == ApiTokenIp.Tipo.PERMITIDO]
+        if allowed_ips and ip_address not in allowed_ips:
             raise AuthenticationFailed("IP não permitido")
 
         api_token.last_used_at = timezone.now()
