@@ -779,8 +779,9 @@ def termos(request):
             except IntegrityError:
                 messages.error(
                     request,
-                    _("Não foi possível criar o usuário. Dados já cadastrados."),
+                    _("Nome de usuário já cadastrado."),
                 )
+                request.session.pop("usuario", None)
                 return redirect("accounts:usuario")
 
             primeiro_nucleo = token_obj.nucleos.first()

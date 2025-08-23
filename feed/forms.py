@@ -11,7 +11,7 @@ from accounts.models import UserType
 
 from organizacoes.models import Organizacao
 
-from .models import Comment, Post, Tag
+from .models import Comment, Like, Post, Tag
 from .services import upload_media
 
 User = get_user_model()
@@ -173,5 +173,12 @@ class CommentForm(forms.ModelForm):
                 }
             ),
         }
+
+
+class LikeForm(forms.ModelForm):
+    class Meta:
+        model = Like
+        fields = ["post"]
+        widgets = {"post": forms.HiddenInput()}
 
 
