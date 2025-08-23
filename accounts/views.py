@@ -454,6 +454,11 @@ def password_reset(request):
             except User.DoesNotExist:  # pragma: no cover - feedback uniforme
                 pass
             else:
+                AccountToken.objects.filter(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.PASSWORD_RESET,
+                    used_at__isnull=True,
+                ).update(used_at=timezone.now())
                 token = AccountToken.objects.create(
                     usuario=user,
                     tipo=AccountToken.Tipo.PASSWORD_RESET,

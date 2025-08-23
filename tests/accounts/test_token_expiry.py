@@ -92,6 +92,28 @@ def test_resend_confirmation_invalidates_previous(client, monkeypatch):
 
 
 @pytest.mark.django_db
+def test_password_reset_request_invalidates_previous(client, monkeypatch):
+    user = User.objects.create_user(email="r2@example.com", username="r2")
+    old = AccountToken.objects.create(
+        usuario=user,
+        tipo=AccountToken.Tipo.PASSWORD_RESET,
+        expires_at=timezone.now() + timezone.timedelta(hours=1),
+    )
+    monkeypatch.setattr(
+        "accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None
+    )
+    client.post(reverse("accounts:password_reset"), {"email": user.email})
+    assert (
+        AccountToken.objects.filter(
+            usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET, used_at__isnull=True
+        ).count()
+        == 1
+    )
+    old.refresh_from_db()
+    assert old.used_at is not None
+
+
+@pytest.mark.django_db
 def test_confirmation_token_default_expiry_and_invalidation(client):
     with freeze_time("2024-01-01 12:00:00"):
         form = CustomUserCreationForm(
