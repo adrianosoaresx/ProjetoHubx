@@ -396,6 +396,7 @@ def perfil_midia_delete(request, pk):
 # ====================== AUTENTICAÇÃO ======================
 
 
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("accounts:perfil")
