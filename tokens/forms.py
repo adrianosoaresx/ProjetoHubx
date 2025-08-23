@@ -1,13 +1,14 @@
 import pyotp
 from django import forms
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .models import ApiToken, CodigoAutenticacao, TokenAcesso
+from .models import ApiToken, ApiTokenIp, CodigoAutenticacao, TokenAcesso
 from .services import find_token_by_code
 
 User = get_user_model()
@@ -133,3 +134,38 @@ class Ativar2FAForm(forms.Form):
         if not pyotp.TOTP(self.user.two_factor_secret).verify(codigo):
             raise forms.ValidationError("Código inválido")
         return codigo
+
+
+class ApiTokenIpForm(forms.ModelForm):
+    class Meta:
+        model = ApiTokenIp
+        fields = ["token", "ip", "tipo"]
+
+    def __init__(self, *args, user: User | None = None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        if user and not user.is_superuser:
+            self.fields["token"].queryset = ApiToken.objects.filter(user=user)
+
+    def clean_token(self):
+        token = self.cleaned_data["token"]
+        if not self.user:
+            raise forms.ValidationError("Usuário inválido")
+        if not self.user.is_superuser and token.user != self.user:
+            raise forms.ValidationError("Token inválido")
+        return token
+
+
+class RemoverApiTokenIpForm(forms.Form):
+    ip_id = forms.UUIDField()
+
+    def __init__(self, *args, user: User | None = None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        ip_obj = get_object_or_404(ApiTokenIp, id=self.cleaned_data["ip_id"])
+        if not self.user.is_superuser and ip_obj.token.user != self.user:
+            raise forms.ValidationError("IP inválido")
+        ip_obj.delete()
+        return ip_obj

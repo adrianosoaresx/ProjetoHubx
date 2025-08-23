@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import ApiToken, TokenAcesso, TokenUsoLog
+from .models import ApiToken, ApiTokenIp, TokenAcesso, TokenUsoLog
 
 
 class TokenAcessoSerializer(serializers.ModelSerializer):
@@ -76,3 +76,10 @@ class ApiTokenSerializer(serializers.ModelSerializer):
             "expires_at": {"allow_null": True, "required": False},
             "device_fingerprint": {"allow_null": True, "required": False},
         }
+
+
+class ApiTokenIpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApiTokenIp
+        fields = ["id", "token", "ip", "tipo", "created_at"]
+        read_only_fields = ["id", "created_at"]
