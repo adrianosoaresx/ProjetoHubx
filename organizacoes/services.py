@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Dict
-import uuid
-
-import json
 import csv
-
+import uuid
+from typing import Any, Dict
 
 from django.db.models import Model
 from django.http import HttpResponse
@@ -52,22 +49,19 @@ def registrar_log(
 
 def exportar_logs_csv(organizacao: Organizacao) -> HttpResponse:
     response = HttpResponse(content_type="text/csv")
-    response[
-        "Content-Disposition"
-    ] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
+    response["Content-Disposition"] = f'attachment; filename="organizacao_{organizacao.pk}_logs.csv"'
     writer = csv.writer(response)
-    writer.writerow([
-        "tipo",
-        "campo/acao",
-        "valor_antigo",
-        "valor_novo",
-        "usuario",
-        "data",
-    ])
-    for log in (
-        OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-        .order_by("-created_at")
-    ):
+    writer.writerow(
+        [
+            "tipo",
+            "campo/acao",
+            "valor_antigo",
+            "valor_novo",
+            "usuario",
+            "data",
+        ]
+    )
+    for log in OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
         writer.writerow(
             [
                 "change",
@@ -78,10 +72,7 @@ def exportar_logs_csv(organizacao: Organizacao) -> HttpResponse:
                 log.created_at.isoformat(),
             ]
         )
-    for log in (
-        OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-        .order_by("-created_at")
-    ):
+    for log in OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at"):
         writer.writerow(
             [
                 "activity",
