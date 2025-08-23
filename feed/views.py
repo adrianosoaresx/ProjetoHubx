@@ -357,6 +357,15 @@ class PostDetailView(LoginRequiredMixin, DetailView):
 
 @login_required
 def toggle_like(request, pk):
+    if is_ratelimited(
+        request,
+        group="feed_misc_actions",
+        key="user",
+        rate=_read_rate(None, request),
+        method="POST",
+        increment=True,
+    ):
+        return HttpResponse(status=429)
     post = get_object_or_404(Post.objects.filter(deleted=False), id=pk)
     reacao = Reacao.all_objects.filter(post=post, user=request.user, vote="like").first()
     if reacao and not reacao.deleted:
