@@ -605,7 +605,7 @@ def checkin_inscricao(request, pk: int):
     return JsonResponse({"check_in": inscricao.check_in_realizado_em})
 
 
-class InscricaoEventoListView(LoginRequiredMixin, ListView):
+class InscricaoEventoListView(LoginRequiredMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
     template_name = "agenda/inscricao_list.html"
     context_object_name = "inscricoes"
