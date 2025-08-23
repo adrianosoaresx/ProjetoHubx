@@ -433,7 +433,14 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             messages.error(request, _("Acesso negado."))  # pragma: no cover
             return redirect("agenda:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
-        InscricaoEvento.objects.filter(user=inscrito, evento=evento).delete()
+        inscricao = get_object_or_404(InscricaoEvento, user=inscrito, evento=evento)
+        inscricao.cancelar_inscricao()
+        EventoLog.objects.create(
+            evento=evento,
+            usuario=request.user,
+            acao="inscricao_removida",
+            detalhes={"inscrito_id": inscrito.id},
+        )
         messages.success(request, _("Inscrito removido."))  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
 
