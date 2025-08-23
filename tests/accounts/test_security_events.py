@@ -13,6 +13,7 @@ User = get_user_model()
 
 
 @pytest.mark.django_db
+@override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_security_events_flow():
     user = User.objects.create_user(email="sec@example.com", username="sec", password="pass")
     client = APIClient()
@@ -34,17 +35,27 @@ def test_security_events_flow():
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()
 
     # delete account
-    resp = client.delete(reverse("accounts_api:account-delete-me"))
+    resp = client.delete(
+        reverse("accounts_api:account-delete-me"),
+        {"password": "pass"},
+        format="json",
+    )
     assert resp.status_code == 204
     assert SecurityEvent.objects.filter(usuario=user, evento="conta_excluida").exists()
 
     # cancel deletion
-    resp = client.post(reverse("accounts_api:account-cancel-delete"))
+    token = user.account_tokens.get(tipo="cancel_delete")
+    resp = client.post(
+        reverse("accounts_api:account-cancel-delete"),
+        {"token": token.codigo},
+        format="json",
+    )
     assert resp.status_code == 200
     assert SecurityEvent.objects.filter(usuario=user, evento="cancelou_exclusao").exists()
 
 
 @pytest.mark.django_db
+@override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_reset_password_logs_security_event():
     user = User.objects.create_user(email="reset@example.com", username="r", password="old")
     user.failed_login_attempts = 3
@@ -66,7 +77,7 @@ def test_reset_password_logs_security_event():
 
 
 @pytest.mark.django_db
-@override_settings(ROOT_URLCONF="tests.urls_accounts_api_only")
+@override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_resend_confirmation_logs_security_event():
     user = User.objects.create_user(email="inactive@example.com", username="i", is_active=False)
     client = APIClient()
@@ -77,6 +88,7 @@ def test_resend_confirmation_logs_security_event():
 
 
 @pytest.mark.django_db
+@override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
 def test_disable_2fa_requires_code():
     user = User.objects.create_user(email="tfa@example.com", username="t", password="pass", two_factor_enabled=True, two_factor_secret=pyotp.random_base32())
     TOTPDevice.objects.create(usuario=user, secret=user.two_factor_secret, confirmado=True)

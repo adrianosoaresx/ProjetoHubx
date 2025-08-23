@@ -187,6 +187,20 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["delete"], url_path="me")
     def delete_me(self, request):
         user = request.user
+        password = request.data.get("password")
+        confirm = request.data.get("confirm")
+        valid = False
+        if password:
+            valid = user.check_password(password)
+        elif confirm:
+            valid = confirm == "EXCLUIR"
+        if not valid:
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="conta_exclusao_falha",
+                ip=request.META.get("REMOTE_ADDR"),
+            )
+            return Response({"detail": _("Senha ou confirmação inválida.")}, status=400)
         user.delete()
         user.is_active = False
         user.exclusao_confirmada = True
