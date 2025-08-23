@@ -28,6 +28,7 @@ django-silk==5.4.0
 gprof2dot==2025.4.14
 nodeenv==1.9.1
 virtualenv==20.31.2
+setuptools<81
 
 # Notificações push
 onesignal-sdk==2.0.0
