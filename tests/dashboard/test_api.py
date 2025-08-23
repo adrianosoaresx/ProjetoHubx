@@ -4,10 +4,13 @@ import csv
 
 import pytest
 from django.core.cache import cache
+import datetime as dt
 from django.urls import reverse
 from django.test.utils import override_settings
+from django.utils import timezone
 from rest_framework.test import APIClient
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 from dashboard.utils import get_variation
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
@@ -122,6 +125,18 @@ def test_export_xlsx(api_client: APIClient, admin_user) -> None:
     )
 
 
+def test_export_invalid_date_order(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    inicio = timezone.now()
+    fim = inicio - dt.timedelta(days=1)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        params = {"formato": "csv", "inicio": inicio.isoformat(), "fim": fim.isoformat()}
+        url = reverse("dashboard-export") + "?" + urlencode(params)
+        resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
+
+
 def test_filter_crud(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)
     url = reverse("dashboard_api:dashboard-filter-list")
@@ -154,6 +169,17 @@ def test_dashboard_invalid_param(api_client: APIClient, admin_user) -> None:
     url = reverse("dashboard_api:dashboard-list") + "?periodo=foo"
     resp = api_client.get(url)
     assert resp.status_code == 400
+
+
+def test_dashboard_invalid_date_order(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    inicio = timezone.now()
+    fim = inicio - dt.timedelta(days=1)
+    params = {"inicio": inicio.isoformat(), "fim": fim.isoformat()}
+    url = reverse("dashboard_api:dashboard-list") + "?" + urlencode(params)
+    resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
 
 
 def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:
