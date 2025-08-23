@@ -36,7 +36,7 @@ from .serializers import (
     NucleoSerializer,
     ParticipacaoNucleoSerializer,
 )
-from .services import gerar_convite_nucleo
+from .services import gerar_convite_nucleo, registrar_uso_convite
 from .tasks import (
     notify_exportacao_membros,
     notify_participacao_aprovada,
@@ -91,7 +91,7 @@ class AceitarConviteAPIView(APIView):
     def get(self, request):
         token = request.query_params.get("token")
         convite = get_object_or_404(ConviteNucleo, token=token)
-        if convite.usado_em or convite.expirado():
+        if convite.expirado():
             return Response({"detail": _("Convite inválido ou expirado.")}, status=400)
         if request.user.email.lower() != convite.email.lower():
             return Response({"detail": _("Este convite não pertence a você.")}, status=403)
@@ -101,6 +101,10 @@ class AceitarConviteAPIView(APIView):
                 {"detail": _("Você não tem permissão para acessar este núcleo.")},
                 status=403,
             )
+        try:
+            registrar_uso_convite(convite)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_429_TOO_MANY_REQUESTS)
         ParticipacaoNucleo.objects.get_or_create(
             user=request.user,
             nucleo=nucleo,
@@ -160,8 +164,9 @@ class NucleoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(organizacao_id=org)
         page_number = request.query_params.get("page", "1")
         page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
+        search = request.query_params.get("search")
         version = get_cache_version(f"nucleos_list_{org}")
-        cache_key = f"nucleos_list_{org}_v{version}_{page_number}_{page_size}"
+        cache_key = f"nucleos_list_{org}_v{version}_{page_number}_{page_size}_{search or ''}"
         data = cache.get(cache_key)
         if data is not None:
             resp = Response(data)
@@ -482,15 +487,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
             papel, status = info.split(":")
             ativo = status == "ativo"
         return Response({"papel": papel, "ativo": ativo, "suspenso": suspenso})
-
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
-    def participacoes(self, request, pk: str | None = None):
-        nucleo = self.get_object()
-        if ParticipacaoNucleo.objects.filter(user=request.user, nucleo=nucleo).exists():
-            return Response({"detail": _("Já solicitado ou membro do núcleo.")}, status=400)
-        participacao = ParticipacaoNucleo.objects.create(user=request.user, nucleo=nucleo)
-        serializer = ParticipacaoNucleoSerializer(participacao)
-        return Response(serializer.data, status=201)
 
     @action(
         detail=True,

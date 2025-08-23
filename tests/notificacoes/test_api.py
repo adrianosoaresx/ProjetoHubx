@@ -3,7 +3,11 @@ from django.test.utils import override_settings
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
-from notificacoes.models import NotificationLog, NotificationStatus, NotificationTemplate
+from notificacoes.models import (
+    NotificationLog,
+    NotificationStatus,
+    NotificationTemplate,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -56,12 +60,8 @@ def test_logs_incluem_campo_created_at(client) -> None:
 
 def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
     user = UserFactory()
-    template = NotificationTemplate.objects.create(
-        codigo="t", assunto="Oi", corpo="C", canal="email"
-    )
-    log = NotificationLog.objects.create(
-        user=user, template=template, canal="email", status=NotificationStatus.ENVIADA
-    )
+    template = NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email", status=NotificationStatus.ENVIADA)
     client.force_login(user)
     resp = client.patch(
         f"/api/notificacoes/logs/{log.id}/",
@@ -74,12 +74,42 @@ def test_usuario_pode_marcar_notificacao_como_lida(client) -> None:
     assert log.data_leitura is not None
 
 
+def test_usuario_nao_pode_usar_status_invalido(client) -> None:
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="t9", assunto="Oi", corpo="C", canal="email")
+    log = NotificationLog.objects.create(user=user, template=template, canal="email", status=NotificationStatus.ENVIADA)
+    client.force_login(user)
+    resp = client.patch(
+        f"/api/notificacoes/logs/{log.id}/",
+        {"status": NotificationStatus.FALHA},
+        content_type="application/json",
+    )
+    assert resp.status_code == 400
+    log.refresh_from_db()
+    assert log.status == NotificationStatus.ENVIADA
+
+
+def test_usuario_nao_pode_marcar_log_nao_enviado(client) -> None:
+    user = UserFactory()
+    template = NotificationTemplate.objects.create(codigo="t10", assunto="Oi", corpo="C", canal="email")
+    log = NotificationLog.objects.create(
+        user=user, template=template, canal="email", status=NotificationStatus.PENDENTE
+    )
+    client.force_login(user)
+    resp = client.patch(
+        f"/api/notificacoes/logs/{log.id}/",
+        {"status": NotificationStatus.LIDA},
+        content_type="application/json",
+    )
+    assert resp.status_code == 400
+    log.refresh_from_db()
+    assert log.status == NotificationStatus.PENDENTE
+
+
 def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
     user1 = UserFactory()
     user2 = UserFactory()
-    template = NotificationTemplate.objects.create(
-        codigo="t2", assunto="Oi", corpo="C", canal="email"
-    )
+    template = NotificationTemplate.objects.create(codigo="t2", assunto="Oi", corpo="C", canal="email")
     log = NotificationLog.objects.create(
         user=user1, template=template, canal="email", status=NotificationStatus.ENVIADA
     )
@@ -96,9 +126,7 @@ def test_usuario_nao_marca_notificacao_de_outro(client) -> None:
 def test_usuario_staff_nao_marca_notificacao_de_outro(client) -> None:
     staff = UserFactory(is_staff=True)
     other = UserFactory()
-    template = NotificationTemplate.objects.create(
-        codigo="t8", assunto="Oi", corpo="C", canal="email"
-    )
+    template = NotificationTemplate.objects.create(codigo="t8", assunto="Oi", corpo="C", canal="email")
     log = NotificationLog.objects.create(
         user=other, template=template, canal="email", status=NotificationStatus.ENVIADA
     )

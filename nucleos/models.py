@@ -68,9 +68,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=("organizacao", "slug"), name="uniq_org_slug")
-        ]
+        constraints = [models.UniqueConstraint(fields=("organizacao", "slug"), name="uniq_org_slug")]
         verbose_name = "Núcleo"
         verbose_name_plural = "Núcleos"
 
@@ -89,12 +87,14 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     def coordenadores(self):
         return self.membros.filter(participacoes__papel="coordenador")
 
-
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.nome)
-        else:
-            self.slug = slugify(self.slug)
+        base_slug = slugify(self.slug or self.nome)
+        slug = base_slug
+        counter = 1
+        while self.__class__.objects.filter(organizacao=self.organizacao, slug=slug).exclude(pk=self.pk).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        self.slug = slug
         super().save(*args, **kwargs)
 
 

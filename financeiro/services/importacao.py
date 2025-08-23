@@ -8,6 +8,7 @@ from typing import Any, Iterable
 
 from dateutil.parser import parse
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
@@ -282,8 +283,8 @@ class ImportadorPagamentos:
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
-                user = User.objects.create_user(email=email, username=email.split("@")[0])
-            conta, _ = ContaAssociado.objects.get_or_create(user=user)
+                raise ValidationError(_("Usuário com e-mail não encontrado"))
+            conta = ContaAssociado.objects.filter(user=user).first()
         if not conta:
             raise ValueError(_("Conta do associado não encontrada"))
         data_lanc = parse(row["data_lancamento"])

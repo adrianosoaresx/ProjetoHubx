@@ -41,7 +41,8 @@ def test_gera_serie_temporal(django_assert_num_queries):
     assert data["serie"][0]["despesas"] == 20.0
 
 
-def test_exporta_csv_relatorios(client):
+def test_exporta_csv_relatorios(client, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
     user = UserFactory(user_type=UserType.ADMIN)
     client.force_login(user)
     org = OrganizacaoFactory()
@@ -55,8 +56,13 @@ def test_exporta_csv_relatorios(client):
     )
     url = reverse("financeiro_api:financeiro-relatorios") + "?format=csv"
     resp = client.get(url)
-    assert resp.status_code == 200
-    reader = csv.reader(io.StringIO(resp.content.decode()))
+    assert resp.status_code == 202
+    data = resp.json()
+    assert "id" in data
+    download_url = data["url"]
+    resp2 = client.get(download_url)
+    assert resp2.status_code == 200
+    reader = csv.reader(io.StringIO(resp2.content.decode()))
     rows = list(reader)
     assert rows[0] == ["data", "categoria", "valor", "status", "centro de custo"]
     assert len(rows) == 2

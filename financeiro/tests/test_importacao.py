@@ -198,6 +198,41 @@ def test_reprocessar_erros(api_client, user, settings):
     assert LancamentoFinanceiro.objects.count() == 2
 
 
+def test_email_nao_cadastrado(api_client, user):
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    buf = StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(
+        [
+            "centro_custo_id",
+            "email",
+            "tipo",
+            "valor",
+            "data_lancamento",
+            "data_vencimento",
+            "status",
+        ]
+    )
+    writer.writerow(
+        [
+            str(centro.id),
+            "naoexiste@example.com",
+            "aporte_interno",
+            "10",
+            timezone.now().isoformat(),
+            "",
+            "pago",
+        ]
+    )
+    csv_bytes = buf.getvalue().encode()
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 400
+    assert "e-mail" in " ".join(resp.data.get("erros", [])).lower()
+
+
 def test_metrics_increment(api_client, user, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     auth(api_client, user)

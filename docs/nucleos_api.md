@@ -13,5 +13,8 @@ O modelo `Nucleo` possui o campo booleano `ativo` (padrão `true`), permitindo a
 - `POST /api/nucleos/{id}/membros/{user_id}/reativar/` — reativa o participante suspenso.
 - `GET /api/nucleos/{id}/membro-status/` — retorna `{papel, ativo, suspenso}` para o usuário autenticado.
 
+## Participações
+- `POST /api/nucleos/{id}/solicitar/` — solicita participação no núcleo para o usuário autenticado. Retorna erro se já houver solicitação ou se o usuário já for membro.
+
 ## Feed do Núcleo
 - `POST /api/nucleos/{id}/posts/` — cria um post no feed do núcleo para membros ativos não suspensos.

@@ -52,30 +52,38 @@ def enviar_para_usuario(
     prefs, _created = UserNotificationPreference.objects.get_or_create(user=user)
 
     canais: list[str] = []
-    if template.canal in {Canal.EMAIL, Canal.TODOS} and prefs.email:
-        canais.append(Canal.EMAIL)
-    if template.canal in {Canal.PUSH, Canal.TODOS} and prefs.push:
-        canais.append(Canal.PUSH)
-    if template.canal in {Canal.WHATSAPP, Canal.TODOS} and prefs.whatsapp:
-        canais.append(Canal.WHATSAPP)
+    canais_desabilitados: list[str] = []
+
+    if template.canal in {Canal.EMAIL, Canal.TODOS}:
+        if prefs.email:
+            canais.append(Canal.EMAIL)
+        else:
+            canais_desabilitados.append(Canal.EMAIL)
+
+    if template.canal in {Canal.PUSH, Canal.TODOS}:
+        if prefs.push:
+            canais.append(Canal.PUSH)
+        else:
+            canais_desabilitados.append(Canal.PUSH)
+
+    if template.canal in {Canal.WHATSAPP, Canal.TODOS}:
+        if prefs.whatsapp:
+            canais.append(Canal.WHATSAPP)
+        else:
+            canais_desabilitados.append(Canal.WHATSAPP)
+
+    for canal in canais_desabilitados:
+        NotificationLog.objects.create(
+            user=user,
+            template=template,
+            canal=canal,
+            destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
+            status=NotificationStatus.FALHA,
+            erro=_("Canais desabilitados pelo usuário"),
+            corpo_renderizado=body,
+        )
 
     if not canais:
-        canais_desabilitados: list[str]
-        if template.canal == Canal.TODOS:
-            canais_desabilitados = [Canal.EMAIL, Canal.PUSH, Canal.WHATSAPP]
-        else:
-            canais_desabilitados = [template.canal]
-
-        for canal in canais_desabilitados:
-            NotificationLog.objects.create(
-                user=user,
-                template=template,
-                canal=canal,
-                destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
-                status=NotificationStatus.FALHA,
-                erro=_("Canais desabilitados pelo usuário"),
-                corpo_renderizado=body,
-            )
         return
 
     for canal in canais:
