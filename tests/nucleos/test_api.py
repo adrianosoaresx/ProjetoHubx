@@ -8,7 +8,7 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import UserType
-from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
+from nucleos.models import ConviteNucleo, CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from nucleos.tasks import expirar_solicitacoes_pendentes
 from organizacoes.models import Organizacao
 
@@ -197,6 +197,25 @@ def test_permission_denied(api_client, outro_user, organizacao):
     assert resp.status_code == 403
     export_url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
     assert api_client.get(export_url).status_code == 403
+
+
+def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    nucleo = Nucleo.objects.create(nome="Nextra", slug="nextra", organizacao=outra)
+    _auth(api_client, outro_user)
+    url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
+    resp = api_client.post(url)
+    assert resp.status_code == 403
+
+
+def test_aceitar_convite_outro_nucleo(api_client, outro_user, organizacao):
+    outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
+    nucleo = Nucleo.objects.create(nome="Nextra", slug="nextra", organizacao=outra)
+    convite = ConviteNucleo.objects.create(email=outro_user.email, papel="membro", nucleo=nucleo)
+    _auth(api_client, outro_user)
+    url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
+    resp = api_client.get(url)
+    assert resp.status_code == 403
 
 
 def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_model):

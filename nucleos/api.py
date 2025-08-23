@@ -95,9 +95,15 @@ class AceitarConviteAPIView(APIView):
             return Response({"detail": _("Convite inválido ou expirado.")}, status=400)
         if request.user.email.lower() != convite.email.lower():
             return Response({"detail": _("Este convite não pertence a você.")}, status=403)
+        nucleo = convite.nucleo
+        if request.user.organizacao_id != nucleo.organizacao_id:
+            return Response(
+                {"detail": _("Você não tem permissão para acessar este núcleo.")},
+                status=403,
+            )
         ParticipacaoNucleo.objects.get_or_create(
             user=request.user,
-            nucleo=convite.nucleo,
+            nucleo=nucleo,
             defaults={
                 "status": "ativo",
                 "papel": convite.papel,
@@ -256,6 +262,11 @@ class NucleoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="solicitar", permission_classes=[IsAuthenticated])
     def solicitar(self, request, pk: str | None = None):
         nucleo = self.get_object()
+        if request.user.organizacao_id != nucleo.organizacao_id:
+            return Response(
+                {"detail": _("Você não tem permissão para acessar este núcleo.")},
+                status=403,
+            )
         participacao, created = ParticipacaoNucleo.objects.get_or_create(user=request.user, nucleo=nucleo)
         if not created:
             if participacao.status == "pendente":
