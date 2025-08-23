@@ -30,6 +30,11 @@ Authorization: Bearer <token>
 DELETE /api/api-tokens/<id>/
 ```
 
+Revogações feitas via API registram o IP e o *user agent* do cliente.
+Revogações automáticas, executadas pela tarefa periódica
+`revogar_tokens_expirados`, registram o IP `0.0.0.0` e o *user agent*
+`task:revogar_tokens_expirados`.
+
 ### Rotação
 
 ```http

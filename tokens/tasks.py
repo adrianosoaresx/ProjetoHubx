@@ -30,15 +30,15 @@ def revogar_tokens_expirados() -> None:
         token.revogado_por = token.user  # automatic revocation by owner, if any
         token.deleted = True
         token.deleted_at = now
-        token.save(
-            update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"]
-        )
+        token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
         ApiTokenLog.objects.create(
             token=token,
             usuario=None,
             acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=None,
+            ip="0.0.0.0",
+            user_agent="task:revogar_tokens_expirados",
         )
+
 
 @shared_task
 def send_webhook(payload: dict[str, object]) -> None:
@@ -109,4 +109,3 @@ def reenviar_webhooks_pendentes() -> None:
         if sucesso:
             evento.delivered = True
         evento.save(update_fields=["delivered", "attempts", "last_attempt_at"])
-
