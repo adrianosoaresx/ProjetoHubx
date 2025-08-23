@@ -71,7 +71,14 @@
           document.getElementById('confirm-btn').disabled = false;
         }
         if (data.erros && data.erros.length) {
-          messages.innerHTML = `<ul class="list-disc text-red-600 pl-5">${data.erros.map(e => `<li>${e}</li>`).join('')}</ul>`;
+          const ul = document.createElement('ul');
+          ul.className = 'list-disc text-red-600 pl-5';
+          data.erros.forEach((err) => {
+            const li = document.createElement('li');
+            li.textContent = err;
+            ul.appendChild(li);
+          });
+          messages.appendChild(ul);
           if (!data.preview || !data.preview.length) {
             document.getElementById('confirm-btn').disabled = true;
           }
