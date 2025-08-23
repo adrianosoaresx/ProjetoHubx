@@ -69,10 +69,19 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ["id", "nome"]
 
 
+class IsAdminOrReadOnly(permissions.IsAdminUser):
+    """Permite acesso de leitura a qualquer usuário e escrita apenas a admins."""
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return super().has_permission(request, view)
+
+
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CanEditPost(permissions.BasePermission):
