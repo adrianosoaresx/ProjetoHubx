@@ -1,6 +1,5 @@
 import asyncio
 import os
-import time
 
 import pytest
 from asgiref.sync import sync_to_async
@@ -9,7 +8,7 @@ from channels.testing import WebsocketCommunicator
 from django.utils import timezone
 from django.core.cache import cache
 
-from chat.consumers import MESSAGE_RATE_LIMIT, MESSAGE_WINDOW_SECONDS
+from chat.consumers import MESSAGE_RATE_LIMIT
 from chat.models import ChatMessage, ChatNotification
 from chat.services import criar_canal, enviar_mensagem
 from Hubx.asgi import application
@@ -59,7 +58,7 @@ def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user
     asyncio.run(inner())
 
 
-def test_consumer_rate_limit_delays_messages(admin_user, coordenador_user, nucleo):
+def test_consumer_rate_limit_closes_connection(admin_user, coordenador_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
             criador=admin_user,
@@ -75,13 +74,16 @@ def test_consumer_rate_limit_delays_messages(admin_user, coordenador_user, nucle
         assert connected
         for i in range(MESSAGE_RATE_LIMIT):
             await communicator.send_json_to({"tipo": "text", "conteudo": str(i)})
-            await communicator.receive_json_from()
-        start = time.monotonic()
+            await communicator.receive_json_from(timeout=5)
         await communicator.send_json_to({"tipo": "text", "conteudo": "limit"})
-        await communicator.receive_json_from(timeout=MESSAGE_WINDOW_SECONDS + 5)
-        elapsed = time.monotonic() - start
-        assert elapsed >= MESSAGE_WINDOW_SECONDS - 1
-        await communicator.disconnect()
+        event = await communicator.receive_output()
+        assert event["type"] == "websocket.close"
+        assert event["code"] == 4008
+        count = await database_sync_to_async(
+            ChatMessage.objects.filter(channel=canal).count
+        )()
+        assert count == MESSAGE_RATE_LIMIT
+        await communicator.wait()
 
     asyncio.run(inner())
 

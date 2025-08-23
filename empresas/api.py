@@ -151,13 +151,20 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+        ):
             return Response(status=403)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or request.user.is_superuser
+        ):
             return Response(status=403)
         return super().destroy(request, *args, **kwargs)
 
@@ -253,7 +260,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def historico(self, request, pk: str | None = None):
-        if not request.user.is_staff:
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return Response(status=403)
         empresa = self.get_object()
         logs = empresa.logs.filter(deleted=False).select_related("usuario")
@@ -265,7 +272,11 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if not empresa.deleted:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
+        if not (
+            request.user == empresa.usuario
+            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            or request.user.is_superuser
+        ):
             return Response(status=403)
         empresa.undelete()
         EmpresaChangeLog.objects.create(
@@ -283,7 +294,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if not empresa.deleted:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT} and not request.user.is_superuser:
             return Response(status=403)
         EmpresaChangeLog.objects.create(
             empresa=empresa,
