@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django import forms
 
+from .constants import METRICAS_INFO
 from .models import (
     DashboardConfig,
     DashboardCustomMetric,
@@ -36,8 +37,6 @@ class DashboardFilterForm(forms.ModelForm):
         instance.filtros = {k: v for k, v in filtros_data.items() if k in allowed}
         metricas = instance.filtros.get("metricas")
         if metricas:
-            from .views import METRICAS_INFO  # type: ignore
-
             valid = set(METRICAS_INFO.keys()) | set(
                 DashboardCustomMetric.objects.values_list("code", flat=True)
             )

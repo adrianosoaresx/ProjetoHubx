@@ -310,6 +310,24 @@ def test_interacao_view_returns_score(client, nucleado_user, categoria, topico):
     assert data["score"] == 1 and data["num_votos"] == 1
 
 
+def test_interacao_view_invalid_action(client, nucleado_user, categoria, topico):
+    client.force_login(nucleado_user)
+    ct = ContentType.objects.get_for_model(topico)
+    url = reverse("discussao:interacao", args=[ct.id, topico.id, "foo"])
+    resp = client.post(url)
+    assert resp.status_code == 400
+    assert not InteracaoDiscussao.objects.exists()
+
+
+def test_interacao_view_rejects_invalid_content_type(client, nucleado_user, categoria):
+    client.force_login(nucleado_user)
+    ct = ContentType.objects.get_for_model(categoria)
+    url = reverse("discussao:interacao", args=[ct.id, categoria.id, "like"])
+    resp = client.post(url)
+    assert resp.status_code == 400
+    assert not InteracaoDiscussao.objects.exists()
+
+
 def test_topico_detail_includes_num_votos(rf, nucleado_user, categoria, topico):
     RespostaDiscussao.objects.create(topico=topico, autor=nucleado_user, conteudo="r")
     request = rf.get("/")

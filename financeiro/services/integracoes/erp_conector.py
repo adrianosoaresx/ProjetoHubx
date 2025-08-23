@@ -22,10 +22,18 @@ class ERPConector:
     base para extensões futuras e é propositalmente minimalista.
     """
 
-    def __init__(self, config: IntegracaoConfig):
+    def __init__(
+        self,
+        config: IntegracaoConfig,
+        *,
+        retries: int = 3,
+        backoff: float = 1.0,
+    ):
         self.config = config
         self.base_url = config.base_url.rstrip("/")
         self.session = requests.Session()
+        self.retries = retries
+        self.backoff = backoff
         if config.credenciais_encrypted:
             self.session.headers["Authorization"] = f"Bearer {config.credenciais_encrypted}"
 
@@ -80,40 +88,45 @@ class ERPConector:
         headers = kwargs.pop("headers", {})
         if idempotency_key:
             headers["Idempotency-Key"] = idempotency_key
-        start = time.monotonic()
         timeout = kwargs.pop("timeout", 10)
-        try:
-            response = self.session.request(
-                method, url, headers=headers, timeout=timeout, **kwargs
-            )
-        except (requests.Timeout, requests.ConnectionError) as exc:
+
+        for attempt in range(1, self.retries + 1):
+            start = time.monotonic()
+            try:
+                response = self.session.request(
+                    method, url, headers=headers, timeout=timeout, **kwargs
+                )
+            except (requests.Timeout, requests.ConnectionError) as exc:
+                duration = int((time.monotonic() - start) * 1000)
+                status = (
+                    "timeout" if isinstance(exc, requests.Timeout) else "connection_error"
+                )
+                IntegracaoLog.objects.create(
+                    provedor=self.config.nome,
+                    acao=f"{method} {path} (tentativa {attempt})",
+                    payload_in=kwargs.get("json"),
+                    payload_out={},
+                    status=status,
+                    duracao_ms=duration,
+                    erro=str(exc),
+                )
+                if attempt == self.retries:
+                    raise ERPConectorError("Erro ao comunicar com ERP") from exc
+                time.sleep(self.backoff * attempt)
+                continue
+
             duration = int((time.monotonic() - start) * 1000)
-            status = (
-                "timeout" if isinstance(exc, requests.Timeout) else "connection_error"
-            )
             IntegracaoLog.objects.create(
                 provedor=self.config.nome,
-                acao=f"{method} {path}",
+                acao=f"{method} {path} (tentativa {attempt})",
                 payload_in=kwargs.get("json"),
-                payload_out={},
-                status=status,
+                payload_out=self._safe_json(response),
+                status=str(response.status_code),
                 duracao_ms=duration,
-                erro=str(exc),
+                erro="" if response.ok else response.text,
             )
-            raise ERPConectorError("Erro ao comunicar com ERP") from exc
-
-        duration = int((time.monotonic() - start) * 1000)
-        IntegracaoLog.objects.create(
-            provedor=self.config.nome,
-            acao=f"{method} {path}",
-            payload_in=kwargs.get("json"),
-            payload_out=self._safe_json(response),
-            status=str(response.status_code),
-            duracao_ms=duration,
-            erro="" if response.ok else response.text,
-        )
-        response.raise_for_status()
-        return response
+            response.raise_for_status()
+            return response
 
     @staticmethod
     def _safe_json(response: requests.Response) -> Any:

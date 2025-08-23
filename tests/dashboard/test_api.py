@@ -16,6 +16,7 @@ from dashboard.utils import get_variation
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from dashboard.services import DashboardMetricsService
+from dashboard.constants import METRICAS_INFO
 
 pytestmark = pytest.mark.django_db
 
@@ -51,7 +52,7 @@ def test_export_csv(api_client: APIClient, admin_user) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
@@ -82,7 +83,7 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
@@ -107,7 +108,7 @@ def test_export_xlsx(api_client: APIClient, admin_user) -> None:
         with patch.object(
             DashboardMetricsService,
             "get_metrics",
-            return_value={"num_users": {"total": 1, "crescimento": 0.0}},
+            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
         ) as mock_get:
             resp = api_client.get(url)
     assert resp.status_code == 200
@@ -135,6 +136,15 @@ def test_export_invalid_date_order(api_client: APIClient, admin_user) -> None:
         resp = api_client.get(url)
     assert resp.status_code == 400
     assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
+
+
+def test_export_invalid_metric(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        url = reverse("dashboard-export") + "?metricas=foo"
+        resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "Métrica inválida: foo"
 
 
 def test_filter_crud(api_client: APIClient, admin_user) -> None:
@@ -180,6 +190,14 @@ def test_dashboard_invalid_date_order(api_client: APIClient, admin_user) -> None
     resp = api_client.get(url)
     assert resp.status_code == 400
     assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
+
+
+def test_dashboard_invalid_metric(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    url = reverse("dashboard_api:dashboard-list") + "?metricas=foo"
+    resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "Métrica inválida: foo"
 
 
 def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:
