@@ -68,7 +68,7 @@
     {% endif %}
     <div id="lista-comentarios">
 
-      {% include 'discussao/topico_detail.html' with partial=True topico=topico user=user resposta_content_type_id=content_type_id only %}
+      {% include 'discussao/topico_detail.html' with partial=True topico=topico comentarios=comentarios user=user resposta_content_type_id=content_type_id only %}
 
 
     </div>
