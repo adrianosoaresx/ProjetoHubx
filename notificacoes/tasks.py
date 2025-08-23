@@ -108,7 +108,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
         logs = NotificationLog.objects.filter(user=config.user, canal=canal, status=NotificationStatus.PENDENTE)
         if not logs.exists():
             continue
-        mensagens = [log.template.corpo for log in logs]
+        mensagens = [log.corpo_renderizado or log.template.corpo for log in logs]
         body = "\n".join(mensagens)
         subject = _("Resumo de notificações")
         if canal == Canal.EMAIL:

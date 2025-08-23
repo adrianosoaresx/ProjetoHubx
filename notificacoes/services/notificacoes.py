@@ -74,6 +74,7 @@ def enviar_para_usuario(
                 destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
                 status=NotificationStatus.FALHA,
                 erro=_("Canais desabilitados pelo usuário"),
+                corpo_renderizado=body,
             )
         return
 
@@ -83,5 +84,6 @@ def enviar_para_usuario(
             template=template,
             canal=canal,
             destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
+            corpo_renderizado=body,
         )
         enviar_notificacao_async.delay(subject, body, str(log.id))
