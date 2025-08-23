@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.conf import settings
 from django.db import connection, models
 from django.db.models.functions import TruncDay, TruncMonth
 from django.shortcuts import get_object_or_404
@@ -104,6 +105,19 @@ class UploadArquivoAPIView(APIView):
         if not arquivo:
             return Response({"erro": "Arquivo obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
         content_type = arquivo.content_type or mimetypes.guess_type(arquivo.name)[0] or ""
+        if arquivo.size > settings.CHAT_UPLOAD_MAX_SIZE:
+            return Response(
+                {"erro": "Arquivo excede o tamanho máximo permitido"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not any(
+            content_type == mt or (mt.endswith("/") and content_type.startswith(mt))
+            for mt in settings.CHAT_ALLOWED_MIME_TYPES
+        ):
+            return Response(
+                {"erro": "Tipo de arquivo não permitido"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         attachment = ChatAttachment(
             mime_type=content_type,
             tamanho=arquivo.size,
