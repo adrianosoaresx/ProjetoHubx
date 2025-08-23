@@ -148,7 +148,7 @@ def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monke
         sent["subject"] = subject
         sent["body"] = body
 
-    monkeypatch.setattr("financeiro.views.send_email", fake_send_email)
+    monkeypatch.setattr("financeiro.views.api.send_email", fake_send_email)
     auth(api_client, admin_user)
     centro = _create_centro(admin_user)
     url = reverse("financeiro_api:financeiro-aportes")
