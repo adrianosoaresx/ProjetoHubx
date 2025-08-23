@@ -1,8 +1,8 @@
 import importlib
 import sys
+import types
 from datetime import timedelta
 from unittest.mock import Mock
-import types
 
 import pytest
 from django.core.files.storage import default_storage
@@ -25,15 +25,17 @@ def test_scan_file_logs_exception(monkeypatch, module_path):
     monkeypatch.setitem(sys.modules, "clamd", dummy_module)
 
     captured = Mock()
-    monkeypatch.setattr(f"{module_path}.sentry_sdk.capture_exception", captured)
+    from chat import utils as chat_utils
+
+    monkeypatch.setattr(chat_utils.sentry_sdk, "capture_exception", captured)
 
     mod = importlib.import_module(module_path)
     assert mod._scan_file("/tmp/test") is False
     assert captured.call_count == 1
+    assert mod._scan_file is chat_utils._scan_file
 
 
-def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenador_user):
-
+def test_exportar_historico_chat_gera_arquivo(media_root, admin_user, coordenador_user, nucleo):
     canal = criar_canal(
         criador=admin_user,
         contexto_tipo="privado",
@@ -67,16 +69,16 @@ def test_exportar_historico_chat_com_filtro(media_root, admin_user, coordenador_
     )
     enviar_mensagem(canal, admin_user, "text", conteudo="oi")
     enviar_mensagem(canal, admin_user, "image", conteudo="https://exemplo.com/img.png")
-    rel = RelatorioChatExport.objects.create(
-        channel=canal, formato="json", gerado_por=admin_user, status="gerando"
-    )
+    rel = RelatorioChatExport.objects.create(channel=canal, formato="json", gerado_por=admin_user, status="gerando")
     exportar_historico_chat(
         str(canal.id),
         "json",
         tipos=["image"],
         relatorio_id=str(rel.id),
     )
-    import json, os
+    import json
+    import os
+
     from django.conf import settings
 
     file_path = os.path.join(settings.MEDIA_ROOT, f"chat_exports/{canal.id}.json")
@@ -95,18 +97,12 @@ def test_limpar_exports_antigos_remove_arquivos(media_root, admin_user, coordena
         participantes=[coordenador_user],
     )
     enviar_mensagem(canal, admin_user, "text", conteudo="oi")
-    rel_old = RelatorioChatExport.objects.create(
-        channel=canal, formato="json", gerado_por=admin_user, status="gerando"
-    )
+    rel_old = RelatorioChatExport.objects.create(channel=canal, formato="json", gerado_por=admin_user, status="gerando")
     exportar_historico_chat(str(canal.id), "json", relatorio_id=str(rel_old.id))
     rel_old.refresh_from_db()
-    RelatorioChatExport.objects.filter(id=rel_old.id).update(
-        created_at=timezone.now() - timedelta(days=31)
-    )
+    RelatorioChatExport.objects.filter(id=rel_old.id).update(created_at=timezone.now() - timedelta(days=31))
 
-    rel_new = RelatorioChatExport.objects.create(
-        channel=canal, formato="csv", gerado_por=admin_user, status="gerando"
-    )
+    rel_new = RelatorioChatExport.objects.create(channel=canal, formato="csv", gerado_por=admin_user, status="gerando")
     exportar_historico_chat(str(canal.id), "csv", relatorio_id=str(rel_new.id))
     rel_new.refresh_from_db()
 

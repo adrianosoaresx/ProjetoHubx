@@ -3,7 +3,6 @@ from __future__ import annotations
 import mimetypes
 from datetime import timedelta
 from io import BytesIO
-import sentry_sdk
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -20,11 +19,11 @@ from django.utils.dateparse import parse_datetime
 from PIL import Image
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import ValidationError
 
 from .api import add_reaction, remove_reaction
 from .metrics import chat_attachments_total, chat_categories_total
@@ -65,22 +64,6 @@ from .throttles import FlagRateThrottle, UploadRateThrottle
 from .utils import _scan_file
 
 User = get_user_model()
-
-
-
-def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external service
-    try:
-        import clamd  # type: ignore
-
-        cd = clamd.ClamdNetworkSocket()
-        result = cd.scan(path)
-        if result:
-            return any(status == "FOUND" for _, (status, _) in result.items())
-    except Exception as exc:
-        sentry_sdk.capture_exception(exc)
-        return False
-    return False
-
 
 
 class ChatChannelCategoryViewSet(viewsets.ModelViewSet):
@@ -391,9 +374,7 @@ class ChatChannelViewSet(viewsets.ModelViewSet):
         url_path=r"resumos/(?P<resumo_id>[0-9a-f-]+)",
         permission_classes=[permissions.IsAuthenticated, IsChannelParticipant],
     )
-    def resumo_detail(
-        self, request: Request, pk: str | None = None, resumo_id: str | None = None
-    ) -> Response:
+    def resumo_detail(self, request: Request, pk: str | None = None, resumo_id: str | None = None) -> Response:
         channel = self.get_object()
         resumo = get_object_or_404(channel.resumos, pk=resumo_id)
         serializer = ResumoChatSerializer(resumo)
