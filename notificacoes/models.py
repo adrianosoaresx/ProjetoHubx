@@ -98,11 +98,11 @@ class NotificationLog(TimeStampedModel):
             imutaveis = ["user_id", "template_id", "canal", "destinatario"]
             for campo in imutaveis:
                 if getattr(self, campo) != getattr(original, campo):
-                    raise PermissionError("NotificationLog é imutável")
+                    raise PermissionError(_("NotificationLog é imutável"))
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):  # pragma: no cover - comportamento definido
-        raise PermissionError("NotificationLog é imutável")
+        raise PermissionError(_("NotificationLog é imutável"))
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return f"{self.template.codigo} -> {self.user}"  # type: ignore[attr-defined]  # pragma: no cover

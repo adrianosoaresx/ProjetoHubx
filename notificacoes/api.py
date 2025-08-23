@@ -88,7 +88,7 @@ def enviar_view(request):
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
-        return Response({"detail": "Usuário não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"detail": _("Usuário não encontrado")}, status=status.HTTP_404_NOT_FOUND)
     try:
         enviar_para_usuario(user, template_codigo, context)
     except ValueError as exc:
