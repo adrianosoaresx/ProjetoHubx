@@ -99,26 +99,38 @@ class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
     )
     escopo_tipo = models.CharField(max_length=20, choices=Escopo.choices)
     escopo_id = models.UUIDField()
-    receber_notificacoes_email = models.BooleanField(default=True)
+    receber_notificacoes_email = models.BooleanField(null=True, blank=True, default=None)
     frequencia_notificacoes_email = models.CharField(
         max_length=8,
         choices=NOTIFICACAO_FREQ_CHOICES,
-        default="imediata",
+        null=True,
+        blank=True,
+        default=None,
     )
-    receber_notificacoes_whatsapp = models.BooleanField(default=False)
+    receber_notificacoes_whatsapp = models.BooleanField(null=True, blank=True, default=None)
     frequencia_notificacoes_whatsapp = models.CharField(
         max_length=8,
         choices=NOTIFICACAO_FREQ_CHOICES,
-        default="imediata",
+        null=True,
+        blank=True,
+        default=None,
     )
-    receber_notificacoes_push = models.BooleanField(default=True)
+    receber_notificacoes_push = models.BooleanField(null=True, blank=True, default=None)
     frequencia_notificacoes_push = models.CharField(
         max_length=8,
         choices=NOTIFICACAO_FREQ_CHOICES,
-        default="imediata",
+        null=True,
+        blank=True,
+        default=None,
     )
-    idioma = models.CharField(max_length=5, default="pt-BR")
-    tema = models.CharField(max_length=10, choices=TEMA_CHOICES, default="claro")
+    idioma = models.CharField(max_length=5, null=True, blank=True, default=None)
+    tema = models.CharField(
+        max_length=10,
+        choices=TEMA_CHOICES,
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()

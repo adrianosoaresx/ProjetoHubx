@@ -74,10 +74,10 @@ def test_logs_created_for_push_fields(admin_user):
         .first()
     )
     assert log_receber is not None
-    assert log_receber.valor_antigo == "True"
+    assert log_receber.valor_antigo is None
     assert log_receber.fonte == "import"
     assert log_freq is not None
-    assert log_freq.valor_antigo == "imediata"
+    assert log_freq.valor_antigo is None
     assert log_freq.fonte == "import"
 
 

@@ -91,9 +91,9 @@ class ConfiguracaoContextualForm(forms.ModelForm):
         )
         widgets = {
             "escopo_id": forms.Select(),
-            "receber_notificacoes_email": forms.CheckboxInput(),
-            "receber_notificacoes_whatsapp": forms.CheckboxInput(),
-            "receber_notificacoes_push": forms.CheckboxInput(),
+            "receber_notificacoes_email": forms.NullBooleanSelect(),
+            "receber_notificacoes_whatsapp": forms.NullBooleanSelect(),
+            "receber_notificacoes_push": forms.NullBooleanSelect(),
             "frequencia_notificacoes_email": forms.Select(),
             "frequencia_notificacoes_whatsapp": forms.Select(),
             "frequencia_notificacoes_push": forms.Select(),
@@ -108,10 +108,19 @@ class ConfiguracaoContextualForm(forms.ModelForm):
 
     def clean(self) -> dict[str, object]:
         data = super().clean()
-        if not data.get("receber_notificacoes_email"):
-            data["frequencia_notificacoes_email"] = self.instance.frequencia_notificacoes_email
-        if not data.get("receber_notificacoes_whatsapp"):
-            data["frequencia_notificacoes_whatsapp"] = self.instance.frequencia_notificacoes_whatsapp
-        if not data.get("receber_notificacoes_push"):
-            data["frequencia_notificacoes_push"] = self.instance.frequencia_notificacoes_push
+        if data.get("receber_notificacoes_email") is False:
+            if data.get("frequencia_notificacoes_email") in (None, ""):
+                data["frequencia_notificacoes_email"] = (
+                    self.instance.frequencia_notificacoes_email
+                )
+        if data.get("receber_notificacoes_whatsapp") is False:
+            if data.get("frequencia_notificacoes_whatsapp") in (None, ""):
+                data["frequencia_notificacoes_whatsapp"] = (
+                    self.instance.frequencia_notificacoes_whatsapp
+                )
+        if data.get("receber_notificacoes_push") is False:
+            if data.get("frequencia_notificacoes_push") in (None, ""):
+                data["frequencia_notificacoes_push"] = (
+                    self.instance.frequencia_notificacoes_push
+                )
         return data
