@@ -175,3 +175,11 @@ msgstr ""
 #, python-format
 msgid "Acesse %(link_pagamento)s para efetuar o pagamento."
 msgstr ""
+
+#: organizacoes/forms.py:?? organizacoes/serializers.py:??
+msgid "Deve ser maior que zero."
+msgstr "Deve ser maior que zero."
+
+#: organizacoes/forms.py:?? organizacoes/serializers.py:??
+msgid "Deve ser entre 0 e 1."
+msgstr "Deve ser entre 0 e 1."
