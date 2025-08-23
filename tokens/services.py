@@ -1,3 +1,5 @@
+"""Serviços relacionados a tokens e convites."""
+
 from __future__ import annotations
 
 import hashlib
@@ -6,6 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Iterable, Tuple
 
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -40,6 +43,21 @@ def token_created(token: ApiToken, raw: str) -> None:
 def token_revoked(token: ApiToken) -> None:
     """Dispara webhook para notificar revogação de ``token``."""
     _send_webhook({"event": "revoked", "id": str(token.id)})
+
+
+def invite_created(token: TokenAcesso, codigo: str) -> None:
+    """Notifica criação de um convite."""
+    _send_webhook({"event": "invite.created", "id": str(token.id), "code": codigo})
+
+
+def invite_used(token: TokenAcesso) -> None:
+    """Notifica utilização de um convite."""
+    _send_webhook({"event": "invite.used", "id": str(token.id)})
+
+
+def invite_revoked(token: TokenAcesso) -> None:
+    """Notifica revogação de um convite."""
+    _send_webhook({"event": "invite.revoked", "id": str(token.id)})
 
 
 def generate_token(
@@ -109,13 +127,6 @@ def list_tokens(user: User) -> Iterable[ApiToken]:
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
-
-
-
-from datetime import datetime
-from typing import Tuple
-
-from .models import TokenAcesso
 
 
 
