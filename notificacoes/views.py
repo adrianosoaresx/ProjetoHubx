@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-@permission_required("notificacoes.change_notificationtemplate", raise_exception=True)
+@permission_required("notificacoes.view_notificationtemplate", raise_exception=True)
 def list_templates(request):
     templates = NotificationTemplate.objects.all()
     return render(request, "notificacoes/templates_list.html", {"templates": templates})
