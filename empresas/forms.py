@@ -1,6 +1,7 @@
 import re
 
 from django import forms
+from django.db import IntegrityError
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
@@ -95,7 +96,10 @@ class ContatoEmpresaForm(forms.ModelForm):
                 principal=False
             )
         if commit:
-            contato.save()
+            try:
+                contato.save()
+            except IntegrityError:
+                raise forms.ValidationError({"principal": _("Já existe um contato principal para esta empresa.")})
         return contato
 
 
