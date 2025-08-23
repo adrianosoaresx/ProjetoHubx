@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
 from rest_framework import permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 
 from .services import get_feed_counts, get_top_authors, get_top_tags
 
@@ -28,14 +28,16 @@ class FeedMetricsView(APIView):
         org = request.query_params.get("organizacao")
         inicio_str = request.query_params.get("inicio")
         fim_str = request.query_params.get("fim")
-        try:
-            inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
-        except ValueError:
+        inicio = parse_datetime(inicio_str) if inicio_str else None
+        if inicio_str and inicio is None:
             return Response({"detail": "data_inicio inválida"}, status=400)
-        try:
-            fim = datetime.fromisoformat(fim_str) if fim_str else None
-        except ValueError:
+        if inicio and timezone.is_naive(inicio):
+            inicio = timezone.make_aware(inicio)
+        fim = parse_datetime(fim_str) if fim_str else None
+        if fim_str and fim is None:
             return Response({"detail": "data_fim inválida"}, status=400)
+        if fim and timezone.is_naive(fim):
+            fim = timezone.make_aware(fim)
 
         counts = get_feed_counts(org, inicio, fim)
         tags = get_top_tags(org, inicio, fim)

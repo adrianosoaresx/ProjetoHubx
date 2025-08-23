@@ -7,6 +7,9 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlencode
 
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+
 import matplotlib.pyplot as plt
 from django.conf import settings
 from django.contrib import messages
@@ -141,14 +144,16 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
         inicio_str = self.request.GET.get("data_inicio")
         fim_str = self.request.GET.get("data_fim")
-        try:
-            inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
-        except ValueError:
+        inicio = parse_datetime(inicio_str) if inicio_str else None
+        if inicio_str and inicio is None:
             raise ValueError("data_inicio inválida")
-        try:
-            fim = datetime.fromisoformat(fim_str) if fim_str else None
-        except ValueError:
+        if inicio and timezone.is_naive(inicio):
+            inicio = timezone.make_aware(inicio)
+        fim = parse_datetime(fim_str) if fim_str else None
+        if fim_str and fim is None:
             raise ValueError("data_fim inválida")
+        if fim and timezone.is_naive(fim):
+            fim = timezone.make_aware(fim)
 
         filters: dict[str, object] = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
@@ -538,8 +543,16 @@ class DashboardExportView(LoginRequiredMixin, View):
         audit_action = f"EXPORT_{formato.upper()}"
         inicio_str = request.GET.get("data_inicio")
         fim_str = request.GET.get("data_fim")
-        inicio = datetime.fromisoformat(inicio_str) if inicio_str else None
-        fim = datetime.fromisoformat(fim_str) if fim_str else None
+        inicio = parse_datetime(inicio_str) if inicio_str else None
+        if inicio_str and inicio is None:
+            return _response_with_message(_("data_inicio inválida"), 400)
+        if inicio and timezone.is_naive(inicio):
+            inicio = timezone.make_aware(inicio)
+        fim = parse_datetime(fim_str) if fim_str else None
+        if fim_str and fim is None:
+            return _response_with_message(_("data_fim inválida"), 400)
+        if fim and timezone.is_naive(fim):
+            fim = timezone.make_aware(fim)
 
         filters: dict[str, object] = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
@@ -722,12 +735,18 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
             "escopo": self.request.GET.get("escopo", "auto"),
             "filters": {},
         }
-        inicio = self.request.GET.get("data_inicio")
-        fim = self.request.GET.get("data_fim")
-        if inicio:
-            config_data["filters"]["data_inicio"] = inicio
-        if fim:
-            config_data["filters"]["data_fim"] = fim
+        inicio_str = self.request.GET.get("data_inicio")
+        fim_str = self.request.GET.get("data_fim")
+        inicio_dt = parse_datetime(inicio_str) if inicio_str else None
+        if inicio_dt:
+            if timezone.is_naive(inicio_dt):
+                inicio_dt = timezone.make_aware(inicio_dt)
+            config_data["filters"]["data_inicio"] = inicio_dt.isoformat()
+        fim_dt = parse_datetime(fim_str) if fim_str else None
+        if fim_dt:
+            if timezone.is_naive(fim_dt):
+                fim_dt = timezone.make_aware(fim_dt)
+            config_data["filters"]["data_fim"] = fim_dt.isoformat()
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = self.request.GET.get(key)
             if val:
@@ -819,12 +838,18 @@ class DashboardConfigUpdateView(LoginRequiredMixin, UpdateView):
             "escopo": self.request.GET.get("escopo", "auto"),
             "filters": {},
         }
-        inicio = self.request.GET.get("data_inicio")
-        fim = self.request.GET.get("data_fim")
-        if inicio:
-            config_data["filters"]["data_inicio"] = inicio
-        if fim:
-            config_data["filters"]["data_fim"] = fim
+        inicio_str = self.request.GET.get("data_inicio")
+        fim_str = self.request.GET.get("data_fim")
+        inicio_dt = parse_datetime(inicio_str) if inicio_str else None
+        if inicio_dt:
+            if timezone.is_naive(inicio_dt):
+                inicio_dt = timezone.make_aware(inicio_dt)
+            config_data["filters"]["data_inicio"] = inicio_dt.isoformat()
+        fim_dt = parse_datetime(fim_str) if fim_str else None
+        if fim_dt:
+            if timezone.is_naive(fim_dt):
+                fim_dt = timezone.make_aware(fim_dt)
+            config_data["filters"]["data_fim"] = fim_dt.isoformat()
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = self.request.GET.get(key)
             if val:

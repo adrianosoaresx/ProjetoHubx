@@ -2,13 +2,14 @@ from __future__ import annotations
 
 import csv
 import io
-from datetime import datetime
 
 from openpyxl import Workbook
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
@@ -46,8 +47,16 @@ class DashboardViewSet(viewsets.ViewSet):
         inicio = params.get("inicio")
         fim = params.get("fim")
         escopo = params.get("escopo", "auto")
-        inicio_dt = datetime.fromisoformat(inicio) if inicio else None
-        fim_dt = datetime.fromisoformat(fim) if fim else None
+        inicio_dt = parse_datetime(inicio) if inicio else None
+        if inicio and inicio_dt is None:
+            return Response({"detail": "inicio inválido"}, status=400)
+        if inicio_dt and timezone.is_naive(inicio_dt):
+            inicio_dt = timezone.make_aware(inicio_dt)
+        fim_dt = parse_datetime(fim) if fim else None
+        if fim and fim_dt is None:
+            return Response({"detail": "fim inválido"}, status=400)
+        if fim_dt and timezone.is_naive(fim_dt):
+            fim_dt = timezone.make_aware(fim_dt)
         filters = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = params.get(key)
@@ -72,8 +81,6 @@ class DashboardViewSet(viewsets.ViewSet):
         periodo = request.query_params.get("periodo", "mensal")
         inicio = request.query_params.get("inicio")
         fim = request.query_params.get("fim")
-        inicio_dt = datetime.fromisoformat(inicio) if inicio else None
-        fim_dt = datetime.fromisoformat(fim) if fim else None
         filters = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = request.query_params.get(key)
@@ -88,6 +95,32 @@ class DashboardViewSet(viewsets.ViewSet):
         filtros.pop("formato", None)
         metadata = {"filtros": filtros, "formato": formato}
         ip_hash = hash_ip(request.META.get("REMOTE_ADDR", ""))
+        inicio_dt = parse_datetime(inicio) if inicio else None
+        if inicio and inicio_dt is None:
+            log_audit(
+                request.user,
+                f"EXPORT_{formato.upper()}",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                status="ERROR",
+                metadata={**metadata, "error": "inicio inválido"},
+            )
+            return Response({"detail": "inicio inválido"}, status=400)
+        if inicio_dt and timezone.is_naive(inicio_dt):
+            inicio_dt = timezone.make_aware(inicio_dt)
+        fim_dt = parse_datetime(fim) if fim else None
+        if fim and fim_dt is None:
+            log_audit(
+                request.user,
+                f"EXPORT_{formato.upper()}",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                status="ERROR",
+                metadata={**metadata, "error": "fim inválido"},
+            )
+            return Response({"detail": "fim inválido"}, status=400)
+        if fim_dt and timezone.is_naive(fim_dt):
+            fim_dt = timezone.make_aware(fim_dt)
         try:
             data = DashboardMetricsService.get_metrics(
                 request.user, periodo, inicio_dt, fim_dt, **filters
