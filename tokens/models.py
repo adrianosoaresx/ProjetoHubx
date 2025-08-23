@@ -308,6 +308,10 @@ class CodigoAutenticacaoLog(TimeStampedModel, SoftDeleteModel):
         EMISSAO = "emissao", _("Emissão")
         VALIDACAO = "validacao", _("Validação")
 
+    class StatusEnvio(models.TextChoices):
+        SUCESSO = "sucesso", _("Sucesso")
+        FALHA = "falha", _("Falha")
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo = models.ForeignKey(
         CodigoAutenticacao,
@@ -323,6 +327,13 @@ class CodigoAutenticacaoLog(TimeStampedModel, SoftDeleteModel):
     acao = models.CharField(max_length=20, choices=Acao.choices)
     ip = EncryptedCharField(max_length=128, null=True, blank=True)
     user_agent = EncryptedCharField(max_length=512, null=True, blank=True)
+    status_envio = models.CharField(
+        max_length=20,
+        choices=StatusEnvio.choices,
+        null=True,
+        blank=True,
+    )
+    mensagem_envio = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering = ["-created_at"]

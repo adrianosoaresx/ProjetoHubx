@@ -17,6 +17,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 
 from accounts.models import SecurityEvent
+from notificacoes.services.email_client import send_email
+from notificacoes.services.whatsapp_client import send_whatsapp
 
 from .forms import (
     Ativar2FAForm,
@@ -364,14 +366,37 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
             codigo = form.save()
             ip = request.META.get("REMOTE_ADDR", "")
             user_agent = request.META.get("HTTP_USER_AGENT", "")
-            CodigoAutenticacaoLog.objects.create(
+            log = CodigoAutenticacaoLog.objects.create(
                 codigo=codigo,
                 usuario=request.user,
                 acao=CodigoAutenticacaoLog.Acao.EMISSAO,
                 ip=ip,
                 user_agent=user_agent,
             )
-            # TODO: enviar via email/SMS
+            email_ok = sms_ok = False
+            erros: list[str] = []
+            subject = _("Código de autenticação")
+            body = _("Seu código de autenticação é %(codigo)s") % {"codigo": codigo.codigo}
+            if getattr(request.user, "email", ""):
+                try:
+                    send_email(request.user, subject, body)
+                    email_ok = True
+                except Exception as exc:  # pragma: no cover - integração externa
+                    erros.append(f"email: {exc}")
+            if getattr(request.user, "whatsapp", ""):
+                try:
+                    send_whatsapp(request.user, body)
+                    sms_ok = True
+                except Exception as exc:  # pragma: no cover - integração externa
+                    erros.append(f"sms: {exc}")
+            log.status_envio = (
+                CodigoAutenticacaoLog.StatusEnvio.SUCESSO
+                if email_ok or sms_ok
+                else CodigoAutenticacaoLog.StatusEnvio.FALHA
+            )
+            if erros:
+                log.mensagem_envio = "; ".join(str(e) for e in erros)
+            log.save(update_fields=["status_envio", "mensagem_envio"])
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"codigo": codigo.codigo})
             messages.success(request, _("Código gerado"))
