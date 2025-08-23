@@ -206,3 +206,22 @@ def test_enviar_mensagem_com_attachment_id(admin_user, coordenador_user, nucleo)
     att.refresh_from_db()
     assert att.mensagem_id == msg.id
     assert msg.arquivo.name == att.arquivo.name
+
+
+def test_enviar_mensagem_recusa_attachment_infectado(admin_user, coordenador_user, nucleo):
+    canal = criar_canal(
+        criador=admin_user,
+        contexto_tipo="privado",
+        contexto_id=nucleo.id,
+        titulo="Privado",
+        descricao="",
+        participantes=[coordenador_user],
+    )
+    att = ChatAttachment.objects.create(
+        arquivo=SimpleUploadedFile("a.txt", b"a"),
+        tamanho=1,
+        usuario=admin_user,
+        infected=True,
+    )
+    with pytest.raises(ValueError):
+        enviar_mensagem(canal, admin_user, "file", attachment_id=str(att.id))

@@ -23,7 +23,7 @@ def test_feed_engagement_metrics(admin_user, organizacao):
     opened = timezone.now() - timedelta(minutes=5)
     PostView.objects.create(post=post, user=admin_user, opened_at=opened, closed_at=timezone.now())
 
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         escopo="organizacao",
         organizacao_id=organizacao.id,
@@ -56,7 +56,7 @@ def test_token_metrics_filtering(admin_user, organizacao):
     )
     TokenUsoLog.objects.create(token=token2, acao=TokenUsoLog.Acao.USO)
 
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         escopo="organizacao",
         organizacao_id=organizacao.id,
@@ -65,7 +65,7 @@ def test_token_metrics_filtering(admin_user, organizacao):
     assert metrics["tokens_gerados"]["total"] == 1
     assert metrics["tokens_consumidos"]["total"] == 1
 
-    metrics_filtered = DashboardMetricsService.get_metrics(
+    metrics_filtered, _ = DashboardMetricsService.get_metrics(
         admin_user,
         escopo="organizacao",
         organizacao_id=organizacao.id,

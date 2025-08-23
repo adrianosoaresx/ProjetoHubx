@@ -73,15 +73,25 @@ class CategoriaDiscussaoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
-        cache.delete(categorias_list_cache_key())
+        cache.delete(
+            categorias_list_cache_key(
+                organizacao_id=serializer.instance.organizacao_id
+            )
+        )
 
     def perform_update(self, serializer):
         serializer.save()
-        cache.delete(categorias_list_cache_key())
+        cache.delete(
+            categorias_list_cache_key(
+                organizacao_id=serializer.instance.organizacao_id
+            )
+        )
 
     def perform_destroy(self, instance):  # type: ignore[override]
         super().perform_destroy(instance)
-        cache.delete(categorias_list_cache_key())
+        cache.delete(
+            categorias_list_cache_key(organizacao_id=instance.organizacao_id)
+        )
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -145,22 +155,49 @@ class TopicoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(autor=self.request.user)
-        cache.delete(categorias_list_cache_key())
-        cache.delete(topicos_list_cache_key(serializer.instance.categoria.slug))
+        cache.delete(
+            categorias_list_cache_key(
+                organizacao_id=serializer.instance.categoria.organizacao_id
+            )
+        )
+        cache.delete(
+            topicos_list_cache_key(
+                serializer.instance.categoria.slug,
+                organizacao_id=serializer.instance.categoria.organizacao_id,
+            )
+        )
 
     def perform_update(self, serializer):
         if not self._can_edit(serializer.instance):
             raise PermissionDenied("Prazo de edição expirado.")
         serializer.save()
-        cache.delete(categorias_list_cache_key())
-        cache.delete(topicos_list_cache_key(serializer.instance.categoria.slug))
+        cache.delete(
+            categorias_list_cache_key(
+                organizacao_id=serializer.instance.categoria.organizacao_id
+            )
+        )
+        cache.delete(
+            topicos_list_cache_key(
+                serializer.instance.categoria.slug,
+                organizacao_id=serializer.instance.categoria.organizacao_id,
+            )
+        )
 
     def perform_destroy(self, instance):  # type: ignore[override]
         if not verificar_prazo_edicao(instance, self.request.user):
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
-        cache.delete(categorias_list_cache_key())
-        cache.delete(topicos_list_cache_key(instance.categoria.slug))
+        cache.delete(
+            categorias_list_cache_key(
+                organizacao_id=instance.categoria.organizacao_id
+            )
+        )
+        cache.delete(
+            topicos_list_cache_key(
+                instance.categoria.slug,
+                organizacao_id=instance.categoria.organizacao_id,
+            )
+        )
 
     def _can_edit(self, obj: TopicoDiscussao) -> bool:
         return verificar_prazo_edicao(obj, self.request.user)
@@ -175,7 +212,12 @@ class TopicoViewSet(viewsets.ModelViewSet):
         notificar_melhor_resposta.delay(resposta.id)
         if not was_resolved:
             notificar_topico_resolvido.delay(topico.id)
-        cache.delete(topicos_list_cache_key(topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                topico.categoria.slug,
+                organizacao_id=topico.categoria.organizacao_id,
+            )
+        )
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -191,7 +233,12 @@ class TopicoViewSet(viewsets.ModelViewSet):
             topico.melhor_resposta = None
             topico.resolvido = False
             topico.save(update_fields=["melhor_resposta", "resolvido"])
-        cache.delete(topicos_list_cache_key(topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                topico.categoria.slug,
+                organizacao_id=topico.categoria.organizacao_id,
+            )
+        )
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -264,19 +311,34 @@ class RespostaViewSet(viewsets.ModelViewSet):
             raise ValidationError(exc.messages)
         serializer.instance = resposta
         notificar_nova_resposta.delay(resposta.id)
-        cache.delete(topicos_list_cache_key(resposta.topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                resposta.topico.categoria.slug,
+                organizacao_id=resposta.topico.categoria.organizacao_id,
+            )
+        )
 
     def perform_update(self, serializer):
         if not self._can_edit(serializer.instance):
             raise PermissionDenied("Prazo de edição expirado.")
         serializer.save()
-        cache.delete(topicos_list_cache_key(serializer.instance.topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                serializer.instance.topico.categoria.slug,
+                organizacao_id=serializer.instance.topico.categoria.organizacao_id,
+            )
+        )
 
     def perform_destroy(self, instance):  # type: ignore[override]
         if not verificar_prazo_edicao(instance, self.request.user):
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
-        cache.delete(topicos_list_cache_key(instance.topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                instance.topico.categoria.slug,
+                organizacao_id=instance.topico.categoria.organizacao_id,
+            )
+        )
 
     def _can_edit(self, obj: RespostaDiscussao) -> bool:
         return verificar_prazo_edicao(obj, self.request.user)
@@ -307,12 +369,15 @@ class VotoDiscussaoViewSet(viewsets.ViewSet):
                 interacao.save(update_fields=["valor"])
         if isinstance(obj, TopicoDiscussao):
             slug = obj.categoria.slug
+            org_id = obj.categoria.organizacao_id
         elif isinstance(obj, RespostaDiscussao):
             slug = obj.topico.categoria.slug
+            org_id = obj.topico.categoria.organizacao_id
         else:
             slug = None
-        if slug:
-            cache.delete(topicos_list_cache_key(slug))
+            org_id = None
+        if slug and org_id is not None:
+            cache.delete(topicos_list_cache_key(slug, organizacao_id=org_id))
         return Response({"score": obj.score, "num_votos": obj.num_votos})
 
 

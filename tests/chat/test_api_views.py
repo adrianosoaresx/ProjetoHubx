@@ -66,6 +66,21 @@ def test_upload_endpoint_saves_metadata(api_client: APIClient, admin_user):
     assert ChatAttachment.objects.filter(id=data["attachment_id"]).exists()
 
 
+def test_upload_infected_file(api_client: APIClient, admin_user, monkeypatch):
+    api_client.force_authenticate(admin_user)
+    url = reverse("chat_api:chat-upload")
+    file = SimpleUploadedFile("bad.txt", b"x", content_type="text/plain")
+    monkeypatch.setattr("chat.api_views._scan_file", lambda path: True)
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    assert resp.status_code == 400
+    data = resp.json()
+    assert data["erro"]
+    att = ChatAttachment.objects.get()
+    assert att.infected is True
+    assert att.removed is True
+    assert att.arquivo.name == ""
+
+
 @override_settings(ROOT_URLCONF="chat.api_urls")
 def test_create_channel_requires_permission(api_client: APIClient, associado_user):
     api_client.force_authenticate(associado_user)
