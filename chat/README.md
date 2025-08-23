@@ -139,7 +139,10 @@ CHAT_SPAM_LINK_LIMIT = 3
 ```
 
 Ajuste os valores conforme a necessidade do ambiente. A contagem de
-mensagens por usuário é mantida em cache por até um minuto.
+mensagens por usuário é mantida em cache por até um minuto. O limite de
+mensagens no WebSocket também utiliza o cache (ex.: Redis) para registrar
+os envios de cada usuário por canal, expurgando os dados após o período da
+janela configurado.
 
 ### Limites de upload
 
