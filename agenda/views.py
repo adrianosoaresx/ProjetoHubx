@@ -684,11 +684,15 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
         return qs.order_by("id")
 
 
-class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
+class MaterialDivulgacaoEventoCreateView(
+    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, CreateView
+):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
+
+    permission_required = "agenda.add_materialdivulgacaoevento"
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -700,11 +704,15 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class MaterialDivulgacaoEventoUpdateView(LoginRequiredMixin, UpdateView):
+class MaterialDivulgacaoEventoUpdateView(
+    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView
+):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
+
+    permission_required = "agenda.add_materialdivulgacaoevento"
 
     def get_queryset(self):  # pragma: no cover - simples
         qs = MaterialDivulgacaoEvento.objects.all()
