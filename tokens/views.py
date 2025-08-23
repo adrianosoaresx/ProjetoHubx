@@ -28,7 +28,11 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-from .metrics import tokens_invites_revoked_total
+from .metrics import (
+    tokens_invites_created_total,
+    tokens_invites_revoked_total,
+    tokens_invites_used_total,
+)
 from .models import (
     ApiToken,
     ApiTokenLog,
@@ -289,6 +293,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             invite_created(token, codigo)
+            tokens_invites_created_total.inc()
             token.codigo = codigo
 
             if request.headers.get("HX-Request") == "true":
@@ -338,6 +343,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             invite_used(token)
+            tokens_invites_used_total.inc()
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
             messages.success(request, _("Token validado"))
