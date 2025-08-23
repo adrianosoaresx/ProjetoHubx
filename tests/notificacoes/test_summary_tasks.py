@@ -2,6 +2,7 @@ import asyncio
 
 import pytest
 from channels.testing import WebsocketCommunicator
+from django.template import Context, Template
 from django.utils import timezone
 from freezegun import freeze_time
 
@@ -112,6 +113,35 @@ def test_relatorio_diario_envia_push(settings):
         await communicator.disconnect()
 
     asyncio.run(inner())
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+def test_relatorio_diario_renderiza_placeholders(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    user = UserFactory()
+    config = user.configuracao
+    config.frequencia_notificacoes_email = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+
+    template = NotificationTemplate.objects.create(
+        codigo="tpl-ph",
+        assunto="a",
+        corpo="Olá {{ nome }}",
+        canal=Canal.EMAIL,
+    )
+    body = Template(template.corpo).render(Context({"nome": user.first_name}))
+    NotificationLog.objects.create(
+        user=user,
+        template=template,
+        canal=Canal.EMAIL,
+        corpo_renderizado=body,
+    )
+
+    enviar_relatorios_diarios()
+
+    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA)
+    assert hist.conteudo == [body]
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
