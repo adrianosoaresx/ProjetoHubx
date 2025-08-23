@@ -4,10 +4,13 @@ import hashlib
 
 from django.utils import timezone
 from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, Throttled
 
-from .metrics import tokens_api_tokens_used_total
+from audit.models import AuditLog
+from audit.services import hash_ip, log_audit
+from .metrics import tokens_api_tokens_used_total, tokens_rate_limited_total
 from .models import ApiToken, ApiTokenIp, ApiTokenLog
+from .ratelimit import check_rate_limit
 from .utils import get_client_ip
 
 
@@ -34,9 +37,8 @@ class ApiTokenAuthentication(BaseAuthentication):
             raise AuthenticationFailed("Fingerprint inválido")
 
 
-        ip_address = get_client_ip(request)
-        if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip_address).exists():
-
+        ip = get_client_ip(request)
+        if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip).exists():
             raise AuthenticationFailed("IP bloqueado")
         ip_address = request.META.get("REMOTE_ADDR", "")
         ip_rules = list(api_token.ips.all())
@@ -45,6 +47,23 @@ class ApiTokenAuthentication(BaseAuthentication):
         allowed_ips = [rule.ip for rule in ip_rules if rule.tipo == ApiTokenIp.Tipo.PERMITIDO]
         if allowed_ips and ip_address not in allowed_ips:
             raise AuthenticationFailed("IP não permitido")
+
+        rl_token = check_rate_limit(f"token:{api_token.id}:{ip}")
+        rl_user = check_rate_limit(f"user:{api_token.user_id}:{ip}")
+        if not rl_token.allowed or not rl_user.allowed:
+            tokens_rate_limited_total.inc()
+            log_audit(
+                api_token.user,
+                "api_token_rate_limited",
+                object_type="ApiToken",
+                object_id=str(api_token.id),
+                ip_hash=hash_ip(ip),
+                status=AuditLog.Status.FAILURE,
+            )
+            retry = max(rl_token.retry_after, rl_user.retry_after)
+            if retry:
+                raise Throttled(wait=retry)
+            raise Throttled()
 
         api_token.last_used_at = timezone.now()
         api_token.save(update_fields=["last_used_at"])
