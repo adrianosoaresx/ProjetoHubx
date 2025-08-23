@@ -594,6 +594,8 @@ class InteracaoView(LoginRequiredMixin, View):
     def post(self, request, content_type_id, object_id, acao):
         content_type = get_object_or_404(ContentType, id=content_type_id)
         obj = get_object_or_404(content_type.model_class(), id=object_id)
+        from .cache_utils import topicos_list_cache_key
+        from .models import RespostaDiscussao, TopicoDiscussao
         valor_map = {"up": 1, "down": -1, "like": 1, "dislike": -1}
         valor = valor_map.get(acao, 1)
         interacao, created = InteracaoDiscussao.objects.get_or_create(
@@ -608,6 +610,13 @@ class InteracaoView(LoginRequiredMixin, View):
             else:
                 interacao.valor = valor
                 interacao.save()
+        slug = None
+        if isinstance(obj, TopicoDiscussao):
+            slug = obj.categoria.slug
+        elif isinstance(obj, RespostaDiscussao):
+            slug = obj.topico.categoria.slug
+        if slug:
+            cache.delete(topicos_list_cache_key(slug))
         data = {"score": obj.score, "num_votos": obj.num_votos}
         return JsonResponse(data)
 
