@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (
+from .views.pages import (
     aportes_form_view,
     centro_form_view,
     centros_list_view,

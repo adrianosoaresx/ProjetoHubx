@@ -58,6 +58,8 @@ class DashboardViewSet(viewsets.ViewSet):
             return Response({"detail": "fim inválido"}, status=400)
         if fim_dt and timezone.is_naive(fim_dt):
             fim_dt = timezone.make_aware(fim_dt)
+        if inicio_dt and fim_dt and inicio_dt > fim_dt:
+            return Response({"detail": "inicio deve ser menor ou igual a fim"}, status=400)
         filters = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:
             val = params.get(key)
@@ -122,6 +124,16 @@ class DashboardViewSet(viewsets.ViewSet):
             return Response({"detail": "fim inválido"}, status=400)
         if fim_dt and timezone.is_naive(fim_dt):
             fim_dt = timezone.make_aware(fim_dt)
+        if inicio_dt and fim_dt and inicio_dt > fim_dt:
+            log_audit(
+                request.user,
+                f"EXPORT_{formato.upper()}",
+                object_type="DashboardMetrics",
+                ip_hash=ip_hash,
+                status="ERROR",
+                metadata={**metadata, "error": "inicio deve ser menor ou igual a fim"},
+            )
+            return Response({"detail": "inicio deve ser menor ou igual a fim"}, status=400)
         try:
             data = DashboardMetricsService.get_metrics(
                 request.user, periodo, inicio_dt, fim_dt, **filters

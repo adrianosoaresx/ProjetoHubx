@@ -1,7 +1,7 @@
 import os
+from datetime import timedelta
 
 import pytest
-from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
@@ -78,9 +78,7 @@ def test_membros_property(organizacao, usuario):
     u3 = get_user_model().objects.create_user(
         username="u3", email="u3@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
     )
-    ParticipacaoNucleo.objects.create(
-        user=u3, nucleo=nucleo, status="ativo", status_suspensao=True
-    )
+    ParticipacaoNucleo.objects.create(user=u3, nucleo=nucleo, status="ativo", status_suspensao=True)
     assert list(nucleo.membros) == [u2]
 
 
@@ -103,6 +101,16 @@ def test_slug_unico_por_organizacao(organizacao):
     Nucleo.objects.create(nome="N2", slug="igual", organizacao=outra)
     with pytest.raises(IntegrityError):
         Nucleo.objects.create(nome="N3", slug="igual", organizacao=organizacao)
+
+
+def test_slug_incremental_para_nomes_iguais(organizacao):
+    n1 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
+    n2 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
+    n3 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
+
+    assert n1.slug == "nucleo-teste"
+    assert n2.slug == "nucleo-teste-1"
+    assert n3.slug == "nucleo-teste-2"
 
 
 @pytest.mark.xfail(reason="Arquivos não são removidos ao deletar o núcleo")

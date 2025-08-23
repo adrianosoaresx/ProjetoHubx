@@ -5,14 +5,21 @@ import pytest
 from django.test import override_settings
 import requests
 
-from tokens import services
+from tokens import metrics as m, services
 from tokens.models import TokenWebhookEvent
 from tokens.tasks import reenviar_webhooks_pendentes, send_webhook
+
+
+def reset_metrics() -> None:
+    m.tokens_webhooks_sent_total._value.set(0)
+    m.tokens_webhooks_failed_total._value.set(0)
+    m.tokens_webhook_latency_seconds._sum.set(0)
 
 
 @override_settings(TOKENS_WEBHOOK_URL="http://example.com")
 @pytest.mark.django_db
 def test_enqueue_webhook_task(monkeypatch):
+    reset_metrics()
     queued: list[dict[str, object]] = []
     monkeypatch.setattr(
         "tokens.services.send_webhook.delay", lambda payload: queued.append(payload)
@@ -27,6 +34,7 @@ def test_enqueue_webhook_task(monkeypatch):
 @override_settings(TOKENS_WEBHOOK_URL="http://example.com")
 @pytest.mark.django_db
 def test_send_webhook_retry_success(monkeypatch):
+    reset_metrics()
     calls = []
 
     def fake_post(url, data, headers, timeout):
@@ -44,11 +52,16 @@ def test_send_webhook_retry_success(monkeypatch):
     assert len(calls) == 3
     assert sleeps == [1, 2]
     assert TokenWebhookEvent.objects.count() == 0
+    assert m.tokens_webhooks_sent_total._value.get() == 1
+    assert m.tokens_webhooks_failed_total._value.get() == 0
+    assert m.tokens_webhook_latency_seconds._sum.get() > 0
 
 
 @override_settings(TOKENS_WEBHOOK_URL="http://example.com")
 @pytest.mark.django_db
 def test_send_webhook_logs_failure(monkeypatch):
+    reset_metrics()
+
     def fake_post(url, data, headers, timeout):
         raise requests.RequestException("boom")
 
@@ -62,10 +75,14 @@ def test_send_webhook_logs_failure(monkeypatch):
     assert event.url == "http://example.com"
     assert event.attempts == 3
     assert sleeps == [1, 2]
+    assert m.tokens_webhooks_failed_total._value.get() == 1
+    assert m.tokens_webhooks_sent_total._value.get() == 0
+    assert m.tokens_webhook_latency_seconds._sum.get() > 0
 
 
 @pytest.mark.django_db
 def test_reenviar_webhooks_pendentes(monkeypatch):
+    reset_metrics()
     event = TokenWebhookEvent.objects.create(
         url="http://example.com",
         payload={"event": "created"},
@@ -81,3 +98,4 @@ def test_reenviar_webhooks_pendentes(monkeypatch):
     event.refresh_from_db()
     assert event.delivered is True
     assert event.attempts == 0
+    assert m.tokens_webhooks_sent_total._value.get() == 1

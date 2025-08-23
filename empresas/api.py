@@ -7,9 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
-from core.permissions import pode_crud_empresa
+from core.permissions import IsAdminOrCoordenador, pode_crud_empresa
 from .metrics import (
     empresas_favoritos_total,
+    empresas_avaliacoes_total,
     empresas_purgadas_total,
     empresas_restauradas_total,
 )
@@ -93,7 +94,7 @@ class ContatoEmpresaViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenador]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nome"]
 
@@ -118,8 +119,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted
-        instance.deleted = True
-        instance.save(update_fields=["deleted"])
+        instance.soft_delete()
         EmpresaChangeLog.objects.create(
             empresa=instance,
             usuario=self.request.user,
@@ -219,6 +219,19 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         avals = empresa.avaliacoes.filter(deleted=False).select_related("usuario")
         serializer = AvaliacaoEmpresaSerializer(avals, many=True)
         return Response(serializer.data)
+
+    @avaliacoes.mapping.delete
+    def remover_avaliacao(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if request.user.organizacao != empresa.organizacao:
+            return Response({"detail": "Usuário não pertence à organização."}, status=403)
+        aval = AvaliacaoEmpresa.objects.filter(
+            empresa=empresa, usuario=request.user, deleted=False
+        ).first()
+        if aval:
+            aval.soft_delete()
+            empresas_avaliacoes_total.dec()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def historico(self, request, pk: str | None = None):

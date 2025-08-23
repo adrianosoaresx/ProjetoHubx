@@ -95,3 +95,28 @@ def test_get_user_preferences_contextual(admin_user, escopo):
         prefs_global.frequencia_notificacoes_push
         == admin_user.configuracao.frequencia_notificacoes_push
     )
+
+
+def test_get_user_preferences_fallback_to_global(admin_user):
+    cache.clear()
+    config = admin_user.configuracao
+    config.tema = "escuro"
+    config.receber_notificacoes_email = True
+    config.frequencia_notificacoes_email = "diaria"
+    config.idioma = "en-US"
+    config.save()
+    escopo_id = uuid.uuid4()
+    ConfiguracaoContextual.objects.create(
+        user=admin_user,
+        escopo_tipo="organizacao",
+        escopo_id=escopo_id,
+        tema="automatico",
+        receber_notificacoes_email=None,
+        frequencia_notificacoes_email=None,
+        idioma=None,
+    )
+    prefs = get_user_preferences(admin_user, "organizacao", str(escopo_id))
+    assert prefs.tema == "automatico"
+    assert prefs.receber_notificacoes_email is True
+    assert prefs.frequencia_notificacoes_email == "diaria"
+    assert prefs.idioma == "en-US"

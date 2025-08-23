@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import structlog
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
@@ -18,6 +19,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import cache_page
+from django_ratelimit.decorators import ratelimit
 
 from .cache_utils import (
     CATEGORIAS_LIST_KEY_PREFIX,
@@ -62,6 +64,9 @@ from .tasks import (
     notificar_nova_resposta,
     notificar_topico_resolvido,
 )
+
+
+logger = structlog.get_logger(__name__)
 
 
 @method_decorator(cache_page(60, key_prefix=CATEGORIAS_LIST_KEY_PREFIX), name="dispatch")
@@ -581,10 +586,16 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
         )
 
 
+@method_decorator(
+    ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
+    name="dispatch",
+)
 class InteracaoView(LoginRequiredMixin, View):
     def post(self, request, content_type_id, object_id, acao):
         content_type = get_object_or_404(ContentType, id=content_type_id)
         obj = get_object_or_404(content_type.model_class(), id=object_id)
+        from .cache_utils import topicos_list_cache_key
+        from .models import RespostaDiscussao, TopicoDiscussao
         valor_map = {"up": 1, "down": -1, "like": 1, "dislike": -1}
         valor = valor_map.get(acao, 1)
         interacao, created = InteracaoDiscussao.objects.get_or_create(
@@ -599,10 +610,21 @@ class InteracaoView(LoginRequiredMixin, View):
             else:
                 interacao.valor = valor
                 interacao.save()
+        slug = None
+        if isinstance(obj, TopicoDiscussao):
+            slug = obj.categoria.slug
+        elif isinstance(obj, RespostaDiscussao):
+            slug = obj.topico.categoria.slug
+        if slug:
+            cache.delete(topicos_list_cache_key(slug))
         data = {"score": obj.score, "num_votos": obj.num_votos}
         return JsonResponse(data)
 
 
+@method_decorator(
+    ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
+    name="dispatch",
+)
 class TopicoMarkResolvedView(LoginRequiredMixin, View):
     def post(self, request, categoria_slug, topico_slug):
         categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
@@ -695,6 +717,13 @@ class DenunciaApproveView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia = get_object_or_404(Denuncia, pk=pk)
         notes = request.POST.get("notes", "")
         denuncia.aprovar(request.user, notes)
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="approve",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Denúncia aprovada"))
         return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
 
@@ -704,6 +733,13 @@ class DenunciaRejectView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia = get_object_or_404(Denuncia, pk=pk)
         notes = request.POST.get("notes", "")
         denuncia.rejeitar(request.user, notes)
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="reject",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Denúncia rejeitada"))
         return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
 
@@ -722,5 +758,12 @@ class DenunciaRemoveContentView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia.status = Denuncia.Status.REVISADO
         denuncia.log = log
         denuncia.save(update_fields=["status", "log"])
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="remove",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Conteúdo removido"))
         return redirect("discussao:denuncia_list", status=Denuncia.Status.PENDENTE)

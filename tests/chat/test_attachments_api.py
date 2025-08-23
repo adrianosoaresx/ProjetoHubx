@@ -22,6 +22,7 @@ def test_list_attachments_filters_infected(api_client: APIClient, admin_user, co
     file1 = SimpleUploadedFile("a.txt", b"1")
     att1 = ChatAttachment.objects.create(
         mensagem=msg,
+        usuario=admin_user,
         arquivo=file1,
         mime_type="text/plain",
         tamanho=1,
@@ -29,6 +30,7 @@ def test_list_attachments_filters_infected(api_client: APIClient, admin_user, co
     file2 = SimpleUploadedFile("b.txt", b"1")
     ChatAttachment.objects.create(
         mensagem=msg,
+        usuario=admin_user,
         arquivo=file2,
         mime_type="text/plain",
         tamanho=1,
@@ -56,6 +58,7 @@ def test_delete_attachment_requires_admin(api_client: APIClient, admin_user, coo
     file1 = SimpleUploadedFile("c.txt", b"1")
     att = ChatAttachment.objects.create(
         mensagem=msg,
+        usuario=admin_user,
         arquivo=file1,
         mime_type="text/plain",
         tamanho=1,

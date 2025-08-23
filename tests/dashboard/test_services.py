@@ -195,6 +195,23 @@ def test_get_metrics_cache_not_shared_between_users(admin_user):
     assert len(cache._cache) == keys_before + 1
 
 
+def test_inscricao_evento_signal_clears_cache_for_user_only(admin_user, cliente_user, evento):
+    cache.clear()
+    DashboardMetricsService.get_metrics(
+        admin_user, escopo="auto", metricas=["num_users"]
+    )
+    DashboardMetricsService.get_metrics(
+        cliente_user, escopo="auto", metricas=["num_users"]
+    )
+    prefix_admin = f"dashboard-{admin_user.pk}-{admin_user.user_type}-"
+    prefix_cliente = f"dashboard-{cliente_user.pk}-{cliente_user.user_type}-"
+    assert any(prefix_admin in k for k in cache._cache.keys())
+    assert any(prefix_cliente in k for k in cache._cache.keys())
+    InscricaoEvento.objects.create(evento=evento, user=admin_user, status="confirmada")
+    assert not any(prefix_admin in k for k in cache._cache.keys())
+    assert any(prefix_cliente in k for k in cache._cache.keys())
+
+
 def test_get_metrics_permission_denied(cliente_user, admin_user):
     with pytest.raises(PermissionError):
         DashboardMetricsService.get_metrics(
@@ -210,6 +227,13 @@ def test_get_metrics_invalid_period(admin_user):
 def test_get_metrics_invalid_date(admin_user):
     with pytest.raises(ValueError):
         DashboardMetricsService.get_metrics(admin_user, inicio="bad-date")
+
+
+def test_get_metrics_invalid_date_order(admin_user):
+    inicio = timezone.now()
+    fim = inicio - dt.timedelta(days=1)
+    with pytest.raises(ValueError):
+        DashboardMetricsService.get_metrics(admin_user, inicio=inicio, fim=fim)
 
 
 def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):

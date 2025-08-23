@@ -9,6 +9,7 @@ from notificacoes.services.notificacoes import enviar_para_usuario
 from services.cnpj_validator import CNPJValidationError, validar_cnpj
 
 from .models import AvaliacaoEmpresa, Empresa
+from .metrics import empresas_avaliacoes_total
 
 nova_avaliacao = Signal()  # args: avaliacao
 
@@ -128,5 +129,6 @@ def criar_post_avaliacao(self, avaliacao_id: str) -> None:
 
 @receiver(nova_avaliacao)
 def _on_nova_avaliacao(sender, avaliacao: AvaliacaoEmpresa, **kwargs) -> None:
+    empresas_avaliacoes_total.inc()
     notificar_responsavel.delay(str(avaliacao.id))
     criar_post_avaliacao.delay(str(avaliacao.id))

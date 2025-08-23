@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from collections import defaultdict
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.core.cache import cache
 
 from services.nucleos import user_belongs_to_nucleo
 
@@ -28,7 +28,6 @@ from .services import (
 
 MESSAGE_WINDOW_SECONDS = 5
 MESSAGE_RATE_LIMIT = 5
-_USER_MESSAGE_TIMES: dict[int, list[float]] = defaultdict(list)
 
 logger = logging.getLogger(__name__)
 
@@ -79,23 +78,23 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message_type = data.get("tipo")
         user = self.scope["user"]
         if message_type in {"text", "image", "video", "file"}:
-            now = time.monotonic()
-            timestamps = _USER_MESSAGE_TIMES[user.id]
+            now = time.time()
+            cache_key = f"chat-rate:{self.channel.id}:{user.id}"
+            timestamps: list[float] = await cache.aget(cache_key) or []
             window_start = now - MESSAGE_WINDOW_SECONDS
-            while timestamps and timestamps[0] <= window_start:
-                timestamps.pop(0)
+            timestamps = [ts for ts in timestamps if ts > window_start]
             if len(timestamps) >= MESSAGE_RATE_LIMIT:
                 wait_time = MESSAGE_WINDOW_SECONDS - (now - timestamps[0])
                 if wait_time > 0:
                     await asyncio.sleep(wait_time)
-                now = time.monotonic()
+                now = time.time()
                 window_start = now - MESSAGE_WINDOW_SECONDS
-                while timestamps and timestamps[0] <= window_start:
-                    timestamps.pop(0)
+                timestamps = [ts for ts in timestamps if ts > window_start]
                 if len(timestamps) >= MESSAGE_RATE_LIMIT:
                     await self.close(code=4008)
                     return
             timestamps.append(now)
+            await cache.aset(cache_key, timestamps, MESSAGE_WINDOW_SECONDS)
             # Limite de mensagens aplicado antes da detecção de spam
             conteudo = data.get("conteudo", "")
             arquivo = None
@@ -110,7 +109,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             if message_type in {"image", "video", "file"}:
                 if not attachment_id:
                     return
-                exists = await database_sync_to_async(ChatAttachment.objects.filter(id=attachment_id).exists)()
+                exists = await database_sync_to_async(
+                    ChatAttachment.objects.filter(
+                        id=attachment_id, usuario=user, mensagem__isnull=True
+                    ).exists
+                )()
                 if not exists:
                     return
             start = time.monotonic()
@@ -123,6 +126,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 alg = data.get("alg", "")
                 key_version = data.get("key_version", "")
                 if not cipher or not alg or not key_version:
+                    await self.close(code=4003)
+                    return
+                if alg != "AES-GCM":
                     await self.close(code=4003)
                     return
                 msg = await database_sync_to_async(enviar_mensagem)(

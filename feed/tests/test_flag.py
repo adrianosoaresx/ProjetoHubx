@@ -26,3 +26,11 @@ class FlagAPITest(TestCase):
         self.assertEqual(self.post.moderacao.status, "pendente")
         res2 = self.client.post(f"/api/feed/posts/{self.post.id}/flag/")
         self.assertEqual(res2.status_code, 400)
+
+    @override_settings(FEED_FLAGS_LIMIT=2, FEED_RATE_LIMIT_READ="1/m")
+    def test_flag_rate_limit_exceeded(self):
+        url = f"/api/feed/posts/{self.post.id}/flag/"
+        res1 = self.client.post(url)
+        self.assertEqual(res1.status_code, 204)
+        res2 = self.client.post(url)
+        self.assertEqual(res2.status_code, 429)

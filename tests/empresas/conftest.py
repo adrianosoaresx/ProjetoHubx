@@ -60,6 +60,16 @@ def nucleado_user(db, organizacao):
 
 
 @pytest.fixture
+def root_user(db):
+    return User.objects.create_user(
+        email="root@example.com",
+        username="root",
+        password="pass",
+        user_type=UserType.ROOT,
+    )
+
+
+@pytest.fixture
 def tag_factory(db):
     def factory(**kwargs):
         return Tag.objects.create(**kwargs)

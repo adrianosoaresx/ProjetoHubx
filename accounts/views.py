@@ -14,6 +14,7 @@ from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
@@ -195,6 +196,7 @@ def disable_2fa(request):
     return render(request, "perfil/disable_2fa.html")
 
 
+@ratelimit(key="ip", rate="5/m", method="GET", block=True)
 def check_2fa(request):
     email = request.GET.get("email")
     enabled = False
@@ -452,11 +454,21 @@ def password_reset(request):
             except User.DoesNotExist:  # pragma: no cover - feedback uniforme
                 pass
             else:
+                AccountToken.objects.filter(
+                    usuario=user,
+                    tipo=AccountToken.Tipo.PASSWORD_RESET,
+                    used_at__isnull=True,
+                ).update(used_at=timezone.now())
                 token = AccountToken.objects.create(
                     usuario=user,
                     tipo=AccountToken.Tipo.PASSWORD_RESET,
                     expires_at=timezone.now() + timezone.timedelta(hours=1),
                     ip_gerado=get_client_ip(request),
+                )
+                SecurityEvent.objects.create(
+                    usuario=user,
+                    evento="senha_reset_solicitada",
+                    ip=get_client_ip(request),
                 )
                 send_password_reset_email.delay(token.id)
         messages.success(
@@ -489,9 +501,8 @@ def password_reset_confirm(request, code: str):
         if form.is_valid():
             form.save()
             user = token.usuario
-            user.failed_login_attempts = 0
-            user.lock_expires_at = None
-            user.save(update_fields=["failed_login_attempts", "lock_expires_at"])
+            cache.delete(f"failed_login_attempts_user_{user.pk}")
+            cache.delete(f"lockout_user_{user.pk}")
             token.used_at = timezone.now()
             token.save(update_fields=["used_at"])
             SecurityEvent.objects.create(

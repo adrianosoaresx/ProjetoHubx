@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.core.cache import cache
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -96,6 +97,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(status=204)
+        AccountToken.objects.filter(
+            usuario=user,
+            tipo=AccountToken.Tipo.PASSWORD_RESET,
+            used_at__isnull=True,
+        ).update(used_at=timezone.now())
         token = AccountToken.objects.create(
             usuario=user,
             tipo=AccountToken.Tipo.PASSWORD_RESET,
@@ -103,6 +109,11 @@ class AccountViewSet(viewsets.GenericViewSet):
             ip_gerado=get_client_ip(request),
         )
         send_password_reset_email.delay(token.id)
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="senha_reset_solicitada",
+            ip=get_client_ip(request),
+        )
         return Response(status=204)
 
     @action(detail=False, methods=["post"], url_path="reset-password")
@@ -119,10 +130,10 @@ class AccountViewSet(viewsets.GenericViewSet):
             validate_password(new_password, user)
         except ValidationError as e:
             return Response({"detail": e.messages}, status=400)
-        user.failed_login_attempts = 0
-        user.lock_expires_at = None
+        cache.delete(f"failed_login_attempts_user_{user.pk}")
+        cache.delete(f"lockout_user_{user.pk}")
         user.set_password(new_password)
-        user.save(update_fields=["password", "failed_login_attempts", "lock_expires_at"])
+        user.save(update_fields=["password"])
         SecurityEvent.objects.create(
             usuario=user,
             evento="senha_redefinida",
@@ -135,6 +146,14 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="enable-2fa")
     def enable_2fa(self, request):
         user = request.user
+        password = request.data.get("password")
+        if not password or not user.check_password(password):
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
+            return Response({"detail": _("Senha incorreta.")}, status=400)
         code = request.data.get("code")
         if user.two_factor_enabled:
             return Response({"detail": _("2FA já habilitado.")}, status=400)
@@ -169,7 +188,15 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="disable-2fa")
     def disable_2fa(self, request):
         user = request.user
+        password = request.data.get("password")
         code = request.data.get("code")
+        if not password or not user.check_password(password):
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
+            return Response({"detail": _("Senha incorreta.")}, status=400)
         if not code:
             return Response({"detail": _("Código obrigatório.")}, status=400)
         if not user.two_factor_secret or not pyotp.TOTP(user.two_factor_secret).verify(code):

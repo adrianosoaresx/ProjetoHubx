@@ -1,0 +1,187 @@
+from __future__ import annotations
+
+import uuid
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import get_object_or_404, render
+
+from accounts.models import UserType
+from agenda.models import Evento
+
+from ..models import (
+    CentroCusto,
+    FinanceiroLog,
+    FinanceiroTaskLog,
+    IntegracaoConfig,
+    LancamentoFinanceiro,
+)
+
+
+def _is_financeiro_or_admin(user) -> bool:
+    permitido = {UserType.ADMIN, UserType.FINANCEIRO}
+    return user.is_authenticated and user.user_type in permitido
+
+
+def _is_associado(user) -> bool:
+    return user.is_authenticated and user.user_type == UserType.ASSOCIADO
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def importar_pagamentos_view(request):
+    return render(request, "financeiro/importar_pagamentos.html")
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def relatorios_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/relatorios.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def centros_list_view(request):
+    limit = 20
+    offset = int(request.GET.get("offset", 0))
+    qs = CentroCusto.objects.all().select_related("organizacao", "nucleo", "evento")
+    total = qs.count()
+    centros = qs[offset : offset + limit]
+    next_offset = offset + limit if total > offset + limit else None
+    prev_offset = offset - limit if offset - limit >= 0 else None
+    context = {
+        "centros": centros,
+        "next": next_offset,
+        "prev": prev_offset,
+    }
+    return render(request, "financeiro/centros_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def centro_form_view(request, pk: uuid.UUID | None = None):
+    centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
+    return render(request, "financeiro/centro_form.html", {"centro": centro})
+
+
+def integracoes_list_view(request):
+    limit = 20
+    offset = int(request.GET.get("offset", 0))
+    qs = IntegracaoConfig.objects.all()
+    total = qs.count()
+    integracoes = qs[offset : offset + limit]
+    next_offset = offset + limit if total > offset + limit else None
+    prev_offset = offset - limit if offset - limit >= 0 else None
+    context = {
+        "integracoes": integracoes,
+        "next": next_offset,
+        "prev": prev_offset,
+    }
+    return render(request, "financeiro/integracoes_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def integracao_form_view(request, pk: uuid.UUID | None = None):
+    integracao = get_object_or_404(IntegracaoConfig, pk=pk) if pk is not None else None
+    return render(request, "financeiro/integracao_form.html", {"integracao": integracao})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def importacoes_list_view(request):
+    """Lista de importações de pagamentos."""
+    return render(request, "financeiro/importacoes_list.html")
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def lancamentos_list_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/lancamentos_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def lancamento_ajuste_modal_view(request, pk: uuid.UUID):
+    lancamento = get_object_or_404(LancamentoFinanceiro, pk=pk)
+    return render(request, "financeiro/lancamento_ajuste_modal.html", {"lancamento": lancamento})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def repasses_view(request):
+    eventos = Evento.objects.all()
+    return render(request, "financeiro/repasses.html", {"eventos": eventos})
+
+
+def logs_list_view(request):
+    User = get_user_model()
+    context = {
+        "acoes": FinanceiroLog.Acao.choices,
+        "usuarios": User.objects.all(),
+    }
+    return render(request, "financeiro/logs_list.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def inadimplencias_view(request):
+    centros = CentroCusto.objects.all()
+    nucleos = {c.nucleo for c in centros if c.nucleo}
+    context = {
+        "centros": centros,
+        "nucleos": list(nucleos),
+    }
+    return render(request, "financeiro/inadimplencias.html", context)
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def task_logs_view(request):
+    logs = FinanceiroTaskLog.objects.all()
+    return render(request, "financeiro/task_logs.html", {"logs": logs})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def task_log_detail_view(request, pk):
+    log = get_object_or_404(FinanceiroTaskLog, pk=pk)
+    return render(request, "financeiro/task_log_detail.html", {"log": log})
+
+
+@login_required
+@user_passes_test(_is_financeiro_or_admin)
+def forecast_view(request):
+    """Tela com previsão financeira."""
+    return render(request, "financeiro/forecast.html")
+
+
+@login_required
+@user_passes_test(_is_associado)
+def aportes_form_view(request):
+    centros = CentroCusto.objects.all()
+    return render(request, "financeiro/aportes_form.html", {"centros": centros})
+
+
+@login_required
+@user_passes_test(_is_associado)
+def extrato_view(request):
+    """Lista os lançamentos financeiros do associado."""
+    lancamentos = (
+        LancamentoFinanceiro.objects.filter(conta_associado__user=request.user)
+        .select_related("centro_custo")
+        .order_by("-data_lancamento")
+    )
+    return render(request, "financeiro/extrato.html", {"lancamentos": lancamentos})

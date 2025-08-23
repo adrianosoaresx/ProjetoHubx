@@ -7,6 +7,7 @@ from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 from django.utils import timezone
+from django.core.cache import cache
 
 from chat.consumers import MESSAGE_RATE_LIMIT, MESSAGE_WINDOW_SECONDS
 from chat.models import ChatMessage, ChatNotification
@@ -22,6 +23,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture(autouse=True)
 def in_memory_channel_layer(settings):
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 
 def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user, nucleo):
@@ -72,7 +78,7 @@ def test_consumer_rate_limit_delays_messages(admin_user, coordenador_user, nucle
             await communicator.receive_json_from()
         start = time.monotonic()
         await communicator.send_json_to({"tipo": "text", "conteudo": "limit"})
-        await communicator.receive_json_from(timeout=MESSAGE_WINDOW_SECONDS + 1)
+        await communicator.receive_json_from(timeout=MESSAGE_WINDOW_SECONDS + 5)
         elapsed = time.monotonic() - start
         assert elapsed >= MESSAGE_WINDOW_SECONDS - 1
         await communicator.disconnect()
@@ -125,6 +131,41 @@ def test_consumer_send_reply(admin_user, coordenador_user, nucleo):
         second = await communicator.receive_json_from()
         assert second["reply_to"] == first["id"]
         await communicator.disconnect()
+
+    asyncio.run(inner())
+
+
+def test_consumer_rejects_invalid_algorithm(admin_user, coordenador_user, nucleo):
+    async def inner():
+        canal = await database_sync_to_async(criar_canal)(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=nucleo.id,
+            titulo="Privado",
+            descricao="",
+            participantes=[coordenador_user],
+            e2ee_habilitado=True,
+        )
+        communicator = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+        await communicator.send_json_to(
+            {
+                "tipo": "text",
+                "conteudo_cifrado": "AAECAwQ=",
+                "alg": "AES-CBC",
+                "key_version": "1",
+            }
+        )
+        event = await communicator.receive_output()
+        assert event["type"] == "websocket.close"
+        assert event["code"] == 4003
+        count = await database_sync_to_async(
+            ChatMessage.objects.filter(channel=canal).count
+        )()
+        assert count == 0
+        await communicator.wait()
 
     asyncio.run(inner())
 

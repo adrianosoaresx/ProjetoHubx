@@ -127,6 +127,16 @@ class IsCoordenador(BasePermission):
         )
 
 
+class IsAdminOrCoordenador(BasePermission):
+    """Permite acesso a administradores ou coordenadores."""
+
+    def has_permission(self, request, view) -> bool:
+        return bool(
+            request.user.is_authenticated
+            and getattr(request.user, "user_type", None) in {UserType.ADMIN, UserType.COORDENADOR}
+        )
+
+
 class IsModeratorUser(BasePermission):
     """Permite acesso a usuários root ou admin."""
 

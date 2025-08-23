@@ -372,6 +372,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def bookmark(self, request, pk=None):
+        if is_ratelimited(
+            request,
+            group="feed_misc_actions",
+            key="user",
+            rate=_read_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
         post = self.get_object()
         bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
         if not created:
@@ -381,6 +390,15 @@ class PostViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def flag(self, request, pk=None):
+        if is_ratelimited(
+            request,
+            group="feed_misc_actions",
+            key="user",
+            rate=_read_rate(None, request),
+            method="POST",
+            increment=True,
+        ):
+            return ratelimit_exceeded(request, None)
         post = self.get_object()
         use_case = DenunciarPost()
         try:

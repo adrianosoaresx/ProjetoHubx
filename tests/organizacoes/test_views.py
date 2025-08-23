@@ -336,6 +336,32 @@ def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
     assert "Membros" in content and "Núcleos" in content and "Eventos" in content
 
 
+@pytest.mark.parametrize(
+    "url_name, section, api_url_name, context_key",
+    [
+        ("usuarios_modal", "usuarios", "organizacoes_api:organizacao-usuarios-list", "usuarios"),
+        ("nucleos_modal", "nucleos", "organizacoes_api:organizacao-nucleos-list", "nucleos"),
+        ("eventos_modal", "eventos", "organizacoes_api:organizacao-eventos-list", "eventos"),
+        ("empresas_modal", "empresas", "organizacoes_api:organizacao-empresas-list", "empresas"),
+        ("posts_modal", "posts", "organizacoes_api:organizacao-posts-list", "posts"),
+    ],
+)
+def test_modal_views_context(
+    superadmin_user, organizacao, url_name, section, api_url_name, context_key
+):
+    url = reverse(f"organizacoes:{url_name}", args=[organizacao.pk])
+    resp = superadmin_user.get(url)
+    assert resp.status_code == 200
+    ctx = resp.context
+    assert ctx["refresh_url"] == reverse(
+        "organizacoes:detail", args=[organizacao.pk]
+    ) + f"?section={section}"
+    assert ctx["api_url"] == reverse(
+        api_url_name, kwargs={"organizacao_pk": organizacao.pk}
+    )
+    assert context_key in ctx
+
+
 def test_list_view_caching(superadmin_user, organizacao):
     cache.clear()
     url = reverse("organizacoes:list")

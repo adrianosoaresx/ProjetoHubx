@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
@@ -37,3 +37,13 @@ class BookmarkAPITest(TestCase):
         self.assertEqual(res.status_code, 200)
         ids = [item["post"]["id"] for item in res.data]
         self.assertIn(str(post.id), ids)
+
+    @override_settings(FEED_RATE_LIMIT_READ="1/m")
+    def test_bookmark_rate_limit_exceeded(self):
+        post = PostFactory(autor=self.user, organizacao=self.org)
+        url = f"/api/feed/posts/{post.id}/bookmark/"
+        res1 = self.client.post(url)
+        self.assertEqual(res1.status_code, 201)
+        res2 = self.client.post(url)
+        self.assertEqual(res2.status_code, 429)
+        self.assertTrue(Bookmark.objects.filter(user=self.user, post=post).exists())

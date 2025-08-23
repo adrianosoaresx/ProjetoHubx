@@ -5,6 +5,7 @@ import pyotp
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+from django.core.cache import cache
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -66,8 +67,6 @@ class CustomUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         user.is_active = False
         user.email_confirmed = False
-        user.failed_login_attempts = 0
-        user.lock_expires_at = None
         if commit:
             user.save()
             token = AccountToken.objects.create(
@@ -249,8 +248,10 @@ class EmailLoginForm(forms.Form):
         except User.DoesNotExist:
             authenticate(self.request, username=email, password=password)
             raise forms.ValidationError("Credenciais inválidas.")
+        lock_key = f"lockout_user_{user.pk}"
+        lock_until = cache.get(lock_key)
         now = timezone.now()
-        if user.lock_expires_at and user.lock_expires_at > now:
+        if lock_until and lock_until > now:
             authenticate(self.request, username=email, password=password)
             SecurityEvent.objects.create(
                 usuario=user,
@@ -258,7 +259,7 @@ class EmailLoginForm(forms.Form):
                 ip=get_client_ip(self.request) if self.request else None,
             )
             raise forms.ValidationError(
-                f"Conta bloqueada. Tente novamente após {user.lock_expires_at.strftime('%H:%M')}"
+                f"Conta bloqueada. Tente novamente após {lock_until.strftime('%H:%M')}"
             )
         if not user.is_active:
             raise forms.ValidationError("Conta inativa. Confirme seu e-mail.")

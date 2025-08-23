@@ -139,7 +139,17 @@ CHAT_SPAM_LINK_LIMIT = 3
 ```
 
 Ajuste os valores conforme a necessidade do ambiente. A contagem de
-mensagens por usuário é mantida em cache por até um minuto.
+mensagens por usuário é mantida em cache por até um minuto. O limite de
+mensagens no WebSocket também utiliza o cache (ex.: Redis) para registrar
+os envios de cada usuário por canal, expurgando os dados após o período da
+janela configurado.
+
+### Limites de upload
+
+O endpoint `POST /api/chat/upload/` aceita apenas arquivos de até 20 MB e
+limitados aos tipos MIME `image/*`, `video/*`, `audio/*`, `application/pdf`
+e `text/plain`. Os valores podem ser configurados via `CHAT_ALLOWED_MIME_TYPES`
+e `CHAT_UPLOAD_MAX_SIZE` em `settings`.
 
 ## Exportação de histórico
 

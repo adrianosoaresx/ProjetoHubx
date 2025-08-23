@@ -85,11 +85,19 @@ def enviar_notificacao_whatsapp(user, contexto):
         logger.exception("Falha ao enviar WhatsApp", extra={"user": getattr(user, "id", None)})
 
 
-@shared_task
-def enviar_notificacoes_diarias() -> None:
-    _send_for_frequency("diaria")
+@shared_task(bind=True, autoretry_for=[Exception], retry_backoff=True, max_retries=3)
+def enviar_notificacoes_diarias(self) -> None:
+    try:
+        _send_for_frequency("diaria")
+    except Exception as exc:  # pragma: no cover - logging de falha
+        logger.exception("Falha ao enviar notificações diárias")
+        raise exc
 
 
-@shared_task
-def enviar_notificacoes_semanais() -> None:
-    _send_for_frequency("semanal")
+@shared_task(bind=True, autoretry_for=[Exception], retry_backoff=True, max_retries=3)
+def enviar_notificacoes_semanais(self) -> None:
+    try:
+        _send_for_frequency("semanal")
+    except Exception as exc:  # pragma: no cover - logging de falha
+        logger.exception("Falha ao enviar notificações semanais")
+        raise exc

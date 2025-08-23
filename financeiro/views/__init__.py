@@ -1,3 +1,12 @@
+
+from .api import (
+    AportePermission,
+    CentroCustoViewSet,
+    FinanceiroViewSet,
+    parse_periodo,
+    gerar_relatorio,
+    send_email,
+
 from __future__ import annotations
 
 import uuid
@@ -13,6 +22,7 @@ from django.core.files.storage import default_storage
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -39,13 +49,28 @@ from ..permissions import (
     IsCoordenador,
     IsFinanceiroOrAdmin,
     IsNotRoot,
+
 )
-from ..serializers import (
-    AporteSerializer,
-    CentroCustoSerializer,
-    ImportarPagamentosConfirmacaoSerializer,
-    ImportarPagamentosPreviewSerializer,
+from .pages import (
+    aportes_form_view,
+    centro_form_view,
+    centros_list_view,
+    extrato_view,
+    forecast_view,
+    importacoes_list_view,
+    importar_pagamentos_view,
+    inadimplencias_view,
+    integracao_form_view,
+    integracoes_list_view,
+    lancamento_ajuste_modal_view,
+    lancamentos_list_view,
+    logs_list_view,
+    relatorios_view,
+    repasses_view,
+    task_log_detail_view,
+    task_logs_view,
 )
+
 from ..services import metrics
 from ..services.aportes import estornar_aporte as estornar_aporte_service
 from ..services.auditoria import log_financeiro
@@ -54,6 +79,7 @@ from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
+from ..tasks.relatorios import gerar_relatorio_async
 
 
 def parse_periodo(periodo: str | None) -> datetime | None:
@@ -291,31 +317,41 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
         fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
-            qs_csv = _base_queryset(centro_id, nucleo_id, inicio, fim)
-            if tipo == "receitas":
-                qs_csv = qs_csv.filter(valor__gt=0)
-            elif tipo == "despesas":
-                qs_csv = qs_csv.filter(valor__lt=0)
-            if status:
-                qs_csv = qs_csv.filter(status=status)
-            linhas = [
-                [
-                    lanc.data_lancamento.date(),
-                    lanc.get_tipo_display(),
-                    float(lanc.valor),
-                    lanc.status,
-                    lanc.centro_custo.nome,
-                ]
-                for lanc in qs_csv
-            ]
-            headers = ["data", "categoria", "valor", "status", "centro de custo"]
-            try:
-                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
-            except RuntimeError:
-                return Response({"detail": _("openpyxl não disponível")}, status=500)
-            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=f"relatorio.{fmt}")
+            token = uuid.uuid4().hex
+            gerar_relatorio_async.delay(
+                token,
+                fmt,
+                centro=centro_id,
+                nucleo=nucleo_id,
+                inicio=inicio.isoformat() if inicio else None,
+                fim=fim.isoformat() if fim else None,
+                tipo=tipo,
+                status=status,
+            )
+            url = request.build_absolute_uri(
+                reverse(
+                    "financeiro_api:financeiro-relatorios-download",
+                    kwargs={"token": token, "formato": fmt},
+                )
+            )
+            return Response({"id": token, "url": url}, status=status.HTTP_202_ACCEPTED)
 
         return Response(result)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="relatorios/download/(?P<token>[\w-]+)/(?P<formato>csv|xlsx)",
+    )
+    def relatorios_download(self, request, token: str, formato: str):
+        path = f"relatorios/{token}.{formato}"
+        if not default_storage.exists(path):
+            return Response({"detail": _("Arquivo não encontrado")}, status=404)
+        return FileResponse(
+            default_storage.open(path, "rb"),
+            as_attachment=True,
+            filename=f"relatorio.{formato}",
+        )
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
@@ -568,13 +604,29 @@ def aportes_form_view(request):
     return render(request, "financeiro/aportes_form.html", {"centros": centros})
 
 
-@login_required
-@user_passes_test(_is_associado)
-def extrato_view(request):
-    """Lista os lançamentos financeiros do associado."""
-    lancamentos = (
-        LancamentoFinanceiro.objects.filter(conta_associado__user=request.user)
-        .select_related("centro_custo")
-        .order_by("-data_lancamento")
-    )
-    return render(request, "financeiro/extrato.html", {"lancamentos": lancamentos})
+
+__all__ = [
+    "AportePermission",
+    "CentroCustoViewSet",
+    "FinanceiroViewSet",
+    "parse_periodo",
+    "gerar_relatorio",
+    "send_email",
+    "aportes_form_view",
+    "centro_form_view",
+    "centros_list_view",
+    "extrato_view",
+    "forecast_view",
+    "importacoes_list_view",
+    "importar_pagamentos_view",
+    "inadimplencias_view",
+    "integracao_form_view",
+    "integracoes_list_view",
+    "lancamento_ajuste_modal_view",
+    "lancamentos_list_view",
+    "logs_list_view",
+    "relatorios_view",
+    "repasses_view",
+    "task_log_detail_view",
+    "task_logs_view",
+]

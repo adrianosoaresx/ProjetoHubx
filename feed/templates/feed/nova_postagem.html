@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n widget_tweaks %}
 
 {% block title %}{% trans "Nova Postagem" %} - Hubx{% endblock %}
 
@@ -49,23 +49,23 @@
 
     <div class="mb-4">
         <label for="id_tipo_feed" class="font-semibold mb-1 block">{% trans "Tipo de Feed" %}</label>
-      {{ form.tipo_feed|as_widget }}
+      {{ form.tipo_feed }}
     </div>
     <div class="mb-4">
         <label for="id_organizacao" class="font-semibold mb-1 block">{% trans "Organização" %}</label>
-      {{ form.organizacao|as_widget }}
+      {{ form.organizacao }}
     </div>
     <div class="mb-4">
         <label for="id_nucleo" class="font-semibold mb-1 block">{% trans "Núcleo" %}</label>
-      {{ form.nucleo|as_widget }}
+      {{ form.nucleo }}
     </div>
     <div class="mb-4">
         <label for="id_evento" class="font-semibold mb-1 block">{% trans "Evento" %}</label>
-      {{ form.evento|as_widget }}
+      {{ form.evento }}
     </div>
     <div class="mb-4">
         <label for="{{ form.tags.id_for_label }}" class="font-semibold mb-1 block">{% trans "Tags" %}</label>
-      {{ form.tags|as_widget }}
+      {{ form.tags }}
     </div>
 
     <!-- Arquivo -->

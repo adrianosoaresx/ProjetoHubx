@@ -70,6 +70,34 @@ def test_relatorio_diario_nao_duplicado(settings):
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
+def test_relatorio_diario_atualiza_conteudo(settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    user = UserFactory()
+    config = user.configuracao
+    config.frequencia_notificacoes_email = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+
+    template1 = NotificationTemplate.objects.create(
+        codigo="tpl1", assunto="a", corpo="msg1", canal=Canal.EMAIL
+    )
+    NotificationLog.objects.create(user=user, template=template1, canal=Canal.EMAIL)
+    enviar_relatorios_diarios()
+    hist = HistoricoNotificacao.objects.get(
+        user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA
+    )
+    assert hist.conteudo == ["msg1"]
+
+    template2 = NotificationTemplate.objects.create(
+        codigo="tpl2", assunto="a", corpo="msg2", canal=Canal.EMAIL
+    )
+    NotificationLog.objects.create(user=user, template=template2, canal=Canal.EMAIL)
+    enviar_relatorios_diarios()
+    hist.refresh_from_db()
+    assert hist.conteudo == ["msg2"]
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
 def test_relatorio_diario_respeita_horario(settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     user = UserFactory()

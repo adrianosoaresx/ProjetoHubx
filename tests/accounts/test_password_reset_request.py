@@ -23,5 +23,24 @@ def test_request_password_reset(monkeypatch, settings):
     url = reverse("accounts_api:account-request-password-reset")
     resp = client.post(url, {"email": "pw@example.com"})
     assert resp.status_code == 204
-    token = AccountToken.objects.filter(usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET).latest("created_at")
-    assert called["id"] == token.id
+    first = AccountToken.objects.get(usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET)
+    resp = client.post(url, {"email": "pw@example.com"})
+    assert resp.status_code == 204
+    second = (
+        AccountToken.objects.filter(
+            usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET
+        )
+        .exclude(id=first.id)
+        .get()
+    )
+    first.refresh_from_db()
+    assert first.used_at is not None
+    assert called["id"] == second.id
+    assert (
+        AccountToken.objects.filter(
+            usuario=user,
+            tipo=AccountToken.Tipo.PASSWORD_RESET,
+            used_at__isnull=True,
+        ).count()
+        == 1
+    )

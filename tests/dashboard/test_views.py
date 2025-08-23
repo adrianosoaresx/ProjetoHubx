@@ -1,10 +1,12 @@
 import io
+import datetime as dt
 from pathlib import Path
 
 import pytest
 from bs4 import BeautifulSoup
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
+from django.utils import timezone
 
 from agenda.models import InscricaoEvento
 from core.permissions import (
@@ -148,6 +150,16 @@ def test_base_view_accepts_params(monkeypatch, client, admin_user):
 def test_invalid_date_returns_400(client, admin_user):
     client.force_login(admin_user)
     resp = client.get(reverse("dashboard:admin"), {"data_inicio": "xx"})
+    assert resp.status_code == 400
+
+
+def test_invalid_date_order_returns_400(client, admin_user):
+    client.force_login(admin_user)
+    inicio = (timezone.now() + dt.timedelta(days=1)).isoformat()
+    fim = timezone.now().isoformat()
+    resp = client.get(
+        reverse("dashboard:admin"), {"data_inicio": inicio, "data_fim": fim}
+    )
     assert resp.status_code == 400
 
 

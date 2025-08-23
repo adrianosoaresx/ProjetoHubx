@@ -59,7 +59,7 @@ from .models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from .tasks import notificar_briefing_status
+from .tasks import notificar_briefing_status, upload_material_divulgacao
 from dashboard.services import check_achievements
 
 User = get_user_model()
@@ -684,11 +684,14 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
         return qs.order_by("id")
 
 
-class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
+class MaterialDivulgacaoEventoCreateView(
+    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, CreateView
+):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
+
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -700,6 +703,9 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
             )
         return form
 
+    permission_required = "agenda.add_materialdivulgacaoevento"
+
+
     def form_valid(self, form):
         evento = form.cleaned_data["evento"]
         user = self.request.user
@@ -707,6 +713,7 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
             form.add_error("evento", _("Evento de outra organização"))
             return self.form_invalid(form)
         response = super().form_valid(form)
+        upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
             evento=self.object.evento,
             usuario=self.request.user,
@@ -715,11 +722,15 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class MaterialDivulgacaoEventoUpdateView(LoginRequiredMixin, UpdateView):
+class MaterialDivulgacaoEventoUpdateView(
+    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView
+):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
+
+    permission_required = "agenda.add_materialdivulgacaoevento"
 
     def get_queryset(self):  # pragma: no cover - simples
         qs = MaterialDivulgacaoEvento.objects.all()
@@ -735,12 +746,17 @@ class MaterialDivulgacaoEventoUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         old_obj = self.get_object()
         detalhes: dict[str, dict[str, Any]] = {}
+        arquivo_alterado = False
         for field in form.changed_data:
             before = getattr(old_obj, field)
             after = form.cleaned_data.get(field)
             if before != after:
                 detalhes[field] = {"antes": before, "depois": after}
+                if field == "arquivo":
+                    arquivo_alterado = True
         response = super().form_valid(form)
+        if arquivo_alterado:
+            upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
             evento=self.object.evento,
             usuario=self.request.user,

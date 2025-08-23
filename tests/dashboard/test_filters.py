@@ -1,7 +1,9 @@
 import pytest
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 from audit.models import AuditLog
+from dashboard.forms import DashboardFilterForm
 from dashboard.models import DashboardFilter
 
 pytestmark = pytest.mark.urls("tests.dashboard.urls")
@@ -40,4 +42,13 @@ def test_filter_list_permissions(client, admin_user, cliente_user):
     assert reverse("dashboard:filter-delete", args=[own.pk]) in content
     assert reverse("dashboard:filter-edit", args=[other.pk]) not in content
     assert reverse("dashboard:filter-delete", args=[other.pk]) not in content
+
+
+@pytest.mark.django_db
+@pytest.mark.urls("tests.urls")
+def test_filter_form_rejects_invalid_metric(admin_user):
+    form = DashboardFilterForm(data={"nome": "F", "publico": False})
+    assert form.is_valid()
+    with pytest.raises(ValidationError):
+        form.save(admin_user, {"metricas": ["desconhecida"]})
 

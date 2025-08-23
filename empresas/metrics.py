@@ -5,6 +5,11 @@ empresas_favoritos_total = Gauge(
     "Total de favoritos em empresas",
 )
 
+empresas_avaliacoes_total = Gauge(
+    "empresas_avaliacoes_total",
+    "Total de avaliações em empresas",
+)
+
 empresas_restauradas_total = Counter(
     "empresas_restauradas_total",
     "Total de empresas restauradas",

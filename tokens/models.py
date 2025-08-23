@@ -133,8 +133,8 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         default=Estado.NOVO,
     )
     data_expiracao = models.DateTimeField(null=True, blank=True)
-    ip_gerado = models.CharField(max_length=45, null=True, blank=True)
-    ip_utilizado = models.CharField(max_length=45, null=True, blank=True)
+    ip_gerado = EncryptedCharField(max_length=128, null=True, blank=True)
+    ip_utilizado = EncryptedCharField(max_length=128, null=True, blank=True)
     revogado_em = models.DateTimeField(null=True, blank=True)
     revogado_por = models.ForeignKey(
         get_user_model(),

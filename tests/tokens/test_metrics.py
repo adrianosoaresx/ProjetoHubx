@@ -16,6 +16,9 @@ def reset_metrics():
     m.tokens_invites_revoked_total._value.set(0)
     m.tokens_validation_fail_total._value.set(0)
     m.tokens_rate_limited_total._value.set(0)
+    m.tokens_webhooks_sent_total._value.set(0)
+    m.tokens_webhooks_failed_total._value.set(0)
+    m.tokens_webhook_latency_seconds._sum.set(0)
 
 
 

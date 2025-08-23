@@ -35,6 +35,7 @@ from .custom_metrics import (
     DashboardCustomMetricService,
     get_metrics_info as get_custom_metrics_info,
 )
+from .constants import METRICAS_INFO
 
 
 def log_filter_action(
@@ -529,6 +530,8 @@ class DashboardMetricsService:
                 fim = datetime.fromisoformat(fim)
             except ValueError:
                 raise ValueError("data_fim inválida")
+        if inicio and fim and inicio > fim:
+            raise ValueError("data_inicio deve ser menor ou igual a data_fim")
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
         organizacao_id = filters.get("organizacao_id")
@@ -795,8 +798,6 @@ class DashboardMetricsService:
             metrics[metric.code] = {"total": total, "crescimento": 0.0}
 
         if custom_metrics_info:
-            from .views import METRICAS_INFO  # type: ignore
-
             METRICAS_INFO.update(custom_metrics_info)
 
         cache.set(cache_key, metrics, 300)
