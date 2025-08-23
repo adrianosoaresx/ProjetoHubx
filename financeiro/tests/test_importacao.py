@@ -13,6 +13,7 @@ from accounts.models import UserType
 from financeiro.models import (
     CentroCusto,
     ContaAssociado,
+    FinanceiroTaskLog,
     ImportacaoPagamentos,
     IntegracaoIdempotency,
     LancamentoFinanceiro,
@@ -194,8 +195,11 @@ def test_reprocessar_erros(api_client, user, settings):
     )
     file2 = SimpleUploadedFile("corr.csv", corrected, content_type="text/csv")
     resp = api_client.post(err_url, {"file": file2}, format="multipart")
-    assert resp.status_code == 200
+    assert resp.status_code == 202
     assert LancamentoFinanceiro.objects.count() == 2
+    log = FinanceiroTaskLog.objects.filter(nome_tarefa="reprocessar_importacao_async").first()
+    assert log is not None
+    assert log.status == "sucesso"
 
 
 def test_email_nao_cadastrado(api_client, user):

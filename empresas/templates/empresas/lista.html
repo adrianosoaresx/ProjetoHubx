@@ -4,13 +4,11 @@
 {% block title %}{% translate "Empresas" %}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/vendor/select2-4.1.0-rc.0.min.css' %}" rel="stylesheet" />
+<link href="{% static 'django_select2/django_select2.css' %}" rel="stylesheet" />
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/vendor/jquery-3.7.1.min.js' %}"></script>
-<script src="{% static 'js/vendor/select2-4.1.0-rc.0.min.js' %}"></script>
-<script>$(function(){ $('#tags').select2(); });</script>
+<script src="{% static 'django_select2/django_select2.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -44,7 +42,7 @@
     </div>
     <div>
       <label for="tags" class="block text-sm font-medium text-neutral-700">{% translate "Tags" %}</label>
-      <select id="tags" name="tags" multiple class="w-full p-2 border rounded select2">
+      <select id="tags" name="tags" multiple class="w-full p-2 border rounded django-select2">
         {% for tag in tags %}
           <option value="{{ tag.id }}" {% if tag.id|stringformat:'s' in selected_tags %}selected{% endif %}>{{ tag.nome }}</option>
         {% endfor %}

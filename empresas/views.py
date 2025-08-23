@@ -17,6 +17,7 @@ from core.permissions import (
     no_superadmin_required,
     pode_crud_empresa,
 )
+from empresas.tasks import nova_avaliacao
 from organizacoes.models import Organizacao
 
 from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
@@ -29,7 +30,6 @@ from .models import (
     Tag,
 )
 from .services import list_all_tags, search_empresas
-from empresas.tasks import nova_avaliacao
 
 
 @login_required
@@ -76,20 +76,20 @@ class EmpresaListView(LoginRequiredMixin, ListView):
             qs = qs.annotate(favoritado=Exists(fav_exists))
         return qs
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["tags"] = list_all_tags()
         context["selected_tags"] = self.request.GET.getlist("tags")
         context["empresas"] = context.get("object_list")
         context["mostrar_excluidas"] = self.request.GET.get("mostrar_excluidas", "")
-        if self.request.user.is_superuser or self.request.user.user_type == UserType.ADMIN:
+        if self.request.user.is_superuser or self.request.user.user_type in {
+            UserType.ADMIN,
+            UserType.ROOT,
+        }:
             context["organizacoes"] = Organizacao.objects.all()
         else:
             org_id = getattr(self.request.user, "organizacao_id", None)
-            context["organizacoes"] = (
-                Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
-            )
+            context["organizacoes"] = Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
         return context
 
     def get_template_names(self):  # type: ignore[override]
@@ -295,9 +295,7 @@ class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
             empresa=self.empresa, usuario=self.request.user, deleted=False
         ).first()
         if not avaliacao:
-            messages.error(
-                self.request, _("Você não possui nenhuma avaliação ativa para esta empresa.")
-            )
+            messages.error(self.request, _("Você não possui nenhuma avaliação ativa para esta empresa."))
             raise Http404
         return avaliacao
 
@@ -329,6 +327,7 @@ def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if (
         not request.user.is_superuser
+        and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}
         and empresa.usuario.organizacao != request.user.organizacao  # Corrigido para usar 'organizacao'
     ):
         return HttpResponseForbidden()
