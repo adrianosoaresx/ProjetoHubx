@@ -20,6 +20,7 @@ from django.views.generic import (
     UpdateView,
 )
 from sentry_sdk import capture_exception
+from typing import Any
 
 from accounts.models import UserType
 from agenda.models import Evento
@@ -354,81 +355,67 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
             raise
 
 
-class OrganizacaoUsuariosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
+class OrganizacaoModalBaseView(AdminRequiredMixin, LoginRequiredMixin, View):
+    model = None
+    template_name = ""
+    context_object_name = ""
+    section = ""
+    api_url_name = ""
+    filter_kwargs: dict[str, Any] = {}
+
     def get(self, request, pk):
         org = get_object_or_404(Organizacao, pk=pk, inativa=False)
-        usuarios = User.objects.filter(organizacao=org)
+        queryset = self.model.objects.filter(organizacao=org, **self.filter_kwargs)
         return render(
             request,
-            "organizacoes/usuarios_modal.html",
+            self.template_name,
             {
                 "organizacao": org,
-                "usuarios": usuarios,
-                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=usuarios",
-                "api_url": reverse("organizacoes_api:organizacao-usuarios-list", kwargs={"organizacao_pk": org.pk}),
+                self.context_object_name: queryset,
+                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + f"?section={self.section}",
+                "api_url": reverse(self.api_url_name, kwargs={"organizacao_pk": org.pk}),
             },
         )
 
 
-class OrganizacaoNucleosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
-        nucleos = Nucleo.objects.filter(organizacao=org, deleted=False)
-        return render(
-            request,
-            "organizacoes/nucleos_modal.html",
-            {
-                "organizacao": org,
-                "nucleos": nucleos,
-                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=nucleos",
-                "api_url": reverse("organizacoes_api:organizacao-nucleos-list", kwargs={"organizacao_pk": org.pk}),
-            },
-        )
+class OrganizacaoUsuariosModalView(OrganizacaoModalBaseView):
+    model = User
+    template_name = "organizacoes/usuarios_modal.html"
+    context_object_name = "usuarios"
+    section = "usuarios"
+    api_url_name = "organizacoes_api:organizacao-usuarios-list"
 
 
-class OrganizacaoEventosModalView(AdminRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
-        eventos = Evento.objects.filter(organizacao=org)
-        return render(
-            request,
-            "organizacoes/eventos_modal.html",
-            {
-                "organizacao": org,
-                "eventos": eventos,
-                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=eventos",
-                "api_url": reverse("organizacoes_api:organizacao-eventos-list", kwargs={"organizacao_pk": org.pk}),
-            },
-        )
+class OrganizacaoNucleosModalView(OrganizacaoModalBaseView):
+    model = Nucleo
+    template_name = "organizacoes/nucleos_modal.html"
+    context_object_name = "nucleos"
+    section = "nucleos"
+    api_url_name = "organizacoes_api:organizacao-nucleos-list"
+    filter_kwargs = {"deleted": False}
 
 
-class OrganizacaoEmpresasModalView(AdminRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
-        empresas = Empresa.objects.filter(organizacao=org, deleted=False)
-        return render(
-            request,
-            "organizacoes/empresas_modal.html",
-            {
-                "organizacao": org,
-                "empresas": empresas,
-                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=empresas",
-                "api_url": reverse("organizacoes_api:organizacao-empresas-list", kwargs={"organizacao_pk": org.pk}),
-            },
-        )
+class OrganizacaoEventosModalView(OrganizacaoModalBaseView):
+    model = Evento
+    template_name = "organizacoes/eventos_modal.html"
+    context_object_name = "eventos"
+    section = "eventos"
+    api_url_name = "organizacoes_api:organizacao-eventos-list"
 
 
-class OrganizacaoPostsModalView(AdminRequiredMixin, LoginRequiredMixin, View):
-    def get(self, request, pk):
-        org = get_object_or_404(Organizacao, pk=pk, inativa=False)
-        posts = Post.objects.filter(organizacao=org, deleted=False)
-        return render(
-            request,
-            "organizacoes/posts_modal.html",
-            {
-                "organizacao": org,
-                "posts": posts,
-                "refresh_url": reverse("organizacoes:detail", args=[org.pk]) + "?section=posts",
-                "api_url": reverse("organizacoes_api:organizacao-posts-list", kwargs={"organizacao_pk": org.pk}),
-            },
-        )
+class OrganizacaoEmpresasModalView(OrganizacaoModalBaseView):
+    model = Empresa
+    template_name = "organizacoes/empresas_modal.html"
+    context_object_name = "empresas"
+    section = "empresas"
+    api_url_name = "organizacoes_api:organizacao-empresas-list"
+    filter_kwargs = {"deleted": False}
+
+
+class OrganizacaoPostsModalView(OrganizacaoModalBaseView):
+    model = Post
+    template_name = "organizacoes/posts_modal.html"
+    context_object_name = "posts"
+    section = "posts"
+    api_url_name = "organizacoes_api:organizacao-posts-list"
+    filter_kwargs = {"deleted": False}
