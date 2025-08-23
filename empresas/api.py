@@ -220,6 +220,24 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         serializer = AvaliacaoEmpresaSerializer(avals, many=True)
         return Response(serializer.data)
 
+    @avaliacoes.mapping.put
+    @avaliacoes.mapping.patch
+    def atualizar_avaliacao(self, request, pk: str | None = None):
+        empresa = self.get_object()
+        if request.user.organizacao != empresa.organizacao:
+            return Response({"detail": "Usuário não pertence à organização."}, status=403)
+        aval = AvaliacaoEmpresa.objects.filter(
+            empresa=empresa, usuario=request.user, deleted=False
+        ).first()
+        if not aval:
+            return Response({"detail": "Avaliação não encontrada."}, status=404)
+        partial = request.method == "PATCH"
+        serializer = AvaliacaoEmpresaSerializer(aval, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        nova_avaliacao.send(sender=self.__class__, avaliacao=aval)
+        return Response(serializer.data)
+
     @avaliacoes.mapping.delete
     def remover_avaliacao(self, request, pk: str | None = None):
         empresa = self.get_object()
