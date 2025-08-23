@@ -128,6 +128,19 @@ valor ao atributo `data-ws-url` no container do chat.
 - Variáveis de notificação e demais integrações são lidas de
   `settings` (ver exemplos em `start_server.py`).
 
+### Limiar de spam
+
+O detector de spam utiliza parâmetros configuráveis em `settings`:
+
+```python
+CHAT_SPAM_MESSAGES_PER_MINUTE = 20
+CHAT_SPAM_REPEAT_LIMIT = 3
+CHAT_SPAM_LINK_LIMIT = 3
+```
+
+Ajuste os valores conforme a necessidade do ambiente. A contagem de
+mensagens por usuário é mantida em cache por até um minuto.
+
 ## Exportação de histórico
 
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,

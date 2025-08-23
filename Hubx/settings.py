@@ -171,6 +171,10 @@ else:  # pragma: no cover - fallback para testes sem Redis
         }
     }
 
+CHAT_SPAM_MESSAGES_PER_MINUTE = int(os.getenv("CHAT_SPAM_MESSAGES_PER_MINUTE", 20))
+CHAT_SPAM_REPEAT_LIMIT = int(os.getenv("CHAT_SPAM_REPEAT_LIMIT", 3))
+CHAT_SPAM_LINK_LIMIT = int(os.getenv("CHAT_SPAM_LINK_LIMIT", 3))
+
 TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
 TOKENS_RATE_LIMIT_ENABLED = True
 
