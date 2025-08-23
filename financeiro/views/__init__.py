@@ -13,6 +13,7 @@ from django.core.files.storage import default_storage
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -54,6 +55,7 @@ from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import importar_pagamentos_async
+from ..tasks.relatorios import gerar_relatorio_async
 
 
 def parse_periodo(periodo: str | None) -> datetime | None:
@@ -291,31 +293,41 @@ class FinanceiroViewSet(viewsets.ViewSet):
 
         fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
-            qs_csv = _base_queryset(centro_id, nucleo_id, inicio, fim)
-            if tipo == "receitas":
-                qs_csv = qs_csv.filter(valor__gt=0)
-            elif tipo == "despesas":
-                qs_csv = qs_csv.filter(valor__lt=0)
-            if status:
-                qs_csv = qs_csv.filter(status=status)
-            linhas = [
-                [
-                    lanc.data_lancamento.date(),
-                    lanc.get_tipo_display(),
-                    float(lanc.valor),
-                    lanc.status,
-                    lanc.centro_custo.nome,
-                ]
-                for lanc in qs_csv
-            ]
-            headers = ["data", "categoria", "valor", "status", "centro de custo"]
-            try:
-                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
-            except RuntimeError:
-                return Response({"detail": _("openpyxl não disponível")}, status=500)
-            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=f"relatorio.{fmt}")
+            token = uuid.uuid4().hex
+            gerar_relatorio_async.delay(
+                token,
+                fmt,
+                centro=centro_id,
+                nucleo=nucleo_id,
+                inicio=inicio.isoformat() if inicio else None,
+                fim=fim.isoformat() if fim else None,
+                tipo=tipo,
+                status=status,
+            )
+            url = request.build_absolute_uri(
+                reverse(
+                    "financeiro_api:financeiro-relatorios-download",
+                    kwargs={"token": token, "formato": fmt},
+                )
+            )
+            return Response({"id": token, "url": url}, status=status.HTTP_202_ACCEPTED)
 
         return Response(result)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="relatorios/download/(?P<token>[\w-]+)/(?P<formato>csv|xlsx)",
+    )
+    def relatorios_download(self, request, token: str, formato: str):
+        path = f"relatorios/{token}.{formato}"
+        if not default_storage.exists(path):
+            return Response({"detail": _("Arquivo não encontrado")}, status=404)
+        return FileResponse(
+            default_storage.open(path, "rb"),
+            as_attachment=True,
+            filename=f"relatorio.{formato}",
+        )
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
