@@ -27,6 +27,7 @@ from organizacoes.models import Organizacao
 
 from .forms import CommentForm, LikeForm, PostForm
 from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
+from .api import _post_rate, _read_rate
 from feed.tasks import notify_post_moderated
 
 @login_required
@@ -306,8 +307,15 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         if getattr(form, "_video_preview_key", None):
             form.instance.video_preview = form._video_preview_key
         form.instance.autor = self.request.user
-        form.instance.organizacao = form.cleaned_data.get("organizacao")
+        form.instance.organizacao = form.cleaned_data.get("organizacao") or self.request.user.organizacao
         response = super().form_valid(form)
+        from feed.tasks import POSTS_CREATED, notify_new_post
+
+        POSTS_CREATED.inc()
+        if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+            notify_new_post(str(self.object.id))
+        else:
+            notify_new_post.delay(str(self.object.id))
         if self.request.headers.get("HX-Request") == "true":
             return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
         return response
