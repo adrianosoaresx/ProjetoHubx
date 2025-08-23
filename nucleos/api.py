@@ -483,15 +483,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
             ativo = status == "ativo"
         return Response({"papel": papel, "ativo": ativo, "suspenso": suspenso})
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
-    def participacoes(self, request, pk: str | None = None):
-        nucleo = self.get_object()
-        if ParticipacaoNucleo.objects.filter(user=request.user, nucleo=nucleo).exists():
-            return Response({"detail": _("Já solicitado ou membro do núcleo.")}, status=400)
-        participacao = ParticipacaoNucleo.objects.create(user=request.user, nucleo=nucleo)
-        serializer = ParticipacaoNucleoSerializer(participacao)
-        return Response(serializer.data, status=201)
-
     @action(
         detail=True,
         methods=["patch"],
