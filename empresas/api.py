@@ -235,7 +235,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], permission_classes=[IsAuthenticated])
     def historico(self, request, pk: str | None = None):
-        if not request.user.is_staff:
+        if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
             return Response(status=403)
         empresa = self.get_object()
         logs = empresa.logs.filter(deleted=False).select_related("usuario")
