@@ -58,3 +58,13 @@ O Celery Beat executa diariamente duas tarefas de manutenção:
 
 Ambas são agendadas para rodar todos os dias à meia-noite.
 
+## Métricas Prometheus
+
+O módulo expõe métricas para monitorar o envio de webhooks:
+
+- `tokens_webhooks_sent_total`: total de webhooks enviados com sucesso.
+- `tokens_webhooks_failed_total`: total de webhooks que falharam após todas as tentativas.
+- `tokens_webhook_latency_seconds`: histograma da latência do envio de webhooks.
+
+Exemplos de regras de alerta podem ser importados a partir de `prometheus/tokens_alerts.yml`.
+
