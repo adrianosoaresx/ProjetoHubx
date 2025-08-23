@@ -4,6 +4,8 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from core.models import (
     SoftDeleteManager,
@@ -257,6 +259,13 @@ class ChatAttachment(CoreTimeStampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Anexo"
         verbose_name_plural = "Anexos"
+
+
+@receiver(post_delete, sender=ChatAttachment)
+def _delete_attachment_file(sender, instance: ChatAttachment, **kwargs) -> None:
+    """Remove o arquivo do storage ao deletar o anexo."""
+    if instance.arquivo:
+        instance.arquivo.delete(save=False)
 
 
 class RelatorioChatExport(CoreTimeStampedModel):
