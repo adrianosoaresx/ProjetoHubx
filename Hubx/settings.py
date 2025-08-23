@@ -175,6 +175,16 @@ CHAT_SPAM_MESSAGES_PER_MINUTE = int(os.getenv("CHAT_SPAM_MESSAGES_PER_MINUTE", 2
 CHAT_SPAM_REPEAT_LIMIT = int(os.getenv("CHAT_SPAM_REPEAT_LIMIT", 3))
 CHAT_SPAM_LINK_LIMIT = int(os.getenv("CHAT_SPAM_LINK_LIMIT", 3))
 
+# Limites de upload de arquivos no chat
+CHAT_ALLOWED_MIME_TYPES = [
+    "image/",
+    "video/",
+    "audio/",
+    "application/pdf",
+    "text/plain",
+]
+CHAT_UPLOAD_MAX_SIZE = 20 * 1024 * 1024  # 20 MB
+
 TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
 TOKENS_RATE_LIMIT_ENABLED = True
 
@@ -246,7 +256,7 @@ DISCUSSAO_PDF_ALLOWED_EXTS = [".pdf"]
 DISCUSSAO_IMAGE_MAX_SIZE = 5 * 1024 * 1024
 DISCUSSAO_PDF_MAX_SIZE = 10 * 1024 * 1024
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = DATA_UPLOAD_MAX_MEMORY_SIZE
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

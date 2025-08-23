@@ -141,6 +141,13 @@ CHAT_SPAM_LINK_LIMIT = 3
 Ajuste os valores conforme a necessidade do ambiente. A contagem de
 mensagens por usuário é mantida em cache por até um minuto.
 
+### Limites de upload
+
+O endpoint `POST /api/chat/upload/` aceita apenas arquivos de até 20 MB e
+limitados aos tipos MIME `image/*`, `video/*`, `audio/*`, `application/pdf`
+e `text/plain`. Os valores podem ser configurados via `CHAT_ALLOWED_MIME_TYPES`
+e `CHAT_UPLOAD_MAX_SIZE` em `settings`.
+
 ## Exportação de histórico
 
 Arquivos JSON possuem uma lista de objetos com `id`, `remetente`,
