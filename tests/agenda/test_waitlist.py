@@ -70,10 +70,15 @@ def test_lista_espera(client, usuario_comum, gerente, evento):
     InscricaoEvento.objects.filter(user=gerente, evento=evento).delete()
     from agenda.tasks import promover_lista_espera
 
-    with patch("agenda.tasks.enviar_para_usuario", lambda *a, **k: None):
+    with patch("agenda.tasks.enviar_para_usuario", lambda *a, **k: None), \
+        patch(
+            "agenda.models.InscricaoEvento.gerar_qrcode",
+            lambda self: setattr(self, "qrcode_url", "/fake.png"),
+        ):
         promover_lista_espera(evento.pk)
     ins2.refresh_from_db()
     assert ins2.status == "confirmada"
+    assert ins2.qrcode_url == "/fake.png"
 
 
 def test_promover_lista_espera_envia_notificacao(usuario_comum, gerente, evento, monkeypatch):
@@ -102,6 +107,11 @@ def test_promover_lista_espera_envia_notificacao(usuario_comum, gerente, evento,
         called["context"] = context
 
     monkeypatch.setattr("agenda.tasks.enviar_para_usuario", fake_enviar)
+    monkeypatch.setattr(
+        InscricaoEvento,
+        "gerar_qrcode",
+        lambda self: setattr(self, "qrcode_url", "/fake.png"),
+    )
     from agenda.tasks import promover_lista_espera
 
     InscricaoEvento.objects.filter(user=gerente, evento=evento).delete()
@@ -113,6 +123,7 @@ def test_promover_lista_espera_envia_notificacao(usuario_comum, gerente, evento,
 
     ins.refresh_from_db()
     assert ins.status == "confirmada"
+    assert ins.qrcode_url == "/fake.png"
 
     log = EventoLog.objects.get(evento=evento, usuario=usuario_comum, acao="inscricao_promovida")
     assert log.detalhes["notificacao"] is True
