@@ -317,6 +317,14 @@ CELERY_BEAT_SCHEDULE = {
         "task": "nucleos.tasks.expirar_solicitacoes_pendentes",
         "schedule": crontab(minute=0, hour=0),
     },
+    "limpar_contadores_convites": {
+        "task": "nucleos.tasks.limpar_contadores_convites",
+        "schedule": crontab(minute=0, hour=0),
+    },
+    "expirar_convites_nucleo": {
+        "task": "nucleos.tasks.expirar_convites_nucleo",
+        "schedule": crontab(minute=0, hour=0),
+    },
     "cleanup_audit_logs": {
         "task": "audit.tasks.cleanup_old_logs",
         "schedule": crontab(minute=0, hour=0, day_of_week="sun"),
