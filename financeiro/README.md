@@ -21,6 +21,8 @@ operação.
    registro em `ImportacaoPagamentos`.
 3. Linhas com problemas são registradas em `errors` para posterior
    reprocessamento.
+4. Os associados referenciados devem estar pré-cadastrados no sistema;
+   se o e-mail informado não existir, a linha será rejeitada.
 
 ## Geração de cobranças
 
