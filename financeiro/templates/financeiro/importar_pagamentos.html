@@ -20,6 +20,7 @@
              hx-trigger="change"
              hx-include="#upload-form"
              hx-on="htmx:afterRequest: renderPreview(event)" />
+      <p class="text-sm text-gray-500">{% trans "Apenas CSV ou XLSX até 5MB" %}</p>
     </form>
       <button id="preview-btn"
               class="mt-2 bg-primary text-white px-4 py-2 rounded"

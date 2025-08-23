@@ -193,14 +193,24 @@ class AporteSerializer(serializers.ModelSerializer):
 
 class ImportarPagamentosPreviewSerializer(serializers.Serializer):
     """Valida o arquivo enviado para pré-visualização da importação."""
+    MAX_FILE_SIZE_MB = 5
 
-    file = serializers.FileField()
+    file = serializers.FileField(
+        help_text=_("Arquivo CSV ou XLSX até %(size)dMB") % {"size": MAX_FILE_SIZE_MB}
+    )
 
     def validate_file(self, file):  # type: ignore[override]
         """Aceita apenas arquivos CSV ou XLSX."""
         name = file.name.lower()
         if not (name.endswith(".csv") or name.endswith(".xlsx")):
-            raise serializers.ValidationError(_("Formato inválido. Envie CSV ou XLSX"))
+            raise serializers.ValidationError(
+                _("Formato inválido. Envie CSV ou XLSX")
+            )
+        max_bytes = self.MAX_FILE_SIZE_MB * 1024 * 1024
+        if file.size > max_bytes:
+            raise serializers.ValidationError(
+                _("Arquivo maior que %(size)dMB") % {"size": self.MAX_FILE_SIZE_MB}
+            )
         return file
 
 
