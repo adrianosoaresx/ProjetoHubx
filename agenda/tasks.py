@@ -9,7 +9,6 @@ from django.contrib.auth import get_user_model
 from notificacoes.services.notificacoes import enviar_para_usuario
 
 from .models import Evento, MaterialDivulgacaoEvento, BriefingEvento, EventoLog
-from notificacoes.services.notificacoes import enviar_para_usuario
 
 logger = logging.getLogger(__name__)
 
