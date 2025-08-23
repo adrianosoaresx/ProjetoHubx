@@ -42,8 +42,6 @@ from .serializers import (
     OrganizacaoSerializer,
 )
 from .tasks import organizacao_alterada
-
-from .metrics import list_latency_seconds, detail_latency_seconds
 from .services import exportar_logs_csv
 
 
