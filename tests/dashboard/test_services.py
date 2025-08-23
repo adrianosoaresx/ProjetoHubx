@@ -81,7 +81,7 @@ def test_calcular_mensagens_chat(conversa, admin_user):
 
 def test_get_metrics_mensagens_chat(conversa, admin_user, organizacao):
     ChatMessage.objects.create(channel=conversa, remetente=admin_user, conteudo="hi")
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         metricas=["num_mensagens_chat"],
         escopo="organizacao",
@@ -120,7 +120,7 @@ def test_get_metrics_with_filters(admin_user, organizacao):
         user_type=UserType.ADMIN,
         organizacao=other_org,
     )
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         escopo="organizacao",
         organizacao_id=admin_user.organizacao_id,
@@ -137,7 +137,7 @@ def test_get_metrics_includes_new_metrics(admin_user):
         categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
     )
     RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         escopo="organizacao",
         organizacao_id=admin_user.organizacao_id,
@@ -163,10 +163,10 @@ def test_get_metrics_cache_differentiates(admin_user):
         user_type=UserType.ADMIN,
         organizacao=other_org,
     )
-    metrics1 = DashboardMetricsService.get_metrics(
+    metrics1, _ = DashboardMetricsService.get_metrics(
         admin_user, escopo="organizacao", organizacao_id=admin_user.organizacao_id
     )
-    metrics2 = DashboardMetricsService.get_metrics(admin_user, escopo="global")
+    metrics2, _ = DashboardMetricsService.get_metrics(admin_user, escopo="global")
     assert metrics1["num_users"]["total"] < metrics2["num_users"]["total"]
 
 
@@ -274,7 +274,7 @@ def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
         data_confirmacao=prev_month,
     )
 
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user,
         metricas=["inscricoes_confirmadas"],
         escopo="organizacao",
@@ -291,7 +291,7 @@ def test_get_metrics_lancamentos_pendentes(admin_user, organizacao):
         tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
         valor=10,
     )
-    metrics = DashboardMetricsService.get_metrics(
+    metrics, _ = DashboardMetricsService.get_metrics(
         admin_user, metricas=["lancamentos_pendentes"], escopo="organizacao", organizacao_id=organizacao.id
     )
     assert metrics["lancamentos_pendentes"]["total"] >= 1

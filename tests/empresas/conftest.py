@@ -61,11 +61,10 @@ def nucleado_user(db, organizacao):
 
 @pytest.fixture
 def root_user(db):
-    return User.objects.create_user(
+    return User.objects.create_superuser(
         email="root@example.com",
         username="root",
         password="pass",
-        user_type=UserType.ROOT,
     )
 
 

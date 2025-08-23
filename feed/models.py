@@ -14,7 +14,6 @@ User = get_user_model()
 
 
 class Tag(TimeStampedModel, SoftDeleteModel):
-
     nome = models.CharField(max_length=50)
 
     class Meta:
@@ -24,6 +23,12 @@ class Tag(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.nome
+
+
+class PendingUpload(TimeStampedModel):
+    """Armazena uploads pendentes associados a tasks Celery."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    task_id = models.CharField(max_length=255, unique=True)
 
 
 class FeedPluginConfig(TimeStampedModel):
@@ -96,20 +101,6 @@ class Post(TimeStampedModel, SoftDeleteModel):
     @property
     def moderacao(self):
         return self.moderacoes.order_by("-created_at").first()
-
-
-class Like(TimeStampedModel, SoftDeleteModel):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="likes")
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        unique_together = ("post", "user", "deleted")
-        verbose_name = "Curtida"
-        verbose_name_plural = "Curtidas"
 
 
 class Flag(TimeStampedModel, SoftDeleteModel):

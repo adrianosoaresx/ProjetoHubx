@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
 from typing import Any, Dict
 from django.core.exceptions import ValidationError as DjangoValidationError
+from accounts.models import UserType
 
 from .validators import validate_uploaded_file
 
@@ -187,8 +188,12 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
         evento = validated_data["evento"]
-        if evento.organizacao != request.user.organizacao:
-            raise PermissionDenied("Evento de outra organização")
+        user = request.user
+        if user.user_type != UserType.ROOT:
+            if evento.organizacao != user.organizacao:
+                raise PermissionDenied("Evento de outra organização")
+            if not user.nucleos.filter(id=evento.nucleo_id).exists():
+                raise PermissionDenied("Evento de outro núcleo")
         instance = super().create(validated_data)
         upload_material_divulgacao.delay(instance.pk)
         return instance

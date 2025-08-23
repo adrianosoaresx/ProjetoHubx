@@ -433,7 +433,14 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             messages.error(request, _("Acesso negado."))  # pragma: no cover
             return redirect("agenda:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
-        InscricaoEvento.objects.filter(user=inscrito, evento=evento).delete()
+        inscricao = get_object_or_404(InscricaoEvento, user=inscrito, evento=evento)
+        inscricao.cancelar_inscricao()
+        EventoLog.objects.create(
+            evento=evento,
+            usuario=request.user,
+            acao="inscricao_removida",
+            detalhes={"inscrito_id": inscrito.id},
+        )
         messages.success(request, _("Inscrito removido."))  # pragma: no cover
         return redirect("agenda:evento_editar", pk=pk)
 
@@ -605,7 +612,7 @@ def checkin_inscricao(request, pk: int):
     return JsonResponse({"check_in": inscricao.check_in_realizado_em})
 
 
-class InscricaoEventoListView(LoginRequiredMixin, ListView):
+class InscricaoEventoListView(LoginRequiredMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
     template_name = "agenda/inscricao_list.html"
     context_object_name = "inscricoes"
@@ -709,9 +716,13 @@ class MaterialDivulgacaoEventoCreateView(
     def form_valid(self, form):
         evento = form.cleaned_data["evento"]
         user = self.request.user
-        if user.user_type != UserType.ROOT and evento.organizacao != user.organizacao:
-            form.add_error("evento", _("Evento de outra organização"))
-            return self.form_invalid(form)
+        if user.user_type != UserType.ROOT:
+            if evento.organizacao != user.organizacao:
+                form.add_error("evento", _("Evento de outra organização"))
+                return self.form_invalid(form)
+            if not user.nucleos.filter(id=evento.nucleo_id).exists():
+                form.add_error("evento", _("Evento de outro núcleo"))
+                return self.form_invalid(form)
         response = super().form_valid(form)
         upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
@@ -730,7 +741,7 @@ class MaterialDivulgacaoEventoUpdateView(
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
 
-    permission_required = "agenda.add_materialdivulgacaoevento"
+    permission_required = "agenda.change_materialdivulgacaoevento"
 
     def get_queryset(self):  # pragma: no cover - simples
         qs = MaterialDivulgacaoEvento.objects.all()

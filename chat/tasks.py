@@ -71,8 +71,8 @@ def aplicar_politica_retencao_canal(canal_id: str, batch_size: int = 1000) -> No
     user = moderator.user if moderator else User.objects.filter(is_staff=True).first()
 
     for ids in _chunked(ids_iter, batch_size):
-        # Remove anexos associados às mensagens, garantindo cascata controlada
-        ChatAttachment.objects.filter(mensagem_id__in=ids).delete()
+        # A remoção das mensagens em cascata também exclui anexos; um sinal
+        # ``post_delete`` no ``ChatAttachment`` cuida da limpeza do arquivo.
         canal.messages.filter(id__in=ids).delete()
 
         chat_mensagens_removidas_retencao_total.inc(len(ids))
