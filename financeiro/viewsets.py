@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -18,6 +18,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
+from agenda.models import Evento
+from nucleos.models import Nucleo
 
 from .models import (
     CentroCusto,
@@ -308,6 +310,27 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
             return Response({"detail": _("periodos inválido")}, status=status.HTTP_400_BAD_REQUEST)
         crescimento = float(params.get("crescimento_receita", 0))
         reducao = float(params.get("reducao_despesa", 0))
+        user = request.user
+        autorizado = False
+        if escopo == "organizacao":
+            autorizado = str(user.organizacao_id) == id_ref
+        elif escopo == "nucleo":
+            autorizado = Nucleo.objects.filter(
+                id=id_ref, organizacao_id=user.organizacao_id
+            ).exists()
+        elif escopo == "centro":
+            autorizado = CentroCusto.objects.filter(pk=id_ref).filter(
+                Q(organizacao_id=user.organizacao_id)
+                | Q(nucleo__organizacao_id=user.organizacao_id)
+            ).exists()
+        elif escopo == "evento":
+            autorizado = Evento.objects.filter(
+                id=id_ref, organizacao_id=user.organizacao_id
+            ).exists()
+        else:
+            return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
+        if not autorizado:
+            return Response({"detail": _("Acesso negado")}, status=status.HTTP_403_FORBIDDEN)
         cache_key = f"fin:forecast:{escopo}:{id_ref}:{periodos}:{crescimento}:{reducao}"
         data = cache.get(cache_key)
         if not data:

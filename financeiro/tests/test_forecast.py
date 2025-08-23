@@ -5,8 +5,10 @@ from django.core.cache import cache
 from rest_framework.test import APIClient
 from rest_framework.reverse import reverse
 
+import pytest
 from accounts.factories import UserFactory
 from accounts.models import UserType
+from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from financeiro.models import CentroCusto, LancamentoFinanceiro
 import financeiro.viewsets as v
@@ -121,3 +123,41 @@ def test_cache(api_client, admin_user, monkeypatch):
     api_client.get(url, params)
     api_client.get(url, params)
     assert len(calls) == 1
+
+
+def test_forecast_organizacao_forbidden(api_client):
+    org1 = OrganizacaoFactory()
+    org2 = OrganizacaoFactory()
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
+    )
+    auth(api_client, user)
+    url = reverse("financeiro_api:forecast-list")
+    resp = api_client.get(url, {"escopo": "organizacao", "id": str(org2.id)})
+    assert resp.status_code == 403
+
+
+def test_forecast_nucleo_forbidden(api_client):
+    org1 = OrganizacaoFactory()
+    org2 = OrganizacaoFactory()
+    nucleo = NucleoFactory(organizacao=org2)
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
+    )
+    auth(api_client, user)
+    url = reverse("financeiro_api:forecast-list")
+    resp = api_client.get(url, {"escopo": "nucleo", "id": str(nucleo.id)})
+    assert resp.status_code == 403
+
+
+def test_forecast_centro_forbidden(api_client):
+    org1 = OrganizacaoFactory()
+    org2 = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="X", tipo="organizacao", organizacao=org2)
+    user = UserFactory(
+        user_type=UserType.ADMIN, organizacao=org1, nucleo_obj=NucleoFactory(organizacao=org1)
+    )
+    auth(api_client, user)
+    url = reverse("financeiro_api:forecast-list")
+    resp = api_client.get(url, {"escopo": "centro", "id": str(centro.id)})
+    assert resp.status_code == 403
