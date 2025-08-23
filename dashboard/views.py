@@ -17,6 +17,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseForbidden,
+    JsonResponse,
 )
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
@@ -206,23 +207,39 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             {"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()
         ]
         user = request.user
+        def limit_with_selected(qs, selected_id, limit=50):
+            if selected_id:
+                return qs.filter(pk=selected_id) | qs.exclude(pk=selected_id)[: limit - 1]
+            return qs[:limit]
+
         if user.user_type in {UserType.ROOT, UserType.ADMIN}:
-            orgs = Organizacao.objects.all()
-            nucleos = Nucleo.objects.all()
-            eventos = Evento.objects.all()
+            orgs_qs = Organizacao.objects.only("id", "nome")
+            nucleos_qs = (
+                Nucleo.objects.only("id", "nome", "organizacao")
+                .select_related("organizacao")
+            )
+            eventos_qs = (
+                Evento.objects.only("id", "titulo", "nucleo", "organizacao")
+                .select_related("nucleo", "organizacao")
+            )
         else:
             org_id = getattr(user.organizacao, "pk", None)
-            orgs = (
-                Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            orgs_qs = (
+                Organizacao.objects.filter(pk=org_id).only("id", "nome")
+                if org_id
+                else Organizacao.objects.none()
             )
-            nucleos = (
+            nucleos_qs = (
                 Nucleo.objects.filter(
                     participacoes__user=user,
                     participacoes__status="ativo",
                     participacoes__status_suspensao=False,
-                ).distinct()
+                )
+                .distinct()
+                .only("id", "nome", "organizacao")
+                .select_related("organizacao")
             )
-            eventos = (
+            eventos_qs = (
                 Evento.objects.filter(
                     Q(coordenador=user)
                     | Q(
@@ -230,8 +247,15 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                         nucleo__participacoes__status="ativo",
                         nucleo__participacoes__status_suspensao=False,
                     )
-                ).distinct()
+                )
+                .distinct()
+                .only("id", "titulo", "nucleo", "organizacao")
+                .select_related("nucleo", "organizacao")
             )
+
+        orgs = limit_with_selected(orgs_qs, filtros["organizacao_id"])
+        nucleos = limit_with_selected(nucleos_qs, filtros["nucleo_id"])
+        eventos = limit_with_selected(eventos_qs, filtros["evento_id"])
         return {
             "periodo": periodo,
             "escopo": escopo,
@@ -397,6 +421,50 @@ def tarefas_partial(request):
     except Exception:  # pragma: no cover
         messages.error(request, _("Erro ao carregar tarefas."))
         return HttpResponse(status=500)
+
+
+def organizacoes_search(request):
+    """Busca assíncrona de organizações para Select2."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+
+    term = request.GET.get("q", "")
+    qs = (
+        Organizacao.objects.only("id", "nome")
+        .filter(nome__icontains=term)[:50]
+    )
+    data = {"results": [{"id": o.id, "text": o.nome} for o in qs]}
+    return JsonResponse(data)
+
+
+def nucleos_search(request):
+    """Busca assíncrona de núcleos para Select2."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+
+    term = request.GET.get("q", "")
+    qs = (
+        Nucleo.objects.only("id", "nome", "organizacao")
+        .select_related("organizacao")
+        .filter(nome__icontains=term)[:50]
+    )
+    data = {"results": [{"id": n.id, "text": n.nome} for n in qs]}
+    return JsonResponse(data)
+
+
+def eventos_search(request):
+    """Busca assíncrona de eventos para Select2."""
+    if not request.user.is_authenticated:
+        return HttpResponse(status=401)
+
+    term = request.GET.get("q", "")
+    qs = (
+        Evento.objects.only("id", "titulo", "nucleo", "organizacao")
+        .select_related("nucleo", "organizacao")
+        .filter(titulo__icontains=term)[:50]
+    )
+    data = {"results": [{"id": e.id, "text": e.titulo} for e in qs]}
+    return JsonResponse(data)
 
 
 def eventos_partial(request):
