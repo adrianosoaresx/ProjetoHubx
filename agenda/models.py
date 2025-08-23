@@ -142,7 +142,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 
     def gerar_qrcode(self) -> None:
         """Gera um QRCode único e salva no armazenamento padrão."""
-        data = f"inscricao:{self.pk}:{self.created_at.timestamp()}"
+        data = f"inscricao:{self.pk}:{int(self.created_at.timestamp())}"
         img = qrcode.make(data)
         buffer = BytesIO()
         img.save(buffer, format="PNG")

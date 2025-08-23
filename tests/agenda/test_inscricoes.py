@@ -145,7 +145,8 @@ def test_qrcode_and_checkin(client, inscricao):
     inscricao.confirmar_inscricao()
     assert inscricao.qrcode_url
     url = reverse("agenda:inscricao_checkin", args=[inscricao.pk])
-    codigo = f"inscricao:{inscricao.pk}:{int(inscricao.created_at.timestamp())}"
+    timestamp = int(inscricao.created_at.timestamp())
+    codigo = f"inscricao:{inscricao.pk}:{timestamp}"
     resp = client.post(url, {"codigo": codigo})
     assert resp.status_code == 200
     inscricao.refresh_from_db()
