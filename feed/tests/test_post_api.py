@@ -7,6 +7,7 @@ import io
 import subprocess
 import tempfile
 from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -20,6 +21,20 @@ class PostAPITest(TestCase):
         self.user.save()
         self.client = APIClient()
         self.client.force_authenticate(self.user)
+
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+    @patch("feed.tasks.upload_media.apply_async")
+    @patch("feed.services._upload_media", return_value="ok")
+    def test_upload_uses_direct_service_when_eager(self, mock_upload, mock_apply):
+        img_io = io.BytesIO()
+        Image.new("RGB", (1, 1)).save(img_io, format="PNG")
+        image = SimpleUploadedFile("t.png", img_io.getvalue(), content_type="image/png")
+        res = self.client.post(
+            "/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart"
+        )
+        self.assertEqual(res.status_code, 201)
+        mock_upload.assert_called_once()
+        mock_apply.assert_not_called()
 
     def test_create_text_post(self):
         res = self.client.post(

@@ -73,12 +73,27 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
 
 
 def upload_media(file: IO[bytes]) -> str | tuple[str, str]:
-    """Wrapper que delega o upload para uma task assíncrona."""
+    """Envia mídia utilizando task Celery quando assíncrono.
+
+    Em ambientes de teste, com ``CELERY_TASK_ALWAYS_EAGER`` habilitado,
+    executa ``_upload_media`` diretamente para evitar a sobrecarga de
+    invocar uma task e aguardar o resultado.
+
+    Quando ``CELERY_TASK_ALWAYS_EAGER`` estiver desabilitado, a task é
+    enfileirada de forma assíncrona e uma chave temporária é retornada
+    imediatamente. O resultado definitivo deve ser tratado via callback ou
+    sinal quando a task completar.
+    """
 
     from .tasks import upload_media as upload_media_task
+
+    if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+        file.seek(0)
+        return _upload_media(file)
 
     file.seek(0)
     data = file.read()
     content_type = getattr(file, "content_type", "")
 
-    return upload_media_task.delay(data, file.name, content_type).get()
+    task = upload_media_task.apply_async(args=[data, file.name, content_type])
+    return f"pending:{task.id}"
