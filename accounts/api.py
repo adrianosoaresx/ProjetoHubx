@@ -135,6 +135,14 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="enable-2fa")
     def enable_2fa(self, request):
         user = request.user
+        password = request.data.get("password")
+        if not password or not user.check_password(password):
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
+            return Response({"detail": _("Senha incorreta.")}, status=400)
         code = request.data.get("code")
         if user.two_factor_enabled:
             return Response({"detail": _("2FA já habilitado.")}, status=400)
@@ -169,7 +177,15 @@ class AccountViewSet(viewsets.GenericViewSet):
     @action(detail=False, methods=["post"], url_path="disable-2fa")
     def disable_2fa(self, request):
         user = request.user
+        password = request.data.get("password")
         code = request.data.get("code")
+        if not password or not user.check_password(password):
+            SecurityEvent.objects.create(
+                usuario=user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
+            return Response({"detail": _("Senha incorreta.")}, status=400)
         if not code:
             return Response({"detail": _("Código obrigatório.")}, status=400)
         if not user.two_factor_secret or not pyotp.TOTP(user.two_factor_secret).verify(code):

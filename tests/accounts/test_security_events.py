@@ -14,23 +14,30 @@ User = get_user_model()
 
 @pytest.mark.django_db
 @override_settings(ROOT_URLCONF="tests.urls_accounts_plus")
-def test_security_events_flow():
+def test_security_events_flow(monkeypatch):
     user = User.objects.create_user(email="sec@example.com", username="sec", password="pass")
     client = APIClient()
     client.force_authenticate(user=user)
+    monkeypatch.setattr("accounts.tasks.send_cancel_delete_email.delay", lambda *args, **kwargs: None)
 
     # enable 2FA
-    resp = client.post(reverse("accounts_api:account-enable-2fa"))
+    resp = client.post(reverse("accounts_api:account-enable-2fa"), {"password": "pass"})
     assert resp.status_code == 200
     secret = resp.json()["secret"]
     totp = pyotp.TOTP(secret).now()
-    resp = client.post(reverse("accounts_api:account-enable-2fa"), {"code": totp})
+    resp = client.post(
+        reverse("accounts_api:account-enable-2fa"),
+        {"code": totp, "password": "pass"},
+    )
     assert resp.status_code == 200
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitado").exists()
 
     # disable 2FA
     disable_code = pyotp.TOTP(secret).now()
-    resp = client.post(reverse("accounts_api:account-disable-2fa"), {"code": disable_code})
+    resp = client.post(
+        reverse("accounts_api:account-disable-2fa"),
+        {"code": disable_code, "password": "pass"},
+    )
     assert resp.status_code == 200
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()
 
@@ -94,5 +101,5 @@ def test_disable_2fa_requires_code():
     TOTPDevice.objects.create(usuario=user, secret=user.two_factor_secret, confirmado=True)
     client = APIClient()
     client.force_authenticate(user=user)
-    resp = client.post(reverse("accounts_api:account-disable-2fa"))
+    resp = client.post(reverse("accounts_api:account-disable-2fa"), {"password": "pass"})
     assert resp.status_code == 400
