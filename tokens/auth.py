@@ -37,10 +37,10 @@ class ApiTokenAuthentication(BaseAuthentication):
         ip_address = get_client_ip(request)
         if api_token.ips.filter(tipo=ApiTokenIp.Tipo.NEGADO, ip=ip_address).exists():
 
+            raise AuthenticationFailed("IP bloqueado")
         ip_address = request.META.get("REMOTE_ADDR", "")
         ip_rules = list(api_token.ips.all())
         if any(rule.tipo == ApiTokenIp.Tipo.NEGADO and rule.ip == ip_address for rule in ip_rules):
-
             raise AuthenticationFailed("IP bloqueado")
         allowed_ips = [rule.ip for rule in ip_rules if rule.tipo == ApiTokenIp.Tipo.PERMITIDO]
         if allowed_ips and ip_address not in allowed_ips:
