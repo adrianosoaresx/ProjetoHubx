@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import structlog
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
@@ -62,6 +63,9 @@ from .tasks import (
     notificar_nova_resposta,
     notificar_topico_resolvido,
 )
+
+
+logger = structlog.get_logger(__name__)
 
 
 @method_decorator(cache_page(60, key_prefix=CATEGORIAS_LIST_KEY_PREFIX), name="dispatch")
@@ -695,6 +699,13 @@ class DenunciaApproveView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia = get_object_or_404(Denuncia, pk=pk)
         notes = request.POST.get("notes", "")
         denuncia.aprovar(request.user, notes)
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="approve",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Denúncia aprovada"))
         return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
 
@@ -704,6 +715,13 @@ class DenunciaRejectView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia = get_object_or_404(Denuncia, pk=pk)
         notes = request.POST.get("notes", "")
         denuncia.rejeitar(request.user, notes)
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="reject",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Denúncia rejeitada"))
         return redirect("discussao:denuncia_detalhe", pk=denuncia.pk)
 
@@ -722,5 +740,12 @@ class DenunciaRemoveContentView(AdminRequiredMixin, LoginRequiredMixin, View):
         denuncia.status = Denuncia.Status.REVISADO
         denuncia.log = log
         denuncia.save(update_fields=["status", "log"])
+        logger.info(
+            "denuncia_moderacao",
+            denuncia_id=denuncia.id,
+            acao="remove",
+            moderador_id=request.user.id,
+            status=denuncia.status,
+        )
         messages.success(request, gettext_lazy("Conteúdo removido"))
         return redirect("discussao:denuncia_list", status=Denuncia.Status.PENDENTE)
