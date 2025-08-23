@@ -1,6 +1,7 @@
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 from unittest.mock import patch
+from django.core.cache import cache
 
 from accounts.factories import UserFactory
 from feed.factories import PostFactory
@@ -40,3 +41,25 @@ class LikeAPITest(TestCase):
         self.assertEqual(
             REACTIONS_TOTAL.labels(vote="like")._value.get(), base_count
         )
+
+    @patch("feed.tasks.enviar_para_usuario")
+    def test_counts_updated_immediately(self, enviar):
+        cache_key = f"post_reacoes:{self.post.id}"
+        res = self.client.get(f"/api/feed/posts/{self.post.id}/reacoes/")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["like"], 0)
+        self.assertIsNotNone(cache.get(cache_key))
+
+        res = self.client.post("/api/feed/likes/", {"post": self.post.id})
+        self.assertEqual(res.status_code, 201)
+        self.assertIsNone(cache.get(cache_key))
+
+        res = self.client.get(f"/api/feed/posts/{self.post.id}/reacoes/")
+        self.assertEqual(res.data["like"], 1)
+
+        res = self.client.post("/api/feed/likes/", {"post": self.post.id})
+        self.assertEqual(res.status_code, 200)
+        self.assertIsNone(cache.get(cache_key))
+
+        res = self.client.get(f"/api/feed/posts/{self.post.id}/reacoes/")
+        self.assertEqual(res.data["like"], 0)
