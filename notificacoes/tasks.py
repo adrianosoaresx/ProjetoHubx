@@ -115,13 +115,35 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
         mensagens = [log.corpo_renderizado or log.template.corpo for log in logs]
         body = "\n".join(mensagens)
         subject = _("Resumo de notificações")
-        if canal == Canal.EMAIL:
-            send_email(config.user, subject, body)
-        elif canal == Canal.WHATSAPP:
-            send_whatsapp(config.user, body)
-        elif canal == Canal.PUSH:
-            send_push(config.user, body)
-        logs.update(status=NotificationStatus.ENVIADA, data_envio=agora)
+        try:
+            if canal == Canal.EMAIL:
+                send_email(config.user, subject, body)
+            elif canal == Canal.WHATSAPP:
+                send_whatsapp(config.user, body)
+            elif canal == Canal.PUSH:
+                send_push(config.user, body)
+        except Exception as exc:
+            logs.update(
+                status=NotificationStatus.FALHA,
+                data_envio=agora,
+                erro=str(exc),
+            )
+            metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
+            duration = time.perf_counter() - start
+            metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(
+                duration
+            )
+            logger.exception(
+                "falha_envio_resumo",
+                user_id=config.user.id,
+                canal=canal,
+                tipo_frequencia=tipo,
+                erro=str(exc),
+                duration=duration,
+            )
+            continue
+
+        logs.update(status=NotificationStatus.ENVIADA, data_envio=agora, erro=None)
         envio = agora.replace(second=0, microsecond=0)
         data_ref = agora.date()
         historico, created = HistoricoNotificacao.objects.update_or_create(
