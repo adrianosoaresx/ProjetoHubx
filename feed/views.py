@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,18 +18,18 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
-from django.conf import settings
 
 from accounts.models import UserType
 from agenda.models import Evento
 from core.cache import get_cache_version
+from feed.tasks import notify_post_moderated
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
-from .forms import CommentForm, LikeForm, PostForm
-from .models import Bookmark, Flag, Like, ModeracaoPost, Post, Reacao, Tag
 from .api import _post_rate, _read_rate
-from feed.tasks import notify_post_moderated
+from .forms import CommentForm, PostForm
+from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
+
 
 @login_required
 def meu_mural(request):
@@ -71,7 +72,6 @@ def bookmark_list(request):
             "post__evento",
         )
         .prefetch_related(
-            "post__likes",
             "post__comments",
             "post__bookmarks",
             "post__flags",
