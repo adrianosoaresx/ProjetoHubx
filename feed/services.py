@@ -42,9 +42,6 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     else:
         raise ValidationError("Formato de arquivo não suportado")
 
-    if is_video and not ffmpeg_available:
-        raise ValidationError("O binário 'ffmpeg' é necessário para gerar previews de vídeo")
-
     if size > max_size:
         raise ValidationError("Arquivo maior que o limite permitido")
 
@@ -53,7 +50,7 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     data = file.read()
 
     preview_key: str | None = None
-    if is_video:
+    if is_video and ffmpeg_available:
         try:
             with tempfile.NamedTemporaryFile(suffix=ext) as src_tmp, tempfile.NamedTemporaryFile(suffix=".jpg") as tmp:
                 src_tmp.write(data)

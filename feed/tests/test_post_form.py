@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
 import io
+from unittest.mock import patch
 
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -15,7 +16,8 @@ class PostFormTest(TestCase):
         org = OrganizacaoFactory()
         self.user = UserFactory(organizacao=org)
 
-    def test_form_video_valid(self):
+    @patch("feed.services.shutil.which", return_value=None)
+    def test_form_video_valid_without_preview(self, mock_which):
         video = SimpleUploadedFile("v.mp4", b"00", content_type="video/mp4")
         form = PostForm(
             data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
@@ -23,6 +25,8 @@ class PostFormTest(TestCase):
             user=self.user,
         )
         self.assertTrue(form.is_valid())
+        self.assertIsNone(form._video_preview_key)
+        self.assertIsInstance(form.cleaned_data["video"], str)
 
     def test_form_text_only_valid(self):
         form = PostForm(
