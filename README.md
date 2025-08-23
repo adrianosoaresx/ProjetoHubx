@@ -242,6 +242,8 @@ npm run build
 
 ### Dashboard
 - **Dashboard**: Estatísticas de eventos, inscrições e interações.
+- É possível registrar novas fontes de dados para métricas em tempo de execução
+  com `DashboardCustomMetricService.register_source("chave", Modelo, {"campo"})`.
 
 ### Parcerias de Eventos
 - **CRUD Web**: gerenciamento de `ParceriaEvento` em `/agenda/parcerias/` com criação, edição e exclusão restritas a administradores e coordenadores.

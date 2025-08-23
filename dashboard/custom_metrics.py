@@ -1,14 +1,31 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Set, Type
 
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Model, Sum
 
 from feed.models import Post
 
 
 class DashboardCustomMetricService:
-    SOURCES: Dict[str, tuple] = {
+    SOURCES: Dict[str, tuple[Type[Model], Set[str]]] = {
         "posts": (Post, {"id", "organizacao_id"}),
     }
+
+    @classmethod
+    def register_source(
+        cls, key: str, model: Type[Model], allowed_fields: Iterable[str]
+    ) -> None:
+        if key in cls.SOURCES:
+            raise ValueError("Fonte já registrada")
+        if not isinstance(model, type) or not issubclass(model, Model):
+            raise TypeError("Model inválido")
+        fields_set = set(allowed_fields)
+        model_fields = {f.name for f in model._meta.get_fields()}
+        invalid = fields_set - model_fields
+        if invalid:
+            raise ValueError(
+                f"Campos inválidos: {', '.join(sorted(invalid))}"
+            )
+        cls.SOURCES[key] = (model, fields_set)
 
     AGGREGATIONS = {"count", "sum", "avg"}
 
