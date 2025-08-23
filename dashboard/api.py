@@ -23,6 +23,7 @@ from .models import DashboardFilter, DashboardCustomMetric
 from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
 from .services import DashboardMetricsService, DashboardService, check_achievements
 from .custom_metrics import DashboardCustomMetricService
+from .constants import METRICAS_INFO
 from core.permissions import IsModeratorUser
 
 
@@ -65,8 +66,24 @@ class DashboardViewSet(viewsets.ViewSet):
             val = params.get(key)
             if val:
                 filters[key] = val
-        metricas_list = params.getlist("metricas") if hasattr(params, "getlist") else params.get("metricas")
+        metricas_list = (
+            params.getlist("metricas")
+            if hasattr(params, "getlist")
+            else params.get("metricas")
+        )
         if metricas_list:
+            if isinstance(metricas_list, str):
+                metricas_list = [metricas_list]
+            valid_metricas = set(METRICAS_INFO.keys()) | set(
+                DashboardCustomMetric.objects.values_list("code", flat=True)
+            )
+            invalid = [m for m in metricas_list if m not in valid_metricas]
+            if invalid:
+                if len(invalid) == 1:
+                    return Response({"detail": f"Métrica inválida: {invalid[0]}"}, status=400)
+                return Response(
+                    {"detail": f"Métricas inválidas: {', '.join(invalid)}"}, status=400
+                )
             filters["metricas"] = metricas_list
         try:
             data = DashboardMetricsService.get_metrics(
@@ -90,14 +107,33 @@ class DashboardViewSet(viewsets.ViewSet):
             if val:
                 filters[key] = val
         metricas_list = request.query_params.getlist("metricas")
-        if metricas_list:
-            filters["metricas"] = metricas_list
         filtros = request.query_params.dict()
         if metricas_list:
             filtros["metricas"] = metricas_list
         filtros.pop("formato", None)
         metadata = {"filtros": filtros, "formato": formato}
         ip_hash = hash_ip(get_client_ip(request))
+        if metricas_list:
+            valid_metricas = set(METRICAS_INFO.keys()) | set(
+                DashboardCustomMetric.objects.values_list("code", flat=True)
+            )
+            invalid = [m for m in metricas_list if m not in valid_metricas]
+            if invalid:
+                error_msg = (
+                    f"Métrica inválida: {invalid[0]}"
+                    if len(invalid) == 1
+                    else f"Métricas inválidas: {', '.join(invalid)}"
+                )
+                log_audit(
+                    request.user,
+                    f"EXPORT_{formato.upper()}",
+                    object_type="DashboardMetrics",
+                    ip_hash=ip_hash,
+                    status="ERROR",
+                    metadata={**metadata, "error": error_msg},
+                )
+                return Response({"detail": error_msg}, status=400)
+            filters["metricas"] = metricas_list
         inicio_dt = parse_datetime(inicio) if inicio else None
         if inicio and inicio_dt is None:
             log_audit(
