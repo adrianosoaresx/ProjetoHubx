@@ -25,6 +25,8 @@ def api_client():
 def celery_eager(settings, monkeypatch):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     monkeypatch.setattr("empresas.tasks.notificar_responsavel.delay", lambda *a, **k: None)
+    monkeypatch.setattr("empresas.signals.criar_post_empresa.delay", lambda *a, **k: None)
+    monkeypatch.setattr("empresas.signals.validar_cnpj_empresa.delay", lambda *a, **k: None)
 
 
 def test_crud_empresa(api_client, gerente_user, tag_factory):
@@ -32,8 +34,6 @@ def test_crud_empresa(api_client, gerente_user, tag_factory):
     url = reverse("empresas_api:empresa-list")
     tag = tag_factory(nome="Teste", categoria="prod")
     data = {
-        "usuario": gerente_user.id,
-        "organizacao": gerente_user.organizacao.id,
         "nome": "Empresa X",
         "cnpj": CNPJ().generate(),
         "tipo": "mei",
@@ -45,6 +45,8 @@ def test_crud_empresa(api_client, gerente_user, tag_factory):
     resp = api_client.post(url, data, format="json")
     assert resp.status_code == status.HTTP_201_CREATED
     empresa_id = resp.data["id"]
+    assert resp.data["usuario"] == gerente_user.id
+    assert str(resp.data["organizacao"]) == str(gerente_user.organizacao.id)
     assert list(Empresa.objects.get(pk=empresa_id).tags.values_list("id", flat=True)) == [tag.id]
 
     # duplicate cnpj
@@ -69,8 +71,6 @@ def test_criar_empresa_sem_permissao(api_client, associado_user):
     api_client.force_authenticate(user=associado_user)
     url = reverse("empresas_api:empresa-list")
     data = {
-        "usuario": associado_user.id,
-        "organizacao": associado_user.organizacao.id,
         "nome": "Empresa Y",
         "cnpj": CNPJ().generate(),
         "tipo": "mei",
