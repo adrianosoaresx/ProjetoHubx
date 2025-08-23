@@ -151,3 +151,20 @@ def test_qrcode_and_checkin(client, inscricao):
     assert resp.status_code == 200
     inscricao.refresh_from_db()
     assert inscricao.check_in_realizado_em is not None
+
+
+def test_realizar_check_in_incrementa_numero_presentes(evento, inscricao):
+    inscricao.confirmar_inscricao()
+    inscricao.realizar_check_in()
+    evento.refresh_from_db()
+    assert evento.numero_presentes == 1
+
+
+def test_cancelar_inscricao_decrementa_numero_presentes(evento, inscricao):
+    inscricao.confirmar_inscricao()
+    inscricao.realizar_check_in()
+    evento.refresh_from_db()
+    assert evento.numero_presentes == 1
+    inscricao.cancelar_inscricao()
+    evento.refresh_from_db()
+    assert evento.numero_presentes == 0

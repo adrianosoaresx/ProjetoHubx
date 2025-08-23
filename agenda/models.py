@@ -134,25 +134,35 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     def cancelar_inscricao(self) -> None:
         if timezone.now() >= self.evento.data_inicio:
             raise ValueError("Não é possível cancelar após o início do evento.")
-        self.status = "cancelada"
-        self.data_confirmacao = timezone.now()
-        self.save(update_fields=["status", "data_confirmacao", "updated_at"])
-        EventoLog.objects.create(
-            evento=self.evento,
-            usuario=self.user,
-            acao="inscricao_cancelada",
-        )
+        was_confirmed = self.status == "confirmada"
+        with transaction.atomic():
+            evento = Evento.objects.select_for_update().get(pk=self.evento.pk)
+            self.status = "cancelada"
+            self.data_confirmacao = timezone.now()
+            self.save(update_fields=["status", "data_confirmacao", "updated_at"])
+            if was_confirmed and evento.numero_presentes > 0:
+                evento.numero_presentes -= 1
+                evento.save(update_fields=["numero_presentes", "updated_at"])
+            EventoLog.objects.create(
+                evento=self.evento,
+                usuario=self.user,
+                acao="inscricao_cancelada",
+            )
 
     def realizar_check_in(self) -> None:
         if self.check_in_realizado_em:
             return
-        self.check_in_realizado_em = timezone.now()
-        self.save(update_fields=["check_in_realizado_em", "updated_at"])
-        EventoLog.objects.create(
-            evento=self.evento,
-            usuario=self.user,
-            acao="check_in",
-        )
+        with transaction.atomic():
+            evento = Evento.objects.select_for_update().get(pk=self.evento.pk)
+            self.check_in_realizado_em = timezone.now()
+            self.save(update_fields=["check_in_realizado_em", "updated_at"])
+            evento.numero_presentes += 1
+            evento.save(update_fields=["numero_presentes", "updated_at"])
+            EventoLog.objects.create(
+                evento=self.evento,
+                usuario=self.user,
+                acao="check_in",
+            )
 
     def gerar_qrcode(self) -> None:
         """Gera um QRCode único e salva no armazenamento padrão."""
