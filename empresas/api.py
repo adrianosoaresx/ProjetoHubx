@@ -171,7 +171,9 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def favoritos(self, request):
-        empresas = self.get_queryset().filter(favoritos__usuario=request.user, favoritos__deleted=False)
+        empresas = Empresa.objects.filter(
+            favoritos__usuario=request.user, favoritos__deleted=False
+        )
         serializer = self.get_serializer(empresas, many=True)
         return Response(serializer.data)
 
