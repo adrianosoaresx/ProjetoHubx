@@ -128,11 +128,50 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         if fim and timezone.is_naive(fim):
             fim = timezone.make_aware(fim)
 
+        user = self.request.user
         filters: dict[str, object] = {}
-        for key in ["organizacao_id", "nucleo_id", "evento_id"]:
-            value = self.request.GET.get(key)
-            if value:
-                filters[key] = value
+        org_id = self.request.GET.get("organizacao_id")
+        nucleo_id = self.request.GET.get("nucleo_id")
+        evento_id = self.request.GET.get("evento_id")
+
+        if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+            if org_id:
+                filters["organizacao_id"] = org_id
+            if nucleo_id:
+                filters["nucleo_id"] = nucleo_id
+            if evento_id:
+                filters["evento_id"] = evento_id
+        else:
+            user_org_id = getattr(user, "organizacao_id", None)
+            if org_id and str(user_org_id) != org_id:
+                raise PermissionError("Organização não permitida")
+            if user_org_id:
+                filters["organizacao_id"] = str(user_org_id)
+
+            if nucleo_id:
+                allowed_nucleos = {
+                    str(pk)
+                    for pk in user.nucleos.values_list("id", flat=True)
+                }
+                if nucleo_id not in allowed_nucleos:
+                    raise PermissionError("Núcleo não permitido")
+                filters["nucleo_id"] = nucleo_id
+
+            if evento_id:
+                allowed_eventos = {
+                    str(pk)
+                    for pk in Evento.objects.filter(
+                        Q(coordenador=user)
+                        | Q(
+                            nucleo__participacoes__user=user,
+                            nucleo__participacoes__status="ativo",
+                            nucleo__participacoes__status_suspensao=False,
+                        )
+                    ).values_list("id", flat=True)
+                }
+                if evento_id not in allowed_eventos:
+                    raise PermissionError("Evento não permitido")
+                filters["evento_id"] = evento_id
 
         metricas_list = self.request.GET.getlist("metricas")
         if not metricas_list:
