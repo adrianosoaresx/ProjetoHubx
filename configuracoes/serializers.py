@@ -42,3 +42,13 @@ class ConfiguracaoContextualSerializer(serializers.ModelSerializer):
             "tema",
         ]
         read_only_fields = ["id"]
+        extra_kwargs = {
+            "receber_notificacoes_email": {"required": False, "allow_null": True},
+            "frequencia_notificacoes_email": {"required": False, "allow_null": True},
+            "receber_notificacoes_whatsapp": {"required": False, "allow_null": True},
+            "frequencia_notificacoes_whatsapp": {"required": False, "allow_null": True},
+            "receber_notificacoes_push": {"required": False, "allow_null": True},
+            "frequencia_notificacoes_push": {"required": False, "allow_null": True},
+            "idioma": {"required": False, "allow_null": True},
+            "tema": {"required": False, "allow_null": True},
+        }

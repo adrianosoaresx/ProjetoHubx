@@ -79,7 +79,9 @@ def merge_preferences(
         "idioma",
         "tema",
     ]:
-        setattr(prefs, field, getattr(contextual, field))
+        value = getattr(contextual, field)
+        if value is not None:
+            setattr(prefs, field, value)
     return prefs
 
 
