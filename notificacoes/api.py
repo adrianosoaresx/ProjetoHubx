@@ -72,6 +72,11 @@ class NotificationLogViewSet(mixins.UpdateModelMixin, viewsets.ReadOnlyModelView
                 {"detail": _("Não é permitido alterar logs de outro usuário.")},
                 status=status.HTTP_403_FORBIDDEN,
             )
+        if log.status != NotificationStatus.ENVIADA:
+            return Response(
+                {"detail": _("Status não permite alteração.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         log.status = NotificationStatus.LIDA
         log.data_leitura = timezone.now()
         log.save(update_fields=["status", "data_leitura"])
@@ -94,7 +99,6 @@ def enviar_view(request):
     except ValueError as exc:
         return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 class PushSubscriptionViewSet(viewsets.ViewSet):
