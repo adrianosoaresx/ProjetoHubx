@@ -163,6 +163,13 @@ def test_invalid_date_order_returns_400(client, admin_user):
     assert resp.status_code == 400
 
 
+def test_invalid_metric_returns_400(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.get(reverse("dashboard:admin"), {"metricas": ["foo"]})
+    assert resp.status_code == 400
+    assert "Métrica inválida" in resp.content.decode()
+
+
 def test_metrics_partial_new_metrics(client, admin_user):
     client.force_login(admin_user)
     PostFactory(autor=admin_user, organizacao=admin_user.organizacao)

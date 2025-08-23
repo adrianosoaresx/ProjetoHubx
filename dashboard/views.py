@@ -187,6 +187,15 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 "lancamentos_pendentes",
                 "num_posts_feed_total",
             ]
+        else:
+            valid_metricas = set(METRICAS_INFO.keys()) | set(
+                DashboardCustomMetric.objects.values_list("code", flat=True)
+            )
+            invalid = [m for m in metricas_list if m not in valid_metricas]
+            if invalid:
+                if len(invalid) == 1:
+                    raise ValueError(f"Métrica inválida: {invalid[0]}")
+                raise ValueError(f"Métricas inválidas: {', '.join(invalid)}")
         filters["metricas"] = metricas_list
 
         self.periodo = periodo
