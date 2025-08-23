@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -67,6 +68,8 @@ from .services import (
 )
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 plt.switch_backend("Agg")
 
@@ -202,9 +205,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             "num_eventos",
             "num_posts_feed_total",
         ]
-        metricas_disponiveis = [
-            {"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()
-        ]
+        metricas_disponiveis = [{"key": key, "label": data["label"]} for key, data in METRICAS_INFO.items()]
         user = request.user
         if user.user_type in {UserType.ROOT, UserType.ADMIN}:
             orgs = Organizacao.objects.all()
@@ -212,26 +213,20 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             eventos = Evento.objects.all()
         else:
             org_id = getattr(user.organizacao, "pk", None)
-            orgs = (
-                Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
-            )
-            nucleos = (
-                Nucleo.objects.filter(
-                    participacoes__user=user,
-                    participacoes__status="ativo",
-                    participacoes__status_suspensao=False,
-                ).distinct()
-            )
-            eventos = (
-                Evento.objects.filter(
-                    Q(coordenador=user)
-                    | Q(
-                        nucleo__participacoes__user=user,
-                        nucleo__participacoes__status="ativo",
-                        nucleo__participacoes__status_suspensao=False,
-                    )
-                ).distinct()
-            )
+            orgs = Organizacao.objects.filter(pk=org_id) if org_id else Organizacao.objects.none()
+            nucleos = Nucleo.objects.filter(
+                participacoes__user=user,
+                participacoes__status="ativo",
+                participacoes__status_suspensao=False,
+            ).distinct()
+            eventos = Evento.objects.filter(
+                Q(coordenador=user)
+                | Q(
+                    nucleo__participacoes__user=user,
+                    nucleo__participacoes__status="ativo",
+                    nucleo__participacoes__status_suspensao=False,
+                )
+            ).distinct()
         return {
             "periodo": periodo,
             "escopo": escopo,
@@ -252,9 +247,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context.update(self.get_filters_context())
         metricas = context["metricas_selecionadas"]
         context["chart_data"] = [
-            metrics[m]["total"]
-            for m in metricas
-            if m in metrics and isinstance(metrics[m]["total"], (int, float))
+            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
         ]
         context["metricas_iter"] = [
             {"key": m, "data": metrics[m], "label": METRICAS_INFO[m]["label"], "icon": METRICAS_INFO[m]["icon"]}
@@ -310,7 +303,6 @@ def dashboard_redirect(request):
     return redirect("accounts:perfil")
 
 
-
 def metrics_partial(request):
     """Retorna HTML com métricas para HTMX."""
     if not request.user.is_authenticated:
@@ -335,14 +327,17 @@ def metrics_partial(request):
         )
         return HttpResponse(html)
     except PermissionError:
+        logger.exception("Acesso negado ao carregar métricas")
         messages.error(request, _("Acesso negado"))
         html = render_to_string("dashboard/partials/messages.html", request=request)
         return HttpResponse(html, status=403)
     except ValueError as exc:
+        logger.exception("Erro de valor ao carregar métricas")
         messages.error(request, str(exc))
         html = render_to_string("dashboard/partials/messages.html", request=request)
         return HttpResponse(html, status=400)
     except Exception:  # pragma: no cover - logado
+        logger.exception("Erro inesperado ao carregar métricas")
         messages.error(request, _("Erro ao carregar métricas."))
         html = render_to_string("dashboard/partials/messages.html", request=request)
         return HttpResponse(html, status=500)
@@ -361,6 +356,7 @@ def lancamentos_partial(request):
         )
         return HttpResponse(html)
     except Exception:  # pragma: no cover - logado
+        logger.exception("Erro ao carregar lançamentos")
         messages.error(request, _("Erro ao carregar lançamentos."))
         return HttpResponse(status=500)
 
@@ -378,6 +374,7 @@ def notificacoes_partial(request):
         )
         return HttpResponse(html)
     except Exception:  # pragma: no cover
+        logger.exception("Erro ao carregar notificações")
         messages.error(request, _("Erro ao carregar notificações."))
         return HttpResponse(status=500)
 
@@ -395,6 +392,7 @@ def tarefas_partial(request):
         )
         return HttpResponse(html)
     except Exception:  # pragma: no cover
+        logger.exception("Erro ao carregar tarefas")
         messages.error(request, _("Erro ao carregar tarefas."))
         return HttpResponse(status=500)
 
@@ -412,6 +410,7 @@ def eventos_partial(request):
         )
         return HttpResponse(html)
     except Exception:  # pragma: no cover
+        logger.exception("Erro ao carregar eventos")
         messages.error(request, _("Erro ao carregar eventos."))
         return HttpResponse(status=500)
 
