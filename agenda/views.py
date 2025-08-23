@@ -59,7 +59,7 @@ from .models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from .tasks import notificar_briefing_status
+from .tasks import notificar_briefing_status, upload_material_divulgacao
 from dashboard.services import check_achievements
 
 User = get_user_model()
@@ -696,6 +696,7 @@ class MaterialDivulgacaoEventoCreateView(
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
             evento=self.object.evento,
             usuario=self.request.user,
@@ -728,12 +729,17 @@ class MaterialDivulgacaoEventoUpdateView(
     def form_valid(self, form):
         old_obj = self.get_object()
         detalhes: dict[str, dict[str, Any]] = {}
+        arquivo_alterado = False
         for field in form.changed_data:
             before = getattr(old_obj, field)
             after = form.cleaned_data.get(field)
             if before != after:
                 detalhes[field] = {"antes": before, "depois": after}
+                if field == "arquivo":
+                    arquivo_alterado = True
         response = super().form_valid(form)
+        if arquivo_alterado:
+            upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
             evento=self.object.evento,
             usuario=self.request.user,
