@@ -5,10 +5,11 @@ import json
 import re
 from collections import Counter
 from datetime import timedelta
-from typing import Sequence
+from itertools import islice
+from typing import Iterable, Sequence
 
-from celery import shared_task  # type: ignore
 import sentry_sdk
+from celery import shared_task  # type: ignore
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -19,6 +20,7 @@ from .metrics import (
     chat_mensagens_removidas_retencao_total,
     chat_resumo_geracao_segundos,
     chat_resumos_total,
+    chat_retencao_canal_segundos,
 )
 from .models import (
     ChatAttachment,
@@ -45,29 +47,48 @@ def _scan_file(path: str) -> bool:  # pragma: no cover - depends on external ser
         return False
     return False
 
-from .utils import _scan_file
 
+from .utils import _scan_file  # noqa: E402
+
+
+def _chunked(iterable: Iterable, size: int) -> Iterable[list]:
+    iterator = iter(iterable)
+    while True:
+        chunk = list(islice(iterator, size))
+        if not chunk:
+            break
+        yield chunk
 
 
 @shared_task
 def aplicar_politica_retencao() -> None:
-    """Aplica a política de retenção de mensagens por canal."""
+    """Dispara subtarefas para aplicar a política de retenção por canal."""
 
-    agora = timezone.now()
-    for canal in ChatChannel.objects.filter(retencao_dias__isnull=False):
-        limite = agora - timedelta(days=canal.retencao_dias or 0)
-        mensagens_qs = canal.messages.filter(created_at__lt=limite)
-        ids = list(mensagens_qs.values_list("id", flat=True).iterator())
-        if not ids:
-            continue
+    canais = ChatChannel.objects.filter(retencao_dias__isnull=False).values_list("id", flat=True)
+    for canal_id in canais.iterator():
+        aplicar_politica_retencao_canal.delay(str(canal_id))
 
+
+@shared_task
+def aplicar_politica_retencao_canal(canal_id: str, batch_size: int = 1000) -> None:
+    """Aplica a política de retenção de mensagens para um único canal."""
+
+    inicio = timezone.now()
+    canal = ChatChannel.objects.get(pk=canal_id)
+    limite = inicio - timedelta(days=canal.retencao_dias or 0)
+    mensagens_qs = canal.messages.filter(created_at__lt=limite)
+    ids_iter = mensagens_qs.values_list("id", flat=True).iterator(chunk_size=batch_size)
+
+    moderator = canal.participants.filter(is_admin=True).first()
+    user = moderator.user if moderator else User.objects.filter(is_staff=True).first()
+
+    for ids in _chunked(ids_iter, batch_size):
         # Remove anexos associados às mensagens, garantindo cascata controlada
         ChatAttachment.objects.filter(mensagem_id__in=ids).delete()
-        mensagens_qs.delete()
+        canal.messages.filter(id__in=ids).delete()
 
         chat_mensagens_removidas_retencao_total.inc(len(ids))
-        moderator = canal.participants.filter(is_admin=True).first()
-        user = moderator.user if moderator else User.objects.filter(is_staff=True).first()
+
         if user:
             logs = [
                 ChatModerationLog(
@@ -78,6 +99,9 @@ def aplicar_politica_retencao() -> None:
                 for mid in ids
             ]
             ChatModerationLog.objects.bulk_create(logs)
+
+    duracao = (timezone.now() - inicio).total_seconds()
+    chat_retencao_canal_segundos.observe(duracao)
 
 
 @shared_task
