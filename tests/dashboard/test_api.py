@@ -138,6 +138,15 @@ def test_export_invalid_date_order(api_client: APIClient, admin_user) -> None:
     assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
 
 
+def test_export_invalid_metric(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
+        url = reverse("dashboard-export") + "?metricas=foo"
+        resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "Métrica inválida: foo"
+
+
 def test_filter_crud(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)
     url = reverse("dashboard_api:dashboard-filter-list")
@@ -181,6 +190,14 @@ def test_dashboard_invalid_date_order(api_client: APIClient, admin_user) -> None
     resp = api_client.get(url)
     assert resp.status_code == 400
     assert resp.data["detail"] == "inicio deve ser menor ou igual a fim"
+
+
+def test_dashboard_invalid_metric(api_client: APIClient, admin_user) -> None:
+    _auth(api_client, admin_user)
+    url = reverse("dashboard_api:dashboard-list") + "?metricas=foo"
+    resp = api_client.get(url)
+    assert resp.status_code == 400
+    assert resp.data["detail"] == "Métrica inválida: foo"
 
 
 def test_metrics_cache(api_client: APIClient, admin_user, monkeypatch) -> None:
