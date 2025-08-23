@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
-from core.permissions import pode_crud_empresa
+from core.permissions import IsAdminOrCoordenador, pode_crud_empresa
 from .metrics import (
     empresas_favoritos_total,
     empresas_purgadas_total,
@@ -93,7 +93,7 @@ class ContatoEmpresaViewSet(viewsets.ModelViewSet):
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
     serializer_class = TagSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrCoordenador]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nome"]
 
