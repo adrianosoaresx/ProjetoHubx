@@ -56,7 +56,7 @@ from .models import (
     TopicoDiscussao,
 )
 from .permissions import publicos_permitidos
-from .services import responder_topico
+from .services import responder_topico, verificar_prazo_edicao
 from .tasks import (
     notificar_melhor_resposta,
     notificar_nova_resposta,
@@ -415,18 +415,15 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
         self.object = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
-        if request.user != self.object.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+        if not verificar_prazo_edicao(self.object, request.user):
+            if request.user == self.object.autor:
+                messages.error(request, gettext_lazy("Prazo de edição expirado."))
+                return redirect(
+                    "discussao:topico_detalhe",
+                    categoria_slug=self.categoria.slug,
+                    topico_slug=self.object.slug,
+                )
             return HttpResponseForbidden()
-        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
-            messages.error(request, gettext_lazy("Prazo de edição expirado."))
-            return redirect(
-                "discussao:topico_detalhe",
-                categoria_slug=self.categoria.slug,
-                topico_slug=self.object.slug,
-            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -441,12 +438,7 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
         self.object = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
-        if request.user != self.object.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
-            return HttpResponseForbidden()
-        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
+        if not verificar_prazo_edicao(self.object, request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
@@ -531,16 +523,11 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
         self.topico = self.object.topico
-        if request.user != self.object.autor and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.COORDENADOR,
-            UserType.ROOT,
-        }:
-            return HttpResponseForbidden()
-        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
+        if not verificar_prazo_edicao(
+            self.object,
+            request.user,
+            tipos_extras={UserType.COORDENADOR},
+        ):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
@@ -565,22 +552,19 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
     def dispatch(self, request, *args, **kwargs):
         self.object = get_object_or_404(RespostaDiscussao, pk=kwargs["pk"])
         self.topico = self.object.topico
-        if request.user != self.object.autor and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.COORDENADOR,
-            UserType.ROOT,
-        }:
+        if not verificar_prazo_edicao(
+            self.object,
+            request.user,
+            tipos_extras={UserType.COORDENADOR},
+        ):
+            if request.user == self.object.autor:
+                messages.error(request, gettext_lazy("Prazo de edição expirado."))
+                return redirect(
+                    "discussao:topico_detalhe",
+                    categoria_slug=self.topico.categoria.slug,
+                    topico_slug=self.topico.slug,
+                )
             return HttpResponseForbidden()
-        if timezone.now() - self.object.created_at > timedelta(minutes=15) and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
-            messages.error(request, gettext_lazy("Prazo de edição expirado."))
-            return redirect(
-                "discussao:topico_detalhe",
-                categoria_slug=self.topico.categoria.slug,
-                topico_slug=self.topico.slug,
-            )
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):

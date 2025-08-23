@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
@@ -10,7 +9,6 @@ from django.db import connection, transaction
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
@@ -44,7 +42,7 @@ from .serializers import (
     TopicoDiscussaoSerializer,
     VotoDiscussaoSerializer,
 )
-from .services import marcar_resolucao, responder_topico
+from .services import marcar_resolucao, responder_topico, verificar_prazo_edicao
 from .services.agenda_bridge import criar_reuniao as criar_reuniao_agenda
 from .tasks import (
     notificar_melhor_resposta,
@@ -157,25 +155,14 @@ class TopicoViewSet(viewsets.ModelViewSet):
         cache.delete(topicos_list_cache_key(serializer.instance.categoria.slug))
 
     def perform_destroy(self, instance):  # type: ignore[override]
-        if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }:
+        if not verificar_prazo_edicao(instance, self.request.user):
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
         cache.delete(categorias_list_cache_key())
         cache.delete(topicos_list_cache_key(instance.categoria.slug))
 
     def _can_edit(self, obj: TopicoDiscussao) -> bool:
-        if timezone.now() - obj.created_at > timedelta(minutes=15):
-            return self.request.user.get_tipo_usuario in {
-                UserType.ADMIN.value,
-                UserType.ROOT.value,
-            }
-        return obj.autor == self.request.user or self.request.user.get_tipo_usuario in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }
+        return verificar_prazo_edicao(obj, self.request.user)
 
     @action(detail=True, methods=["post"], url_path="marcar-resolvido")
     def marcar_resolvido(self, request, pk=None):
@@ -285,24 +272,13 @@ class RespostaViewSet(viewsets.ModelViewSet):
         cache.delete(topicos_list_cache_key(serializer.instance.topico.categoria.slug))
 
     def perform_destroy(self, instance):  # type: ignore[override]
-        if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }:
+        if not verificar_prazo_edicao(instance, self.request.user):
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
         cache.delete(topicos_list_cache_key(instance.topico.categoria.slug))
 
     def _can_edit(self, obj: RespostaDiscussao) -> bool:
-        if timezone.now() - obj.created_at > timedelta(minutes=15):
-            return self.request.user.get_tipo_usuario in {
-                UserType.ADMIN.value,
-                UserType.ROOT.value,
-            }
-        return obj.autor == self.request.user or self.request.user.get_tipo_usuario in {
-            UserType.ADMIN.value,
-            UserType.ROOT.value,
-        }
+        return verificar_prazo_edicao(obj, self.request.user)
 
 
 class VotoDiscussaoViewSet(viewsets.ViewSet):
