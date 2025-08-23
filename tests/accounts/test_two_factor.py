@@ -56,18 +56,18 @@ def test_login_requires_totp_when_enabled(client):
 
 
 @pytest.mark.django_db
-def test_check_2fa_endpoint(client):
+def test_check_2fa_neutral_response(client):
     cache.clear()
     secret = pyotp.random_base32()
     user = User.objects.create_user(
         email="c@c.com", username="c", password="Strong!123", two_factor_enabled=True, two_factor_secret=secret
     )
     TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
-    url = reverse("accounts:check_2fa") + "?email=c@c.com"
-    resp = client.get(url)
-    assert resp.json()["enabled"] is True
-    resp = client.get(reverse("accounts:check_2fa") + "?email=nao@existe.com")
-    assert resp.json()["enabled"] is False
+    url = reverse("accounts:check_2fa")
+    resp_existing = client.get(url + "?email=c@c.com")
+    resp_missing = client.get(url + "?email=nao@existe.com")
+    assert resp_existing.status_code == 204
+    assert resp_missing.status_code == 204
 
 
 @pytest.mark.django_db
@@ -76,7 +76,7 @@ def test_check_2fa_rate_limit(client):
     url = reverse("accounts:check_2fa") + "?email=foo@bar.com"
     for _ in range(5):
         resp = client.get(url)
-        assert resp.status_code == 200
+        assert resp.status_code == 204
     resp = client.get(url)
     assert resp.status_code == 403
 
