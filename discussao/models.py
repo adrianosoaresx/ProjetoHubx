@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.postgres.indexes import GinIndex
 from django.db import connection, models
 from django.utils import timezone
 from django.utils.text import slugify
@@ -169,7 +170,10 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["slug", "categoria"])]
+        indexes = [
+            models.Index(fields=["slug", "categoria"]),
+            GinIndex(fields=["search_vector"]),
+        ]
         verbose_name = "Tópico de Discussão"
         verbose_name_plural = "Tópicos de Discussão"
 
@@ -219,6 +223,7 @@ class RespostaDiscussao(TimeStampedModel, SoftDeleteModel):
         ordering = ["created_at"]
         verbose_name = "Resposta de Discussão"
         verbose_name_plural = "Respostas de Discussão"
+        indexes = [GinIndex(fields=["search_vector"])]
 
     def clean(self):  # type: ignore[override]
         super().clean()
