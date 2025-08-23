@@ -128,6 +128,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
                 if not cipher or not alg or not key_version:
                     await self.close(code=4003)
                     return
+                if alg != "AES-GCM":
+                    await self.close(code=4003)
+                    return
                 msg = await database_sync_to_async(enviar_mensagem)(
                     self.channel,
                     user,

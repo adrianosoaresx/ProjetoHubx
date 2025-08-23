@@ -135,6 +135,41 @@ def test_consumer_send_reply(admin_user, coordenador_user, nucleo):
     asyncio.run(inner())
 
 
+def test_consumer_rejects_invalid_algorithm(admin_user, coordenador_user, nucleo):
+    async def inner():
+        canal = await database_sync_to_async(criar_canal)(
+            criador=admin_user,
+            contexto_tipo="privado",
+            contexto_id=nucleo.id,
+            titulo="Privado",
+            descricao="",
+            participantes=[coordenador_user],
+            e2ee_habilitado=True,
+        )
+        communicator = WebsocketCommunicator(application, f"/ws/chat/{canal.id}/")
+        communicator.scope["user"] = admin_user
+        connected, _ = await communicator.connect()
+        assert connected
+        await communicator.send_json_to(
+            {
+                "tipo": "text",
+                "conteudo_cifrado": "AAECAwQ=",
+                "alg": "AES-CBC",
+                "key_version": "1",
+            }
+        )
+        event = await communicator.receive_output()
+        assert event["type"] == "websocket.close"
+        assert event["code"] == 4003
+        count = await database_sync_to_async(
+            ChatMessage.objects.filter(channel=canal).count
+        )()
+        assert count == 0
+        await communicator.wait()
+
+    asyncio.run(inner())
+
+
 def test_consumer_rejects_non_participant(admin_user, associado_user, nucleo):
     async def inner():
         canal = await database_sync_to_async(criar_canal)(
