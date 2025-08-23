@@ -29,7 +29,13 @@ from .models import TokenAcesso, TokenUsoLog
 from .perms import can_issue_invite
 from .ratelimit import check_rate_limit
 from .serializers import TokenAcessoSerializer, TokenUsoLogSerializer
-from .services import create_invite_token, find_token_by_code
+from .services import (
+    create_invite_token,
+    find_token_by_code,
+    invite_created,
+    invite_revoked,
+    invite_used,
+)
 from .utils import get_client_ip
 
 
@@ -96,6 +102,7 @@ class TokenViewSet(viewsets.GenericViewSet):
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
+        invite_created(token, codigo)
         with sentry_sdk.push_scope() as scope:
             scope.set_tag("module", "tokens")
             scope.set_context("invite", {"token_id": str(token.id), "user_id": request.user.id})
@@ -233,6 +240,7 @@ class TokenViewSet(viewsets.GenericViewSet):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
         tokens_invites_used_total.inc()
+        invite_used(token)
         tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
         out = self.get_serializer(token)
         return Response(out.data)
@@ -272,6 +280,7 @@ class TokenViewSet(viewsets.GenericViewSet):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
         tokens_invites_revoked_total.inc()
+        invite_revoked(token)
         tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
         token.codigo = codigo
         out = self.get_serializer(token)

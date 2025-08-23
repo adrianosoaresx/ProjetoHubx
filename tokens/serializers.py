@@ -8,6 +8,8 @@ from .models import ApiToken, ApiTokenIp, TokenAcesso, TokenUsoLog
 class TokenAcessoSerializer(serializers.ModelSerializer):
     codigo = serializers.CharField(read_only=True)
     revogado_por_email = serializers.EmailField(source="revogado_por.email", default=None, read_only=True)
+    ip_gerado = serializers.IPAddressField(read_only=True, allow_null=True)
+    ip_utilizado = serializers.IPAddressField(read_only=True, allow_null=True)
 
     class Meta:
         model = TokenAcesso
@@ -33,6 +35,7 @@ class TokenAcessoSerializer(serializers.ModelSerializer):
             "estado",
             "gerado_por",
             "usuario",
+            "ip_gerado",
             "ip_utilizado",
             "revogado_em",
             "revogado_por",

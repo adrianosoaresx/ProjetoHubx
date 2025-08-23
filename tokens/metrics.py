@@ -25,6 +25,20 @@ tokens_api_tokens_revoked_total = Counter(
     "Total de tokens API revogados",
 )
 
+# Webhook metrics
+tokens_webhooks_sent_total = Counter(
+    "tokens_webhooks_sent_total",
+    "Total de webhooks enviados com sucesso",
+)
+tokens_webhooks_failed_total = Counter(
+    "tokens_webhooks_failed_total",
+    "Falhas no envio de webhooks",
+)
+
 # Histograms
 tokens_validation_latency_seconds = Histogram("tokens_validation_latency_seconds", "Latência da validação de convites")
 tokens_api_latency_seconds = Histogram("tokens_api_latency_seconds", "Latência de operações da API de tokens")
+tokens_webhook_latency_seconds = Histogram(
+    "tokens_webhook_latency_seconds",
+    "Latência do envio de webhooks",
+)

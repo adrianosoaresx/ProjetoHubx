@@ -11,6 +11,11 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import ApiToken, ApiTokenLog, TokenUsoLog, TokenWebhookEvent
+from .metrics import (
+    tokens_webhook_latency_seconds,
+    tokens_webhooks_failed_total,
+    tokens_webhooks_sent_total,
+)
 
 
 @shared_task
@@ -90,10 +95,13 @@ def send_webhook(payload: dict[str, object]) -> None:
 
     attempts = 0
     delay = 1
+    start = time.monotonic()
     while attempts < 3:
         try:
             response = requests.post(url, data=data, headers=headers, timeout=5)
             if response.status_code < 400:
+                tokens_webhooks_sent_total.inc()
+                tokens_webhook_latency_seconds.observe(time.monotonic() - start)
                 return
         except Exception:  # pragma: no cover - falha de rede é ignorada
             pass
@@ -102,6 +110,8 @@ def send_webhook(payload: dict[str, object]) -> None:
             time.sleep(delay)
             delay *= 2
 
+    tokens_webhooks_failed_total.inc()
+    tokens_webhook_latency_seconds.observe(time.monotonic() - start)
     TokenWebhookEvent.objects.create(
         url=url,
         payload=payload,
@@ -125,6 +135,7 @@ def reenviar_webhooks_pendentes() -> None:
         attempts = 0
         delay = 1
         sucesso = False
+        start = time.monotonic()
         while attempts < 3:
             try:
                 response = requests.post(evento.url, data=data, headers=headers, timeout=5)
@@ -142,4 +153,8 @@ def reenviar_webhooks_pendentes() -> None:
         evento.last_attempt_at = timezone.now()
         if sucesso:
             evento.delivered = True
+            tokens_webhooks_sent_total.inc()
+        else:
+            tokens_webhooks_failed_total.inc()
+        tokens_webhook_latency_seconds.observe(time.monotonic() - start)
         evento.save(update_fields=["delivered", "attempts", "last_attempt_at"])

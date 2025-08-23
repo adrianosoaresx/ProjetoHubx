@@ -1,0 +1,17 @@
+groups:
+  - name: tokens
+    rules:
+      - alert: TokensWebhookFalhas
+        expr: increase(tokens_webhooks_failed_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Falhas no envio de webhooks de tokens"
+      - alert: TokensWebhookLatenciaAlta
+        expr: histogram_quantile(0.95, sum(rate(tokens_webhook_latency_seconds_bucket[5m])) by (le)) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência p95 do envio de webhooks de tokens acima de 1s"
