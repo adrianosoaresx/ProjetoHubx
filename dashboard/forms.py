@@ -34,6 +34,17 @@ class DashboardFilterForm(forms.ModelForm):
         instance.user = user
         allowed = {"metricas", "organizacao_id", "nucleo_id", "evento_id", "data_inicio", "data_fim"}
         instance.filtros = {k: v for k, v in filtros_data.items() if k in allowed}
+        metricas = instance.filtros.get("metricas")
+        if metricas:
+            from .views import METRICAS_INFO  # type: ignore
+
+            valid = set(METRICAS_INFO.keys()) | set(
+                DashboardCustomMetric.objects.values_list("code", flat=True)
+            )
+            invalid = [m for m in metricas if m not in valid]
+            if invalid:
+                invalid_str = ", ".join(invalid)
+                raise forms.ValidationError({"metricas": f"Métricas inválidas: {invalid_str}"})
         if commit:
             instance.save()
         return instance
