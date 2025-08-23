@@ -68,9 +68,10 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
         },
         escopo="organizacao",
     )
-    from dashboard import views
+    from dashboard import views, constants
 
-    monkeypatch.setattr(views, "METRICAS_INFO", views.METRICAS_INFO.copy())
+    monkeypatch.setattr(constants, "METRICAS_INFO", constants.METRICAS_INFO.copy())
+    monkeypatch.setattr(views, "METRICAS_INFO", constants.METRICAS_INFO)
     metrics = DashboardMetricsService.get_metrics(
         admin_user, metricas=[metric.code], organizacao_id=admin_user.organizacao_id
     )

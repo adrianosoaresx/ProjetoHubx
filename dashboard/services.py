@@ -35,6 +35,7 @@ from .custom_metrics import (
     DashboardCustomMetricService,
     get_metrics_info as get_custom_metrics_info,
 )
+from .constants import METRICAS_INFO
 
 
 def log_filter_action(
@@ -795,8 +796,6 @@ class DashboardMetricsService:
             metrics[metric.code] = {"total": total, "crescimento": 0.0}
 
         if custom_metrics_info:
-            from .views import METRICAS_INFO  # type: ignore
-
             METRICAS_INFO.update(custom_metrics_info)
 
         cache.set(cache_key, metrics, 300)
