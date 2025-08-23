@@ -2,6 +2,22 @@
 
 Este app fornece visualizações de métricas com parâmetros flexíveis e suporte a exportação.
 
+## Fontes personalizadas
+
+Novas fontes para métricas podem ser registradas em runtime utilizando
+`DashboardCustomMetricService.register_source`:
+
+```python
+from dashboard.custom_metrics import DashboardCustomMetricService
+from feed.models import Post
+
+DashboardCustomMetricService.register_source(
+    "posts",
+    Post,
+    {"id", "organizacao_id"},
+)
+```
+
 ## PWA e suporte offline
 
 O dashboard pode ser instalado como um aplicativo no navegador. Ao acessar `/dashboard/`,
