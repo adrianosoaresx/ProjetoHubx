@@ -132,7 +132,7 @@ class PostSerializer(serializers.ModelSerializer):
 
         for field in ["image", "pdf", "video"]:
             file = validated_data.get(field)
-            if file:
+            if file and not isinstance(file, str):
                 try:
                     result = upload_media(file)
                 except DjangoValidationError as e:
@@ -141,6 +141,8 @@ class PostSerializer(serializers.ModelSerializer):
                     validated_data["video"], validated_data["video_preview"] = result
                 else:
                     validated_data[field] = result
+            elif isinstance(file, str):
+                validated_data[field] = file
 
     def create(self, validated_data):
         self._handle_media(validated_data)
