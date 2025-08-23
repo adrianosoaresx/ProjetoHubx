@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -239,9 +239,9 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
             .filter(inativa=False)
             .prefetch_related(
                 "users",
-                "nucleos",
-                "empresas",
-                "posts",
+                Prefetch("nucleos", queryset=Nucleo.objects.filter(deleted=False)),
+                Prefetch("empresas", queryset=Empresa.objects.filter(deleted=False)),
+                Prefetch("posts", queryset=Post.objects.filter(deleted=False)),
                 "evento_set",
             )
         )
@@ -253,11 +253,11 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         org = self.object
-        usuarios = User.objects.filter(organizacao=org)
-        nucleos = Nucleo.objects.filter(organizacao=org, deleted=False)
-        eventos = Evento.objects.filter(organizacao=org)
-        empresas = Empresa.objects.filter(organizacao=org, deleted=False)
-        posts = Post.objects.filter(organizacao=org, deleted=False)
+        usuarios = org.users.all()
+        nucleos = org.nucleos.all()
+        eventos = org.evento_set.all()
+        empresas = org.empresas.all()
+        posts = org.posts.all()
         context.update(
             {
                 "usuarios": usuarios,
