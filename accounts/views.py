@@ -725,10 +725,20 @@ def foto(request):
     if request.method == "POST":
         arquivo = request.FILES.get("foto")
         if arquivo:
+            ext = Path(arquivo.name).suffix.lower()
+            allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+            max_size = getattr(settings, "USER_MEDIA_MAX_SIZE", 50 * 1024 * 1024)
+            if ext not in allowed_exts:
+                messages.error(request, _("Formato de arquivo não permitido."))
+                return redirect("accounts:foto")
+            if arquivo.size > max_size:
+                messages.error(request, _("Arquivo excede o tamanho máximo permitido."))
+                return redirect("accounts:foto")
             temp_name = f"temp/{uuid.uuid4()}_{arquivo.name}"
             path = default_storage.save(temp_name, ContentFile(arquivo.read()))
             request.session["foto"] = path
-        return redirect("accounts:termos")
+            return redirect("accounts:termos")
+        return redirect("accounts:foto")
     return render(request, "register/foto.html")
 
 
