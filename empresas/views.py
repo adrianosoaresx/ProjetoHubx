@@ -51,6 +51,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
             UserType.ADMIN,
             UserType.COORDENADOR,
             UserType.NUCLEADO,
+            UserType.ROOT,
         }:
             return super().dispatch(request, *args, **kwargs)
         return HttpResponseForbidden("Usuário não autorizado.")
