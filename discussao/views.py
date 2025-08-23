@@ -12,7 +12,13 @@ from django.core.paginator import Paginator
 from django.db import connection
 from django.db.models import Count, Max, Q, Sum
 from django.db.models.functions import Coalesce
-from django.http import Http404, HttpResponse, HttpResponseForbidden, JsonResponse
+from django.http import (
+    Http404,
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    JsonResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -592,12 +598,20 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
 )
 class InteracaoView(LoginRequiredMixin, View):
     def post(self, request, content_type_id, object_id, acao):
-        content_type = get_object_or_404(ContentType, id=content_type_id)
-        obj = get_object_or_404(content_type.model_class(), id=object_id)
         from .cache_utils import topicos_list_cache_key
         from .models import RespostaDiscussao, TopicoDiscussao
+
+        if acao not in {"up", "down", "like", "dislike"}:
+            return HttpResponseBadRequest()
+
+        content_type = get_object_or_404(ContentType, id=content_type_id)
+        model_class = content_type.model_class()
+        if model_class not in {TopicoDiscussao, RespostaDiscussao}:
+            return HttpResponseBadRequest()
+
+        obj = get_object_or_404(model_class, id=object_id)
         valor_map = {"up": 1, "down": -1, "like": 1, "dislike": -1}
-        valor = valor_map.get(acao, 1)
+        valor = valor_map[acao]
         interacao, created = InteracaoDiscussao.objects.get_or_create(
             user=request.user,
             content_type=content_type,
