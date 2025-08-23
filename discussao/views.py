@@ -18,15 +18,9 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
-from django.views.decorators.cache import cache_page
 from django_ratelimit.decorators import ratelimit
 
-from .cache_utils import (
-    CATEGORIAS_LIST_KEY_PREFIX,
-    TOPICOS_LIST_KEY_PREFIX,
-    categorias_list_cache_key,
-    topicos_list_cache_key,
-)
+from .cache_utils import categorias_list_cache_key, topicos_list_cache_key
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -68,8 +62,6 @@ from .tasks import (
 
 logger = structlog.get_logger(__name__)
 
-
-@method_decorator(cache_page(60, key_prefix=CATEGORIAS_LIST_KEY_PREFIX), name="dispatch")
 class CategoriaListView(LoginRequiredMixin, ListView):
     model = CategoriaDiscussao
     template_name = "discussao/categorias.html"
@@ -77,6 +69,28 @@ class CategoriaListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        user = self.request.user
+        org = self.request.GET.get("organizacao")
+        nucleo = self.request.GET.get("nucleo")
+        evento = self.request.GET.get("evento")
+        if user.user_type != UserType.ROOT:
+            org = user.organizacao_id
+
+        params = {}
+        if nucleo:
+            params["nucleo"] = nucleo
+        if evento:
+            params["evento"] = evento
+
+        cache_key = categorias_list_cache_key(
+            user=user if user.user_type == UserType.ROOT else None,
+            organizacao_id=org,
+            params=params,
+        )
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         qs = (
             super()
             .get_queryset()
@@ -84,19 +98,17 @@ class CategoriaListView(LoginRequiredMixin, ListView):
             .annotate(num_topicos=Count("topicos"))
             .order_by("nome")
         )
-        user = self.request.user
         if user.user_type != UserType.ROOT:
             qs = qs.filter(organizacao=user.organizacao)
-        org = self.request.GET.get("organizacao")
-        nucleo = self.request.GET.get("nucleo")
-        evento = self.request.GET.get("evento")
         if org:
             qs = qs.filter(organizacao_id=org)
         if nucleo:
             qs = qs.filter(nucleo_id=nucleo)
         if evento:
             qs = qs.filter(evento_id=evento)
-        return qs
+        qs_list = list(qs)
+        cache.set(cache_key, qs_list, 60)
+        return qs_list
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -141,7 +153,7 @@ class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
-        cache.delete(categorias_list_cache_key())
+        cache.delete(categorias_list_cache_key(organizacao_id=self.request.user.organizacao_id))
         return response
 
     def get_success_url(self):
@@ -163,7 +175,7 @@ class CategoriaUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        cache.delete(categorias_list_cache_key())
+        cache.delete(categorias_list_cache_key(organizacao_id=self.object.organizacao_id))
         return response
 
     def get_success_url(self):
@@ -184,7 +196,7 @@ class CategoriaDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         response = super().delete(request, *args, **kwargs)
-        cache.delete(categorias_list_cache_key())
+        cache.delete(categorias_list_cache_key(organizacao_id=self.object.organizacao_id))
         return response
 
     def get_success_url(self):
@@ -221,8 +233,6 @@ class TagDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     slug_field = "slug"
     slug_url_kwarg = "slug"
 
-
-@method_decorator(cache_page(60, key_prefix=TOPICOS_LIST_KEY_PREFIX), name="dispatch")
 class TopicoListView(LoginRequiredMixin, ListView):
     model = TopicoDiscussao
     template_name = "discussao/topicos_list.html"
@@ -235,6 +245,25 @@ class TopicoListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         ordenacao = self.request.GET.get("ordenacao", "recentes")
+        tags_param = self.request.GET.getlist("tags")
+        names = [t.strip() for t in tags_param if t.strip()]
+        query = self.request.GET.get("q")
+
+        params = {
+            "ordenacao": ordenacao,
+            "tags": ",".join(sorted(names)),
+            "q": query or "",
+        }
+        cache_key = topicos_list_cache_key(
+            self.categoria.slug,
+            user=self.request.user if self.request.user.user_type == UserType.ROOT else None,
+            organizacao_id=self.categoria.organizacao_id,
+            params=params,
+        )
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         qs = (
             TopicoDiscussao.objects.filter(categoria=self.categoria)
             .select_related("categoria", "autor")
@@ -246,12 +275,9 @@ class TopicoListView(LoginRequiredMixin, ListView):
             )
         )
         qs = qs.filter(publico_alvo__in=publicos_permitidos(self.request.user.user_type))
-        tags_param = self.request.GET.getlist("tags")
-        if tags_param:
-            names = [t.strip() for t in tags_param if t.strip()]
+        if names:
             for name in names:
                 qs = qs.filter(tags__nome=name)
-        query = self.request.GET.get("q")
         if query:
             if connection.vendor == "postgresql":
                 vector = (
@@ -278,7 +304,9 @@ class TopicoListView(LoginRequiredMixin, ListView):
             qs = qs.order_by("-score_total")
         else:
             qs = qs.order_by("-created_at")
-        return qs
+        qs_list = list(qs)
+        cache.set(cache_key, qs_list, 60)
+        return qs_list
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -403,8 +431,14 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
             form.instance.evento = self.categoria.evento
         response = super().form_valid(form)
         form.instance.tags.set(form.cleaned_data["tags"])
-        cache.delete(categorias_list_cache_key())
-        cache.delete(topicos_list_cache_key(self.categoria.slug))
+        cache.delete(
+            categorias_list_cache_key(organizacao_id=self.categoria.organizacao_id)
+        )
+        cache.delete(
+            topicos_list_cache_key(
+                self.categoria.slug, organizacao_id=self.categoria.organizacao_id
+            )
+        )
         messages.success(self.request, gettext_lazy("Tópico criado com sucesso"))
         return response
 
@@ -432,7 +466,11 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        cache.delete(topicos_list_cache_key(self.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                self.categoria.slug, organizacao_id=self.categoria.organizacao_id
+            )
+        )
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.object.slug])
 
 
@@ -452,8 +490,14 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):  # type: ignore[override]
         response = super().delete(request, *args, **kwargs)
-        cache.delete(categorias_list_cache_key())
-        cache.delete(topicos_list_cache_key(self.categoria.slug))
+        cache.delete(
+            categorias_list_cache_key(organizacao_id=self.categoria.organizacao_id)
+        )
+        cache.delete(
+            topicos_list_cache_key(
+                self.categoria.slug, organizacao_id=self.categoria.organizacao_id
+            )
+        )
         if request.headers.get("Hx-Request"):
             return HttpResponse("")
         messages.success(request, gettext_lazy("Tópico removido"))
@@ -489,7 +533,11 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
             arquivo=dados.get("arquivo"),
         )
         notificar_nova_resposta.delay(self.object.id)
-        cache.delete(topicos_list_cache_key(self.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                self.categoria.slug, organizacao_id=self.categoria.organizacao_id
+            )
+        )
         if self.request.headers.get("Hx-Request"):
             context = {
                 "comentario": self.object,
@@ -538,7 +586,12 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        cache.delete(topicos_list_cache_key(self.topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                self.topico.categoria.slug,
+                organizacao_id=self.topico.categoria.organizacao_id,
+            )
+        )
         if request.headers.get("Hx-Request"):
             return HttpResponse("")
         messages.success(request, gettext_lazy("Coment\u00e1rio removido"))
@@ -576,7 +629,12 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
         form.instance.editado = True
         form.instance.editado_em = timezone.now()
         response = super().form_valid(form)
-        cache.delete(topicos_list_cache_key(self.topico.categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                self.topico.categoria.slug,
+                organizacao_id=self.topico.categoria.organizacao_id,
+            )
+        )
         return response
 
     def get_success_url(self):
@@ -611,12 +669,15 @@ class InteracaoView(LoginRequiredMixin, View):
                 interacao.valor = valor
                 interacao.save()
         slug = None
+        org_id = None
         if isinstance(obj, TopicoDiscussao):
             slug = obj.categoria.slug
+            org_id = obj.categoria.organizacao_id
         elif isinstance(obj, RespostaDiscussao):
             slug = obj.topico.categoria.slug
-        if slug:
-            cache.delete(topicos_list_cache_key(slug))
+            org_id = obj.topico.categoria.organizacao_id
+        if slug and org_id is not None:
+            cache.delete(topicos_list_cache_key(slug, organizacao_id=org_id))
         data = {"score": obj.score, "num_votos": obj.num_votos}
         return JsonResponse(data)
 
@@ -644,20 +705,32 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             notificar_melhor_resposta.delay(resposta.id)
             if not antes_resolvido:
                 notificar_topico_resolvido.delay(topico.id)
-            cache.delete(topicos_list_cache_key(categoria.slug))
+            cache.delete(
+                topicos_list_cache_key(
+                    categoria.slug, organizacao_id=categoria.organizacao_id
+                )
+            )
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         elif topico.resolvido:
             topico.melhor_resposta = None
             topico.resolvido = False
             topico.save(update_fields=["melhor_resposta", "resolvido"])
-            cache.delete(topicos_list_cache_key(categoria.slug))
+            cache.delete(
+                topicos_list_cache_key(
+                    categoria.slug, organizacao_id=categoria.organizacao_id
+                )
+            )
             messages.success(request, gettext_lazy("Resolução removida"))
         else:
             topico.resolvido = True
             topico.save(update_fields=["resolvido"])
             if not antes_resolvido:
                 notificar_topico_resolvido.delay(topico.id)
-            cache.delete(topicos_list_cache_key(categoria.slug))
+            cache.delete(
+                topicos_list_cache_key(
+                    categoria.slug, organizacao_id=categoria.organizacao_id
+                )
+            )
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         return redirect(
             "discussao:topico_detalhe",
@@ -679,7 +752,11 @@ class TopicoToggleFechadoView(LoginRequiredMixin, View):
                 return HttpResponseForbidden()
             topico.fechado = True
         topico.save(update_fields=["fechado"])
-        cache.delete(topicos_list_cache_key(categoria.slug))
+        cache.delete(
+            topicos_list_cache_key(
+                categoria.slug, organizacao_id=categoria.organizacao_id
+            )
+        )
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,
