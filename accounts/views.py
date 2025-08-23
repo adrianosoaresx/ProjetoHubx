@@ -161,8 +161,18 @@ def enable_2fa(request):
                 del request.session["tmp_2fa_secret"]
                 messages.success(request, _("Verificação em duas etapas ativada."))
                 return redirect("accounts:seguranca")
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Código inválido."))
         else:
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_habilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Senha incorreta."))
 
     return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64})
@@ -189,8 +199,18 @@ def disable_2fa(request):
                 )
                 messages.success(request, _("Verificação em duas etapas desativada."))
                 return redirect("accounts:seguranca")
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Código inválido."))
         else:
+            SecurityEvent.objects.create(
+                usuario=request.user,
+                evento="2fa_desabilitacao_falha",
+                ip=get_client_ip(request),
+            )
             messages.error(request, _("Senha incorreta."))
 
     return render(request, "perfil/disable_2fa.html")
