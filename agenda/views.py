@@ -709,9 +709,13 @@ class MaterialDivulgacaoEventoCreateView(
     def form_valid(self, form):
         evento = form.cleaned_data["evento"]
         user = self.request.user
-        if user.user_type != UserType.ROOT and evento.organizacao != user.organizacao:
-            form.add_error("evento", _("Evento de outra organização"))
-            return self.form_invalid(form)
+        if user.user_type != UserType.ROOT:
+            if evento.organizacao != user.organizacao:
+                form.add_error("evento", _("Evento de outra organização"))
+                return self.form_invalid(form)
+            if not user.nucleos.filter(id=evento.nucleo_id).exists():
+                form.add_error("evento", _("Evento de outro núcleo"))
+                return self.form_invalid(form)
         response = super().form_valid(form)
         upload_material_divulgacao.delay(self.object.pk)
         EventoLog.objects.create(
