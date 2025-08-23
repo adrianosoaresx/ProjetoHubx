@@ -375,3 +375,9 @@ def test_history_export_csv(superadmin_user, organizacao, monkeypatch):
     assert resp.status_code == 200
     assert called["org"] == organizacao
     assert resp["Content-Type"] == "text/csv"
+
+
+def test_history_view_denied_for_admin(admin_user, organizacao):
+    url = reverse("organizacoes:historico", args=[organizacao.pk])
+    resp = admin_user.get(url)
+    assert resp.status_code == 403
