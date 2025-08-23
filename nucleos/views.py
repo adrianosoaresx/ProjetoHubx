@@ -189,7 +189,9 @@ class NucleoDetailView(LoginRequiredMixin, DetailView):
     template_name = "nucleos/detail.html"
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False)
+        qs = Nucleo.objects.filter(deleted=False).prefetch_related(
+            "participacoes__user", "coordenadores_suplentes"
+        )
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
