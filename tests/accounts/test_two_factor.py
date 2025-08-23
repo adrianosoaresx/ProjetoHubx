@@ -1,6 +1,7 @@
 import pyotp
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.urls import reverse
 
 from accounts.models import SecurityEvent
@@ -55,6 +56,7 @@ def test_login_requires_totp_when_enabled(client):
 
 @pytest.mark.django_db
 def test_check_2fa_endpoint(client):
+    cache.clear()
     secret = pyotp.random_base32()
     user = User.objects.create_user(
         email="c@c.com", username="c", password="Strong!123", two_factor_enabled=True, two_factor_secret=secret
@@ -65,6 +67,17 @@ def test_check_2fa_endpoint(client):
     assert resp.json()["enabled"] is True
     resp = client.get(reverse("accounts:check_2fa") + "?email=nao@existe.com")
     assert resp.json()["enabled"] is False
+
+
+@pytest.mark.django_db
+def test_check_2fa_rate_limit(client):
+    cache.clear()
+    url = reverse("accounts:check_2fa") + "?email=foo@bar.com"
+    for _ in range(5):
+        resp = client.get(url)
+        assert resp.status_code == 200
+    resp = client.get(url)
+    assert resp.status_code == 403
 
 
 @pytest.mark.django_db

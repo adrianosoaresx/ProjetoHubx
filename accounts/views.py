@@ -195,6 +195,7 @@ def disable_2fa(request):
     return render(request, "perfil/disable_2fa.html")
 
 
+@ratelimit(key="ip", rate="5/m", method="GET", block=True)
 def check_2fa(request):
     email = request.GET.get("email")
     enabled = False
