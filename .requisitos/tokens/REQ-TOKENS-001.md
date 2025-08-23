@@ -84,6 +84,58 @@ O app Tokens fornece mecanismos de credencial temporária e permanente no Hubx. 
 - Sentry para captura de erros.
 - Prometheus para métricas.
 
+## 10. Uso
+
+### Convites (RF-01–RF-08)
+- **Emitir**
+  ```http
+  POST /api/tokens/convites/
+  {
+    "email": "pessoa@exemplo.com"
+  }
+  ```
+  Responde `201` com `{ "codigo": "ABCD1234", "expira_em": "2025-09-01T00:00:00Z" }`.
+- **Validar**
+  `GET /api/tokens/validate/?codigo=ABCD1234` → `{ "estado": "novo" }`.
+- **Usar**
+  `POST /api/nucleos/aceitar-convite/?token=ABCD1234` marca como usado.
+- **Webhook**
+  `token.convite.usado` → POST `/webhooks/tokens/` com corpo `{ "codigo": "ABCD1234", "acao": "usado" }` e cabeçalho `X-Hubx-Signature`.
+- **Segurança**
+  Código armazenado com hash, expira em 7 dias, máximo de cinco emissões diárias por usuário e entrega apenas via HTTPS.
+
+### Códigos de Autenticação (RF-12)
+- **Gerar**
+  ```http
+  POST /api/tokens/codigos/
+  {
+    "usuario": 1
+  }
+  ```
+  Responde `201` com `{ "codigo": "123456" }`.
+- **Validar**
+  `POST /api/tokens/codigos/validar/` com `{ "codigo": "123456" }` marca como verificado.
+- **Webhook**
+  `auth.code.verificado` → POST `/webhooks/tokens/` com assinatura HMAC.
+- **Segurança**
+  Código de 6 dígitos expira em 10 minutos, é armazenado com hash e possui limite de três tentativas por IP.
+
+### 2FA TOTP (RF-13)
+- **Registrar dispositivo**
+  ```http
+  POST /api/tokens/totp/dispositivos/
+  {
+    "nome": "celular"
+  }
+  ```
+  Responde `201` com `otpauth://...`.
+- **Verificar código**
+  `POST /api/tokens/totp/verificar/` com `{ "codigo": "123456" }`.
+- **Webhook**
+  `2fa.dispositivo.registrado` e `2fa.verificado` → POST `/webhooks/tokens/` com cabeçalho `X-Hubx-Signature`.
+- **Segurança**
+  Segredo TOTP criptografado em repouso, sincronização de tempo exigida e exigência de HTTPS em todas as chamadas.
+
 ## Anexos e Referências
 ...
 

@@ -1,11 +1,13 @@
-import pytest
-
 import hashlib
-
 from datetime import timedelta
+
+
+
+import pytest
+from django.test import override_settings
+
 from django.urls import reverse
 from django.utils import timezone
-from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APIClient
 
@@ -47,6 +49,7 @@ def test_rotate_token_service():
     assert token_db.revoked_at is not None
     assert new_raw != raw
 
+
 def test_generate_token_with_device_fingerprint():
     user = UserFactory()
     fingerprint = "abc123"
@@ -54,7 +57,6 @@ def test_generate_token_with_device_fingerprint():
     token_hash = hashlib.sha256(raw.encode()).hexdigest()
     token = ApiToken.objects.get(token_hash=token_hash)
     assert token.device_fingerprint == fingerprint
-
 
 
 @override_settings(ROOT_URLCONF="tokens.api_urls")
@@ -90,14 +92,10 @@ def test_api_token_authentication_with_device_fingerprint():
     client = APIClient()
     url = reverse("tokens_api:api-token-list")
 
-    client.credentials(
-        HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT=fingerprint
-    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT=fingerprint)
     assert client.get(url).status_code == 200
 
-    client.credentials(
-        HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT="wrong"
-    )
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {raw}", HTTP_X_DEVICE_FINGERPRINT="wrong")
     assert client.get(url).status_code in {
         status.HTTP_401_UNAUTHORIZED,
         status.HTTP_403_FORBIDDEN,
@@ -124,7 +122,8 @@ def test_revogar_tokens_expirados():
     assert token_db.revogado_por == user
     log = ApiTokenLog.objects.get(token=token_db, acao=ApiTokenLog.Acao.REVOGACAO)
     assert log.usuario is None
-    assert log.ip is None
+    assert log.ip == "0.0.0.0"
+    assert log.user_agent == "task:revogar_tokens_expirados"
 
 
 @override_settings(ROOT_URLCONF="tokens.api_urls")
