@@ -6,7 +6,7 @@ from django.utils.timezone import make_aware
 from unittest.mock import patch
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento
+from agenda.models import Evento, InscricaoEvento, EventoLog
 from organizacoes.models import Organizacao
 
 
@@ -70,9 +70,52 @@ def test_lista_espera(client, usuario_comum, gerente, evento):
     InscricaoEvento.objects.filter(user=gerente, evento=evento).delete()
     from agenda.tasks import promover_lista_espera
 
-    promover_lista_espera(evento.pk)
+    with patch("agenda.tasks.enviar_para_usuario", lambda *a, **k: None):
+        promover_lista_espera(evento.pk)
     ins2.refresh_from_db()
     assert ins2.status == "confirmada"
+
+
+def test_promover_lista_espera_envia_notificacao(usuario_comum, gerente, evento, monkeypatch):
+    evento.participantes_maximo = 1
+    evento.espera_habilitada = True
+    evento.save()
+
+    InscricaoEvento.objects.create(
+        user=gerente,
+        evento=evento,
+        status="confirmada",
+        data_confirmacao=timezone.now(),
+    )
+    ins = InscricaoEvento.objects.create(
+        user=usuario_comum,
+        evento=evento,
+        status="pendente",
+        posicao_espera=1,
+    )
+
+    called: dict[str, object] = {}
+
+    def fake_enviar(user, codigo, context, escopo_tipo=None, escopo_id=None):
+        called["user"] = user
+        called["codigo"] = codigo
+        called["context"] = context
+
+    monkeypatch.setattr("agenda.tasks.enviar_para_usuario", fake_enviar)
+    from agenda.tasks import promover_lista_espera
+
+    InscricaoEvento.objects.filter(user=gerente, evento=evento).delete()
+    promover_lista_espera(evento.pk)
+
+    assert called["user"] == usuario_comum
+    assert called["codigo"] == "evento_lista_espera_promovido"
+    assert called["context"]["evento"]["id"] == evento.pk
+
+    ins.refresh_from_db()
+    assert ins.status == "confirmada"
+
+    log = EventoLog.objects.get(evento=evento, usuario=usuario_comum, acao="inscricao_promovida")
+    assert log.detalhes["notificacao"] is True
 
 
 def test_promover_lista_espera_enqueued_on_cancel(gerente, evento):
