@@ -39,6 +39,13 @@ exclusão lógica através dos campos `deleted` e `deleted_at`.
 * Apenas membros da organização podem participar.
 * Autor ou administrador podem editar e resolver tópicos/respostas.
 
+## Estratégia de cache
+
+As listagens de categorias e de tópicos utilizam cache de página por 60s.
+As chaves são geradas em `cache_utils.py` e invalidadas de forma
+seletiva com `cache.delete` sempre que categorias, tópicos ou respostas
+relevantes são modificados.
+
 ## Moderação
 
 Moderadores podem sinalizar conteúdo impróprio e revisar no `DiscussionModerationLog`.
