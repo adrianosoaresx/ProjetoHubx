@@ -3,8 +3,6 @@ from __future__ import annotations
 from rest_framework import routers
 
 from .viewsets import (
-    CentroCustoViewSet,
-    FinanceiroViewSet,
     FinanceiroLogViewSet,
     FinanceiroTaskLogViewSet,
     FinanceiroForecastViewSet,
@@ -12,8 +10,8 @@ from .viewsets import (
     LancamentoFinanceiroViewSet,
     RepasseViewSet,
     IntegracaoConfigViewSet,
-
 )
+from .views.api import CentroCustoViewSet, FinanceiroViewSet
 
 router = routers.DefaultRouter()
 router.register("lancamentos", LancamentoFinanceiroViewSet, basename="lancamento")

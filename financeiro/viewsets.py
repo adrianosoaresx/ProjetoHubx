@@ -45,7 +45,7 @@ from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .services.forecast import calcular_previsao
 from .services.exportacao import exportar_para_arquivo
-from .views import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
+from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
 class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
