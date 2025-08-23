@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.db.models import Count, OuterRef, Subquery, UUIDField
+from django.db.models import Case, Count, F, OuterRef, Subquery, TextField, UUIDField, When
 from django.http import HttpResponse
 import csv
 from django.shortcuts import get_object_or_404, redirect, render
@@ -31,7 +31,18 @@ def conversation_list(request):
         ChatChannel.objects.filter(participants__user=request.user)
         .prefetch_related("participants")
         .annotate(
-            last_message_text=Subquery(last_msg.values("conteudo")[:1]),
+            last_message_text=Subquery(
+                last_msg.annotate(
+                    preview=Case(
+                        When(channel__e2ee_habilitado=True, then=F("conteudo_cifrado")),
+                        When(conteudo__isnull=True, then=F("tipo")),
+                        When(conteudo="", then=F("tipo")),
+                        default=F("conteudo"),
+                        output_field=TextField(),
+                    )
+                ).values("preview")[:1],
+                output_field=TextField(),
+            ),
             last_message_at=Subquery(last_msg.values("created_at")[:1]),
             unread_count=Subquery(unread),
         )
