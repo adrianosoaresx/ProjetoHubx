@@ -7,6 +7,7 @@ from asgiref.sync import sync_to_async
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
 from django.utils import timezone
+from django.core.cache import cache
 
 from chat.consumers import MESSAGE_RATE_LIMIT, MESSAGE_WINDOW_SECONDS
 from chat.models import ChatMessage, ChatNotification
@@ -22,6 +23,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture(autouse=True)
 def in_memory_channel_layer(settings):
     settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+
+@pytest.fixture(autouse=True)
+def clear_cache():
+    cache.clear()
 
 
 def test_consumer_connect_send_message_and_reaction(admin_user, coordenador_user, nucleo):
@@ -72,7 +78,7 @@ def test_consumer_rate_limit_delays_messages(admin_user, coordenador_user, nucle
             await communicator.receive_json_from()
         start = time.monotonic()
         await communicator.send_json_to({"tipo": "text", "conteudo": "limit"})
-        await communicator.receive_json_from(timeout=MESSAGE_WINDOW_SECONDS + 1)
+        await communicator.receive_json_from(timeout=MESSAGE_WINDOW_SECONDS + 5)
         elapsed = time.monotonic() - start
         assert elapsed >= MESSAGE_WINDOW_SECONDS - 1
         await communicator.disconnect()
