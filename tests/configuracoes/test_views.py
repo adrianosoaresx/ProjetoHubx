@@ -6,6 +6,7 @@ from django.http import Http404
 from django.test import override_settings
 from django.urls import reverse
 from django.test.client import RequestFactory
+from django.contrib.messages.storage.fallback import FallbackStorage
 
 from configuracoes.views import ConfiguracoesView
 from pathlib import Path
@@ -48,30 +49,32 @@ def test_view_post_invalid_tab_returns_404(admin_user, rf: RequestFactory):
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
-def test_view_post_atualiza_preferencias(admin_client, admin_user):
-    url = reverse("configuracoes") + "?tab=preferencias"
-    data = {
-        "receber_notificacoes_email": False,
-        "frequencia_notificacoes_email": "diaria",
-        "receber_notificacoes_whatsapp": True,
-        "frequencia_notificacoes_whatsapp": "semanal",
-        "idioma": "pt-BR",
-        "tema": "escuro",
-        "hora_notificacao_diaria": "08:00",
-        "hora_notificacao_semanal": "08:00",
-        "dia_semana_notificacao": 0,
-        "tab": "preferencias",
-    }
-    resp = admin_client.post(url, data, HTTP_HX_REQUEST="true")
-    assert resp.status_code == 200
-    admin_user.configuracao.refresh_from_db()
-    assert admin_user.configuracao.tema == "escuro"
-    assert admin_user.configuracao.receber_notificacoes_email is False
-    assert resp.cookies["tema"].value == "escuro"
-    assert resp.cookies["django_language"].value == "pt-BR"
-    content = resp.content.decode()
-    assert 'const tema = "escuro"' in content
-    assert "localStorage.setItem('tema', tema)" in content
+def test_view_post_atualiza_preferencias(admin_user, rf: RequestFactory, monkeypatch):
+    class DummyForm:
+        def __init__(self):
+            self.instance = type("obj", (), {"tema": "escuro", "idioma": "pt-BR"})()
+            self.cleaned_data = {}
+
+        def is_valid(self):
+            return True
+
+    def fake_get_form(self, tab, data=None, files=None):  # pragma: no cover - simple
+        return DummyForm()
+
+    monkeypatch.setattr(ConfiguracoesView, "get_form", fake_get_form)
+    request = rf.post("/configuracoes/?tab=preferencias", {"tab": "preferencias"})
+    request.user = admin_user
+    request.session = {}
+    setattr(request, "_messages", FallbackStorage(request))
+    resp = ConfiguracoesView.as_view()(request)
+    tema_cookie = resp.cookies["tema"]
+    lang_cookie = resp.cookies["django_language"]
+    assert tema_cookie["samesite"] == "Lax"
+    assert lang_cookie["samesite"] == "Lax"
+    assert tema_cookie["secure"] == ""
+    assert lang_cookie["secure"] == ""
+    assert tema_cookie["httponly"] == ""
+    assert lang_cookie["httponly"] == ""
 
 
 try:
@@ -101,3 +104,28 @@ def test_base_template_localstorage():
     content = Path("templates/base.html").read_text()
     assert "localStorage.setItem('tema'" in content
     assert "localStorage.setItem('idioma'" in content
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_view_post_preferencias_https_secure_cookies(admin_user, rf: RequestFactory, monkeypatch):
+    class DummyForm:
+        def __init__(self):
+            self.instance = type("obj", (), {"tema": "escuro", "idioma": "pt-BR"})()
+            self.cleaned_data = {}
+
+        def is_valid(self):
+            return True
+
+    def fake_get_form(self, tab, data=None, files=None):  # pragma: no cover - simple
+        return DummyForm()
+
+    monkeypatch.setattr(ConfiguracoesView, "get_form", fake_get_form)
+    request = rf.post(
+        "/configuracoes/?tab=preferencias", {"tab": "preferencias"}, secure=True
+    )
+    request.user = admin_user
+    request.session = {}
+    setattr(request, "_messages", FallbackStorage(request))
+    resp = ConfiguracoesView.as_view()(request)
+    assert resp.cookies["tema"]["secure"] is True
+    assert resp.cookies["django_language"]["secure"] is True

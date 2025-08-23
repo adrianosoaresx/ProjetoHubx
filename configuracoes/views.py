@@ -132,8 +132,20 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         response = render(request, template, context)
         if tab == "preferencias" and form.is_valid():
             tema = form.instance.tema
-            response.set_cookie("tema", tema)
-            response.set_cookie("django_language", form.instance.idioma)
+            response.set_cookie(
+                "tema",
+                tema,
+                httponly=False,
+                secure=request.is_secure(),
+                samesite="Lax",
+            )
+            response.set_cookie(
+                "django_language",
+                form.instance.idioma,
+                httponly=False,
+                secure=request.is_secure(),
+                samesite="Lax",
+            )
         return response
 
 
