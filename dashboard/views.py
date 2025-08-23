@@ -155,6 +155,8 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             raise ValueError("data_fim inválida")
         if fim and timezone.is_naive(fim):
             fim = timezone.make_aware(fim)
+        if inicio and fim and inicio > fim:
+            raise ValueError("data_inicio deve ser menor ou igual a data_fim")
 
         filters: dict[str, object] = {}
         for key in ["organizacao_id", "nucleo_id", "evento_id"]:

@@ -212,6 +212,13 @@ def test_get_metrics_invalid_date(admin_user):
         DashboardMetricsService.get_metrics(admin_user, inicio="bad-date")
 
 
+def test_get_metrics_invalid_date_order(admin_user):
+    inicio = timezone.now()
+    fim = inicio - dt.timedelta(days=1)
+    with pytest.raises(ValueError):
+        DashboardMetricsService.get_metrics(admin_user, inicio=inicio, fim=fim)
+
+
 def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
     another_user = User.objects.create_user(
         email="other@example.com",

@@ -529,6 +529,8 @@ class DashboardMetricsService:
                 fim = datetime.fromisoformat(fim)
             except ValueError:
                 raise ValueError("data_fim inválida")
+        if inicio and fim and inicio > fim:
+            raise ValueError("data_inicio deve ser menor ou igual a data_fim")
         inicio, fim = DashboardService.get_period_range(periodo, inicio, fim)
 
         organizacao_id = filters.get("organizacao_id")
