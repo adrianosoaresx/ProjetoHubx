@@ -10,6 +10,10 @@ import requests
 from financeiro.models import IntegracaoConfig, IntegracaoIdempotency, IntegracaoLog
 
 
+class ERPConectorError(Exception):
+    """Erro genérico ao se comunicar com o ERP."""
+
+
 class ERPConector:
     """Cliente simples para integração com ERPs.
 
@@ -77,7 +81,27 @@ class ERPConector:
         if idempotency_key:
             headers["Idempotency-Key"] = idempotency_key
         start = time.monotonic()
-        response = self.session.request(method, url, headers=headers, **kwargs)
+        timeout = kwargs.pop("timeout", 10)
+        try:
+            response = self.session.request(
+                method, url, headers=headers, timeout=timeout, **kwargs
+            )
+        except (requests.Timeout, requests.ConnectionError) as exc:
+            duration = int((time.monotonic() - start) * 1000)
+            status = (
+                "timeout" if isinstance(exc, requests.Timeout) else "connection_error"
+            )
+            IntegracaoLog.objects.create(
+                provedor=self.config.nome,
+                acao=f"{method} {path}",
+                payload_in=kwargs.get("json"),
+                payload_out={},
+                status=status,
+                duracao_ms=duration,
+                erro=str(exc),
+            )
+            raise ERPConectorError("Erro ao comunicar com ERP") from exc
+
         duration = int((time.monotonic() - start) * 1000)
         IntegracaoLog.objects.create(
             provedor=self.config.nome,
