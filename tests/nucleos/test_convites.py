@@ -137,3 +137,19 @@ def test_convite_quota_diaria(api_client, admin_user, organizacao):
         resp2 = api_client.post(url, {"email": "b@example.com", "papel": "membro"})
         assert resp2.status_code == 429
 
+
+def test_convite_limite_uso_diario(api_client, membro_user, organizacao):
+    from django.core.cache import cache
+
+    nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
+    convite = ConviteNucleo.objects.create(
+        email=membro_user.email, papel="membro", nucleo=nucleo, limite_uso_diario=1
+    )
+    _auth(api_client, membro_user)
+    url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
+    cache.clear()
+    resp1 = api_client.get(url)
+    assert resp1.status_code == 200
+    resp2 = api_client.get(url)
+    assert resp2.status_code == 429
+

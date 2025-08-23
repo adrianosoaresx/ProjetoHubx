@@ -69,3 +69,19 @@ def gerar_convite_nucleo(user: User, nucleo: Nucleo, email: str, papel: str) -> 
     )
     return convite
 
+
+def registrar_uso_convite(convite: ConviteNucleo) -> None:
+    """Registra um uso do convite respeitando o limite diário.
+
+    Usa o cache para contar quantas vezes o convite foi utilizado no dia
+    corrente. Levanta ``ValueError`` quando o limite é ultrapassado.
+    """
+
+    cache_key = f"convite_uso:{convite.id}:{timezone.now().date()}"
+    count = cache.get(cache_key, 0)
+    if count >= convite.limite_uso_diario:
+        raise ValueError("limite diário de uso do convite atingido")
+    # Armazena por 24h para reiniciar a contagem a cada dia
+    cache.set(cache_key, count + 1, 24 * 60 * 60)
+
+
