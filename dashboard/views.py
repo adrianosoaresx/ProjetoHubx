@@ -477,10 +477,22 @@ def organizacoes_search(request):
         return HttpResponse(status=401)
 
     term = request.GET.get("q", "")
-    qs = (
-        Organizacao.objects.only("id", "nome")
-        .filter(nome__icontains=term)[:50]
-    )
+    user = request.user
+
+    if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+        qs = (
+            Organizacao.objects.only("id", "nome")
+            .filter(nome__icontains=term)[:50]
+        )
+    else:
+        org_id = getattr(user, "organizacao_id", None)
+        if not org_id:
+            return HttpResponse(status=403)
+        qs = (
+            Organizacao.objects.only("id", "nome")
+            .filter(id=org_id, nome__icontains=term)[:50]
+        )
+
     data = {"results": [{"id": o.id, "text": o.nome} for o in qs]}
     return JsonResponse(data)
 
@@ -491,11 +503,17 @@ def nucleos_search(request):
         return HttpResponse(status=401)
 
     term = request.GET.get("q", "")
-    qs = (
-        Nucleo.objects.only("id", "nome", "organizacao")
-        .select_related("organizacao")
-        .filter(nome__icontains=term)[:50]
-    )
+    user = request.user
+    qs = Nucleo.objects.only("id", "nome", "organizacao").select_related("organizacao")
+
+    if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+        qs = qs.filter(nome__icontains=term)[:50]
+    else:
+        allowed_ids = list(user.nucleos.values_list("id", flat=True))
+        if not allowed_ids:
+            return HttpResponse(status=403)
+        qs = qs.filter(id__in=allowed_ids, nome__icontains=term)[:50]
+
     data = {"results": [{"id": n.id, "text": n.nome} for n in qs]}
     return JsonResponse(data)
 
@@ -506,11 +524,28 @@ def eventos_search(request):
         return HttpResponse(status=401)
 
     term = request.GET.get("q", "")
-    qs = (
-        Evento.objects.only("id", "titulo", "nucleo", "organizacao")
-        .select_related("nucleo", "organizacao")
-        .filter(titulo__icontains=term)[:50]
+    user = request.user
+    qs = Evento.objects.only("id", "titulo", "nucleo", "organizacao").select_related(
+        "nucleo", "organizacao"
     )
+
+    if user.user_type in {UserType.ROOT, UserType.ADMIN}:
+        qs = qs.filter(titulo__icontains=term)[:50]
+    else:
+        allowed_ids = list(
+            Evento.objects.filter(
+                Q(coordenador=user)
+                | Q(
+                    nucleo__participacoes__user=user,
+                    nucleo__participacoes__status="ativo",
+                    nucleo__participacoes__status_suspensao=False,
+                )
+            ).values_list("id", flat=True)
+        )
+        if not allowed_ids:
+            return HttpResponse(status=403)
+        qs = qs.filter(id__in=allowed_ids, titulo__icontains=term)[:50]
+
     data = {"results": [{"id": e.id, "text": e.titulo} for e in qs]}
     return JsonResponse(data)
 
