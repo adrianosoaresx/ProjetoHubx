@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 {% url 'organizacoes_api:organizacao-empresas-list' organizacao_pk=organizacao.id as api_url %}
 <div class="bg-white p-4 rounded shadow" hx-target="this">
   <h3 class="text-lg font-semibold mb-2">{% trans 'Gerenciar empresas' %}</h3>
@@ -15,7 +15,7 @@
       hx-target="#empresa-options"
       hx-swap="none"
       hx-include="[name=search]"
-      hx-on="htmx:afterRequest: renderEmpresas(event)"
+      hx-on="htmx:afterRequest: renderOptions(event, '#empresa-options', 'nome')"
     >
     <select name="empresa_id" id="empresa-options" class="w-full border px-2 py-1 rounded mt-2"></select>
     <button type="submit" class="mt-2 px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Adicionar' %}</button>
@@ -31,20 +31,5 @@
     {% endfor %}
   </ul>
   <script src="{% url 'javascript-catalog' %}"></script>
-  <script>
-    function renderEmpresas(evt) {
-      const sel = document.querySelector('#empresa-options');
-      sel.innerHTML = '';
-      try {
-        const data = JSON.parse(evt.detail.xhr.response);
-        const itens = data.results || data;
-        sel.innerHTML =
-          itens
-            .map(e => `<option value="${e.id}">${e.nome}</option>`)
-            .join('') || `<option value="">${gettext('Nenhum resultado')}</option>`;
-      } catch (err) {
-        sel.innerHTML = `<option value="">${gettext('Erro ao carregar')}</option>`;
-      }
-    }
-  </script>
+  <script src="{% static 'js/organizacoes_modals.js' %}"></script>
 </div>
