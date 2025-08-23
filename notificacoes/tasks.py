@@ -59,30 +59,34 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
         log.status = NotificationStatus.ENVIADA
         metrics.notificacoes_enviadas_total.labels(canal=canal).inc()
     except Exception as exc:  # pragma: no cover - integração externa
-        log.status = NotificationStatus.FALHA
         log.erro = str(exc)
-        metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
-        log.data_envio = timezone.now()
-        log.save(update_fields=["status", "erro", "data_envio"])
-        with sentry_sdk.push_scope() as scope:
-            scope.set_tag("module", "notificacoes")
-            scope.set_context("notificacao", {"log_id": str(log.id), "canal": canal})
-            sentry_sdk.capture_exception(exc)
-        log_audit(
-            user,
-            "notification_send_failed",
-            object_type="NotificationLog",
-            object_id=str(log.id),
-            status=AuditLog.Status.FAILURE,
-            metadata={"canal": canal, "template": str(template.id)},
-        )
-        logger.exception(
-            "falha_envio_notificacao",
-            user_id=user.id,
-            template=str(template.id),
-            canal=canal,
-        )
-        raise self.retry(exc=exc, countdown=2**self.request.retries)
+        if self.request.retries >= self.max_retries:
+            log.status = NotificationStatus.FALHA
+            metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
+            log.data_envio = timezone.now()
+            log.save(update_fields=["status", "erro", "data_envio"])
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("module", "notificacoes")
+                scope.set_context("notificacao", {"log_id": str(log.id), "canal": canal})
+                sentry_sdk.capture_exception(exc)
+            log_audit(
+                user,
+                "notification_send_failed",
+                object_type="NotificationLog",
+                object_id=str(log.id),
+                status=AuditLog.Status.FAILURE,
+                metadata={"canal": canal, "template": str(template.id)},
+            )
+            logger.exception(
+                "falha_envio_notificacao",
+                user_id=user.id,
+                template=str(template.id),
+                canal=canal,
+            )
+            raise
+        else:
+            log.save(update_fields=["erro"])
+            raise self.retry(exc=exc, countdown=2**self.request.retries)
     else:
         log.data_envio = timezone.now()
         log.erro = None
