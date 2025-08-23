@@ -26,6 +26,12 @@ class Tag(TimeStampedModel, SoftDeleteModel):
         return self.nome
 
 
+class PendingUpload(TimeStampedModel):
+    """Armazena uploads pendentes associados a tasks Celery."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    task_id = models.CharField(max_length=255, unique=True)
+
+
 class FeedPluginConfig(TimeStampedModel):
     """Configuração de plugins para organizações."""
 

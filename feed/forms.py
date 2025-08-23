@@ -103,7 +103,7 @@ class PostForm(forms.ModelForm):
 
         for field in ["image", "pdf", "video"]:
             file = cleaned_data.get(field)
-            if file:
+            if file and not isinstance(file, str):
                 try:
                     result = upload_media(file)
                 except ValidationError as e:
@@ -114,6 +114,8 @@ class PostForm(forms.ModelForm):
                     self._video_preview_key = result[1]
                 else:
                     cleaned_data[field] = result
+            elif isinstance(file, str):
+                cleaned_data[field] = file
 
         tipo_feed = cleaned_data.get("tipo_feed")
         nucleo = cleaned_data.get("nucleo")
