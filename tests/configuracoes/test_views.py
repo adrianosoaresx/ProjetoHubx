@@ -33,6 +33,20 @@ def test_view_get_redirect_nao_autenticado(client):
     assert "/accounts/login" in resp.headers["Location"]
 
 
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_view_get_redes_connect_redirect(admin_client):
+    url = (
+        reverse("configuracoes")
+        + "?tab=redes&action=connect&network=github"
+    )
+    resp = admin_client.get(url)
+    assert resp.status_code == 302
+    assert (
+        resp.headers["Location"]
+        == "https://github.com/login/oauth/authorize"
+    )
+
+
 def test_view_invalid_tab_returns_404(admin_user, rf: RequestFactory):
     request = rf.get("/configuracoes/?tab=invalido")
     request.user = admin_user
