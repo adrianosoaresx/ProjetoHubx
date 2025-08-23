@@ -21,18 +21,18 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
 from accounts.models import UserType
 from agenda.models import Evento
 from notificacoes.services.email_client import send_email
-
 
 from ..models import (
     CentroCusto,
     FinanceiroLog,
     FinanceiroTaskLog,
     ImportacaoPagamentos,
-    LancamentoFinanceiro,
     IntegracaoConfig,
+    LancamentoFinanceiro,
 )
 from ..permissions import (
     IsAssociadoReadOnly,
@@ -276,9 +276,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         tipo = params.get("tipo")
         status = params.get("status")
         cache_centro = "|".join(sorted(centro_id)) if isinstance(centro_id, list) else centro_id
-        cache_key = (
-            f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}:{status}"
-        )
+        cache_key = f"rel:{cache_centro}:{nucleo_id}:{params.get('periodo_inicial')}:{params.get('periodo_final')}:{tipo}:{status}"
         result = cache.get(cache_key)
         if result is None:
             result = gerar_relatorio(
@@ -460,10 +458,10 @@ def centros_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
-
-def centro_form_view(request, pk: int | None = None):
+def centro_form_view(request, pk: uuid.UUID | None = None):
     centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
     return render(request, "financeiro/centro_form.html", {"centro": centro})
+
 
 def integracoes_list_view(request):
     limit = 20
@@ -495,7 +493,6 @@ def importacoes_list_view(request):
     return render(request, "financeiro/importacoes_list.html")
 
 
-
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
 def lancamentos_list_view(request):
@@ -510,17 +507,17 @@ def lancamentos_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
-def lancamento_ajuste_modal_view(request, pk: int):
+def lancamento_ajuste_modal_view(request, pk: uuid.UUID):
     lancamento = get_object_or_404(LancamentoFinanceiro, pk=pk)
     return render(request, "financeiro/lancamento_ajuste_modal.html", {"lancamento": lancamento})
 
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
-
 def repasses_view(request):
     eventos = Evento.objects.all()
     return render(request, "financeiro/repasses.html", {"eventos": eventos})
+
 
 def logs_list_view(request):
     User = get_user_model()
@@ -529,7 +526,6 @@ def logs_list_view(request):
         "usuarios": User.objects.all(),
     }
     return render(request, "financeiro/logs_list.html", context)
-
 
 
 @login_required

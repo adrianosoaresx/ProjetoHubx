@@ -45,7 +45,7 @@ coordenadores ou organizadores.
 ## Ajustes de Lançamentos
 
 Lançamentos pagos podem ser ajustados via `POST
-/api/financeiro/lancamentos/<id>/ajustar/`. O serviço cria um lançamento do tipo
+/api/financeiro/lancamentos/<uuid:id>/ajustar/`. O serviço cria um lançamento do tipo
 `ajuste` com a diferença de valores, marca o original como ajustado e atualiza os
 saldos. A requisição deve conter `valor_corrigido` e `descricao_motivo` e é
 restrita a usuários financeiros ou administradores.
@@ -82,7 +82,7 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`GET /api/financeiro/importacoes/<uuid:id>/`|Financeiro/Admin|Detalha uma importação específica|
 |`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado (CSV/XLSX)|
 |`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
-|`PATCH /api/financeiro/lancamentos/<id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
+|`PATCH /api/financeiro/lancamentos/<uuid:id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
 |`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências (CSV/XLSX)|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 

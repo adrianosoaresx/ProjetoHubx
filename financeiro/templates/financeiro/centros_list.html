@@ -32,7 +32,7 @@
           </td>
           <td class="px-3 py-2">{{ c.saldo }}</td>
           <td class="px-3 py-2 text-right space-x-2">
-              <button class="text-primary underline" hx-get="/financeiro/centros/form/{{ c.id }}/" hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
+              <button class="text-primary underline" hx-get="{% url 'financeiro:centro_form_edit' c.id %}" hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
                 <button class="text-red-600 underline" hx-delete="/api/financeiro/centros/{{ c.id }}/" hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans "Excluir" %}</button>
             </td>
           </tr>
