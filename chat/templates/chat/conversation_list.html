@@ -33,7 +33,15 @@
                   <div>
                     <p class="font-medium">{{ conv.titulo|default:conv.id }}</p>
                     {% if conv.last_message_text %}
-                      <p class="text-sm text-gray-500">{{ conv.last_message_text|truncatechars:50 }}</p>
+                      {% if conv.last_message_text == 'image' %}
+                        <p class="text-sm text-gray-500">[{% trans "imagem" %}]</p>
+                      {% elif conv.last_message_text == 'video' %}
+                        <p class="text-sm text-gray-500">[{% trans "vídeo" %}]</p>
+                      {% elif conv.last_message_text == 'file' %}
+                        <p class="text-sm text-gray-500">[{% trans "arquivo" %}]</p>
+                      {% else %}
+                        <p class="text-sm text-gray-500">{{ conv.last_message_text|truncatechars:50 }}</p>
+                      {% endif %}
                     {% endif %}
                   </div>
                 </div>
