@@ -164,7 +164,7 @@ def test_admin_excludes_deleted_by_default(client, admin_user):
 
 
 @pytest.mark.django_db
-def test_historico_view_access(client, admin_user, nucleado_user):
+def test_historico_view_permissions(client, admin_user, nucleado_user, gerente_user):
     empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
     EmpresaChangeLog.objects.create(
         empresa=empresa,
@@ -176,8 +176,26 @@ def test_historico_view_access(client, admin_user, nucleado_user):
     url = reverse("empresas:historico", args=[empresa.id])
     client.force_login(nucleado_user)
     resp = client.get(url)
+    assert resp.status_code == 200
+    assert "nome" in resp.content.decode()
+    client.force_login(gerente_user)
+    resp = client.get(url)
     assert resp.status_code == 403
     client.force_login(admin_user)
     resp = client.get(url)
     assert resp.status_code == 200
     assert "nome" in resp.content.decode()
+@pytest.mark.django_db
+def test_historico_link_visibility(client, admin_user, nucleado_user, gerente_user):
+    empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
+    url = reverse("empresas:detail", args=[empresa.id])
+    client.force_login(nucleado_user)
+    resp = client.get(url)
+    assert "Histórico" in resp.content.decode()
+    client.force_login(admin_user)
+    resp = client.get(url)
+    assert "Histórico" in resp.content.decode()
+    client.force_login(gerente_user)
+    resp = client.get(url)
+    assert "Histórico" not in resp.content.decode()
+

@@ -111,7 +111,7 @@
 
   <div class="flex justify-end gap-3 mt-8">
     <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
-    {% if request.user.is_staff %}
+    {% if request.user == empresa.usuario or request.user.is_staff %}
     <a href="{% url 'empresas:historico' empresa.id %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Histórico" %}</a>
     {% endif %}
     {% translate "Favoritar" as txt_favoritar %}
