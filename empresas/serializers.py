@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.db import IntegrityError
 from rest_framework import serializers
 from validate_docbr import CNPJ
 
@@ -136,6 +137,21 @@ class ContatoEmpresaSerializer(serializers.ModelSerializer):
             if qs.exists():
                 raise serializers.ValidationError({"principal": "Já existe um contato principal para esta empresa."})
         return attrs
+
+    def create(self, validated_data):
+        empresa = self.context.get("empresa")
+        if empresa:
+            validated_data["empresa"] = empresa
+        try:
+            return super().create(validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError({"principal": "Já existe um contato principal para esta empresa."})
+
+    def update(self, instance, validated_data):
+        try:
+            return super().update(instance, validated_data)
+        except IntegrityError:
+            raise serializers.ValidationError({"principal": "Já existe um contato principal para esta empresa."})
 
 
 class AvaliacaoEmpresaSerializer(serializers.ModelSerializer):

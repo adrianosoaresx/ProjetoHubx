@@ -5,7 +5,7 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from validate_docbr import CNPJ
 
 from core.models import SoftDeleteManager, SoftDeleteModel, TimeStampedModel
@@ -119,6 +119,13 @@ class ContatoEmpresa(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         unique_together = ("empresa", "email", "deleted")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["empresa"],
+                condition=Q(principal=True, deleted=False),
+                name="unique_principal_contatoempresa",
+            )
+        ]
         verbose_name = "Contato da Empresa"
         verbose_name_plural = "Contatos das Empresas"
 
