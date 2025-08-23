@@ -49,6 +49,15 @@ Revoga o token antigo e retorna um novo valor.
 - Revogue tokens comprometidos imediatamente.
 - A validade máxima recomendada é de 1 ano.
 
+## Webhooks
+
+Quando `TOKENS_WEBHOOK_URL` está configurado, a aplicação envia notificações HTTP:
+
+- `created`: `{ "event": "created", "id": "<token-id>", "token": "<token-hash>" }`
+- `revoked`: `{ "event": "revoked", "id": "<token-id>" }`
+
+O campo `token` contém o hash SHA-256 do valor do token, nunca o valor bruto.
+
 ## Tarefas periódicas
 
 O Celery Beat executa diariamente duas tarefas de manutenção:

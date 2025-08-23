@@ -43,7 +43,7 @@ def test_generate_token_triggers_webhook(monkeypatch):
     assert json.loads(calls["data"].decode()) == {
         "event": "created",
         "id": str(token.id),
-        "token": raw,
+        "token": token_hash,
     }
 
     expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()

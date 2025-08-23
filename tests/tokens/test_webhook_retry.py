@@ -1,6 +1,7 @@
 import uuid
 from types import SimpleNamespace
 
+import hashlib
 import pytest
 from django.test import override_settings
 import requests
@@ -28,7 +29,8 @@ def test_enqueue_webhook_task(monkeypatch):
     token = SimpleNamespace(id=uuid.uuid4())
     services.token_created(token, "raw")
 
-    assert queued == [{"event": "created", "id": str(token.id), "token": "raw"}]
+    expected = hashlib.sha256(b"raw").hexdigest()
+    assert queued == [{"event": "created", "id": str(token.id), "token": expected}]
 
 
 @override_settings(TOKENS_WEBHOOK_URL="http://example.com")
