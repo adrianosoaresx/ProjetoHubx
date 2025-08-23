@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import cache_page
+from django_ratelimit.decorators import ratelimit
 
 from .cache_utils import (
     CATEGORIAS_LIST_KEY_PREFIX,
@@ -581,6 +582,10 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
         )
 
 
+@method_decorator(
+    ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
+    name="dispatch",
+)
 class InteracaoView(LoginRequiredMixin, View):
     def post(self, request, content_type_id, object_id, acao):
         content_type = get_object_or_404(ContentType, id=content_type_id)
@@ -603,6 +608,10 @@ class InteracaoView(LoginRequiredMixin, View):
         return JsonResponse(data)
 
 
+@method_decorator(
+    ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
+    name="dispatch",
+)
 class TopicoMarkResolvedView(LoginRequiredMixin, View):
     def post(self, request, categoria_slug, topico_slug):
         categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
