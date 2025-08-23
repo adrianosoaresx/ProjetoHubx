@@ -186,7 +186,11 @@ class NucleoViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def meus(self, request):
-        qs = self.get_queryset().filter(participacoes__user=request.user, participacoes__status="ativo")
+        qs = self.get_queryset().filter(
+            participacoes__user=request.user,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        )
         qs = qs.distinct()
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page, many=True)
