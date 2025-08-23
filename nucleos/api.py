@@ -160,8 +160,9 @@ class NucleoViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(organizacao_id=org)
         page_number = request.query_params.get("page", "1")
         page_size = request.query_params.get("page_size", str(self.pagination_class.page_size))
+        search = request.query_params.get("search")
         version = get_cache_version(f"nucleos_list_{org}")
-        cache_key = f"nucleos_list_{org}_v{version}_{page_number}_{page_size}"
+        cache_key = f"nucleos_list_{org}_v{version}_{page_number}_{page_size}_{search or ''}"
         data = cache.get(cache_key)
         if data is not None:
             resp = Response(data)
