@@ -690,7 +690,22 @@ class MaterialDivulgacaoEventoCreateView(LoginRequiredMixin, CreateView):
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = self.request.user
+        if user.user_type != UserType.ROOT:
+            form.fields["evento"].queryset = Evento.objects.filter(
+                Q(organizacao=user.organizacao)
+                | Q(nucleo__in=user.nucleos.values_list("id", flat=True))
+            )
+        return form
+
     def form_valid(self, form):
+        evento = form.cleaned_data["evento"]
+        user = self.request.user
+        if user.user_type != UserType.ROOT and evento.organizacao != user.organizacao:
+            form.add_error("evento", _("Evento de outra organização"))
+            return self.form_invalid(form)
         response = super().form_valid(form)
         EventoLog.objects.create(
             evento=self.object.evento,
