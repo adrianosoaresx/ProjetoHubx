@@ -6,11 +6,12 @@ from datetime import timedelta
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import ApiToken, ApiTokenLog
-from .serializers import ApiTokenSerializer
+from .models import ApiToken, ApiTokenIp, ApiTokenLog
+from .serializers import ApiTokenIpSerializer, ApiTokenSerializer
 from .services import generate_token, list_tokens, revoke_token, rotate_token
 from .metrics import tokens_api_latency_seconds
 from .utils import get_client_ip
@@ -100,3 +101,30 @@ class ApiTokenViewSet(viewsets.ViewSet):
             data["token"] = raw_token
             return Response(data, status=status.HTTP_201_CREATED)
 
+
+class ApiTokenIpViewSet(viewsets.ModelViewSet):
+    queryset = ApiTokenIp.objects.all()
+    serializer_class = ApiTokenIpSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        token_id = self.request.query_params.get("token")
+        if token_id:
+            qs = qs.filter(token_id=token_id)
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(token__user=self.request.user)
+
+    def perform_create(self, serializer):
+        token = serializer.validated_data["token"]
+        if not self.request.user.is_superuser and token.user != self.request.user:
+            raise NotFound()
+        serializer.save()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not request.user.is_superuser and instance.token.user != request.user:
+            raise NotFound()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
