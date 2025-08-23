@@ -21,6 +21,12 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
+from .cache_utils import (
+    CATEGORIAS_LIST_KEY_PREFIX,
+    TOPICOS_LIST_KEY_PREFIX,
+    categorias_list_cache_key,
+    topicos_list_cache_key,
+)
 from .models import (
     CategoriaDiscussao,
     Denuncia,
@@ -47,6 +53,7 @@ from .tasks import (
 )
 
 
+@method_decorator(cache_page(60, key_prefix=CATEGORIAS_LIST_KEY_PREFIX), name="list")
 class CategoriaDiscussaoViewSet(viewsets.ModelViewSet):
     queryset = CategoriaDiscussao.objects.all().order_by("nome")
     serializer_class = CategoriaDiscussaoSerializer
@@ -65,6 +72,18 @@ class CategoriaDiscussaoViewSet(viewsets.ModelViewSet):
             qs = qs.filter(evento_id=evento)
         return qs
 
+    def perform_create(self, serializer):
+        serializer.save()
+        cache.delete(categorias_list_cache_key())
+
+    def perform_update(self, serializer):
+        serializer.save()
+        cache.delete(categorias_list_cache_key())
+
+    def perform_destroy(self, instance):  # type: ignore[override]
+        super().perform_destroy(instance)
+        cache.delete(categorias_list_cache_key())
+
 
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all().order_by("nome")
@@ -73,7 +92,7 @@ class TagViewSet(viewsets.ModelViewSet):
     lookup_field = "slug"
 
 
-@method_decorator(cache_page(60), name="list")
+@method_decorator(cache_page(60, key_prefix=TOPICOS_LIST_KEY_PREFIX), name="list")
 class TopicoViewSet(viewsets.ModelViewSet):
     queryset = (
         TopicoDiscussao.objects.select_related("categoria", "autor", "melhor_resposta")
@@ -127,13 +146,15 @@ class TopicoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(autor=self.request.user)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
+        cache.delete(topicos_list_cache_key(serializer.instance.categoria.slug))
 
     def perform_update(self, serializer):
         if not self._can_edit(serializer.instance):
             raise PermissionDenied("Prazo de edição expirado.")
         serializer.save()
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
+        cache.delete(topicos_list_cache_key(serializer.instance.categoria.slug))
 
     def perform_destroy(self, instance):  # type: ignore[override]
         if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
@@ -142,7 +163,8 @@ class TopicoViewSet(viewsets.ModelViewSet):
         }:
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
+        cache.delete(topicos_list_cache_key(instance.categoria.slug))
 
     def _can_edit(self, obj: TopicoDiscussao) -> bool:
         if timezone.now() - obj.created_at > timedelta(minutes=15):
@@ -165,7 +187,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
         notificar_melhor_resposta.delay(resposta.id)
         if not was_resolved:
             notificar_topico_resolvido.delay(topico.id)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(topico.categoria.slug))
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -181,7 +203,7 @@ class TopicoViewSet(viewsets.ModelViewSet):
             topico.melhor_resposta = None
             topico.resolvido = False
             topico.save(update_fields=["melhor_resposta", "resolvido"])
-        cache.clear()
+        cache.delete(topicos_list_cache_key(topico.categoria.slug))
         serializer = self.get_serializer(topico)
         return Response(serializer.data)
 
@@ -254,13 +276,13 @@ class RespostaViewSet(viewsets.ModelViewSet):
             raise ValidationError(exc.messages)
         serializer.instance = resposta
         notificar_nova_resposta.delay(resposta.id)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(resposta.topico.categoria.slug))
 
     def perform_update(self, serializer):
         if not self._can_edit(serializer.instance):
             raise PermissionDenied("Prazo de edição expirado.")
         serializer.save()
-        cache.clear()
+        cache.delete(topicos_list_cache_key(serializer.instance.topico.categoria.slug))
 
     def perform_destroy(self, instance):  # type: ignore[override]
         if timezone.now() - instance.created_at > timedelta(minutes=15) and self.request.user.get_tipo_usuario not in {
@@ -269,7 +291,7 @@ class RespostaViewSet(viewsets.ModelViewSet):
         }:
             raise PermissionDenied("Prazo de exclusão expirado.")
         super().perform_destroy(instance)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(instance.topico.categoria.slug))
 
     def _can_edit(self, obj: RespostaDiscussao) -> bool:
         if timezone.now() - obj.created_at > timedelta(minutes=15):
@@ -303,7 +325,14 @@ class VotoDiscussaoViewSet(viewsets.ViewSet):
             else:
                 interacao.valor = serializer.validated_data["valor"]
                 interacao.save(update_fields=["valor"])
-        cache.clear()
+        if isinstance(obj, TopicoDiscussao):
+            slug = obj.categoria.slug
+        elif isinstance(obj, RespostaDiscussao):
+            slug = obj.topico.categoria.slug
+        else:
+            slug = None
+        if slug:
+            cache.delete(topicos_list_cache_key(slug))
         return Response({"score": obj.score, "num_votos": obj.num_votos})
 
 

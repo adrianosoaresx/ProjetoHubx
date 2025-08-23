@@ -18,6 +18,13 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy
 from django.views.decorators.cache import cache_page
+
+from .cache_utils import (
+    CATEGORIAS_LIST_KEY_PREFIX,
+    TOPICOS_LIST_KEY_PREFIX,
+    categorias_list_cache_key,
+    topicos_list_cache_key,
+)
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -57,7 +64,7 @@ from .tasks import (
 )
 
 
-@method_decorator(cache_page(60), name="dispatch")
+@method_decorator(cache_page(60, key_prefix=CATEGORIAS_LIST_KEY_PREFIX), name="dispatch")
 class CategoriaListView(LoginRequiredMixin, ListView):
     model = CategoriaDiscussao
     template_name = "discussao/categorias.html"
@@ -129,7 +136,7 @@ class CategoriaCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
         return response
 
     def get_success_url(self):
@@ -151,7 +158,7 @@ class CategoriaUpdateView(AdminRequiredMixin, LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
         return response
 
     def get_success_url(self):
@@ -172,7 +179,7 @@ class CategoriaDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         response = super().delete(request, *args, **kwargs)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
         return response
 
     def get_success_url(self):
@@ -210,7 +217,7 @@ class TagDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     slug_url_kwarg = "slug"
 
 
-@method_decorator(cache_page(60), name="dispatch")
+@method_decorator(cache_page(60, key_prefix=TOPICOS_LIST_KEY_PREFIX), name="dispatch")
 class TopicoListView(LoginRequiredMixin, ListView):
     model = TopicoDiscussao
     template_name = "discussao/topicos_list.html"
@@ -391,7 +398,8 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
             form.instance.evento = self.categoria.evento
         response = super().form_valid(form)
         form.instance.tags.set(form.cleaned_data["tags"])
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
+        cache.delete(topicos_list_cache_key(self.categoria.slug))
         messages.success(self.request, gettext_lazy("Tópico criado com sucesso"))
         return response
 
@@ -422,7 +430,7 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        cache.clear()
+        cache.delete(topicos_list_cache_key(self.categoria.slug))
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.object.slug])
 
 
@@ -447,7 +455,8 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):  # type: ignore[override]
         response = super().delete(request, *args, **kwargs)
-        cache.clear()
+        cache.delete(categorias_list_cache_key())
+        cache.delete(topicos_list_cache_key(self.categoria.slug))
         if request.headers.get("Hx-Request"):
             return HttpResponse("")
         messages.success(request, gettext_lazy("Tópico removido"))
@@ -483,7 +492,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
             arquivo=dados.get("arquivo"),
         )
         notificar_nova_resposta.delay(self.object.id)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(self.categoria.slug))
         if self.request.headers.get("Hx-Request"):
             context = {
                 "comentario": self.object,
@@ -537,7 +546,7 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         super().delete(request, *args, **kwargs)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(self.topico.categoria.slug))
         if request.headers.get("Hx-Request"):
             return HttpResponse("")
         messages.success(request, gettext_lazy("Coment\u00e1rio removido"))
@@ -578,7 +587,7 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
         form.instance.editado = True
         form.instance.editado_em = timezone.now()
         response = super().form_valid(form)
-        cache.clear()
+        cache.delete(topicos_list_cache_key(self.topico.categoria.slug))
         return response
 
     def get_success_url(self):
@@ -629,20 +638,20 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
             notificar_melhor_resposta.delay(resposta.id)
             if not antes_resolvido:
                 notificar_topico_resolvido.delay(topico.id)
-            cache.clear()
+            cache.delete(topicos_list_cache_key(categoria.slug))
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         elif topico.resolvido:
             topico.melhor_resposta = None
             topico.resolvido = False
             topico.save(update_fields=["melhor_resposta", "resolvido"])
-            cache.clear()
+            cache.delete(topicos_list_cache_key(categoria.slug))
             messages.success(request, gettext_lazy("Resolução removida"))
         else:
             topico.resolvido = True
             topico.save(update_fields=["resolvido"])
             if not antes_resolvido:
                 notificar_topico_resolvido.delay(topico.id)
-            cache.clear()
+            cache.delete(topicos_list_cache_key(categoria.slug))
             messages.success(request, gettext_lazy("Tópico marcado como resolvido"))
         return redirect(
             "discussao:topico_detalhe",
@@ -664,7 +673,7 @@ class TopicoToggleFechadoView(LoginRequiredMixin, View):
                 return HttpResponseForbidden()
             topico.fechado = True
         topico.save(update_fields=["fechado"])
-        cache.clear()
+        cache.delete(topicos_list_cache_key(categoria.slug))
         return redirect(
             "discussao:topico_detalhe",
             categoria_slug=categoria.slug,
