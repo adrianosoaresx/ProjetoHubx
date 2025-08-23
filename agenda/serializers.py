@@ -226,6 +226,15 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
             "updated_at",
         )
 
+    def validate_acordo(self, arquivo):
+        if not arquivo:
+            return arquivo
+        try:
+            validate_uploaded_file(arquivo)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return arquivo
+
     def validate_cnpj(self, value: str) -> str:
         if not CNPJ().validate(value):
             raise serializers.ValidationError("CNPJ inválido")

@@ -186,3 +186,10 @@ class ParceriaEventoForm(forms.ModelForm):
             "descricao",
             "acordo",
         ]
+
+    def clean_acordo(self):
+        arquivo = self.cleaned_data.get("acordo")
+        if not arquivo:
+            return arquivo
+        validate_uploaded_file(arquivo)
+        return arquivo
