@@ -55,6 +55,8 @@ python manage.py migrate
 ```
 
 Essa etapa garante que bibliotecas como Pillow e clamd estejam disponíveis no ambiente virtual.
+O pacote `twilio` também é instalado para envios de WhatsApp; defina as variáveis
+`TWILIO_SID`, `TWILIO_TOKEN` e `TWILIO_WHATSAPP_FROM` para habilitá-lo.
 
 Além disso, o Hubx depende do utilitário de linha de comando `ffmpeg` para gerar previews de vídeos.
 Instale-o no sistema operacional (ex.: `sudo apt-get install ffmpeg` no Debian/Ubuntu ou
