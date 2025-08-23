@@ -59,6 +59,13 @@ Essa etapa garante que bibliotecas como Pillow e clamd estejam disponíveis no a
 O pacote `twilio` também é instalado para envios de WhatsApp; defina as variáveis
 `TWILIO_SID`, `TWILIO_TOKEN` e `TWILIO_WHATSAPP_FROM` para habilitá-lo.
 
+Para notificações push, defina também:
+
+- `ONESIGNAL_APP_ID` e `ONESIGNAL_API_KEY` para o cliente OneSignal (`onesignal_sdk`).
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_CLAIMS_SUBJECT` usados pelo `pywebpush`.
+
+Sem essas variáveis, os serviços de push permanecem indisponíveis.
+
 Além disso, o Hubx depende do utilitário de linha de comando `ffmpeg` para gerar previews de vídeos.
 Instale-o no sistema operacional (ex.: `sudo apt-get install ffmpeg` no Debian/Ubuntu ou
 `brew install ffmpeg` no macOS) antes de enviar vídeos.
