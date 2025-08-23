@@ -68,16 +68,16 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
         },
         escopo="organizacao",
     )
-    from dashboard import views, constants
+    from dashboard import constants, services as dash_services
 
     monkeypatch.setattr(constants, "METRICAS_INFO", constants.METRICAS_INFO.copy())
-    monkeypatch.setattr(views, "METRICAS_INFO", constants.METRICAS_INFO)
+    monkeypatch.setattr(dash_services, "METRICAS_INFO", constants.METRICAS_INFO)
     metrics = DashboardMetricsService.get_metrics(
         admin_user, metricas=[metric.code], organizacao_id=admin_user.organizacao_id
     )
     assert metrics[metric.code]["total"] == 1
-    assert views.METRICAS_INFO[metric.code]["label"] == "Total Posts"
-    assert views.METRICAS_INFO[metric.code]["icon"] == "fa-star"
+    assert constants.METRICAS_INFO[metric.code]["label"] == "Total Posts"
+    assert constants.METRICAS_INFO[metric.code]["icon"] == "fa-star"
 
 
 def test_register_source_and_execute(admin_user, monkeypatch):
@@ -86,12 +86,14 @@ def test_register_source_and_execute(admin_user, monkeypatch):
         "SOURCES",
         DashboardCustomMetricService.SOURCES.copy(),
     )
-    DashboardCustomMetricService.register_source("runtime_posts", Post, {"id"})
+    DashboardCustomMetricService.register_source(
+        "runtime_posts", Post, {"id", "organizacao"}
+    )
     PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
     query = {
         "source": "runtime_posts",
         "aggregation": "count",
-        "filters": {"organizacao_id": admin_user.organizacao_id},
+        "filters": {"organizacao": admin_user.organizacao_id},
     }
     assert (
         DashboardCustomMetricService.execute(query) == 1

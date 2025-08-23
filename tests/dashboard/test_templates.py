@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 
-from dashboard.views import METRICAS_INFO
+from dashboard.constants import METRICAS_INFO
 from dashboard.services import DashboardMetricsService
 
 pytestmark = pytest.mark.django_db
@@ -16,6 +16,15 @@ def test_metricas_info_used_in_context(client, admin_user):
 
 def test_error_message_rendered(client, admin_user, monkeypatch):
     client.force_login(admin_user)
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+    from dashboard.models import DashboardConfig
+
+    ct = ContentType.objects.get_for_model(DashboardConfig)
+    perm, _ = Permission.objects.get_or_create(
+        codename="view_metrics", name="Can view metrics", content_type=ct
+    )
+    admin_user.user_permissions.add(perm)
 
     def boom(user, **kwargs):
         raise ValueError("boom")
