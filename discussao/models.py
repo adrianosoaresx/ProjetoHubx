@@ -8,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
 from django.db import connection, models
+from django.db.models import F
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -178,8 +179,9 @@ class TopicoDiscussao(TimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Tópicos de Discussão"
 
     def incrementar_visualizacao(self):
-        self.numero_visualizacoes += 1
-        self.save()
+        TopicoDiscussao.objects.filter(pk=self.pk).update(
+            numero_visualizacoes=F("numero_visualizacoes") + 1
+        )
 
     @property
     def score(self) -> int:

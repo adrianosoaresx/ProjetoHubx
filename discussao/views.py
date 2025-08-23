@@ -312,6 +312,7 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.incrementar_visualizacao()
+        self.object.refresh_from_db(fields=["numero_visualizacoes"])
         context = self.get_context_data(object=self.object)
         context["resposta_form"] = RespostaDiscussaoForm()
         if request.headers.get("Hx-Request"):
