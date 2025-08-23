@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from collections import defaultdict
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
@@ -25,6 +26,10 @@ from .services import (
     sinalizar_mensagem,
 )
 
+MESSAGE_WINDOW_SECONDS = 5
+MESSAGE_RATE_LIMIT = 5
+_USER_MESSAGE_TIMES: dict[int, list[float]] = defaultdict(list)
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,9 +51,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
         if channel.contexto_tipo == "nucleo":
-            participa, info, suspenso = await database_sync_to_async(user_belongs_to_nucleo)(
-                user, channel.contexto_id
-            )
+            participa, info, suspenso = await database_sync_to_async(user_belongs_to_nucleo)(user, channel.contexto_id)
             if not participa or not info.endswith("ativo") or suspenso:
                 await self.close()
                 return
@@ -76,6 +79,24 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message_type = data.get("tipo")
         user = self.scope["user"]
         if message_type in {"text", "image", "video", "file"}:
+            now = time.monotonic()
+            timestamps = _USER_MESSAGE_TIMES[user.id]
+            window_start = now - MESSAGE_WINDOW_SECONDS
+            while timestamps and timestamps[0] <= window_start:
+                timestamps.pop(0)
+            if len(timestamps) >= MESSAGE_RATE_LIMIT:
+                wait_time = MESSAGE_WINDOW_SECONDS - (now - timestamps[0])
+                if wait_time > 0:
+                    await asyncio.sleep(wait_time)
+                now = time.monotonic()
+                window_start = now - MESSAGE_WINDOW_SECONDS
+                while timestamps and timestamps[0] <= window_start:
+                    timestamps.pop(0)
+                if len(timestamps) >= MESSAGE_RATE_LIMIT:
+                    await self.close(code=4008)
+                    return
+            timestamps.append(now)
+            # Limite de mensagens aplicado antes da detecção de spam
             conteudo = data.get("conteudo", "")
             arquivo = None
             attachment_id = data.get("attachment_id")
@@ -83,17 +104,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             reply_to = None
             if reply_to_id:
                 try:
-                    reply_to = await database_sync_to_async(ChatMessage.objects.get)(
-                        pk=reply_to_id
-                    )
+                    reply_to = await database_sync_to_async(ChatMessage.objects.get)(pk=reply_to_id)
                 except ChatMessage.DoesNotExist:
                     reply_to = None
             if message_type in {"image", "video", "file"}:
                 if not attachment_id:
                     return
-                exists = await database_sync_to_async(
-                    ChatAttachment.objects.filter(id=attachment_id).exists
-                )()
+                exists = await database_sync_to_async(ChatAttachment.objects.filter(id=attachment_id).exists)()
                 if not exists:
                     return
             start = time.monotonic()
@@ -149,9 +166,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 payload["conteudo"] = msg.conteudo
             await self.channel_layer.group_send(self.group_name, payload)
-            asyncio.create_task(
-                database_sync_to_async(notify_users)(self.channel, msg)
-            )
+            asyncio.create_task(database_sync_to_async(notify_users)(self.channel, msg))
             duration = time.monotonic() - start
             chat_message_latency_seconds.observe(duration)
             logger.info("chat message %s sent in %.4fs", msg.id, duration)
@@ -169,11 +184,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             else:
                 await database_sync_to_async(adicionar_reacao)(msg, user, emoji)
             user_emojis = await database_sync_to_async(
-                lambda: list(
-                    ChatMessageReaction.objects.filter(message=msg, user=user).values_list(
-                        "emoji", flat=True
-                    )
-                )
+                lambda: list(ChatMessageReaction.objects.filter(message=msg, user=user).values_list("emoji", flat=True))
             )()
             payload = {
                 "type": "chat.message",
