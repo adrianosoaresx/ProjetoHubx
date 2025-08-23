@@ -234,7 +234,8 @@ class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView
     paginate_by = 10
 
     def test_func(self):
-        return self.request.user.is_staff
+        empresa = self.get_empresa()
+        return self.request.user == empresa.usuario or self.request.user.is_staff
 
     def get_empresa(self):
         if not hasattr(self, "_empresa"):
