@@ -16,6 +16,20 @@ class PostFormTest(TestCase):
         org = OrganizacaoFactory()
         self.user = UserFactory(organizacao=org)
 
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+    @patch("feed.services._upload_media", return_value="ok")
+    @patch("feed.tasks.upload_media.apply_async")
+    def test_upload_uses_direct_service_when_eager(self, mock_apply, mock_upload):
+        video = SimpleUploadedFile("v.mp4", b"00", content_type="video/mp4")
+        form = PostForm(
+            data={"tipo_feed": "global", "organizacao": str(self.user.organizacao.id)},
+            files={"video": video},
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid())
+        mock_upload.assert_called_once()
+        mock_apply.assert_not_called()
+
     @patch("feed.services.shutil.which", return_value=None)
     def test_form_video_valid_without_preview(self, mock_which):
         video = SimpleUploadedFile("v.mp4", b"00", content_type="video/mp4")

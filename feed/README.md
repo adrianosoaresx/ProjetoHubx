@@ -28,7 +28,12 @@ curl /api/feed/posts/?tags=django&date_from=2025-01-01
 ```
 
 Cada post pode conter **apenas um** tipo de mídia (imagem, vídeo ou PDF).
-Uploads são enviados ao S3 com tentativas de reenvio em caso de falha.
+Uploads são enviados ao S3 com tentativas de reenvio em caso de falha. Em
+ambientes de testes `CELERY_TASK_ALWAYS_EAGER=True` o envio ocorre
+sincronamente chamando diretamente o serviço interno. Em produção a
+operação é enfileirada via Celery e uma chave temporária é retornada
+imediatamente; o processamento assíncrono atualiza o registro quando
+finalizado.
 
 Posts contendo palavras proibidas são marcados para moderação e só aparecem
 após aprovação.
