@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from typing import Any
+from datetime import timedelta
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from accounts.models import User
+from accounts.models import User, UserType
 
 from ..models import (
     CategoriaDiscussao,
@@ -105,4 +107,27 @@ def denunciar_conteudo(
         object_id=content_object.pk,
         motivo=motivo,
     )
+
+
+def verificar_prazo_edicao(
+    obj: models.Model,
+    user: User,
+    *,
+    tipos_extras: set[UserType] | None = None,
+    limite_minutos: int = 15,
+) -> bool:
+    """Retorna se ``user`` pode editar ou excluir ``obj``.
+
+    Usuários administradores e root podem sempre editar. Outros usuários só
+    podem editar se forem autores e estiverem dentro do prazo definido. Tipos
+    adicionais podem ser informados através de ``tipos_extras``.
+    """
+
+    tipos_extras = tipos_extras or set()
+    tipo_usuario = getattr(user, "user_type", None) or getattr(user, "get_tipo_usuario", None)
+    if tipo_usuario in {UserType.ADMIN, UserType.ROOT}:
+        return True
+    if obj.autor != user and tipo_usuario not in tipos_extras:
+        return False
+    return timezone.now() - obj.created_at <= timedelta(minutes=limite_minutos)
 
