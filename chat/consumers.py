@@ -109,7 +109,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
             if message_type in {"image", "video", "file"}:
                 if not attachment_id:
                     return
-                exists = await database_sync_to_async(ChatAttachment.objects.filter(id=attachment_id).exists)()
+                exists = await database_sync_to_async(
+                    ChatAttachment.objects.filter(
+                        id=attachment_id, usuario=user, mensagem__isnull=True
+                    ).exists
+                )()
                 if not exists:
                     return
             start = time.monotonic()
