@@ -53,7 +53,10 @@
                   <button type="submit" class="text-sm text-neutral-600 hover:underline">{% trans 'Ativar' %}</button>
                 </form>
               {% endif %}
-              <a href="{% url 'notificacoes:template_delete' tpl.codigo %}" class="text-sm text-red-600 hover:underline">{% trans 'Excluir' %}</a>
+              <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-sm text-red-600 hover:underline">{% trans 'Excluir' %}</button>
+              </form>
             </div>
           </td>
         </tr>

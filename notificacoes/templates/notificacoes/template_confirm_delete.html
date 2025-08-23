@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans 'Confirmar exclusão' %} | HubX{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+  <h1 class="text-2xl font-bold mb-4">{% trans 'Confirmar exclusão' %}</h1>
+  <p class="mb-6">
+    {% blocktrans with codigo=template.codigo %}Tem certeza que deseja excluir o template {{ codigo }}?{% endblocktrans %}
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">{% trans 'Excluir' %}</button>
+    <a href="{% url 'notificacoes:templates_list' %}" class="ml-4 text-neutral-600 hover:underline">{% trans 'Cancelar' %}</a>
+  </form>
+</div>
+{% endblock %}

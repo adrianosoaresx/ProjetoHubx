@@ -30,13 +30,28 @@ def test_toggle_template(client):
     assert template.ativo is True
 
 
+
+def test_delete_template_requires_post(client):
+    user = UserFactory()
+    perm = Permission.objects.get(codename="delete_notificationtemplate")
+
 def test_edit_template_codigo_unchanged(client):
     user = UserFactory()
     perm = Permission.objects.get(codename="change_notificationtemplate")
+
     user.user_permissions.add(perm)
     client.force_login(user)
 
     template = NotificationTemplate.objects.create(
+
+        codigo="t2", assunto="a", corpo="b", canal="email", ativo=True
+    )
+
+    url = reverse("notificacoes:template_delete", args=[template.codigo])
+    response = client.get(url)
+    assert response.status_code == 200
+    assert NotificationTemplate.objects.filter(pk=template.pk).exists()
+
         codigo="orig", assunto="a", corpo="b", canal="email", ativo=True
     )
 
@@ -56,3 +71,4 @@ def test_edit_template_codigo_unchanged(client):
     template.refresh_from_db()
     assert template.codigo == "orig"
     assert template.assunto == "novo assunto"
+
