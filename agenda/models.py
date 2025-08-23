@@ -19,6 +19,7 @@ from django.core.validators import (
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db import transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -93,29 +94,42 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
         unique_together = ("user", "evento")
 
     def confirmar_inscricao(self) -> None:
-        if self.evento.participantes_maximo and self.evento.espera_habilitada:
-            confirmados = self.evento.inscricoes.filter(status="confirmada").count()
-            if confirmados >= self.evento.participantes_maximo:
-                self.status = "pendente"
-                ultimo = (
-                    self.evento.inscricoes.filter(posicao_espera__isnull=False)
-                    .aggregate(mx=models.Max("posicao_espera"))
-                    .get("mx")
-                    or 0
-                )
-                self.posicao_espera = ultimo + 1
-                self.save(update_fields=["status", "posicao_espera", "updated_at"])
-                return
-        self.status = "confirmada"
-        self.data_confirmacao = timezone.now()
-        if not self.qrcode_url:
-            self.gerar_qrcode()
-        self.save(update_fields=["status", "data_confirmacao", "qrcode_url", "updated_at"])
-        EventoLog.objects.create(
-            evento=self.evento,
-            usuario=self.user,
-            acao="inscricao_confirmada",
-        )
+        with transaction.atomic():
+            if self.evento.participantes_maximo and self.evento.espera_habilitada:
+                confirmados = self.evento.inscricoes.filter(status="confirmada").count()
+                if confirmados >= self.evento.participantes_maximo:
+                    pendentes = (
+                        self.evento.inscricoes.filter(status="pendente")
+                        .select_for_update()
+                    )
+                    ultimo = (
+                        pendentes.aggregate(mx=models.Max("posicao_espera"))
+                        .get("mx")
+                        or 0
+                    )
+                    self.status = "pendente"
+                    self.posicao_espera = ultimo + 1
+                    self.save(
+                        update_fields=["status", "posicao_espera", "updated_at"]
+                    )
+                    return
+            self.status = "confirmada"
+            self.data_confirmacao = timezone.now()
+            if not self.qrcode_url:
+                self.gerar_qrcode()
+            self.save(
+                update_fields=[
+                    "status",
+                    "data_confirmacao",
+                    "qrcode_url",
+                    "updated_at",
+                ]
+            )
+            EventoLog.objects.create(
+                evento=self.evento,
+                usuario=self.user,
+                acao="inscricao_confirmada",
+            )
 
     def cancelar_inscricao(self) -> None:
         if timezone.now() >= self.evento.data_inicio:
