@@ -6,6 +6,7 @@ from django.core.cache import cache
 from prometheus_client import Counter, Histogram
 from sentry_sdk import capture_exception
 from botocore.exceptions import ClientError
+import logging
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 from organizacoes.models import Organizacao
@@ -17,6 +18,9 @@ from django.utils import timezone
 from feed.application.plugins_loader import load_plugins_for
 
 from .models import FeedPluginConfig, Post
+
+
+logger = logging.getLogger(__name__)
 
 POSTS_CREATED = Counter("feed_posts_created_total", "Total de posts criados")
 NOTIFICATIONS_SENT = Counter(
@@ -128,7 +132,9 @@ def executar_plugins() -> None:
                 continue
             try:
                 plugin.render(user)
-            except Exception:  # pragma: no cover - melhor esforço
+            except Exception as exc:  # pragma: no cover - melhor esforço
+                logger.exception("Falha ao executar plugin %s", module_path)
+                capture_exception(exc)
                 continue
             config.last_run = now
             config.save(update_fields=["last_run"])
