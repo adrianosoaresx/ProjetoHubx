@@ -730,7 +730,7 @@ class MaterialDivulgacaoEventoUpdateView(
     template_name = "agenda/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
 
-    permission_required = "agenda.add_materialdivulgacaoevento"
+    permission_required = "agenda.change_materialdivulgacaoevento"
 
     def get_queryset(self):  # pragma: no cover - simples
         qs = MaterialDivulgacaoEvento.objects.all()
