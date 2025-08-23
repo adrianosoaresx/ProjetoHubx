@@ -29,3 +29,10 @@ operação.
 As cobranças mensais são geradas por uma tarefa agendada que cria os
 lançamentos financeiros correspondentes e notifica os usuários.
 
+## Views
+
+As views deste módulo estão organizadas em dois arquivos separados:
+`financeiro/views/api.py` contém as APIs utilizadas pelos clientes e
+`financeiro/views/pages.py` reúne as páginas HTML. Importações devem ser
+realizadas diretamente desses módulos.
+
