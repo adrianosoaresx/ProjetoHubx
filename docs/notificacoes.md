@@ -1,6 +1,8 @@
 # App de Notificações
 
 Este módulo centraliza o envio de mensagens via e-mail, push e WhatsApp. Todos os modelos usam chaves UUID e herdam `TimeStampedModel`.
+Para envio de WhatsApp é utilizada a API do Twilio; configure as variáveis
+`TWILIO_SID`, `TWILIO_TOKEN` e `TWILIO_WHATSAPP_FROM` e certifique-se de instalar o pacote.
 
 ## Modelos
 
