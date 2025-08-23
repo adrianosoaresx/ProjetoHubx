@@ -3,6 +3,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError
+from django.test import override_settings
 from django.utils.text import slugify
 
 from discussao.models import (
@@ -115,10 +116,9 @@ def test_resposta_model_valid_upload(topico, admin_user):
     resp.full_clean()
 
 
+@override_settings(DISCUSSAO_IMAGE_MAX_SIZE=1)
 def test_resposta_model_invalid_upload_size(topico, admin_user):
-    big = SimpleUploadedFile(
-        "a.png", b"x" * (5 * 1024 * 1024 + 1), content_type="image/png"
-    )
+    big = SimpleUploadedFile("a.png", b"xx", content_type="image/png")
     resp = RespostaDiscussao(topico=topico, autor=admin_user, conteudo="ok", arquivo=big)
     with pytest.raises(ValidationError):
         resp.full_clean()

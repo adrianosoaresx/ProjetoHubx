@@ -43,3 +43,14 @@ exclusão lógica através dos campos `deleted` e `deleted_at`.
 
 Moderadores podem sinalizar conteúdo impróprio e revisar no `DiscussionModerationLog`.
 
+## Configurações
+
+O envio de arquivos nas respostas pode ser ajustado via `settings.py`:
+
+- `DISCUSSAO_IMAGE_ALLOWED_EXTS`: extensões permitidas para imagens.
+- `DISCUSSAO_PDF_ALLOWED_EXTS`: extensões permitidas para PDFs.
+- `DISCUSSAO_IMAGE_MAX_SIZE`: tamanho máximo das imagens em bytes.
+- `DISCUSSAO_PDF_MAX_SIZE`: tamanho máximo dos PDFs em bytes.
+
+Por padrão, são aceitas imagens JPEG, PNG e GIF de até 5 MB e PDFs de até 10 MB.
+
