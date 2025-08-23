@@ -43,6 +43,9 @@ from .services import (
     generate_token,
     list_tokens,
     revoke_token,
+    invite_created,
+    invite_revoked,
+    invite_used,
 )
 from .utils import get_client_ip
 
@@ -89,6 +92,7 @@ def revogar_convite(request, token_id: int):
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
         tokens_invites_revoked_total.inc()
+        invite_revoked(token)
         messages.success(request, _("Convite revogado."))
     else:
         messages.info(request, _("Convite já estava revogado."))
@@ -284,6 +288,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
+            invite_created(token, codigo)
             token.codigo = codigo
 
             if request.headers.get("HX-Request") == "true":
@@ -332,6 +337,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
                 ip=ip,
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
+            invite_used(token)
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
             messages.success(request, _("Token validado"))
