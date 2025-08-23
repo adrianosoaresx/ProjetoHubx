@@ -10,7 +10,8 @@ from django.core.exceptions import ValidationError
 def validar_arquivo_discussao(arquivo) -> None:
     """Valida arquivos enviados nas respostas das discussões.
 
-    Aceita apenas imagens e PDFs dentro do limite de tamanho configurado.
+    Aceita apenas imagens e PDFs dentro dos limites configurados em
+    ``DISCUSSAO_IMAGE_MAX_SIZE`` e ``DISCUSSAO_PDF_MAX_SIZE``.
     """
     if not arquivo:
         return
@@ -18,13 +19,15 @@ def validar_arquivo_discussao(arquivo) -> None:
     size = getattr(arquivo, "size", 0)
     ext = Path(arquivo.name).suffix.lower()
 
-    image_exts = getattr(settings, "FEED_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif"])
-    pdf_exts = getattr(settings, "FEED_PDF_ALLOWED_EXTS", [".pdf"])
+    image_exts = getattr(
+        settings, "DISCUSSAO_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif"]
+    )
+    pdf_exts = getattr(settings, "DISCUSSAO_PDF_ALLOWED_EXTS", [".pdf"])
 
     if ext in image_exts and content_type.startswith("image/"):
-        max_size = getattr(settings, "FEED_IMAGE_MAX_SIZE", 5 * 1024 * 1024)
+        max_size = getattr(settings, "DISCUSSAO_IMAGE_MAX_SIZE", 5 * 1024 * 1024)
     elif ext in pdf_exts and content_type == "application/pdf":
-        max_size = getattr(settings, "FEED_PDF_MAX_SIZE", 10 * 1024 * 1024)
+        max_size = getattr(settings, "DISCUSSAO_PDF_MAX_SIZE", 10 * 1024 * 1024)
     else:
         raise ValidationError("Formato de arquivo não suportado")
 
