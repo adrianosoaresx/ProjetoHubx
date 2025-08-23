@@ -190,8 +190,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             tokens_validation_latency_seconds.observe(time.perf_counter() - start)
             return Response({"detail": _("Token expirado.")}, status=status.HTTP_409_CONFLICT)
 
-        token.ip_utilizado = ip
-        token.save(update_fields=["ip_utilizado"])
         TokenUsoLog.objects.create(
             token=token,
             usuario=request.user if request.user.is_authenticated else None,
