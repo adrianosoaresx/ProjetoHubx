@@ -11,6 +11,7 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -284,6 +285,9 @@ class RespostaViewSet(viewsets.ModelViewSet):
 class VotoDiscussaoViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(
+        ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True)
+    )
     def create(self, request):
         serializer = VotoDiscussaoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -316,6 +320,12 @@ class DenunciaViewSet(viewsets.ModelViewSet):
     queryset = Denuncia.objects.select_related("log").all()
     serializer_class = DenunciaSerializer
     permission_classes = [IsAuthenticated]
+
+    @method_decorator(
+        ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True)
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
     def get_queryset(self):  # pragma: no cover - simple filter
         qs = super().get_queryset()
