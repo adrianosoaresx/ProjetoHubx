@@ -86,7 +86,7 @@ class DashboardViewSet(viewsets.ViewSet):
                 )
             filters["metricas"] = metricas_list
         try:
-            data = DashboardMetricsService.get_metrics(
+            data, _ = DashboardMetricsService.get_metrics(
                 request.user, periodo, inicio_dt, fim_dt, escopo=escopo, **filters
             )
         except PermissionError:
@@ -171,7 +171,7 @@ class DashboardViewSet(viewsets.ViewSet):
             )
             return Response({"detail": "inicio deve ser menor ou igual a fim"}, status=400)
         try:
-            data = DashboardMetricsService.get_metrics(
+            data, _ = DashboardMetricsService.get_metrics(
                 request.user, periodo, inicio_dt, fim_dt, **filters
             )
         except PermissionError:
@@ -276,7 +276,9 @@ class DashboardViewSet(viewsets.ViewSet):
             nucleo_id = request.query_params.get("nucleo_id")
             if nucleo_id:
                 filters["nucleo_id"] = nucleo_id
-        atual = DashboardMetricsService.get_metrics(request.user, escopo=escopo, metricas=metricas, **filters)
+        atual, _ = DashboardMetricsService.get_metrics(
+            request.user, escopo=escopo, metricas=metricas, **filters
+        )
         media = DashboardService.medias_globais(metricas, por=escopo)
         return Response({"atual": atual, "media": media})
 

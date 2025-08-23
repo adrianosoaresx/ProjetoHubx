@@ -515,8 +515,8 @@ class DashboardMetricsService:
         fim: Optional[datetime] = None,
         escopo: str = "auto",
         **filters,
-    ) -> Dict[str, Dict[str, float]]:
-        """Return dashboard metrics, cached for 5 minutes."""
+    ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, str]]]:
+        """Return dashboard metrics and metadata, cached for 5 minutes."""
         valid_periodos = {"mensal", "trimestral", "semestral", "anual"}
         if periodo not in valid_periodos:
             raise ValueError("Período inválido")
@@ -797,11 +797,12 @@ class DashboardMetricsService:
             total = DashboardCustomMetricService.execute(metric.query_spec, **exec_params)
             metrics[metric.code] = {"total": total, "crescimento": 0.0}
 
+        metricas_info = METRICAS_INFO.copy()
         if custom_metrics_info:
-            METRICAS_INFO.update(custom_metrics_info)
+            metricas_info.update(custom_metrics_info)
 
-        cache.set(cache_key, metrics, 300)
-        return metrics
+        cache.set(cache_key, (metrics, metricas_info), 300)
+        return metrics, metricas_info
 
 
 def check_achievements(user) -> None:

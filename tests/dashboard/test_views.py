@@ -17,6 +17,7 @@ from core.permissions import (
 )
 from dashboard.models import DashboardConfig, DashboardFilter
 from dashboard.services import DashboardMetricsService
+from dashboard.constants import METRICAS_INFO
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from financeiro.models import CentroCusto, LancamentoFinanceiro
@@ -124,9 +125,7 @@ def test_base_view_accepts_params(monkeypatch, client, admin_user):
         assert escopo == "organizacao"
         assert filters["organizacao_id"] == str(admin_user.organizacao_id)
         assert filters["metricas"] == ["num_users"]
-        return {
-            "num_users": {"total": 1, "crescimento": 0.0},
-        }
+        return ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO)
 
     monkeypatch.setattr(DashboardMetricsService, "get_metrics", fake_metrics)
 
@@ -233,7 +232,7 @@ def test_export_view_csv(monkeypatch, client, admin_user):
     monkeypatch.setattr(
         DashboardMetricsService,
         "get_metrics",
-        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
     )
 
     resp = client.get(reverse("dashboard:export"), {"formato": "csv"})
@@ -250,7 +249,7 @@ def test_export_view_pdf(monkeypatch, client, admin_user):
     monkeypatch.setattr(
         DashboardMetricsService,
         "get_metrics",
-        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
     )
     monkeypatch.setattr("weasyprint.HTML.write_pdf", lambda self: b"pdf")
 
@@ -265,7 +264,7 @@ def test_export_view_xlsx(monkeypatch, client, admin_user):
     monkeypatch.setattr(
         DashboardMetricsService,
         "get_metrics",
-        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
     )
 
     resp = client.get(reverse("dashboard:export"), {"formato": "xlsx"})
@@ -286,7 +285,7 @@ def test_export_view_png(monkeypatch, client, admin_user, settings):
     monkeypatch.setattr(
         DashboardMetricsService,
         "get_metrics",
-        lambda *a, **kw: {"num_users": {"total": 1, "crescimento": 0.0}},
+        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
     )
 
     resp = client.get(reverse("dashboard:export"), {"formato": "png"})
