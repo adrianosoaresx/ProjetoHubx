@@ -288,6 +288,44 @@ def test_ignore_duplicate_lines(api_client, user, settings):
     assert log.erros
 
 
+def test_ignore_existing_entries(api_client, user, settings):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    auth(api_client, user)
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
+    conta = ContaAssociado.objects.create(user=user)
+    data_lanc = timezone.now()
+    LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        conta_associado=conta,
+        tipo="aporte_interno",
+        valor=Decimal("10"),
+        data_lancamento=data_lanc,
+        data_vencimento=data_lanc,
+        status=LancamentoFinanceiro.Status.PAGO,
+    )
+    row = [
+        str(centro.id),
+        str(conta.id),
+        "aporte_interno",
+        "10",
+        data_lanc.isoformat(),
+        data_lanc.isoformat(),
+        "pago",
+    ]
+    csv_bytes = make_csv([row])
+    file = SimpleUploadedFile("data.csv", csv_bytes, content_type="text/csv")
+    url = reverse("financeiro_api:financeiro-importar-pagamentos")
+    resp = api_client.post(url, {"file": file}, format="multipart")
+    token = resp.data["id"]
+    importacao_id = resp.data["importacao_id"]
+    confirm_url = reverse("financeiro_api:financeiro-confirmar-importacao")
+    api_client.post(confirm_url, {"id": token, "importacao_id": importacao_id})
+    assert LancamentoFinanceiro.objects.count() == 1
+    log = ImportacaoPagamentos.objects.latest("data_importacao")
+    assert log.total_processado == 0
+    assert log.erros
+
+
 def test_negative_value_invalid(api_client, user):
     auth(api_client, user)
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao")

@@ -9,7 +9,7 @@ from typing import Any, Iterable
 from dateutil.parser import parse
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -141,11 +141,7 @@ class ImportadorPagamentos:
         errors: list[str] = []
         total = 0
         batch: list[dict[str, Any]] = []
-        existing = set(
-            LancamentoFinanceiro.objects.values_list(
-                "centro_custo_id", "conta_associado_id", "tipo", "valor", "data_lancamento"
-            )
-        )
+        processed: set[tuple[str | None, str, str, Decimal, Any]] = set()
 
         if idempotency_key:
             idem, created = IntegracaoIdempotency.objects.get_or_create(
@@ -164,6 +160,7 @@ class ImportadorPagamentos:
             saldo_centro: dict[str, Decimal] = {}
             saldo_conta: dict[str, Decimal] = {}
             seen: set[tuple[str | None, str, str, Decimal, Any]] = set()
+            validated: list[tuple[dict[str, Any], tuple[str | None, str, str, Decimal, Any]]] = []
             for item in chunk:
                 payload = {
                     "centro_custo": str(item["centro_custo"].id),
@@ -189,14 +186,48 @@ class ImportadorPagamentos:
                     data["valor"],
                     data["data_lancamento"],
                 )
+                validated.append((data, key))
+
+            if validated:
+                q = Q()
+                for _, key in validated:
+                    q |= Q(
+                        centro_custo_id=key[0],
+                        conta_associado_id=key[1],
+                        tipo=key[2],
+                        valor=key[3],
+                        data_lancamento=key[4],
+                    )
+                existing = {
+                    (
+                        str(cc),
+                        str(ca) if ca else None,
+                        tipo,
+                        valor,
+                        dl,
+                    )
+                    for cc, ca, tipo, valor, dl in LancamentoFinanceiro.objects.filter(q).values_list(
+                        "centro_custo_id",
+                        "conta_associado_id",
+                        "tipo",
+                        "valor",
+                        "data_lancamento",
+                    )
+                }
+            else:
+                existing = set()
+            existing.update(processed)
+
+            for data, key in validated:
                 if key in seen or key in existing:
                     errors.append("Lançamento duplicado")
                     continue
                 seen.add(key)
-                existing.add(key)
+                processed.add(key)
                 if data["status"] == LancamentoFinanceiro.Status.PAGO:
                     cid = str(data["centro_custo"].id)
                     saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + data["valor"]
+                    conta = data.get("conta_associado")
                     if conta:
                         aid = str(conta.id)
                         saldo_conta[aid] = saldo_conta.get(aid, Decimal("0")) + data["valor"]
