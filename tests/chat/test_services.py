@@ -200,6 +200,7 @@ def test_enviar_mensagem_com_attachment_id(admin_user, coordenador_user, nucleo)
     att = ChatAttachment.objects.create(
         arquivo=SimpleUploadedFile("a.txt", b"a"),
         tamanho=1,
+        usuario=admin_user,
     )
     msg = enviar_mensagem(canal, admin_user, "file", attachment_id=str(att.id))
     att.refresh_from_db()

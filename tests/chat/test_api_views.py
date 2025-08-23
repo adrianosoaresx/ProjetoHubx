@@ -162,6 +162,24 @@ def test_send_message_with_attachment(api_client: APIClient, admin_user):
     assert msg.arquivo.name == att.arquivo.name
 
 
+def test_send_message_with_attachment_requires_owner(
+    api_client: APIClient, admin_user, coordenador_user
+):
+    channel = ChatChannel.objects.create(contexto_tipo="privado")
+    ChatParticipant.objects.create(channel=channel, user=admin_user)
+    ChatParticipant.objects.create(channel=channel, user=coordenador_user)
+    api_client.force_authenticate(admin_user)
+    upload_url = reverse("chat_api:chat-upload")
+    file = SimpleUploadedFile("a.txt", b"a", content_type="text/plain")
+    resp = api_client.post(upload_url, {"file": file}, format="multipart")
+    attachment_id = resp.json()["attachment_id"]
+    api_client.force_authenticate(coordenador_user)
+    list_url = f"/api/chat/channels/{channel.id}/messages/"
+    resp = api_client.post(list_url, {"tipo": "file", "attachment_id": attachment_id})
+    assert resp.status_code == 400
+    assert "attachment_id" in resp.json()
+
+
 def test_history_endpoint_returns_messages(api_client: APIClient, admin_user):
     channel = ChatChannel.objects.create(contexto_tipo="privado")
     ChatParticipant.objects.create(channel=channel, user=admin_user)

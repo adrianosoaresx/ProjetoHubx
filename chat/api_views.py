@@ -105,6 +105,7 @@ class UploadArquivoAPIView(APIView):
             return Response({"erro": "Arquivo obrigatório"}, status=status.HTTP_400_BAD_REQUEST)
         content_type = arquivo.content_type or mimetypes.guess_type(arquivo.name)[0] or ""
         attachment = ChatAttachment(
+            usuario=request.user,
             mime_type=content_type,
             tamanho=arquivo.size,
         )
@@ -500,6 +501,11 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer: ChatMessageSerializer) -> None:
         channel = get_object_or_404(ChatChannel, pk=self.kwargs["channel_pk"])
+        attachment_id = serializer.validated_data.get("attachment_id")
+        if attachment_id and not ChatAttachment.objects.filter(
+            id=attachment_id, usuario=self.request.user, mensagem__isnull=True
+        ).exists():
+            raise ValidationError({"attachment_id": "Anexo inválido"})
         if channel.e2ee_habilitado:
             data = serializer.validated_data
             if data.get("conteudo"):

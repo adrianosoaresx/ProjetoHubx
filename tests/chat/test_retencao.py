@@ -51,7 +51,10 @@ def test_aplicar_politica_retencao_remove_mensagens(admin_user) -> None:
     channel = ChatChannel.objects.create(contexto_tipo="privado", retencao_dias=30)
     ChatParticipant.objects.create(channel=channel, user=admin_user, is_admin=True)
     old_time = timezone.now() - timedelta(days=40)
-    att = ChatAttachment.objects.create(arquivo=SimpleUploadedFile("a.txt", b"a"))
+    att = ChatAttachment.objects.create(
+        arquivo=SimpleUploadedFile("a.txt", b"a"),
+        usuario=admin_user,
+    )
     old_msg = ChatMessage.objects.create(
         channel=channel,
         remetente=admin_user,

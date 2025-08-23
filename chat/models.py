@@ -237,6 +237,13 @@ class ChatAttachment(CoreTimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
     )
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="chat_attachments",
+        null=True,
+        blank=True,
+    )
     arquivo = models.FileField(upload_to="chat/attachments/")
     mime_type = models.CharField(max_length=100, blank=True)
     tamanho = models.PositiveIntegerField(default=0)

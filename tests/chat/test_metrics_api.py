@@ -40,6 +40,7 @@ def test_metrics_endpoint_returns_counts(api_client: APIClient, admin_user):
     file1 = SimpleUploadedFile("d.txt", b"1")
     ChatAttachment.objects.create(
         mensagem=msg1,
+        usuario=admin_user,
         arquivo=file1,
         mime_type="text/plain",
         tamanho=1,
