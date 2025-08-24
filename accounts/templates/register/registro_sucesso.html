@@ -6,13 +6,7 @@
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12 text-center">
   <div class="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
-    {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
+    {% include '_messages.html' %}
     <h1 class="mb-4 text-3xl font-bold text-neutral-900">{% trans "Bem-vindo ao HubX!" %}</h1>
     <p class="mb-6 text-neutral-600">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
     <a

@@ -10,7 +10,7 @@
     <a href="{% url 'agenda:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
   </header>
 
-{% include "agenda/_messages.html" %}
+{% include '_messages.html' %}
 
   <form
     hx-get="{% url 'agenda:material_list' %}"

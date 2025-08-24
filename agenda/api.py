@@ -188,7 +188,7 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
             row_html = render_to_string(
                 "agenda/_material_row.html", {"material": material}, request=request
             )
-            messages_html = render_to_string("agenda/_messages.html", request=request)
+            messages_html = render_to_string("_messages.html", request=request)
             return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 
@@ -203,7 +203,7 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
                     "agenda/_material_row.html", {"material": material}, request=request
                 )
                 messages_html = render_to_string(
-                    "agenda/_messages.html", request=request
+                    "_messages.html", request=request
                 )
                 return HttpResponse(row_html + messages_html, status=status.HTTP_400_BAD_REQUEST)
             return Response(
@@ -234,7 +234,7 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
             row_html = render_to_string(
                 "agenda/_material_row.html", {"material": material}, request=request
             )
-            messages_html = render_to_string("agenda/_messages.html", request=request)
+            messages_html = render_to_string("_messages.html", request=request)
             return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 

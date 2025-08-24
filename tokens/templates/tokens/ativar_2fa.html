@@ -10,15 +10,7 @@
     <p class="text-sm text-neutral-600 mt-2">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>
   </header>
 
-  {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
-          {{ message }}
-        </p>
-      {% endfor %}
-    </div>
-  {% endif %}
+  {% include '_messages.html' %}
 
   <main>
     {% if qr_code %}

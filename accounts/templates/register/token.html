@@ -31,13 +31,7 @@
       <p class="text-neutral-600">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
     </div>
 
-    {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags == 'success'|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
+    {% include '_messages.html' %}
 
     <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
       {% csrf_token %}
