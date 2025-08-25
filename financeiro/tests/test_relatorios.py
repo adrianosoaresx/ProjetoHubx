@@ -40,7 +40,7 @@ def test_gera_serie_temporal(django_assert_num_queries):
     assert data["serie"][0]["receitas"] == 50.0
     assert data["serie"][0]["despesas"] == 20.0
 
-
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_exporta_csv_relatorios(client, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     user = UserFactory(user_type=UserType.ADMIN)
@@ -66,6 +66,17 @@ def test_exporta_csv_relatorios(client, settings):
     rows = list(reader)
     assert rows[0] == ["data", "categoria", "valor", "status", "centro de custo"]
     assert len(rows) == 2
+
+
+def test_download_relatorio_inexistente(client):
+    user = UserFactory(user_type=UserType.ADMIN)
+    client.force_login(user)
+    url = reverse(
+        "financeiro_api:financeiro-relatorios-download",
+        kwargs={"token": "naoexiste", "formato": "csv"},
+    )
+    resp = client.get(url)
+    assert resp.status_code == 404
 
 
 @override_settings(ROOT_URLCONF="Hubx.urls")

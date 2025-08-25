@@ -91,6 +91,8 @@ class AceitarConviteAPIView(APIView):
     def get(self, request):
         token = request.query_params.get("token")
         convite = get_object_or_404(ConviteNucleo, token=token)
+        if convite.usado_em is not None:
+            return Response({"detail": _("Convite já utilizado.")}, status=400)
         if convite.expirado():
             return Response({"detail": _("Convite inválido ou expirado.")}, status=400)
         if request.user.email.lower() != convite.email.lower():
@@ -186,7 +188,11 @@ class NucleoViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def meus(self, request):
-        qs = self.get_queryset().filter(participacoes__user=request.user, participacoes__status="ativo")
+        qs = self.get_queryset().filter(
+            participacoes__user=request.user,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        )
         qs = qs.distinct()
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page, many=True)

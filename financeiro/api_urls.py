@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from rest_framework import routers
 
+app_name = "financeiro_api"
+
 from .viewsets import (
     FinanceiroLogViewSet,
     FinanceiroTaskLogViewSet,

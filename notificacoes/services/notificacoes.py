@@ -13,6 +13,7 @@ from ..models import (
     NotificationStatus,
     NotificationTemplate,
     UserNotificationPreference,
+    PushSubscription,
 )
 from ..tasks import enviar_notificacao_async
 
@@ -31,6 +32,20 @@ def _mask_email(email: str) -> str:
     prefixo = nome[:2]
     return f"{prefixo}***@{dominio}" if dominio else email
 
+
+def _get_destinatario(user: Any, canal: str) -> str:
+    if canal == Canal.EMAIL:
+        return _mask_email(user.email)
+    if canal == Canal.WHATSAPP:
+        return getattr(user, "whatsapp", "")
+    if canal == Canal.PUSH:
+        device_id = (
+            PushSubscription.objects.filter(user=user, ativo=True)
+            .values_list("device_id", flat=True)
+            .first()
+        )
+        return device_id or ""
+    return ""
 
 def enviar_para_usuario(
     user: Any,
@@ -77,9 +92,9 @@ def enviar_para_usuario(
             user=user,
             template=template,
             canal=canal,
-            destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
+            destinatario=_get_destinatario(user, canal),
             status=NotificationStatus.FALHA,
-            erro=_("Canais desabilitados pelo usuário"),
+            erro=_("Canal %(canal)s desabilitado pelo usuário") % {"canal": canal},
             corpo_renderizado=body,
         )
 
@@ -91,7 +106,7 @@ def enviar_para_usuario(
             user=user,
             template=template,
             canal=canal,
-            destinatario=_mask_email(user.email) if canal == Canal.EMAIL else "",
+            destinatario=_get_destinatario(user, canal),
             corpo_renderizado=body,
         )
         enviar_notificacao_async.delay(subject, body, str(log.id))

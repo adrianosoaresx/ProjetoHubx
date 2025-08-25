@@ -3,7 +3,7 @@
   {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {{ message.tags|yesno:'bg-green-100 text-green-700,bg-red-100 text-red-700' }}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
   {% endif %}

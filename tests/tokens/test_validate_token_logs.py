@@ -75,3 +75,16 @@ def test_log_on_expired_token():
     log = TokenUsoLog.objects.get()
     assert log.token == token
     assert log.acao == TokenUsoLog.Acao.VALIDACAO
+
+
+def test_log_on_valid_token_does_not_set_token_ip():
+    token = TokenAcessoFactory(estado=TokenAcesso.Estado.NOVO)
+    client = _setup_client()
+    resp = _validate(client, token.codigo)
+    assert resp.status_code == 200
+    token.refresh_from_db()
+    assert token.ip_utilizado is None
+    log = TokenUsoLog.objects.get()
+    assert log.token == token
+    assert log.ip == "1.1.1.1"
+    assert log.acao == TokenUsoLog.Acao.VALIDACAO

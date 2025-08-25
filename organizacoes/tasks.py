@@ -7,11 +7,12 @@ from sentry_sdk import capture_exception
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import Organizacao
 from .metrics import (
+    membros_notificacao_falhas_total,
     membros_notificacao_latency,
     membros_notificados_total,
 )
+from .models import Organizacao
 
 organizacao_alterada = Signal()  # args: organizacao, acao
 
@@ -43,7 +44,7 @@ def enviar_email_membros(organizacao_id: int, acao: str) -> None:
                 membros_notificados_total.inc()
             except Exception as exc:  # pragma: no cover - melhor esforço
                 capture_exception(exc)
-                raise
+                membros_notificacao_falhas_total.inc()
 
 
 @receiver(organizacao_alterada)

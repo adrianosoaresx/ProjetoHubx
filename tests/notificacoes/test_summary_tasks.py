@@ -18,6 +18,7 @@ from notificacoes.models import (
     PushSubscription,
 )
 from notificacoes.tasks import enviar_relatorios_diarios, enviar_relatorios_semanais
+from notificacoes.services import metrics
 
 pytestmark = pytest.mark.django_db
 
@@ -170,6 +171,33 @@ def test_relatorio_diario_renderiza_placeholders(settings):
 
     hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA)
     assert hist.conteudo == [body]
+
+
+@freeze_time("2024-01-01 08:00:00-03:00")
+def test_relatorio_diario_registra_falha(settings, monkeypatch):
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    user = UserFactory()
+    config = user.configuracao
+    config.frequencia_notificacoes_email = "diaria"
+    config.hora_notificacao_diaria = timezone.localtime().time()
+    config.save()
+    _criar_logs(user, Canal.EMAIL)
+
+    def fake_send_email(*args, **kwargs):
+        raise RuntimeError("falhou")
+
+    monkeypatch.setattr("notificacoes.tasks.send_email", fake_send_email)
+
+    before_fail = metrics.notificacoes_falhadas_total.labels(canal=Canal.EMAIL)._value.get()
+    enviar_relatorios_diarios()
+
+    logs = NotificationLog.objects.filter(user=user, canal=Canal.EMAIL)
+    assert all(log.status == NotificationStatus.FALHA for log in logs)
+    assert all(log.erro == "falhou" for log in logs)
+    assert (
+        metrics.notificacoes_falhadas_total.labels(canal=Canal.EMAIL)._value.get()
+        == before_fail + 1
+    )
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")

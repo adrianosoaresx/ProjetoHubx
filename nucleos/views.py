@@ -288,8 +288,28 @@ class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
 class ParticipacaoCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        ParticipacaoNucleo.objects.get_or_create(user=request.user, nucleo=nucleo)
-        messages.success(request, _("Solicitação enviada."))
+        participacao, created = ParticipacaoNucleo.objects.get_or_create(
+            user=request.user, nucleo=nucleo
+        )
+
+        if not created and participacao.status != "pendente":
+            participacao.status = "pendente"
+            participacao.data_solicitacao = timezone.now()
+            participacao.decidido_por = None
+            participacao.data_decisao = None
+            participacao.justificativa = ""
+            participacao.save(
+                update_fields=[
+                    "status",
+                    "data_solicitacao",
+                    "decidido_por",
+                    "data_decisao",
+                    "justificativa",
+                ]
+            )
+            messages.success(request, _("Solicitação reenviada."))
+        else:
+            messages.success(request, _("Solicitação enviada."))
         return redirect("nucleos:detail", pk=pk)
 
 

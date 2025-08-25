@@ -37,7 +37,8 @@ def _send_webhook(payload: dict[str, object]) -> None:
 
 def token_created(token: ApiToken, raw: str) -> None:
     """Dispara webhook para notificar criação de ``token``."""
-    _send_webhook({"event": "created", "id": str(token.id), "token": raw})
+    token_hash = hashlib.sha256(raw.encode()).hexdigest()
+    _send_webhook({"event": "created", "id": str(token.id), "token": token_hash})
 
 
 def token_revoked(token: ApiToken) -> None:

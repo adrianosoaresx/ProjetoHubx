@@ -17,6 +17,8 @@ from django.utils.translation import gettext_lazy as _
 from django.views import View
 
 from accounts.models import SecurityEvent
+from audit.models import AuditLog
+from audit.services import hash_ip, log_audit
 from notificacoes.services.email_client import send_email
 from notificacoes.services.whatsapp_client import send_whatsapp
 
@@ -28,7 +30,14 @@ from .forms import (
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-from .metrics import tokens_invites_revoked_total
+
+from .metrics import tokens_invites_revoked_total, tokens_rate_limited_total
+
+from .metrics import (
+    tokens_invites_created_total,
+    tokens_invites_revoked_total,
+    tokens_invites_used_total,
+
 from .models import (
     ApiToken,
     ApiTokenLog,
@@ -38,6 +47,7 @@ from .models import (
     TOTPDevice,
 )
 from .perms import can_issue_invite
+from .ratelimit import check_rate_limit
 from .services import (
     create_invite_token,
     generate_token,
@@ -217,6 +227,35 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         return render(request, "tokens/gerar_token.html", {"form": form})
 
     def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        rl = check_rate_limit(f"user:{request.user.id}:{ip}")
+        if not rl.allowed:
+            tokens_rate_limited_total.inc()
+            log_audit(
+                request.user,
+                "token_invite_rate_limited",
+                object_type="TokenAcesso",
+                ip_hash=hash_ip(ip),
+                status=AuditLog.Status.FAILURE,
+            )
+            if request.headers.get("HX-Request") == "true":
+                resp = render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": _("Muitas requisições, tente novamente mais tarde.")},
+                    status=429,
+                )
+            else:
+                messages.error(request, _("Muitas requisições, tente novamente mais tarde."))
+                resp = render(
+                    request,
+                    "tokens/gerar_token.html",
+                    {"form": GerarTokenConviteForm(user=request.user)},
+                    status=429,
+                )
+            if rl.retry_after:
+                resp["Retry-After"] = str(rl.retry_after)
+            return resp
         form = GerarTokenConviteForm(request.POST, user=request.user)
         choices = [
             choice
@@ -289,6 +328,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             invite_created(token, codigo)
+            tokens_invites_created_total.inc()
             token.codigo = codigo
 
             if request.headers.get("HX-Request") == "true":
@@ -322,12 +362,40 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
         form = ValidarTokenConviteForm()
         return render(request, "tokens/validar_token.html", {"form": form})
     def post(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        rl = check_rate_limit(f"user:{request.user.id}:{ip}")
+        if not rl.allowed:
+            tokens_rate_limited_total.inc()
+            log_audit(
+                request.user,
+                "token_validate_rate_limited",
+                object_type="TokenAcesso",
+                ip_hash=hash_ip(ip),
+                status=AuditLog.Status.FAILURE,
+            )
+            if request.headers.get("HX-Request") == "true":
+                resp = render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": _("Muitas requisições, tente novamente mais tarde.")},
+                    status=429,
+                )
+            else:
+                messages.error(request, _("Muitas requisições, tente novamente mais tarde."))
+                resp = render(
+                    request,
+                    "tokens/validar_token.html",
+                    {"form": ValidarTokenConviteForm()},
+                    status=429,
+                )
+            if rl.retry_after:
+                resp["Retry-After"] = str(rl.retry_after)
+            return resp
         form = ValidarTokenConviteForm(request.POST)
         if form.is_valid():
             token = form.token
             token.usuario = request.user
             token.estado = TokenAcesso.Estado.USADO
-            ip = get_client_ip(request)
             token.ip_utilizado = ip
             token.save(update_fields=["usuario", "estado", "ip_utilizado"])
             TokenUsoLog.objects.create(
@@ -338,6 +406,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
                 user_agent=request.META.get("HTTP_USER_AGENT", ""),
             )
             invite_used(token)
+            tokens_invites_used_total.inc()
             if request.headers.get("HX-Request") == "true":
                 return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
             messages.success(request, _("Token validado"))
