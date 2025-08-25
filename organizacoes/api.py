@@ -403,7 +403,7 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class OrganizacaoNucleoViewSet(OrganizacaoRelatedAssociationViewSet):
+class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
     model = Nucleo
     serializer_class = NucleoSerializer
 
@@ -434,12 +434,12 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedAssociationViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class OrganizacaoEmpresaViewSet(OrganizacaoRelatedAssociationViewSet):
+class OrganizacaoEmpresaViewSet(OrganizacaoRelatedModelViewSet):
     model = Empresa
     serializer_class = EmpresaSerializer
 
 
-class OrganizacaoPostViewSet(OrganizacaoRelatedAssociationViewSet):
+class OrganizacaoPostViewSet(OrganizacaoRelatedModelViewSet):
     model = Post
     serializer_class = PostSerializer
     search_field = "conteudo"
