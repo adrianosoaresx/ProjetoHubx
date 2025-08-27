@@ -11,7 +11,12 @@ class SuperadminRequiredMixin(UserPassesTestMixin):
     """Permite acesso apenas a superadministradores."""
 
     def test_func(self):
-        return self.request.user.user_type == UserType.ROOT
+        user = self.request.user
+        return (
+            getattr(user, "user_type", None) == UserType.ROOT
+            or getattr(user, "is_superuser", False)
+            or getattr(user, "get_tipo_usuario", None) == UserType.ROOT.value
+        )
 
 
 class AdminRequiredMixin(UserPassesTestMixin):
