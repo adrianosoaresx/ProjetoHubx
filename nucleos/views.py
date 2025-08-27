@@ -426,6 +426,8 @@ class SuplenteDeleteView(GerenteRequiredMixin, LoginRequiredMixin, View):
 class NucleoToggleActiveView(GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo.all_objects, pk=pk)
+        if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
+            return redirect("nucleos:list")
         if nucleo.deleted:
             nucleo.undelete()
         else:
