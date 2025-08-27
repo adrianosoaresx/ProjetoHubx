@@ -22,6 +22,7 @@ from django_ratelimit.core import is_ratelimited
 from accounts.models import UserType
 from agenda.models import Evento
 from core.cache import get_cache_version
+from core.permissions import NoSuperadminMixin, no_superadmin_required
 from feed.tasks import notify_post_moderated
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -32,6 +33,7 @@ from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
 
 
 @login_required
+@no_superadmin_required
 def meu_mural(request):
     """Exibe o mural pessoal do usuário com seus posts e posts globais."""
 
@@ -53,15 +55,9 @@ def meu_mural(request):
                 filter=Q(reacoes__vote="share", reacoes__deleted=False),
                 distinct=True,
             ),
-            is_bookmarked=Exists(
-                Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
-            ),
-            is_flagged=Exists(
-                Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
-            ),
-            is_liked=Exists(
-                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)
-            ),
+            is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)),
             is_shared=Exists(
                 Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="share", deleted=False)
             ),
@@ -86,6 +82,7 @@ def meu_mural(request):
 
 
 @login_required
+@no_superadmin_required
 def bookmark_list(request):
     posts = (
         Post.objects.filter(bookmarks__user=request.user, bookmarks__deleted=False, deleted=False)
@@ -104,9 +101,7 @@ def bookmark_list(request):
             ),
             is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
             is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
-            is_liked=Exists(
-                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)
-            ),
+            is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)),
             is_shared=Exists(
                 Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="share", deleted=False)
             ),
@@ -117,7 +112,7 @@ def bookmark_list(request):
     return render(request, "feed/bookmarks.html", {"posts": posts})
 
 
-class FeedListView(LoginRequiredMixin, ListView):
+class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = Post
     template_name = "feed/feed.html"
     context_object_name = "posts"
@@ -197,12 +192,8 @@ class FeedListView(LoginRequiredMixin, ListView):
                 ),
                 is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
                 is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
-                is_liked=Exists(
-                    Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)
-                ),
-                is_shared=Exists(
-                    Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)
-                ),
+                is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)),
+                is_shared=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)),
             )
         )
         if not user.is_staff:
@@ -298,15 +289,13 @@ class FeedListView(LoginRequiredMixin, ListView):
         return super().render_to_response(context, **response_kwargs)
 
 
-class NovaPostagemView(LoginRequiredMixin, CreateView):
+class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = Post
     form_class = PostForm
     template_name = "feed/nova_postagem.html"
     success_url = reverse_lazy("feed:meu_mural")
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.user_type == UserType.ROOT:
-            return HttpResponseForbidden("Usuário root não pode publicar no feed.")
         if request.method == "POST" and is_ratelimited(
             request,
             group="feed_posts_create",
@@ -361,7 +350,7 @@ class NovaPostagemView(LoginRequiredMixin, CreateView):
         return response
 
 
-class PostDetailView(LoginRequiredMixin, DetailView):
+class PostDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     template_name = "feed/post_detail.html"
     context_object_name = "post"
 
@@ -386,18 +375,12 @@ class PostDetailView(LoginRequiredMixin, DetailView):
                 is_bookmarked=Exists(
                     Bookmark.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)
                 ),
-                is_flagged=Exists(
-                    Flag.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)
-                ),
+                is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)),
                 is_liked=Exists(
-                    Reacao.objects.filter(
-                        post=OuterRef("pk"), user=self.request.user, vote="like", deleted=False
-                    )
+                    Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="like", deleted=False)
                 ),
                 is_shared=Exists(
-                    Reacao.objects.filter(
-                        post=OuterRef("pk"), user=self.request.user, vote="share", deleted=False
-                    )
+                    Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="share", deleted=False)
                 ),
             )
         )
@@ -412,6 +395,7 @@ class PostDetailView(LoginRequiredMixin, DetailView):
 
 
 @login_required
+@no_superadmin_required
 def toggle_like(request, pk):
     if is_ratelimited(
         request,
@@ -439,6 +423,7 @@ def toggle_like(request, pk):
 
 
 @login_required
+@no_superadmin_required
 def post_update(request, pk):
     post = get_object_or_404(Post.objects.filter(deleted=False), pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
@@ -478,6 +463,7 @@ def post_update(request, pk):
 
 
 @login_required
+@no_superadmin_required
 def post_delete(request, pk):
     post = get_object_or_404(Post.objects.filter(deleted=False), pk=pk)
     if request.user != post.autor and request.user.user_type not in {UserType.ROOT, UserType.ADMIN}:
@@ -497,6 +483,7 @@ def post_delete(request, pk):
 
 
 @login_required
+@no_superadmin_required
 @permission_required("feed.change_moderacaopost", raise_exception=True)
 def moderar_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
