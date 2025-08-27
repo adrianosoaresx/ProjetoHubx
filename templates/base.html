@@ -97,27 +97,41 @@
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
         </a>
+        {% if user.user_type != 'root' %}
         <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-building"></i> {% trans "Empresas" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'empresas:buscar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-search"></i> {% trans "Buscar Empresas" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-calendar-alt"></i> {% trans "Agenda" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'discussao:categorias' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-comments"></i> {% trans "Discussão" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-rss"></i> {% trans "Feed" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-users"></i> {% trans "Núcleos" %}
         </a>
+        {% endif %}
+        {% if user.user_type != 'root' %}
         <a href="{% url 'nucleos:meus' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-user-group"></i> {% trans "Meus Núcleos" %}
         </a>
+        {% endif %}
         {% if user.is_authenticated %}
         {% if user.user_type == 'financeiro' or user.user_type == 'admin' %}
         <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
