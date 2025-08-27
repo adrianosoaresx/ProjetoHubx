@@ -11,6 +11,14 @@ def test_dashboard_redirect_root(client, root_user):
     assert resp.url == reverse("dashboard:root")
 
 
+def test_dashboard_redirect_root_follow(client, root_user):
+    """Root user should be redirected to the root dashboard and receive 200."""
+    client.force_login(root_user)
+    resp = client.get(reverse("dashboard:dashboard"), follow=True)
+    assert resp.status_code == 200
+    assert resp.wsgi_request.path == reverse("dashboard:root")
+
+
 def test_dashboard_redirect_admin(client, admin_user):
     client.force_login(admin_user)
     resp = client.get(reverse("dashboard:dashboard"))
