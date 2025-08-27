@@ -9,6 +9,11 @@ from django.urls import reverse
 from django.utils import timezone
 
 from agenda.models import InscricaoEvento
+from django.contrib.auth import get_user_model
+from accounts.models import UserType
+from organizacoes.factories import OrganizacaoFactory
+from nucleos.factories import NucleoFactory
+from agenda.factories import EventoFactory
 from core.permissions import (
     AdminRequiredMixin,
     ClienteRequiredMixin,
@@ -67,6 +72,29 @@ def test_root_dashboard_view(client, root_user):
     assert "dashboard/root.html" in [t.name for t in resp.templates]
     _assert_metrics_in_context(resp.context)
     assert "Dashboard Root" in resp.content.decode()
+
+
+def test_root_dashboard_organizacao_counts(client, root_user):
+    org = OrganizacaoFactory(nome="Org Test", slug="org-test")
+    nucleo = NucleoFactory(organizacao=org)
+    user = get_user_model().objects.create_user(
+        username="member",
+        email="member@example.com",
+        password="pass",
+        user_type=UserType.ASSOCIADO,
+        organizacao=org,
+    )
+    EventoFactory(organizacao=org, nucleo=nucleo, coordenador=user)
+    client.force_login(root_user)
+    resp = client.get(reverse("dashboard:root"))
+    assert resp.status_code == 200
+    soup = BeautifulSoup(resp.content, "html.parser")
+    card = soup.find("div", {"data-org": org.slug})
+    assert card is not None
+    text = " ".join(card.stripped_strings)
+    assert "Usuários: 1" in text
+    assert "Núcleos: 1" in text
+    assert "Eventos: 1" in text
 
 
 def test_admin_dashboard_view(client, admin_user):

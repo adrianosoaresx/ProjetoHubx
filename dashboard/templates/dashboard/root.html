@@ -49,6 +49,13 @@
     </div>
   </section>
 
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Organizações" %}</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% include 'dashboard/partials/org_cards.html' %}
+    </div>
+  </section>
+
   <section
     id="notifications"
     hx-get="{% url 'dashboard:notificacoes-partial' %}"

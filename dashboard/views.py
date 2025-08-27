@@ -15,7 +15,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import (
     FileResponse,
     HttpResponse,
@@ -359,6 +359,14 @@ class RootDashboardView(SuperadminRequiredMixin, DashboardBaseView):
             "disco": round(used / total * 100, 2),
         }
         context["security_metrics"] = {"login_bloqueados": 0}
+        context["organizacoes"] = (
+            Organizacao.objects.annotate(
+                num_users=Count("users", distinct=True),
+                num_nucleos=Count("nucleos", distinct=True),
+                num_eventos=Count("evento", distinct=True),
+            )
+            .all()
+        )
         return context
 
 
