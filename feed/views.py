@@ -42,6 +42,30 @@ def meu_mural(request):
         .filter(deleted=False)
         .annotate(mod_status=Subquery(latest_status))
         .exclude(mod_status="rejeitado")
+        .annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+            is_bookmarked=Exists(
+                Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
+            ),
+            is_flagged=Exists(
+                Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)
+            ),
+            is_liked=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="share", deleted=False)
+            ),
+        )
         .filter(
             Q(autor=request.user)
             | Q(
@@ -63,23 +87,33 @@ def meu_mural(request):
 
 @login_required
 def bookmark_list(request):
-    bookmarks = (
-        Bookmark.objects.filter(user=request.user)
-        .select_related(
-            "post__autor",
-            "post__organizacao",
-            "post__nucleo",
-            "post__evento",
+    posts = (
+        Post.objects.filter(bookmarks__user=request.user, bookmarks__deleted=False, deleted=False)
+        .select_related("autor", "organizacao", "nucleo", "evento")
+        .prefetch_related("comments", "bookmarks", "flags", "reacoes")
+        .annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+            is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_liked=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="share", deleted=False)
+            ),
         )
-        .prefetch_related(
-            "post__comments",
-            "post__bookmarks",
-            "post__flags",
-            "post__reacoes",
-        )
-        .order_by("-created_at")
+        .order_by("-bookmarks__created_at")
+        .distinct()
     )
-    posts = [bookmark.post for bookmark in bookmarks]
     return render(request, "feed/bookmarks.html", {"posts": posts})
 
 
@@ -163,6 +197,12 @@ class FeedListView(LoginRequiredMixin, ListView):
                 ),
                 is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
                 is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+                is_liked=Exists(
+                    Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)
+                ),
+                is_shared=Exists(
+                    Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)
+                ),
             )
         )
         if not user.is_staff:
@@ -342,6 +382,22 @@ class PostDetailView(LoginRequiredMixin, DetailView):
                     "reacoes",
                     filter=Q(reacoes__vote="share", reacoes__deleted=False),
                     distinct=True,
+                ),
+                is_bookmarked=Exists(
+                    Bookmark.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)
+                ),
+                is_flagged=Exists(
+                    Flag.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)
+                ),
+                is_liked=Exists(
+                    Reacao.objects.filter(
+                        post=OuterRef("pk"), user=self.request.user, vote="like", deleted=False
+                    )
+                ),
+                is_shared=Exists(
+                    Reacao.objects.filter(
+                        post=OuterRef("pk"), user=self.request.user, vote="share", deleted=False
+                    )
                 ),
             )
         )

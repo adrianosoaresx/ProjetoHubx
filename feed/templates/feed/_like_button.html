@@ -1,5 +1,5 @@
 {% load i18n %}
-{% with liked=post.reacoes.filter(user=user, vote='like', deleted=False).exists count=post.like_count %}
+{% with liked=post.is_liked count=post.like_count %}
 <button
   hx-post="/api/feed/posts/{{ post.id }}/reacoes/"
   hx-ext="json-enc"
