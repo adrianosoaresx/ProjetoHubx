@@ -18,7 +18,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ratelimit.core import is_ratelimited
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Gauge, Histogram
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -31,13 +31,9 @@ from feed.application.moderar_ai import aplicar_decisao, pre_analise
 from .models import Bookmark, Comment, ModeracaoPost, Post, PostView, Reacao, Tag
 from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
 
-REACTIONS_TOTAL = Counter("feed_reactions_total", "Total de reações registradas", ["vote"])
+REACTIONS_TOTAL = Gauge("feed_reactions_total", "Total de reações registradas", ["vote"])
 POST_VIEWS_TOTAL = Counter("feed_post_views_total", "Total de visualizações de posts")
 POST_VIEW_DURATION = Histogram("feed_post_view_duration_seconds", "Tempo de leitura dos posts em segundos")
-
-
-def _dec_counter(metric: Counter) -> None:
-    metric._value.set(max(0, metric._value.get() - 1))
 
 
 class CanModerate(permissions.BasePermission):
@@ -435,7 +431,7 @@ class PostViewSet(viewsets.ModelViewSet):
         if reacao and not reacao.deleted:
             reacao.deleted = True
             reacao.save(update_fields=["deleted"])
-            _dec_counter(REACTIONS_TOTAL.labels(vote=vote))
+            REACTIONS_TOTAL.labels(vote=vote).dec()
             cache.delete(f"post_reacoes:{post.id}")
             return Response(status=status.HTTP_204_NO_CONTENT)
         if is_ratelimited(
