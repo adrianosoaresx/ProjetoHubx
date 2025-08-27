@@ -288,9 +288,15 @@ class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
 class ParticipacaoCreateView(LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        participacao, created = ParticipacaoNucleo.objects.get_or_create(
+        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(
             user=request.user, nucleo=nucleo
         )
+
+        save_fields: list[str] = []
+        if participacao.deleted:
+            participacao.deleted = False
+            participacao.deleted_at = None
+            save_fields += ["deleted", "deleted_at"]
 
         if not created and participacao.status != "pendente":
             participacao.status = "pendente"
@@ -298,18 +304,19 @@ class ParticipacaoCreateView(LoginRequiredMixin, View):
             participacao.decidido_por = None
             participacao.data_decisao = None
             participacao.justificativa = ""
-            participacao.save(
-                update_fields=[
-                    "status",
-                    "data_solicitacao",
-                    "decidido_por",
-                    "data_decisao",
-                    "justificativa",
-                ]
-            )
+            save_fields += [
+                "status",
+                "data_solicitacao",
+                "decidido_por",
+                "data_decisao",
+                "justificativa",
+            ]
             messages.success(request, _("Solicitação reenviada."))
         else:
             messages.success(request, _("Solicitação enviada."))
+
+        if save_fields:
+            participacao.save(update_fields=save_fields)
         return redirect("nucleos:detail", pk=pk)
 
 
