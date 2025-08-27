@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 from math import ceil
 
-import boto3
 from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
@@ -167,8 +166,17 @@ class PostSerializer(serializers.ModelSerializer):
             return None
         bucket = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "")
         if bucket:
-            client = boto3.client("s3")
-            return client.generate_presigned_url("get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=3600)
+            try:
+                import boto3  # type: ignore
+
+                client = boto3.client("s3")
+                return client.generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": bucket, "Key": key},
+                    ExpiresIn=3600,
+                )
+            except ImportError:  # pragma: no cover - simples
+                pass
         return default_storage.url(key)
 
     def get_image_url(self, obj: Post) -> str | None:  # pragma: no cover - simples
