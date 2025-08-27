@@ -60,6 +60,27 @@
     </dl>
   </section>
 
+  {% if request.user.user_type == 'root' %}
+  <section id="org-stats" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 text-center">
+      <p class="text-xs text-neutral-500">{% trans 'Usuários' %}</p>
+      <p class="text-lg font-semibold text-neutral-900">{{ usuarios|length }}</p>
+    </div>
+    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 text-center">
+      <p class="text-xs text-neutral-500">{% trans 'Núcleos' %}</p>
+      <p class="text-lg font-semibold text-neutral-900">{{ nucleos|length }}</p>
+    </div>
+    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 text-center">
+      <p class="text-xs text-neutral-500">{% trans 'Eventos' %}</p>
+      <p class="text-lg font-semibold text-neutral-900">{{ eventos|length }}</p>
+    </div>
+    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 text-center">
+      <p class="text-xs text-neutral-500">{% trans 'Empresas' %}</p>
+      <p class="text-lg font-semibold text-neutral-900">{{ empresas|length }}</p>
+    </div>
+  </section>
+  {% endif %}
+
   {% if request.user.user_type != 'root' %}
   <section id="usuarios-section">
     {% include 'organizacoes/partials/usuarios_list.html' %}
