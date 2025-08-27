@@ -32,10 +32,10 @@ def test_list_filters_name_municipio_tags(client, admin_user, tag_factory):
 
 
 @pytest.mark.django_db
-def test_list_view_denies_root_user(client, root_user):
+def test_list_view_allows_root_user(client, root_user):
     client.force_login(root_user)
     resp = client.get(reverse("empresas:lista"))
-    assert resp.status_code == 403
+    assert resp.status_code == 200
 
 
 @pytest.mark.django_db
