@@ -314,7 +314,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 tipo_destino=target_role,
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
                 organizacao=form.cleaned_data.get("organizacao"),
-                nucleos=form.cleaned_data["nucleos"],
+                nucleos=form.cleaned_data.get("nucleos"),
             )
 
             ip = get_client_ip(request)
