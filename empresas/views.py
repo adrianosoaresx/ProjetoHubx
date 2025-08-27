@@ -33,6 +33,7 @@ from .services import list_all_tags, search_empresas
 
 
 @login_required
+@no_superadmin_required
 def buscar(request):
     empresas = search_empresas(request.user, request.GET)
     context = {"empresas": empresas, "q": request.GET.get("q", "")}
@@ -41,7 +42,7 @@ def buscar(request):
     return render(request, "empresas/busca.html", context)
 
 
-class EmpresaListView(LoginRequiredMixin, ListView):
+class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Empresa
     template_name = "empresas/lista.html"
     paginate_by = 10
@@ -51,7 +52,6 @@ class EmpresaListView(LoginRequiredMixin, ListView):
             UserType.ADMIN,
             UserType.COORDENADOR,
             UserType.NUCLEADO,
-            UserType.ROOT,
         }:
             return super().dispatch(request, *args, **kwargs)
         return HttpResponseForbidden("Usuário não autorizado.")
@@ -65,7 +65,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
 
         if not (
             self.request.GET.get("mostrar_excluidas") == "1"
-            and self.request.user.user_type in {UserType.ADMIN, UserType.ROOT}
+            and self.request.user.user_type == UserType.ADMIN
         ):
             qs = qs.filter(deleted=False)
 
@@ -82,10 +82,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         context["selected_tags"] = self.request.GET.getlist("tags")
         context["empresas"] = context.get("object_list")
         context["mostrar_excluidas"] = self.request.GET.get("mostrar_excluidas", "")
-        if self.request.user.is_superuser or self.request.user.user_type in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
+        if self.request.user.is_superuser or self.request.user.user_type == UserType.ADMIN:
             context["organizacoes"] = Organizacao.objects.all()
         else:
             org_id = getattr(self.request.user, "organizacao_id", None)
@@ -98,7 +95,7 @@ class EmpresaListView(LoginRequiredMixin, ListView):
         return [self.template_name]
 
 
-class EmpresaCreateView(LoginRequiredMixin, CreateView):
+class EmpresaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = Empresa
     form_class = EmpresaForm
     template_name = "empresas/nova.html"
@@ -121,7 +118,7 @@ class EmpresaCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
+class EmpresaUpdateView(NoSuperadminMixin, LoginRequiredMixin, UpdateView):
     model = Empresa
     form_class = EmpresaForm
     template_name = "empresas/nova.html"
@@ -143,13 +140,13 @@ class EmpresaUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
-class EmpresaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+class EmpresaDeleteView(NoSuperadminMixin, LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Empresa
     template_name = "empresas/confirmar_remocao.html"
     success_url = reverse_lazy("empresas:lista")
 
     def test_func(self):
-        return pode_crud_empresa(self.request.user, self.get_object())
+        return super().test_func() and pode_crud_empresa(self.request.user, self.get_object())
 
     def delete(self, request, *args, **kwargs):  # type: ignore[override]
         empresa = self.get_object()
@@ -167,7 +164,7 @@ class EmpresaDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return redirect(self.success_url)
 
 
-class FavoritoListView(LoginRequiredMixin, ListView):
+class FavoritoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Empresa
     template_name = "empresas/favoritos.html"
     context_object_name = "empresas"
@@ -229,12 +226,14 @@ class TagDeleteView(NoSuperadminMixin, ClienteGerenteRequiredMixin, LoginRequire
         return super().delete(request, *args, **kwargs)
 
 
-class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class EmpresaChangeLogListView(NoSuperadminMixin, LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = EmpresaChangeLog
     template_name = "empresas/historico.html"
     paginate_by = 10
 
     def test_func(self):
+        if not super().test_func():
+            return False
         empresa = self.get_empresa()
         return self.request.user == empresa.usuario or self.request.user.is_staff
 
@@ -252,7 +251,7 @@ class EmpresaChangeLogListView(LoginRequiredMixin, UserPassesTestMixin, ListView
         return context
 
 
-class AvaliacaoCreateView(LoginRequiredMixin, CreateView):
+class AvaliacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = AvaliacaoEmpresa
     form_class = AvaliacaoForm
     template_name = "empresas/avaliacao_form.html"
@@ -284,7 +283,7 @@ class AvaliacaoCreateView(LoginRequiredMixin, CreateView):
         return reverse("empresas:detail", args=[self.empresa.pk])
 
 
-class AvaliacaoUpdateView(LoginRequiredMixin, UpdateView):
+class AvaliacaoUpdateView(NoSuperadminMixin, LoginRequiredMixin, UpdateView):
     model = AvaliacaoEmpresa
     form_class = AvaliacaoForm
     template_name = "empresas/avaliacao_form.html"
@@ -327,7 +326,7 @@ def detalhes_empresa(request, pk):
     empresa = get_object_or_404(Empresa, pk=pk)
     if (
         not request.user.is_superuser
-        and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}
+        and request.user.user_type != UserType.ADMIN
         and empresa.usuario.organizacao != request.user.organizacao  # Corrigido para usar 'organizacao'
     ):
         return HttpResponseForbidden()

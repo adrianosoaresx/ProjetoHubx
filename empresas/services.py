@@ -22,12 +22,12 @@ def search_empresas(user, params):
 
     Parâmetros aceitos: ``nome``, ``municipio``, ``estado``, ``tags``,
     ``organizacao_id`` e ``q`` (busca textual). O parâmetro
-    ``mostrar_excluidas`` só é respeitado para administradores ou usuários
-    ``root``, exibindo registros com ``deleted=True``.
+    ``mostrar_excluidas`` só é respeitado para administradores,
+    exibindo registros com ``deleted=True``.
     """
 
     mostrar_excluidas = params.get("mostrar_excluidas")
-    if mostrar_excluidas == "1" and user.user_type in {UserType.ADMIN, UserType.ROOT}:
+    if mostrar_excluidas == "1" and user.user_type == UserType.ADMIN:
         qs = Empresa.all_objects.select_related("organizacao", "usuario").prefetch_related("tags")
     else:
         qs = (
