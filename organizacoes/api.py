@@ -318,44 +318,9 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
 
 
 
-class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
-    serializer_class = NucleoSerializer
-
-    def get_queryset(self):
-        org = self.get_organizacao()
-        return Nucleo.objects.filter(organizacao=org, deleted=False)
-
-    def list(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        qs = Nucleo.objects.filter(deleted=False, organizacao__isnull=True)
-        search = request.query_params.get("search")
-        if search:
-            qs = qs.filter(nome__icontains=search)
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        nucleo_id = request.data.get("nucleo_id")
-        nucleo = get_object_or_404(Nucleo, pk=nucleo_id)
-        if nucleo.organizacao_id is not None:
-            return Response(status=status.HTTP_409_CONFLICT)
-        nucleo.organizacao = org
-        nucleo.save(update_fields=["organizacao"])
-        serializer = self.get_serializer(nucleo)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
-        org = self.get_organizacao()
-        nucleo = get_object_or_404(Nucleo, pk=pk, organizacao=org)
-        nucleo.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class OrganizacaoRelatedAssociationViewSet(OrganizacaoRelatedModelViewSet):
     model = None  # type: ignore[assignment]
     serializer_class = None  # type: ignore[assignment]
     search_field = "nome"
@@ -367,9 +332,7 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
-
-        qs = Evento.objects.filter(deleted=False, organizacao__isnull=True)
-
+        qs = self.model.objects.filter(deleted=False, organizacao__isnull=True)
         search = request.query_params.get("search")
         if search:
             qs = qs.filter(**{f"{self.search_field}__icontains": search})
@@ -385,15 +348,13 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedModelViewSet):
 
     def create(self, request, *args, **kwargs):  # type: ignore[override]
         org = self.get_organizacao()
-
-        evento_id = request.data.get("evento_id")
-        evento = get_object_or_404(Evento, pk=evento_id)
-        if evento.organizacao_id is not None:
+        obj_id = request.data.get(self._get_id_field())
+        obj = get_object_or_404(self.model, pk=obj_id)
+        if getattr(obj, "organizacao_id", None) is not None:
             return Response(status=status.HTTP_409_CONFLICT)
-        evento.organizacao = org
-        evento.save(update_fields=["organizacao"])
-        serializer = self.get_serializer(evento)
-
+        obj.organizacao = org
+        obj.save(update_fields=["organizacao"])
+        serializer = self.get_serializer(obj)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
@@ -408,30 +369,10 @@ class OrganizacaoNucleoViewSet(OrganizacaoRelatedAssociationViewSet):
     serializer_class = NucleoSerializer
 
 
-
-    def list(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        qs = Empresa.objects.filter(deleted=False, organizacao__isnull=True)
-        search = request.query_params.get("search")
-        if search:
-            qs = qs.filter(nome__icontains=search)
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        empresa_id = request.data.get("empresa_id")
-        empresa = get_object_or_404(Empresa, pk=empresa_id)
-        if empresa.organizacao_id is not None:
-            return Response(status=status.HTTP_409_CONFLICT)
-        empresa.organizacao = org
-        empresa.save(update_fields=["organizacao"])
-        serializer = self.get_serializer(empresa)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+class OrganizacaoEventoViewSet(OrganizacaoRelatedAssociationViewSet):
+    model = Evento
+    serializer_class = EventoSerializer
+    search_field = "titulo"
 
 
 class OrganizacaoEmpresaViewSet(OrganizacaoRelatedAssociationViewSet):
@@ -443,42 +384,6 @@ class OrganizacaoPostViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Post
     serializer_class = PostSerializer
     search_field = "conteudo"
-
-
-    def get_queryset(self):
-        org = self.get_organizacao()
-        return Post.objects.filter(organizacao=org, deleted=False)
-
-    def list(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        qs = Post.objects.filter(deleted=False, organizacao__isnull=True)
-        search = request.query_params.get("search")
-        if search:
-            qs = qs.filter(conteudo__icontains=search)
-        page = self.paginate_queryset(qs)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(qs, many=True)
-        return Response(serializer.data)
-
-    def create(self, request, *args, **kwargs):  # type: ignore[override]
-        org = self.get_organizacao()
-        post_id = request.data.get("post_id")
-        post = get_object_or_404(Post, pk=post_id)
-        if post.organizacao_id is not None:
-            return Response(status=status.HTTP_409_CONFLICT)
-        post.organizacao = org
-        post.save(update_fields=["organizacao"])
-        serializer = self.get_serializer(post)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def destroy(self, request, pk=None, organizacao_pk=None):  # type: ignore[override]
-        org = self.get_organizacao()
-        post = get_object_or_404(Post, pk=pk, organizacao=org)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 
 class OrganizacaoCentroCustoViewSet(OrganizacaoRelatedModelViewSet):
