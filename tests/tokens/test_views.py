@@ -36,6 +36,20 @@ def test_gerar_convite_form_fields(client):
     assert "name=\"nucleos\"" in content
 
 
+def test_gerar_convite_form_root_user(client):
+    root = UserFactory(is_staff=True, is_superuser=True, user_type=UserType.ROOT.value)
+    org1 = OrganizacaoFactory()
+    org2 = OrganizacaoFactory()
+    org1.users.add(root)
+    org2.users.add(root)
+    _login(client, root)
+    resp = client.get(reverse("tokens:gerar_convite"))
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert content.count("<option") >= 2
+    assert "name=\"nucleos\"" not in content
+
+
 def test_gerar_token_convite_view(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
