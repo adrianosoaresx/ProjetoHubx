@@ -29,7 +29,7 @@ class ModerationTests(TestCase):
 
     def test_pending_visibility_and_approval(self):
         post = Post.objects.create(autor=self.author, organizacao=self.org, conteudo="hi")
-        self.assertEqual(post.moderacao.status, "pendente")
+        self.assertIsNone(post.moderacao)
 
         resp = self._list(self.other)
         data = resp.data if isinstance(resp.data, dict) else {"results": resp.data}
@@ -61,8 +61,7 @@ class ModerationTests(TestCase):
 
     def test_rejected_hidden(self):
         post = Post.objects.create(autor=self.author, organizacao=self.org, conteudo="hi")
-        post.moderacao.status = "rejeitado"
-        post.moderacao.save()
+        ModeracaoPost.objects.create(post=post, status="rejeitado")
 
         resp = self._list(self.author)
         data = resp.data if isinstance(resp.data, dict) else {"results": resp.data}
@@ -82,5 +81,5 @@ class ModerationTests(TestCase):
             format="json",
         )
         self.client.force_authenticate(user=None)
-        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 3)
+        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 2)
         self.assertEqual(post.moderacao.status, "rejeitado")

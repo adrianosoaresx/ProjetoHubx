@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import UserType
-from feed.models import Post
+from feed.models import ModeracaoPost, Post
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -40,8 +40,7 @@ class FeedPublicPrivateTests(TestCase):
             tipo_feed="global",
             organizacao=self.org,
         )
-        post.moderacao.status = "aprovado"
-        post.moderacao.save()
+        ModeracaoPost.objects.create(post=post, status="aprovado")
         resp = self.client.get(reverse("feed:listar"))
         self.assertIn("global", resp.content.decode())
 
@@ -52,8 +51,7 @@ class FeedPublicPrivateTests(TestCase):
             tipo_feed="nucleo",
             organizacao=self.org,
         )
-        post.moderacao.status = "aprovado"
-        post.moderacao.save()
+        ModeracaoPost.objects.create(post=post, status="aprovado")
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context.get("posts", [])), 0)
 
@@ -65,8 +63,7 @@ class FeedPublicPrivateTests(TestCase):
             tipo_feed="nucleo",
             organizacao=self.org,
         )
-        post.moderacao.status = "aprovado"
-        post.moderacao.save()
+        ModeracaoPost.objects.create(post=post, status="aprovado")
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context.get("posts", [])), 0)
 
@@ -79,9 +76,8 @@ class FeedPublicPrivateTests(TestCase):
     def test_search_returns_matching_posts(self):
         p1 = Post.objects.create(autor=self.user, conteudo="alpha bravo", organizacao=self.org)
         p2 = Post.objects.create(autor=self.user, conteudo="charlie delta", organizacao=self.org)
-        p1.moderacao.status = p2.moderacao.status = "aprovado"
-        p1.moderacao.save()
-        p2.moderacao.save()
+        ModeracaoPost.objects.create(post=p1, status="aprovado")
+        ModeracaoPost.objects.create(post=p2, status="aprovado")
         resp = self.client.get(reverse("feed:listar") + "?q=alpha")
         self.assertEqual(len(resp.context.get("posts", [])), 1)
         self.assertIn("alpha bravo", resp.content.decode())

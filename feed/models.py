@@ -88,10 +88,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
             raise ValidationError({"evento": "Evento é obrigatório"})
 
     def save(self, *args, **kwargs):
-        is_new = self._state.adding
         super().save(*args, **kwargs)
-        if is_new:
-            ModeracaoPost.objects.create(post=self)
         banned = getattr(settings, "FEED_BAD_WORDS", [])
         if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
             mod = self.moderacao

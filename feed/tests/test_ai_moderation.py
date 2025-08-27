@@ -32,11 +32,13 @@ class AIModerationAPITest(TestCase):
         )
         self.assertEqual(post.moderacao.status, "pendente")
 
-    def test_multiple_ai_decisions_create_history(self):
-        post = Post.objects.create(autor=self.user, organizacao=self.user.organizacao, conteudo="ok")
+    def test_multiple_ai_decisions_update_status(self):
+        post = Post.objects.create(
+            autor=self.user, organizacao=self.user.organizacao, conteudo="ok"
+        )
         aplicar_decisao(post, "aceito")
         aplicar_decisao(post, "rejeitado")
-        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 3)
+        self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 1)
         self.assertEqual(post.moderacao.status, "rejeitado")
 
 
