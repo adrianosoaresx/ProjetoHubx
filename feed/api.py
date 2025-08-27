@@ -305,6 +305,7 @@ class PostViewSet(viewsets.ModelViewSet):
                     qs.annotate(search=vector, rank=SearchRank(vector, query))
                     .filter(search=query)
                     .filter(Q(tags__deleted=False) | Q(tags__isnull=True))
+                    .distinct()
                     .order_by("-rank")
                 )
             or_query = Q()
@@ -313,7 +314,7 @@ class PostViewSet(viewsets.ModelViewSet):
                 for part in term.split():
                     sub &= Q(conteudo__icontains=part) | Q(tags__nome__icontains=part, tags__deleted=False)
                 or_query |= sub
-            return qs.filter(or_query)
+            return qs.filter(or_query).distinct()
         return qs.order_by("-created_at")
 
     def _cache_key(self, request) -> str:

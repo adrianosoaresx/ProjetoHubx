@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from feed.factories import PostFactory
+from feed.models import Tag
 from organizacoes.factories import OrganizacaoFactory
 
 
+@override_settings(ROOT_URLCONF="Hubx.urls")
 class FeedSearchTest(TestCase):
     def setUp(self) -> None:
         org = OrganizacaoFactory()
@@ -34,4 +36,13 @@ class FeedSearchTest(TestCase):
         ids = self._ids(res.data)
         self.assertIn(str(p1.id), ids)
         self.assertIn(str(p2.id), ids)
+
+    def test_post_with_multiple_tags_returns_once(self) -> None:
+        post = PostFactory(autor=self.user)
+        tag1 = Tag.objects.create(nome="abacate")
+        tag2 = Tag.objects.create(nome="laranja")
+        post.tags.add(tag1, tag2)
+        res = self.client.get("/api/feed/posts/", {"q": "abacate|laranja"})
+        ids = self._ids(res.data)
+        self.assertEqual(ids.count(str(post.id)), 1)
 
