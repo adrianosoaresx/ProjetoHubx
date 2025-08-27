@@ -7,7 +7,6 @@ from django.utils.translation import gettext_lazy as _
 
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
-from accounts.models import UserType
 
 from accounts.models import UserType
 from .models import ApiToken, ApiTokenIp, CodigoAutenticacao, TokenAcesso
@@ -35,12 +34,20 @@ class GerarTokenConviteForm(forms.Form):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
-            if getattr(user, "user_type", None) == UserType.ROOT:
-                self.fields.pop("nucleos")
+            if user.user_type == UserType.ROOT:
+                self.fields["organizacao"].queryset = Organizacao.objects.all()
+                self.fields.pop("nucleos", None)
             else:
-                self.fields["nucleos"].queryset = Nucleo.objects.filter(organizacao__users=user)
+                self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
+                self.fields["nucleos"].queryset = Nucleo.objects.filter(
+                    organizacao__users=user
+                )
 
+            self.fields["tipo_destino"].choices = [
+                choice
+                for choice in TokenAcesso.TipoUsuario.choices
+                if can_issue_invite(user, choice[0])
+            ]
 
 
 class GerarApiTokenForm(forms.Form):
