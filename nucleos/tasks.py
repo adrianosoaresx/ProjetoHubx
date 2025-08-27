@@ -16,7 +16,14 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def notify_participacao_aprovada(participacao_id: int) -> None:
-    part = ParticipacaoNucleo.objects.select_related("user").get(pk=participacao_id)
+    try:
+        part = ParticipacaoNucleo.all_objects.select_related("user").get(pk=participacao_id)
+    except ParticipacaoNucleo.DoesNotExist:
+        logger.warning(
+            "participacao_nucleo_not_found",
+            extra={"participacao_id": str(participacao_id)},
+        )
+        return
     enviar_para_usuario(
         part.user,
         "participacao_aprovada",
@@ -26,7 +33,14 @@ def notify_participacao_aprovada(participacao_id: int) -> None:
 
 @shared_task
 def notify_participacao_recusada(participacao_id: int) -> None:
-    part = ParticipacaoNucleo.objects.select_related("user").get(pk=participacao_id)
+    try:
+        part = ParticipacaoNucleo.all_objects.select_related("user").get(pk=participacao_id)
+    except ParticipacaoNucleo.DoesNotExist:
+        logger.warning(
+            "participacao_nucleo_not_found",
+            extra={"participacao_id": str(participacao_id)},
+        )
+        return
     enviar_para_usuario(
         part.user,
         "participacao_recusada",
