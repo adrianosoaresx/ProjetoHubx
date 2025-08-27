@@ -62,7 +62,7 @@
       {{ s.usuario.get_full_name|default:s.usuario.username }} -
       {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }} -
       {% if s.ativo %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}
-      {% if request.user.user_type in ('admin','coordenador') %}
+      {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
       <form method="post" action="{% url 'nucleos:suplente_remover' object.pk s.id %}" class="inline">
         {% csrf_token %}
         <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
@@ -72,7 +72,7 @@
     {% endfor %}
   </ul>
   {% endif %}
-  {% if request.user.user_type in ('admin','coordenador') %}
+  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
   <div class="mt-4">
     <a href="{% url 'nucleos:suplente_adicionar' object.pk %}" class="text-blue-600">{% trans 'Adicionar Suplente' %}</a>
   </div>
@@ -102,14 +102,14 @@
         download="nucleo-{{ object.pk }}-membros.xlsx"
       >{% trans 'Exportar XLS' %}</a>
     </div>
-    {% if request.user.user_type in ('admin','coordenador','root') %}
+    {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' or request.user.user_type == 'root' %}
     <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
       <button class="ml-2 text-orange-600">{% if object.deleted %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}</button>
     </form>
     {% endif %}
   </div>
 
-    {% if mostrar_solicitar and request.user.user_type not in ('admin','coordenador') %}
+    {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
     <div class="mt-4">
       <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
     </div>
