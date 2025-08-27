@@ -13,7 +13,7 @@
   <div class="mb-4">
     <a href="{% url 'nucleos:meus' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
   </div>
-  {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+  {% if request.user.user_type == 'admin' %}
   <div class="mb-4">
     <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
   </div>
@@ -38,7 +38,7 @@
       <p class="text-sm">{% trans "Mensalidade" %}: {{ nucleo.mensalidade|localize }}</p>
       <div class="mt-2">
         <a href="{% url 'nucleos:detail' nucleo.pk %}" class="text-blue-600" aria-label="{% blocktrans with nome=nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}">{% trans 'Detalhes' %}</a>
-        {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+        {% if request.user.user_type == 'admin' %}
         <a href="{% url 'nucleos:delete' nucleo.pk %}" class="text-red-600 ml-2" aria-label="{% blocktrans with nome=nucleo.nome %}Excluir núcleo {{ nome }}{% endblocktrans %}">{% trans 'Excluir' %}</a>
         {% endif %}
       </div>

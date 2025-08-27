@@ -38,7 +38,7 @@ from django.views.generic import (
 
 from accounts.models import UserType
 from agenda.models import Evento
-from core.permissions import AdminRequiredMixin
+from core.permissions import AdminRequiredMixin, NoSuperadminMixin
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
@@ -68,7 +68,7 @@ from .tasks import (
 
 logger = structlog.get_logger(__name__)
 
-class CategoriaListView(LoginRequiredMixin, ListView):
+class CategoriaListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = CategoriaDiscussao
     template_name = "discussao/categorias.html"
     context_object_name = "categorias"
@@ -239,7 +239,7 @@ class TagDeleteView(AdminRequiredMixin, LoginRequiredMixin, DeleteView):
     slug_field = "slug"
     slug_url_kwarg = "slug"
 
-class TopicoListView(LoginRequiredMixin, ListView):
+class TopicoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = TopicoDiscussao
     template_name = "discussao/topicos_list.html"
     context_object_name = "topicos"
@@ -326,7 +326,7 @@ class TopicoListView(LoginRequiredMixin, ListView):
         return context
 
 
-class TopicoDetailView(LoginRequiredMixin, DetailView):
+class TopicoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = TopicoDiscussao
     template_name = "discussao/topico_detail.html"
     context_object_name = "topico"
@@ -411,21 +411,21 @@ class TopicoDetailView(LoginRequiredMixin, DetailView):
         context["content_type_id"] = ContentType.objects.get_for_model(TopicoDiscussao).id
 
         context["resposta_content_type_id"] = ContentType.objects.get_for_model(RespostaDiscussao).id
-        is_admin = user.user_type in {UserType.ADMIN, UserType.ROOT}
+        is_admin = user.user_type == UserType.ADMIN
         dentro_prazo = timezone.now() - self.object.created_at <= timedelta(minutes=15)
         context["pode_editar_topico"] = is_admin or (user == self.object.autor and dentro_prazo)
 
         return context
 
 
-class TopicoCreateView(LoginRequiredMixin, CreateView):
+class TopicoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = TopicoDiscussao
     form_class = TopicoDiscussaoForm
     template_name = "discussao/topico_novo.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
-        if request.user.user_type != UserType.ROOT and request.user.organizacao != self.categoria.organizacao:
+        if request.user.user_type == UserType.ROOT or request.user.organizacao != self.categoria.organizacao:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
@@ -453,7 +453,7 @@ class TopicoCreateView(LoginRequiredMixin, CreateView):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.object.slug])
 
 
-class TopicoUpdateView(LoginRequiredMixin, UpdateView):
+class TopicoUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = TopicoDiscussao
     form_class = TopicoDiscussaoForm
     template_name = "discussao/topico_novo.html"
@@ -481,7 +481,7 @@ class TopicoUpdateView(LoginRequiredMixin, UpdateView):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.object.slug])
 
 
-class TopicoDeleteView(LoginRequiredMixin, DeleteView):
+class TopicoDeleteView(LoginRequiredMixin, NoSuperadminMixin, DeleteView):
     model = TopicoDiscussao
     template_name = "discussao/topico_confirm_delete.html"
 
@@ -511,7 +511,7 @@ class TopicoDeleteView(LoginRequiredMixin, DeleteView):
         return response
 
 
-class RespostaCreateView(LoginRequiredMixin, CreateView):
+class RespostaCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = RespostaDiscussao
     form_class = RespostaDiscussaoForm
     template_name = "discussao/resposta_form.html"
@@ -519,7 +519,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         self.categoria = get_object_or_404(CategoriaDiscussao, slug=kwargs["categoria_slug"])
         self.topico = get_object_or_404(TopicoDiscussao, categoria=self.categoria, slug=kwargs["topico_slug"])
-        if request.user.user_type != UserType.ROOT and request.user.organizacao != self.categoria.organizacao:
+        if request.user.user_type == UserType.ROOT or request.user.organizacao != self.categoria.organizacao:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
@@ -561,7 +561,7 @@ class RespostaCreateView(LoginRequiredMixin, CreateView):
         return reverse("discussao:topico_detalhe", args=[self.categoria.slug, self.topico.slug])
 
 
-class RespostaDetailView(LoginRequiredMixin, DetailView):
+class RespostaDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = RespostaDiscussao
     template_name = "discussao/comentario_item.html"
     context_object_name = "comentario"
@@ -577,7 +577,7 @@ class RespostaDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class RespostaDeleteView(LoginRequiredMixin, DeleteView):
+class RespostaDeleteView(LoginRequiredMixin, NoSuperadminMixin, DeleteView):
     model = RespostaDiscussao
 
     def dispatch(self, request, *args, **kwargs):
@@ -609,7 +609,7 @@ class RespostaDeleteView(LoginRequiredMixin, DeleteView):
         )
 
 
-class RespostaUpdateView(LoginRequiredMixin, UpdateView):
+class RespostaUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = RespostaDiscussao
     form_class = RespostaDiscussaoForm
     template_name = "discussao/resposta_form.html"
@@ -655,7 +655,7 @@ class RespostaUpdateView(LoginRequiredMixin, UpdateView):
     ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
     name="dispatch",
 )
-class InteracaoView(LoginRequiredMixin, View):
+class InteracaoView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, content_type_id, object_id, acao):
         from .cache_utils import topicos_list_cache_key
         from .models import RespostaDiscussao, TopicoDiscussao
@@ -701,14 +701,11 @@ class InteracaoView(LoginRequiredMixin, View):
     ratelimit(key="user_or_ip", rate="20/m", method="POST", block=True),
     name="dispatch",
 )
-class TopicoMarkResolvedView(LoginRequiredMixin, View):
+class TopicoMarkResolvedView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, categoria_slug, topico_slug):
         categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
         topico = get_object_or_404(TopicoDiscussao, categoria=categoria, slug=topico_slug)
-        if request.user != topico.autor and request.user.user_type not in {
-            UserType.ADMIN,
-            UserType.ROOT,
-        }:
+        if request.user != topico.autor and request.user.user_type != UserType.ADMIN:
             return HttpResponseForbidden()
         antes_resolvido = topico.resolvido
         resposta_id = request.POST.get("melhor_resposta")
@@ -754,16 +751,16 @@ class TopicoMarkResolvedView(LoginRequiredMixin, View):
         )
 
 
-class TopicoToggleFechadoView(LoginRequiredMixin, View):
+class TopicoToggleFechadoView(LoginRequiredMixin, NoSuperadminMixin, View):
     def post(self, request, categoria_slug, topico_slug):
         categoria = get_object_or_404(CategoriaDiscussao, slug=categoria_slug)
         topico = get_object_or_404(TopicoDiscussao, categoria=categoria, slug=topico_slug)
         if topico.fechado:
-            if request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+            if request.user.user_type != UserType.ADMIN:
                 return HttpResponseForbidden()
             topico.fechado = False
         else:
-            if request.user != topico.autor and request.user.user_type not in {UserType.ADMIN, UserType.ROOT}:
+            if request.user != topico.autor and request.user.user_type != UserType.ADMIN:
                 return HttpResponseForbidden()
             topico.fechado = True
         topico.save(update_fields=["fechado"])

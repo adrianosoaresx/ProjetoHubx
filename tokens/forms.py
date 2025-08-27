@@ -9,7 +9,9 @@ from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 from accounts.models import UserType
 
+from accounts.models import UserType
 from .models import ApiToken, ApiTokenIp, CodigoAutenticacao, TokenAcesso
+from .perms import can_issue_invite
 from .services import find_token_by_code
 
 User = get_user_model()
@@ -38,6 +40,7 @@ class GerarTokenConviteForm(forms.Form):
                 self.fields.pop("nucleos")
             else:
                 self.fields["nucleos"].queryset = Nucleo.objects.filter(organizacao__users=user)
+
 
 
 class GerarApiTokenForm(forms.Form):

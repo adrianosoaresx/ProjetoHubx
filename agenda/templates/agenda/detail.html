@@ -55,7 +55,7 @@
   </div>
 
   <!-- Inscrição -->
-  {% if user.is_authenticated and user.user_type != 'admin' and user.user_type != 'root' %}
+  {% if user.is_authenticated and user.user_type != 'admin' %}
     {% with inscricao=object.inscricoes.filter(user=user, status='confirmada').first %}
       {% if inscricao %}
         <div class="mb-10 space-y-4">

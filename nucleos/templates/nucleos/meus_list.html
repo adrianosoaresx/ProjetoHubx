@@ -13,7 +13,7 @@
     <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
     <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
   </form>
-    {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+    {% if request.user.user_type == 'admin' %}
   <div class="mb-4">
     <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
   </div>
@@ -38,7 +38,7 @@
       <p class="text-sm">{% trans "Mensalidade" %}: {{ nucleo.mensalidade|localize }}</p>
       <div class="mt-2">
         <a href="{% url 'nucleos:detail' nucleo.pk %}" class="text-blue-600" aria-label="{% blocktrans with nome=nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}">{% trans 'Detalhes' %}</a>
-          {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+          {% if request.user.user_type == 'admin' %}
         <form method="post" action="{% url 'nucleos:delete' nucleo.pk %}" class="inline">{% csrf_token %}
           <button class="text-red-600 ml-2" aria-label="{% blocktrans with nome=nucleo.nome %}Excluir núcleo {{ nome }}{% endblocktrans %}">{% trans 'Excluir' %}</button>
         </form>

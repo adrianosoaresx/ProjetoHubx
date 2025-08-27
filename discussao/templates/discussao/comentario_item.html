@@ -12,13 +12,13 @@
     {% if comentario.pode_editar %}
       <a href="{% url 'discussao:resposta_editar' comentario.id %}" class="text-blue-600 text-xs">{% trans "Editar" %}</a>
     {% endif %}
-    {% if comentario.pode_editar or user.get_tipo_usuario in ['admin', 'coordenador', 'root'] %}
+    {% if comentario.pode_editar or user.get_tipo_usuario in ['admin', 'coordenador'] %}
       <form method="post" hx-delete="{% url 'discussao:delete_comment' comentario.id %}" hx-target="#coment-{{ comentario.id }}" hx-swap="delete">
         {% csrf_token %}
         <button type="submit" class="text-red-600 text-xs">{% trans "Remover" %}</button>
       </form>
     {% endif %}
-    {% if not topico.melhor_resposta and (user == topico.autor or user.get_tipo_usuario in ['admin','root']) %}
+    {% if not topico.melhor_resposta and (user == topico.autor or user.get_tipo_usuario == 'admin') %}
       <form method="post" hx-post="{% url 'discussao:topico_resolver' topico.categoria.slug topico.slug %}" hx-target="#topico-container" hx-swap="outerHTML">
         {% csrf_token %}
         <input type="hidden" name="melhor_resposta" value="{{ comentario.id }}" />

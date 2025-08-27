@@ -44,24 +44,42 @@ def test_get_permissions(client, issuer_type, allowed):
         content = resp.content.decode()
         for role in allowed:
             assert f'value="{role}"' in content
+        for role, _ in TokenAcesso.TipoUsuario.choices:
+            if role not in allowed:
+                assert f'value="{role}"' not in content
     else:
         assert resp.status_code == 302
         assert resp.url == reverse("accounts:perfil")
+
+
+def test_root_form_has_all_orgs_and_no_nucleos(client):
+    user = UserFactory(
+        user_type=UserType.ROOT.value, is_staff=True, is_superuser=True
+    )
+    org1 = OrganizacaoFactory()
+    org2 = OrganizacaoFactory()
+    _login(client, user)
+    resp = client.get(reverse("tokens:gerar_convite"))
+    assert resp.status_code == 200
+    content = resp.content.decode()
+    assert f'value="{org1.pk}"' in content
+    assert f'value="{org2.pk}"' in content
+    assert 'name="nucleos"' not in content
 
 
 @pytest.mark.parametrize(
     "issuer_type,target,expected",
     [
         (UserType.ROOT, TokenAcesso.TipoUsuario.ADMIN, 200),
-        (UserType.ROOT, TokenAcesso.TipoUsuario.CONVIDADO, 403),
+        (UserType.ROOT, TokenAcesso.TipoUsuario.CONVIDADO, 400),
         (UserType.ADMIN, TokenAcesso.TipoUsuario.CONVIDADO, 200),
-        (UserType.ADMIN, TokenAcesso.TipoUsuario.ADMIN, 403),
+        (UserType.ADMIN, TokenAcesso.TipoUsuario.ADMIN, 400),
         (UserType.COORDENADOR, TokenAcesso.TipoUsuario.CONVIDADO, 200),
-        (UserType.COORDENADOR, TokenAcesso.TipoUsuario.ASSOCIADO, 403),
-        (UserType.FINANCEIRO, TokenAcesso.TipoUsuario.CONVIDADO, 403),
-        (UserType.NUCLEADO, TokenAcesso.TipoUsuario.CONVIDADO, 403),
-        (UserType.ASSOCIADO, TokenAcesso.TipoUsuario.CONVIDADO, 403),
-        (UserType.CONVIDADO, TokenAcesso.TipoUsuario.CONVIDADO, 403),
+        (UserType.COORDENADOR, TokenAcesso.TipoUsuario.ASSOCIADO, 400),
+        (UserType.FINANCEIRO, TokenAcesso.TipoUsuario.CONVIDADO, 400),
+        (UserType.NUCLEADO, TokenAcesso.TipoUsuario.CONVIDADO, 400),
+        (UserType.ASSOCIADO, TokenAcesso.TipoUsuario.CONVIDADO, 400),
+        (UserType.CONVIDADO, TokenAcesso.TipoUsuario.CONVIDADO, 400),
     ],
 )
 def test_post_permissions(client, issuer_type, target, expected):

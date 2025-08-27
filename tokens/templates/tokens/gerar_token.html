@@ -17,21 +17,23 @@
 
     <div class="space-y-4">
       {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
-          {% if field.field.widget.input_type == 'select' %}
-            {{ field|add_class:"form-select"|attr:"required" }}
-          {% else %}
-            {% if forloop.first %}
-              {{ field|add_class:"form-input"|attr:"autofocus required" }}
+        {% if user.user_type != 'root' or field.name != 'nucleos' %}
+          <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
+            {% if field.field.widget.input_type == 'select' %}
+              {{ field|add_class:"form-select"|attr:"required" }}
             {% else %}
-              {{ field|add_class:"form-input"|attr:"required" }}
+              {% if forloop.first %}
+                {{ field|add_class:"form-input"|attr:"autofocus required" }}
+              {% else %}
+                {{ field|add_class:"form-input"|attr:"required" }}
+              {% endif %}
             {% endif %}
-          {% endif %}
-          {% if field.errors %}
-            <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
-          {% endif %}
-        </div>
+            {% if field.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
+            {% endif %}
+          </div>
+        {% endif %}
       {% endfor %}
     </div>
 
