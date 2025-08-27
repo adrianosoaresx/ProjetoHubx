@@ -109,6 +109,24 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
     assert part.status == "inativo" and part.justificativa == "expiração automática"
 
 
+def test_solicitar_reuse_soft_deleted(api_client, outro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
+    part = ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
+    part.soft_delete()
+
+    _auth(api_client, outro_user)
+    url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
+    resp = api_client.post(url)
+    assert resp.status_code == 201
+
+    part.refresh_from_db()
+    assert part.status == "pendente"
+    assert part.deleted is False and part.deleted_at is None
+    assert (
+        ParticipacaoNucleo.all_objects.filter(user=outro_user, nucleo=nucleo).count() == 1
+    )
+
+
 def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=coord_user, nucleo=nucleo, status="ativo")

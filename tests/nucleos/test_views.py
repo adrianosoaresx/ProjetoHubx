@@ -94,6 +94,23 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
     assert list(nucleo.membros) == [membro_user]
 
 
+def test_participacao_reuse_soft_deleted(client, membro_user, organizacao):
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    part = ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
+    part.soft_delete()
+
+    client.force_login(membro_user)
+    resp = client.post(reverse("nucleos:participacao_solicitar", args=[nucleo.pk]))
+    assert resp.status_code == 302
+
+    part.refresh_from_db()
+    assert part.status == "pendente"
+    assert part.deleted is False and part.deleted_at is None
+    assert (
+        ParticipacaoNucleo.all_objects.filter(user=membro_user, nucleo=nucleo).count() == 1
+    )
+
+
 def test_toggle_active(client, admin_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     client.force_login(admin_user)

@@ -278,30 +278,38 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 {"detail": _("Você não tem permissão para acessar este núcleo.")},
                 status=403,
             )
-        participacao, created = ParticipacaoNucleo.objects.get_or_create(user=request.user, nucleo=nucleo)
+        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(
+            user=request.user, nucleo=nucleo
+        )
+
+        save_fields: list[str] = []
+        if participacao.deleted:
+            participacao.deleted = False
+            participacao.deleted_at = None
+            save_fields += ["deleted", "deleted_at"]
+
         if not created:
-            if participacao.status == "pendente":
-                return Response({"detail": _("Já solicitado.")}, status=400)
-            if participacao.status == "ativo":
-                return Response({"detail": _("Já membro do núcleo.")}, status=400)
+            if not save_fields:
+                if participacao.status == "pendente":
+                    return Response({"detail": _("Já solicitado.")}, status=400)
+                if participacao.status == "ativo":
+                    return Response({"detail": _("Já membro do núcleo.")}, status=400)
             participacao.status = "pendente"
             participacao.data_solicitacao = timezone.now()
             participacao.data_decisao = None
             participacao.decidido_por = None
             participacao.justificativa = ""
-            participacao.deleted = False
-            participacao.deleted_at = None
-            participacao.save(
-                update_fields=[
-                    "status",
-                    "data_solicitacao",
-                    "data_decisao",
-                    "decidido_por",
-                    "justificativa",
-                    "deleted",
-                    "deleted_at",
-                ]
-            )
+            save_fields += [
+                "status",
+                "data_solicitacao",
+                "data_decisao",
+                "decidido_por",
+                "justificativa",
+            ]
+
+        if save_fields:
+            participacao.save(update_fields=save_fields)
+
         serializer = ParticipacaoNucleoSerializer(participacao)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
