@@ -68,6 +68,7 @@
           {% endif %}
         </div>
       </div>
+      {% if request.user.user_type != 'root' %}
       <div class="grid grid-cols-3 gap-4 text-center mt-auto">
         <div>
           <p class="text-xs text-neutral-500">{% trans 'Usuários' %}</p>
@@ -82,23 +83,11 @@
           <p class="text-lg font-semibold text-neutral-900">{{ organizacao.events_count }}</p>
         </div>
       </div>
-      <div class="mt-4 flex gap-2 justify-center">
+      {% endif %}
+      <div class="flex gap-2 justify-center {% if request.user.user_type == 'root' %}mt-auto{% else %}mt-4{% endif %}">
         <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
         {% if perms.organizacoes.change_organizacao %}
         <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
-        {% endif %}
-        {% if request.user.user_type == 'root' %}
-          {% if perms.organizacoes.delete_organizacao %}
-          <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
-          {% endif %}
-          <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
-            {% csrf_token %}
-            {% if organizacao.inativa %}
-              <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Reativar' %}">{% trans 'Reativar' %}</button>
-            {% else %}
-              <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Inativar' %}">{% trans 'Inativar' %}</button>
-            {% endif %}
-          </form>
         {% endif %}
       </div>
     </div>
