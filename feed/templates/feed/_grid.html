@@ -59,7 +59,7 @@
           <div id="like-btn-{{ post.id }}">
             {% include 'feed/_like_button.html' with post=post %}
           </div>
-          <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.reacoes.filter(vote='share', user=user).exists %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+            <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
             <i class="fa-solid fa-share" aria-hidden="true"></i>
             <span class="share-count">{{ post.share_count }}</span>
           </button>
