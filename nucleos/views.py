@@ -24,7 +24,7 @@ from django.views.generic import (
 
 from accounts.models import UserType
 from core.cache import get_cache_version
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin
+from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
 
 from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class NucleoListView(LoginRequiredMixin, ListView):
+class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Nucleo
     template_name = "nucleos/list.html"
     paginate_by = 10
@@ -92,7 +92,7 @@ class NucleoListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class NucleoMeusView(LoginRequiredMixin, ListView):
+class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Nucleo
     template_name = "nucleos/meus_list.html"
     paginate_by = 10
@@ -144,7 +144,7 @@ class NucleoMeusView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
+class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/create.html"
@@ -156,7 +156,7 @@ class NucleoCreateView(AdminRequiredMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
+class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
     form_class = NucleoForm
     template_name = "nucleos/update.html"
@@ -176,7 +176,7 @@ class NucleoUpdateView(GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
+class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
@@ -192,7 +192,7 @@ class NucleoDeleteView(AdminRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:list")
 
 
-class NucleoDetailView(LoginRequiredMixin, DetailView):
+class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
@@ -215,7 +215,6 @@ class NucleoDetailView(LoginRequiredMixin, DetailView):
         if self.request.user.user_type in {
             UserType.ADMIN,
             UserType.COORDENADOR,
-            UserType.ROOT,
         }:
             ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
             ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
@@ -230,7 +229,7 @@ class NucleoDetailView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class NucleoMetricsView(LoginRequiredMixin, DetailView):
+class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/metrics.html"
 
@@ -254,19 +253,19 @@ class NucleoMetricsView(LoginRequiredMixin, DetailView):
         return ctx
 
 
-class SolicitarParticipacaoModalView(LoginRequiredMixin, View):
+class SolicitarParticipacaoModalView(NoSuperadminMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         return render(request, "nucleos/solicitar_modal.html", {"nucleo": nucleo})
 
 
-class PostarFeedModalView(LoginRequiredMixin, View):
+class PostarFeedModalView(NoSuperadminMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         return render(request, "nucleos/postar_modal.html", {"nucleo": nucleo})
 
 
-class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class ConvitesModalView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def get(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         convites = nucleo.convitenucleo_set.filter(usado_em__isnull=True)
@@ -285,7 +284,7 @@ class ConvitesModalView(GerenteRequiredMixin, LoginRequiredMixin, View):
         )
 
 
-class ParticipacaoCreateView(LoginRequiredMixin, View):
+class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao, created = ParticipacaoNucleo.all_objects.get_or_create(
@@ -320,7 +319,7 @@ class ParticipacaoCreateView(LoginRequiredMixin, View):
         return redirect("nucleos:detail", pk=pk)
 
 
-class ParticipacaoDecisaoView(GerenteRequiredMixin, LoginRequiredMixin, FormView):
+class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, FormView):
     form_class = ParticipacaoDecisaoForm
 
     def form_valid(self, form):
@@ -341,7 +340,7 @@ class ParticipacaoDecisaoView(GerenteRequiredMixin, LoginRequiredMixin, FormView
         return redirect("nucleos:detail", pk=nucleo.pk)
 
 
-class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroRemoveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
@@ -352,7 +351,7 @@ class MembroRemoveView(GerenteRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:detail", pk=pk)
 
 
-class MembroPromoverView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class MembroPromoverView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, participacao_id):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         participacao = get_object_or_404(ParticipacaoNucleo, pk=participacao_id, nucleo=nucleo)
@@ -368,7 +367,7 @@ class MembroPromoverView(GerenteRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:detail", pk=pk)
 
 
-class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
+class SuplenteCreateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, CreateView):
     model = CoordenadorSuplente
     form_class = SuplenteForm
     template_name = "nucleos/suplente_form.html"
@@ -414,7 +413,7 @@ class SuplenteCreateView(GerenteRequiredMixin, LoginRequiredMixin, CreateView):
         return ctx
 
 
-class SuplenteDeleteView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class SuplenteDeleteView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk, suplente_id):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         suplente = get_object_or_404(CoordenadorSuplente, pk=suplente_id, nucleo=nucleo)
@@ -423,7 +422,7 @@ class SuplenteDeleteView(GerenteRequiredMixin, LoginRequiredMixin, View):
         return redirect("nucleos:detail", pk=pk)
 
 
-class NucleoToggleActiveView(GerenteRequiredMixin, LoginRequiredMixin, View):
+class NucleoToggleActiveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo.all_objects, pk=pk)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
