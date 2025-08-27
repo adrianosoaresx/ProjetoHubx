@@ -16,7 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
-from accounts.models import SecurityEvent
+from accounts.models import SecurityEvent, UserType
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 from notificacoes.services.email_client import send_email
@@ -24,14 +24,12 @@ from notificacoes.services.whatsapp_client import send_whatsapp
 
 from .forms import (
     Ativar2FAForm,
-    GerarCodigoAutenticacaoForm,
     GerarApiTokenForm,
+    GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
     ValidarTokenConviteForm,
 )
-
-
 from .metrics import (
     tokens_invites_created_total,
     tokens_invites_revoked_total,
@@ -51,14 +49,13 @@ from .ratelimit import check_rate_limit
 from .services import (
     create_invite_token,
     generate_token,
-    list_tokens,
-    revoke_token,
     invite_created,
     invite_revoked,
     invite_used,
+    list_tokens,
+    revoke_token,
 )
 from .utils import get_client_ip
-
 
 User = get_user_model()
 
@@ -70,7 +67,6 @@ def token(request):
             request.session["invite_token"] = tkn
             return redirect("accounts:usuario")
     return render(request, "register/token.html")
-
 
 
 @login_required
@@ -150,7 +146,7 @@ def gerar_api_token(request):
     form = GerarApiTokenForm(request.POST)
     if form.is_valid():
         scope = form.cleaned_data["scope"]
-        if scope == "admin" and not request.user.is_superuser:
+        if scope == "admin" and not (request.user.is_superuser or request.user.user_type == UserType.ROOT):
             if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
@@ -211,11 +207,7 @@ def gerar_api_token(request):
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        choices = [
-            choice
-            for choice in TokenAcesso.TipoUsuario.choices
-            if can_issue_invite(request.user, choice[0])
-        ]
+        choices = [choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(request.user, choice[0])]
         if not choices:
             messages.error(
                 request,
@@ -257,11 +249,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 resp["Retry-After"] = str(rl.retry_after)
             return resp
         form = GerarTokenConviteForm(request.POST, user=request.user)
-        choices = [
-            choice
-            for choice in TokenAcesso.TipoUsuario.choices
-            if can_issue_invite(request.user, choice[0])
-        ]
+        choices = [choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(request.user, choice[0])]
         form.fields["tipo_destino"].choices = choices
         if form.is_valid():
             target_role = form.cleaned_data["tipo_destino"]
@@ -361,6 +349,7 @@ class ValidarTokenConviteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = ValidarTokenConviteForm()
         return render(request, "tokens/validar_token.html", {"form": form})
+
     def post(self, request, *args, **kwargs):
         ip = get_client_ip(request)
         rl = check_rate_limit(f"user:{request.user.id}:{ip}")
@@ -436,6 +425,7 @@ class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = GerarCodigoAutenticacaoForm()
         return render(request, "tokens/gerar_codigo_autenticacao.html", {"form": form})
+
     def post(self, request, *args, **kwargs):
         form = GerarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
@@ -502,6 +492,7 @@ class ValidarCodigoAutenticacaoView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(usuario=request.user)
         return render(request, "tokens/validar_codigo_autenticacao.html", {"form": form})
+
     def post(self, request, *args, **kwargs):
         form = ValidarCodigoAutenticacaoForm(request.POST, usuario=request.user)
         if form.is_valid():
