@@ -84,7 +84,7 @@ def votar_interacao(*, user: User, obj: models.Model, valor: int) -> InteracaoDi
 
 
 def marcar_resolucao(*, topico: TopicoDiscussao, resposta: RespostaDiscussao, user: User) -> TopicoDiscussao:
-    if user != topico.autor and user.user_type not in {"admin", "root"}:
+    if user != topico.autor and user.user_type != UserType.ADMIN:
         raise PermissionDenied
     with transaction.atomic():
         topico.melhor_resposta = resposta
@@ -118,14 +118,14 @@ def verificar_prazo_edicao(
 ) -> bool:
     """Retorna se ``user`` pode editar ou excluir ``obj``.
 
-    Usuários administradores e root podem sempre editar. Outros usuários só
+    Usuários administradores podem sempre editar. Outros usuários só
     podem editar se forem autores e estiverem dentro do prazo definido. Tipos
     adicionais podem ser informados através de ``tipos_extras``.
     """
 
     tipos_extras = tipos_extras or set()
     tipo_usuario = getattr(user, "user_type", None) or getattr(user, "get_tipo_usuario", None)
-    if tipo_usuario in {UserType.ADMIN, UserType.ROOT}:
+    if tipo_usuario == UserType.ADMIN:
         return True
     if obj.autor != user and tipo_usuario not in tipos_extras:
         return False
