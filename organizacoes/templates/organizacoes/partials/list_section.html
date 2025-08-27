@@ -51,61 +51,59 @@
 </form>
 
 {% if object_list %}
-  <div class="overflow-x-auto">
-    <table class="min-w-full bg-white border border-neutral-200 rounded-2xl shadow-sm">
-      <thead class="bg-neutral-50">
-        <tr>
-          <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Nome' %}</th>
-          <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Tipo' %}</th>
-          <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Cidade/Estado' %}</th>
-          <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Data de Criação' %}</th>
-          <th scope="col" class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans 'Ações' %}</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-neutral-200">
-        {% for organizacao in object_list %}
-        <tr class="hover:bg-neutral-50">
-          <td class="px-4 py-2 whitespace-nowrap">
-            <div class="flex items-center gap-2">
-              <div class="w-10 h-10 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
-                {% if organizacao.avatar %}
-                  <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" />
-                {% else %}
-                  <span class="text-sm font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
-                {% endif %}
-              </div>
-              <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
-              {% if organizacao.inativa %}
-                <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td class="px-4 py-2">{{ organizacao.get_tipo_display }}</td>
-          <td class="px-4 py-2">{{ organizacao.cidade }}{% if organizacao.estado %}/{{ organizacao.estado }}{% endif %}</td>
-          <td class="px-4 py-2">{{ organizacao.created_at|date:'d/m/Y' }}</td>
-          <td class="px-4 py-2 whitespace-nowrap flex gap-2">
-            <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
-            {% if perms.organizacoes.change_organizacao %}
-            <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for organizacao in object_list %}
+    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 flex flex-col">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
+          {% if organizacao.avatar %}
+            <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" />
+          {% else %}
+            <span class="text-sm font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
+          {% if organizacao.inativa %}
+            <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-4 text-center mt-auto">
+        <div>
+          <p class="text-xs text-neutral-500">{% trans 'Usuários' %}</p>
+          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.users_count }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-500">{% trans 'Núcleos' %}</p>
+          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.nucleos_count }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-neutral-500">{% trans 'Eventos' %}</p>
+          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.events_count }}</p>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-2 justify-center">
+        <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
+        {% if perms.organizacoes.change_organizacao %}
+        <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
+        {% endif %}
+        {% if request.user.user_type == 'root' %}
+          {% if perms.organizacoes.delete_organizacao %}
+          <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
+          {% endif %}
+          <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
+            {% csrf_token %}
+            {% if organizacao.inativa %}
+              <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Reativar' %}">{% trans 'Reativar' %}</button>
+            {% else %}
+              <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Inativar' %}">{% trans 'Inativar' %}</button>
             {% endif %}
-            {% if request.user.user_type == 'root' %}
-              {% if perms.organizacoes.delete_organizacao %}
-              <a href="{% url 'organizacoes:delete' organizacao.id %}" class="text-red-700 hover:underline" aria-label="{% trans 'Remover' %}" hx-confirm="{% trans 'Confirmar remoção?' %}">{% trans 'Remover' %}</a>
-              {% endif %}
-              <form method="post" action="{% url 'organizacoes:toggle' organizacao.id %}" hx-confirm="{% trans 'Tem certeza?' %}">
-                {% csrf_token %}
-                {% if organizacao.inativa %}
-                  <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Reativar' %}">{% trans 'Reativar' %}</button>
-                {% else %}
-                  <button type="submit" class="text-neutral-700 hover:underline" aria-label="{% trans 'Inativar' %}">{% trans 'Inativar' %}</button>
-                {% endif %}
-              </form>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
   </div>
   <div class="mt-6 flex justify-center gap-2">
     {% if page_obj.has_previous %}

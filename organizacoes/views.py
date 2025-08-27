@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch, Q
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -63,7 +63,16 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         return f"organizacoes_list_v{version}_" + "_".join(keys)
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("created_by").prefetch_related("evento_set", "nucleos", "users")
+        qs = (
+            super()
+            .get_queryset()
+            .select_related("created_by")
+            .annotate(
+                users_count=Count("users", distinct=True),
+                nucleos_count=Count("nucleos", distinct=True),
+                events_count=Count("evento", distinct=True),
+            )
+        )
 
         user = self.request.user
         if user.user_type == UserType.ADMIN:
