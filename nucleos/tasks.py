@@ -52,12 +52,14 @@ def notify_participacao_recusada(participacao_id: int) -> None:
 def notify_suplente_designado(nucleo_id: int, email: str) -> None:
     """Notifica apenas o suplente designado identificado pelo e-mail."""
     nucleo = Nucleo.objects.get(pk=nucleo_id)
-    participacoes = nucleo.participacoes.select_related("user").filter(
-        user__email=email
+    participacao = (
+        nucleo.participacoes.select_related("user")
+        .filter(user__email=email)
+        .first()
     )
-    for part in participacoes:
+    if participacao:
         enviar_para_usuario(
-            part.user,
+            participacao.user,
             "suplente_designado",
             {"nucleo": nucleo.nome},
         )
@@ -89,7 +91,32 @@ def expirar_solicitacoes_pendentes() -> None:
 
 @shared_task
 def limpar_contadores_convites() -> None:
-    cache.delete_pattern("convites_nucleo:*")  # type: ignore[attr-defined]
+    """Limpa contadores de convites de núcleo do cache.
+
+    Tenta usar ``delete_pattern`` quando disponível. Para backends que não
+    oferecem esse método (como ``LocMemCache``), itera manualmente pelas chaves
+    armazenadas e remove aquelas que iniciam com o prefixo esperado.
+    """
+
+    prefix = "convites_nucleo:"
+    pattern = f"{prefix}*"
+    if hasattr(cache, "delete_pattern"):
+        cache.delete_pattern(pattern)  # type: ignore[attr-defined]
+        return
+
+    version = getattr(cache, "version", 1)
+    internal_prefix = f":{version}:{prefix}"
+    try:
+        keys = [
+            k.split(f":{version}:", 1)[1]
+            for k in getattr(cache, "_cache").keys()
+            if isinstance(k, str) and k.startswith(internal_prefix)
+        ]
+    except AttributeError:
+        keys = []
+
+    if keys:
+        cache.delete_many(keys)
 
 
 @shared_task
