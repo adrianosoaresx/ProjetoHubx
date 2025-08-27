@@ -3,22 +3,14 @@
 {% block title %}{% trans 'Categorias' %} | HubX{% endblock %}
 {% block content %}
   <div class="max-w-4xl mx-auto px-4 py-10">
-    <div class="flex items-center mb-6">
-      <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Categorias' %}</h1>
-      {% if user.user_type == 'admin' or user.user_type == 'coordenador' or user.user_type == 'root' %}
-      <a href="{% url 'discussao:categoria_criar' %}" class="ml-auto bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl">{% trans 'Novo' %}</a>
-      {% endif %}
-    </div>
-    <form id="filtros" class="mb-6 flex flex-col sm:flex-row gap-3">
-      {% if user.user_type == 'root' %}
-      <select name="organizacao" class="form-select" hx-get="?" hx-target="#lista-categorias" hx-include="#filtros">
-        <option value="">{% trans 'Organização' %}</option>
-        {% for o in organizacoes %}
-        <option value="{{ o.id }}" {% if organizacao_id == o.id %}selected{% endif %}>{{ o.nome }}</option>
-        {% endfor %}
-      </select>
-      {% endif %}
-      <select name="nucleo" class="form-select" hx-get="?" hx-target="#lista-categorias" hx-include="#filtros">
+      <div class="flex items-center mb-6">
+        <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Categorias' %}</h1>
+        {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
+        <a href="{% url 'discussao:categoria_criar' %}" class="ml-auto bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-xl">{% trans 'Novo' %}</a>
+        {% endif %}
+      </div>
+      <form id="filtros" class="mb-6 flex flex-col sm:flex-row gap-3">
+        <select name="nucleo" class="form-select" hx-get="?" hx-target="#lista-categorias" hx-include="#filtros">
         <option value="">{% trans 'Núcleo' %}</option>
         {% for n in nucleos %}
         <option value="{{ n.id }}" {% if nucleo_id == n.id %}selected{% endif %}>{{ n.nome }}</option>
