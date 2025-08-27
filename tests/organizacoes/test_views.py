@@ -294,7 +294,51 @@ def test_signal_emitted_on_create(monkeypatch, superadmin_user, faker_ptbr):
     assert called.get("called") is True
 
 
-def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
+def test_detail_view_lists_associations_admin_user(faker_ptbr):
+    org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
+    client = Client()
+    user = User.objects.create_user(
+        username="u1",
+        email="u1@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=org,
+    )
+    client.force_login(user)
+    Nucleo.objects.create(organizacao=org, nome="N1", slug="n1")
+    Empresa.objects.create(
+        organizacao=org,
+        usuario=user,
+        nome="E1",
+        cnpj=faker_ptbr.cnpj(),
+        tipo="",
+        municipio="Cidade",
+        estado="SC",
+    )
+    Post.objects.create(organizacao=org, autor=user, conteudo="p", tipo_feed="global")
+    Evento.objects.create(
+        organizacao=org,
+        coordenador=user,
+        titulo="Ev",
+        descricao="d",
+        data_inicio=timezone.now(),
+        data_fim=timezone.now(),
+        local="loc",
+        cidade="Cidade",
+        estado="SC",
+        cep="12345-000",
+        status=0,
+        publico_alvo=0,
+        numero_convidados=0,
+        numero_presentes=0,
+        contato_nome="c",
+    )
+    resp = client.get(reverse("organizacoes:detail", args=[org.pk]))
+    content = resp.content.decode()
+    assert all(s in content for s in ["Membros", "Núcleos", "Eventos", "Empresas", "Posts"])
+
+
+def test_detail_view_lists_hidden_for_root(superadmin_user, faker_ptbr):
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="org")
     user = User.objects.create_user(
         username="u1",
@@ -333,7 +377,9 @@ def test_detail_view_lists_associations(superadmin_user, faker_ptbr):
     )
     resp = superadmin_user.get(reverse("organizacoes:detail", args=[org.pk]))
     content = resp.content.decode()
-    assert "Membros" in content and "Núcleos" in content and "Eventos" in content
+    assert org.nome in content
+    for s in ["Membros", "Núcleos", "Eventos", "Empresas", "Posts"]:
+        assert s not in content
 
 
 @pytest.mark.parametrize(

@@ -60,6 +60,7 @@
     </dl>
   </section>
 
+  {% if request.user.user_type != 'root' %}
   <section id="usuarios-section">
     {% include 'organizacoes/partials/usuarios_list.html' %}
   </section>
@@ -79,6 +80,7 @@
   <section id="posts-section">
     {% include 'organizacoes/partials/posts_list.html' %}
   </section>
+  {% endif %}
 
   <div class="flex justify-end gap-3">
     {% if perms.organizacoes.change_organizacao %}
