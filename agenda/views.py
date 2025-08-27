@@ -37,7 +37,12 @@ from django.views.generic import (
 )
 
 from accounts.models import UserType
-from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from core.permissions import (
+    AdminRequiredMixin,
+    GerenteRequiredMixin,
+    NoSuperadminMixin,
+    no_superadmin_required,
+)
 
 from .forms import (
     BriefingEventoCreateForm,
@@ -80,6 +85,8 @@ def _queryset_por_organizacao(request):
 
 
 def calendario(request, ano: int | None = None, mes: int | None = None):
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
     today = timezone.localdate()
     ano = int(ano or today.year)
     mes = int(mes or today.month)
@@ -123,6 +130,8 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
 
 
 def lista_eventos(request, dia_iso):
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
     try:
         dia = date.fromisoformat(dia_iso)
     except ValueError as exc:  # pragma: no cover - parametros invalidos
@@ -445,7 +454,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
         return redirect("agenda:evento_editar", pk=pk)
 
 
-class EventoFeedbackView(LoginRequiredMixin, View):
+class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
     """Registra feedback pós-evento."""
 
     def get(self, request, pk):
@@ -504,10 +513,13 @@ def eventos_por_dia(request):
     dia_iso = request.GET.get("dia")
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
     return lista_eventos(request, dia_iso)
 
 
 @login_required
+@no_superadmin_required
 def evento_orcamento(request, pk: int):
     evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
     if request.user.user_type not in {UserType.ADMIN, UserType.COORDENADOR}:
@@ -549,6 +561,7 @@ def evento_orcamento(request, pk: int):
 
 
 @login_required
+@no_superadmin_required
 def fila_espera(request, pk: int):
     evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
     inscritos = list(
@@ -560,6 +573,7 @@ def fila_espera(request, pk: int):
 
 
 @login_required
+@no_superadmin_required
 def avaliar_parceria(request, pk: int):
     parceria = get_object_or_404(
         ParceriaEvento.objects.filter(
@@ -594,6 +608,7 @@ def avaliar_parceria(request, pk: int):
 
 
 @login_required
+@no_superadmin_required
 def checkin_form(request, pk: int):
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
     return render(request, "agenda/checkin_form.html", {"inscricao": inscricao})
@@ -601,6 +616,8 @@ def checkin_form(request, pk: int):
 
 def checkin_inscricao(request, pk: int):
     """Valida o QRCode enviado e registra o check-in."""
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
     if request.method != "POST":
         return HttpResponse(status=405)
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
@@ -612,7 +629,7 @@ def checkin_inscricao(request, pk: int):
     return JsonResponse({"check_in": inscricao.check_in_realizado_em})
 
 
-class InscricaoEventoListView(LoginRequiredMixin, GerenteRequiredMixin, ListView):
+class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
     template_name = "agenda/inscricao_list.html"
     context_object_name = "inscricoes"
@@ -666,7 +683,7 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         return reverse_lazy("agenda:evento_detalhe", kwargs={"pk": self.evento.pk})
 
 
-class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
+class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = MaterialDivulgacaoEvento
     template_name = "agenda/material_list.html"
     context_object_name = "materiais"
@@ -692,7 +709,7 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, ListView):
 
 
 class MaterialDivulgacaoEventoCreateView(
-    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, CreateView
+    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, CreateView
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
@@ -734,7 +751,7 @@ class MaterialDivulgacaoEventoCreateView(
 
 
 class MaterialDivulgacaoEventoUpdateView(
-    LoginRequiredMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView
+    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
@@ -786,7 +803,7 @@ class ParceriaPermissionMixin(UserPassesTestMixin):
         }
 
 
-class ParceriaEventoListView(LoginRequiredMixin, ParceriaPermissionMixin, ListView):
+class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, ListView):
     model = ParceriaEvento
     template_name = "agenda/parceria_list.html"
     context_object_name = "parcerias"
@@ -806,7 +823,7 @@ class ParceriaEventoListView(LoginRequiredMixin, ParceriaPermissionMixin, ListVi
         return qs.order_by("-data_inicio")
 
 
-class ParceriaEventoCreateView(LoginRequiredMixin, ParceriaPermissionMixin, CreateView):
+class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
     template_name = "agenda/parceria_form.html"
@@ -835,7 +852,7 @@ class ParceriaEventoCreateView(LoginRequiredMixin, ParceriaPermissionMixin, Crea
         return super().form_valid(form)
 
 
-class ParceriaEventoUpdateView(LoginRequiredMixin, ParceriaPermissionMixin, UpdateView):
+class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
     template_name = "agenda/parceria_form.html"
@@ -874,7 +891,7 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, ParceriaPermissionMixin, Upda
         return response
 
 
-class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, DeleteView):
+class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
     template_name = "agenda/parceria_confirm_delete.html"
     success_url = reverse_lazy("agenda:parceria_list")
@@ -901,7 +918,7 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, ParceriaPermissionMixin, Dele
         return super().delete(request, *args, **kwargs)
 
 
-class BriefingEventoListView(LoginRequiredMixin, ListView):
+class BriefingEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = BriefingEvento
     template_name = "agenda/briefing_list.html"
     context_object_name = "briefings"
@@ -921,7 +938,7 @@ class BriefingEventoListView(LoginRequiredMixin, ListView):
         return qs
 
 
-class BriefingEventoCreateView(LoginRequiredMixin, CreateView):
+class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = BriefingEvento
     form_class = BriefingEventoCreateForm
     template_name = "agenda/briefing_form.html"
@@ -944,7 +961,7 @@ class BriefingEventoCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
+class BriefingEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = BriefingEvento
     form_class = BriefingEventoForm
     template_name = "agenda/briefing_form.html"
@@ -978,7 +995,7 @@ class BriefingEventoUpdateView(LoginRequiredMixin, UpdateView):
         return response
 
 
-class BriefingEventoStatusView(LoginRequiredMixin, View):
+class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
     """Atualiza o status do briefing registrando avaliador e timestamps."""
 
     def post(self, request, pk: int, status: str):

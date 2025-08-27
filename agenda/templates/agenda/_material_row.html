@@ -9,7 +9,7 @@
       <a href="{{ material.arquivo.url }}" class="text-blue-600 hover:underline">
         {% trans "Download" %}
       </a>
-      {% if user.user_type == 'admin' or user.user_type == 'coordenador' or user.user_type == 'root' %}
+      {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
       <form
         hx-post="{% url 'agenda_api:material-aprovar' material.pk %}"
         hx-target="closest tr"
