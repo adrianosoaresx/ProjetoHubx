@@ -38,12 +38,14 @@ def notify_participacao_recusada(participacao_id: int) -> None:
 def notify_suplente_designado(nucleo_id: int, email: str) -> None:
     """Notifica apenas o suplente designado identificado pelo e-mail."""
     nucleo = Nucleo.objects.get(pk=nucleo_id)
-    participacoes = nucleo.participacoes.select_related("user").filter(
-        user__email=email
+    participacao = (
+        nucleo.participacoes.select_related("user")
+        .filter(user__email=email)
+        .first()
     )
-    for part in participacoes:
+    if participacao:
         enviar_para_usuario(
-            part.user,
+            participacao.user,
             "suplente_designado",
             {"nucleo": nucleo.nome},
         )
