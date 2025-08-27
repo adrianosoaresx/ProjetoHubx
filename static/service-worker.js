@@ -1,6 +1,6 @@
 // Service worker for Hubx Dashboard PWA
 // Cache version. Update the suffix (e.g., -v2) to force cache refresh on deploys.
-const CACHE_NAME = "dashboard-static-v1";
+const CACHE_NAME = "dashboard-static-v2";
 
 // List of core resources to pre-cache for offline usage.
 const CORE_ASSETS = ["/dashboard/"];
@@ -29,7 +29,9 @@ async function staleWhileRevalidate(request) {
   const cached = await cache.match(request);
   const fetchPromise = fetch(request)
     .then(response => {
-      cache.put(request, response.clone());
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
       return response;
     })
     .catch(() => cached);
