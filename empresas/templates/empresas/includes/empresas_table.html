@@ -61,7 +61,7 @@
               {% csrf_token %}
               <button type="submit" class="text-green-600 hover:underline">{% translate "Restaurar" %}</button>
             </form>
-            {% if request.user.user_type == 'admin' or request.user.user_type == 'root' %}
+            {% if request.user.user_type == 'admin' %}
               <button hx-delete="{% url 'empresas_api:empresa-purgar' empresa.pk %}"
                       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                       hx-on="htmx:afterRequest: location.reload()"
