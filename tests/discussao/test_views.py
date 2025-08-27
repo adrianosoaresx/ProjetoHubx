@@ -50,11 +50,10 @@ def test_categoria_list_view_org_filter(client, admin_user, categoria, categoria
     assert list(resp.context["categorias"]) == [categoria]
 
 
-def test_categoria_list_view_root_sees_all(client, root_user, categoria, categoria_outro):
+def test_categoria_list_view_root_denied(client, root_user, categoria):
     client.force_login(root_user)
     resp = client.get(reverse("discussao:categorias"))
-    assert resp.status_code == 200
-    assert set(resp.context["categorias"]) == {categoria, categoria_outro}
+    assert resp.status_code == 403
 
 
 def test_topico_list_view(client, admin_user, categoria, topico):
