@@ -103,6 +103,26 @@ def test_toggle_active(client, admin_user, organizacao):
     assert nucleo.deleted is True
 
 
+def test_toggle_active_admin_other_org(client, organizacao, admin_user):
+    other_org = Organizacao.objects.create(
+        nome="Org2", cnpj="11.111.111/1111-11", slug="org2"
+    )
+    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    User = get_user_model()
+    other_admin = User.objects.create_user(
+        username="admin2",
+        email="admin2@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=other_org,
+    )
+    client.force_login(other_admin)
+    resp = client.post(reverse("nucleos:toggle_active", args=[nucleo.pk]))
+    assert resp.status_code == 302
+    nucleo.refresh_from_db()
+    assert nucleo.deleted is False
+
+
 def test_suplente_create_non_member(admin_user, organizacao, monkeypatch):
     nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
     User = get_user_model()
