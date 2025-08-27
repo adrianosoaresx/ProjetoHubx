@@ -388,13 +388,20 @@ def dashboard_redirect(request):
     if not user.is_authenticated:
         return redirect("accounts:login")
 
-    if user.user_type == UserType.ROOT:
+    user_type = getattr(user, "user_type", None) or getattr(user, "get_tipo_usuario", None)
+
+    if user.is_superuser or user_type in {UserType.ROOT, UserType.ROOT.value}:
         return redirect("dashboard:root")
-    if user.user_type == UserType.ADMIN:
+    if user_type in {UserType.ADMIN, UserType.ADMIN.value}:
         return redirect("dashboard:admin")
-    if user.user_type == UserType.COORDENADOR:
+    if user_type in {UserType.COORDENADOR, UserType.COORDENADOR.value}:
         return redirect("dashboard:coordenador")
-    if user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
+    if user_type in {
+        UserType.ASSOCIADO,
+        UserType.ASSOCIADO.value,
+        UserType.NUCLEADO,
+        UserType.NUCLEADO.value,
+    }:
         return redirect("dashboard:cliente")
     return redirect("accounts:perfil")
 
