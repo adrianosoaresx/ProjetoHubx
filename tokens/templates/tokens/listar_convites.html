@@ -4,7 +4,10 @@
 
 {% block content %}
 <section class="max-w-3xl mx-auto px-4 py-10">
-  <h1 class="text-2xl font-bold mb-6">{% trans "Convites Emitidos" %}</h1>
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
+    <a href="{% url 'tokens:gerar_convite' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Gerar Token" %}</a>
+  </div>
   {% if convites %}
   <div class="overflow-x-auto">
     <table class="min-w-full divide-y divide-neutral-200 bg-white shadow-sm rounded-2xl">
