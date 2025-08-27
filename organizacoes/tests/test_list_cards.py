@@ -2,8 +2,9 @@ import pytest
 from django.urls import reverse
 
 from accounts.factories import UserFactory
-from nucleos.factories import NucleoFactory
+from accounts.models import UserType
 from agenda.factories import EventoFactory
+from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
 
@@ -38,3 +39,18 @@ def test_list_template_renders_cards(client, admin_user):
     assert "Núcleos" in content
     assert "Eventos" in content
 
+
+@pytest.mark.django_db
+def test_list_template_root_hides_counts_and_actions(client):
+    OrganizacaoFactory()
+    user = UserFactory(user_type=UserType.ROOT)
+    client.force_login(user)
+    response = client.get(reverse("organizacoes:list"))
+    content = response.content.decode()
+
+    assert "Usuários" not in content
+    assert "Núcleos" not in content
+    assert "Eventos" not in content
+    assert "Remover" not in content
+    assert "Inativar" not in content
+    assert "Reativar" not in content
