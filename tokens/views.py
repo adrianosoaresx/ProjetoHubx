@@ -31,13 +31,13 @@ from .forms import (
     ValidarTokenConviteForm,
 )
 
-from .metrics import tokens_invites_revoked_total, tokens_rate_limited_total
 
 from .metrics import (
     tokens_invites_created_total,
     tokens_invites_revoked_total,
     tokens_invites_used_total,
-
+    tokens_rate_limited_total,
+)
 from .models import (
     ApiToken,
     ApiTokenLog,
