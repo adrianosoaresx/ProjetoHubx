@@ -17,7 +17,7 @@ def test_load_plugins_for(db):
         module_path="feed.tests.sample_plugin.DummyPlugin",
         frequency=1,
     )
-    plugins = load_plugins_for(org)
+    plugins, _ = load_plugins_for(org)
     assert len(plugins) == 1
     plugin = plugins[0]
     User = get_user_model()
@@ -55,7 +55,7 @@ def test_load_plugins_logs_failure(caplog, db):
         frequency=1,
     )
     with caplog.at_level(logging.ERROR):
-        plugins = load_plugins_for(org)
+        plugins, _ = load_plugins_for(org)
     assert plugins == []
     assert "Falha ao carregar plugin feed.tests.sample_plugin.MissingPlugin" in caplog.text
 

@@ -156,10 +156,10 @@ def executar_plugins() -> None:
         user = User.objects.filter(organizacao=org).first()
         if not user:
             continue
-        configs = {
-            c.module_path: c for c in FeedPluginConfig.objects.filter(organizacao=org)
-        }
-        for plugin in load_plugins_for(org):
+        configs_list = list(FeedPluginConfig.objects.filter(organizacao=org))
+        plugins, configs_list = load_plugins_for(org, configs_list)
+        configs = {c.module_path: c for c in configs_list}
+        for plugin in plugins:
             module_path = f"{plugin.__class__.__module__}.{plugin.__class__.__name__}"
             config = configs.get(module_path)
             if not config:
