@@ -57,7 +57,8 @@ User = get_user_model()
 
 @login_required
 def perfil_home(request):
-    return redirect("accounts:informacoes_pessoais")
+    """Exibe a página de detalhes do perfil do usuário."""
+    return render(request, "perfil/detail.html")
 
 
 def perfil_publico(request, pk):
