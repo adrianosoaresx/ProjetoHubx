@@ -144,9 +144,11 @@
           <i class="fas fa-sitemap"></i> {% trans "Organizações" %}
         </a>
         {% endif %}
+        {% if user.is_authenticated and user.user_type in ['root', 'admin', 'coordenador'] %}
         <a href="{% url 'tokens:gerar_convite' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-key"></i> {% trans "Token" %}
         </a>
+        {% endif %}
         {% if user.is_authenticated %}
           <span class="text-gray-600">{% blocktrans %}Olá, {{ user.username }}{% endblocktrans %}</span>
           <a href="{% url 'accounts:logout' %}" class="hover:text-primary transition">{% trans "Sair" %}</a>
