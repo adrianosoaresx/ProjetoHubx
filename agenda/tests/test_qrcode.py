@@ -19,7 +19,6 @@ pytestmark = pytest.mark.django_db
 
 @override_settings(ROOT_URLCONF="agenda.tests.test_qrcode")
 def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
-    monkeypatch.setattr("agenda.views.check_achievements", lambda user: None)
     monkeypatch.setattr(
         InscricaoEvento,
         "gerar_qrcode",

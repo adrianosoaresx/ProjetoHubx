@@ -23,12 +23,10 @@ from tokens.models import TokenAcesso as InviteToken
 from tokens.models import TokenUsoLog as UserToken
 
 from .models import (
-    Achievement,
     DashboardConfig,
     DashboardCustomMetric,
     DashboardFilter,
     DashboardLayout,
-    UserAchievement,
 )
 from .utils import get_variation
 from .custom_metrics import (
@@ -803,24 +801,3 @@ class DashboardMetricsService:
 
         cache.set(cache_key, (metrics, metricas_info), 300)
         return metrics, metricas_info
-
-
-def check_achievements(user) -> None:
-    """Verifica e registra conquistas atingidas pelo usuário."""
-
-    achieved = set(UserAchievement.objects.filter(user=user).values_list("achievement__code", flat=True))
-    achievements = {a.code: a for a in Achievement.objects.all()}
-
-    if (
-        "100_inscricoes" in achievements
-        and "100_inscricoes" not in achieved
-        and InscricaoEvento.objects.filter(user=user).count() >= 100
-    ):
-        UserAchievement.objects.create(user=user, achievement=achievements["100_inscricoes"])
-
-    if (
-        "5_dashboards" in achievements
-        and "5_dashboards" not in achieved
-        and DashboardConfig.objects.filter(user=user).count() >= 5
-    ):
-        UserAchievement.objects.create(user=user, achievement=achievements["5_dashboards"])

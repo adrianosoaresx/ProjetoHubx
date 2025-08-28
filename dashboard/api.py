@@ -21,7 +21,7 @@ from tokens.utils import get_client_ip
 
 from .models import DashboardFilter, DashboardCustomMetric
 from .serializers import DashboardFilterSerializer, DashboardCustomMetricSerializer
-from .services import DashboardMetricsService, DashboardService, check_achievements
+from .services import DashboardMetricsService, DashboardService
 from .custom_metrics import DashboardCustomMetricService
 from .constants import METRICAS_INFO
 from core.permissions import IsModeratorUser
@@ -298,7 +298,6 @@ class DashboardFilterViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-        check_achievements(self.request.user)
 
 
 class DashboardCustomMetricViewSet(viewsets.ModelViewSet):

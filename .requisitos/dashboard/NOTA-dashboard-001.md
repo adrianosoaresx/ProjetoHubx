@@ -18,7 +18,6 @@
 - **Dashboard Root/Admin/Gerente/Cliente:** visão geral conforme o tipo de usuário.
 - **Configs e Filtros:** `Dashboard → Configurações` e `Dashboard → Filtros` para salvar ou aplicar preferências.
 - **Layouts:** `Dashboard → Layouts` para criar e ajustar a disposição dos widgets.
-- **Conquistas:** `Dashboard → Conquistas` mostra os objetivos atingidos.
 
 ## O que você precisa saber
 - Algumas exportações requerem bibliotecas extras (PDF/XLSX/PNG).

@@ -5,7 +5,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("dashboard", "0004_achievement_deleted_achievement_deleted_at_and_more"),
+        ("dashboard", "0002_dashboard_timestamp"),
     ]
 
     operations = [

@@ -55,37 +55,6 @@ class DashboardConfig(SoftDeleteModel, TimeStampedModel):
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.nome
 
-class Achievement(SoftDeleteModel, TimeStampedModel):
-    """Representa uma conquista disponível para os usuários."""
-
-    code = models.CharField(max_length=50, unique=True)
-    titulo = models.CharField(max_length=100)
-    descricao = models.TextField()
-    criterio = models.CharField(max_length=200)
-    icon = models.CharField(max_length=200, blank=True)
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    def __str__(self) -> str:  # pragma: no cover - simples representação
-        return self.titulo
-
-
-class UserAchievement(SoftDeleteModel, TimeStampedModel):
-    """Conquistas obtidas por um usuário."""
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    achievement = models.ForeignKey(Achievement, on_delete=models.CASCADE)
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        unique_together = ("user", "achievement")
-
-    def __str__(self) -> str:  # pragma: no cover - simples representação
-        return f"{self.user} - {self.achievement}"
-
 
 class DashboardCustomMetric(SoftDeleteModel, TimeStampedModel):
     code = models.CharField(max_length=50, unique=True)

@@ -65,7 +65,6 @@ from .models import (
     ParceriaEvento,
 )
 from .tasks import notificar_briefing_status, upload_material_divulgacao
-from dashboard.services import check_achievements
 
 User = get_user_model()
 
@@ -422,7 +421,6 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 messages.error(request, str(exc))
         else:
             inscricao.confirmar_inscricao()
-            check_achievements(request.user)
             if inscricao.status == "confirmada":
                 messages.success(request, _("Inscrição realizada."))  # pragma: no cover
             else:
@@ -676,7 +674,6 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         response = super().form_valid(form)
         self.object.confirmar_inscricao()
         messages.success(self.request, _("Inscrição realizada."))
-        check_achievements(self.request.user)
         return response
 
     def get_success_url(self):
