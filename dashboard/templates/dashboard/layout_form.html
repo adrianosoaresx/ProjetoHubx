@@ -10,7 +10,7 @@
       <label for="id_nome" class="block mb-1">{% trans "Nome" %}</label>
       {{ form.nome }}
     </div>
-    {% if request.user.user_type in ['root','admin'] %}
+  {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
     <div class="mb-4">
       <label for="id_publico" class="block">{{ form.publico.label }}</label>
       {{ form.publico }}
