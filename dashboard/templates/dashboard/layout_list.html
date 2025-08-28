@@ -19,6 +19,6 @@
       <li>{% trans "Nenhum layout" %}</li>
     {% endfor %}
   </ul>
-  <a href="{% url 'dashboard:layout-create' %}" class="btn btn-primary">{% trans "Novo Layout" %}</a>
+  <a href="{% url 'dashboard:layout-create' %}" class="btn btn-primary" aria-label="{% trans 'Novo Layout' %}">{% trans "Novo Layout" %}</a>
 </main>
 {% endblock %}
