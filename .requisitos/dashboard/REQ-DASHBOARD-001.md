@@ -25,7 +25,6 @@ Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para dife
   - Criação, salvamento e compartilhamento de configurações de dashboards e filtros personalizados.
   - Personalização de layout (arranjo dos widgets) e seleção de métricas exibidas.
   - Exportação de métricas em múltiplos formatos (CSV, PDF, XLSX, PNG).
-  - Sistema de conquistas para incentivar o uso de funcionalidades.
   - Endpoints de dados parciais via HTMX para atualizar seções específicas sem recarregar a página.
 - **Exclui**
   - Alteração ou inclusão de dados de origem (os dashboards apenas leem dados de outros módulos).
@@ -77,11 +76,7 @@ Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para dife
   - Descrição: O sistema deve permitir que usuários salvem layouts personalizados (`DashboardLayout`) em JSON, definindo a disposição e tamanho de cada widget. Deve haver CRUD completo para layouts; apenas criador, root ou admin podem editá-los ou excluí-los.
   - Critérios de Aceite: Layouts aplicados reproduzem a disposição salva; layouts públicos são visíveis a todos; restrições de acesso são respeitadas.
   - Rastreabilidade: ...
-- **RF-12 — Sistema de Conquistas**
-  - Descrição: O app deve possuir conquistas (`Achievement`) configuráveis que são atribuídas automaticamente ao usuário (`UserAchievement`) quando determinados critérios são cumpridos. O usuário pode visualizar suas conquistas e as disponíveis.
-  - Critérios de Aceite: Conquistas são concedidas automaticamente e não podem ser editadas pelo usuário; a listagem indica quais conquistas já foram obtidas.
-  - Rastreabilidade: ...
-- **RF-13 — Log de Auditoria**
+  - **RF-13 — Log de Auditoria**
   - Descrição: Todas as ações relevantes (criar, aplicar, excluir filtros/configurações/layouts, exportar métricas) devem ser registradas em logs imutáveis com identificação do usuário, tipo de ação, data/hora, IP anoniminizado e metadados.
   - Critérios de Aceite: Somente superadmins podem consultar logs completos; tarefas periódicas removem registros mais antigos que `AUDIT_LOG_RETENTION_YEARS`.
   - Rastreabilidade: ...
@@ -124,7 +119,6 @@ flowchart TD
     S --> D
     D -->|Renderiza lista de métricas, lançamentos, notificações, tarefas e eventos| UI[Interface]
     UI -->|Usuário salva configuração/filtro/layout| Conf[Persistência]
-    Conf -->|Verifica conquistas| Achiev[Achievement]
 ```
 
 ### UC-01 – Acesso ao Dashboard
@@ -143,7 +137,6 @@ flowchart TD
   - **cliente/associado** vê métricas pessoais ou conforme permissões de núcleo/evento.
 - **Limitação de Escopo**: Usuários não podem ver métricas de núcleos ou eventos aos quais não pertencem; tentativas inválidas devem gerar erro.
 - **Publicação de Configurações/Filtros/Layout**: Somente usuários `root` ou `admin` podem marcar itens como públicos.
-- **Concessão de Conquistas**: Conquistas são concedidas automaticamente quando os critérios configurados são atingidos e não podem ser removidas manualmente.
 
 ## 7. Modelo de Dados
 
@@ -174,24 +167,6 @@ Campos:
 - `layout_json`: JSON
 - `publico`: boolean
 - `deleted`: boolean
-
-### Achievement
-Descrição: Conquista disponível no sistema.
-Campos:
-- `code`: string único
-- `titulo`: string
-- `descricao`: texto
-- `criterio`: string
-- `icon`: string opcional
-
-### UserAchievement
-Descrição: Relaciona usuário às conquistas obtidas.
-Campos:
-- `user`: FK → User
-- `achievement`: FK → Achievement
-- `completado_em`: datetime
-Constraints adicionais:
-- Unicidade entre usuário e conquista
 
 ## 8. Critérios de Aceite (Gherkin)
 

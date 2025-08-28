@@ -17,7 +17,7 @@ Data: 2025-08-13
 | RF-09 | Atualizações em Tempo Real              | Implementado (HTMX)                                 |
 | RF-10 | Exportação de Métricas                  | Implementado                                        |
 | RF-11 | Layout Personalizado                    | Parcial – layouts públicos invisíveis; logs ausentes |
-| RF-12 | Sistema de Conquistas                   | Implementado                                        |
+| RF-12 | Sistema de Conquistas                   | Removido                                            |
 | RF-13 | Log de Auditoria                        | Parcial – várias ações sem registro                 |
 | RF-14 | Inclusão de novas métricas              | Implementado                                        |
 | RNF-01 | Desempenho                             | Não verificado                                      |

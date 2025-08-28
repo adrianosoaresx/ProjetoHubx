@@ -100,10 +100,6 @@ Exemplo de JSON armazenado:
 O cache das métricas expira em 5 minutos e utiliza a chave `dashboard-<escopo>-<json dos filtros>`, permitindo reutilização entre usuários com o mesmo escopo e filtros. Para invalidar manualmente, utilize o comando `python manage.py clear_cache` ou limpe o backend configurado.
 
 
-## Conquistas
-
-O dashboard possui um sistema de conquistas que registra marcos como 100 inscrições em eventos ou a criação de 5 dashboards personalizados. As conquistas disponíveis e o progresso do usuário podem ser visualizados em `/dashboard/achievements/`.
-
 ## Layouts personalizáveis
 
 Administradores podem criar diferentes disposições de widgets:

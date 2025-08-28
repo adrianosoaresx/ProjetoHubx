@@ -9,8 +9,6 @@
   <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Root" %}</h1>
 
   {% include 'dashboard/partials/messages.html' %}
-  {% include 'dashboard/partials/achievements_badges.html' %}
-
   {% include 'dashboard/partials/filters_form.html' %}
 
   <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
@@ -74,10 +72,6 @@
         <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
           <i class="fa-solid fa-chart-line mb-2" aria-hidden="true"></i>
           <span class="block">{% trans "Métricas Personalizadas" %}</span>
-        </a>
-        <a href="{% url 'dashboard:achievements' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
-          <i class="fa-solid fa-trophy mb-2" aria-hidden="true"></i>
-          <span class="block">{% trans "Conquistas" %}</span>
         </a>
       </div>
     </section>

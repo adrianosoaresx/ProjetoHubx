@@ -57,17 +57,14 @@ from .forms import (
     DashboardLayoutForm,
 )
 from .models import (
-    Achievement,
     DashboardConfig,
     DashboardCustomMetric,
     DashboardFilter,
     DashboardLayout,
-    UserAchievement,
 )
 from .services import (
     DashboardMetricsService,
     DashboardService,
-    check_achievements,
     log_filter_action,
     log_layout_action,
 )
@@ -342,8 +339,6 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             if m in metrics
         ]
         context["metricas_info"] = metricas_info
-        obtidas = UserAchievement.objects.filter(user=self.request.user).count()
-        context["has_pending_achievements"] = Achievement.objects.count() > obtidas
         return context
 
 
@@ -797,19 +792,6 @@ class DashboardExportedImageView(LoginRequiredMixin, View):
         return FileResponse(open(path, "rb"), content_type="image/png")
 
 
-class AchievementListView(LoginRequiredMixin, ListView):
-    model = Achievement
-    template_name = "dashboard/achievement_list.html"
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        user_achievements = set(
-            UserAchievement.objects.filter(user=self.request.user).values_list("achievement_id", flat=True)
-        )
-        ctx["user_achievements"] = user_achievements
-        return ctx
-
-
 class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
     form_class = DashboardConfigForm
     template_name = "dashboard/config_form.html"
@@ -843,7 +825,6 @@ class DashboardConfigCreateView(LoginRequiredMixin, CreateView):
         if metricas_list:
             config_data["filters"]["metricas"] = metricas_list
         self.object = form.save(self.request.user, config_data)
-        check_achievements(self.request.user)
         action = "SHARE_DASHBOARD" if self.object.publico else "CREATE_CONFIG"
         log_audit(
             user=self.request.user,
@@ -1005,7 +986,6 @@ class DashboardFilterCreateView(LoginRequiredMixin, CreateView):
             else:
                 filtros_data[key] = value[0]
         self.object = form.save(self.request.user, filtros_data)
-        check_achievements(self.request.user)
         log_filter_action(
             user=self.request.user,
             action="CREATE_FILTER",

@@ -22,7 +22,6 @@ from .models import (
     TarefaLog,
 )
 from .tasks import upload_material_divulgacao
-from dashboard.services import check_achievements
 
 
 class TarefaSerializer(serializers.ModelSerializer):
@@ -157,7 +156,6 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
         validated_data["user"] = request.user
         instance = super().create(validated_data)
         instance.confirmar_inscricao()
-        check_achievements(request.user)
         return instance
 
 
