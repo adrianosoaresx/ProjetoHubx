@@ -55,19 +55,19 @@
   <section class="mb-8">
     <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
         <i class="fa-solid fa-chart-line mb-2"></i>
         <span class="block">{% trans "Métricas Personalizadas" %}</span>
       </a>
-      <a href="{% url 'admin:accounts_user_changelist' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="{% url 'admin:accounts_user_changelist' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Administrar Usuários' %}">
         <i class="fa-solid fa-user-gear mb-2"></i>
         <span class="block">{% trans "Administrar Usuários" %}</span>
       </a>
-      <a href="{% url 'financeiro:relatorios' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="{% url 'financeiro:relatorios' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Relatórios Financeiros' %}">
         <i class="fa-solid fa-file-invoice-dollar mb-2"></i>
         <span class="block">{% trans "Relatórios Financeiros" %}</span>
       </a>
-      <a href="{% url 'notificacoes:logs_list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50">
+      <a href="{% url 'notificacoes:logs_list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Logs de Notificações' %}">
         <i class="fa-solid fa-bell mb-2"></i>
         <span class="block">{% trans "Logs de Notificações" %}</span>
       </a>
