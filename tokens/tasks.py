@@ -11,7 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import ApiToken, ApiTokenLog, TokenUsoLog, TokenWebhookEvent
-from .services import revoke_token, rotate_token
+from .utils import revoke_token, rotate_token
 from .metrics import (
     tokens_webhook_latency_seconds,
     tokens_webhooks_failed_total,

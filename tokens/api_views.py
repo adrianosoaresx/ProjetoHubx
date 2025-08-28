@@ -12,9 +12,9 @@ from rest_framework.response import Response
 
 from .models import ApiToken, ApiTokenIp, ApiTokenLog
 from .serializers import ApiTokenIpSerializer, ApiTokenSerializer
-from .services import generate_token, list_tokens, revoke_token, rotate_token
+from .services import generate_token, list_tokens
 from .metrics import tokens_api_latency_seconds
-from .utils import get_client_ip
+from .utils import get_client_ip, revoke_token, rotate_token
 
 
 class ApiTokenViewSet(viewsets.ViewSet):

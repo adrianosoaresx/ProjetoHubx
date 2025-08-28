@@ -13,8 +13,9 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from tokens.models import ApiToken, ApiTokenLog
-from tokens.services import generate_token, revoke_token, rotate_token
+from tokens.services import generate_token
 from tokens.tasks import revogar_tokens_expirados, rotacionar_tokens_proximos_da_expiracao
+from tokens.utils import revoke_token, rotate_token
 
 pytestmark = pytest.mark.django_db
 

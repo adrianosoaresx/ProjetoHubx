@@ -53,9 +53,8 @@ from .services import (
     invite_revoked,
     invite_used,
     list_tokens,
-    revoke_token,
 )
-from .utils import get_client_ip
+from .utils import get_client_ip, revoke_token
 
 User = get_user_model()
 

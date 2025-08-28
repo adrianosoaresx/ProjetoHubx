@@ -8,7 +8,8 @@ from django.test import override_settings
 
 from accounts.factories import UserFactory
 from tokens.models import ApiToken
-from tokens.services import generate_token, revoke_token, rotate_token
+from tokens.services import generate_token
+from tokens.utils import revoke_token, rotate_token
 
 
 pytestmark = pytest.mark.django_db
