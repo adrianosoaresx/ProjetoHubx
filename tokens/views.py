@@ -118,14 +118,9 @@ def revogar_api_token(request, token_id: str):
     if token.revoked_at:
         messages.info(request, _("Token já revogado."))
     else:
-        revoke_token(token.id, revogado_por=request.user)
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=request.user,
-            acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=get_client_ip(request),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
+        ip = get_client_ip(request)
+        ua = request.META.get("HTTP_USER_AGENT", "")
+        revoke_token(token.id, revogado_por=request.user, ip=ip, user_agent=ua)
         messages.success(request, _("Token revogado."))
     return redirect("tokens:listar_api_tokens")
 

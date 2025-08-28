@@ -55,6 +55,7 @@ Quando `TOKENS_WEBHOOK_URL` está configurado, a aplicação envia notificaçõe
 
 - `created`: `{ "event": "created", "id": "<token-id>", "token": "<token-hash>" }`
 - `revoked`: `{ "event": "revoked", "id": "<token-id>" }`
+- `rotated`: `{ "event": "rotated", "id": "<old-token-id>", "new_id": "<new-token-id>" }`
 
 O campo `token` contém o hash SHA-256 do valor do token, nunca o valor bruto.
 
@@ -74,6 +75,9 @@ O módulo expõe métricas para monitorar o envio de webhooks:
 - `tokens_webhooks_sent_total`: total de webhooks enviados com sucesso.
 - `tokens_webhooks_failed_total`: total de webhooks que falharam após todas as tentativas.
 - `tokens_webhook_latency_seconds`: histograma da latência do envio de webhooks.
+- `tokens_api_tokens_created_total`: total de tokens de API gerados.
+- `tokens_api_tokens_revoked_total`: total de tokens de API revogados.
+- `tokens_api_tokens_rotated_total`: total de tokens de API rotacionados.
 
 Exemplos de regras de alerta podem ser importados a partir de `prometheus/tokens_alerts.yml`.
 

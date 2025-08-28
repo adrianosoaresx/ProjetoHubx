@@ -16,8 +16,9 @@ from django.utils import timezone
 from .metrics import (
     tokens_api_tokens_created_total,
     tokens_api_tokens_revoked_total,
+    tokens_api_tokens_rotated_total,
 )
-from .models import ApiToken, TokenAcesso
+from .models import ApiToken, ApiTokenLog, TokenAcesso
 from .tasks import send_webhook
 
 User = get_user_model()
@@ -44,6 +45,11 @@ def token_created(token: ApiToken, raw: str) -> None:
 def token_revoked(token: ApiToken) -> None:
     """Dispara webhook para notificar revogação de ``token``."""
     _send_webhook({"event": "revoked", "id": str(token.id)})
+
+
+def token_rotated(old: ApiToken, new: ApiToken) -> None:
+    """Dispara webhook para notificar rotação de ``old`` para ``new``."""
+    _send_webhook({"event": "rotated", "id": str(old.id), "new_id": str(new.id)})
 
 
 def invite_created(token: TokenAcesso, codigo: str) -> None:
@@ -89,10 +95,22 @@ def generate_token(
     return raw_token
 
 
-def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
+def revoke_token(
+    token_id: uuid.UUID,
+    revogado_por: User | None = None,
+    ip: str | None = None,
+    user_agent: str | None = None,
+    usuario_log: User | None = None,
+) -> bool:
+    """Revoga o token indicado.
+
+    Retorna ``True`` caso a revogação tenha ocorrido. Caso o token já esteja
+    revogado, nenhuma ação é tomada e ``False`` é retornado, garantindo
+    idempotência.
+    """
     token = ApiToken.all_objects.get(id=token_id)
     if token.revoked_at:
-        return
+        return False
     now = timezone.now()
     token.revoked_at = now
     token.revogado_por = revogado_por or token.user
@@ -100,12 +118,26 @@ def revoke_token(token_id: uuid.UUID, revogado_por: User | None = None) -> None:
     token.deleted_at = now
     token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
 
+    ApiTokenLog.objects.create(
+        token=token,
+        usuario=usuario_log or revogado_por,
+        acao=ApiTokenLog.Acao.REVOGACAO,
+        ip=ip,
+        user_agent=user_agent,
+    )
+
     tokens_api_tokens_revoked_total.inc()
 
     token_revoked(token)
+    return True
 
 
-def rotate_token(token_id: uuid.UUID, revogado_por: User | None = None) -> str:
+def rotate_token(
+    token_id: uuid.UUID,
+    revogado_por: User | None = None,
+    ip: str | None = None,
+    user_agent: str | None = None,
+) -> str:
     """Gera novo token e revoga o anterior automaticamente."""
     token = ApiToken.objects.get(id=token_id)
     expires_in: timedelta | None = None
@@ -119,7 +151,11 @@ def rotate_token(token_id: uuid.UUID, revogado_por: User | None = None) -> str:
     novo_token = ApiToken.objects.get(token_hash=token_hash)
     novo_token.anterior = token
     novo_token.save(update_fields=["anterior"])
-    revoke_token(token.id, revogado_por)
+
+    revoke_token(token.id, revogado_por, ip=ip, user_agent=user_agent)
+    token_rotated(token, novo_token)
+    tokens_api_tokens_rotated_total.inc()
+
     return raw_token
 
 

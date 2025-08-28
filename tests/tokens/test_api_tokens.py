@@ -36,12 +36,22 @@ def test_generate_token_without_expires_in():
     assert token.expires_at is None
 
 
+def test_revoke_token_idempotent():
+    user = UserFactory()
+    raw = generate_token(user, "cli", "read", timedelta(days=1))
+    token_hash = hashlib.sha256(raw.encode()).hexdigest()
+    token = ApiToken.objects.get(token_hash=token_hash)
+    revoke_token(token.id, user, ip="1.1.1.1", user_agent="ua")
+    revoke_token(token.id, user, ip="1.1.1.1", user_agent="ua")
+    assert ApiTokenLog.objects.filter(token=token, acao="revogacao").count() == 1
+
+
 def test_rotate_token_service():
     user = UserFactory()
     raw = generate_token(user, "cli", "read", timedelta(days=1))
     token_hash = hashlib.sha256(raw.encode()).hexdigest()
     token = ApiToken.objects.get(token_hash=token_hash)
-    new_raw = rotate_token(token.id, user)
+    new_raw = rotate_token(token.id, user, ip="127.0.0.1", user_agent="ua-test")
     new_hash = hashlib.sha256(new_raw.encode()).hexdigest()
     novo_token = ApiToken.objects.get(token_hash=new_hash)
     assert novo_token.anterior == token
@@ -74,7 +84,7 @@ def test_api_token_authentication_and_revocation():
     usage_log = ApiTokenLog.objects.get(token=token, acao="uso")
     assert usage_log.user_agent == "ua-test"
     assert usage_log.ip == "127.0.0.1"
-    revoke_token(token.id, user)
+    revoke_token(token.id, user, ip="127.0.0.1", user_agent="ua-test")
 
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.deleted is True
@@ -153,9 +163,9 @@ def test_api_view_create_and_destroy():
         HTTP_USER_AGENT="ua-delete",
     )
     assert del_resp.status_code == status.HTTP_204_NO_CONTENT
-
-    assert ApiTokenLog.objects.filter(token=token, acao="revogacao").exists()
-
+    rev_log = ApiTokenLog.objects.get(token=token, acao="revogacao")
+    assert rev_log.user_agent == "ua-delete"
+    assert rev_log.ip == "127.0.0.1"
     token_db = ApiToken.all_objects.get(id=token_id)
     assert token_db.revogado_por == user
 
@@ -193,8 +203,10 @@ def test_api_view_rotate():
     assert "token" in resp.data
     token_db = ApiToken.all_objects.get(id=token.id)
     assert token_db.revoked_at is not None
-    assert ApiTokenLog.objects.filter(token=new_token, acao="geracao").exists()
-    assert ApiTokenLog.objects.filter(token=token, acao="revogacao").exists()
+    gen_log = ApiTokenLog.objects.get(token=new_token, acao="geracao")
+    rev_log = ApiTokenLog.objects.get(token=token, acao="revogacao")
+    assert gen_log.user_agent == rev_log.user_agent == "ua-rotate"
+    assert gen_log.ip == rev_log.ip == "127.0.0.1"
 
 
 def test_rotacionar_tokens_proximos_da_expiracao():
