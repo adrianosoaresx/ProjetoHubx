@@ -11,6 +11,7 @@ from django.conf import settings
 from django.utils import timezone
 
 from .models import ApiToken, ApiTokenLog, TokenUsoLog, TokenWebhookEvent
+from .services import revoke_token, rotate_token
 from .metrics import (
     tokens_webhook_latency_seconds,
     tokens_webhooks_failed_total,
@@ -31,17 +32,12 @@ def revogar_tokens_expirados() -> None:
 
     tokens = ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True)
     for token in tokens:
-        token.revoked_at = now
-        token.revogado_por = token.user  # automatic revocation by owner, if any
-        token.deleted = True
-        token.deleted_at = now
-        token.save(update_fields=["revoked_at", "revogado_por", "deleted", "deleted_at"])
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=None,
-            acao=ApiTokenLog.Acao.REVOGACAO,
+        revoke_token(
+            token.id,
+            token.user,
             ip="0.0.0.0",
             user_agent="task:revogar_tokens_expirados",
+            usuario_log=None,
         )
 
 
@@ -49,7 +45,6 @@ def revogar_tokens_expirados() -> None:
 @shared_task
 def rotacionar_tokens_proximos_da_expiracao() -> None:
     """Rotaciona tokens próximos da expiração."""
-    from .services import rotate_token
 
     margem_dias = getattr(settings, "TOKENS_ROTATE_BEFORE_DAYS", 7)
     now = timezone.now()
@@ -62,20 +57,19 @@ def rotacionar_tokens_proximos_da_expiracao() -> None:
         expires_at__lt=limite,
     )
     for token in tokens:
-        raw = rotate_token(token.id)
+        raw = rotate_token(
+            token.id,
+            ip="0.0.0.0",
+            user_agent="task:rotacionar_tokens_proximos_da_expiracao",
+        )
         new_hash = hashlib.sha256(raw.encode()).hexdigest()
         novo_token = ApiToken.objects.get(token_hash=new_hash)
         ApiTokenLog.objects.create(
             token=novo_token,
             usuario=None,
             acao=ApiTokenLog.Acao.GERACAO,
-            ip=None,
-        )
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=None,
-            acao=ApiTokenLog.Acao.REVOGACAO,
-            ip=None,
+            ip="0.0.0.0",
+            user_agent="task:rotacionar_tokens_proximos_da_expiracao",
         )
 
 

@@ -62,14 +62,9 @@ class ApiTokenViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         with tokens_api_latency_seconds.time():
-            revoke_token(token.id, request.user)
-            ApiTokenLog.objects.create(
-                token=token,
-                usuario=request.user,
-                acao=ApiTokenLog.Acao.REVOGACAO,
-                ip=get_client_ip(request),
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
+            ip = get_client_ip(request)
+            ua = request.META.get("HTTP_USER_AGENT", "")
+            revoke_token(token.id, request.user, ip=ip, user_agent=ua)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"])
@@ -79,23 +74,17 @@ class ApiTokenViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         with tokens_api_latency_seconds.time():
-            raw_token = rotate_token(token.id, request.user)
+            ip = get_client_ip(request)
+            ua = request.META.get("HTTP_USER_AGENT", "")
+            raw_token = rotate_token(token.id, request.user, ip=ip, user_agent=ua)
             new_hash = hashlib.sha256(raw_token.encode()).hexdigest()
             novo_token = ApiToken.objects.get(token_hash=new_hash)
-            ip = get_client_ip(request)
             ApiTokenLog.objects.create(
                 token=novo_token,
                 usuario=request.user,
                 acao=ApiTokenLog.Acao.GERACAO,
                 ip=ip,
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
-            ApiTokenLog.objects.create(
-                token=token,
-                usuario=request.user,
-                acao=ApiTokenLog.Acao.REVOGACAO,
-                ip=ip,
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+                user_agent=ua,
             )
             data = ApiTokenSerializer(novo_token).data
             data["token"] = raw_token

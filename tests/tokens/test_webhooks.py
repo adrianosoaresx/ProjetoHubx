@@ -8,7 +8,7 @@ from django.test import override_settings
 
 from accounts.factories import UserFactory
 from tokens.models import ApiToken
-from tokens.services import generate_token, revoke_token
+from tokens.services import generate_token, revoke_token, rotate_token
 
 
 pytestmark = pytest.mark.django_db
@@ -32,6 +32,7 @@ def test_generate_token_triggers_webhook(monkeypatch):
         return Resp()
 
     monkeypatch.setattr("tokens.services.requests.post", fake_post)
+    monkeypatch.setattr("tokens.tasks.requests.post", fake_post)
 
     user = UserFactory()
     raw = generate_token(user, None, "read", timedelta(days=1))
@@ -66,6 +67,7 @@ def test_revoke_token_triggers_webhook(monkeypatch):
         return Resp()
 
     monkeypatch.setattr("tokens.services.requests.post", fake_post)
+    monkeypatch.setattr("tokens.tasks.requests.post", fake_post)
 
     user = UserFactory()
     raw = generate_token(user, None, "read", timedelta(days=1))
@@ -73,7 +75,7 @@ def test_revoke_token_triggers_webhook(monkeypatch):
 
     calls.clear()  # ignora webhook de criação
 
-    revoke_token(token.id)
+    revoke_token(token.id, ip="1.1.1.1", user_agent="tests")
 
     assert len(calls) == 1
     url, data, headers = calls[0]
@@ -81,4 +83,35 @@ def test_revoke_token_triggers_webhook(monkeypatch):
     assert json.loads(data.decode()) == {"event": "revoked", "id": str(token.id)}
     expected_sig = hmac.new(b"segredo", data, hashlib.sha256).hexdigest()
     assert headers["X-Hubx-Signature"] == expected_sig
+
+
+@override_settings(
+    TOKENS_WEBHOOK_URL="https://example.com/hook",
+    TOKEN_WEBHOOK_SECRET="",
+)
+def test_rotate_token_triggers_webhook(monkeypatch):
+    calls: list[dict[str, object]] = []
+
+    def fake_post(url, data, headers, timeout):
+        calls.append(json.loads(data.decode()))
+
+        class Resp:
+            status_code = 200
+
+        return Resp()
+
+    monkeypatch.setattr("tokens.services.requests.post", fake_post)
+    monkeypatch.setattr("tokens.tasks.requests.post", fake_post)
+
+    user = UserFactory()
+    raw = generate_token(user, None, "read", timedelta(days=1))
+    token = ApiToken.objects.get(token_hash=hashlib.sha256(raw.encode()).hexdigest())
+
+    calls.clear()
+
+    rotate_token(token.id, user, ip="1.1.1.1", user_agent="tests")
+
+    events = {c["event"] for c in calls}
+    assert {"created", "revoked", "rotated"} <= events
+    assert any(c.get("event") == "rotated" and c.get("id") == str(token.id) for c in calls)
 

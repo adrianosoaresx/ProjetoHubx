@@ -24,6 +24,10 @@ tokens_api_tokens_revoked_total = Counter(
     "tokens_api_tokens_revoked_total",
     "Total de tokens API revogados",
 )
+tokens_api_tokens_rotated_total = Counter(
+    "tokens_api_tokens_rotated_total",
+    "Total de tokens API rotacionados",
+)
 
 # Webhook metrics
 tokens_webhooks_sent_total = Counter(

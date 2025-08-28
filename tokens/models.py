@@ -345,12 +345,19 @@ class TOTPDevice(TimeStampedModel, SoftDeleteModel):
         on_delete=models.CASCADE,
         related_name="totp_device",
     )
+    # ``secret`` é armazenado como hash para evitar recuperação do valor bruto
     secret = EncryptedCharField(max_length=128)
     confirmado = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.secret:
             self.secret = pyotp.random_base32()
+
+        # Para novos registros, persistimos apenas o hash SHA-256 do segredo,
+        # evitando que o valor original seja recuperado do banco de dados.
+        if self.secret and len(self.secret) != 64:
+            self.secret = hashlib.sha256(self.secret.encode()).hexdigest()
+
         super().save(*args, **kwargs)
 
     def gerar_totp(self) -> str:
