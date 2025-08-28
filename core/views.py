@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
 
 from feed.models import Post
 
 
 def home(request):
+    if request.user.is_authenticated:
+        return redirect("accounts:perfil")
     return render(request, "core/home.html")
 
 
