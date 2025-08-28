@@ -60,6 +60,12 @@ User = get_user_model()
 
 
 def token(request):
+    if request.user.is_authenticated and (
+        request.user.is_superuser
+        or request.user.user_type in [UserType.ROOT, UserType.ADMIN]
+    ):
+        return redirect("tokens:listar_api_tokens")
+
     if request.method == "POST":
         tkn = request.POST.get("token")
         if tkn:
