@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load static i18n %}
+{% load static i18n custom_filters %}
 
 {% block title %}{% trans "Redes Sociais" %} | HubX{% endblock %}
 
@@ -11,16 +11,28 @@
   <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
     {% csrf_token %}
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        {{ form.redes_sociais.label_tag }}
-        {{ form.redes_sociais }}
-        {% if form.redes_sociais.errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.redes_sociais.errors }}</p>
-        {% endif %}
-        {% if form.non_field_errors %}
-          <p class="text-red-600 text-sm mt-1">{{ form.non_field_errors }}</p>
-        {% endif %}
+        {{ form.facebook.label_tag }}
+        {{ form.facebook|add_class:'w-full' }}
+        {{ form.facebook.errors }}
       </div>
+      <div>
+        {{ form.twitter.label_tag }}
+        {{ form.twitter|add_class:'w-full' }}
+        {{ form.twitter.errors }}
+      </div>
+      <div>
+        {{ form.instagram.label_tag }}
+        {{ form.instagram|add_class:'w-full' }}
+        {{ form.instagram.errors }}
+      </div>
+      <div>
+        {{ form.linkedin.label_tag }}
+        {{ form.linkedin|add_class:'w-full' }}
+        {{ form.linkedin.errors }}
+      </div>
+    </div>
 
     <div class="pt-4">
       <button type="submit"

@@ -22,6 +22,7 @@ function initPreferencias() {
   const selEmailEl = document.getElementById(selEmail);
   const selWhatsEl = document.getElementById(selWhats);
   const selPushEl = document.getElementById(selPush);
+  const temaSelectEl = document.getElementById('id_tema');
 
   if (!chkEmailEl || !chkWhatsEl || !chkPushEl || !selEmailEl || !selWhatsEl || !selPushEl) {
     return;
@@ -71,6 +72,23 @@ function initPreferencias() {
   chkPushEl.addEventListener('change', toggleFields);
 
   toggleFields();
+
+  if (temaSelectEl) {
+    const applyTheme = () => {
+      const temaValue = temaSelectEl.value;
+      localStorage.setItem('tema', temaValue);
+      document.cookie = `tema=${temaValue};path=/`;
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme =
+        temaValue === 'automatico'
+          ? prefersDark
+            ? 'escuro'
+            : 'claro'
+          : temaValue;
+      document.documentElement.classList.toggle('dark', theme === 'escuro');
+    };
+    temaSelectEl.addEventListener('change', applyTheme);
+  }
 
   if (updatedPreferences === 'true') {
     const temaValue = tema;
