@@ -14,10 +14,14 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
 
     def get_queryset(self):
         User = get_user_model()
-        qs = User.objects.filter(
-            Q(is_associado=True) | Q(user_type=UserType.ASSOCIADO),
-            organizacao=self.request.user.organizacao,
-        ).select_related("organizacao", "nucleo")
+        qs = (
+            User.objects.filter(
+                user_type=UserType.ASSOCIADO.value,
+                organizacao=self.request.user.organizacao,
+            )
+            .select_related("organizacao", "nucleo")
+        )
+        # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q))
