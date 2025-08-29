@@ -1,25 +1,34 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
 {% block title %}{{ perfil.get_full_name|default:perfil.username }} | Hubx{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto mt-8 px-4">
-  <div class="bg-white rounded-2xl shadow p-6">
-    <div class="flex items-center gap-4">
-      {% if perfil.avatar %}
-        <img src="{{ perfil.avatar.url }}" alt="{{ perfil.username }}" class="w-20 h-20 rounded-full object-cover">
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="profile-cover h-48 w-full">
+      {% if perfil.cover %}
+        <img src="{{ perfil.cover.url }}" alt="{% trans "Capa do usuário" %}" class="w-full h-full object-cover">
       {% else %}
-        <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-primary" role="img" aria-label="{{ perfil.username }}">
-          {{ perfil.username|first|upper }}
-        </div>
+        <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
       {% endif %}
-      <div>
-        <h1 class="text-lg font-bold">{{ perfil.get_full_name|default:perfil.username }}</h1>
-        <p class="text-sm text-gray-500">@{{ perfil.username }}</p>
-      </div>
     </div>
-    {% if perfil.biografia %}
-      <p class="mt-4 text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
-    {% endif %}
+    <div class="p-6">
+      <div class="flex items-center gap-4">
+        {% if perfil.avatar %}
+          <img src="{{ perfil.avatar.url }}" alt="{{ perfil.username }}" class="w-20 h-20 rounded-full object-cover">
+        {% else %}
+          <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-primary" role="img" aria-label="{{ perfil.username }}">
+            {{ perfil.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <h1 class="text-lg font-bold">{{ perfil.get_full_name|default:perfil.username }}</h1>
+          <p class="text-sm text-gray-500">@{{ perfil.username }}</p>
+        </div>
+      </div>
+      {% if perfil.biografia %}
+        <p class="mt-4 text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}
