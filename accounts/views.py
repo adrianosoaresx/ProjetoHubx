@@ -8,9 +8,9 @@ import pyotp
 import qrcode
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
@@ -91,26 +91,8 @@ def perfil_redes_sociais(request):
 
 @login_required
 def perfil_seguranca(request):
-    if request.method == "POST":
-        form = PasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            AccountToken.objects.filter(
-                usuario=user,
-                tipo=AccountToken.Tipo.PASSWORD_RESET,
-                used_at__isnull=True,
-            ).update(used_at=timezone.now())
-            update_session_auth_hash(request, user)
-            SecurityEvent.objects.create(
-                usuario=user,
-                evento="senha_alterada",
-                ip=get_client_ip(request),
-            )
-            messages.success(request, "Senha alterada com sucesso.")
-            return redirect("accounts:seguranca")
-        return render(request, "perfil/seguranca.html", {"form": form})
-    form = PasswordChangeForm(request.user)
-    return render(request, "perfil/seguranca.html", {"form": form})
+    """Redireciona para as configurações de segurança centralizadas."""
+    return redirect("configuracoes")
 
 
 @login_required

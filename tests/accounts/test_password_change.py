@@ -20,13 +20,13 @@ def test_password_change_marks_reset_tokens_used(client):
     )
     client.force_login(user)
     resp = client.post(
-        reverse("accounts:seguranca"),
+        reverse("configuracoes"),
         {
             "old_password": "oldpass",
             "new_password1": "Newpass123!",
             "new_password2": "Newpass123!",
         },
     )
-    assert resp.status_code == 302
+    assert resp.status_code == 200
     token.refresh_from_db()
     assert token.used_at is not None
