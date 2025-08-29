@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog
 
 from configuracoes.views import ConfiguracoesView
+from accounts import views as accounts_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -21,6 +22,9 @@ urlpatterns = [
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
+
+    path("associados/", accounts_views.AssociadoListView.as_view(), name="associados_lista"),
+
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
     path(
         "api/financeiro/",

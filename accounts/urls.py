@@ -8,6 +8,7 @@ urlpatterns = [
     # Autenticação
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
+    path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
     # Registro de usuário
     path("resend-confirmation/", views.resend_confirmation, name="resend_confirmation"),
     path("password_reset/", views.password_reset, name="password_reset"),

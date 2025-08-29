@@ -28,7 +28,7 @@ def test_admin_list_associados(client):
         is_associado=True,
     )
     client.force_login(admin)
-    resp = client.get(reverse("associados:lista"))
+    resp = client.get(reverse("accounts:associados_lista"))
     assert resp.status_code == 200
     assert assoc.username in resp.content.decode()
 
@@ -38,7 +38,7 @@ def test_search_associados(client):
     create_user("john@example.com", "john", UserType.ASSOCIADO, is_associado=True)
     create_user("jane@example.com", "jane", UserType.ASSOCIADO, is_associado=True)
     client.force_login(admin)
-    resp = client.get(reverse("associados:lista"), {"q": "john"})
+    resp = client.get(reverse("accounts:associados_lista"), {"q": "john"})
     content = resp.content.decode()
     assert "john" in content
     assert "jane" not in content
@@ -60,6 +60,6 @@ def test_coordenador_list_associados(client):
         organizacao=org,
     )
     client.force_login(coord)
-    resp = client.get(reverse("associados:lista"))
+    resp = client.get(reverse("accounts:associados_lista"))
     assert resp.status_code == 200
     assert assoc.username in resp.content.decode()
