@@ -119,10 +119,12 @@
         <a href="{% url 'tokens:listar_api_tokens' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-key"></i> {% trans "Tokens" %}
         </a>
-        <a href="{% url 'configuracoes' %}" class="hover:text-primary transition">
-          <i class="fa-solid fa-gear" aria-hidden="true"></i><span class="sr-only">{% trans "Configurações" %}</span>
-        </a>
-        <a href="{% url 'accounts:logout' %}" class="hover:text-primary transition">{% trans "Sair" %}</a>
+          <a href="{% url 'configuracoes' %}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}">
+            <i class="fas fa-cog"></i>
+          </a>
+          <a href="{% url 'accounts:logout' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+            <i class="fas fa-right-from-bracket"></i> {% trans "Sair" %}
+          </a>
         {% else %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
@@ -185,18 +187,21 @@
         </a>
         {% endif %}
         {% endif %}
-        {% if user.is_authenticated %}
-          <a href="{% url 'configuracoes' %}" class="hover:text-primary transition">
-            <i class="fas fa-cog"></i>
-            <span class="sr-only">{% trans "Configurações" %}</span>
-          </a>
-          <a href="{% url 'accounts:logout' %}" class="hover:text-primary transition">{% trans "Sair" %}</a>
-        {% else %}
-          <a href="{% url 'accounts:login' %}" class="hover:text-primary transition">{% trans "Entrar" %}</a>
-          <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition">
-            {% trans "Cadastrar" %}
-          </a>
-        {% endif %}
+          {% if user.is_authenticated %}
+            <a href="{% url 'configuracoes' %}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}">
+              <i class="fas fa-cog"></i>
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+              <i class="fas fa-right-from-bracket"></i> {% trans "Sair" %}
+            </a>
+          {% else %}
+            <a href="{% url 'accounts:login' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+              <i class="fas fa-right-to-bracket"></i> {% trans "Entrar" %}
+            </a>
+            <a href="{% url 'accounts:onboarding' %}" class="flex items-center gap-x-2 bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition">
+              <i class="fas fa-user-plus"></i> {% trans "Cadastrar" %}
+            </a>
+          {% endif %}
         {% endif %}
       </nav>
     </div>
