@@ -94,7 +94,7 @@
           </div>
         </div>
         {% endif %}
-        {% if user.user_type == 'admin' %}
+        {% if user.user_type in ('admin', 'coordenador') %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-gauge"></i> {% trans "Dashboard" %}
         </a>

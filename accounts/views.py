@@ -838,6 +838,12 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        organizacao = getattr(self.request.user, "organizacao", None)
+        if not organizacao:
+            return User.objects.none()
+        return User.objects.filter(organizacao=organizacao, is_associado=True)
+
     def get_permission_classes(self):
         """Retorna lista de classes de permissão baseadas na ação atual."""
         permission_classes = [IsAuthenticated]
