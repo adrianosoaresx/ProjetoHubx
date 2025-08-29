@@ -560,7 +560,7 @@ class Ativar2FAView(LoginRequiredMixin, View):
         user = request.user
         if user.two_factor_enabled:
             messages.info(request, _("2FA já está habilitado."))
-            return redirect("accounts:seguranca")
+            return redirect("configuracoes")
         if not user.two_factor_secret:
             user.two_factor_secret = pyotp.random_base32()
             user.save(update_fields=["two_factor_secret"])
@@ -592,7 +592,7 @@ class Ativar2FAView(LoginRequiredMixin, View):
                 ip=get_client_ip(request),
             )
             messages.success(request, _("2FA ativado"))
-            return redirect("accounts:seguranca")
+            return redirect("configuracoes")
         context = {
             "form": form,
             "qr_code": self._get_qr_code(user),
@@ -619,4 +619,4 @@ class Desativar2FAView(LoginRequiredMixin, View):
             ip=get_client_ip(request),
         )
         messages.success(request, _("2FA desativado"))
-        return redirect("accounts:seguranca")
+        return redirect("configuracoes")

@@ -90,12 +90,6 @@ def perfil_redes_sociais(request):
 
 
 @login_required
-def perfil_seguranca(request):
-    """Redireciona para as configurações de segurança centralizadas."""
-    return redirect("configuracoes")
-
-
-@login_required
 def perfil_notificacoes(request):
     """Redireciona para a aba de preferências centralizada em ConfiguracaoConta."""
     return redirect("configuracoes")
@@ -104,7 +98,7 @@ def perfil_notificacoes(request):
 @login_required
 def enable_2fa(request):
     if request.user.two_factor_enabled:
-        return redirect("accounts:seguranca")
+        return redirect("configuracoes")
     secret = request.session.get("tmp_2fa_secret")
     if not secret:
         secret = pyotp.random_base32()
@@ -140,7 +134,7 @@ def enable_2fa(request):
                 )
                 del request.session["tmp_2fa_secret"]
                 messages.success(request, _("Verificação em duas etapas ativada."))
-                return redirect("accounts:seguranca")
+                return redirect("configuracoes")
             SecurityEvent.objects.create(
                 usuario=request.user,
                 evento="2fa_habilitacao_falha",
@@ -161,7 +155,7 @@ def enable_2fa(request):
 @login_required
 def disable_2fa(request):
     if not request.user.two_factor_enabled:
-        return redirect("accounts:seguranca")
+        return redirect("configuracoes")
     if request.method == "POST":
         password = request.POST.get("password")
         code = request.POST.get("code")
@@ -178,7 +172,7 @@ def disable_2fa(request):
                     ip=get_client_ip(request),
                 )
                 messages.success(request, _("Verificação em duas etapas desativada."))
-                return redirect("accounts:seguranca")
+                return redirect("configuracoes")
             SecurityEvent.objects.create(
                 usuario=request.user,
                 evento="2fa_desabilitacao_falha",
