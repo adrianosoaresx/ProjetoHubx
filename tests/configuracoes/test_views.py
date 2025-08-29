@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-import pytest
 from django.http import Http404
 from django.test import override_settings
 from django.urls import reverse
@@ -11,7 +10,7 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from configuracoes.views import ConfiguracoesView
 from pathlib import Path
 
-from accounts.forms import InformacoesPessoaisForm
+from django.contrib.auth.forms import PasswordChangeForm
 
 pytestmark = pytest.mark.django_db
 
@@ -20,9 +19,7 @@ pytestmark = pytest.mark.django_db
 def test_view_get_autenticado(admin_client):
     resp = admin_client.get(reverse("configuracoes"))
     assert resp.status_code == 200
-    assert isinstance(resp.context["informacoes_form"], InformacoesPessoaisForm)
-    assert "seguranca_form" not in resp.context
-    assert "redes_form" not in resp.context
+    assert isinstance(resp.context["seguranca_form"], PasswordChangeForm)
     assert "preferencias_form" not in resp.context
     assert "configuracoes/configuracoes.html" in [t.name for t in resp.templates]
 
@@ -35,17 +32,17 @@ def test_view_get_redirect_nao_autenticado(client):
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
-def test_view_get_redes_connect_redirect(admin_client):
-    url = (
-        reverse("configuracoes")
-        + "?tab=redes&action=connect&network=github"
-    )
-    resp = admin_client.get(url)
+def test_view_get_redes_redirect(admin_client):
+    resp = admin_client.get(reverse("configuracoes") + "?tab=redes")
     assert resp.status_code == 302
-    assert (
-        resp.headers["Location"]
-        == "https://github.com/login/oauth/authorize"
-    )
+    assert resp.headers["Location"] == reverse("accounts:redes_sociais")
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_view_get_informacoes_redirect(admin_client):
+    resp = admin_client.get(reverse("configuracoes") + "?tab=informacoes")
+    assert resp.status_code == 302
+    assert resp.headers["Location"] == reverse("accounts:informacoes_pessoais")
 
 
 def test_view_invalid_tab_returns_404(admin_user, rf: RequestFactory):

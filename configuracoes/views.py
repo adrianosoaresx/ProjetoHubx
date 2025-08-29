@@ -6,29 +6,23 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AbstractBaseUser
-
 from django.http import Http404, HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
-
+from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
-from accounts.forms import InformacoesPessoaisForm, RedesSociaisForm
+from accounts.models import AccountToken, SecurityEvent
 from configuracoes.forms import ConfiguracaoContaForm
-from configuracoes.services import (
-    atualizar_preferencias_usuario,
-    get_configuracao_conta,
-    get_autorizacao_rede_url,
-)
+from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
+from tokens.utils import get_client_ip
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
     """Exibe e processa formulários de configuração da conta."""
 
     form_classes = {
-        "informacoes": InformacoesPessoaisForm,
         "seguranca": PasswordChangeForm,
-        "redes": RedesSociaisForm,
         "preferencias": ConfiguracaoContaForm,
     }
 
@@ -43,7 +37,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
     def get_form(
         self, tab: str | None, data: dict[str, Any] | None = None, files: Any | None = None
     ) -> forms.Form:
-        tab = tab or "informacoes"
+        tab = tab or "seguranca"
         if tab not in self.form_classes:
             raise Http404
         user = self.get_user()
@@ -59,15 +53,15 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         return bool(self.request.user.two_factor_enabled)
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        tab = request.GET.get("tab", "informacoes")
-        if tab == "redes" and request.GET.get("action") == "connect":
-            network = request.GET.get("network", "")
-            return redirect(get_autorizacao_rede_url(network))
+        tab = request.GET.get("tab", "seguranca")
+        if tab == "informacoes":
+            return redirect("accounts:informacoes_pessoais")
+        if tab == "redes":
+            return redirect("accounts:redes_sociais")
         context = {
             f"{tab}_form": self.get_form(tab),
             "tab": tab,
             "two_factor_enabled": self.get_two_factor_enabled(),
-            "redes_conectadas": request.user.redes_sociais or {},
         }
         template = (
             f"configuracoes/partials/{tab}.html"
@@ -78,38 +72,39 @@ class ConfiguracoesView(LoginRequiredMixin, View):
 
     def post(self, request: HttpRequest) -> HttpResponse:
         tab = request.GET.get("tab") or request.POST.get("tab")
-        tab = tab or "informacoes"
+        tab = tab or "seguranca"
+        if tab == "informacoes":
+            return redirect("accounts:informacoes_pessoais")
+        if tab == "redes":
+            return redirect("accounts:redes_sociais")
         if tab not in self.form_classes:
             raise Http404
-        if tab == "redes" and request.POST.get("action") == "disconnect":
-            redes = request.user.redes_sociais or {}
-            network = request.POST.get("network")
-            if network in redes:
-                redes.pop(network)
-                request.user.redes_sociais = redes
-                request.user.save()
-                messages.success(request, _("Conta desconectada."))
+        form = self.get_form(tab, request.POST, request.FILES)
+        if form.is_valid():
+            if tab == "preferencias":
+                form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)
             else:
-                messages.error(request, _("Rede social não encontrada."))
-            form = self.get_form("redes")
+                saved = form.save()
+                if isinstance(form, PasswordChangeForm):
+                    AccountToken.objects.filter(
+                        usuario=request.user,
+                        tipo=AccountToken.Tipo.PASSWORD_RESET,
+                        used_at__isnull=True,
+                    ).update(used_at=timezone.now())
+                    update_session_auth_hash(request, saved)
+                    SecurityEvent.objects.create(
+                        usuario=request.user,
+                        evento="senha_alterada",
+                        ip=get_client_ip(request),
+                    )
+            messages.success(request, _("Alterações salvas com sucesso."))
         else:
-            form = self.get_form(tab, request.POST, request.FILES)
-            if form.is_valid():
-                if tab == "preferencias":
-                    form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)
-                else:
-                    saved = form.save()
-                    if isinstance(form, PasswordChangeForm):
-                        update_session_auth_hash(request, saved)
-                messages.success(request, _("Alterações salvas com sucesso."))
-            else:
-                messages.error(request, _("Corrija os erros abaixo."))
+            messages.error(request, _("Corrija os erros abaixo."))
 
         context = {
             f"{tab}_form": form,
             "tab": tab,
             "two_factor_enabled": self.get_two_factor_enabled(),
-            "redes_conectadas": request.user.redes_sociais or {},
         }
         if tab == "preferencias" and form.is_valid():
             context["updated_preferences"] = True
