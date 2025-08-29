@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load static i18n %}
+{% load static i18n custom_filters %}
 
 {% block title %}{% trans "Informações Pessoais" %} | HubX{% endblock %}
 
@@ -71,7 +71,7 @@
 
     <div>
       {{ form.endereco.label_tag }}
-      {{ form.endereco }}
+      {{ form.endereco|add_class:'w-full' }}
       {{ form.endereco.errors }}
     </div>
 

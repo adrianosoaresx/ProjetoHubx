@@ -1,4 +1,3 @@
-import json
 import re
 
 import pyotp
@@ -162,29 +161,32 @@ class InformacoesPessoaisForm(forms.ModelForm):
 
 
 class RedesSociaisForm(forms.ModelForm):
-    redes_sociais = forms.JSONField(
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 3}),
-        label="Redes sociais (JSON)",
-    )
+    facebook = forms.URLField(required=False, label="Facebook")
+    twitter = forms.URLField(required=False, label="Twitter")
+    instagram = forms.URLField(required=False, label="Instagram")
+    linkedin = forms.URLField(required=False, label="LinkedIn")
 
     class Meta:
         model = User
-        fields = ("redes_sociais",)
+        fields = ()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance and self.instance.redes_sociais:
-            self.initial["redes_sociais"] = json.dumps(self.instance.redes_sociais, ensure_ascii=False, indent=2)
+        redes = self.instance.redes_sociais or {}
+        for field in self.fields:
+            if field in redes:
+                self.fields[field].initial = redes.get(field)
 
-    def clean_redes_sociais(self):
-        data = self.cleaned_data.get("redes_sociais") or {}
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError as exc:
-                raise forms.ValidationError("JSON inválido") from exc
-        return data
+    def save(self, commit: bool = True):
+        redes: dict[str, str] = {}
+        for field in self.fields:
+            value = self.cleaned_data.get(field)
+            if value:
+                redes[field] = value
+        self.instance.redes_sociais = redes
+        if commit:
+            self.instance.save(update_fields=["redes_sociais"])
+        return self.instance
 class MediaForm(forms.ModelForm):
     tags_field = forms.CharField(
         required=False,
