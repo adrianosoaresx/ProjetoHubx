@@ -80,20 +80,13 @@ def insert_user(cur, user_data: dict) -> int:
     nucleo_id = user_data.get("nucleo_id")
     # Default string fields (not nullable) – use empty strings unless provided
     defaults = {
-        "address": "",
-        "nome_completo": f"{first_name} {last_name}".strip(),
         "biografia": "",
-        "fone": "",
+        "phone_number": "",
         "whatsapp": "",
         "endereco": "",
         "cidade": user_data.get("cidade", ""),
         "estado": user_data.get("estado", ""),
         "cep": user_data.get("cep", "00000-000"),
-        "facebook": "",
-        "twitter": "",
-        "instagram": "",
-        "linkedin": "",
-        "website": "",
         "idioma": "pt-BR",
         "fuso_horario": "America/Sao_Paulo",
         "perfil_publico": 1,
@@ -119,24 +112,16 @@ def insert_user(cur, user_data: dict) -> int:
         "deleted_at",
         "email",
         "phone_number",
-        "address",
         "birth_date",
         "cpf",
-        "nome_completo",
         "biografia",
         "cover",
-        "fone",
         "whatsapp",
         "avatar",
         "endereco",
         "cidade",
         "estado",
         "cep",
-        "facebook",
-        "twitter",
-        "instagram",
-        "linkedin",
-        "website",
         "redes_sociais",
         "idioma",
         "fuso_horario",
@@ -169,25 +154,17 @@ def insert_user(cur, user_data: dict) -> int:
         0,  # deleted
         None,  # deleted_at
         email,
-        None,  # phone_number
-        defaults["address"],
+        defaults["phone_number"],
         None,  # birth_date
         None,  # cpf
-        defaults["nome_completo"],
         defaults["biografia"],
         None,  # cover
-        defaults["fone"],
         defaults["whatsapp"],
         None,  # avatar
         defaults["endereco"],
         defaults["cidade"],
         defaults["estado"],
         defaults["cep"],
-        defaults["facebook"],
-        defaults["twitter"],
-        defaults["instagram"],
-        defaults["linkedin"],
-        defaults["website"],
         None,  # redes_sociais JSON
         defaults["idioma"],
         defaults["fuso_horario"],
@@ -496,7 +473,7 @@ def main():
     cur = conn.cursor()
 
     # Create root user
-    root_id = insert_user(
+    insert_user(
         cur,
         {
             "email": "root@hubx.com.br",

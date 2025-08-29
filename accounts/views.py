@@ -12,7 +12,6 @@ from django.contrib.auth import authenticate, get_user_model, login, logout, upd
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -24,7 +23,6 @@ from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.views import View
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -40,13 +38,7 @@ from core.permissions import IsAdmin, IsCoordenador
 from tokens.models import TokenAcesso, TOTPDevice
 from tokens.utils import get_client_ip
 
-from .forms import (
-    CustomUserChangeForm,
-    EmailLoginForm,
-    InformacoesPessoaisForm,
-    MediaForm,
-    RedesSociaisForm,
-)
+from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, RedesSociaisForm
 from .models import AccountToken, SecurityEvent, UserMedia
 from .validators import cpf_validator
 
@@ -231,15 +223,22 @@ def check_2fa(request):
 @login_required
 def perfil_conexoes(request):
     q = request.GET.get("q", "").strip()
-    connections = request.user.connections.all() if hasattr(request.user, "connections") else User.objects.none()
-    connection_requests = request.user.followers.all() if hasattr(request.user, "followers") else User.objects.none()
+    connections = (
+        request.user.connections.select_related("organizacao", "nucleo")
+        if hasattr(request.user, "connections")
+        else User.objects.none()
+    )
+    connection_requests = (
+        request.user.followers.select_related("organizacao", "nucleo")
+        if hasattr(request.user, "followers")
+        else User.objects.none()
+    )
 
     if q:
         filters = (
             Q(username__icontains=q)
             | Q(first_name__icontains=q)
             | Q(last_name__icontains=q)
-            | Q(nome_completo__icontains=q)
         )
         connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
@@ -778,7 +777,6 @@ def termos(request):
                         email=email_val,
                         first_name=first_name,
                         last_name=last_name,
-                        nome_completo=nome_completo,
                         password=pwd_hash,
                         cpf=cpf_val,
                         user_type=tipo_mapping[token_obj.tipo_destino],
@@ -856,33 +854,3 @@ class UserViewSet(viewsets.ModelViewSet):
             raise PermissionError("Você não tem permissão para criar usuários.")
 
 
-class UserProfileView(LoginRequiredMixin, View):
-    def get(self, request):
-        form = CustomUserChangeForm(instance=request.user)
-        return render(request, "accounts/user_profile.html", {"form": form})
-
-    def post(self, request):
-        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect("user_profile")
-        return render(request, "accounts/user_profile.html", {"form": form})
-
-
-class ChangePasswordView(LoginRequiredMixin, View):
-    def get(self, request):
-        form = PasswordChangeForm(user=request.user)
-        return render(request, "accounts/change_password.html", {"form": form})
-
-    def post(self, request):
-        form = PasswordChangeForm(data=request.POST, user=request.user)
-        if form.is_valid():
-            form.save()
-            update_session_auth_hash(request, form.user)
-            SecurityEvent.objects.create(
-                usuario=request.user,
-                evento="senha_alterada",
-                ip=get_client_ip(request),
-            )
-            return redirect("user_profile")
-        return render(request, "accounts/change_password.html", {"form": form})
