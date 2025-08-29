@@ -8,13 +8,7 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from django.views.i18n import JavaScriptCatalog
 
-from configuracoes.views import (
-    ConfiguracoesView,
-    ConfiguracaoContextualListView,
-    ConfiguracaoContextualCreateView,
-    ConfiguracaoContextualUpdateView,
-    ConfiguracaoContextualDeleteView,
-)
+from configuracoes.views import ConfiguracoesView
 
 urlpatterns = [
     # Django admin
@@ -40,26 +34,6 @@ urlpatterns = [
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
-    path(
-        "configuracoes/contextuais/",
-        ConfiguracaoContextualListView.as_view(),
-        name="configuracoes-contextual-list",
-    ),
-    path(
-        "configuracoes/contextuais/nova/",
-        ConfiguracaoContextualCreateView.as_view(),
-        name="configuracoes-contextual-create",
-    ),
-    path(
-        "configuracoes/contextuais/<uuid:pk>/editar/",
-        ConfiguracaoContextualUpdateView.as_view(),
-        name="configuracoes-contextual-update",
-    ),
-    path(
-        "configuracoes/contextuais/<uuid:pk>/remover/",
-        ConfiguracaoContextualDeleteView.as_view(),
-        name="configuracoes-contextual-delete",
-    ),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),
