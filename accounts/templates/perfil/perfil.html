@@ -38,6 +38,12 @@
            class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
            role="tab"
            aria-selected="{% if request.resolver_match.url_name == 'informacoes_pessoais' %}true{% else %}false{% endif %}">{% trans "Informações Pessoais" %}</a>
+
+        <a href="{% url 'configuracoes' %}"
+           class="px-3 py-2 -mb-px border-b-2 border-transparent hover:text-primary"
+           role="tab"
+           aria-selected="false">{% trans "Segurança" %}</a>
+
         <a href="{% url 'accounts:redes_sociais' %}"
            class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
            role="tab"
