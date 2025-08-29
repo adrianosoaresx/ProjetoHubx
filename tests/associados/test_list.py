@@ -1,9 +1,9 @@
 import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from accounts.models import UserType
-
+from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db
 
@@ -42,3 +42,24 @@ def test_search_associados(client):
     content = resp.content.decode()
     assert "john" in content
     assert "jane" not in content
+
+
+def test_coordenador_list_associados(client):
+    org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
+    coord = create_user(
+        "coord@example.com",
+        "coord",
+        UserType.COORDENADOR,
+        organizacao=org,
+    )
+    assoc = create_user(
+        "assoc2@example.com",
+        "assoc2",
+        UserType.ASSOCIADO,
+        is_associado=True,
+        organizacao=org,
+    )
+    client.force_login(coord)
+    resp = client.get(reverse("associados:lista"))
+    assert resp.status_code == 200
+    assert assoc.username in resp.content.decode()

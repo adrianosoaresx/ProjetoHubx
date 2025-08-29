@@ -28,7 +28,6 @@ from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperad
 
 from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
-from .services import gerar_convite_nucleo
 from .tasks import (
     notify_participacao_aprovada,
     notify_participacao_recusada,
@@ -77,6 +76,8 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             qs = qs.filter(organizacao=user.organizacao)
         elif user.user_type == UserType.COORDENADOR:
             qs = qs.filter(participacoes__user=user)
+        elif user.user_type in {UserType.ASSOCIADO, UserType.NUCLEADO}:
+            qs = qs.filter(organizacao=user.organizacao)
 
         if q:
             qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
@@ -197,9 +198,7 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     template_name = "nucleos/detail.html"
 
     def get_queryset(self):
-        qs = Nucleo.objects.filter(deleted=False).prefetch_related(
-            "participacoes__user", "coordenadores_suplentes"
-        )
+        qs = Nucleo.objects.filter(deleted=False).prefetch_related("participacoes__user", "coordenadores_suplentes")
         user = self.request.user
         if user.user_type == UserType.ADMIN:
             qs = qs.filter(organizacao=user.organizacao)
@@ -287,9 +286,7 @@ class ConvitesModalView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
 class ParticipacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, View):
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
-        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(
-            user=request.user, nucleo=nucleo
-        )
+        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
 
         save_fields: list[str] = []
         if participacao.deleted:

@@ -79,7 +79,7 @@ class IsSameOrganization(BasePermission):
     """Allow access only to objects within the user's organization."""
 
     def has_object_permission(self, request, view, obj) -> bool:
-        return getattr(obj, "organization_id", None) == getattr(request.user, "organization_id", None)
+        return getattr(obj, "organizacao_id", None) == getattr(request.user, "organizacao_id", None)
 
 
 class ClienteGerenteRequiredMixin(UserPassesTestMixin):
