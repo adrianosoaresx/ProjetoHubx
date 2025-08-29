@@ -306,7 +306,7 @@ export NOTIFICATIONS_WHATSAPP_API_KEY=token
 - Consultas filtram dados via:
 
 ```python
-User.objects.filter_current_org(request.user.organization)
+User.objects.filter_current_org(request.user.organizacao)
 ```
 
 - Superusuários não possuem organização associada e visualizam todos os dados.
