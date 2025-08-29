@@ -9,6 +9,7 @@ from django.views.generic import RedirectView
 from django.views.i18n import JavaScriptCatalog
 
 from configuracoes.views import ConfiguracoesView
+from accounts import views
 
 urlpatterns = [
     # Django admin
@@ -35,7 +36,7 @@ urlpatterns = [
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
-    path("associados/", include(("associados.urls", "associados"), namespace="associados")),
+    path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),
     # APIs REST (subcaminhos específicos)

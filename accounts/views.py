@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -23,23 +24,28 @@ from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.generic import ListView
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from accounts.models import UserType
 from accounts.serializers import UserSerializer
 from accounts.tasks import (
     send_cancel_delete_email,
     send_confirmation_email,
     send_password_reset_email,
 )
-from core.permissions import IsAdmin, IsCoordenador
+from core.permissions import (
+    GerenteRequiredMixin,
+    IsAdmin,
+    IsCoordenador,
+    NoSuperadminMixin,
+)
 from tokens.models import TokenAcesso, TOTPDevice
 from tokens.utils import get_client_ip
 
 from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, RedesSociaisForm
-from .models import AccountToken, SecurityEvent, UserMedia
+from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
 User = get_user_model()
@@ -800,6 +806,31 @@ def termos(request):
 
 def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
+
+
+class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
+    template_name = "associados/lista.html"
+    context_object_name = "associados"
+    paginate_by = 10
+
+    def get_queryset(self):
+        User = get_user_model()
+        qs = (
+            User.objects.filter(
+                user_type=UserType.ASSOCIADO.value,
+                organizacao=self.request.user.organizacao,
+            )
+            .select_related("organizacao", "nucleo")
+        )
+        # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(
+                Q(username__icontains=q)
+                | Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+            )
+        return qs.order_by("username")
 
 
 class UserViewSet(viewsets.ModelViewSet):

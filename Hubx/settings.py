@@ -95,7 +95,6 @@ INSTALLED_APPS = [
     "notificacoes.apps.NotificacoesConfig",
     "audit",
     "webhooks.apps.WebhooksConfig",
-    "associados.apps.AssociadosConfig",
 ]
 
 MIDDLEWARE = [
