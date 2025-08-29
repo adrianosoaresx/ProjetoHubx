@@ -94,6 +94,36 @@
           </div>
         </div>
         {% endif %}
+        {% if user.user_type == 'admin' %}
+        <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
+        </a>
+        <a href="{% url 'associados:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-users"></i> {% trans "Associados" %}
+        </a>
+        <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-building"></i> {% trans "Empresas" %}
+        </a>
+        <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-users"></i> {% trans "Núcleos" %}
+        </a>
+        <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-calendar-alt"></i> {% trans "Agenda" %}
+        </a>
+        <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-rss"></i> {% trans "Feed" %}
+        </a>
+        <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-hand-holding-usd"></i> {% trans "Financeiro" %}
+        </a>
+        <a href="{% url 'tokens:listar_api_tokens' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fas fa-key"></i> {% trans "Tokens" %}
+        </a>
+        <a href="{% url 'configuracoes' %}" class="hover:text-primary transition">
+          <i class="fa-solid fa-gear" aria-hidden="true"></i><span class="sr-only">{% trans "Configurações" %}</span>
+        </a>
+        <a href="{% url 'accounts:logout' %}" class="hover:text-primary transition">{% trans "Sair" %}</a>
+        {% else %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
         </a>
@@ -166,6 +196,7 @@
           <a href="{% url 'accounts:onboarding' %}" class="bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition">
             {% trans "Cadastrar" %}
           </a>
+        {% endif %}
         {% endif %}
       </nav>
     </div>
