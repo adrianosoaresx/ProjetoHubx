@@ -81,103 +81,11 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-updated_at"]
-        constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
-
-
-class ConfiguracaoContextual(TimeStampedModel, SoftDeleteModel):
-    """Preferências específicas por escopo para um usuário."""
-
-    class Escopo(models.TextChoices):
-        ORGANIZACAO = "organizacao", _("Organização")
-        NUCLEO = "nucleo", _("Núcleo")
-        EVENTO = "evento", _("Evento")
-
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="configuracoes_contextuais",
-    )
-    escopo_tipo = models.CharField(max_length=20, choices=Escopo.choices)
-    escopo_id = models.UUIDField()
-    receber_notificacoes_email = models.BooleanField(null=True, blank=True, default=None)
-    frequencia_notificacoes_email = models.CharField(
-        max_length=8,
-        choices=NOTIFICACAO_FREQ_CHOICES,
-        null=True,
-        blank=True,
-        default=None,
-    )
-    receber_notificacoes_whatsapp = models.BooleanField(null=True, blank=True, default=None)
-    frequencia_notificacoes_whatsapp = models.CharField(
-        max_length=8,
-        choices=NOTIFICACAO_FREQ_CHOICES,
-        null=True,
-        blank=True,
-        default=None,
-    )
-    receber_notificacoes_push = models.BooleanField(null=True, blank=True, default=None)
-    frequencia_notificacoes_push = models.CharField(
-        max_length=8,
-        choices=NOTIFICACAO_FREQ_CHOICES,
-        null=True,
-        blank=True,
-        default=None,
-    )
-    idioma = models.CharField(max_length=5, null=True, blank=True, default=None)
-    tema = models.CharField(
-        max_length=10,
-        choices=TEMA_CHOICES,
-        null=True,
-        blank=True,
-        default=None,
-    )
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        ordering = ["-updated_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "escopo_tipo", "escopo_id"],
-                name="config_contextual_user_scope_unique",
+                fields=["user"], name="configuracao_conta_user_unique"
             )
         ]
-
-    @property
-    def escopo_nome(self) -> str | None:
-        """Retorna o nome do escopo associado ao ``escopo_id``.
-
-        O campo retornado varia conforme o tipo de escopo:
-
-        - ``organizacao``: ``Organizacao.nome``
-        - ``nucleo``: ``Nucleo.nome``
-        - ``evento``: ``Evento.titulo``
-
-        Caso o registro não seja encontrado, retorna ``None``.
-        """
-
-        from organizacoes.models import Organizacao
-        from nucleos.models import Nucleo
-        from agenda.models import Evento
-
-        model_info = {
-            self.Escopo.ORGANIZACAO: (Organizacao, "nome"),
-            self.Escopo.NUCLEO: (Nucleo, "nome"),
-            self.Escopo.EVENTO: (Evento, "titulo"),
-        }.get(self.escopo_tipo)
-
-        if not model_info:
-            return None
-
-        model, attr = model_info
-
-        try:
-            obj = model.objects.get(pk=self.escopo_id)
-        except model.DoesNotExist:  # type: ignore[attr-defined]
-            return None
-
-        return getattr(obj, attr, None)
 
 
 class ConfiguracaoContaLog(TimeStampedModel):

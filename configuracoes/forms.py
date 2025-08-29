@@ -3,7 +3,7 @@ from __future__ import annotations
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from configuracoes.models import ConfiguracaoConta, ConfiguracaoContextual
+from configuracoes.models import ConfiguracaoConta
 
 
 class ConfiguracaoContaForm(forms.ModelForm):
@@ -67,60 +67,4 @@ class ConfiguracaoContaForm(forms.ModelForm):
                 self.add_error("hora_notificacao_semanal", _("Obrigatório para frequência semanal."))
             if data.get("dia_semana_notificacao") is None:
                 self.add_error("dia_semana_notificacao", _("Obrigatório para frequência semanal."))
-        return data
-
-
-class ConfiguracaoContextualForm(forms.ModelForm):
-    """Formulário simples para CRUD de ``ConfiguracaoContextual``."""
-
-    escopo_id = forms.UUIDField(required=True, widget=forms.Select())
-
-    class Meta:
-        model = ConfiguracaoContextual
-        fields = (
-            "escopo_tipo",
-            "escopo_id",
-            "receber_notificacoes_email",
-            "frequencia_notificacoes_email",
-            "receber_notificacoes_whatsapp",
-            "frequencia_notificacoes_whatsapp",
-            "receber_notificacoes_push",
-            "frequencia_notificacoes_push",
-            "idioma",
-            "tema",
-        )
-        widgets = {
-            "escopo_id": forms.Select(),
-            "receber_notificacoes_email": forms.NullBooleanSelect(),
-            "receber_notificacoes_whatsapp": forms.NullBooleanSelect(),
-            "receber_notificacoes_push": forms.NullBooleanSelect(),
-            "frequencia_notificacoes_email": forms.Select(),
-            "frequencia_notificacoes_whatsapp": forms.Select(),
-            "frequencia_notificacoes_push": forms.Select(),
-            "idioma": forms.Select(),
-            "tema": forms.Select(),
-        }
-        help_texts = {
-            "frequencia_notificacoes_email": _("Aplicável apenas se notificações por e-mail estiverem ativas."),
-            "frequencia_notificacoes_whatsapp": _("Aplicável apenas se notificações por WhatsApp estiverem ativas."),
-            "frequencia_notificacoes_push": _("Aplicável apenas se notificações push estiverem ativas."),
-        }
-
-    def clean(self) -> dict[str, object]:
-        data = super().clean()
-        if data.get("receber_notificacoes_email") is False:
-            if data.get("frequencia_notificacoes_email") in (None, ""):
-                data["frequencia_notificacoes_email"] = (
-                    self.instance.frequencia_notificacoes_email
-                )
-        if data.get("receber_notificacoes_whatsapp") is False:
-            if data.get("frequencia_notificacoes_whatsapp") in (None, ""):
-                data["frequencia_notificacoes_whatsapp"] = (
-                    self.instance.frequencia_notificacoes_whatsapp
-                )
-        if data.get("receber_notificacoes_push") is False:
-            if data.get("frequencia_notificacoes_push") in (None, ""):
-                data["frequencia_notificacoes_push"] = (
-                    self.instance.frequencia_notificacoes_push
-                )
         return data

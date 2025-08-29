@@ -5,16 +5,13 @@ import time
 from drf_spectacular.utils import OpenApiExample, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ViewSet, ModelViewSet
+from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 
 from . import metrics
-from .serializers import (
-    ConfiguracaoContaSerializer,
-    ConfiguracaoContextualSerializer,
-)
-from .services import get_configuracao_conta, get_user_preferences
-from .models import ConfiguracaoConta, ConfiguracaoContextual
+from .serializers import ConfiguracaoContaSerializer
+from .services import get_configuracao_conta
+from .models import ConfiguracaoConta
 from notificacoes.models import NotificationTemplate, Canal
 from notificacoes.services.notificacoes import enviar_para_usuario
 from notificacoes.services.whatsapp_client import send_whatsapp
@@ -109,28 +106,13 @@ class ConfiguracaoContaViewSet(ViewSet):
         return resp
 
 
-class ConfiguracaoContextualViewSet(ModelViewSet):
-    """CRUD das configurações contextuais via API."""
-
-    serializer_class = ConfiguracaoContextualSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):  # pragma: no cover - simples filtro
-        return ConfiguracaoContextual.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):  # pragma: no cover - simples
-        serializer.save(user=self.request.user)
-
-
 class TestarNotificacaoView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [TestarNotificacaoThrottle]
 
     def post(self, request):
         canal = request.data.get("canal", Canal.EMAIL)
-        escopo_tipo = request.data.get("escopo_tipo")
-        escopo_id = request.data.get("escopo_id")
-        prefs = get_user_preferences(request.user, escopo_tipo, escopo_id)
+        prefs = get_configuracao_conta(request.user)
         if canal == Canal.EMAIL and not prefs.receber_notificacoes_email:
             return Response({"detail": "canal desabilitado"}, status=400)
         if canal == Canal.WHATSAPP and not prefs.receber_notificacoes_whatsapp:
@@ -156,8 +138,6 @@ class TestarNotificacaoView(APIView):
             request.user,
             template.codigo,
             {},
-            escopo_tipo=escopo_tipo,
-            escopo_id=escopo_id,
         )
         return Response({"detail": "enviado"})
 
