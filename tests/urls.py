@@ -21,7 +21,6 @@ urlpatterns = [
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
-    path("associados/", include(("associados.urls", "associados"), namespace="associados")),
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
     path(
         "api/financeiro/",
