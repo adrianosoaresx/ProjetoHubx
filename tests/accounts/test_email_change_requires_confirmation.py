@@ -1,6 +1,7 @@
 import pytest
-from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+
 from accounts.models import AccountToken
 
 User = get_user_model()
@@ -18,12 +19,13 @@ def test_email_change_generates_confirmation_token(client):
     resp = client.post(
         reverse("accounts:informacoes_pessoais"),
         {
-            "nome_completo": "Nome",
+            "first_name": "Nome",
+            "last_name": "Teste",
             "username": "u",
             "email": "new@example.com",
             "cpf": "529.982.247-25",
             "biografia": "",
-            "fone": "",
+            "phone_number": "",
             "whatsapp": "",
             "endereco": "",
             "cidade": "",

@@ -27,10 +27,11 @@ class CustomUserCreationForm(UserCreationForm):
             "email",
             "cpf",
             "avatar",
-            "nome_completo",
+            "first_name",
+            "last_name",
             "biografia",
             "cover",
-            "fone",
+            "phone_number",
             "whatsapp",
             "redes_sociais",
             "organizacao",
@@ -50,19 +51,13 @@ class CustomUserCreationForm(UserCreationForm):
         cpf_validator(cpf)
         return cpf
 
-    def clean_fone(self):
-        fone = self.cleaned_data.get("fone")
-        if fone and not re.match(r"^\+?\d{8,20}$", fone):
-            raise forms.ValidationError("Telefone deve ser válido.")
-        return fone
-
     def clean_whatsapp(self):
         whatsapp = self.cleaned_data.get("whatsapp")
         if whatsapp and not re.match(r"^\+?\d{8,20}$", whatsapp):
             raise forms.ValidationError("WhatsApp deve ser válido.")
         return whatsapp
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
         user.is_active = False
         user.email_confirmed = False
@@ -84,10 +79,11 @@ class CustomUserChangeForm(UserChangeForm):
             "email",
             "cpf",
             "avatar",
-            "nome_completo",
+            "first_name",
+            "last_name",
             "biografia",
             "cover",
-            "fone",
+            "phone_number",
             "whatsapp",
             "redes_sociais",
             "organizacao",
@@ -96,20 +92,22 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class InformacoesPessoaisForm(forms.ModelForm):
-    nome_completo = forms.CharField(max_length=255, label="Nome completo")
+    first_name = forms.CharField(max_length=150, label="Nome")
+    last_name = forms.CharField(max_length=150, label="Sobrenome")
     cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
 
     class Meta:
         model = User
         fields = (
-            "nome_completo",
+            "first_name",
+            "last_name",
             "username",
             "email",
             "cpf",
             "avatar",
             "cover",
             "biografia",
-            "fone",
+            "phone_number",
             "whatsapp",
             "endereco",
             "cidade",
@@ -120,7 +118,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance.pk:
-            self.initial["nome_completo"] = self.instance.nome_completo
+            self.initial["first_name"] = self.instance.first_name
+            self.initial["last_name"] = self.instance.last_name
             self.initial["cpf"] = self.instance.cpf
             self.original_email = self.instance.email
         else:
@@ -132,9 +131,10 @@ class InformacoesPessoaisForm(forms.ModelForm):
             raise forms.ValidationError(_("CPF já cadastrado."))
         return cpf
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
-        user.nome_completo = self.cleaned_data.get("nome_completo", "")
+        user.first_name = self.cleaned_data.get("first_name", "")
+        user.last_name = self.cleaned_data.get("last_name", "")
         user.cpf = self.cleaned_data.get("cpf")
         self.email_changed = (
             self.original_email

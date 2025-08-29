@@ -12,7 +12,8 @@ def test_cpf_duplicate_validation():
     user = User.objects.create_user(email="b@example.com", username="b", cpf="529.982.247-25")
     form = InformacoesPessoaisForm(
         data={
-            "nome_completo": "Teste",
+            "first_name": "Teste",
+            "last_name": "Silva",
             "username": "b",
             "email": "b@example.com",
             "cpf": "390.533.447-05",

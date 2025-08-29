@@ -11,13 +11,20 @@
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
-    <div>
-      {{ form.nome_completo.label_tag }}
-      {{ form.nome_completo }}
-      {{ form.nome_completo.errors }}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        {{ form.first_name.label_tag }}
+        {{ form.first_name }}
+        {{ form.first_name.errors }}
+      </div>
+      <div>
+        {{ form.last_name.label_tag }}
+        {{ form.last_name }}
+        {{ form.last_name.errors }}
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
       <div>
         {{ form.username.label_tag }}
         {{ form.username }}
@@ -58,9 +65,9 @@
 
     <div class="grid md:grid-cols-2 gap-4">
       <div>
-        {{ form.fone.label_tag }}
-        {{ form.fone }}
-        {{ form.fone.errors }}
+        {{ form.phone_number.label_tag }}
+        {{ form.phone_number }}
+        {{ form.phone_number.errors }}
       </div>
       <div>
         {{ form.whatsapp.label_tag }}

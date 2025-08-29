@@ -3,23 +3,24 @@ from __future__ import annotations
 import pyotp
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
-from django.core.cache import cache
+from django_ratelimit.decorators import ratelimit
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.utils.decorators import method_decorator
-from django_ratelimit.decorators import ratelimit
 
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
-from .models import AccountToken, SecurityEvent
 from tokens.models import TOTPDevice
 from tokens.utils import get_client_ip
+
+from .models import AccountToken, SecurityEvent
 from .serializers import UserSerializer
 from .tasks import (
     send_cancel_delete_email,
@@ -31,7 +32,7 @@ User = get_user_model()
 
 
 class AccountViewSet(viewsets.GenericViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects.select_related("organizacao", "nucleo")
     serializer_class = UserSerializer
 
     def get_permissions(self):

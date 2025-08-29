@@ -14,7 +14,7 @@ from django.db.models import PROTECT, SET_NULL
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
-from core.fields import EncryptedCharField, URLField
+from core.fields import EncryptedCharField
 from core.models import SoftDeleteModel, TimeStampedModel
 
 from .validators import cpf_validator
@@ -114,12 +114,6 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         null=True,
         help_text="Ex.: +55 48 99999-0000",
     )
-    address = models.CharField(
-        "Endereço",
-        max_length=255,
-        blank=True,
-        help_text="Rua, número, complemento, cidade/UF",
-    )
     birth_date = models.DateField("Data de nascimento", blank=True, null=True)
     cpf = models.CharField(
         "CPF",
@@ -129,10 +123,8 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         unique=True,
         validators=[cpf_validator],
     )
-    nome_completo = models.CharField(max_length=255, blank=True)
     biografia = models.TextField(blank=True)
     cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
-    fone = models.CharField(max_length=20, blank=True)
     whatsapp = models.CharField(max_length=20, blank=True)
 
     # Campos migrados do antigo modelo Perfil
@@ -141,11 +133,6 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)
     cep = models.CharField(max_length=10, blank=True)
-    facebook = URLField(blank=True)
-    twitter = URLField(blank=True)
-    instagram = URLField(blank=True)
-    linkedin = URLField(blank=True)
-    website = URLField(blank=True)
     redes_sociais = models.JSONField(default=dict, blank=True, null=True)
     idioma = models.CharField(max_length=10, blank=True)
     fuso_horario = models.CharField(max_length=50, blank=True)
