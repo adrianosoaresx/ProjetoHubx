@@ -26,8 +26,8 @@ def generate_secure_token() -> str:
 
 
 class UserQuerySet(models.QuerySet):
-    def filter_current_org(self, org):
-        return self.filter(organization=org)
+    def filter_current_org(self, organizacao):
+        return self.filter(organizacao=organizacao)
 
 
 class UserType(models.TextChoices):
