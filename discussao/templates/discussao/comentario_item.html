@@ -54,7 +54,7 @@
     {% if comentario.arquivo %}
       <div class="mt-2 text-sm">
         <a href="{{ comentario.arquivo.url }}" class="text-blue-600 flex items-center gap-1" download>
-          <i class="fas fa-paperclip"></i>
+          <i class="fa-solid fa-paperclip"></i>
           {{ comentario.arquivo.name }} ({{ comentario.arquivo.size|filesizeformat }})
         </a>
       </div>

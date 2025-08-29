@@ -65,7 +65,7 @@
         aria-controls="menu"
         aria-expanded="false"
       >
-        <i class="fas fa-bars"></i>
+        <i class="fa-solid fa-bars"></i>
       </button>
       <nav
         id="menu"
@@ -77,12 +77,12 @@
           {% if user.avatar %}
             <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" />
           {% else %}
-            <i class="fas fa-user"></i>
+            <i class="fa-solid fa-user"></i>
           {% endif %}
         </a>
         <div class="relative">
           <button id="notif-btn" class="relative" aria-label="{% trans 'Notificações de chat' %}" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-bell"></i>
+            <i class="fa-solid fa-bell"></i>
             <span id="notif-count" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center" aria-live="polite">0</span>
           </button>
           <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded shadow-lg" role="menu" aria-label="{% trans 'Notificações' %}">
@@ -96,110 +96,110 @@
         {% endif %}
         {% if user.user_type == 'admin' %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
+          <i class="fa-solid fa-gauge"></i> {% trans "Dashboard" %}
         </a>
         <a href="{% url 'associados:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-users"></i> {% trans "Associados" %}
+          <i class="fa-solid fa-users"></i> {% trans "Associados" %}
         </a>
         <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-building"></i> {% trans "Empresas" %}
+          <i class="fa-solid fa-building"></i> {% trans "Empresas" %}
         </a>
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-users"></i> {% trans "Núcleos" %}
+          <i class="fa-solid fa-users"></i> {% trans "Núcleos" %}
         </a>
         <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-calendar-alt"></i> {% trans "Agenda" %}
+          <i class="fa-solid fa-calendar-days"></i> {% trans "Agenda" %}
         </a>
         <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-rss"></i> {% trans "Feed" %}
+          <i class="fa-solid fa-rss"></i> {% trans "Feed" %}
         </a>
         <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-hand-holding-usd"></i> {% trans "Financeiro" %}
+          <i class="fa-solid fa-hand-holding-dollar"></i> {% trans "Financeiro" %}
         </a>
         <a href="{% url 'tokens:listar_api_tokens' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-key"></i> {% trans "Tokens" %}
+          <i class="fa-solid fa-key"></i> {% trans "Tokens" %}
         </a>
           <a href="{% url 'configuracoes' %}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}">
-            <i class="fas fa-cog"></i>
+            <i class="fa-solid fa-gear"></i>
           </a>
           <a href="{% url 'accounts:logout' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-            <i class="fas fa-right-from-bracket"></i> {% trans "Sair" %}
+            <i class="fa-solid fa-right-from-bracket"></i> {% trans "Sair" %}
           </a>
         {% else %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-tachometer-alt"></i> {% trans "Dashboard" %}
+          <i class="fa-solid fa-gauge"></i> {% trans "Dashboard" %}
         </a>
         {% if user.user_type != 'root' %}
         <a href="{% url 'empresas:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-building"></i> {% trans "Empresas" %}
+          <i class="fa-solid fa-building"></i> {% trans "Empresas" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'empresas:buscar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-search"></i> {% trans "Buscar Empresas" %}
+          <i class="fa-solid fa-magnifying-glass"></i> {% trans "Buscar Empresas" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-calendar-alt"></i> {% trans "Agenda" %}
+          <i class="fa-solid fa-calendar-days"></i> {% trans "Agenda" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'discussao:categorias' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-comments"></i> {% trans "Discussão" %}
+          <i class="fa-solid fa-comments"></i> {% trans "Discussão" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-rss"></i> {% trans "Feed" %}
+          <i class="fa-solid fa-rss"></i> {% trans "Feed" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-users"></i> {% trans "Núcleos" %}
+          <i class="fa-solid fa-users"></i> {% trans "Núcleos" %}
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
         <a href="{% url 'nucleos:meus' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-user-group"></i> {% trans "Meus Núcleos" %}
+          <i class="fa-solid fa-user-group"></i> {% trans "Meus Núcleos" %}
         </a>
         {% endif %}
         {% if user.is_authenticated %}
         {% if user.user_type == 'financeiro' or user.user_type == 'admin' %}
         <a href="{% url 'financeiro:repasses' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-hand-holding-usd"></i> {% trans "Financeiro" %}
+          <i class="fa-solid fa-hand-holding-dollar"></i> {% trans "Financeiro" %}
         </a>
         {% endif %}
         {% endif %}
         {% if user.is_authenticated and user.user_type == 'root' %}
         <a href="{% url 'organizacoes:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-sitemap"></i> {% trans "Organizações" %}
+          <i class="fa-solid fa-sitemap"></i> {% trans "Organizações" %}
         </a>
         {% endif %}
   {% if user.is_authenticated and user.user_type in 'root,admin,coordenador' %}
         {% if user.user_type in 'root,admin' %}
         <a href="{% url 'tokens:listar_api_tokens' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-key"></i> {% trans "Token" %}
+          <i class="fa-solid fa-key"></i> {% trans "Token" %}
         </a>
         {% else %}
         <a href="{% url 'tokens:gerar_convite' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fas fa-key"></i> {% trans "Token" %}
+          <i class="fa-solid fa-key"></i> {% trans "Token" %}
         </a>
         {% endif %}
         {% endif %}
           {% if user.is_authenticated %}
             <a href="{% url 'configuracoes' %}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}">
-              <i class="fas fa-cog"></i>
+              <i class="fa-solid fa-gear"></i>
             </a>
             <a href="{% url 'accounts:logout' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-              <i class="fas fa-right-from-bracket"></i> {% trans "Sair" %}
+              <i class="fa-solid fa-right-from-bracket"></i> {% trans "Sair" %}
             </a>
           {% else %}
             <a href="{% url 'accounts:login' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-              <i class="fas fa-right-to-bracket"></i> {% trans "Entrar" %}
+              <i class="fa-solid fa-right-to-bracket"></i> {% trans "Entrar" %}
             </a>
             <a href="{% url 'accounts:onboarding' %}" class="flex items-center gap-x-2 bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition">
-              <i class="fas fa-user-plus"></i> {% trans "Cadastrar" %}
+              <i class="fa-solid fa-user-plus"></i> {% trans "Cadastrar" %}
             </a>
           {% endif %}
         {% endif %}
