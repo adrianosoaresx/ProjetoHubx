@@ -334,3 +334,38 @@ def test_nucleo_list_filtra_para_nucleado(client, organizacao):
     nomes = [n.nome for n in resp.context["object_list"]]
     assert "N1" in nomes
     assert "N2" not in nomes
+
+
+def test_nucleo_list_filtra_para_admin(client, organizacao, admin_user):
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="33.333.333/0003-33", slug="org3")
+    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", slug="n2", organizacao=other_org)
+    client.force_login(admin_user)
+    resp = client.get(reverse("nucleos:list"))
+    assert resp.status_code == 200
+    nomes = [n.nome for n in resp.context["object_list"]]
+    assert "N1" in nomes
+    assert "N2" not in nomes
+
+
+def test_nucleo_list_filtra_para_coordenador(client, organizacao):
+    other_org = Organizacao.objects.create(nome="Org2", cnpj="44.444.444/0004-44", slug="org4")
+    n1 = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    Nucleo.objects.create(nome="N3", slug="n3", organizacao=other_org)
+    User = get_user_model()
+    coord = User.objects.create_user(
+        username="coord",
+        email="coord@example.com",
+        password="pwd",
+        user_type=UserType.COORDENADOR,
+        organizacao=organizacao,
+    )
+    ParticipacaoNucleo.objects.create(nucleo=n1, user=coord, status="ativo")
+    client.force_login(coord)
+    resp = client.get(reverse("nucleos:list"))
+    assert resp.status_code == 200
+    nomes = [n.nome for n in resp.context["object_list"]]
+    assert "N1" in nomes
+    assert "N2" not in nomes
+    assert "N3" not in nomes
