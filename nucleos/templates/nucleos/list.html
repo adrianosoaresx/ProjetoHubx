@@ -26,29 +26,32 @@
     <a href="{% url 'nucleos_api:nucleo-relatorio' %}?formato=pdf" class="text-blue-600">{% trans 'Relatório PDF' %}</a>
   </div>
   {% endif %}
-  <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {% for nucleo in object_list %}
-    <li role="listitem" class="border rounded p-4">
-      <div class="flex items-center gap-3">
-        {% if nucleo.avatar %}<img src="{{ nucleo.avatar.url }}" class="w-12 h-12 rounded-full" alt="{{ nucleo.nome }}" />{% endif %}
-        <div>
-          <h2 class="font-semibold">{{ nucleo.nome }}</h2>
-          <p class="text-sm text-gray-500">{{ nucleo.slug }}</p>
-        </div>
-      </div>
-      <p class="text-sm mt-2">{% trans "Membros" %}: {{ nucleo.membros_count }}</p>
-      <p class="text-sm">{% trans "Mensalidade" %}: {{ nucleo.mensalidade|localize }}</p>
-      <div class="mt-2">
-        <a href="{% url 'nucleos:detail' nucleo.pk %}" class="text-blue-600" aria-label="{% blocktrans with nome=nucleo.nome %}Ver detalhes do núcleo {{ nome }}{% endblocktrans %}">{% trans 'Detalhes' %}</a>
-        {% if request.user.user_type == 'admin' %}
-        <a href="{% url 'nucleos:delete' nucleo.pk %}" class="text-red-600 ml-2" aria-label="{% blocktrans with nome=nucleo.nome %}Excluir núcleo {{ nome }}{% endblocktrans %}">{% trans 'Excluir' %}</a>
+      <a
+        href="{% url 'nucleos:detail' nucleo.pk %}"
+        class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
+      >
+        {% if nucleo.avatar %}
+          <img
+            src="{{ nucleo.avatar.url }}"
+            alt="{{ nucleo.nome }}"
+            class="w-24 h-24 rounded-full object-cover mb-2"
+          />
+        {% else %}
+          <div
+            class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2"
+          >
+            {{ nucleo.nome|first|upper }}
+          </div>
         {% endif %}
-      </div>
-    </li>
+        <h2 class="font-medium">{{ nucleo.nome }}</h2>
+        <p class="text-sm text-gray-500">{{ nucleo.slug }}</p>
+      </a>
     {% empty %}
-    <p>{% trans "Nenhum núcleo encontrado." %}</p>
+      <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
     {% endfor %}
-  </ul>
+  </div>
   {% if is_paginated %}
     <div class="mt-4">
       {% if page_obj.has_previous %}
