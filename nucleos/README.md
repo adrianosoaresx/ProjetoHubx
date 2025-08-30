@@ -8,6 +8,7 @@ Views principais:
 - `nucleos:update` – edição de dados básicos do núcleo.
 - `nucleos:toggle_active` – inativa ou reativa um núcleo.
 - `nucleos_api:nucleo-exportar-membros` – exporta membros em CSV.
+- `nucleos_api:nucleo-metrics` – retorna métricas do núcleo.
 
 Fluxo de participação:
 
@@ -26,4 +27,4 @@ Modelos:
 - `Nucleo`, `ParticipacaoNucleo` e `CoordenadorSuplente` utilizam o mixin `TimeStampedModel`.
 - `Nucleo` também herda de `SoftDeleteModel`, permitindo exclusão lógica via `soft_delete()`.
 - Participações aprovadas podem ser acessadas pelo atributo `nucleo.membros` e coordenadores por `nucleo.coordenadores`.
-
+> O endpoint `nucleos_api:nucleo-relatorio` foi removido.
