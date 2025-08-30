@@ -38,8 +38,10 @@ def search_empresas(user, params):
     if user.is_superuser:
         pass
     elif user.user_type == UserType.ADMIN:
+        # Admins have visibility over all companies in their organization
         qs = qs.filter(organizacao=user.organizacao)
     elif user.user_type in {UserType.COORDENADOR, UserType.NUCLEADO}:
+        # Coordinators and nucleados are limited to companies they created
         qs = qs.filter(usuario=user)
     else:
         return Empresa.objects.none()

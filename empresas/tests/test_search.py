@@ -15,3 +15,21 @@ def test_search_empresas_by_cnpj():
     params["q"] = empresa.cnpj
     qs = search_empresas(user, params)
     assert list(qs) == [empresa]
+
+
+@pytest.mark.django_db
+def test_search_empresas_admin_by_organizacao():
+    admin = UserFactory(user_type=UserType.ADMIN)
+    admin.organizacao = admin.nucleo.organizacao
+    admin.save()
+    outro_usuario = UserFactory(
+        user_type=UserType.COORDENADOR,
+        organizacao=admin.organizacao,
+        nucleo_obj=admin.nucleo,
+    )
+    emp1 = EmpresaFactory(organizacao=admin.organizacao, usuario=admin)
+    emp2 = EmpresaFactory(organizacao=admin.organizacao, usuario=outro_usuario)
+    EmpresaFactory()  # empresa de outra organização
+    params = QueryDict(mutable=True)
+    qs = search_empresas(admin, params)
+    assert set(qs) == {emp1, emp2}
