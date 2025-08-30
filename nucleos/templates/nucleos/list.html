@@ -10,9 +10,11 @@
       <input type="text" name="q" value="{{ form.q.value|default:'' }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
     <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
   </form>
+  {% if request.user.user_type != 'admin' %}
   <div class="mb-4">
     <a href="{% url 'nucleos:meus' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
   </div>
+  {% endif %}
   {% if request.user.user_type == 'admin' %}
   <div class="mb-4">
     <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
