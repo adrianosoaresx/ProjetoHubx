@@ -98,6 +98,11 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     template_name = "nucleos/meus_list.html"
     paginate_by = 10
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.user_type == UserType.ADMIN:
+            return redirect("nucleos:list")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         user = self.request.user
         q = self.request.GET.get("q", "")

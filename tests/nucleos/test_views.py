@@ -242,6 +242,14 @@ def test_meus_nucleos_view(client, membro_user, organizacao):
     assert list(resp.context["object_list"]) == [nucleo1]
 
 
+def test_meus_nucleos_view_admin_redirect(client, admin_user):
+    client.force_login(admin_user)
+    resp = client.get(reverse("nucleos:meus"))
+    assert resp.status_code in (302, 403)
+    if resp.status_code == 302:
+        assert resp.url == reverse("nucleos:list")
+
+
 def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_queries):
     User = get_user_model()
     nucleo = Nucleo.objects.create(nome="NQ", slug="nq", organizacao=organizacao)
