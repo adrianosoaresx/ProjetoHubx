@@ -18,7 +18,7 @@
     <a href="{% url 'empresas:empresa_criar' %}" class="bg-primary-600 text-white px-4 py-2 rounded-md text-sm hover:bg-primary-700">{% translate "Nova Empresa" %}</a>
   </header>
 
-  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-table" hx-push-url="true" class="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white border border-neutral-200 p-4 rounded-md">
+  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-grid" hx-push-url="true" class="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white border border-neutral-200 p-4 rounded-md">
     <div>
       <label for="nome" class="block text-sm font-medium text-neutral-700">{% translate "Nome" %}</label>
       <input type="text" id="nome" name="nome" value="{{ request.GET.nome }}" class="w-full p-2 border rounded" />
@@ -69,8 +69,8 @@
     </div>
   </form>
 
-  <div id="empresas-table">
-    {% include "empresas/includes/empresas_table.html" %}
+  <div id="empresas-grid">
+    {% include "empresas/includes/empresas_grid.html" %}
   </div>
 </section>
 {% endblock %}

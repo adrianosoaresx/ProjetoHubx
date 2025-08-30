@@ -10,13 +10,13 @@
     <p class="text-neutral-600 text-sm">{% translate 'Encontre empresas na plataforma HubX' %}</p>
   </header>
 
-  <form hx-get="{% url 'empresas:buscar' %}" hx-target="#resultado-busca" hx-push-url="true" class="max-w-xl mx-auto flex items-center gap-2">
+  <form hx-get="{% url 'empresas:buscar' %}" hx-target="#empresas-grid" hx-push-url="true" class="max-w-xl mx-auto flex items-center gap-2">
     <input type="text" name="q" value="{{ q }}" placeholder="{% translate 'Buscar por nome, CNPJ ou localização...' %}" class="flex-grow p-2 border rounded" />
     <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">🔍</button>
   </form>
 
-  <div id="resultado-busca">
-    {% include 'empresas/includes/empresas_table.html' with empresas=empresas %}
+  <div id="empresas-grid">
+    {% include 'empresas/includes/empresas_grid.html' with empresas=empresas %}
   </div>
 
   <div class="mt-10 text-center">
