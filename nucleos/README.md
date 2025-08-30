@@ -3,7 +3,7 @@
 Views principais:
 
 - `nucleos:list` – lista núcleos ativos com busca por nome ou *slug*.
-- `nucleos:meus` – exibe apenas os núcleos dos quais o usuário participa.
+- `nucleos:meus` – exibe apenas os núcleos dos quais o usuário participa; indisponível para administradores.
 - `nucleos:create` – criação de núcleo vinculado à organização do usuário.
 - `nucleos:update` – edição de dados básicos do núcleo.
 - `nucleos:toggle_active` – inativa ou reativa um núcleo.

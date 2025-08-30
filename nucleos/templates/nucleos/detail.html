@@ -87,27 +87,22 @@
   </div>
   {% endif %}
 
-  <div class="mt-6 space-x-2">
-    <div class="inline-block relative">
-      <a
-        href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=csv"
-        class="text-blue-600"
-        hx-boost="false"
-        download="nucleo-{{ object.pk }}-membros.csv"
-      >{% trans 'Exportar CSV' %}</a>
-      <a
-        href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=xls"
-        class="text-blue-600"
-        hx-boost="false"
-        download="nucleo-{{ object.pk }}-membros.xlsx"
-      >{% trans 'Exportar XLS' %}</a>
+    <div class="mt-6 space-x-2">
+      <div class="inline-block relative">
+        <a
+          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=csv"
+          class="text-blue-600"
+          hx-boost="false"
+          download="nucleo-{{ object.pk }}-membros.csv"
+        >{% trans 'Exportar CSV' %}</a>
+        <a
+          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=xls"
+          class="text-blue-600"
+          hx-boost="false"
+          download="nucleo-{{ object.pk }}-membros.xlsx"
+        >{% trans 'Exportar XLS' %}</a>
+      </div>
     </div>
-    {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-    <form method="post" action="{% url 'nucleos:toggle_active' object.pk %}" class="inline">{% csrf_token %}
-      <button class="ml-2 text-orange-600">{% if object.deleted %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}</button>
-    </form>
-    {% endif %}
-  </div>
 
     {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
     <div class="mt-4">

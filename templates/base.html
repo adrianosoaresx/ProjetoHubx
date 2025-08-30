@@ -159,7 +159,7 @@
           <i class="fa-solid fa-users"></i> {% trans "Núcleos" %}
         </a>
         {% endif %}
-        {% if user.user_type != 'root' %}
+        {% if user.user_type != 'root' and user.user_type != 'admin' %}
         <a href="{% url 'nucleos:meus' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-user-group"></i> {% trans "Meus Núcleos" %}
         </a>
