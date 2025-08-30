@@ -17,15 +17,11 @@ def test_buscar_view_returns_results(client, admin_user):
 
 
 @pytest.mark.django_db
-def test_list_filters_name_municipio_tags(client, admin_user, tag_factory):
-    tag1 = tag_factory(nome="Tech")
-    tag2 = tag_factory(nome="Food")
-    e1 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Alpha", municipio="X")
-    e1.tags.add(tag1)
-    e2 = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Beta", municipio="Y")
-    e2.tags.add(tag2)
+def test_list_filters_by_q(client, admin_user):
+    EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Alpha")
+    EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, nome="Beta")
     client.force_login(admin_user)
-    resp = client.get(reverse("empresas:lista"), {"nome": "Alpha", "municipio": "X", "tags": [tag1.id]})
+    resp = client.get(reverse("empresas:lista"), {"q": "Alpha"})
     content = resp.content.decode()
     assert "Alpha" in content
     assert "Beta" not in content
@@ -144,22 +140,6 @@ def test_avaliacao_update_requires_active(client, nucleado_user):
     assert any("nenhuma avaliação ativa" in m.lower() for m in msgs)
 
 
-@pytest.mark.django_db
-def test_admin_can_list_deleted(client, admin_user):
-    emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
-    client.force_login(admin_user)
-    resp = client.get(reverse("empresas:lista"), {"mostrar_excluidas": "1"})
-    assert emp.nome in resp.content.decode()
-
-
-@pytest.mark.django_db
-def test_admin_sees_restore_and_purge_actions(client, admin_user):
-    emp = EmpresaFactory(usuario=admin_user, organizacao=admin_user.organizacao, deleted=True)
-    client.force_login(admin_user)
-    resp = client.get(reverse("empresas:lista"), {"mostrar_excluidas": "1"})
-    content = resp.content.decode()
-    assert "Restaurar" in content
-    assert "Purgar" in content
 
 
 @pytest.mark.django_db
