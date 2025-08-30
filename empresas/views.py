@@ -38,7 +38,7 @@ def buscar(request):
     empresas = search_empresas(request.user, request.GET)
     context = {"empresas": empresas, "q": request.GET.get("q", "")}
     if request.headers.get("HX-Request"):
-        return render(request, "empresas/includes/empresas_table.html", context)
+        return render(request, "empresas/includes/empresas_grid.html", context)
     return render(request, "empresas/busca.html", context)
 
 
@@ -75,7 +75,7 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
     def get_template_names(self):  # type: ignore[override]
         if self.request.headers.get("HX-Request"):
-            return ["empresas/includes/empresas_table.html"]
+            return ["empresas/includes/empresas_grid.html"]
         return [self.template_name]
 
 
