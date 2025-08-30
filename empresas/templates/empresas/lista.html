@@ -1,15 +1,7 @@
 {% extends "base.html" %}
-{% load i18n static %}
+{% load i18n %}
 
 {% block title %}{% translate "Empresas" %}{% endblock %}
-
-{% block extra_css %}
-<link href="{% static 'django_select2/django_select2.css' %}" rel="stylesheet" />
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'django_select2/django_select2.js' %}"></script>
-{% endblock %}
 
 {% block content %}
 <section class="max-w-7xl mx-auto px-4 py-10 space-y-6">
@@ -18,55 +10,16 @@
     <a href="{% url 'empresas:empresa_criar' %}" class="bg-primary-600 text-white px-4 py-2 rounded-md text-sm hover:bg-primary-700">{% translate "Nova Empresa" %}</a>
   </header>
 
-  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-table" hx-push-url="true" class="grid grid-cols-1 sm:grid-cols-5 gap-4 bg-white border border-neutral-200 p-4 rounded-md">
-    <div>
-      <label for="nome" class="block text-sm font-medium text-neutral-700">{% translate "Nome" %}</label>
-      <input type="text" id="nome" name="nome" value="{{ request.GET.nome }}" class="w-full p-2 border rounded" />
-    </div>
-    <div>
-      <label for="municipio" class="block text-sm font-medium text-neutral-700">{% translate "Município" %}</label>
-      <input type="text" id="municipio" name="municipio" value="{{ request.GET.municipio }}" class="w-full p-2 border rounded" />
-    </div>
-    <div>
-      <label for="estado" class="block text-sm font-medium text-neutral-700">{% translate "Estado" %}</label>
-      <input type="text" id="estado" name="estado" value="{{ request.GET.estado }}" class="w-full p-2 border rounded" />
-    </div>
-    <div>
-      <label for="organizacao" class="block text-sm font-medium text-neutral-700">{% translate "Organização" %}</label>
-      <select id="organizacao" name="organizacao" class="w-full p-2 border rounded">
-        <option value="">{% translate "Todas" %}</option>
-        {% for org in organizacoes %}
-          <option value="{{ org.id }}" {% if request.GET.organizacao == org.id|stringformat:'s' %}selected{% endif %}>{{ org.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="tags" class="block text-sm font-medium text-neutral-700">{% translate "Tags" %}</label>
-      <select id="tags" name="tags" multiple class="w-full p-2 border rounded django-select2">
-        {% for tag in tags %}
-          <option value="{{ tag.id }}" {% if tag.id|stringformat:'s' in selected_tags %}selected{% endif %}>{{ tag.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="palavras_chave" class="block text-sm font-medium text-neutral-700">{% translate "Palavras-chave" %}</label>
-      <input type="text" id="palavras_chave" name="palavras_chave" value="{{ request.GET.palavras_chave }}" class="w-full p-2 border rounded" />
-    </div>
-    <div>
-      <label for="q" class="block text-sm font-medium text-neutral-700">{% translate "Busca" %}</label>
-      <input type="text" id="q" name="q" value="{{ request.GET.q }}" class="w-full p-2 border rounded" />
-    </div>
-    {% if request.user.user_type == 'admin' %}
-    <div class="flex items-end">
-      <label for="mostrar_excluidas" class="inline-flex items-center text-sm font-medium text-neutral-700">
-        <input type="checkbox" id="mostrar_excluidas" name="mostrar_excluidas" value="1" class="mr-2" {% if mostrar_excluidas == '1' %}checked{% endif %}>
-        {% translate "Mostrar excluídas" %}
-      </label>
-    </div>
-    {% endif %}
-    <div class="flex items-end">
-      <button type="submit" class="w-full bg-primary-600 text-white p-2 rounded hover:bg-primary-700">{% translate "Filtrar" %}</button>
-    </div>
+  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-table" hx-push-url="true" method="get" class="mb-6 flex gap-2">
+    <label for="q" class="sr-only">{% translate "Buscar" %}</label>
+    <input
+      id="q"
+      name="q"
+      value="{{ request.GET.q }}"
+      class="border rounded px-3 py-2 flex-grow"
+      placeholder="{% translate 'Buscar' %}"
+    />
+    <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded">{% translate "Buscar" %}</button>
   </form>
 
   <div id="empresas-table">
