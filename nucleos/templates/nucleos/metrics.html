@@ -6,12 +6,8 @@
 {% block content %}
 <section class="max-w-3xl mx-auto py-8">
   <h1 class="text-2xl font-bold mb-4">{% blocktrans with nome=nucleo.nome %}Métricas de {{ nome }}{% endblocktrans %}</h1>
-  <div id="metrics" class="space-y-2" aria-live="polite"></div>
-  <div class="mt-6 space-x-4">
-    <a href="{{ relatorio_csv_url }}" class="text-blue-600">{% trans 'Relatório CSV' %}</a>
-    <a href="{{ relatorio_pdf_url }}" class="text-blue-600">{% trans 'Relatório PDF' %}</a>
-  </div>
-</section>
+    <div id="metrics" class="space-y-2" aria-live="polite"></div>
+    </section>
 <script>
 (async function() {
   try {

@@ -246,9 +246,6 @@ class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         nucleo = self.object
         ctx["nucleo"] = nucleo
         ctx["metrics_url"] = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
-        relatorio_base = reverse("nucleos_api:nucleo-relatorio")
-        ctx["relatorio_csv_url"] = f"{relatorio_base}?formato=csv"
-        ctx["relatorio_pdf_url"] = f"{relatorio_base}?formato=pdf"
         return ctx
 
 
