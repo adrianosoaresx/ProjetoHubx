@@ -15,10 +15,10 @@ def test_admin_list_empresas_cards(client, settings, tmp_path):
     admin.save()
 
     owner = UserFactory(organizacao=admin.organizacao)
-    owner.avatar = SimpleUploadedFile("a.png", b"a", content_type="image/png")
-    owner.save()
 
     empresa = EmpresaFactory(organizacao=admin.organizacao, usuario=owner, nome="Empresa X")
+    empresa.avatar = SimpleUploadedFile("a.png", b"a", content_type="image/png")
+    empresa.save()
     EmpresaFactory()  # Empresa de outra organização
 
     client.force_login(admin)
@@ -28,4 +28,4 @@ def test_admin_list_empresas_cards(client, settings, tmp_path):
     assert "Empresa X" in content
     assert owner.username in content
     assert reverse("empresas:detail", args=[empresa.pk]) in content
-    assert "<img" in content
+    assert f'<img src="{empresa.avatar.url}"' in content
