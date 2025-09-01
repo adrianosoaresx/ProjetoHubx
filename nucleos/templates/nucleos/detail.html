@@ -25,13 +25,13 @@
   <div id="membro-status" class="mt-2 text-sm text-gray-700"></div>
 
   <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
-  <ul>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {% for part in membros_ativos %}
       {% include "nucleos/partials/membro.html" with part=part object=object %}
     {% empty %}
-      <li>{% trans 'Sem membros.' %}</li>
+      <p class="col-span-full text-center text-gray-500">{% trans 'Sem membros.' %}</p>
     {% endfor %}
-  </ul>
+  </div>
 
   {% if membros_pendentes %}
   <h2 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h2>
