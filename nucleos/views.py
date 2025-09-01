@@ -25,6 +25,7 @@ from django.views.generic import (
 from accounts.models import UserType
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
+from agenda.models import Evento
 
 from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
@@ -230,6 +231,31 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         part = nucleo.participacoes.filter(user=self.request.user).first()
         ctx["mostrar_solicitar"] = not part or part.status == "inativo"
         ctx["pode_postar"] = bool(part and part.status == "ativo" and not part.status_suspensao)
+
+        ctx["eventos"] = Evento.objects.filter(nucleo=nucleo).annotate(
+            num_inscritos=Count("inscricoes")
+        )
+        return ctx
+
+
+class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
+    model = Nucleo
+    template_name = "nucleos/metrics.html"
+
+    def get_queryset(self):
+        qs = Nucleo.objects.filter(deleted=False)
+        user = self.request.user
+        if user.user_type == UserType.ADMIN:
+            qs = qs.filter(organizacao=user.organizacao)
+        elif user.user_type == UserType.COORDENADOR:
+            qs = qs.filter(participacoes__user=user)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        nucleo = self.object
+        ctx["nucleo"] = nucleo
+
         ctx["metrics_url"] = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
         return ctx
 

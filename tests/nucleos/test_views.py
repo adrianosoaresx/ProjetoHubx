@@ -12,6 +12,7 @@ from nucleos.forms import SuplenteForm
 from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from nucleos.views import NucleoDetailView, SuplenteCreateView
 from organizacoes.models import Organizacao
+from agenda.factories import EventoFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -283,12 +284,13 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
         periodo_inicio=timezone.now(),
         periodo_fim=timezone.now(),
     )
+    EventoFactory.create(organizacao=organizacao, nucleo=nucleo, coordenador=admin_user)
     request = RequestFactory().get("/")
     request.user = admin_user
     view = NucleoDetailView()
     view.request = request
     view.kwargs = {"pk": nucleo.pk}
-    with django_assert_num_queries(14):
+    with django_assert_num_queries(15):
         qs = view.get_queryset()
         obj = qs.get()
         view.object = obj
@@ -302,6 +304,8 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
         suplentes = ctx["suplentes"]
         bool(suplentes)
         list(suplentes)
+        eventos = list(ctx["eventos"])
+        assert eventos[0].num_inscritos == 0
 
 
 def test_nucleo_list_filtra_para_associado(client, organizacao):
