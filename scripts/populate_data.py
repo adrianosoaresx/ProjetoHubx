@@ -65,7 +65,7 @@ def main() -> None:
             },
         )
         # Define senha padrão caso esteja vazia
-        if not root.password:
+        if not root.has_usable_password():
             root.set_password("password123")
             root.save()
 
@@ -87,7 +87,7 @@ def main() -> None:
                     "user_type": "admin",
                 },
             )
-            if not admin.password:
+            if not admin.has_usable_password():
                 admin.set_password("password123")
                 admin.save()
             admins.append(admin)
