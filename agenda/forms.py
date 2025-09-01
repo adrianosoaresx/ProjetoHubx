@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import ClearableFileInput
 from django.utils.translation import gettext_lazy as _
 from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
@@ -68,6 +69,8 @@ class EventoForm(forms.ModelForm):
             "data_inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "data_fim": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "descricao": forms.Textarea(attrs={"rows": 3}),
+            "avatar": ClearableFileInput(),
+            "cover": ClearableFileInput(),
         }
 
 

@@ -232,8 +232,16 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     contato_nome = models.CharField(max_length=100)
     contato_email = models.EmailField(blank=True)
     contato_whatsapp = models.CharField(max_length=15, blank=True)
-    avatar = models.ImageField(upload_to="eventos/avatars/", null=True, blank=True)
-    cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
+    avatar = models.ImageField(
+        upload_to="eventos/avatars/",
+        blank=True,
+        null=True,
+    )
+    cover = models.ImageField(
+        upload_to="eventos/covers/",
+        blank=True,
+        null=True,
+    )
     briefing = models.TextField(blank=True, null=True)
     mensagem_origem = models.ForeignKey(
         "chat.ChatMessage",
