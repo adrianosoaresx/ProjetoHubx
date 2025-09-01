@@ -15,7 +15,10 @@
             {{ field.label }}
           </label>
           {% if field.name == 'avatar' or field.name == 'cover' %}
-          {{ field.as_widget(attrs={'accept': 'image/*'}) }}
+          {% if field.value %}
+            <img src="{{ field.value.url }}" alt="{{ field.label }}" class="w-32 h-32 object-cover mb-2">
+          {% endif %}
+          {{ field.as_widget(attrs={'accept': 'image/*', 'class': 'mt-1 block w-full'}) }}
           {% else %}
           {{ field }}
           {% endif %}
