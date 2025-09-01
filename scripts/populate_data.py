@@ -119,7 +119,7 @@ def main() -> None:
 
         # Núcleos por organização
         nucleos_por_org: dict = {}
-        for org in organizacoes:
+        for org_idx, org in enumerate(organizacoes, start=1):
             nucleos: list = []
             for nome_nucleo in ["NUCLEO DA MULHER", "NUCLEO DE TECNOLOGIA"]:
                 slug = slugify(nome_nucleo)
@@ -138,7 +138,7 @@ def main() -> None:
 
         # Centros de custo por organização
         centro_custo_por_org: dict = {}
-        for org in organizacoes:
+        for org_idx, org in enumerate(organizacoes, start=1):
             cc, _ = CentroCusto.objects.get_or_create(
                 organizacao=org,
                 nucleo=None,
@@ -191,12 +191,12 @@ def main() -> None:
                 )
 
         # Criação de usuários associados, nucleados e convidados
-        for org in organizacoes:
+        for org_idx, org in enumerate(organizacoes, start=1):
             nucleos = nucleos_por_org[org]
             # 50 associados
             for i in range(50):
                 email = f"assoc{i + 1}@{slugify(org.nome)}.com"
-                username = f"assoc{i + 1}_{organizacoes.index(org) + 1}"
+                username = f"assoc{i + 1}_{org_idx}"
                 user, created = User.objects.get_or_create(
                     email=email,
                     defaults={
@@ -221,7 +221,7 @@ def main() -> None:
             for i in range(30):
                 nucleo = nucleos[i % len(nucleos)]
                 email = f"nucleado{i + 1}@{slugify(org.nome)}.com"
-                username = f"nucleado{i + 1}_{organizacoes.index(org) + 1}"
+                username = f"nucleado{i + 1}_{org_idx}"
                 user, created = User.objects.get_or_create(
                     email=email,
                     defaults={
@@ -251,7 +251,7 @@ def main() -> None:
             # 5 convidados
             for i in range(5):
                 email = f"convidado{i + 1}@{slugify(org.nome)}.com"
-                username = f"convidado{i + 1}_{organizacoes.index(org) + 1}"
+                username = f"convidado{i + 1}_{org_idx}"
                 user, created = User.objects.get_or_create(
                     email=email,
                     defaults={
@@ -273,7 +273,7 @@ def main() -> None:
                     user.save()
 
         # Registros financeiros (3 meses) e atualização de saldo
-        for org in organizacoes:
+        for org_idx, org in enumerate(organizacoes, start=1):
             cc = centro_custo_por_org[org]
             for month_offset in range(3, 0, -1):
                 date_ref = datetime.now() - timedelta(days=30 * month_offset)
