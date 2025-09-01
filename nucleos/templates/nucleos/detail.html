@@ -87,6 +87,23 @@
   </div>
   {% endif %}
 
+  <h2 class="mt-6 font-semibold">{% trans 'Eventos' %}</h2>
+  <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for evento in eventos %}
+      <a href="{% url 'agenda:evento_detalhe' evento.pk %}" class="block bg-white rounded shadow p-4 hover:shadow-md">
+        {% if evento.avatar %}
+        <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="w-full h-32 object-cover rounded mb-4" />
+        {% endif %}
+        <h3 class="text-lg font-semibold">{{ evento.titulo }}</h3>
+        <p class="text-sm text-gray-500">{{ evento.data_inicio|date:'d/m/Y H:i' }}</p>
+        <p class="text-sm">{{ evento.num_inscritos }} {% trans 'inscritos' %}</p>
+        <p class="text-sm text-gray-600">{{ evento.get_status_display }}</p>
+      </a>
+    {% empty %}
+      <p class="text-sm text-gray-500">{% trans 'Sem eventos.' %}</p>
+    {% endfor %}
+  </div>
+
     <div class="mt-6 space-x-2">
       <div class="inline-block relative">
         <a
