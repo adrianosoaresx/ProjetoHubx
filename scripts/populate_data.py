@@ -192,6 +192,7 @@ def main() -> None:
                         "contato_whatsapp": "",
                     },
                 )
+                print(f"Criados {i + 1}/3 eventos para {org.nome}")
 
         # Criação de usuários associados, nucleados e convidados
         for org_idx, org in enumerate(organizacoes, start=1):
@@ -220,6 +221,8 @@ def main() -> None:
                     user.set_password("password123")
                     user.save()
                 ContaAssociado.objects.get_or_create(user=user)
+                if (i + 1) % 10 == 0:
+                    print(f"Criados {i + 1}/50 associados para {org.nome}")
             # 30 nucleados
             for i in range(30):
                 nucleo = nucleos[i % len(nucleos)]
@@ -251,6 +254,8 @@ def main() -> None:
                     defaults={"papel": "membro", "status": "ativo"},
                 )
                 ContaAssociado.objects.get_or_create(user=user)
+                if (i + 1) % 10 == 0:
+                    print(f"Criados {i + 1}/30 nucleados para {org.nome}")
             # 5 convidados
             for i in range(5):
                 email = f"convidado{i + 1}@{slugify(org.nome)}.com"
@@ -274,6 +279,7 @@ def main() -> None:
                 if created:
                     user.set_password("password123")
                     user.save()
+                print(f"Criados {i + 1}/5 convidados para {org.nome}")
 
         # Registros financeiros (3 meses) e atualização de saldo
         for org_idx, org in enumerate(organizacoes, start=1):
@@ -301,6 +307,9 @@ def main() -> None:
                     status=LancamentoFinanceiro.Status.PAGO,
                     origem=LancamentoFinanceiro.Origem.MANUAL,
                     descricao=f"Despesa operacional referente ao mês {date_ref.strftime('%Y-%m')}",
+                )
+                print(
+                    f"Registros financeiros criados {3 - month_offset + 1}/3 para {org.nome}"
                 )
             # Calcula o saldo: receitas (aportes externos) menos despesas
             saldo = (
