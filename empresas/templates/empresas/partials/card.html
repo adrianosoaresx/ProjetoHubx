@@ -1,23 +1,13 @@
 {% load i18n %}
-<a href="{% url 'empresas:detail' empresa.pk %}" class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition">
-  {% if empresa.logo %}
-    <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" class="w-24 h-24 rounded-full object-cover mb-2" />
+<div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition">
+  {% if empresa.usuario.avatar %}
+    <img src="{{ empresa.usuario.avatar.url }}" alt="{{ empresa.usuario.username }}" class="w-24 h-24 rounded-full object-cover mb-2" />
   {% else %}
     <div class="w-24 h-24 rounded-full bg-neutral-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2">
-      {{ empresa.nome|first|upper }}
+      {{ empresa.usuario.username|first|upper }}
     </div>
   {% endif %}
   <h2 class="font-medium">{{ empresa.nome }}{% if empresa.deleted %} ({% translate 'excluída' %}){% endif %}</h2>
-  {% with contato=empresa.contatos.first %}
-    <p class="text-sm text-neutral-500">{% if contato %}{{ contato.nome }}{% else %}-{% endif %}</p>
-  {% endwith %}
-  <p class="text-sm text-neutral-500">{{ empresa.tipo }}</p>
-  <p class="text-sm text-neutral-500">{{ empresa.municipio }}</p>
-  <div class="flex flex-wrap gap-1 justify-center mt-1">
-    {% for tag in empresa.tags.all %}
-      <span class="inline-block bg-neutral-100 px-1 rounded text-xs">{{ tag.nome }}</span>
-    {% empty %}
-      <span class="text-xs text-neutral-400">-</span>
-    {% endfor %}
-  </div>
-</a>
+  <p class="text-sm text-neutral-500">{{ empresa.usuario.username }}</p>
+  <a href="{% url 'empresas:detail' empresa.pk %}" class="mt-2 inline-block bg-primary-600 text-white px-3 py-1 rounded">{% translate 'Abrir' %}</a>
+</div>

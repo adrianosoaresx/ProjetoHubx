@@ -29,7 +29,7 @@ from .models import (
     FavoritoEmpresa,
     Tag,
 )
-from .services import list_all_tags, search_empresas
+from .services import search_empresas
 
 
 @login_required
@@ -57,9 +57,14 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
+        qs = (
+            Empresa.objects.filter(
+                organizacao=self.request.user.organizacao, deleted=False
+            ).select_related("usuario")
+        )
         q = self.request.GET.get("q")
-        params = {"q": q} if q else {}
-        qs = search_empresas(self.request.user, params)
+        if q:
+            qs = qs.filter(nome__icontains=q)
 
         if self.request.user.is_authenticated:
             fav_exists = FavoritoEmpresa.objects.filter(
