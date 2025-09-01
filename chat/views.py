@@ -6,7 +6,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Case, Count, F, OuterRef, Subquery, TextField, UUIDField, When
 from django.http import HttpResponse
-import csv
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -177,14 +176,6 @@ def historico_edicoes(request, channel_id, message_id):
         dt = parse_date(fim)
         if dt:
             logs = logs.filter(created_at__date__lte=dt)
-    if request.GET.get("export") == "csv":
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename=historico_edicoes.csv"
-        writer = csv.writer(response)
-        writer.writerow(["created_at", "moderator", "previous_content"])
-        for log in logs:
-            writer.writerow([log.created_at.isoformat(), log.moderator.username, log.previous_content])
-        return response
     paginator = Paginator(logs, 20)
     page = paginator.get_page(request.GET.get("page"))
     return render(

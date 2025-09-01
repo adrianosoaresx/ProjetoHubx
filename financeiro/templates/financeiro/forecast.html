@@ -33,10 +33,6 @@
   <div id="forecast-result" class="mt-6">
     <!-- gráfico e tabela serão inseridos aqui -->
   </div>
-  <div class="mt-4 space-x-2">
-    <a href="#" onclick="exportData('csv');return false;" class="bg-gray-200 px-3 py-1 rounded">{% trans "Exportar CSV" %}</a>
-    <a href="#" onclick="exportData('xlsx');return false;" class="bg-gray-200 px-3 py-1 rounded">{% trans "Exportar XLSX" %}</a>
-  </div>
 </div>
 <script src="{% static 'js/vendor/chart-4.5.0.min.js' %}"></script>
 <script>
@@ -92,8 +88,4 @@ function renderForecast(xhr){
   }
 }
 
-function exportData(fmt){
-  const params = lastParams ? new URLSearchParams(lastParams) : new URLSearchParams(new FormData(document.getElementById('filters')));
-  window.location = '{% url 'financeiro_api:forecast-list' %}?'+params.toString()+'&format='+fmt;
-}
 </script>

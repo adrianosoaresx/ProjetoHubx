@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import csv
 import json
 import re
 from collections import Counter
@@ -140,7 +139,7 @@ def exportar_historico_chat(
 
     Args:
         channel_id: ID do ``ChatChannel`` a ser exportado.
-        formato: ``"json"`` ou ``"csv"``.
+        formato: ``"json"``.
         inicio: filtro opcional de data inicial (ISO8601).
         fim: filtro opcional de data final (ISO8601).
         tipos: lista de tipos de mensagem a incluir.
@@ -173,17 +172,7 @@ def exportar_historico_chat(
     ]
     buffer = ""
     filename = f"chat_exports/{channel.id}.{formato}"
-    if formato == "csv":
-        from io import StringIO
-
-        sio = StringIO()
-        writer = csv.DictWriter(sio, fieldnames=["id", "remetente", "tipo", "conteudo", "created_at"])
-        writer.writeheader()
-        for row in data:
-            writer.writerow(row)
-        buffer = sio.getvalue()
-    else:
-        buffer = json.dumps(data)
+    buffer = json.dumps(data)
     path = default_storage.save(filename, ContentFile(buffer.encode()))
     rel.arquivo_path = path
     rel.arquivo_url = default_storage.url(path)

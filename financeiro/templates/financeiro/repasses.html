@@ -17,10 +17,7 @@
       </select>
     </div>
   </form>
-  <div class="mb-4 flex gap-4">
-    <a href="#" id="export-csv" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar repasses em CSV' %}">{% trans "Exportar CSV" %}</a>
-    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar repasses em XLSX' %}">{% trans "Exportar XLSX" %}</a>
-  </div>
+  <div class="mb-4 flex gap-4"></div>
   <div id="lista" aria-live="polite">
     <table class="min-w-full divide-y divide-gray-200">
       <thead>
@@ -53,9 +50,6 @@
           </tr>
         `).join('');
         tbody.innerHTML = rows || `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Nenhum repasse')}</td></tr>`;
-        const params = new URLSearchParams(new FormData(document.getElementById('filtros')));
-        document.getElementById('export-csv').href = '/api/financeiro/repasses/?' + params.toString() + '&format=csv';
-        document.getElementById('export-xlsx').href = '/api/financeiro/repasses/?' + params.toString() + '&format=xlsx';
       } catch (e) {
         tbody.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Erro ao carregar')}</td></tr>`;
       }

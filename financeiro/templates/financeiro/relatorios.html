@@ -67,10 +67,6 @@
   </form>
 
   <div id="relatorio" class="mt-6" aria-live="polite"></div>
-  <div class="mt-4 flex gap-4">
-    <a href="#" id="export-csv" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar relatório em CSV' %}">{% trans "Exportar CSV" %}</a>
-    <a href="#" id="export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar relatório em XLSX' %}">{% trans "Exportar XLSX" %}</a>
-    </div>
     <script src="{% url 'javascript-catalog' %}"></script>
     <script>
     function renderRelatorio(evt) {
@@ -85,13 +81,6 @@
           <p class=\"mb-2 font-medium\">{% trans "Saldo atual" %}: ${data.saldo_atual}</p>
           <p class=\"mb-2 font-medium\">{% trans "Total inadimplentes" %}: ${data.total_inadimplentes}</p>
           <table class=\"min-w-full divide-y divide-gray-200\"><thead><tr><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Mês" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Receitas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Despesas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Saldo" %}</th></tr></thead><tbody>${rows}</tbody></table>`;
-        const form = document.getElementById('relatorio-form');
-        const params = new URLSearchParams(new FormData(form));
-        params.set('tipo', form.querySelector('[name="tipo"]').value);
-        params.set('status', form.querySelector('[name="status"]').value);
-        const query = params.toString();
-        document.getElementById('export-csv').href = `/api/financeiro/relatorios/?${query}&format=csv`;
-        document.getElementById('export-xlsx').href = `/api/financeiro/relatorios/?${query}&format=xlsx`;
       } catch (e) {
         container.textContent = gettext('Erro ao gerar relatório');
       }
