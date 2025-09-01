@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.http import FileResponse
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -45,7 +44,6 @@ from ..services import metrics
 from ..services.aportes import estornar_aporte as estornar_aporte_service
 from ..services.auditoria import log_financeiro
 from ..services.cobrancas import _nucleos_do_usuario
-from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 
 from ..tasks.relatorios import gerar_relatorio_async
@@ -363,24 +361,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
             )
         fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
-            headers = ["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"]
-            linhas = [
-                [
-                    item["id"],
-                    item["conta"],
-                    item["status"],
-                    item["valor"],
-                    item["data_vencimento"],
-                    item["dias_atraso"],
-                ]
-                for item in data
-            ]
-            try:
-                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
-            except RuntimeError:
-                return Response({"detail": _("openpyxl não disponível")}, status=500)
-            filename = f"inadimplencias.{fmt}"
-            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=filename)
+            return Response({"detail": _("formato indisponível")}, status=400)
 
         return Response(data)
 

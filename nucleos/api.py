@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-import csv
-import io
 import logging
-
-import tablib
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -38,7 +34,6 @@ from .serializers import (
 )
 from .services import gerar_convite_nucleo, registrar_uso_convite
 from .tasks import (
-    notify_exportacao_membros,
     notify_participacao_aprovada,
     notify_participacao_recusada,
     notify_suplente_designado,
@@ -622,62 +617,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
         ]
         return self.get_paginated_response(data)
 
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="membros/exportar",
-        permission_classes=[IsAdminOrCoordenador],
-    )
-    def exportar_membros(self, request, pk: str | None = None):
-        nucleo = self.get_object()
-        formato = request.query_params.get("formato", "csv")
-        membros = nucleo.participacoes.select_related("user").all()
-        now = timezone.now()
-        suplentes = set(
-            CoordenadorSuplente.objects.filter(
-                nucleo=nucleo,
-                periodo_inicio__lte=now,
-                periodo_fim__gte=now,
-                deleted=False,
-            ).values_list("usuario_id", flat=True)
-        )
-        data = tablib.Dataset(
-            headers=[
-                "Nome",
-                "Email",
-                "Status",
-                "papel",
-                "is_suplente",
-                "data_ingresso",
-            ]
-        )
-        for p in membros:
-            nome = p.user.get_full_name() or p.user.username
-            data.append(
-                [
-                    nome,
-                    p.user.email,
-                    p.status,
-                    p.papel,
-                    p.user_id in suplentes,
-                    (p.data_decisao or p.data_solicitacao).isoformat(),
-                ]
-            )
-        notify_exportacao_membros.delay(nucleo.id)
-        logger.info(
-            "Exportação de membros",
-            extra={"nucleo_id": nucleo.id, "user_id": request.user.id, "formato": formato},
-        )
-        if formato == "xls":
-            resp = HttpResponse(
-                data.export("xlsx"),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.xlsx"
-            return resp
-        resp = HttpResponse(data.export("csv"), content_type="text/csv")
-        resp["Content-Disposition"] = f"attachment; filename=nucleo-{nucleo.id}-membros.csv"
-        return resp
 
     @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
     def metrics(self, request, pk: str | None = None):

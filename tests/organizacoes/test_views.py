@@ -429,26 +429,6 @@ def test_list_view_cache_invalidation(superadmin_user, organizacao, faker_ptbr):
     assert resp["X-Cache"] == "MISS"
     assert "Nova" in resp.content.decode()
 
-
-def test_history_export_csv(superadmin_user, organizacao, monkeypatch):
-    called = {}
-
-    def fake_exportar_logs_csv(org):
-        from django.http import HttpResponse
-
-        called["org"] = org
-        return HttpResponse("csv", content_type="text/csv")
-
-    monkeypatch.setattr(
-        "organizacoes.views.exportar_logs_csv", fake_exportar_logs_csv
-    )
-    url = reverse("organizacoes:historico", args=[organizacao.pk]) + "?export=csv"
-    resp = superadmin_user.get(url)
-    assert resp.status_code == 200
-    assert called["org"] == organizacao
-    assert resp["Content-Type"] == "text/csv"
-
-
 def test_history_view_denied_for_admin(admin_user, organizacao):
     url = reverse("organizacoes:historico", args=[organizacao.pk])
     resp = admin_user.get(url)

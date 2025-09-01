@@ -1,5 +1,3 @@
-import csv
-import io
 from unittest.mock import patch
 
 import pytest
@@ -11,7 +9,6 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from financeiro.models import CentroCusto, LancamentoFinanceiro
 from financeiro.services.relatorios import gerar_relatorio
-from financeiro.services.exportacao import exportar_para_arquivo
 from financeiro.views.api import FinanceiroViewSet, parse_periodo
 from organizacoes.factories import OrganizacaoFactory
 
@@ -120,17 +117,3 @@ def test_total_inadimplentes():
     assert data["total_inadimplentes"] == 100.0
 
 
-def test_exportacoes():
-    linhas = [["1", "2"], ["3", "4"]]
-    path = exportar_para_arquivo("csv", ["a", "b"], linhas)
-    with open(path, "r", encoding="utf-8") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
-    assert rows[0] == ["a", "b"]
-    pytest.importorskip("openpyxl")
-    path = exportar_para_arquivo("xlsx", ["a", "b"], linhas)
-    from openpyxl import load_workbook
-
-    wb = load_workbook(path)
-    ws = wb.active
-    assert ws[1][0].value == "a"

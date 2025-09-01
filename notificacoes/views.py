@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import csv
 import logging
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
@@ -94,16 +92,6 @@ def list_logs(request):
         logs = logs.filter(status=status)
     if template_codigo:
         logs = logs.filter(template__codigo=template_codigo)
-
-    if request.GET.get("export") == "csv":
-        logger.info("export_logs_view", extra={"user": request.user.id, "count": logs.count()})
-        response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = "attachment; filename=logs.csv"
-        writer = csv.writer(response)
-        writer.writerow(["user", "template", "canal", "status", "data_envio", "erro"])
-        for log in logs:
-            writer.writerow([log.user_id, log.template.codigo, log.canal, log.status, log.data_envio, log.erro])
-        return response
 
     paginator = Paginator(logs, 20)
     page_obj = paginator.get_page(request.GET.get("page"))

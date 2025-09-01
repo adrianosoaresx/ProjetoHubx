@@ -7,7 +7,6 @@ from decimal import Decimal
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import F, Q
-from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -44,7 +43,6 @@ from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .services.forecast import calcular_previsao
-from .services.exportacao import exportar_para_arquivo
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -267,25 +265,6 @@ class RepasseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):  # type: ignore[override]
         fmt = request.query_params.get("format")
         qs = self.get_queryset()
-        if fmt in {"csv", "xlsx"}:
-            headers = [
-                "id",
-                "centro_custo",
-                "conta_associado",
-                "valor",
-                "data_lancamento",
-                "status",
-            ]
-            linhas = qs.values_list(
-                "id",
-                "centro_custo__nome",
-                "conta_associado__user__email",
-                "valor",
-                "data_lancamento",
-                "status",
-            )
-            tmp_name = exportar_para_arquivo(fmt, headers, linhas)
-            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=f"repasses.{fmt}")
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page or qs, many=True)
         if page is not None:
@@ -375,31 +354,8 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
             cache.set(cache_key, data, 6 * 3600)
 
         fmt = params.get("format")
-        if fmt == "csv":
-            import csv
-            from io import StringIO
-
-            buffer = StringIO()
-            writer = csv.writer(buffer)
-            writer.writerow(["mes", "receita", "despesa", "saldo"])
-            for item in data["historico"] + data["previsao"]:
-                writer.writerow([item["mes"], item["receita"], item["despesa"], item["saldo"]])
-            resp = HttpResponse(buffer.getvalue(), content_type="text/csv")
-            resp["Content-Disposition"] = 'attachment; filename="forecast.csv"'
-            return resp
-        if fmt == "xlsx":
-            from io import BytesIO
-            from openpyxl import Workbook
-
-            wb = Workbook()
-            ws = wb.active
-            ws.append(["mes", "receita", "despesa", "saldo"])
-            for item in data["historico"] + data["previsao"]:
-                ws.append([item["mes"], item["receita"], item["despesa"], item["saldo"]])
-            stream = BytesIO()
-            wb.save(stream)
-            stream.seek(0)
-            return FileResponse(stream, as_attachment=True, filename="forecast.xlsx")
+        if fmt in {"csv", "xlsx"}:
+            return Response({"detail": _("formato indisponível")}, status=status.HTTP_400_BAD_REQUEST)
 
         payload = {
             "historico": data["historico"],

@@ -104,20 +104,6 @@
   </div>
 
     <div class="mt-6 space-x-2">
-      <div class="inline-block relative">
-        <a
-          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=csv"
-          class="text-blue-600"
-          hx-boost="false"
-          download="nucleo-{{ object.pk }}-membros.csv"
-        >{% trans 'Exportar CSV' %}</a>
-        <a
-          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=xls"
-          class="text-blue-600"
-          hx-boost="false"
-          download="nucleo-{{ object.pk }}-membros.xlsx"
-        >{% trans 'Exportar XLS' %}</a>
-      </div>
     </div>
 
 

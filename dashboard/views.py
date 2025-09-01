@@ -1,5 +1,3 @@
-import csv
-import io
 import json
 import logging
 import shutil
@@ -35,8 +33,6 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-from openpyxl import Workbook
-
 from accounts.models import UserType
 from agenda.models import Evento
 from audit.services import hash_ip, log_audit
@@ -622,7 +618,7 @@ class DashboardExportView(LoginRequiredMixin, View):
 
         periodo = request.GET.get("periodo", "mensal")
         escopo = request.GET.get("escopo", "auto")
-        formato = request.GET.get("formato", "csv")
+        formato = request.GET.get("formato", "pdf")
         audit_action = f"EXPORT_{formato.upper()}"
         inicio_str = request.GET.get("data_inicio")
         fim_str = request.GET.get("data_fim")
@@ -708,32 +704,6 @@ class DashboardExportView(LoginRequiredMixin, View):
             )
             return resp
 
-        if formato == "xlsx":
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Métricas"
-            ws.append(["Métrica", "Valor", "Variação (%)"])
-            for key, data in metrics.items():
-                ws.append([key, data["total"], data["crescimento"]])
-            output = io.BytesIO()
-            wb.save(output)
-            resp = HttpResponse(
-                output.getvalue(),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.xlsx")
-            resp["Content-Disposition"] = f"attachment; filename={filename}"
-            log_audit(
-                user=request.user,
-                action="EXPORT_XLSX",
-                object_type="DashboardMetrics",
-                object_id="",
-                ip_hash=hash_ip(get_client_ip(request)),
-                status="SUCCESS",
-                metadata={"formato": formato, **filters},
-            )
-            return resp
-
         if formato == "png":
             keys = list(metrics.keys())
             values = [data["total"] for data in metrics.values()]
@@ -756,24 +726,7 @@ class DashboardExportView(LoginRequiredMixin, View):
             )
             return FileResponse(open(filepath, "rb"), as_attachment=True, filename=filename)
 
-        # default csv
-        resp = HttpResponse(content_type="text/csv")
-        filename = datetime.now().strftime("metrics_%Y%m%d_%H%M%S.csv")
-        resp["Content-Disposition"] = f"attachment; filename={filename}"
-        writer = csv.writer(resp)
-        writer.writerow(["Métrica", "Valor", "Variação (%)"])
-        for key, data in metrics.items():
-            writer.writerow([key, data["total"], data["crescimento"]])
-        log_audit(
-            user=request.user,
-            action="EXPORT_CSV",
-            object_type="DashboardMetrics",
-            object_id="",
-            ip_hash=hash_ip(get_client_ip(request)),
-            status="SUCCESS",
-            metadata={"formato": formato, **filters},
-        )
-        return resp
+        return _response_with_message(_("Formato indisponível"), 400)
 
 
 class DashboardExportedImageView(LoginRequiredMixin, View):
