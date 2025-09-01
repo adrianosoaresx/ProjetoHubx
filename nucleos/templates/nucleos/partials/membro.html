@@ -1,8 +1,25 @@
 {% load i18n %}
-<li id="membro-{{ part.id }}">
-  {{ part.user.get_full_name|default:part.user.username }}{% if part.papel == 'coordenador' %} - {% trans 'Coordenador' %}{% endif %}
-  {% if part.status_suspensao %}<span class="text-red-600">({% trans 'Suspenso' %})</span>{% endif %}
+<div id="membro-{{ part.id }}" class="p-4 bg-white border rounded shadow-sm flex flex-col gap-2">
+  <div class="flex items-center gap-4">
+    {% if part.user.avatar %}
+    <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" />
+    {% else %}
+    <div class="w-12 h-12 rounded-full bg-gray-200"></div>
+    {% endif %}
+    <div>
+      <a href="{% url 'accounts:perfil_publico' part.user.pk %}" class="font-medium text-gray-800">
+        {{ part.user.get_full_name|default:part.user.username }}
+      </a>
+      {% if part.papel == 'coordenador' %}
+        <span class="text-sm text-gray-500"> - {% trans 'Coordenador' %}</span>
+      {% endif %}
+      {% if part.status_suspensao %}
+        <span class="text-sm text-red-600">({% trans 'Suspenso' %})</span>
+      {% endif %}
+    </div>
+  </div>
   {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+  <div class="mt-2 space-x-2">
     <button class="text-sm text-blue-600"
             hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
             hx-target="#membro-{{ part.id }}"
@@ -31,5 +48,7 @@
         <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
       </form>
     {% endif %}
+  </div>
   {% endif %}
-</li>
+</div>
+

@@ -18,20 +18,18 @@
   <div class="mt-4 p-4 bg-blue-50 border rounded">
     <p class="font-medium">{% trans 'Mensalidade' %}: {{ object.mensalidade|localize }}</p>
   </div>
-  <div class="mt-4">
-    <a href="{% url 'nucleos:metrics' object.pk %}" class="text-blue-600">{% trans 'Ver métricas' %}</a>
-  </div>
+  <div id="metrics" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
   <div id="membro-status" class="mt-2 text-sm text-gray-700"></div>
 
   <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
-  <ul>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {% for part in membros_ativos %}
       {% include "nucleos/partials/membro.html" with part=part object=object %}
     {% empty %}
-      <li>{% trans 'Sem membros.' %}</li>
+      <p class="col-span-full text-center text-gray-500">{% trans 'Sem membros.' %}</p>
     {% endfor %}
-  </ul>
+  </div>
 
   {% if membros_pendentes %}
   <h2 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h2>
@@ -87,6 +85,7 @@
   </div>
   {% endif %}
 
+
   <h2 class="mt-6 font-semibold">{% trans 'Eventos' %}</h2>
   <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for evento in eventos %}
@@ -120,6 +119,7 @@
         >{% trans 'Exportar XLS' %}</a>
       </div>
     </div>
+
 
     {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
     <div class="mt-4">
@@ -160,6 +160,27 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   updateStatus();
   document.body.addEventListener('htmx:afterRequest', updateStatus);
+
+  const metricsContainer = document.getElementById('metrics');
+  if (metricsContainer) {
+    fetch("{{ metrics_url }}")
+      .then(resp => (resp.ok ? resp.json() : null))
+      .then(data => {
+        if (!data) return;
+        const items = [
+          ['{% trans "Total de membros" %}', data.total_membros],
+          ['{% trans "Total de suplentes" %}', data.total_suplentes],
+          ['{% trans "Taxa de participação" %}', data.taxa_participacao]
+        ];
+        if (data.membros_por_status) {
+          items.push(['{% trans "Membros por status" %}', JSON.stringify(data.membros_por_status)]);
+        }
+        metricsContainer.innerHTML = items
+          .map(i => `<div class="p-4 border rounded"><div class="font-medium">${i[0]}</div><div>${i[1]}</div></div>`)
+          .join('');
+      })
+      .catch(() => {});
+  }
 });
 </script>
 {% endblock %}

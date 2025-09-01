@@ -231,6 +231,7 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         part = nucleo.participacoes.filter(user=self.request.user).first()
         ctx["mostrar_solicitar"] = not part or part.status == "inativo"
         ctx["pode_postar"] = bool(part and part.status == "ativo" and not part.status_suspensao)
+
         ctx["eventos"] = Evento.objects.filter(nucleo=nucleo).annotate(
             num_inscritos=Count("inscricoes")
         )
@@ -254,6 +255,7 @@ class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object
         ctx["nucleo"] = nucleo
+
         ctx["metrics_url"] = reverse("nucleos_api:nucleo-metrics", args=[nucleo.pk])
         return ctx
 
