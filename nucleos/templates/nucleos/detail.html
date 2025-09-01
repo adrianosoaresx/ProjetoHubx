@@ -85,23 +85,6 @@
   </div>
   {% endif %}
 
-    <div class="mt-6 space-x-2">
-      <div class="inline-block relative">
-        <a
-          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=csv"
-          class="text-blue-600"
-          hx-boost="false"
-          download="nucleo-{{ object.pk }}-membros.csv"
-        >{% trans 'Exportar CSV' %}</a>
-        <a
-          href="{% url 'nucleos_api:nucleo-exportar-membros' object.pk %}?formato=xls"
-          class="text-blue-600"
-          hx-boost="false"
-          download="nucleo-{{ object.pk }}-membros.xlsx"
-        >{% trans 'Exportar XLS' %}</a>
-      </div>
-    </div>
-
     {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
     <div class="mt-4">
       <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
