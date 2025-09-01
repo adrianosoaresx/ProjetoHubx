@@ -9,7 +9,6 @@ from django.db import models
 from django.utils import timezone
 
 from agenda.models import Evento
-from chat.models import ChatNotification
 from feed.models import Post
 from notificacoes.services.notificacoes import enviar_para_usuario
 from notificacoes.services.push_client import send_push
@@ -53,7 +52,6 @@ def _send_for_frequency(frequency: str) -> None:
         )
     for config in configs:
         counts = {
-            "chat": ChatNotification.objects.filter(usuario=config.user, created_at__gte=since, lido=False).count(),
             "feed": Post.objects.filter(created_at__gte=since).exclude(autor=config.user).count(),
             "eventos": Evento.objects.filter(created_at__gte=since).exclude(coordenador=config.user).count(),
         }
@@ -72,12 +70,12 @@ def _send_for_frequency(frequency: str) -> None:
         if config.receber_notificacoes_push and config.frequencia_notificacoes_push == frequency:
             send_push(
                 config.user,
-                "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**counts),
+                "Resumo: feed={feed}, eventos={eventos}".format(**counts),
             )
 
 
 def enviar_notificacao_whatsapp(user, contexto):
-    message = "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
+    message = "Resumo: feed={feed}, eventos={eventos}".format(**contexto)
     try:
         send_whatsapp(user, message)
     except Exception as exc:  # pragma: no cover - falha externa

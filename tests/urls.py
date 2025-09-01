@@ -11,7 +11,6 @@ urlpatterns = [
     path("core/", include(("core.urls", "core"), namespace="core")),
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
-    path("chat/", include(("chat.urls", "chat"), namespace="chat")),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),

@@ -33,7 +33,6 @@ class TarefaSerializer(serializers.ModelSerializer):
             "organizacao",
             "responsavel",
             "status",
-            "mensagem_origem",
             "created_at",
             "updated_at",
         )

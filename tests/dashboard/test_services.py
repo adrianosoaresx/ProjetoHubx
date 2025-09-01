@@ -10,7 +10,6 @@ from django.utils import timezone
 from accounts.models import User, UserType
 from agenda.factories import EventoFactory
 from agenda.models import Evento, InscricaoEvento
-from chat.models import ChatChannel, ChatMessage
 from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
@@ -24,11 +23,6 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture
 def organizacao():
     return OrganizacaoFactory()
-
-
-@pytest.fixture
-def conversa(organizacao, admin_user):
-    return ChatChannel.objects.create(titulo="c1", contexto_tipo="organizacao", contexto_id=organizacao.id)
 
 
 def test_calcular_eventos_por_status(evento):
@@ -72,22 +66,6 @@ def test_calcular_topicos_respostas_discussao(admin_user, organizacao):
     RespostaDiscussao.objects.create(topico=topico1, autor=admin_user, conteudo="r")
     assert DashboardService.calcular_topicos_discussao(organizacao_id=organizacao.id) == 1
     assert DashboardService.calcular_respostas_discussao(organizacao_id=organizacao.id) == 1
-
-
-def test_calcular_mensagens_chat(conversa, admin_user):
-    ChatMessage.objects.create(channel=conversa, remetente=admin_user, conteudo="hi")
-    assert DashboardService.calcular_mensagens_chat() >= 1
-
-
-def test_get_metrics_mensagens_chat(conversa, admin_user, organizacao):
-    ChatMessage.objects.create(channel=conversa, remetente=admin_user, conteudo="hi")
-    metrics, _ = DashboardMetricsService.get_metrics(
-        admin_user,
-        metricas=["num_mensagens_chat"],
-        escopo="organizacao",
-        organizacao_id=organizacao.id,
-    )
-    assert metrics["num_mensagens_chat"]["total"] == 1
 
 
 def test_calcular_valores_eventos(evento, cliente_user):

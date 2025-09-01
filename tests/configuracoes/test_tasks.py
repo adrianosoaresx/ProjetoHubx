@@ -4,7 +4,7 @@ import pytest
 from django.utils import timezone
 from freezegun import freeze_time
 
-from chat.models import ChatChannel, ChatMessage, ChatNotification
+from feed.factories import PostFactory
 from configuracoes.tasks import (
     enviar_notificacao_whatsapp,
     enviar_notificacoes_diarias,
@@ -14,10 +14,8 @@ from configuracoes.tasks import (
 pytestmark = pytest.mark.django_db
 
 
-def _criar_notificacao(user):
-    channel = ChatChannel.objects.create(titulo="c", contexto_tipo="privado")
-    msg = ChatMessage.objects.create(channel=channel, remetente=user, tipo="text", conteudo="oi")
-    ChatNotification.objects.create(usuario=user, mensagem=msg)
+def _criar_post():
+    PostFactory()
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
@@ -27,12 +25,12 @@ def test_tarefa_diaria_envia_resumo(mock_enviar, admin_user):
     config.frequencia_notificacoes_email = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_diarias()
     mock_enviar.assert_called_once()
     args = mock_enviar.call_args[0]
     assert args[0] == admin_user
-    assert args[2]["chat"] == 1
+    assert args[2]["feed"] == 1
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")
@@ -43,7 +41,7 @@ def test_tarefa_diaria_respeita_preferencia(mock_enviar, admin_user):
     config.frequencia_notificacoes_email = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_diarias()
     mock_enviar.assert_not_called()
 
@@ -55,16 +53,16 @@ def test_tarefa_diaria_envia_resumo_push(mock_enviar, admin_user):
     config.frequencia_notificacoes_push = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_diarias()
     mock_enviar.assert_called_once()
 
 
 @patch("configuracoes.tasks.send_whatsapp")
 def test_enviar_notificacao_whatsapp(mock_send, admin_user):
-    enviar_notificacao_whatsapp(admin_user, {"chat": 1, "feed": 0, "eventos": 0})
+    enviar_notificacao_whatsapp(admin_user, {"feed": 1, "eventos": 0})
     mock_send.assert_called_once_with(
-        admin_user, "Resumo: chat=1, feed=0, eventos=0"
+        admin_user, "Resumo: feed=1, eventos=0"
     )
 
 
@@ -77,7 +75,7 @@ def test_tarefa_semanal_whatsapp(mock_whatsapp, admin_user):
     config.hora_notificacao_semanal = timezone.localtime().time()
     config.dia_semana_notificacao = timezone.localtime().weekday()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_semanais()
     mock_whatsapp.assert_called_once()
 
@@ -92,7 +90,7 @@ def test_tarefa_diaria_envia_push(mock_push, mock_evento, admin_user):
     config.frequencia_notificacoes_push = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_diarias()
     mock_push.assert_called_once()
 
@@ -107,6 +105,6 @@ def test_tarefa_diaria_push_respeita_preferencia(mock_push, mock_evento, admin_u
     config.frequencia_notificacoes_push = "diaria"
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
-    _criar_notificacao(admin_user)
+    _criar_post()
     enviar_notificacoes_diarias()
     mock_push.assert_not_called()
