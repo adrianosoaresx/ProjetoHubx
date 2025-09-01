@@ -34,7 +34,7 @@ def setup_django() -> None:
     if str(base_dir) not in sys.path:
         sys.path.append(str(base_dir))
     # Define o módulo de configurações do Django se não estiver definido
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProjetoHubx.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
     django.setup()
 
 
