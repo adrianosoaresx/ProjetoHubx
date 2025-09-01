@@ -49,6 +49,10 @@ def main() -> None:
     from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
     from nucleos.models import Nucleo, ParticipacaoNucleo
     from organizacoes.models import Organizacao
+    from empresas.models import Empresa
+    from faker import Faker
+
+    fake = Faker("pt_BR")
 
     # Garante que todas as operações de criação sejam atômicas
     User = get_user_model()
@@ -280,6 +284,24 @@ def main() -> None:
                     user.set_password("password123")
                     user.save()
                 print(f"Criados {i + 1}/5 convidados para {org.nome}")
+
+            # Empresas para os 10 primeiros associados
+            associados = (
+                User.objects.filter(organizacao=org, user_type="associado")
+                .order_by("id")[:10]
+            )
+            for i, associado in enumerate(associados, start=1):
+                Empresa.objects.get_or_create(
+                    usuario=associado,
+                    organizacao=org,
+                    defaults={
+                        "nome": fake.company(),
+                        "cnpj": fake.unique.cnpj(),
+                        "municipio": fake.city(),
+                        "estado": fake.state_abbr(),
+                    },
+                )
+                print(f"Criadas {i}/10 empresas para {org.nome}")
 
         # Registros financeiros (3 meses) e atualização de saldo
         for org_idx, org in enumerate(organizacoes, start=1):
