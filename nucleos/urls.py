@@ -9,7 +9,6 @@ urlpatterns = [
     path("meus/", views.NucleoMeusView.as_view(), name="meus"),
     path("novo/", views.NucleoCreateView.as_view(), name="create"),
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
-    path("<int:pk>/metrics/", views.NucleoMetricsView.as_view(), name="metrics"),
     path("<int:pk>/editar/", views.NucleoUpdateView.as_view(), name="update"),
     path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),
     path(

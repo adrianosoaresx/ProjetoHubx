@@ -18,9 +18,7 @@
   <div class="mt-4 p-4 bg-blue-50 border rounded">
     <p class="font-medium">{% trans 'Mensalidade' %}: {{ object.mensalidade|localize }}</p>
   </div>
-  <div class="mt-4">
-    <a href="{% url 'nucleos:metrics' object.pk %}" class="text-blue-600">{% trans 'Ver métricas' %}</a>
-  </div>
+  <div id="metrics" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
   <div id="membro-status" class="mt-2 text-sm text-gray-700"></div>
 
@@ -143,6 +141,27 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   updateStatus();
   document.body.addEventListener('htmx:afterRequest', updateStatus);
+
+  const metricsContainer = document.getElementById('metrics');
+  if (metricsContainer) {
+    fetch("{{ metrics_url }}")
+      .then(resp => (resp.ok ? resp.json() : null))
+      .then(data => {
+        if (!data) return;
+        const items = [
+          ['{% trans "Total de membros" %}', data.total_membros],
+          ['{% trans "Total de suplentes" %}', data.total_suplentes],
+          ['{% trans "Taxa de participação" %}', data.taxa_participacao]
+        ];
+        if (data.membros_por_status) {
+          items.push(['{% trans "Membros por status" %}', JSON.stringify(data.membros_por_status)]);
+        }
+        metricsContainer.innerHTML = items
+          .map(i => `<div class="p-4 border rounded"><div class="font-medium">${i[0]}</div><div>${i[1]}</div></div>`)
+          .join('');
+      })
+      .catch(() => {});
+  }
 });
 </script>
 {% endblock %}
