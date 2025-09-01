@@ -34,7 +34,7 @@ def setup_django() -> None:
     if str(base_dir) not in sys.path:
         sys.path.append(str(base_dir))
     # Define o módulo de configurações do Django se não estiver definido
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Hubx.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ProjetoHubx.settings")
     django.setup()
 
 
@@ -50,6 +50,8 @@ def main() -> None:
     from nucleos.models import Nucleo, ParticipacaoNucleo
     from organizacoes.models import Organizacao
     from empresas.models import Empresa
+    from empresas.signals import _log_changes
+    from django.db.models.signals import post_save
     from faker import Faker
 
     fake = Faker("pt_BR")
@@ -69,10 +71,9 @@ def main() -> None:
                 "user_type": "root",
             },
         )
-        # Define senha padrão caso esteja vazia
-        if not root.has_usable_password():
-            root.set_password("password123")
-            root.save()
+        # Define a senha padrão sempre para garantir contas válidas
+        root.set_password("password123")
+        root.save(update_fields=["password"])
 
         # Administradores
         admin_info = [
@@ -92,9 +93,8 @@ def main() -> None:
                     "user_type": "admin",
                 },
             )
-            if not admin.has_usable_password():
-                admin.set_password("password123")
-                admin.save()
+            admin.set_password("password123")
+            admin.save(update_fields=["password"])
             admins.append(admin)
 
         # Organizações e ligação com administradores
@@ -199,6 +199,7 @@ def main() -> None:
                 print(f"Criados {i + 1}/3 eventos para {org.nome}")
 
         # Criação de usuários associados, nucleados e convidados
+        post_save.disconnect(_log_changes, sender=Empresa)
         for org_idx, org in enumerate(organizacoes, start=1):
             nucleos = nucleos_por_org[org]
             # 50 associados
@@ -224,6 +225,9 @@ def main() -> None:
                 if created:
                     user.set_password("password123")
                     user.save()
+                elif user.organizacao != org or user.organizacao is None:
+                    user.organizacao = org
+                    user.save(update_fields=["organizacao"])
                 ContaAssociado.objects.get_or_create(user=user)
                 if (i + 1) % 10 == 0:
                     print(f"Criados {i + 1}/50 associados para {org.nome}")
@@ -252,6 +256,16 @@ def main() -> None:
                 if created:
                     user.set_password("password123")
                     user.save()
+                else:
+                    updated_fields = []
+                    if user.organizacao != org or user.organizacao is None:
+                        user.organizacao = org
+                        updated_fields.append("organizacao")
+                    if user.nucleo != nucleo:
+                        user.nucleo = nucleo
+                        updated_fields.append("nucleo")
+                    if updated_fields:
+                        user.save(update_fields=updated_fields)
                 ParticipacaoNucleo.objects.get_or_create(
                     user=user,
                     nucleo=nucleo,
@@ -283,6 +297,9 @@ def main() -> None:
                 if created:
                     user.set_password("password123")
                     user.save()
+                elif user.organizacao != org or user.organizacao is None:
+                    user.organizacao = org
+                    user.save(update_fields=["organizacao"])
                 print(f"Criados {i + 1}/5 convidados para {org.nome}")
 
             # Empresas para os 10 primeiros associados
@@ -302,6 +319,7 @@ def main() -> None:
                     },
                 )
                 print(f"Criadas {i}/10 empresas para {org.nome}")
+        post_save.connect(_log_changes, sender=Empresa)
 
         # Registros financeiros (3 meses) e atualização de saldo
         for org_idx, org in enumerate(organizacoes, start=1):
@@ -309,26 +327,30 @@ def main() -> None:
             for month_offset in range(3, 0, -1):
                 date_ref = timezone.now() - timedelta(days=30 * month_offset)
                 # Aporte externo (receita)
-                LancamentoFinanceiro.objects.create(
+                LancamentoFinanceiro.objects.get_or_create(
                     centro_custo=cc,
                     tipo=LancamentoFinanceiro.Tipo.APORTE_EXTERNO,
-                    valor=Decimal("5000.00"),
                     data_lancamento=date_ref,
-                    data_vencimento=date_ref,
-                    status=LancamentoFinanceiro.Status.PAGO,
-                    origem=LancamentoFinanceiro.Origem.MANUAL,
-                    descricao=f"Aporte externo referente ao mês {date_ref.strftime('%Y-%m')}",
+                    defaults={
+                        "valor": Decimal("5000.00"),
+                        "data_vencimento": date_ref,
+                        "status": LancamentoFinanceiro.Status.PAGO,
+                        "origem": LancamentoFinanceiro.Origem.MANUAL,
+                        "descricao": f"Aporte externo referente ao mês {date_ref.strftime('%Y-%m')}",
+                    },
                 )
                 # Despesa (saída)
-                LancamentoFinanceiro.objects.create(
+                LancamentoFinanceiro.objects.get_or_create(
                     centro_custo=cc,
                     tipo=LancamentoFinanceiro.Tipo.DESPESA,
-                    valor=Decimal("2000.00"),
                     data_lancamento=date_ref + timedelta(days=2),
-                    data_vencimento=date_ref + timedelta(days=2),
-                    status=LancamentoFinanceiro.Status.PAGO,
-                    origem=LancamentoFinanceiro.Origem.MANUAL,
-                    descricao=f"Despesa operacional referente ao mês {date_ref.strftime('%Y-%m')}",
+                    defaults={
+                        "valor": Decimal("2000.00"),
+                        "data_vencimento": date_ref + timedelta(days=2),
+                        "status": LancamentoFinanceiro.Status.PAGO,
+                        "origem": LancamentoFinanceiro.Origem.MANUAL,
+                        "descricao": f"Despesa operacional referente ao mês {date_ref.strftime('%Y-%m')}",
+                    },
                 )
                 print(
                     f"Registros financeiros criados {3 - month_offset + 1}/3 para {org.nome}"
