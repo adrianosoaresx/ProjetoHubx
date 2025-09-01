@@ -1,0 +1,265 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 15:05+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: templates/notificacoes/historico_list.html:3
+#: templates/notificacoes/historico_list.html:7
+msgid "Histórico de Notificações"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:11
+#: templates/notificacoes/logs_list.html:11
+msgid "De"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:15
+#: templates/notificacoes/logs_list.html:15
+msgid "Até"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:19
+#: templates/notificacoes/historico_list.html:34
+#: templates/notificacoes/logs_list.html:19
+#: templates/notificacoes/logs_list.html:44
+#: templates/notificacoes/template_form.html:39
+#: templates/notificacoes/templates_list.html:29
+msgid "Canal"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:21
+#: templates/notificacoes/logs_list.html:21
+#: templates/notificacoes/logs_list.html:30
+msgid "Todos"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:22
+#: templates/notificacoes/logs_list.html:22
+#: templates/notificacoes/metrics.html:10
+#: templates/notificacoes/metrics.html:16
+msgid "E-mail"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:23
+#: templates/notificacoes/logs_list.html:23
+#: templates/notificacoes/metrics.html:11
+#: templates/notificacoes/metrics.html:17
+msgid "Push"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:24
+#: templates/notificacoes/logs_list.html:24
+#: templates/notificacoes/metrics.html:12
+#: templates/notificacoes/metrics.html:18
+msgid "WhatsApp"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:27
+#: templates/notificacoes/logs_list.html:35
+#: templates/notificacoes/metrics.html:6
+msgid "Filtrar"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:33
+#: templates/notificacoes/logs_list.html:41
+msgid "Data"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:35
+msgid "Conteúdo"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:45
+#: templates/notificacoes/logs_list.html:56
+msgid "Anterior"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:47
+#, python-format
+msgid "Página %(historicos.number)s de %(historicos.paginator.num_pages)s"
+msgstr ""
+
+#: templates/notificacoes/historico_list.html:49
+#: templates/notificacoes/logs_list.html:60
+msgid "Próxima"
+msgstr ""
+
+#: templates/notificacoes/historico_rows.html:10
+msgid "Nenhuma notificação"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:3
+#: templates/notificacoes/logs_list.html:7
+msgid "Logs de Notificação"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:28
+#: templates/notificacoes/logs_list.html:45
+msgid "Status"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:8
+msgid "Baixar CSV completo"
+msgstr "Download full CSV"
+
+#: templates/notificacoes/logs_list.html:31
+msgid "Pendente"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:32
+msgid "Enviada"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:33
+msgid "Falha"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:34
+msgid "Lida"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:42
+msgid "Usuário"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:43
+msgid "Template"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:46
+msgid "Erro"
+msgstr ""
+
+#: templates/notificacoes/logs_list.html:58
+#, python-format
+msgid "Página %(logs.number)s de %(logs.paginator.num_pages)s"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:2
+msgid "Métricas de Notificações"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:4
+msgid "Início"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:5
+msgid "Fim"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:8
+msgid "Total por canal"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:14
+msgid "Falhas por canal"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:20
+msgid "Templates ativos"
+msgstr ""
+
+#: templates/notificacoes/metrics.html:21
+msgid "Templates inativos"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:4
+#: templates/notificacoes/template_form.html:8
+msgid "Editar Template"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:4
+#: templates/notificacoes/templates_list.html:12
+msgid "Novo Template"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:8
+msgid "Cadastrar Template"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:20
+#: templates/notificacoes/templates_list.html:27
+msgid "Código"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:29
+#: templates/notificacoes/templates_list.html:28
+msgid "Assunto"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:34
+msgid "Corpo"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:45
+#: templates/notificacoes/templates_list.html:30
+msgid "Ativo"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:48
+msgid "Cancelar"
+msgstr ""
+
+#: templates/notificacoes/template_form.html:49
+msgid "Salvar"
+msgstr ""
+
+#: templates/notificacoes/templates_list.html:3
+#: templates/notificacoes/templates_list.html:8
+msgid "Templates de Notificação"
+msgstr ""
+
+#: templates/notificacoes/templates_list.html:9
+msgid "Gerencie as mensagens utilizadas nos envios."
+msgstr ""
+
+#: templates/notificacoes/templates_list.html:31
+msgid "Ações"
+msgstr ""
+
+#: templates/notificacoes/templates_list.html:42
+msgid "Editar"
+msgstr ""
+
+#: templates/notificacoes/templates_list.html:50
+msgid "Nenhum template cadastrado."
+msgstr ""
+
+#: templates/notificacoes/financeiro/ajuste_lancamento.html:2 templates/notificacoes/financeiro/distribuicao_receita.html:2 templates/notificacoes/financeiro/nova_cobranca.html:2
+#, python-format
+msgid "Olá %(nome)s,"
+msgstr ""
+
+#: templates/notificacoes/financeiro/ajuste_lancamento.html:3
+#, python-format
+msgid "Seu lançamento %(lancamento)s foi ajustado em %(valor)s."
+msgstr ""
+
+#: templates/notificacoes/financeiro/distribuicao_receita.html:3
+#, python-format
+msgid "A receita do evento %(evento)s no valor de %(valor)s foi distribuída."
+msgstr ""
+
+#: templates/notificacoes/financeiro/nova_cobranca.html:3
+#, python-format
+msgid "Você possui uma nova cobrança no valor de %(valor)s com vencimento em %(vencimento)s."
+msgstr ""
+
+#: templates/notificacoes/financeiro/nova_cobranca.html:4
+#, python-format
+msgid "Acesse %(link_pagamento)s para efetuar o pagamento."
+msgstr ""

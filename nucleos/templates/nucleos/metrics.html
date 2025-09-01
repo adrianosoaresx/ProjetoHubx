@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with nome=nucleo.nome %}Métricas de {{ nome }}{% endblocktrans %}{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto py-8">
+  <h1 class="text-2xl font-bold mb-4">{% blocktrans with nome=nucleo.nome %}Métricas de {{ nome }}{% endblocktrans %}</h1>
+  <div id="metrics" class="space-y-2" aria-live="polite"></div>
+  <div class="mt-6 space-x-4">
+    <a href="{{ relatorio_csv_url }}" class="text-blue-600">{% trans 'Relatório CSV' %}</a>
+    <a href="{{ relatorio_pdf_url }}" class="text-blue-600">{% trans 'Relatório PDF' %}</a>
+  </div>
+</section>
+<script>
+(async function() {
+  try {
+    const resp = await fetch("{{ metrics_url }}");
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const container = document.getElementById('metrics');
+    const items = [
+      ['{% trans "Total de membros" %}', data.total_membros],
+      ['{% trans "Total de suplentes" %}', data.total_suplentes],
+      ['{% trans "Taxa de participação" %}', data.taxa_participacao]
+    ];
+    if (data.membros_por_status) {
+      items.push(['{% trans "Membros por status" %}', JSON.stringify(data.membros_por_status)]);
+    }
+    container.innerHTML = '<ul>' + items.map(i => `<li><strong>${i[0]}:</strong> ${i[1]}</li>`).join('') + '</ul>';
+  } catch(e) {
+    console.error(e);
+  }
+})();
+</script>
+{% endblock %}

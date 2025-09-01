@@ -1,0 +1,12 @@
+{% load i18n %}
+<h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Eventos' %} ({{ eventos|length }})</h2>
+<ul class="list-disc pl-6 text-neutral-700">
+  {% for evento in eventos %}
+    <li>{{ evento.titulo }}</li>
+  {% empty %}
+    <li class="list-none text-neutral-500">{% trans 'Nenhum evento associado.' %}</li>
+  {% endfor %}
+</ul>
+{% if request.user.user_type == 'root' %}
+<a href="#" class="mt-2 inline-block text-sm text-primary-600 hover:underline" hx-get="{% url 'organizacoes:eventos_modal' object.id %}" hx-target="#modal">{% trans 'Adicionar/Remover' %}</a>
+{% endif %}

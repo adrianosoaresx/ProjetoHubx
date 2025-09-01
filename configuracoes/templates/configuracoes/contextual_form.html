@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load i18n widget_tweaks %}
+
+{% block title %}{% trans "Configuração Contextual" %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-4">{% trans "Configuração Contextual" %}</h1>
+  <form method="post" class="bg-white p-6 rounded-md shadow space-y-4"
+          data-organizacao-url="{% url 'organizacoes_api:organizacao-list' %}?page_size=100"
+          data-nucleo-url="{% url 'nucleos_api:nucleo-list' %}?page_size=100"
+          data-evento-url="{% url 'agenda_api:evento-list' %}?page_size=100">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium">{{ field.label }}</label>
+        {% if field.field.widget.input_type == 'checkbox' %}
+          {{ field|add_class:'form-checkbox' }}
+        {% else %}
+          {{ field|add_class:'w-full p-2 border rounded-lg' }}
+        {% endif %}
+        {% if field.help_text %}
+          <p class="text-xs text-gray-500">{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+          <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <div class="flex justify-between pt-4">
+      <a href="{% url 'configuracoes-contextual-list' %}" class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300">{% trans "Cancelar" %}</a>
+      <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">{% trans "Salvar" %}</button>
+    </div>
+  </form>
+</div>
+<script>
+  (function () {
+    const escopoTipo = document.getElementById('id_escopo_tipo');
+    const escopoSelect = document.getElementById('id_escopo_id');
+    const formEl = document.querySelector('form');
+    const endpoints = {
+      organizacao: formEl.dataset.organizacaoUrl,
+      nucleo: formEl.dataset.nucleoUrl,
+      evento: formEl.dataset.eventoUrl
+    };
+
+    function loadEscopoOptions() {
+      const tipo = escopoTipo.value;
+      escopoSelect.innerHTML = '<option value="">---------</option>';
+
+      const existingError = document.getElementById('escopo-error');
+      if (existingError) {
+        existingError.remove();
+      }
+
+      if (!endpoints[tipo]) {
+        return;
+      }
+
+      escopoSelect.disabled = true;
+      escopoSelect.innerHTML = '<option>Carregando...</option>';
+
+      fetch(endpoints[tipo])
+        .then(r => r.json())
+        .then(data => {
+          escopoSelect.innerHTML = '<option value="">---------</option>';
+          const results = data.results || data;
+          results.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.id;
+            opt.textContent = item.nome || item.titulo;
+            escopoSelect.appendChild(opt);
+          });
+        })
+        .catch(() => {
+          escopoSelect.innerHTML = '<option value="">---------</option>';
+          const error = document.createElement('span');
+          error.id = 'escopo-error';
+          error.setAttribute('role', 'alert');
+          error.className = 'text-red-600 text-sm';
+          error.textContent = 'Erro ao carregar opções.';
+          escopoSelect.insertAdjacentElement('afterend', error);
+        })
+        .finally(() => {
+          escopoSelect.disabled = false;
+        });
+    }
+
+    escopoTipo.addEventListener('change', loadEscopoOptions);
+    document.addEventListener('DOMContentLoaded', loadEscopoOptions);
+  })();
+</script>
+{% endblock %}

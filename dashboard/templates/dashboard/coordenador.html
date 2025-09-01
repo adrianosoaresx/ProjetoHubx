@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Dashboard Coordenador" %} | Hubx{% endblock %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="{% trans 'Dashboard' %}">
+  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Coordenador" %}</h1>
+
+  {% include 'dashboard/partials/messages.html' %}
+  {% include 'dashboard/partials/filters_form.html' %}
+
+  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
+    {% include 'dashboard/partials/metrics_list.html' %}
+  </div>
+
+  <section
+    id="tasks"
+    hx-get="{% url 'dashboard:tarefas-partial' %}"
+    hx-trigger="load, every 15s"
+    hx-target="this"
+    hx-swap="outerHTML"
+  ></section>
+
+  <section
+    id="notifications"
+    hx-get="{% url 'dashboard:notificacoes-partial' %}"
+    hx-trigger="load, every 15s"
+    hx-target="this"
+    hx-swap="innerHTML"
+  ></section>
+
+  <section class="mb-8">
+    <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    </div>
+  </section>
+
+</main>
+{% endblock %}

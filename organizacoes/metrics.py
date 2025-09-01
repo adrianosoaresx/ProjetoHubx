@@ -1,0 +1,28 @@
+from __future__ import annotations
+
+from prometheus_client import Counter, Histogram
+
+membros_notificados_total = Counter(
+    "organizacoes_membros_notificados_total",
+    "Total de notificações enviadas aos membros de organizações",
+)
+
+membros_notificacao_falhas_total = Counter(
+    "organizacoes_membros_notificacao_falhas_total",
+    "Total de falhas ao enviar notificações aos membros de organizações",
+)
+
+membros_notificacao_latency = Histogram(
+    "organizacoes_membros_notificacao_latency_seconds",
+    "Tempo para enviar notificações aos membros de organizações",
+)
+
+list_latency_seconds = Histogram(
+    "organizacoes_list_latency_seconds",
+    "Latência das requisições de listagem de organizações",
+)
+
+detail_latency_seconds = Histogram(
+    "organizacoes_detail_latency_seconds",
+    "Latência das requisições de detalhe de organizações",
+)

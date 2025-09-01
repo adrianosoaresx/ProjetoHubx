@@ -1,0 +1,27 @@
+{% load i18n %}
+{% if request.user.user_type != 'root' %}
+{% if post.moderacao and post.moderacao.status != 'aprovado' %}
+  <p class="text-xs text-yellow-700 mb-2">{{ post.moderacao.get_status_display }}</p>
+{% endif %}
+{% if perms.feed.change_moderacaopost %}
+  <div class="flex flex-col gap-2">
+    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML">
+      {% csrf_token %}
+      <input type="hidden" name="acao" value="aprovar">
+      <button type="submit" class="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">{% trans "Aprovar" %}</button>
+    </form>
+    <form method="post" hx-post="{% url 'feed:post_moderar' post.pk %}" hx-target="#moderacao-wrapper" hx-swap="outerHTML" class="flex gap-2 items-start">
+      {% csrf_token %}
+      <input type="hidden" name="acao" value="rejeitar">
+      <input type="text" name="motivo" placeholder="{% trans 'Motivo' %}" class="flex-1 px-2 py-1 border border-neutral-300 rounded text-sm">
+      <button type="submit" class="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">{% trans "Rejeitar" %}</button>
+    </form>
+  </div>
+{% endif %}
+{% if message %}
+  <p class="mt-2 text-sm text-green-700">{{ message }}</p>
+{% endif %}
+{% if error %}
+  <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+{% endif %}
+{% endif %}

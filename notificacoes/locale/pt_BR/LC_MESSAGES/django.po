@@ -1,0 +1,409 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-23 14:03+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: notificacoes/admin.py:71
+msgid "Exportar CSV"
+msgstr ""
+
+#: notificacoes/api.py:37
+msgid "Template possui logs; desative-o ao invés de excluir."
+msgstr ""
+
+#: notificacoes/api.py:68
+msgid "Status inválido"
+msgstr ""
+
+#: notificacoes/api.py:72
+msgid "Não é permitido alterar logs de outro usuário."
+msgstr ""
+
+#: notificacoes/api.py:91
+msgid "Usuário não encontrado"
+msgstr "Usuário não encontrado"
+
+#: notificacoes/models.py:13
+#: notificacoes/templates/notificacoes/historico_list.html:22
+#: notificacoes/templates/notificacoes/logs_list.html:23
+#: notificacoes/templates/notificacoes/metrics.html:27
+#: notificacoes/templates/notificacoes/metrics.html:35
+msgid "E-mail"
+msgstr ""
+
+#: notificacoes/models.py:14
+#: notificacoes/templates/notificacoes/historico_list.html:23
+#: notificacoes/templates/notificacoes/logs_list.html:24
+#: notificacoes/templates/notificacoes/metrics.html:28
+#: notificacoes/templates/notificacoes/metrics.html:36
+msgid "Push"
+msgstr ""
+
+#: notificacoes/models.py:15
+#: notificacoes/templates/notificacoes/historico_list.html:24
+#: notificacoes/templates/notificacoes/logs_list.html:25
+#: notificacoes/templates/notificacoes/metrics.html:29
+#: notificacoes/templates/notificacoes/metrics.html:37
+msgid "WhatsApp"
+msgstr ""
+
+#: notificacoes/models.py:16
+#: notificacoes/templates/notificacoes/historico_list.html:21
+#: notificacoes/templates/notificacoes/logs_list.html:22
+#: notificacoes/templates/notificacoes/logs_list.html:31
+msgid "Todos"
+msgstr ""
+
+#: notificacoes/models.py:26
+#: notificacoes/templates/notificacoes/logs_list.html:32
+msgid "Pendente"
+msgstr ""
+
+#: notificacoes/models.py:27
+#: notificacoes/templates/notificacoes/logs_list.html:33
+msgid "Enviada"
+msgstr ""
+
+#: notificacoes/models.py:28
+#: notificacoes/templates/notificacoes/logs_list.html:34
+msgid "Falha"
+msgstr ""
+
+#: notificacoes/models.py:29
+#: notificacoes/templates/notificacoes/logs_list.html:35
+msgid "Lida"
+msgstr ""
+
+#: notificacoes/models.py:34
+#: notificacoes/templates/notificacoes/historico_list.html:31
+msgid "Diária"
+msgstr ""
+
+#: notificacoes/models.py:35
+#: notificacoes/templates/notificacoes/historico_list.html:32
+msgid "Semanal"
+msgstr ""
+
+#: notificacoes/models.py:48
+msgid "Preferência de Notificação do Usuário"
+msgstr ""
+
+#: notificacoes/models.py:49
+msgid "Preferências de Notificação dos Usuários"
+msgstr ""
+
+#: notificacoes/models.py:58
+#: notificacoes/templates/notificacoes/template_form.html:20
+#: notificacoes/templates/notificacoes/templates_list.html:28
+msgid "Código"
+msgstr ""
+
+#: notificacoes/models.py:59
+#: notificacoes/templates/notificacoes/template_form.html:29
+#: notificacoes/templates/notificacoes/templates_list.html:29
+msgid "Assunto"
+msgstr ""
+
+#: notificacoes/models.py:60
+#: notificacoes/templates/notificacoes/template_form.html:34
+msgid "Corpo"
+msgstr ""
+
+#: notificacoes/models.py:62
+#: notificacoes/templates/notificacoes/historico_list.html:19
+#: notificacoes/templates/notificacoes/historico_table.html:9
+#: notificacoes/templates/notificacoes/logs_list.html:20
+#: notificacoes/templates/notificacoes/logs_table.html:11
+#: notificacoes/templates/notificacoes/template_form.html:39
+#: notificacoes/templates/notificacoes/templates_list.html:30
+msgid "Canal"
+msgstr ""
+
+#: notificacoes/models.py:65
+#: notificacoes/templates/notificacoes/template_form.html:46
+#: notificacoes/templates/notificacoes/templates_list.html:31
+msgid "Ativo"
+msgstr ""
+
+#: notificacoes/models.py:69
+msgid "Template de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:70
+#: notificacoes/templates/notificacoes/templates_list.html:3
+#: notificacoes/templates/notificacoes/templates_list.html:8
+msgid "Templates de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:91
+msgid "Log de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:92
+#: notificacoes/templates/notificacoes/logs_list.html:3
+#: notificacoes/templates/notificacoes/logs_list.html:7
+msgid "Logs de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:101 notificacoes/models.py:105
+msgid "NotificationLog é imutável"
+msgstr "NotificationLog é imutável"
+
+#: notificacoes/models.py:123
+msgid "Histórico de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:124
+msgid "Históricos de Notificação"
+msgstr ""
+
+#: notificacoes/models.py:149
+msgid "Inscrição Push"
+msgstr ""
+
+#: notificacoes/models.py:150
+msgid "Inscrições Push"
+msgstr ""
+
+#: notificacoes/services/notificacoes.py:48
+#, python-format
+msgid "Template '%(codigo)s' não encontrado"
+msgstr ""
+
+#: notificacoes/services/notificacoes.py:86
+#, python-format
+msgid "Canal %(canal)s desabilitado pelo usuário"
+msgstr ""
+
+#: notificacoes/tasks.py:113
+msgid "Resumo de notificações"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:3
+#: notificacoes/templates/notificacoes/historico_list.html:7
+msgid "Histórico de Notificações"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:11
+#: notificacoes/templates/notificacoes/logs_list.html:12
+msgid "De"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:15
+#: notificacoes/templates/notificacoes/logs_list.html:16
+msgid "Até"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:28
+#: notificacoes/templates/notificacoes/historico_table.html:10
+msgid "Frequência"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:30
+msgid "Todas"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_list.html:35
+#: notificacoes/templates/notificacoes/logs_list.html:38
+#: notificacoes/templates/notificacoes/metrics.html:20
+msgid "Filtrar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_rows.html:12
+msgid "Nenhuma notificação"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:4
+msgid "Histórico de notificações enviadas"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:7
+msgid "Enviado em"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:8
+msgid "Referência"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:11
+msgid "Conteúdo"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:21
+#: notificacoes/templates/notificacoes/logs_table.html:23
+msgid "Anterior"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:23
+#, python-format
+msgid "Página %(historicos.number)s de %(historicos.paginator.num_pages)s"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/historico_table.html:25
+#: notificacoes/templates/notificacoes/logs_table.html:27
+msgid "Próxima"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_list.html:8
+msgid "Baixar CSV completo"
+msgstr "Baixar CSV completo"
+
+#: notificacoes/templates/notificacoes/logs_list.html:29
+#: notificacoes/templates/notificacoes/logs_table.html:12
+msgid "Status"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_rows.html:9
+msgid "-"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_rows.html:13
+msgid "Nenhum log encontrado."
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:5
+msgid "Logs de notificações"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:8
+msgid "Data"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:9
+msgid "Usuário"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:10
+msgid "Template"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:13
+msgid "Erro"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/logs_table.html:25
+#, python-format
+msgid "Página %(logs.number)s de %(logs.paginator.num_pages)s"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:4
+#: notificacoes/templates/notificacoes/metrics.html:8
+msgid "Métricas de Notificações"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:12
+msgid "Início"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:16
+msgid "Fim"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:25
+msgid "Total por canal"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:33
+msgid "Falhas por canal"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/metrics.html:40
+msgid "Total de templates"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/template_form.html:4
+#: notificacoes/templates/notificacoes/template_form.html:8
+msgid "Editar Template"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/template_form.html:4
+#: notificacoes/templates/notificacoes/templates_list.html:12
+msgid "Novo Template"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/template_form.html:8
+msgid "Cadastrar Template"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/template_form.html:51
+msgid "Cancelar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/template_form.html:52
+msgid "Salvar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:9
+msgid "Gerencie as mensagens utilizadas nos envios."
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:25
+msgid "Lista de templates de notificação"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:32
+msgid "Ações"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:41
+msgid "Sim,Não"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:44
+msgid "Editar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:48
+msgid "Desativar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:53
+msgid "Ativar"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:56
+msgid "Excluir"
+msgstr ""
+
+#: notificacoes/templates/notificacoes/templates_list.html:65
+msgid "Nenhum template cadastrado."
+msgstr ""
+
+#: notificacoes/views.py:43
+msgid "Template ativado com sucesso."
+msgstr ""
+
+#: notificacoes/views.py:45
+msgid "Template desativado com sucesso."
+msgstr ""
+
+#: notificacoes/views.py:56
+msgid "Template criado com sucesso."
+msgstr ""
+
+#: notificacoes/views.py:71
+msgid "Template atualizado com sucesso."
+msgstr ""
+
+#: notificacoes/views.py:152
+msgid "Template em uso; não é possível removê-lo. Considere desativá-lo."
+msgstr ""
+
+#: notificacoes/views.py:156
+msgid "Template excluído com sucesso."
+msgstr ""

@@ -1,0 +1,480 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 19:42+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: serializers/__init__.py:45
+msgid "Evento é obrigatório para centros do tipo evento"
+msgstr ""
+
+#: serializers/__init__.py:92
+msgid "Vencimento não pode ser anterior à data de lançamento"
+msgstr ""
+
+#: serializers/__init__.py:96 services/importacao.py:234
+msgid "Valor negativo não permitido para este tipo"
+msgstr ""
+
+#: serializers/__init__.py:142
+msgid "Valor não pode ser negativo"
+msgstr ""
+
+#: serializers/__init__.py:151
+msgid "Tipo de aporte inválido"
+msgstr ""
+
+#: serializers/__init__.py:199
+msgid "Formato inválido. Envie CSV ou XLSX"
+msgstr ""
+
+#: services/importacao.py:57 services/importacao.py:76
+msgid "Colunas faltantes: {', '.join(missing)}"
+msgstr ""
+
+#: services/importacao.py:59 services/importacao.py:78
+msgid "Coluna conta_associado_id ou email obrigatória"
+msgstr ""
+
+#: services/importacao.py:66 views/__init__.py:302 views/__init__.py:361
+msgid "openpyxl não disponível"
+msgstr ""
+
+#: services/importacao.py:83
+msgid "Formato não suportado"
+msgstr ""
+
+#: services/importacao.py:219
+msgid "Conta do associado não encontrada"
+msgstr ""
+
+#: services/importacao.py:229
+msgid "data_vencimento anterior a data_lancamento"
+msgstr ""
+
+#: services/notificacoes.py:41
+msgid "Inadimplência"
+msgstr ""
+
+#: services/notificacoes.py:42
+msgid "Você possui lançamentos vencidos."
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:5
+#: templates/financeiro/importar_pagamentos.html:52
+#: templates/financeiro/inadimplencias.html:12
+#: templates/financeiro/inadimplencias.html:45
+#: templates/financeiro/lancamentos_list.html:21
+#: templates/financeiro/lancamentos_list.html:52
+#: templates/financeiro/relatorios.html:12
+msgid "Centro de Custo"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:13
+#: templates/financeiro/importar_pagamentos.html:52
+#: templates/financeiro/inadimplencias.html:47
+#: templates/financeiro/lancamentos_list.html:55
+msgid "Valor"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:17
+#: templates/financeiro/centro_form.html:18
+#: templates/financeiro/centros_list.html:19
+#: templates/financeiro/importar_pagamentos.html:52
+#: templates/financeiro/lancamentos_list.html:54
+msgid "Tipo"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:18
+msgid "Interno"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:19
+msgid "Externo"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:22
+msgid "Descrição"
+msgstr ""
+
+#: templates/financeiro/aportes_form.html:25
+msgid "Registrar"
+msgstr ""
+
+#: templates/financeiro/centro_form.html:13
+#: templates/financeiro/centros_list.html:18
+msgid "Nome"
+msgstr ""
+
+#: templates/financeiro/centro_form.html:20
+#: templates/financeiro/centro_form.html:27
+#: templates/financeiro/forecast.html:7
+msgid "Organização"
+msgstr ""
+
+#: templates/financeiro/centro_form.html:21
+#: templates/financeiro/centro_form.html:31
+#: templates/financeiro/forecast.html:8
+#: templates/financeiro/inadimplencias.html:21
+#: templates/financeiro/lancamentos_list.html:30
+#: templates/financeiro/relatorios.html:21
+msgid "Núcleo"
+msgstr ""
+
+#: templates/financeiro/centro_form.html:22
+#: templates/financeiro/centro_form.html:35
+#: templates/financeiro/forecast.html:10
+msgid "Evento"
+msgstr ""
+
+#: templates/financeiro/centro_form.html:38
+msgid "Salvar"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:4
+#: templates/financeiro/centros_list.html:9
+msgid "Centros de Custo"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:11
+msgid "Novo Centro"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:20
+msgid "Organização/Núcleo/Evento"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:21
+#: templates/financeiro/relatorios.html:62
+msgid "Saldo"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:22
+msgid "Ações"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:35
+msgid "Editar"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:36
+msgid "Tem certeza?"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:36
+msgid "Excluir"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:41
+msgid "Nenhum centro encontrado."
+msgstr ""
+
+#: templates/financeiro/centros_list.html:48
+msgid "Anterior"
+msgstr ""
+
+#: templates/financeiro/centros_list.html:51
+msgid "Próximo"
+msgstr ""
+
+#: templates/financeiro/forecast.html:5
+msgid "Escopo"
+msgstr ""
+
+#: templates/financeiro/forecast.html:9
+msgid "Centro"
+msgstr ""
+
+#: templates/financeiro/forecast.html:14
+msgid "Referência"
+msgstr ""
+
+#: templates/financeiro/forecast.html:18
+msgid "Meses"
+msgstr ""
+
+#: templates/financeiro/forecast.html:23
+#, python-format
+msgid "Crescimento Receita (%%)"
+msgstr ""
+
+#: templates/financeiro/forecast.html:27
+#, python-format
+msgid "Redução Despesa (%%)"
+msgstr ""
+
+#: templates/financeiro/forecast.html:31
+msgid "Atualizar"
+msgstr ""
+
+#: templates/financeiro/forecast.html:37
+#: templates/financeiro/inadimplencias.html:56
+#: templates/financeiro/relatorios.html:52
+msgid "Exportar CSV"
+msgstr ""
+
+#: templates/financeiro/forecast.html:38
+#: templates/financeiro/inadimplencias.html:57
+#: templates/financeiro/relatorios.html:53
+msgid "Exportar XLSX"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:4
+#: templates/financeiro/importar_pagamentos.html:9
+msgid "Importar Pagamentos"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:12
+msgid "Arquivo"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:22
+msgid "Pré-visualizar"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:37
+msgid "Confirmar Importação"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:39
+msgid "Processando..."
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:52
+#: templates/financeiro/inadimplencias.html:46
+msgid "Conta"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:52
+#: templates/financeiro/task_logs.html:13
+msgid "Data"
+msgstr ""
+
+#: templates/financeiro/importar_pagamentos.html:63
+msgid "Erro ao processar pré-visualização"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:4
+#: templates/financeiro/inadimplencias.html:8
+msgid "Inadimplências"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:10
+#: templates/financeiro/lancamentos_list.html:10
+msgid "Filtros"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:14
+#: templates/financeiro/lancamentos_list.html:23
+msgid "Todos Centros"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:23
+#: templates/financeiro/lancamentos_list.html:32
+msgid "Todos Núcleos"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:30
+#: templates/financeiro/lancamentos_list.html:12
+#: templates/financeiro/lancamentos_list.html:57
+#: templates/financeiro/task_log_detail.html:10
+#: templates/financeiro/task_logs.html:14
+msgid "Status"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:32
+#: templates/financeiro/lancamentos_list.html:15
+msgid "Pendente"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:36
+msgid "Período"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:44
+#: templates/financeiro/lancamentos_list.html:51
+msgid "ID"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:48
+#: templates/financeiro/lancamentos_list.html:58
+msgid "Data de Vencimento"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:49
+msgid "Dias em atraso"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:56
+msgid "Exportar inadimplências em CSV"
+msgstr ""
+
+#: templates/financeiro/inadimplencias.html:57
+msgid "Exportar inadimplências em XLSX"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:4
+msgid "Lançamentos Financeiros"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:8
+msgid "Lançamentos"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:14
+msgid "Todos Status"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:16
+msgid "Pago"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:17
+msgid "Cancelado"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:39
+#: templates/financeiro/relatorios.html:32
+msgid "Período inicial"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:43
+#: templates/financeiro/relatorios.html:36
+msgid "Período final"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:53
+msgid "Conta Associada"
+msgstr ""
+
+#: templates/financeiro/lancamentos_list.html:56
+msgid "Data de Lançamento"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:4
+msgid "Relatórios Financeiros"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:8
+msgid "Relatórios"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:14
+#: templates/financeiro/relatorios.html:23
+msgid "Todos"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:46
+msgid "Gerar Relatório"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:52
+msgid "Exportar relatório em CSV"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:53
+msgid "Exportar relatório em XLSX"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:62
+msgid "Saldo atual"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:62
+msgid "Mês"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:62
+msgid "Receitas"
+msgstr ""
+
+#: templates/financeiro/relatorios.html:62
+msgid "Despesas"
+msgstr ""
+
+#: templates/financeiro/task_log_detail.html:4
+msgid "Detalhes da Tarefa Financeira"
+msgstr ""
+
+#: templates/financeiro/task_log_detail.html:9
+msgid "Executada em"
+msgstr ""
+
+#: templates/financeiro/task_log_detail.html:12
+#: templates/financeiro/task_logs.html:15
+msgid "Detalhes"
+msgstr ""
+
+#: templates/financeiro/task_log_detail.html:13
+msgid "Sem detalhes"
+msgstr ""
+
+#: templates/financeiro/task_logs.html:4 templates/financeiro/task_logs.html:8
+msgid "Histórico de Tarefas Financeiras"
+msgstr ""
+
+#: templates/financeiro/task_logs.html:12
+msgid "Tarefa"
+msgstr ""
+
+#: templates/financeiro/task_logs.html:24
+msgid "Ver"
+msgstr ""
+
+#: templates/financeiro/task_logs.html:28
+msgid "Nenhum registro encontrado"
+msgstr ""
+
+#: views/__init__.py:207 views/__init__.py:228
+msgid "Arquivo não encontrado"
+msgstr ""
+
+#: views/__init__.py:221
+msgid "Importação iniciada"
+msgstr ""
+
+#: views/__init__.py:231
+msgid "Arquivo ausente"
+msgstr ""
+
+#: views/__init__.py:239
+msgid "Reprocessamento concluído"
+msgstr ""
+
+#: views/__init__.py:258 views/__init__.py:263
+msgid "Sem permissão"
+msgstr ""
+
+#: viewsets.py:102
+msgid "Status inválido"
+msgstr ""
+
+#: viewsets.py:105
+msgid "Apenas lançamentos pendentes podem ser alterados"
+msgstr ""
+
+#: viewsets.py:216
+msgid "Parâmetros obrigatórios"
+msgstr ""
+
+#: viewsets.py:220 viewsets.py:222
+msgid "periodos inválido"
+msgstr ""
+
+#: viewsets.py:237
+msgid "escopo inválido"
+msgstr ""

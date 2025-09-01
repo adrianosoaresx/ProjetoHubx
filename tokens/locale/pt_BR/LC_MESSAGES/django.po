@@ -1,0 +1,128 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 16:24+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: templates/tokens/_resultado.html:4
+msgid "Código gerado:"
+msgstr ""
+
+#: templates/tokens/_resultado.html:8
+msgid "Token:"
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:4
+msgid "Ativar 2FA"
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:9
+msgid "Ativar Autenticação de Dois Fatores"
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:10
+msgid ""
+"Escaneie o QR Code no aplicativo autenticador ou digite o código exibido."
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:26
+msgid "QR Code"
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:40
+msgid "Ativar"
+msgstr ""
+
+#: templates/tokens/ativar_2fa.html:45 templates/tokens/desativar_2fa.html:24
+msgid "Voltar ao perfil de segurança"
+msgstr ""
+
+#: templates/tokens/desativar_2fa.html:4
+msgid "Desativar 2FA"
+msgstr ""
+
+#: templates/tokens/desativar_2fa.html:9
+msgid "Desativar Autenticação de Dois Fatores"
+msgstr ""
+
+#: templates/tokens/desativar_2fa.html:11
+msgid "Confirme para desativar a autenticação em duas etapas."
+msgstr ""
+
+#: templates/tokens/desativar_2fa.html:18
+msgid "Desativar"
+msgstr ""
+
+#: templates/tokens/gerar_codigo_autenticacao.html:4
+#: templates/tokens/gerar_codigo_autenticacao.html:9
+msgid "Gerar Código de Autenticação"
+msgstr ""
+
+#: templates/tokens/gerar_codigo_autenticacao.html:10
+msgid "Gere um código temporário para validar sua identidade."
+msgstr ""
+
+#: templates/tokens/gerar_codigo_autenticacao.html:36
+msgid "Gerar Código"
+msgstr ""
+
+#: templates/tokens/gerar_codigo_autenticacao.html:43
+#: templates/tokens/gerar_token.html:52
+#: templates/tokens/validar_codigo_autenticacao.html:33
+#: templates/tokens/validar_token.html:33
+msgid "Voltar ao painel de segurança"
+msgstr ""
+
+#: templates/tokens/gerar_token.html:3 templates/tokens/gerar_token.html:8
+msgid "Gerar Token de Acesso"
+msgstr ""
+
+#: templates/tokens/gerar_token.html:9
+msgid "Use este token para convidar novos membros ou recuperar o acesso."
+msgstr ""
+
+#: templates/tokens/gerar_token.html:40
+msgid "Gerar Token"
+msgstr ""
+
+#: templates/tokens/validar_codigo_autenticacao.html:4
+#: templates/tokens/validar_codigo_autenticacao.html:9
+msgid "Validar Código de Autenticação"
+msgstr ""
+
+#: templates/tokens/validar_codigo_autenticacao.html:10
+msgid "Informe o código recebido para concluir a validação."
+msgstr ""
+
+#: templates/tokens/validar_codigo_autenticacao.html:26
+msgid "Validar Código"
+msgstr ""
+
+#: templates/tokens/validar_token.html:4 templates/tokens/validar_token.html:9
+msgid "Validar Token de Convite"
+msgstr ""
+
+#: templates/tokens/validar_token.html:10
+msgid "Informe o token recebido para concluir o convite."
+msgstr ""
+
+#: templates/tokens/validar_token.html:26
+msgid "Validar Token"
+msgstr ""
+
+#: templates/tokens/api_tokens.html:27 templates/tokens/listar_convites.html:25
+msgid "Confirmar revogação?"
+msgstr "Confirmar revogação?"

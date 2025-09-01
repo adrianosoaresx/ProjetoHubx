@@ -1,0 +1,273 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-14 15:05+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+#: templates/organizacoes/create.html:4 templates/organizacoes/list.html:20
+msgid "Nova Organização"
+msgstr ""
+
+#: templates/organizacoes/create.html:11 templates/organizacoes/create.html:15
+#: templates/organizacoes/detail.html:144 templates/organizacoes/update.html:13
+msgid "Voltar"
+msgstr ""
+
+#: templates/organizacoes/create.html:17
+msgid "Cadastrar Organização"
+msgstr ""
+
+#: templates/organizacoes/create.html:132 templates/organizacoes/delete.html:17
+#: templates/organizacoes/update.html:135
+msgid "Cancelar"
+msgstr ""
+
+#: templates/organizacoes/create.html:135
+#: templates/organizacoes/update.html:136
+msgid "Salvar"
+msgstr ""
+
+#: templates/organizacoes/delete.html:4
+msgid "Remover Organização"
+msgstr ""
+
+#: templates/organizacoes/delete.html:9
+msgid "Confirmar remoção"
+msgstr ""
+
+#: templates/organizacoes/delete.html:11
+#, python-format
+msgid "Tem certeza que deseja remover <strong>%(nome)s</strong>?"
+msgstr ""
+
+#: templates/organizacoes/delete.html:20 templates/organizacoes/list.html:94
+msgid "Remover"
+msgstr ""
+
+#: templates/organizacoes/detail.html:27
+msgid "CNPJ"
+msgstr ""
+
+#: templates/organizacoes/detail.html:31 templates/organizacoes/list.html:27
+#: templates/organizacoes/list.html:46 templates/organizacoes/list.html:61
+msgid "Tipo"
+msgstr ""
+
+#: templates/organizacoes/detail.html:35
+msgid "Endereço"
+msgstr ""
+
+#: templates/organizacoes/detail.html:42
+msgid "Contato"
+msgstr ""
+
+#: templates/organizacoes/detail.html:51
+msgid "Descrição"
+msgstr ""
+
+#: templates/organizacoes/detail.html:59
+msgid "Membros"
+msgstr ""
+
+#: templates/organizacoes/detail.html:64
+msgid "Nenhum usuário associado."
+msgstr ""
+
+#: templates/organizacoes/detail.html:68 templates/organizacoes/detail.html:82
+#: templates/organizacoes/detail.html:96 templates/organizacoes/detail.html:110
+#: templates/organizacoes/detail.html:124
+msgid "Adicionar/Remover"
+msgstr ""
+
+#: templates/organizacoes/detail.html:73
+msgid "Núcleos"
+msgstr ""
+
+#: templates/organizacoes/detail.html:78
+msgid "Nenhum núcleo associado."
+msgstr ""
+
+#: templates/organizacoes/detail.html:87
+msgid "Eventos"
+msgstr ""
+
+#: templates/organizacoes/detail.html:92
+msgid "Nenhum evento associado."
+msgstr ""
+
+#: templates/organizacoes/detail.html:101
+msgid "Empresas"
+msgstr ""
+
+#: templates/organizacoes/detail.html:106
+msgid "Nenhuma empresa associada."
+msgstr ""
+
+#: templates/organizacoes/detail.html:115
+msgid "Posts"
+msgstr ""
+
+#: templates/organizacoes/detail.html:120
+msgid "Nenhum post associado."
+msgstr ""
+
+#: templates/organizacoes/detail.html:130 templates/organizacoes/list.html:91
+msgid "Editar"
+msgstr ""
+
+#: templates/organizacoes/detail.html:133
+msgid "Excluir"
+msgstr ""
+
+#: templates/organizacoes/detail.html:139 templates/organizacoes/list.html:100
+msgid "Reativar"
+msgstr ""
+
+#: templates/organizacoes/detail.html:139 templates/organizacoes/list.html:102
+msgid "Inativar"
+msgstr ""
+
+#: templates/organizacoes/detail.html:142 templates/organizacoes/history.html:3
+#: templates/organizacoes/history.html:6
+msgid "Histórico"
+msgstr ""
+
+#: templates/organizacoes/history.html:7
+msgid "Baixar CSV completo"
+msgstr ""
+
+#: templates/organizacoes/history.html:9
+msgid "Alterações"
+msgstr ""
+
+#: templates/organizacoes/history.html:13
+msgid "Campo"
+msgstr ""
+
+#: templates/organizacoes/history.html:14
+msgid "De"
+msgstr ""
+
+#: templates/organizacoes/history.html:15
+msgid "Para"
+msgstr ""
+
+#: templates/organizacoes/history.html:16
+#: templates/organizacoes/history.html:42
+msgid "Usuário"
+msgstr ""
+
+#: templates/organizacoes/history.html:17
+#: templates/organizacoes/history.html:43 templates/organizacoes/list.html:48
+msgid "Data"
+msgstr ""
+
+#: templates/organizacoes/history.html:31
+#: templates/organizacoes/history.html:55
+msgid "Nenhum log encontrado."
+msgstr ""
+
+#: templates/organizacoes/history.html:37
+msgid "Atividades"
+msgstr ""
+
+#: templates/organizacoes/history.html:41
+msgid "Ação"
+msgstr ""
+
+#: templates/organizacoes/list.html:4 templates/organizacoes/list.html:12
+msgid "Organizações"
+msgstr ""
+
+#: templates/organizacoes/list.html:13
+msgid "Gerencie as organizações cadastradas"
+msgstr ""
+
+#: templates/organizacoes/list.html:25
+msgid "Buscar por nome ou slug"
+msgstr ""
+
+#: templates/organizacoes/list.html:33
+msgid "Cidade"
+msgstr ""
+
+#: templates/organizacoes/list.html:39
+msgid "Estado"
+msgstr ""
+
+#: templates/organizacoes/list.html:45 templates/organizacoes/list.html:60
+msgid "Nome"
+msgstr ""
+
+#: templates/organizacoes/list.html:47
+msgid "Localização"
+msgstr ""
+
+#: templates/organizacoes/list.html:51
+msgid "Filtrar"
+msgstr ""
+
+#: templates/organizacoes/list.html:62
+msgid "Cidade/Estado"
+msgstr ""
+
+#: templates/organizacoes/list.html:63
+msgid "Data de Criação"
+msgstr ""
+
+#: templates/organizacoes/list.html:64
+msgid "Ações"
+msgstr ""
+
+#: templates/organizacoes/list.html:81
+msgid "Inativa"
+msgstr ""
+
+#: templates/organizacoes/list.html:89
+msgid "Visualizar"
+msgstr ""
+
+#: templates/organizacoes/list.html:94
+msgid "Confirmar remoção?"
+msgstr ""
+
+#: templates/organizacoes/list.html:97
+msgid "Tem certeza?"
+msgstr ""
+
+#: templates/organizacoes/list.html:114
+msgid "Anterior"
+msgstr ""
+
+#: templates/organizacoes/list.html:118
+msgid "Próxima"
+msgstr ""
+
+#: templates/organizacoes/list.html:123
+msgid "Nenhuma organização cadastrada."
+msgstr ""
+
+#: templates/organizacoes/list.html:125
+msgid "Cadastrar"
+msgstr ""
+
+#: templates/organizacoes/update.html:4 templates/organizacoes/update.html:15
+msgid "Editar Organização"
+msgstr ""
+
+#: templates/organizacoes/update.html:141
+msgid "Voltar à lista"
+msgstr ""
