@@ -7,7 +7,6 @@ from faker import Faker
 from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
 from agenda.models import FeedbackNota, InscricaoEvento, ParceriaEvento
-from chat.models import ChatConversation, ChatMessage, ChatParticipant
 from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory
 from empresas.factories import EmpresaFactory
 from empresas.models import Empresa
@@ -109,23 +108,6 @@ class Command(BaseCommand):
             self.stdout.write(f"Criando postagens no feed para {organizacao.nome}...")
             for cliente in clientes:
                 PostFactory.create_batch(3, autor=cliente)
-
-            self.stdout.write(f"Criando chats para {organizacao.nome}...")
-            conv = ChatConversation.objects.create(
-                slug=f"chat-{organizacao.id}",
-                tipo_conversa="organizacao",
-                organizacao=organizacao,
-                titulo=f"Chat {organizacao.nome}",
-            )
-            participantes = random.sample(clientes + gerentes + admins, k=5)
-            for usuario in participantes:
-                ChatParticipant.objects.create(conversation=conv, user=usuario)
-            for _ in range(10):
-                ChatMessage.objects.create(
-                    conversation=conv,
-                    remetente=random.choice(participantes),
-                    conteudo=faker.sentence(),
-                )
 
             self.stdout.write(f"Preenchendo campos opcionais para usuários de {organizacao.nome}...")
             for user in clientes + gerentes + admins:

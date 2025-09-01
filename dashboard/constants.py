@@ -10,7 +10,6 @@ METRICAS_INFO = {
     "num_posts_feed_recent": {"label": _("Posts (24h)"), "icon": "fa-clock"},
     "num_topicos": {"label": _("Tópicos"), "icon": "fa-comments"},
     "num_respostas": {"label": _("Respostas"), "icon": "fa-reply"},
-    "num_mensagens_chat": {"label": _("Mensagens de chat"), "icon": "fa-comments"},
     "total_curtidas": {"label": _("Curtidas"), "icon": "fa-thumbs-up"},
     "total_compartilhamentos": {"label": _("Compartilhamentos"), "icon": "fa-share"},
     "tempo_medio_leitura": {

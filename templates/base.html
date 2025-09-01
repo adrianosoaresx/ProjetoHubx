@@ -80,19 +80,7 @@
             <i class="fa-solid fa-user"></i>
           {% endif %}
         </a>
-        <div class="relative">
-          <button id="notif-btn" class="relative" aria-label="{% trans 'Notificações de chat' %}" aria-haspopup="true" aria-expanded="false">
-            <i class="fa-solid fa-bell"></i>
-            <span id="notif-count" class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center" aria-live="polite">0</span>
-          </button>
-          <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-64 bg-white border rounded shadow-lg" role="menu" aria-label="{% trans 'Notificações' %}">
-            <div class="p-2 border-b text-sm space-y-1">
-              <label class="flex items-center gap-1"><input type="checkbox" id="notif-sound" />{% trans 'Som' %}</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="notif-vibrate" />{% trans 'Vibração' %}</label>
-            </div>
-            <ul id="notif-list" class="max-h-64 overflow-y-auto text-sm"></ul>
-          </div>
-        </div>
+        <span id="notif-count" class="hidden"></span>
         {% endif %}
         {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
@@ -225,11 +213,9 @@
     </div>
   </footer>
 
-  <script src="{% static 'chat/js/notifications_socket.js' %}"></script>
   <script src="{% static 'notificacoes/js/push_socket.js' %}"></script>
   <script src="{% static 'js/vendor/htmx-1.9.12.min.js' %}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
-  <script src="{% static 'js/chat_modal.js' %}"></script>
   <script>
     document.body.addEventListener('htmx:responseError', function (evt) {
       if (evt.detail.xhr.status === 403) {

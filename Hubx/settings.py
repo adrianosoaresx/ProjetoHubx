@@ -87,7 +87,6 @@ INSTALLED_APPS = [
     "tokens.apps.TokensConfig",
     "nucleos",
     "agenda",
-    "chat",
     "feed",
     "discussao.apps.DiscussaoConfig",
     "configuracoes",
@@ -170,20 +169,6 @@ else:  # pragma: no cover - fallback para testes sem Redis
             "LOCATION": "hubx",
         }
     }
-
-CHAT_SPAM_MESSAGES_PER_MINUTE = int(os.getenv("CHAT_SPAM_MESSAGES_PER_MINUTE", 20))
-CHAT_SPAM_REPEAT_LIMIT = int(os.getenv("CHAT_SPAM_REPEAT_LIMIT", 3))
-CHAT_SPAM_LINK_LIMIT = int(os.getenv("CHAT_SPAM_LINK_LIMIT", 3))
-
-# Limites de upload de arquivos no chat
-CHAT_ALLOWED_MIME_TYPES = [
-    "image/",
-    "video/",
-    "audio/",
-    "application/pdf",
-    "text/plain",
-]
-CHAT_UPLOAD_MAX_SIZE = 20 * 1024 * 1024  # 20 MB
 
 TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
 TOKENS_RATE_LIMIT_ENABLED = True
@@ -276,8 +261,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "chat_upload": "20/hour",
-        "chat_flag": "10/minute",
         "testar_notificacao": "5/minute",
     },
 }
