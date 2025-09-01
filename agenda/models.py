@@ -22,6 +22,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
@@ -190,6 +191,7 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 class Evento(TimeStampedModel, SoftDeleteModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     titulo = models.CharField(max_length=150)
+    slug = models.SlugField(unique=True, blank=True, null=True)
     descricao = models.TextField()
     data_inicio = models.DateTimeField()
     data_fim = models.DateTimeField()
@@ -280,6 +282,14 @@ class Evento(TimeStampedModel, SoftDeleteModel):
             raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
+        base_slug = slugify(self.slug or self.titulo)
+        slug_candidate = base_slug
+        counter = 1
+        while Evento.all_objects.filter(slug=slug_candidate).exclude(pk=self.pk).exists():
+            slug_candidate = f"{base_slug}-{counter}"
+            counter += 1
+        self.slug = slug_candidate
+
         if self.pk:
             old = Evento.all_objects.filter(pk=self.pk).first()
             if old:

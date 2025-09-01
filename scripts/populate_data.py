@@ -159,11 +159,13 @@ def main() -> None:
                 inicio = datetime.now() + timedelta(days=30 * (i + 1))
                 fim = inicio + timedelta(hours=2)
                 titulo = f"Evento {i + 1} - {org.nome}"
-                Evento.objects.get_or_create(
-                    titulo=titulo,
-                    data_inicio=inicio,
-                    organizacao=org,
+                slug = slugify(titulo)
+                Evento.objects.update_or_create(
+                    slug=slug,
                     defaults={
+                        "titulo": titulo,
+                        "data_inicio": inicio,
+                        "organizacao": org,
                         "descricao": "Evento de demonstração gerado pelo script de dados.",
                         "data_fim": fim,
                         "local": "Auditório",
