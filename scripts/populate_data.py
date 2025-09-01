@@ -20,10 +20,11 @@ from __future__ import annotations
 import os
 import sys
 import pathlib
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 import django
+from django.utils import timezone
 
 
 def setup_django() -> None:
@@ -156,7 +157,7 @@ def main() -> None:
         for org, admin in zip(organizacoes, admins):
             nucleos = nucleos_por_org[org]
             for i in range(3):
-                inicio = datetime.now() + timedelta(days=30 * (i + 1))
+                inicio = timezone.now() + timedelta(days=30 * (i + 1))
                 fim = inicio + timedelta(hours=2)
                 titulo = f"Evento {i + 1} - {org.nome}"
                 Evento.objects.get_or_create(
@@ -276,7 +277,7 @@ def main() -> None:
         for org in organizacoes:
             cc = centro_custo_por_org[org]
             for month_offset in range(3, 0, -1):
-                date_ref = datetime.now() - timedelta(days=30 * month_offset)
+                date_ref = timezone.now() - timedelta(days=30 * month_offset)
                 # Aporte externo (receita)
                 LancamentoFinanceiro.objects.create(
                     centro_custo=cc,
