@@ -19,6 +19,7 @@ from core.permissions import (
 )
 from empresas.tasks import nova_avaliacao
 from organizacoes.models import Organizacao
+from agenda.models import Evento
 
 from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
 from .models import (
@@ -335,6 +336,14 @@ def detalhes_empresa(request, pk):
     contatos = []
     if pode_visualizar_contatos:
         contatos = list(empresa.contatos.filter(deleted=False))
+    nucleos_dono = empresa.usuario.nucleos
+    eventos_dono = (
+        Evento.objects.filter(
+            inscricoes__user=empresa.usuario,
+            inscricoes__status="confirmada",
+        )
+        .distinct()
+    )
     context = {
         "empresa": empresa,
         "empresa_tags": empresa.tags.all(),
@@ -345,6 +354,8 @@ def detalhes_empresa(request, pk):
         "avaliacao_usuario": avaliacao_usuario,
         "contatos": contatos,
         "pode_visualizar_contatos": pode_visualizar_contatos,
+        "nucleos_dono": nucleos_dono,
+        "eventos_dono": eventos_dono,
     }
     return render(request, "empresas/detail.html", context)
 
