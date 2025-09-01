@@ -4,9 +4,14 @@
 
 {% block content %}
 <section class="py-10 px-4 max-w-4xl mx-auto">
+  {% if empresa.cover %}
+    <div class="mb-6">
+      <img src="{{ empresa.cover.url }}" alt="{{ empresa.nome }}" class="w-full h-48 object-cover rounded-xl" />
+    </div>
+  {% endif %}
   <div class="text-center mb-6">
-    {% if empresa.logo %}
-      <img src="{{ empresa.logo.url }}" alt="{{ empresa.nome }}" class="h-20 w-20 mx-auto rounded-xl object-cover" />
+    {% if empresa.avatar %}
+      <img src="{{ empresa.avatar.url }}" alt="{{ empresa.nome }}" class="h-20 w-20 mx-auto rounded-xl object-cover" />
     {% else %}
       <div class="h-20 w-20 mx-auto rounded-xl bg-neutral-100 flex items-center justify-center text-xl font-bold text-neutral-700" role="img" aria-label="{{ empresa.nome }}">
         {{ empresa.nome|make_list|first|upper }}

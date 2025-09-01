@@ -79,9 +79,15 @@
       <p class="text-xs text-neutral-500 mt-1">{% translate 'Separe por vírgulas.' %}</p>
     </div>
     <div>
-      <label for="{{ form.logo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.logo.label }}</label>
-      {{ form.logo|add_class:'w-full p-2 border rounded' }}
-      {{ form.logo.errors }}
+      <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
+      {{ form.avatar|add_class:'w-full p-2 border rounded' }}
+      {{ form.avatar.errors }}
+        <p class="text-xs text-neutral-500 mt-1">{% translate 'PNG, JPG até 2MB' %}</p>
+    </div>
+    <div>
+      <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cover.label }}</label>
+      {{ form.cover|add_class:'w-full p-2 border rounded' }}
+      {{ form.cover.errors }}
         <p class="text-xs text-neutral-500 mt-1">{% translate 'PNG, JPG até 2MB' %}</p>
     </div>
     <div class="flex justify-end gap-3 border-t pt-4">
