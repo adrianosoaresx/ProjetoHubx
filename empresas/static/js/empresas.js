@@ -1,7 +1,7 @@
 // JavaScript para Formulários de Empresa - HubX
 // Este arquivo está vazio por enquanto, mas pode ser usado para:
 // - Validações de formulário em tempo real
-// - Lógica de upload de imagem (pré-visualização de logo)
+// - Lógica de upload de imagem (pré-visualização de avatar e cover)
 // - Interações dinâmicas com campos do formulário
 // - Integração com APIs de CEP, etc.
 

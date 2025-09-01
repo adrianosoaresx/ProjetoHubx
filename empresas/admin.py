@@ -16,7 +16,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
-    list_display = ["nome", "cnpj", "usuario", "deleted"]
+    list_display = ["nome", "cnpj", "usuario", "avatar", "cover", "deleted"]
     search_fields = ["nome", "cnpj", "palavras_chave"]
     list_filter = ["estado", "tipo", "deleted"]
 

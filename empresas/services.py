@@ -110,7 +110,8 @@ LOG_FIELDS = [
     "estado",
     "descricao",
     "palavras_chave",
-    "logo",
+    "avatar",
+    "cover",
     "tags",
 ]
 
