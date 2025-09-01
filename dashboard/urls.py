@@ -10,7 +10,6 @@ urlpatterns = [
     path("admin/", views.AdminDashboardView.as_view(), name="admin"),
     path("coordenador/", views.CoordenadorDashboardView.as_view(), name="coordenador"),
     path("cliente/", views.ClienteDashboardView.as_view(), name="cliente"),
-    path("metrics-partial/", views.metrics_partial, name="metrics-partial"),
     path("lancamentos-partial/", views.lancamentos_partial, name="lancamentos-partial"),
     path("notificacoes-partial/", views.notificacoes_partial, name="notificacoes-partial"),
     path("tarefas-partial/", views.tarefas_partial, name="tarefas-partial"),

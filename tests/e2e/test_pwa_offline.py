@@ -26,9 +26,9 @@ def test_dashboard_pwa_offline(live_server):
         manifest = page.get_attribute("link[rel='manifest']", "href")
         assert manifest and manifest.endswith("manifest.json")
 
-        metrics = page.evaluate("fetch('/dashboard/metrics-partial/').then(r => r.text())")
+        lancamentos = page.evaluate("fetch('/dashboard/lancamentos-partial/').then(r => r.text())")
         context.set_offline(True)
-        offline_metrics = page.evaluate("fetch('/dashboard/metrics-partial/').then(r => r.text())")
-        assert offline_metrics == metrics
+        offline_lancamentos = page.evaluate("fetch('/dashboard/lancamentos-partial/').then(r => r.text())")
+        assert offline_lancamentos == lancamentos
 
         browser.close()

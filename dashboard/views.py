@@ -401,50 +401,6 @@ def dashboard_redirect(request):
     return redirect("accounts:perfil")
 
 
-def metrics_partial(request):
-    """Retorna HTML com métricas para HTMX."""
-    if not request.user.is_authenticated:
-        return HttpResponse(status=401)
-    if not request.user.has_perm("dashboard.view_metrics"):
-        return HttpResponse(status=403)
-    try:
-        metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
-        metrics, metricas_info = DashboardMetricsService.get_metrics(
-            request.user, metricas=metricas
-        )
-        metricas_iter = [
-            {
-                "key": m,
-                "data": metrics[m],
-                "label": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("label"),
-                "icon": (metricas_info.get(m) or METRICAS_INFO.get(m, {})).get("icon"),
-            }
-            for m in metricas
-            if m in metrics
-        ]
-        html = render_to_string(
-            "dashboard/partials/metrics_list.html",
-            {"metricas_iter": metricas_iter, "metricas_selecionadas": metricas},
-            request=request,
-        )
-        return HttpResponse(html)
-    except PermissionError:
-        logger.exception("Acesso negado ao carregar métricas")
-        messages.error(request, _("Acesso negado"))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
-        return HttpResponse(html, status=403)
-    except ValueError as exc:
-        logger.exception("Erro de valor ao carregar métricas")
-        messages.error(request, str(exc))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
-        return HttpResponse(html, status=400)
-    except Exception:  # pragma: no cover - logado
-        logger.exception("Erro inesperado ao carregar métricas")
-        messages.error(request, _("Erro ao carregar métricas."))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
-        return HttpResponse(html, status=500)
-
-
 def lancamentos_partial(request):
     """Últimos lançamentos financeiros."""
     if not request.user.is_authenticated:

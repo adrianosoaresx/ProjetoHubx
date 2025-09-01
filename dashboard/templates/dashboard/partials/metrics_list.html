@@ -1,8 +1,0 @@
-{% load i18n %}
-<section class="mb-8" id="metrics">
-  <div id="dashboard-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-save-url="{{ layout_save_url|default:'' }}">
-    {% for m in metricas_iter %}
-      {% include "dashboard/partials/metric_card.html" with title=m.label value=m.data.total icon=m.icon crescimento=m.data.crescimento id=m.key %}
-    {% endfor %}
-  </div>
-</section>

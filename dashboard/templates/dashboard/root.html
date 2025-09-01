@@ -11,14 +11,6 @@
   {% include 'dashboard/partials/messages.html' %}
   {% include 'dashboard/partials/filters_form.html' %}
 
-  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-    {% include 'dashboard/partials/metrics_list.html' %}
-  </div>
-
-  {% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
-  {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
-  {% endwith %}
-
   <section class="mb-8">
     <h2 class="text-xl font-semibold mb-4">{% trans "Status dos Serviços" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -68,10 +60,6 @@
         <a href="{% url 'admin:index' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Django Admin' %}">
           <i class="fa-solid fa-wrench mb-2" aria-hidden="true"></i>
           <span class="block">{% trans "Django Admin" %}</span>
-        </a>
-        <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
-          <i class="fa-solid fa-chart-line mb-2" aria-hidden="true"></i>
-          <span class="block">{% trans "Métricas Personalizadas" %}</span>
         </a>
       </div>
     </section>

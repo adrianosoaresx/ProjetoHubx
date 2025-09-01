@@ -68,17 +68,6 @@
     <label for="data_fim" class="block text-sm font-medium text-neutral-700">{% trans 'Data fim' %}</label>
     <input type="date" id="data_fim" name="data_fim" value="{{ filtros.data_fim }}" class="mt-1 border-gray-300 rounded" />
   </div>
-  <fieldset class="flex flex-col">
-    <legend class="text-sm font-medium text-neutral-700">{% trans 'Métricas' %}</legend>
-    <div class="flex flex-wrap gap-2 mt-1">
-      {% for m in metricas_disponiveis %}
-      <label class="flex items-center gap-1 text-sm">
-        <input type="checkbox" name="metricas" value="{{ m.key }}" {% if m.key in metricas_selecionadas %}checked{% endif %} class="border-gray-300 rounded" />
-        {{ m.label }}
-      </label>
-      {% endfor %}
-    </div>
-  </fieldset>
   <div class="flex gap-2 mt-4">
       <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Aplicar filtros' %}">{% trans 'Filtrar' %}</button>
       {% if can_export %}

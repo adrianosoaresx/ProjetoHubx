@@ -11,10 +11,6 @@
   {% include 'dashboard/partials/messages.html' %}
   {% include 'dashboard/partials/filters_form.html' %}
 
-  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-    {% include 'dashboard/partials/metrics_list.html' %}
-  </div>
-
   <section
     id="tasks"
     hx-get="{% url 'dashboard:tarefas-partial' %}"

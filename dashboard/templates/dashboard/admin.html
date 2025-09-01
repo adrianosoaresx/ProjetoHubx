@@ -11,54 +11,13 @@
   {% include 'dashboard/partials/messages.html' %}
   {% include 'dashboard/partials/filters_form.html' %}
 
-  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-    {% include 'dashboard/partials/metrics_list.html' %}
-  </div>
-
-  <div class="mb-8">
-    <label for="toggle-comparativo" class="mr-2">{% trans "Comparar com média global" %}</label>
-    <input type="checkbox" id="toggle-comparativo" aria-label="{% trans 'Ativar comparativo de métricas' %}">
-    <canvas
-      id="comparativoChart"
-      class="mt-4"
-      hidden
-      aria-label="{% trans 'Gráfico comparativo' %}"
-      role="img"
-      data-comparativo-url="{% url 'dashboard_api:dashboard-comparativo' %}"
-      data-label-atual="{% trans 'Atual' %}"
-      data-label-media="{% trans 'Média' %}"
-      data-label-usuarios="{% trans 'Usuários' %}"
-    ></canvas>
-  </div>
-
-  <script src="{% static 'js/vendor/chart-4.5.0.min.js' %}"></script>
-  <script src="{% static 'dashboard/layout.js' %}"></script>
-  <script src="{% static 'dashboard/admin.js' %}"></script>
-
-{% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
-{% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
-{% endwith %}
-
   <div hx-get="{% url 'dashboard:lancamentos-partial' %}" hx-trigger="load, every 30s" hx-target="#lancamentos" hx-swap="innerHTML"></div>
 
   <div hx-get="{% url 'dashboard:notificacoes-partial' %}" hx-trigger="load, every 10s" hx-target="#notifications" hx-swap="innerHTML"></div>
 
-  <section id="feed-metrics" class="my-8" aria-labelledby="feed-metrics-title" data-feed-metrics-url="{% url 'dashboard_api:feed-metrics' %}">
-    <h2 id="feed-metrics-title" class="text-xl font-semibold mb-4">{% trans "Métricas do Feed" %}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <canvas id="feed-type-chart" aria-label="{% trans 'Posts por tipo' %}" role="img"></canvas>
-      <canvas id="feed-tag-chart" aria-label="{% trans 'Top tags' %}" role="img"></canvas>
-      <canvas id="feed-author-chart" aria-label="{% trans 'Top autores' %}" role="img"></canvas>
-    </div>
-  </section>
-
   <section class="mb-8">
     <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
-        <i class="fa-solid fa-chart-line mb-2"></i>
-        <span class="block">{% trans "Métricas Personalizadas" %}</span>
-      </a>
       <a href="{% url 'admin:accounts_user_changelist' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Administrar Usuários' %}">
         <i class="fa-solid fa-user-gear mb-2"></i>
         <span class="block">{% trans "Administrar Usuários" %}</span>
