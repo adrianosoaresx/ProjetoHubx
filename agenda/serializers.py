@@ -83,6 +83,10 @@ class EventoSerializer(serializers.ModelSerializer):
             "nota_media",
             "distribuicao_notas",
         )
+        extra_kwargs = {
+            "avatar": {"required": False, "allow_null": True},
+            "cover": {"required": False, "allow_null": True},
+        }
 
     def get_nota_media(self, obj: Evento):
         media = obj.calcular_media_feedback()

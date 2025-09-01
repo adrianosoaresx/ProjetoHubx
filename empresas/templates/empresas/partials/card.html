@@ -1,15 +1,17 @@
 {% load i18n %}
+
 <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition">
   {% if empresa.avatar %}
     <img src="{{ empresa.avatar.url }}" alt="{{ empresa.nome }}" class="w-24 h-24 rounded-full object-cover mb-2" />
   {% elif empresa.usuario.avatar %}
     <img src="{{ empresa.usuario.avatar.url }}" alt="{{ empresa.usuario.username }}" class="w-24 h-24 rounded-full object-cover mb-2" />
+
+
   {% else %}
     <div class="w-24 h-24 rounded-full bg-neutral-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2">
-      {{ empresa.usuario.username|first|upper }}
+      {{ empresa.nome|first|upper }}
     </div>
   {% endif %}
   <h2 class="font-medium">{{ empresa.nome }}{% if empresa.deleted %} ({% translate 'excluída' %}){% endif %}</h2>
   <p class="text-sm text-neutral-500">{{ empresa.usuario.username }}</p>
-  <a href="{% url 'empresas:detail' empresa.pk %}" class="mt-2 inline-block bg-primary-600 text-white px-3 py-1 rounded">{% translate 'Abrir' %}</a>
-</div>
+</a>

@@ -80,7 +80,7 @@ pbr==6.1.1
 pdfminer.six==20250506
 pdfplumber==0.11.7
 phonenumbers==9.0.7
-pillow==11.3.0
+Pillow>=10
 platformdirs==4.3.8
 pluggy==1.6.0
 prometheus_client==0.20.0
