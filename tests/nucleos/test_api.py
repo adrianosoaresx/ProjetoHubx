@@ -1,4 +1,3 @@
-import csv
 from datetime import timedelta
 
 import pytest
@@ -21,7 +20,6 @@ def celery_eager(settings, monkeypatch):
     monkeypatch.setattr("nucleos.tasks.notify_participacao_aprovada.delay", lambda *a, **k: None)
     monkeypatch.setattr("nucleos.tasks.notify_participacao_recusada.delay", lambda *a, **k: None)
     monkeypatch.setattr("nucleos.tasks.notify_suplente_designado.delay", lambda *a, **k: None)
-    monkeypatch.setattr("nucleos.tasks.notify_exportacao_membros.delay", lambda *a, **k: None)
 
 
 @pytest.fixture
@@ -168,37 +166,6 @@ def test_suplente_validations(api_client, admin_user, coord_user, outro_user, or
     assert resp.status_code == 400
 
 
-def test_exportar_membros(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N4", slug="n4", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
-    _auth(api_client, admin_user)
-    # designa suplente
-    url_supl = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
-    api_client.post(
-        url_supl,
-        {
-            "usuario": outro_user.pk,
-            "periodo_inicio": timezone.now(),
-            "periodo_fim": timezone.now() + timedelta(days=1),
-        },
-    )
-    url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
-    resp = api_client.get(url + "?formato=csv")
-    assert resp.status_code == 200
-    rows = list(csv.reader(resp.content.decode().splitlines()))
-    assert rows[0] == [
-        "Nome",
-        "Email",
-        "Status",
-        "papel",
-        "is_suplente",
-        "data_ingresso",
-    ]
-    assert "True" in rows[1] or "False" in rows[1]
-    resp = api_client.get(url + "?formato=xls")
-    assert resp.status_code == 200
-    assert resp["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
 
 def test_permission_denied(api_client, outro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N6", slug="n6", organizacao=organizacao)
@@ -213,8 +180,6 @@ def test_permission_denied(api_client, outro_user, organizacao):
         },
     )
     assert resp.status_code == 403
-    export_url = reverse("nucleos_api:nucleo-exportar-membros", args=[nucleo.pk])
-    assert api_client.get(export_url).status_code == 403
 
 
 def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):

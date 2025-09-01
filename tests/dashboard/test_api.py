@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import csv
-
 import pytest
 from django.core.cache import cache
 import datetime as dt
@@ -41,33 +39,6 @@ def test_get_variation_function() -> None:
     assert get_variation(100, 150) == 50
     assert get_variation(0, 50) == 5000
 
-
-def test_export_csv(api_client: APIClient, admin_user) -> None:
-    _auth(api_client, admin_user)
-    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
-        url = (
-            reverse("dashboard-export")
-            + f"?formato=csv&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
-        )
-        with patch.object(
-            DashboardMetricsService,
-            "get_metrics",
-            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
-        ) as mock_get:
-            resp = api_client.get(url)
-    assert resp.status_code == 200
-    rows = list(csv.reader(resp.content.decode().splitlines()))
-    assert rows[0] == ["Métrica", "Total", "Crescimento"]
-    mock_get.assert_called_once_with(
-        admin_user,
-        "mensal",
-        None,
-        None,
-        organizacao_id=str(admin_user.organizacao_id),
-        metricas=["num_users"],
-    )
-
-
 def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
     try:
         import weasyprint  # noqa: F401
@@ -96,35 +67,6 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
         organizacao_id=str(admin_user.organizacao_id),
         metricas=["num_users"],
     )
-
-
-def test_export_xlsx(api_client: APIClient, admin_user) -> None:
-    _auth(api_client, admin_user)
-    with override_settings(ROOT_URLCONF="dashboard.api_urls"):
-        url = (
-            reverse("dashboard-export")
-            + f"?formato=xlsx&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
-        )
-        with patch.object(
-            DashboardMetricsService,
-            "get_metrics",
-            return_value=({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
-        ) as mock_get:
-            resp = api_client.get(url)
-    assert resp.status_code == 200
-    assert (
-        resp["Content-Type"]
-        == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-    mock_get.assert_called_once_with(
-        admin_user,
-        "mensal",
-        None,
-        None,
-        organizacao_id=str(admin_user.organizacao_id),
-        metricas=["num_users"],
-    )
-
 
 def test_export_invalid_date_order(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)

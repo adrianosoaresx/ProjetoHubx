@@ -1,6 +1,4 @@
 import csv
-import io
-
 import pytest
 from django.urls import reverse
 from django.utils import timezone
@@ -39,45 +37,6 @@ def test_gera_serie_temporal(django_assert_num_queries):
     assert data["saldo_atual"] == float(centro.saldo)
     assert data["serie"][0]["receitas"] == 50.0
     assert data["serie"][0]["despesas"] == 20.0
-
-@override_settings(ROOT_URLCONF="Hubx.urls")
-def test_exporta_csv_relatorios(client, settings):
-    settings.CELERY_TASK_ALWAYS_EAGER = True
-    user = UserFactory(user_type=UserType.ADMIN)
-    client.force_login(user)
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
-    LancamentoFinanceiro.objects.create(
-        centro_custo=centro,
-        valor=50,
-        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
-        data_lancamento=timezone.now(),
-        status=LancamentoFinanceiro.Status.PAGO,
-    )
-    url = reverse("financeiro_api:financeiro-relatorios") + "?format=csv"
-    resp = client.get(url)
-    assert resp.status_code == 202
-    data = resp.json()
-    assert "id" in data
-    download_url = data["url"]
-    resp2 = client.get(download_url)
-    assert resp2.status_code == 200
-    reader = csv.reader(io.StringIO(resp2.content.decode()))
-    rows = list(reader)
-    assert rows[0] == ["data", "categoria", "valor", "status", "centro de custo"]
-    assert len(rows) == 2
-
-
-def test_download_relatorio_inexistente(client):
-    user = UserFactory(user_type=UserType.ADMIN)
-    client.force_login(user)
-    url = reverse(
-        "financeiro_api:financeiro-relatorios-download",
-        kwargs={"token": "naoexiste", "formato": "csv"},
-    )
-    resp = client.get(url)
-    assert resp.status_code == 404
-
 
 @override_settings(ROOT_URLCONF="Hubx.urls")
 def test_relatorios_usuario_nao_admin(client):

@@ -1,10 +1,5 @@
 from __future__ import annotations
 
-import csv
-import io
-
-from openpyxl import Workbook
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -194,23 +189,7 @@ class DashboardViewSet(viewsets.ViewSet):
                 metadata={**metadata, "error": str(exc)},
             )
             return Response({"detail": str(exc)}, status=400)
-        if formato == "csv":
-            output = io.StringIO()
-            writer = csv.writer(output)
-            writer.writerow(["Métrica", "Total", "Crescimento"])
-            for key, value in data.items():
-                writer.writerow([key, value["total"], value["crescimento"]])
-            response = HttpResponse(output.getvalue(), content_type="text/csv")
-            response["Content-Disposition"] = "attachment; filename=dashboard.csv"
-            log_audit(
-                request.user,
-                "EXPORT_CSV",
-                object_type="DashboardMetrics",
-                ip_hash=ip_hash,
-                metadata=metadata,
-            )
-            return response
-        elif formato == "pdf":
+        if formato == "pdf":
             try:
                 from weasyprint import HTML
             except Exception:
@@ -230,28 +209,6 @@ class DashboardViewSet(viewsets.ViewSet):
             log_audit(
                 request.user,
                 "EXPORT_PDF",
-                object_type="DashboardMetrics",
-                ip_hash=ip_hash,
-                metadata=metadata,
-            )
-            return response
-        elif formato == "xlsx":
-            wb = Workbook()
-            ws = wb.active
-            ws.title = "Métricas"
-            ws.append(["Métrica", "Total", "Crescimento"])
-            for key, value in data.items():
-                ws.append([key, value["total"], value["crescimento"]])
-            output = io.BytesIO()
-            wb.save(output)
-            response = HttpResponse(
-                output.getvalue(),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            response["Content-Disposition"] = "attachment; filename=dashboard.xlsx"
-            log_audit(
-                request.user,
-                "EXPORT_XLSX",
                 object_type="DashboardMetrics",
                 ip_hash=ip_hash,
                 metadata=metadata,

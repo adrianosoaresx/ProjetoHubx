@@ -66,14 +66,14 @@ def cliente_user(organizacao):
 def test_log_audit_creates_entry(root_user) -> None:
     log_audit(
         root_user,
-        "EXPORT_CSV",
+        "EXPORT_PDF",
         "Dashboard",
         "1",
         hash_ip("127.0.0.1"),
         "SUCCESS",
         {"foo": "bar"},
     )
-    assert AuditLog.objects.filter(action="EXPORT_CSV").count() == 1
+    assert AuditLog.objects.filter(action="EXPORT_PDF").count() == 1
 
 
 def test_middleware_logs_success_and_failure(client, admin_user, cliente_user) -> None:

@@ -42,7 +42,6 @@ from .serializers import (
     OrganizacaoSerializer,
 )
 from .tasks import organizacao_alterada
-from .services import exportar_logs_csv
 
 
 class OrganizacaoViewSet(viewsets.ModelViewSet):
@@ -231,9 +230,6 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     def history(self, request, pk: str | None = None):
         try:
             organizacao = self.get_object()
-            if request.query_params.get("export") == "csv":
-
-                return exportar_logs_csv(organizacao)
             change_logs = (
                 OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
                 .order_by("-created_at")[:10]

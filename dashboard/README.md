@@ -67,12 +67,10 @@ Exemplo solicitando curtidas e tokens via query string:
 
 ## Exportação de métricas
 
-Usuários root, admin e coordenador podem exportar as métricas atuais:
+Usuários root, admin e coordenador podem exportar as métricas atuais em PDF ou PNG:
 
 ```
-/dashboard/export/?formato=csv
 /dashboard/export/?formato=pdf&periodo=mensal&escopo=global
-/dashboard/export/?formato=xlsx
 /dashboard/export/?formato=png
 ```
 

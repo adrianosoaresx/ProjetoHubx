@@ -7,7 +7,6 @@ Views principais:
 - `nucleos:create` – criação de núcleo vinculado à organização do usuário.
 - `nucleos:update` – edição de dados básicos do núcleo.
 - `nucleos:toggle_active` – inativa ou reativa um núcleo.
-- `nucleos_api:nucleo-exportar-membros` – exporta membros em CSV.
 - `nucleos_api:nucleo-metrics` – retorna métricas do núcleo.
 
 Fluxo de participação:

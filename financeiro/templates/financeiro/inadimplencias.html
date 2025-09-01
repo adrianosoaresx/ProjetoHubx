@@ -52,18 +52,11 @@
       <tbody></tbody>
     </table>
   </div>
-  <div class="mt-4 flex gap-4">
-    <a href="#" id="inad-export-csv" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar inadimplências em CSV' %}">{% trans "Exportar CSV" %}</a>
-    <a href="#" id="inad-export-xlsx" class="text-primary underline" hx-boost="false" aria-label="{% trans 'Exportar inadimplências em XLSX' %}">{% trans "Exportar XLSX" %}</a>
-  </div>
   <script>
     function renderInadimplencias(evt) {
       const data = JSON.parse(evt.detail.xhr.response);
       const tbody = document.querySelector('#lista tbody');
       tbody.innerHTML = data.map(r => `<tr><td class=\"px-3 py-2\">${r.id}</td><td class=\"px-3 py-2\">${r.centro || ''}</td><td class=\"px-3 py-2\">${r.conta || ''}</td><td class=\"px-3 py-2\">${r.valor}</td><td class=\"px-3 py-2\">${r.data_vencimento}</td><td class=\"px-3 py-2\">${r.dias_atraso}</td></tr>`).join('');
-      const params = new URLSearchParams(new FormData(document.getElementById('inad-form')));
-      document.getElementById('inad-export-csv').href = '/api/financeiro/inadimplencias/?' + params.toString() + '&format=csv';
-      document.getElementById('inad-export-xlsx').href = '/api/financeiro/inadimplencias/?' + params.toString() + '&format=xlsx';
     }
   </script>
 </section>

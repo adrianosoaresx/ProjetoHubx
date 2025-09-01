@@ -1,4 +1,3 @@
-import io
 import datetime as dt
 from pathlib import Path
 
@@ -253,22 +252,6 @@ def test_metrics_partial_includes_new_metrics(client, admin_user, evento, client
     assert soup.find(id="inscricoes_confirmadas") is not None
     assert soup.find(id="lancamentos_pendentes") is not None
 
-
-def test_export_view_csv(monkeypatch, client, admin_user):
-    client.force_login(admin_user)
-
-    monkeypatch.setattr(
-        DashboardMetricsService,
-        "get_metrics",
-        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
-    )
-
-    resp = client.get(reverse("dashboard:export"), {"formato": "csv"})
-    assert resp.status_code == 200
-    assert resp["Content-Type"] == "text/csv"
-    assert "attachment; filename=" in resp["Content-Disposition"]
-
-
 def test_export_view_pdf(monkeypatch, client, admin_user):
     if weasyprint is None:
         pytest.skip("weasyprint não instalado")
@@ -284,28 +267,6 @@ def test_export_view_pdf(monkeypatch, client, admin_user):
     resp = client.get(reverse("dashboard:export"), {"formato": "pdf"})
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/pdf"
-
-
-def test_export_view_xlsx(monkeypatch, client, admin_user):
-    client.force_login(admin_user)
-
-    monkeypatch.setattr(
-        DashboardMetricsService,
-        "get_metrics",
-        lambda *a, **kw: ({"num_users": {"total": 1, "crescimento": 0.0}}, METRICAS_INFO),
-    )
-
-    resp = client.get(reverse("dashboard:export"), {"formato": "xlsx"})
-    assert resp.status_code == 200
-    assert resp["Content-Type"] == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-
-    from openpyxl import load_workbook
-
-    wb = load_workbook(filename=io.BytesIO(resp.content))
-    ws = wb.active
-    assert ws.title == "Métricas"
-    assert ws.max_row == 2
-
 
 def test_export_view_png(monkeypatch, client, admin_user, settings):
     client.force_login(admin_user)

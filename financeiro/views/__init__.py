@@ -26,7 +26,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.http import FileResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -82,7 +81,6 @@ from ..services import metrics
 from ..services.aportes import estornar_aporte as estornar_aporte_service
 from ..services.auditoria import log_financeiro
 from ..services.cobrancas import _nucleos_do_usuario
-from ..services.exportacao import exportar_para_arquivo
 from ..services.importacao import ImportadorPagamentos
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import (
@@ -350,14 +348,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
         url_path="relatorios/download/(?P<token>[\w-]+)/(?P<formato>csv|xlsx)",
     )
     def relatorios_download(self, request, token: str, formato: str):
-        path = f"relatorios/{token}.{formato}"
-        if not default_storage.exists(path):
-            return Response({"detail": _("Arquivo não encontrado")}, status=404)
-        return FileResponse(
-            default_storage.open(path, "rb"),
-            as_attachment=True,
-            filename=f"relatorio.{formato}",
-        )
+        return Response({"detail": _("formato indisponível")}, status=400)
 
     @action(detail=False, methods=["get"], url_path="inadimplencias")
     def inadimplencias(self, request):
@@ -398,24 +389,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
             )
         fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
-            headers = ["ID", "Conta", "Status", "Valor", "Data Vencimento", "Dias Atraso"]
-            linhas = [
-                [
-                    item["id"],
-                    item["conta"],
-                    item["status"],
-                    item["valor"],
-                    item["data_vencimento"],
-                    item["dias_atraso"],
-                ]
-                for item in data
-            ]
-            try:
-                tmp_name = exportar_para_arquivo(fmt, headers, linhas)
-            except RuntimeError:
-                return Response({"detail": _("openpyxl não disponível")}, status=500)
-            filename = f"inadimplencias.{fmt}"
-            return FileResponse(open(tmp_name, "rb"), as_attachment=True, filename=filename)
+            return Response({"detail": _("formato indisponível")}, status=400)
 
         return Response(data)
 

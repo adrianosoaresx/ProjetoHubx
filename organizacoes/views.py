@@ -32,7 +32,7 @@ from nucleos.models import Nucleo
 
 from .forms import OrganizacaoForm
 from .models import Organizacao, OrganizacaoAtividadeLog, OrganizacaoChangeLog
-from .services import exportar_logs_csv, registrar_log, serialize_organizacao
+from .services import registrar_log, serialize_organizacao
 from .tasks import organizacao_alterada
 
 User = get_user_model()
@@ -342,9 +342,6 @@ class OrganizacaoHistoryView(LoginRequiredMixin, View):
                 or user.get_tipo_usuario == UserType.ROOT.value
             ):
                 return HttpResponseForbidden()
-
-            if request.GET.get("export") == "csv":
-                return exportar_logs_csv(org)
 
             change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]
             atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=org).order_by("-created_at")[:10]

@@ -80,10 +80,10 @@ Após criado, o saldo do centro de custo é atualizado imediatamente.
 |`POST /api/financeiro/importar-pagamentos/reprocessar/<token>/`|Financeiro/Admin|Reprocessa linhas corrigidas|
 |`GET /api/financeiro/importacoes/`|Financeiro/Admin|Lista importações com filtros e paginação|
 |`GET /api/financeiro/importacoes/<uuid:id>/`|Financeiro/Admin|Detalha uma importação específica|
-|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado (CSV/XLSX)|
+|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
 |`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
 |`PATCH /api/financeiro/lancamentos/<uuid:id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
-|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências (CSV/XLSX)|
+|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 
 A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`, `data_lancamento`, `status` e pelo menos uma das colunas `conta_associado_id` ou `email`.
@@ -160,7 +160,7 @@ Resposta:
 
 1. Acesse **Financeiro → Relatórios**.
 2. Defina filtros de centro, núcleo e período e clique em **Gerar Relatório** para obter o saldo e a série temporal.
-3. Use **Exportar CSV** ou **Exportar XLSX** para baixar os dados com os filtros aplicados.
+3. Visualize os dados com os filtros aplicados diretamente na interface.
 
 > **Nota:** Todos os formulários utilizam rótulos associados, suporte a teclado e regiões `aria-live` para mensagens, atendendo às diretrizes WCAG 2.1 AA.
 
