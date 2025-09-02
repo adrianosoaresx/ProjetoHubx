@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("chat", "0001_initial"),
         ("empresas", "0001_initial"),
         ("nucleos", "0001_initial"),
         ("organizacoes", "0001_initial"),
@@ -94,16 +93,6 @@ class Migration(migrations.Migration):
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="eventos_criados",
                         to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
-                (
-                    "mensagem_origem",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="eventos_criados",
-                        to="chat.chatmessage",
                     ),
                 ),
                 (
@@ -446,16 +435,6 @@ class Migration(migrations.Migration):
                         choices=[("pendente", "Pendente"), ("concluida", "Concluída")],
                         default="pendente",
                         max_length=20,
-                    ),
-                ),
-                (
-                    "mensagem_origem",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        related_name="tarefas",
-                        to="chat.chatmessage",
                     ),
                 ),
                 (

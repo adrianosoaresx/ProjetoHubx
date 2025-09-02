@@ -85,9 +85,7 @@ INSTALLED_APPS = [
     "tokens.apps.TokensConfig",
     "nucleos",
     "agenda",
-    "chat",
     "feed",
-    "discussao.apps.DiscussaoConfig",
     "configuracoes",
     "financeiro.apps.FinanceiroConfig",
     "notificacoes.apps.NotificacoesConfig",
@@ -241,10 +239,6 @@ REST_FRAMEWORK = {
         "tokens.auth.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "chat_upload": "20/hour",
-        "chat_flag": "10/minute",
-    },
 }
 
 # Valores padrão para mensalidades

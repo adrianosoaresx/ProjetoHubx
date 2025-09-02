@@ -12,7 +12,6 @@ from twilio.base.exceptions import TwilioRestException  # type: ignore
 from twilio.rest import Client  # type: ignore
 
 from agenda.models import Evento
-from chat.models import ChatNotification
 from feed.models import Post
 from notificacoes.services.notificacoes import enviar_para_usuario
 
@@ -47,7 +46,6 @@ def _send_for_frequency(frequency: str) -> None:
         )
     for config in configs:
         counts = {
-            "chat": ChatNotification.objects.filter(usuario=config.user, created__gte=since, lido=False).count(),
             "feed": Post.objects.filter(created_at__gte=since).exclude(autor=config.user).count(),
             "eventos": Evento.objects.filter(created__gte=since).exclude(coordenador=config.user).count(),
         }
@@ -60,9 +58,7 @@ def _send_for_frequency(frequency: str) -> None:
 
 
 def enviar_notificacao_whatsapp(user, contexto):
-    message = (
-        "Resumo: chat={chat}, feed={feed}, eventos={eventos}".format(**contexto)
-    )
+    message = "Resumo: feed={feed}, eventos={eventos}".format(**contexto)
     try:
         client = Client(os.environ.get("TWILIO_ACCOUNT_SID"), os.environ.get("TWILIO_AUTH_TOKEN"))
         client.messages.create(
