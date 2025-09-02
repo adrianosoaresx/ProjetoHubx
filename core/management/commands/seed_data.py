@@ -8,7 +8,6 @@ from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
 from agenda.models import FeedbackNota, InscricaoEvento, ParceriaEvento
 from chat.models import ChatConversation, ChatMessage, ChatParticipant
-from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory
 from empresas.factories import EmpresaFactory
 from empresas.models import Empresa
 from feed.factories import PostFactory
@@ -98,13 +97,6 @@ class Command(BaseCommand):
 
             self.stdout.write(f"Criando tokens de acesso para {organizacao.nome}...")
             TokenAcessoFactory.create_batch(5, organizacao=organizacao, usuario=random.choice(clientes))
-
-            self.stdout.write(f"Criando categorias de discussão para {organizacao.nome}...")
-            categorias = CategoriaDiscussaoFactory.create_batch(3, organizacao=organizacao)
-
-            for categoria in categorias:
-                self.stdout.write(f"Criando tópicos para a categoria {categoria.nome}...")
-                TopicoDiscussaoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))
 
             self.stdout.write(f"Criando postagens no feed para {organizacao.nome}...")
             for cliente in clientes:

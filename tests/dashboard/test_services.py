@@ -8,7 +8,6 @@ from agenda.factories import EventoFactory
 from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatChannel, ChatMessage
 from dashboard.services import DashboardMetricsService, DashboardService
-from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from feed.models import Post
 from financeiro.models import CentroCusto, LancamentoFinanceiro
@@ -53,21 +52,6 @@ def test_calcular_posts_feed_24h(admin_user):
     old = PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
     Post.objects.filter(id=old.id).update(created_at=timezone.now() - dt.timedelta(days=2))
     assert DashboardService.calcular_posts_feed_24h() == 1
-
-
-def test_calcular_topicos_respostas_discussao(admin_user, organizacao):
-    other_org = OrganizacaoFactory()
-    cat1 = CategoriaDiscussao.objects.create(nome="c", slug="c", organizacao=organizacao)
-    cat2 = CategoriaDiscussao.objects.create(nome="c2", slug="c2", organizacao=other_org)
-    topico1 = TopicoDiscussao.objects.create(
-        categoria=cat1, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
-    )
-    TopicoDiscussao.objects.create(
-        categoria=cat2, titulo="t2", slug="t2", conteudo="x", autor=admin_user, publico_alvo=0
-    )
-    RespostaDiscussao.objects.create(topico=topico1, autor=admin_user, conteudo="r")
-    assert DashboardService.calcular_topicos_discussao(organizacao_id=organizacao.id) == 1
-    assert DashboardService.calcular_respostas_discussao(organizacao_id=organizacao.id) == 1
 
 
 def test_calcular_mensagens_chat(conversa, admin_user):
@@ -124,30 +108,6 @@ def test_get_metrics_with_filters(admin_user, organizacao):
     )
     assert set(metrics.keys()) == {"num_users"}
     assert metrics["num_users"]["total"] >= 1
-
-
-def test_get_metrics_includes_new_metrics(admin_user):
-    PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
-    cat = CategoriaDiscussao.objects.create(nome="c", slug="c", organizacao=admin_user.organizacao)
-    topico = TopicoDiscussao.objects.create(
-        categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
-    )
-    RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
-    metrics = DashboardMetricsService.get_metrics(
-        admin_user,
-        escopo="organizacao",
-        organizacao_id=admin_user.organizacao_id,
-        metricas=[
-            "num_posts_feed_total",
-            "num_posts_feed_recent",
-            "num_topicos",
-            "num_respostas",
-        ],
-    )
-    assert metrics["num_posts_feed_total"]["total"] == 1
-    assert metrics["num_posts_feed_recent"]["total"] == 1
-    assert metrics["num_topicos"]["total"] == 1
-    assert metrics["num_respostas"]["total"] == 1
 
 
 def test_get_metrics_cache_differentiates(admin_user):

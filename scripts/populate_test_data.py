@@ -32,7 +32,6 @@ from accounts.models import UserType  # noqa: E402
 from agenda.models import Evento, InscricaoEvento, ParceriaEvento  # noqa: E402
 from chat.models import ChatConversation, ChatMessage, ChatParticipant  # noqa: E402
 from configuracoes.models import ConfiguracaoConta  # noqa: E402
-from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao  # noqa: E402
 from empresas.models import Empresa  # noqa: E402
 from feed.models import Post  # noqa: E402
 from nucleos.models import Nucleo, ParticipacaoNucleo  # noqa: E402
@@ -51,9 +50,6 @@ def clear_test_data() -> None:
     ChatMessage.all_objects.all().delete(soft=False)
     ChatParticipant.objects.all().delete()
     ChatConversation.all_objects.all().delete(soft=False)
-    RespostaDiscussao.all_objects.all().delete(soft=False)
-    TopicoDiscussao.all_objects.all().delete(soft=False)
-    CategoriaDiscussao.all_objects.all().delete(soft=False)
     Post.objects.all().delete()
     InscricaoEvento.all_objects.all().delete(soft=False)
     Evento.all_objects.all().delete(soft=False)
@@ -302,48 +298,6 @@ def create_chat(orgs, users):
     return conversations, messages
 
 
-def create_discussao(orgs, autores):
-    categorias = []
-    for org in orgs:
-        categorias.append(
-            CategoriaDiscussao(
-                nome=fake.word(),
-                slug=slugify(f"cat-{org.pk}"),
-                descricao=fake.sentence(),
-                organizacao=org,
-            )
-        )
-    CategoriaDiscussao.objects.bulk_create(categorias)
-    categorias = list(CategoriaDiscussao.objects.filter(organizacao__in=orgs))
-
-    topicos = []
-    respostas = []
-    for cat in categorias:
-        autor = random.choice(autores)
-        topico = TopicoDiscussao(
-            categoria=cat,
-            titulo=fake.sentence(),
-            slug=slugify(f"topic-{cat.pk}"),
-            conteudo=fake.paragraph(),
-            autor=autor,
-            publico_alvo=0,
-        )
-        topicos.append(topico)
-    TopicoDiscussao.objects.bulk_create(topicos)
-    topicos = list(TopicoDiscussao.objects.filter(categoria__in=categorias))
-
-    for topico in topicos:
-        for _ in range(2):
-            respostas.append(
-                RespostaDiscussao(
-                    topico=topico,
-                    autor=random.choice(autores),
-                    conteudo=fake.sentence(),
-                )
-            )
-    RespostaDiscussao.objects.bulk_create(respostas)
-    return categorias, topicos
-
 
 def create_empresas(orgs, usuarios):
     empresas = []
@@ -424,7 +378,6 @@ def main():
         inscricoes = create_inscricoes(eventos, participantes)
         posts = create_feed(orgs, users)
         convs, msgs = create_chat(orgs, users)
-        categorias, topicos = create_discussao(orgs, users)
         empresas = create_empresas(orgs, users)
         parcerias = create_parcerias(eventos, empresas)
         tokens = create_tokens(users)
@@ -440,7 +393,7 @@ def main():
     print(
         f"Organizacoes:{len(orgs)} nucleos:{len(nucleos)} usuarios:{len(users)} "
         f"eventos:{len(eventos)} inscricoes:{len(inscricoes)} posts:{len(posts)} "
-        f"conversas:{len(convs)} mensagens:{len(msgs)} topicos:{len(topicos)} "
+        f"conversas:{len(convs)} mensagens:{len(msgs)} "
         f"empresas:{len(empresas)} parcerias:{len(parcerias)} tokens:{len(tokens)}"
     )
 
