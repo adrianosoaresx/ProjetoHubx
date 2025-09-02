@@ -10,6 +10,7 @@ from django.utils import timezone
 from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
 from chat.models import ChatMessage
+from discussao.models import RespostaDiscussao, TopicoDiscussao
 from empresas.models import Empresa
 from feed.models import Post, PostView, Reacao, Tag
 from financeiro.models import LancamentoFinanceiro
@@ -162,6 +163,44 @@ class DashboardService:
             qs = qs.filter(evento_id=evento_id)
         return qs.count()
 
+
+    @staticmethod
+    def calcular_topicos_discussao(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        qs = TopicoDiscussao.objects.select_related(
+            "categoria__organizacao",
+            "nucleo",
+            "evento",
+        )
+        if organizacao_id:
+            qs = qs.filter(categoria__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(Q(nucleo_id=nucleo_id) | Q(categoria__nucleo_id=nucleo_id))
+        if evento_id:
+            qs = qs.filter(Q(evento_id=evento_id) | Q(categoria__evento_id=evento_id))
+        return qs.count()
+
+    @staticmethod
+    def calcular_respostas_discussao(
+        organizacao_id: Optional[int] = None,
+        nucleo_id: Optional[int] = None,
+        evento_id: Optional[int] = None,
+    ) -> int:
+        qs = RespostaDiscussao.objects.select_related(
+            "topico__categoria__organizacao",
+            "topico__nucleo",
+            "topico__evento",
+        )
+        if organizacao_id:
+            qs = qs.filter(topico__categoria__organizacao_id=organizacao_id)
+        if nucleo_id:
+            qs = qs.filter(Q(topico__nucleo_id=nucleo_id) | Q(topico__categoria__nucleo_id=nucleo_id))
+        if evento_id:
+            qs = qs.filter(Q(topico__evento_id=evento_id) | Q(topico__categoria__evento_id=evento_id))
+        return qs.count()
 
     @staticmethod
     def calcular_mensagens_chat(
@@ -397,6 +436,8 @@ class DashboardService:
             "num_eventos": Evento.objects.select_related("nucleo"),
             "num_posts_feed_total": Post.objects.all(),
             "num_mensagens_chat": ChatMessage.objects.all(),
+            "num_topicos": TopicoDiscussao.objects.all(),
+            "num_respostas": RespostaDiscussao.objects.all(),
         }
         if metricas:
             query_map = {k: v for k, v in query_map.items() if k in metricas}
@@ -498,6 +539,22 @@ class DashboardMetricsService:
                 ChatMessage.objects.select_related("channel"),
                 "created",
             ),
+            "num_topicos": (
+                TopicoDiscussao.objects.select_related(
+                    "categoria__organizacao",
+                    "nucleo",
+                    "evento",
+                ),
+                "created",
+            ),
+            "num_respostas": (
+                RespostaDiscussao.objects.select_related(
+                    "topico__categoria__organizacao",
+                    "topico__nucleo",
+                    "topico__evento",
+                ),
+                "created",
+            ),
             "inscricoes_confirmadas": (
                 InscricaoEvento.objects.select_related("evento").filter(status="confirmada"),
                 "created",
@@ -527,6 +584,10 @@ class DashboardMetricsService:
                     qs = qs.filter(evento__organizacao_id=organizacao_id)
                 elif name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
+                elif name == "num_topicos":
+                    qs = qs.filter(categoria__organizacao_id=organizacao_id)
+                elif name == "num_respostas":
+                    qs = qs.filter(topico__categoria__organizacao_id=organizacao_id)
                 elif name == "num_mensagens_chat":
                     qs = qs.filter(channel__contexto_tipo="organizacao", channel__contexto_id=organizacao_id)
             if nucleo_id:
@@ -544,6 +605,10 @@ class DashboardMetricsService:
                     qs = qs.filter(evento__nucleo_id=nucleo_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
+                if name == "num_topicos":
+                    qs = qs.filter(Q(nucleo_id=nucleo_id) | Q(categoria__nucleo_id=nucleo_id))
+                if name == "num_respostas":
+                    qs = qs.filter(Q(topico__nucleo_id=nucleo_id) | Q(topico__categoria__nucleo_id=nucleo_id))
                 if name == "num_mensagens_chat":
                     qs = qs.filter(channel__contexto_tipo="nucleo", channel__contexto_id=nucleo_id)
             if evento_id:
@@ -555,6 +620,10 @@ class DashboardMetricsService:
                     qs = qs.filter(evento_id=evento_id)
                 if name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__evento_id=evento_id)
+                if name == "num_topicos":
+                    qs = qs.filter(Q(evento_id=evento_id) | Q(categoria__evento_id=evento_id))
+                if name == "num_respostas":
+                    qs = qs.filter(Q(topico__evento_id=evento_id) | Q(topico__categoria__evento_id=evento_id))
                 if name == "num_mensagens_chat":
                     qs = qs.filter(channel__contexto_tipo="evento", channel__contexto_id=evento_id)
             query_map[name] = (qs, campo)

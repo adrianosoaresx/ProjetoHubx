@@ -27,8 +27,9 @@ urlpatterns = [
     path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
     path("eventos/", RedirectView.as_view(url="/agenda/", permanent=True)),
     path("eventos/<path:rest>/", RedirectView.as_view(url="/agenda/%(rest)s", permanent=True)),
-    # Chat e Feed (web)
+    # Chat, Discussão e Feed (web)
     path("chat/", include(("chat.urls", "chat"), namespace="chat")),
+    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
@@ -74,6 +75,10 @@ urlpatterns = [
     path(
         "api/chat/",
         include(("chat.api_urls", "chat_api"), namespace="chat_api"),
+    ),
+    path(
+        "api/discussao/",
+        include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
     ),
     path(
         "api/financeiro/",

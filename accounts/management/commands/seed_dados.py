@@ -4,6 +4,7 @@ from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
 from empresas.models import Empresa
 from feed.models import Post
+from discussao.models import CategoriaDiscussao, TopicoDiscussao
 
 User = get_user_model()
 
@@ -73,6 +74,19 @@ class Command(BaseCommand):
                     autor=admin,
                     conteudo=f'Postagem {i+1} da {org.nome}',
                     organizacao=org
+                )
+
+            categoria = CategoriaDiscussao.objects.create(
+                nome='Categoria Geral',
+                organizacao=org
+            )
+
+            for i in range(2):
+                TopicoDiscussao.objects.create(
+                    categoria=categoria,
+                    autor=admin,
+                    titulo=f'Tópico {i+1} da {org.nome}',
+                    conteudo='Conteúdo do tópico'
                 )
 
         self.stdout.write(self.style.SUCCESS('Dados populados com sucesso!'))

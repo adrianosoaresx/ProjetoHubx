@@ -83,7 +83,20 @@ python scripts/populate_test_data.py
 ```
 
 Ele cria organizações, núcleos, **todos os perfis de usuários** (incluindo o superusuário `root`),
-eventos, inscrições, feed, conversas de chat, empresas, parcerias e tokens.
+eventos, inscrições, feed, conversas de chat, discussões, empresas, parcerias e tokens.
+
+---
+
+## 💬 Discussões
+
+O módulo `discussao` permite a criação de tópicos e respostas por usuários autenticados.
+Acesse:
+
+```
+/discussao/
+```
+
+para visualizar categorias e interações.
 
 ---
 
@@ -207,8 +220,9 @@ npm run build
 ### Autenticação em Dois Fatores (2FA)
 - **Ativar 2FA**: Gera um segredo TOTP e valida o código enviado.
 
-### Feed
+### Feed e Discussões
 - **Feed**: Suporte a tipos de feed (`global`, `usuario`, `nucleo`, `evento`).
+- **Discussões**: Categorias e tópicos com respostas e interações.
 
 ### Núcleos: Convites, Suspensão e Feed
 - **Convites de Núcleo**: admins geram convites com `POST /api/nucleos/<id>/convites/` e revogam com `DELETE /api/nucleos/<id>/convites/<convite_id>/`, respeitando a quota diária.
