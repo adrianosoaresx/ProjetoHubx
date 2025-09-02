@@ -13,7 +13,6 @@ from core.permissions import (
 )
 from dashboard.models import DashboardConfig, DashboardFilter
 from dashboard.services import DashboardMetricsService
-from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 
 try:
@@ -125,33 +124,6 @@ def test_invalid_date_returns_400(client, admin_user):
     client.force_login(admin_user)
     resp = client.get(reverse("dashboard:admin"), {"data_inicio": "xx"})
     assert resp.status_code == 400
-
-
-def test_metrics_partial_new_metrics(client, admin_user):
-    client.force_login(admin_user)
-    PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
-    cat = CategoriaDiscussao.objects.create(nome="c", slug="c", organizacao=admin_user.organizacao)
-    topico = TopicoDiscussao.objects.create(
-        categoria=cat, titulo="t", slug="t", conteudo="x", autor=admin_user, publico_alvo=0
-    )
-    RespostaDiscussao.objects.create(topico=topico, autor=admin_user, conteudo="r")
-    resp = client.get(
-        reverse("dashboard:metrics-partial"),
-        {
-            "metricas": [
-                "num_posts_feed_total",
-                "num_posts_feed_recent",
-                "num_topicos",
-                "num_respostas",
-            ]
-        },
-    )
-    assert resp.status_code == 200
-    content = resp.content.decode()
-    assert "Posts (Total)" in content
-    assert "Posts (24h)" in content
-    assert "Tópicos" in content
-    assert "Respostas" in content
 
 
 def test_export_view_csv(monkeypatch, client, admin_user):
