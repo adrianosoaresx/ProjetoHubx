@@ -25,7 +25,6 @@ from simple_history.models import HistoricalRecords
 from core.models import SoftDeleteManager, SoftDeleteModel
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
-from chat.models import ChatMessage
 
 logger = logging.getLogger(__name__)
 
@@ -211,13 +210,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     avatar = models.ImageField(upload_to="eventos/avatars/", null=True, blank=True)
     cover = models.ImageField(upload_to="eventos/capas/", null=True, blank=True)
     briefing = models.TextField(blank=True, null=True)
-    mensagem_origem = models.ForeignKey(
-        "chat.ChatMessage",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="eventos_criados",
-    )
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -424,13 +416,6 @@ class Tarefa(TimeStampedModel, SoftDeleteModel):
     )
     organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    mensagem_origem = models.ForeignKey(
-        ChatMessage,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="tarefas",
-    )
     status = models.CharField(
         max_length=20,
         choices=[("pendente", "Pendente"), ("concluida", "Concluída")],
