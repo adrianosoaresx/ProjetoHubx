@@ -55,7 +55,7 @@ pip install -r requirements-dev.txt  # dependências de desenvolvimento
 python manage.py migrate
 ```
 
-Essa etapa garante que bibliotecas como Pillow e clamd estejam disponíveis no ambiente virtual.
+Essa etapa garante que bibliotecas como Pillow estejam disponíveis no ambiente virtual.
 O pacote `twilio` também é instalado para envios de WhatsApp; defina as variáveis
 `TWILIO_SID`, `TWILIO_TOKEN` e `TWILIO_WHATSAPP_FROM` para habilitá-lo.
 
@@ -267,7 +267,7 @@ ProjetoHubx/
 - HTMX
 - Font Awesome 6
 - Pillow
-- clamd
+ 
 
 ---
 

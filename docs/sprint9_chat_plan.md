@@ -23,7 +23,7 @@ Após oito sprints de evolução contínua, o módulo de chat do Hubx já oferec
 
 ### 3. Uploads e gerenciamento de arquivos
 - **Barra de progresso e uploads grandes**: Implementar envio de arquivos em partes (chunked upload) usando API de streaming no DRF e JavaScript com fetch e `ReadableStream`. Exibir barra de progresso e permitir cancelamento. Ajustar `UploadArquivoAPIView` para montar o arquivo final ao receber todos os chunks.
-- **Scanning de vírus**: Integrar um antivírus (ex.: ClamAV) ou serviço externo para varrer arquivos antes de disponibilizá‑los. Executar a varredura via Celery após upload; atualizar o status da mensagem (scanned, infected) e notificar o usuário se um arquivo for bloqueado.
+- (Removido) Scanning de vírus: a plataforma não realiza varredura antivírus. Políticas de tipo/tamanho e moderação continuam válidas.
 - **Gerenciador de arquivos**: Adicionar página/modal para listar arquivos enviados em cada canal, com metadados (nome, tipo, tamanho, data). Permitir busca por nome, filtro por tipo e exclusão de arquivos (respeitando permissões e retenção).
 
 ### 4. Preferências avançadas de usuário
@@ -39,7 +39,7 @@ Após oito sprints de evolução contínua, o módulo de chat do Hubx já oferec
 ## Critérios de aceite
 - As estatísticas fornecem dados corretos e são carregadas em menos de 2 segundos para intervalos de até 30 dias; dashboards são acessíveis e responsivos.
 - Canais estão organizados por categoria na UI; criação/edição/exclusão de categorias respeita permissões e é refletida na navegação.
-- Uploads grandes mostram barra de progresso, são reconstituídos corretamente e passam por varredura antivírus; arquivos infectados são bloqueados com mensagem adequada.
+- Uploads grandes mostram barra de progresso e são reconstituídos corretamente.
 - Usuários podem personalizar tema, salvar buscas e receber resumos diários; todas as preferências são persistidas e podem ser atualizadas via API.
 - Rate limiting impede spam sem prejudicar usuários legítimos; detecção de spam sinaliza casos suspeitos e notifica moderadores.
 - Todos os testes continuam passando com cobertura de pelo menos 90%; métricas e logs dos novos recursos são exportados via Prometheus e Loki.
