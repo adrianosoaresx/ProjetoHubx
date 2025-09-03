@@ -23,7 +23,7 @@
 
     {% for nucleo in object_list %}
       <a
-        href="{% url 'nucleos:detail' nucleo.pk %}"
+  href="{% url 'nucleos:detail_uuid' nucleo.public_id %}"
         class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
       >
         {% if nucleo.avatar %}

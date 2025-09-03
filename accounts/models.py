@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import secrets
 from pathlib import Path
+import uuid
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -126,6 +127,9 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     biografia = models.TextField(blank=True)
     cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
     whatsapp = models.CharField(max_length=20, blank=True)
+
+    # Identificador público estável (UUID) para uso em URLs
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True, editable=False)
 
     # Campos migrados do antigo modelo Perfil
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)

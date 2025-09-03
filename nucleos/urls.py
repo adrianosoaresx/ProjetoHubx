@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.NucleoListView.as_view(), name="list"),
     path("meus/", views.NucleoMeusView.as_view(), name="meus"),
     path("novo/", views.NucleoCreateView.as_view(), name="create"),
+    path("uuid/<uuid:public_id>/", views.NucleoDetailView.as_view(), name="detail_uuid"),
     path("<int:pk>/", views.NucleoDetailView.as_view(), name="detail"),
     path("<int:pk>/editar/", views.NucleoUpdateView.as_view(), name="update"),
     path("<int:pk>/remover/", views.NucleoDeleteView.as_view(), name="delete"),

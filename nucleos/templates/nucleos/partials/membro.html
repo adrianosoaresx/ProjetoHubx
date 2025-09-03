@@ -7,7 +7,7 @@
     <div class="w-12 h-12 rounded-full bg-gray-200"></div>
     {% endif %}
     <div>
-      <a href="{% url 'accounts:perfil_publico' part.user.pk %}" class="font-medium text-gray-800">
+  <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-gray-800">
         {{ part.user.get_full_name|default:part.user.username }}
       </a>
       {% if part.papel == 'coordenador' %}

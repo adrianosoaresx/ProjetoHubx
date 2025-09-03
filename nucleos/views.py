@@ -234,6 +234,13 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
             qs = qs.filter(participacoes__user=user)
         return qs
 
+    def get_object(self, queryset=None):
+        queryset = queryset or self.get_queryset()
+        public_id = self.kwargs.get("public_id")
+        if public_id:
+            return get_object_or_404(queryset, public_id=public_id)
+        return super().get_object(queryset)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object

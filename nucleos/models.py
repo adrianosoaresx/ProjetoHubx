@@ -53,6 +53,7 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
 
 
 class Nucleo(TimeStampedModel, SoftDeleteModel):
+    public_id = models.UUIDField(primary_key=False, default=uuid.uuid4, unique=True, db_index=True, editable=False)
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
         on_delete=models.CASCADE,

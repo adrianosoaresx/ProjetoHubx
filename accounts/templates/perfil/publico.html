@@ -33,7 +33,7 @@
 </div>
 
 {# Abas: Informações, Empresas, Núcleos, Eventos #}
-<section class="max-w-5xl mx-auto mt-8 px-4">
+<section class="max-w-6xl mx-auto mt-8 px-4">
   {# Navegação das abas #}
   <nav class="border-b border-gray-200">
     <ul class="-mb-px flex flex-wrap gap-2" role="tablist" aria-label="{% trans 'Navegação de abas do perfil' %}">
@@ -112,33 +112,39 @@
     {% if not perfil.is_superuser %}
     {# Empresas #}
     <section id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% if empresas %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% translate 'Lista de empresas' %}">
         {% for empresa in empresas %}
-          {% include 'partials/cards/empresa_card.html' with empresa=empresa %}
-        {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhuma empresa encontrada." %}</p>
+          <div role="listitem">
+            {% include 'empresas/partials/card.html' with empresa=empresa %}
+          </div>
         {% endfor %}
       </div>
+      {% else %}
+      <div class="grid grid-cols-1">
+        <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
+      </div>
+      {% endif %}
     </section>
 
     {# Núcleos #}
     <section id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for nucleo in nucleos %}
-          {% include 'partials/cards/nucleo_card.html' with nucleo=nucleo %}
+          {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
         {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
+          <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
       </div>
     </section>
 
     {# Eventos #}
     <section id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de eventos' %}">
         {% for ins in inscricoes %}
           {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
         {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
+          <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}
       </div>
     </section>

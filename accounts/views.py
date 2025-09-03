@@ -101,8 +101,11 @@ def perfil_home(request):
     )
 
 
-def perfil_publico(request, pk):
-    perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
+def perfil_publico(request, pk=None, public_id=None):
+    if public_id:
+        perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
+    else:
+        perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
     from nucleos.models import Nucleo
     from agenda.models import InscricaoEvento
     from empresas.models import Empresa

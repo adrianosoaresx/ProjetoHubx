@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Card de Membro do Núcleo, inspirado nos cards de associados #}
-<a href="{% url 'accounts:perfil_publico' part.user.pk %}"
+<a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}"
    class="group block rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
    aria-label="{{ part.user.get_full_name|default:part.user.username }}">
   <article class="overflow-hidden rounded-2xl" role="article">
