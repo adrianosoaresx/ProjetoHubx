@@ -82,3 +82,21 @@ class FeedNotificationTest(TestCase):
         self.assertEqual(enviar.call_count, 1)
 
 
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+@patch("notificacoes.services.notificacoes.enviar_notificacao_async.delay")
+def test_notify_new_post_uses_template(enviar) -> None:
+    from feed.models import Post
+    from feed.tasks import notify_new_post
+
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org)
+    UserFactory(organizacao=org)  # outro usuário para receber a notificação
+    post = Post.objects.create(autor=user, organizacao=user.organizacao, conteudo="ola")
+    try:
+        notify_new_post(str(post.id))
+    except ValueError as err:
+        assert False, f"notify_new_post raised ValueError: {err}"
+
+    enviar.assert_called()
+
+
