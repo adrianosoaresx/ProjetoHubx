@@ -26,17 +26,29 @@
   <!-- Formulário -->
   <form method="post"
         hx-post="{% url 'feed:nova_postagem' %}"
+  hx-select="#nova-postagem-form"
+  hx-target="#nova-postagem-form"
+  hx-swap="outerHTML"
         hx-encoding="multipart/form-data"
         enctype="multipart/form-data"
         id="nova-postagem-form"
         class="post-form bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
 
-    {% if form.non_field_errors %}
-      <div class="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3">
-        {{ form.non_field_errors }}
-      </div>
-    {% endif %}
+      {% if form.errors %}
+        <div class="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3">
+          <ul class="list-disc list-inside space-y-1">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
 
     <!-- Conteúdo -->
     <div>
@@ -58,6 +70,9 @@
     </div>
 
     <input type="hidden" name="tipo_feed" value="global">
+    {% if request.user.organizacao %}
+      <input type="hidden" name="organizacao" value="{{ request.user.organizacao.id }}">
+    {% endif %}
 
     <div class="mb-4">
       <label for="id_tags_text" class="font-semibold mb-1 block">{% trans "Tags" %}</label>
@@ -78,9 +93,9 @@
       <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf"
              class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
       <span class="file-text">{% trans "Nenhum arquivo selecionado" %}</span>
-      {% if form.image.errors or form.pdf.errors %}
+    {% if form.image.errors or form.pdf.errors or form.video.errors %}
         <p class="text-red-500 text-xs mt-1">
-          {{ form.image.errors }} {{ form.pdf.errors }}
+      {{ form.image.errors }} {{ form.pdf.errors }} {{ form.video.errors }}
         </p>
       {% endif %}
     </div>

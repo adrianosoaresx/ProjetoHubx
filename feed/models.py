@@ -88,12 +88,8 @@ class Post(TimeStampedModel, SoftDeleteModel):
             raise ValidationError({"evento": "Evento é obrigatório"})
 
     def save(self, *args, **kwargs):
+        # Moderação desativada: apenas salva normalmente, sem criar registros de moderação
         super().save(*args, **kwargs)
-        banned = getattr(settings, "FEED_BAD_WORDS", [])
-        if any(bad.lower() in (self.conteudo or "").lower() for bad in banned):
-            mod = self.moderacao
-            if not mod or mod.status != "pendente":
-                ModeracaoPost.objects.create(post=self, status="pendente")
 
     @property
     def moderacao(self):

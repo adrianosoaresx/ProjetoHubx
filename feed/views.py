@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
@@ -14,7 +14,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
@@ -23,13 +22,13 @@ from accounts.models import UserType
 from agenda.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
-from feed.tasks import notify_post_moderated
+# Moderação desativada: não é necessário notificar moderação
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 from .api import _post_rate, _read_rate
 from .forms import CommentForm, PostForm
-from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
+from .models import Bookmark, Flag, Post, Reacao, Tag
 
 
 @login_required
@@ -37,13 +36,10 @@ from .models import Bookmark, Flag, ModeracaoPost, Post, Reacao, Tag
 def meu_mural(request):
     """Exibe o mural pessoal do usuário com seus posts e posts globais."""
 
-    latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
     posts = (
         Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
         .prefetch_related("reacoes", "comments")
         .filter(deleted=False)
-        .annotate(mod_status=Subquery(latest_status))
-        .exclude(mod_status="rejeitado")
         .annotate(
             like_count=Count(
                 "reacoes",
@@ -167,7 +163,6 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         user = self.request.user
         organizacao_id = self.request.GET.get("organizacao")
 
-        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related(
             "reacoes",
             "comments",
@@ -177,8 +172,6 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         )
         qs = (
             qs.filter(deleted=False)
-            .annotate(mod_status=Subquery(latest_status))
-            .exclude(mod_status="rejeitado")
             .annotate(
                 like_count=Count(
                     "reacoes",
@@ -196,8 +189,9 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
                 is_shared=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)),
             )
         )
+        # Moderação desativada: usuários veem seus posts e o feed global da organização
         if not user.is_staff:
-            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=user))
+            qs = qs.filter(Q(autor=user) | Q(tipo_feed="global"))
         qs = qs.distinct()
 
         if organizacao_id:
@@ -359,18 +353,26 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
         return response
 
+    def form_invalid(self, form):  # type: ignore[override]
+        """Em requisições HTMX, devolve apenas o formulário com status 422.
+
+        Isso evita que a página inteira seja aninhada dentro do formulário
+        e permite que o hx-select/hx-target faça o swap corretamente.
+        """
+        if self.request.headers.get("HX-Request"):
+            html = render(self.request, self.template_name, self.get_context_data(form=form)).content
+            return HttpResponse(html, status=422)
+        return super().form_invalid(form)
+
 
 class PostDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     template_name = "feed/post_detail.html"
     context_object_name = "post"
 
     def get_queryset(self):
-        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
         qs = (
             qs.filter(deleted=False)
-            .annotate(mod_status=Subquery(latest_status))
-            .exclude(mod_status="rejeitado")
             .annotate(
                 like_count=Count(
                     "reacoes",
@@ -395,7 +397,7 @@ class PostDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
             )
         )
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
+            qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
         return qs
 
     def get_context_data(self, **kwargs):
@@ -492,60 +494,4 @@ def post_delete(request, pk):
     return render(request, "feed/post_delete.html", {"post": post})
 
 
-@login_required
-@no_superadmin_required
-@permission_required("feed.change_moderacaopost", raise_exception=True)
-def moderar_post(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    if request.method == "POST":
-        acao = request.POST.get("acao")
-        if acao == "aprovar":
-            moderacao = ModeracaoPost.objects.create(
-                post=post,
-                status="aprovado",
-                avaliado_por=request.user,
-                avaliado_em=timezone.now(),
-            )
-            if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
-                notify_post_moderated(str(post.id), moderacao.status)
-            else:
-                notify_post_moderated.delay(str(post.id), moderacao.status)
-            post.refresh_from_db()
-            message = _("Post aprovado com sucesso.")
-            if request.headers.get("HX-Request"):
-                html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
-                return HttpResponse(html)
-            messages.success(request, message)
-        elif acao == "rejeitar":
-            motivo = request.POST.get("motivo", "").strip()
-            if not motivo:
-                error = _("Motivo é obrigatório.")
-                if request.headers.get("HX-Request"):
-                    html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
-                    return HttpResponse(html, status=400)
-                messages.error(request, error)
-            else:
-                moderacao = ModeracaoPost.objects.create(
-                    post=post,
-                    status="rejeitado",
-                    motivo=motivo,
-                    avaliado_por=request.user,
-                    avaliado_em=timezone.now(),
-                )
-                if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
-                    notify_post_moderated(str(post.id), moderacao.status)
-                else:
-                    notify_post_moderated.delay(str(post.id), moderacao.status)
-                post.refresh_from_db()
-                message = _("Post rejeitado.")
-                if request.headers.get("HX-Request"):
-                    html = render_to_string("feed/_moderacao.html", {"post": post, "message": message}, request=request)
-                    return HttpResponse(html)
-                messages.success(request, message)
-        else:
-            error = _("Ação inválida.")
-            if request.headers.get("HX-Request"):
-                html = render_to_string("feed/_moderacao.html", {"post": post, "error": error}, request=request)
-                return HttpResponse(html, status=400)
-            messages.error(request, error)
-    return redirect("feed:post_detail", pk=pk)
+# Moderação desativada: endpoint removido

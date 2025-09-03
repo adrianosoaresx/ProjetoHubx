@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from accounts.models import UserType
-from feed.application.moderar_ai import aplicar_decisao, pre_analise
+# Moderação desativada: sem análise por IA
 from organizacoes.models import Organizacao
 
 from .models import Comment, Post, Tag
@@ -138,11 +138,8 @@ class PostForm(forms.ModelForm):
         ):
             self.add_error("organizacao", "Usuário não pertence à organização.")
 
-        decision = pre_analise(conteudo or "")
-        self._ai_decision = decision
-        if decision == "rejeitado":
-            raise forms.ValidationError("Conteúdo não permitido.")
-
+        # Moderação desativada: nenhuma análise de conteúdo
+        self._ai_decision = "aceito"
         return cleaned_data
 
     def save(self, commit: bool = True):  # type: ignore[override]
@@ -151,7 +148,7 @@ class PostForm(forms.ModelForm):
             post.video_preview = self._video_preview_key
             if commit:
                 post.save(update_fields=["video_preview"])
-        aplicar_decisao(post, getattr(self, "_ai_decision", "aceito"))
+        # Moderação desativada: nenhuma aplicação de decisão
         return post
 
 

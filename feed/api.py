@@ -25,10 +25,9 @@ from rest_framework.response import Response
 
 from core.cache import get_cache_version
 from feed.application.denunciar_post import DenunciarPost
-from feed.application.moderar_ai import aplicar_decisao, pre_analise
 
-from .models import Bookmark, Comment, ModeracaoPost, Post, PostView, Reacao, Tag
-from .tasks import POSTS_CREATED, notify_new_post, notify_post_moderated
+from .models import Bookmark, Comment, Post, PostView, Reacao, Tag
+from .tasks import POSTS_CREATED, notify_new_post
 
 REACTIONS_TOTAL = Gauge("feed_reactions_total", "Total de reações registradas", ["vote"])
 POST_VIEWS_TOTAL = Counter("feed_post_views_total", "Total de visualizações de posts")
@@ -141,20 +140,12 @@ class PostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         self._handle_media(validated_data)
-        decision = pre_analise(validated_data.get("conteudo", ""))
-        if decision == "rejeitado":
-            raise serializers.ValidationError({"conteudo": "Conteúdo não permitido."})
         post = super().create(validated_data)
-        aplicar_decisao(post, decision)
         return post
 
     def update(self, instance, validated_data):
         self._handle_media(validated_data)
-        decision = pre_analise(validated_data.get("conteudo", instance.conteudo or ""))
-        if decision == "rejeitado":
-            raise serializers.ValidationError({"conteudo": "Conteúdo não permitido."})
         post = super().update(instance, validated_data)
-        aplicar_decisao(post, decision)
         return post
 
     def _generate_presigned(self, key: str | None) -> str | None:  # pragma: no cover - simples
@@ -256,15 +247,9 @@ class PostViewSet(viewsets.ModelViewSet):
         return super().create(request, *args, **kwargs)
 
     def get_queryset(self):
-        latest_status = ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
-        qs = (
-            Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
-            .prefetch_related("tags")
-            .annotate(mod_status=Subquery(latest_status))
-            .exclude(mod_status="rejeitado")
-        )
+        qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
         if not self.request.user.is_staff:
-            qs = qs.filter(Q(mod_status="aprovado") | Q(autor=self.request.user))
+            qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))
         qs = qs.distinct()
         params = self.request.query_params
         tipo_feed = params.get("tipo_feed")
@@ -407,23 +392,7 @@ class PostViewSet(viewsets.ModelViewSet):
             return Response({"detail": e.message}, status=400)
         return Response(status=204)
 
-    @action(detail=True, methods=["post"], permission_classes=[CanModerate], url_path="avaliar")
-    def moderate(self, request, pk=None):
-        post = self.get_object()
-        serializer = ModeracaoPostSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        moderacao = ModeracaoPost.objects.create(
-            post=post,
-            status=serializer.validated_data["status"],
-            motivo=serializer.validated_data.get("motivo", ""),
-            avaliado_por=request.user,
-            avaliado_em=timezone.now(),
-        )
-        if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
-            notify_post_moderated(str(post.id), moderacao.status)
-        else:
-            notify_post_moderated.delay(str(post.id), moderacao.status)
-        return Response(ModeracaoPostSerializer(moderacao).data)
+    # Moderação desativada: endpoint de avaliar removido
 
     @action(
         detail=True,
@@ -555,23 +524,4 @@ class BookmarkViewSet(viewsets.ReadOnlyModelViewSet):
         return Bookmark.objects.filter(user=self.request.user).select_related("post")
 
 
-class ModeracaoPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ModeracaoPost
-        fields = [
-            "id",
-            "post",
-            "status",
-            "motivo",
-            "avaliado_por",
-            "avaliado_em",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "post", "avaliado_por", "avaliado_em", "created_at", "updated_at"]
-
-
-class ModeracaoPostViewSet(viewsets.ModelViewSet):
-    serializer_class = ModeracaoPostSerializer
-    permission_classes = [permissions.IsAdminUser]
-    queryset = ModeracaoPost.objects.select_related("post", "avaliado_por").all()
+    # Moderação desativada: serializers e viewsets removidos

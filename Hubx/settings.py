@@ -339,6 +339,14 @@ CELERY_BEAT_SCHEDULE |= {
     }
 }
 
+# Celery - execução síncrona (modo eager) em desenvolvimento por padrão
+# Evita dependência de broker (RabbitMQ/Redis) quando DEBUG=True
+CELERY_TASK_ALWAYS_EAGER = (
+    os.getenv("CELERY_TASK_ALWAYS_EAGER", "1" if DEBUG else "0").lower() in {"1", "true", "yes", "on"}
+)
+# Propaga exceções ao thread principal quando em modo eager (útil para debug)
+CELERY_TASK_EAGER_PROPAGATES = True
+
 # Notificações
 # Configurações de notificação – usar valores de ambiente quando definidos,
 # senão definir um valor fictício para evitar ImproperlyConfigured

@@ -13,5 +13,4 @@ urlpatterns = [
     path("<uuid:pk>/curtir/", views.toggle_like, name="toggle_like"),
     path("<uuid:pk>/editar/", views.post_update, name="post_update"),
     path("<uuid:pk>/remover/", views.post_delete, name="post_delete"),
-    path("<uuid:pk>/moderar/", views.moderar_post, name="post_moderar"),
 ]

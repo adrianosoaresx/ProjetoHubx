@@ -21,10 +21,7 @@
       </div>
 
       <div class="text-sm text-neutral-800">
-        {{ post.conteudo|linebreaks }}
-        {% if post.moderacao and post.moderacao.status != 'aprovado' %}
-          <span class="ml-2 text-xs text-yellow-700">{{ post.moderacao.get_status_display }}</span>
-        {% endif %}
+  {{ post.conteudo|linebreaks }}
       </div>
 
       {% if post.pdf %}
