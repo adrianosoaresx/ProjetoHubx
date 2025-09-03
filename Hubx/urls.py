@@ -30,7 +30,6 @@ urlpatterns = [
     path("eventos/", RedirectView.as_view(url="/agenda/", permanent=True)),
     path("eventos/<path:rest>/", RedirectView.as_view(url="/agenda/%(rest)s", permanent=True)),
     # Discussão e Feed (web)
-    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
@@ -75,10 +74,6 @@ urlpatterns = [
     path(
         "api/accounts/",
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
-    ),
-    path(
-        "api/discussao/",
-        include(("discussao.api_urls", "discussao_api"), namespace="discussao_api"),
     ),
     path(
         "api/financeiro/",

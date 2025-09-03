@@ -88,7 +88,6 @@ INSTALLED_APPS = [
     "nucleos",
     "agenda",
     "feed",
-    "discussao.apps.DiscussaoConfig",
     "configuracoes",
     "financeiro.apps.FinanceiroConfig",
     "notificacoes.apps.NotificacoesConfig",
