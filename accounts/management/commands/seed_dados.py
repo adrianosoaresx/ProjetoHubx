@@ -4,7 +4,15 @@ from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
 from empresas.models import Empresa
 from feed.models import Post
-from discussao.models import CategoriaDiscussao, TopicoDiscussao
+
+# O app 'discussao' foi removido; tornar import opcional
+try:  # pragma: no cover
+    from discussao.models import CategoriaDiscussao, TopicoDiscussao  # type: ignore
+    DISCUSSAO_INSTALLED = True
+except Exception:  # ImportError
+    CategoriaDiscussao = None  # type: ignore
+    TopicoDiscussao = None  # type: ignore
+    DISCUSSAO_INSTALLED = False
 
 User = get_user_model()
 
@@ -76,17 +84,18 @@ class Command(BaseCommand):
                     organizacao=org
                 )
 
-            categoria = CategoriaDiscussao.objects.create(
-                nome='Categoria Geral',
-                organizacao=org
-            )
-
-            for i in range(2):
-                TopicoDiscussao.objects.create(
-                    categoria=categoria,
-                    autor=admin,
-                    titulo=f'Tópico {i+1} da {org.nome}',
-                    conteudo='Conteúdo do tópico'
+            if DISCUSSAO_INSTALLED:
+                categoria = CategoriaDiscussao.objects.create(  # type: ignore[attr-defined]
+                    nome='Categoria Geral',
+                    organizacao=org
                 )
+
+                for i in range(2):
+                    TopicoDiscussao.objects.create(  # type: ignore[attr-defined]
+                        categoria=categoria,
+                        autor=admin,
+                        titulo=f'Tópico {i+1} da {org.nome}',
+                        conteudo='Conteúdo do tópico'
+                    )
 
         self.stdout.write(self.style.SUCCESS('Dados populados com sucesso!'))

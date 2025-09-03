@@ -1,6 +1,6 @@
 # Hubx
 
-**Projeto Django 5 que conecta comunidades e empresas**, com suporte a perfis de usuário, notificações, multi-organizações e chat em tempo real via WebSocket.  
+**Projeto Django 5 que conecta comunidades e empresas**, com suporte a perfis de usuário, notificações e multi-organizações.  
 Inclui também geração de dados de teste e suporte a interface moderna com Tailwind CSS, HTMX e Font Awesome 6.
 
 ---
@@ -11,7 +11,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Onboarding automático em `/accounts/onboarding/`
 - Perfis personalizados
 - Campo `redes_sociais` em JSON para registrar links de redes sociais
-- Fórum e Chat integrados
+- Fórum integrado
 - Suporte WebSocket via `channels` e `daphne`
 - Sistema multi-tenant por organização
 - Geração automatizada de massa de dados para testes
@@ -101,86 +101,14 @@ python scripts/populate_test_data.py
 ```
 
 Ele cria organizações, núcleos, **todos os perfis de usuários** (incluindo o superusuário `root`),
-eventos, inscrições, feed, conversas de chat, discussões, empresas, parcerias e tokens.
+eventos, inscrições, feed, discussões, empresas, parcerias e tokens.
 
 ---
 
 ## 💬 Discussões
 
-O módulo `discussao` permite a criação de tópicos e respostas por usuários autenticados.
-Acesse:
+O módulo `discussao` foi removido nesta fase. Métricas e links relacionados foram desativados.
 
-```
-/discussao/
-```
-
-para visualizar categorias e interações.
-
-Na listagem de tópicos é possível ordenar por mais recentes, mais comentados ou mais votados. Na API, utilize `?ordering=score` para retornar os mais votados.
-
----
-
-## 📡 Chat (WebSocket)
-
-O módulo de chat registra mensagens trocadas entre usuários. Acesse `/chat/` para ver os canais disponíveis agrupados por contexto (privado, núcleo, evento, organização). Cada item exibe o número de mensagens não lidas e o preview da última mensagem. Ao abrir um canal é possível visualizar mensagens fixadas, reagir com emojis e enviar anexos. A interface usa HTMX + WebSocket e possui *fallback* para quando o JavaScript está desabilitado.
-
-### Moderação e exportação
-
-Mensagens podem ser sinalizadas pelos participantes através do endpoint `POST /api/chat/channels/<canal>/messages/<id>/flag/` ou via WebSocket com `{"tipo": "flag"}`. Após três sinalizações a mensagem é ocultada automaticamente. Moderadores acessam `/chat/moderacao/` para revisar os conteúdos reportados e podem aprovar (`POST /api/chat/moderacao/messages/<id>/approve/`) ou remover (`POST /api/chat/moderacao/messages/<id>/remove/`) definitivamente.
-
-Administradores dos canais podem exportar o histórico acessando o botão *Exportar histórico* na página do canal ou via API `GET /api/chat/channels/<id>/export/` com parâmetros `formato` (`json` ou `csv`), intervalo de datas (`inicio`/`fim`) e tipos de mensagem (`tipos`). O arquivo gerado fica disponível em `media/chat_exports/`.
-
-O módulo expõe métricas Prometheus em `/metrics`, incluindo `chat_mensagens_sinalizadas_total`, `chat_mensagens_ocultadas_total` e `chat_exportacoes_total`.
-
-Para anexos existe o endpoint `POST /api/chat/upload/` que recebe o arquivo e retorna JSON com `{"tipo": tipo, "url": url}` a ser enviado pelo WebSocket. Notificações em tempo real podem ser recebidas conectando-se a `/ws/chat/notificacoes/`; cada evento inclui o título do canal e um resumo da mensagem, podendo ser marcado como lido via `POST /api/chat/notificacoes/<id>/ler/`.
-
-Uma métrica `chat_websocket_latency_seconds` registra a latência (p95) das notificações enviadas pelo WebSocket.
-
-![Demonstração do chat](docs/chat-demo.png)
-
-Para que o WebSocket funcione:
-
-1. Instale o pacote `daphne` (já listado em `requirements.txt`).
-2. Execute um servidor Redis local em `localhost:6379`.
-3. Rode o servidor com:
-
-```bash
-python manage.py runserver
-```
-
-> O `runserver` já usa o servidor ASGI do Django quando `channels` está instalado.
-
-Para rodar manualmente com `daphne`:
-
-```bash
-daphne Hubx.asgi:application -b 0.0.0.0 -p 8000
-```
-
-### Produção
-Em produção defina `ALLOWED_HOSTS` com o domínio usado e configure o proxy para aceitar conexões `wss://`. O endpoint do WebSocket segue o padrão `/ws/chat/<id>/`. Exemplo de configuração no `settings.py`:
-
-```python
-ALLOWED_HOSTS = ["seu-dominio.com"]
-CSRF_TRUSTED_ORIGINS = ["https://seu-dominio.com"]
-```
-
-Certifique-se também de liberar o esquema `wss://` no servidor ou proxy reverso.
-
-### Tasks de exportação
-
-As exportações de histórico são processadas de forma assíncrona. Para
-acompanhar o progresso e gerar os arquivos é necessário executar um
-worker Celery apontando para o mesmo Redis:
-
-```bash
-celery -A Hubx worker -l INFO
-```
-
-Os arquivos gerados ficarão disponíveis em `media/chat_exports/` e o
-endpoint `/api/chat/channels/<id>/export/` aceita os parâmetros
-`inicio`, `fim` e `tipos` para filtrar o conteúdo exportado.
-
----
 
 ## 🛠️ Correção de tokens e usuários
 

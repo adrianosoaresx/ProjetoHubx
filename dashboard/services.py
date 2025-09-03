@@ -11,7 +11,14 @@ from accounts.models import User, UserType
 from agenda.models import Evento, InscricaoEvento
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
-from discussao.models import RespostaDiscussao, TopicoDiscussao
+# O app 'discussao' foi removido. Tornamos a dependência opcional.
+try:  # pragma: no cover - compat sem app
+    from discussao.models import RespostaDiscussao, TopicoDiscussao  # type: ignore
+    DISCUSSAO_INSTALLED = True
+except Exception:  # ImportError ou qualquer falha ao carregar
+    RespostaDiscussao = None  # type: ignore
+    TopicoDiscussao = None  # type: ignore
+    DISCUSSAO_INSTALLED = False
 from empresas.models import Empresa
 from feed.models import Post, PostView, Reacao, Tag
 from financeiro.models import LancamentoFinanceiro
@@ -224,7 +231,9 @@ class DashboardService:
         nucleo_id: Optional[int] = None,
         evento_id: Optional[int] = None,
     ) -> int:
-        qs = TopicoDiscussao.objects.select_related(
+        if not DISCUSSAO_INSTALLED:
+            return 0
+        qs = TopicoDiscussao.objects.select_related(  # type: ignore[attr-defined]
             "categoria__organizacao",
             "nucleo",
             "evento",
@@ -243,7 +252,9 @@ class DashboardService:
         nucleo_id: Optional[int] = None,
         evento_id: Optional[int] = None,
     ) -> int:
-        qs = RespostaDiscussao.objects.select_related(
+        if not DISCUSSAO_INSTALLED:
+            return 0
+        qs = RespostaDiscussao.objects.select_related(  # type: ignore[attr-defined]
             "topico__categoria__organizacao",
             "topico__nucleo",
             "topico__evento",
@@ -467,9 +478,11 @@ class DashboardService:
             "num_empresas": Empresa.objects.select_related("usuario", "usuario__organizacao"),
             "num_eventos": Evento.objects.select_related("nucleo"),
             "num_posts_feed_total": Post.objects.all(),
-            "num_topicos": TopicoDiscussao.objects.all(),
-            "num_respostas": RespostaDiscussao.objects.all(),
         }
+        # Adiciona métricas de discussão apenas se o app existir
+        if DISCUSSAO_INSTALLED:
+            query_map["num_topicos"] = TopicoDiscussao.objects.all()  # type: ignore[attr-defined]
+            query_map["num_respostas"] = RespostaDiscussao.objects.all()  # type: ignore[attr-defined]
         if metricas:
             query_map = {k: v for k, v in query_map.items() if k in metricas}
         divisor = Organizacao.objects.count() if por == "organizacao" else Nucleo.objects.count()
@@ -576,22 +589,6 @@ class DashboardMetricsService:
                 Post.objects.select_related("organizacao", "nucleo", "evento", "autor__organizacao"),
                 "created_at",
             ),
-            "num_topicos": (
-                TopicoDiscussao.objects.select_related(
-                    "categoria__organizacao",
-                    "nucleo",
-                    "evento",
-                ),
-                "created_at",
-            ),
-            "num_respostas": (
-                RespostaDiscussao.objects.select_related(
-                    "topico__categoria__organizacao",
-                    "topico__nucleo",
-                    "topico__evento",
-                ),
-                "created_at",
-            ),
             "lancamentos_pendentes": (
                 LancamentoFinanceiro.objects.select_related("centro_custo").filter(
                     status=LancamentoFinanceiro.Status.PENDENTE
@@ -599,6 +596,25 @@ class DashboardMetricsService:
                 "data_lancamento",
             ),
         }
+
+        # Acrescenta métricas de discussão se disponíveis
+        if DISCUSSAO_INSTALLED:
+            query_map["num_topicos"] = (
+                TopicoDiscussao.objects.select_related(  # type: ignore[attr-defined]
+                    "categoria__organizacao",
+                    "nucleo",
+                    "evento",
+                ),
+                "created_at",
+            )
+            query_map["num_respostas"] = (
+                RespostaDiscussao.objects.select_related(  # type: ignore[attr-defined]
+                    "topico__categoria__organizacao",
+                    "topico__nucleo",
+                    "topico__evento",
+                ),
+                "created_at",
+            )
 
         if metricas:
             query_map = {k: v for k, v in query_map.items() if k in metricas}

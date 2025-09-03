@@ -7,12 +7,6 @@
   - Versão: 1.0
   - Última atualização: 2025-07-25
 
-- **REQ-CHAT-001**
-  - Título: Chat
-  - Módulo: Chat
-  - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
 
 - **REQ-CONFIGURACOES_CONTA-001**
   - Título: Configuracoes Conta

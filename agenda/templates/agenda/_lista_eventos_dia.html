@@ -1,20 +1,18 @@
 {% load i18n %}
-<h2 class="text-xl font-semibold mb-4">
-{% blocktrans trimmed with date=dia|date:"SHORT_DATE_FORMAT" %}Eventos de {{ date }}{% endblocktrans %}
-</h2>
+<header>
+  <h2 class="text-xl font-semibold mb-4">
+    {% blocktrans trimmed with date=dia|date:"SHORT_DATE_FORMAT" %}Eventos de {{ date }}{% endblocktrans %}
+  </h2>
+  <p class="text-sm text-neutral-500 mb-2">{{ eventos|length }} {% trans 'itens' %}</p>
+  <p class="sr-only">{% trans 'Lista de eventos do dia' %}</p>
+</header>
 
-<ul class="space-y-2">
-  {% for ev in eventos %}
-    <li>
-      <a href="{% url 'agenda:evento_detalhe' ev.id %}"
-         class="block bg-white rounded shadow p-4 hover:bg-gray-50">
-        <p class="font-medium">{{ ev.titulo }}</p>
-        <p class="text-xs text-gray-500">
-          {{ ev.data_inicio|date:"TIME_FORMAT" }} – {{ ev.fim|date:"TIME_FORMAT" }}
-        </p>
-      </a>
-    </li>
-  {% empty %}
-    <li class="text-sm text-gray-400">{% trans "Sem eventos." %}</li>
-  {% endfor %}
-</ul>
+<main>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for ev in eventos %}
+      {% include 'agenda/partials/card.html' with evento=ev %}
+    {% empty %}
+      <p class="text-sm text-neutral-400">{% trans "Sem eventos." %}</p>
+    {% endfor %}
+  </div>
+</main>

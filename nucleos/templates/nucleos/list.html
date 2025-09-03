@@ -4,7 +4,7 @@
 {% block title %}{% trans "Núcleos" %}{% endblock %}
 
 {% block content %}
-<section class="max-w-5xl mx-auto py-8">
+<section class="max-w-6xl mx-auto py-8 px-4">
   <h1 class="text-2xl font-bold mb-4">{% trans "Núcleos" %}</h1>
   <form method="get" class="mb-4 flex gap-2">
       <input type="text" name="q" value="{{ form.q.value|default:'' }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
@@ -21,43 +21,25 @@
   </div>
   {% endif %}
 
-    <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-    {% for nucleo in object_list %}
-      <a
-        href="{% url 'nucleos:detail' nucleo.pk %}"
-        class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
-      >
-        {% if nucleo.avatar %}
-          <img
-            src="{{ nucleo.avatar.url }}"
-            alt="{{ nucleo.nome }}"
-            class="w-24 h-24 rounded-full object-cover mb-2"
-          />
-        {% else %}
-          <div
-            class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2"
-          >
-            {{ nucleo.nome|first|upper }}
-          </div>
-        {% endif %}
-        <h2 class="font-medium">{{ nucleo.nome }}</h2>
-        <p class="text-sm text-gray-500">{{ nucleo.slug }}</p>
-      </a>
-    {% empty %}
-      <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
-    {% endfor %}
-  </div>
-  {% if is_paginated %}
-    <div class="mt-4">
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="mr-2" aria-label="{% trans 'Página anterior' %}">{% trans 'Anterior' %}</a>
-      {% endif %}
-      <span class="mr-2">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" aria-label="{% trans 'Próxima página' %}">{% trans 'Próxima' %}</a>
-      {% endif %}
+  <main>
+    <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% for nucleo in object_list %}
+        {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
+      {% empty %}
+        <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
+      {% endfor %}
     </div>
+  </main>
+  {% if is_paginated %}
+    <nav class="mt-4 text-sm flex items-center gap-2" aria-label="{% trans 'Paginação' %}">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded" aria-label="{% trans 'Página anterior' %}">{% trans 'Anterior' %}</a>
+      {% endif %}
+      <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded" aria-label="{% trans 'Próxima página' %}">{% trans 'Próxima' %}</a>
+      {% endif %}
+    </nav>
   {% endif %}
 </section>
 {% endblock %}

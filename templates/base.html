@@ -132,11 +132,7 @@
           <i class="fa-solid fa-calendar-days"></i> {% trans "Agenda" %}
         </a>
         {% endif %}
-        {% if user.user_type != 'root' %}
-        <a href="{% url 'discussao:categorias' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fa-solid fa-comments"></i> {% trans "Discussão" %}
-        </a>
-        {% endif %}
+  {# App Discussão removido: link ocultado #}
         {% if user.user_type != 'root' %}
         <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-rss"></i> {% trans "Feed" %}

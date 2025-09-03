@@ -1,0 +1,54 @@
+{% load i18n %}
+{# Card de Núcleo: cover, avatar, nome, membros, coordenador(es), eventos #}
+<a href="{% url 'nucleos:detail' nucleo.pk %}"
+   class="group block rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
+   aria-label="{{ nucleo.nome }}">
+  <article class="overflow-hidden rounded-2xl" role="article">
+    <header class="relative">
+      {% if nucleo.cover %}
+        <img src="{{ nucleo.cover.url }}" alt="{% trans 'Capa do núcleo' %}"
+             class="h-24 w-full object-cover" />
+      {% else %}
+        <div class="h-24 w-full bg-gradient-to-r from-neutral-200 to-neutral-300"></div>
+      {% endif %}
+      <div class="absolute -bottom-8 left-4">
+        {% if nucleo.avatar %}
+          <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}"
+               class="h-16 w-16 rounded-full ring-4 ring-white object-cover" />
+        {% else %}
+          <div class="h-16 w-16 rounded-full ring-4 ring-white bg-neutral-200 flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ nucleo.nome }}">
+            {{ nucleo.nome|first|upper }}
+          </div>
+        {% endif %}
+      </div>
+    </header>
+    <div class="px-4 pt-10 pb-4">
+      <h3 class="text-base font-semibold text-neutral-900 group-hover:underline">
+        {{ nucleo.nome }}
+      </h3>
+      <dl class="mt-3 grid grid-cols-3 gap-2 text-xs text-neutral-600">
+        <div>
+          <dt class="text-neutral-500">{% trans 'Membros' %}</dt>
+          <dd class="font-medium">{{ nucleo.membros.count }}</dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500">{% trans 'Coordenador' %}</dt>
+          <dd class="font-medium">
+            {% with coords=nucleo.coordenadores %}
+              {% if coords.exists %}
+                {{ coords.first.get_full_name|default:coords.first.username }}
+              {% else %}
+                —
+              {% endif %}
+            {% endwith %}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-neutral-500">{% trans 'Eventos' %}</dt>
+          <dd class="font-medium">{{ nucleo.evento_set.count|default:0 }}</dd>
+        </div>
+      </dl>
+    </div>
+  </article>
+  <span class="sr-only">{% trans 'Ver detalhes do núcleo' %}</span>
+</a>

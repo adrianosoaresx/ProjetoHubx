@@ -7,7 +7,14 @@ from faker import Faker
 from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
 from agenda.models import FeedbackNota, InscricaoEvento, ParceriaEvento
-from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory
+# O app 'discussao' foi removido; factories opcionais
+try:  # pragma: no cover
+    from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory  # type: ignore
+    DISCUSSAO_INSTALLED = True
+except Exception:
+    CategoriaDiscussaoFactory = None  # type: ignore
+    TopicoDiscussaoFactory = None  # type: ignore
+    DISCUSSAO_INSTALLED = False
 from empresas.factories import EmpresaFactory
 from empresas.models import Empresa
 from feed.factories import PostFactory
@@ -98,12 +105,13 @@ class Command(BaseCommand):
             self.stdout.write(f"Criando tokens de acesso para {organizacao.nome}...")
             TokenAcessoFactory.create_batch(5, organizacao=organizacao, usuario=random.choice(clientes))
 
-            self.stdout.write(f"Criando categorias de discussão para {organizacao.nome}...")
-            categorias = CategoriaDiscussaoFactory.create_batch(3, organizacao=organizacao)
+            if DISCUSSAO_INSTALLED:
+                self.stdout.write(f"Criando categorias de discussão para {organizacao.nome}...")
+                categorias = CategoriaDiscussaoFactory.create_batch(3, organizacao=organizacao)  # type: ignore[attr-defined]
 
-            for categoria in categorias:
-                self.stdout.write(f"Criando tópicos para a categoria {categoria.nome}...")
-                TopicoDiscussaoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))
+                for categoria in categorias:
+                    self.stdout.write(f"Criando tópicos para a categoria {categoria.nome}...")
+                    TopicoDiscussaoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))  # type: ignore[attr-defined]
 
             self.stdout.write(f"Criando postagens no feed para {organizacao.nome}...")
             for cliente in clientes:
