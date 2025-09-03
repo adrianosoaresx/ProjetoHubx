@@ -4,7 +4,7 @@
 {% block title %}{{ object.nome }}{% endblock %}
 
 {% block content %}
-<section class="max-w-3xl mx-auto py-8">
+<section class="max-w-5xl mx-auto py-8">
   {% if object.cover %}
   <img src="{{ object.cover.url }}" class="w-full h-48 object-cover rounded" alt="Capa de {{ object.nome }}" />
   {% endif %}
@@ -15,158 +15,124 @@
       <p class="text-sm text-gray-500">{{ object.slug }}</p>
     </div>
   </div>
-  <div class="mt-4 p-4 bg-blue-50 border rounded">
-    <p class="font-medium">{% trans 'Mensalidade' %}: {{ object.mensalidade|localize }}</p>
+  
+  <!-- Cards de totais -->
+  <div class="mt-6 grid grid-cols-1 sm:grid-cols-4 gap-4">
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Membros' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_membros }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Eventos (ativos + concluídos)' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Eventos ativos' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_ativos }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Eventos concluídos' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_concluidos }}</div>
+    </div>
   </div>
-  <div id="metrics" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-  <div id="membro-status" class="mt-2 text-sm text-gray-700"></div>
+  <!-- Abas -->
+  <div class="mt-8">
+    <div class="border-b border-neutral-200">
+      <nav class="-mb-px flex gap-6" aria-label="Tabs">
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="membros">{% trans 'Membros' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="feed">{% trans 'Feed do Núcleo' %}</button>
+      </nav>
+    </div>
 
-  <h2 class="mt-6 font-semibold">{% trans 'Membros' %}</h2>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    {% for part in membros_ativos %}
-      {% include "nucleos/partials/membro.html" with part=part object=object %}
-    {% empty %}
-      <p class="col-span-full text-center text-gray-500">{% trans 'Sem membros.' %}</p>
-    {% endfor %}
-  </div>
+    <div id="tab-panels" class="mt-6">
+      <!-- Painel: Membros -->
+      <div class="tab-panel" data-tab="membros">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
+          {% for part in membros_ativos %}
+            {% include 'nucleos/partials/membro_card.html' with part=part %}
+          {% empty %}
+            <p class="col-span-full text-center text-gray-500">{% trans 'Sem membros.' %}</p>
+          {% endfor %}
+        </div>
 
-  {% if membros_pendentes %}
-  <h2 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h2>
-  <table class="w-full text-left" id="pendentes">
-    <thead>
-      <tr><th>{% trans 'Usuário' %}</th><th>{% trans 'Solicitado em' %}</th><th></th></tr>
-    </thead>
-    <tbody>
-    {% for part in membros_pendentes %}
-      <tr id="pendente-{{ part.id }}">
-        <td>{{ part.user.get_full_name|default:part.user.username }}</td>
-        <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
-        <td class="space-x-2">
-          <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
-          <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-
-  {% if suplentes %}
-  <h2 class="mt-6 font-semibold">{% trans 'Suplentes' %}</h2>
-  <ul>
-    {% for s in suplentes %}
-    <li>
-      {{ s.usuario.get_full_name|default:s.usuario.username }} -
-      {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }} -
-      {% if s.ativo %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}
-      {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-      <form method="post" action="{% url 'nucleos:suplente_remover' object.pk s.id %}" class="inline">
-        {% csrf_token %}
-        <button class="text-sm text-red-600">{% trans 'Remover' %}</button>
-      </form>
-      {% endif %}
-    </li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-  <div class="mt-4">
-    <a href="{% url 'nucleos:suplente_adicionar' object.pk %}" class="text-blue-600">{% trans 'Adicionar Suplente' %}</a>
-  </div>
-  {% endif %}
-
-  {% if request.user.user_type == 'admin' %}
-  <div class="mt-4">
-    <button type="button" class="px-4 py-2 bg-purple-600 text-white rounded" hx-get="{% url 'nucleos:convites_modal' object.pk %}" hx-target="#modal">
-      {% trans 'Gerenciar convites' %} ({{ convites_pendentes }})
-    </button>
-    <p class="text-sm text-gray-500 mt-1">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
-  </div>
-  {% endif %}
-
-
-  <h2 class="mt-6 font-semibold">{% trans 'Eventos' %}</h2>
-  <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% for evento in eventos %}
-      <a href="{% url 'agenda:evento_detalhe' evento.pk %}" class="block bg-white rounded shadow p-4 hover:shadow-md">
-        {% if evento.avatar %}
-        <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="w-full h-32 object-cover rounded mb-4" />
+        {% if membros_pendentes %}
+        <h3 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h3>
+        <table class="w-full text-left" id="pendentes">
+          <thead>
+            <tr><th>{% trans 'Usuário' %}</th><th>{% trans 'Solicitado em' %}</th><th></th></tr>
+          </thead>
+          <tbody>
+          {% for part in membros_pendentes %}
+            <tr id="pendente-{{ part.id }}">
+              <td>{{ part.user.get_full_name|default:part.user.username }}</td>
+              <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
+              <td class="space-x-2">
+                <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
+                <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
         {% endif %}
-        <h3 class="text-lg font-semibold">{{ evento.titulo }}</h3>
-        <p class="text-sm text-gray-500">{{ evento.data_inicio|date:'d/m/Y H:i' }}</p>
-        <p class="text-sm">{{ evento.num_inscritos }} {% trans 'inscritos' %}</p>
-        <p class="text-sm text-gray-600">{{ evento.get_status_display }}</p>
-      </a>
-    {% empty %}
-      <p class="text-sm text-gray-500">{% trans 'Sem eventos.' %}</p>
-    {% endfor %}
+
+        {% if suplentes %}
+        <h3 class="mt-6 font-semibold">{% trans 'Suplentes' %}</h3>
+        <ul class="list-disc pl-5 text-sm text-neutral-700">
+          {% for s in suplentes %}
+            <li>
+              {{ s.usuario.get_full_name|default:s.usuario.username }} —
+              {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
+            </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
+        <div class="mt-4">
+          <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Painel: Eventos -->
+      <div class="tab-panel hidden" data-tab="eventos">
+        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {% for evento in eventos %}
+            {% include 'agenda/partials/card.html' with evento=evento %}
+          {% empty %}
+            <p class="text-sm text-gray-500">{% trans 'Sem eventos.' %}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Painel: Feed -->
+      <div class="tab-panel hidden" data-tab="feed">
+        {% if pode_postar %}
+        <div class="mb-4">
+          <button type="button" class="px-4 py-2 bg-green-600 text-white rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
+        </div>
+        {% endif %}
+        {% include 'feed/_grid.html' with posts=nucleo_posts %}
+      </div>
+    </div>
+    <div id="modal"></div>
   </div>
 
-    <div class="mt-6 space-x-2">
-    </div>
-
-
-    {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-    <div class="mt-4">
-      <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
-    </div>
-    {% endif %}
-    {% if pode_postar %}
-    <div class="mt-4">
-      <button type="button" class="px-4 py-2 bg-green-600 text-white rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
-    </div>
-    {% endif %}
-    <div id="modal"></div>
+  <script>
+    // Tabs simples em JS vanilla
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-panel');
+    function activate(tab) {
+      tabButtons.forEach(btn => btn.dataset.active = (btn.dataset.tab === tab));
+      panels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.tab !== tab));
+    }
+    // Ativa 'membros' por padrão
+    activate('membros');
+    tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
+  </script>
   </section>
   {% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const statusEl = document.getElementById('membro-status');
-  if (!statusEl) return;
-  const url = "{% url 'nucleos_api:nucleo-membro-status' object.pk %}";
-  const papelCoordenador = gettext('Coordenador');
-  const papelMembro = gettext('Membro');
-  const statusAtivo = gettext('Ativo');
-  const statusInativo = gettext('Inativo');
-  const statusSuspenso = gettext('Suspenso');
-  function updateStatus() {
-    fetch(url)
-      .then(resp => resp.ok ? resp.json() : null)
-      .then(data => {
-        if (!data) return;
-        let papel = data.papel === 'coordenador' ? papelCoordenador : papelMembro;
-        let status = data.ativo ? statusAtivo : statusInativo;
-        if (data.suspenso) status += ' (' + statusSuspenso + ')';
-        statusEl.textContent = papel + ' - ' + status;
-      })
-      .catch(() => {});
-  }
-  updateStatus();
-  document.body.addEventListener('htmx:afterRequest', updateStatus);
-
-  const metricsContainer = document.getElementById('metrics');
-  if (metricsContainer) {
-    fetch("{{ metrics_url }}")
-      .then(resp => (resp.ok ? resp.json() : null))
-      .then(data => {
-        if (!data) return;
-        const items = [
-          ['{% trans "Total de membros" %}', data.total_membros],
-          ['{% trans "Total de suplentes" %}', data.total_suplentes],
-          ['{% trans "Taxa de participação" %}', data.taxa_participacao]
-        ];
-        if (data.membros_por_status) {
-          items.push(['{% trans "Membros por status" %}', JSON.stringify(data.membros_por_status)]);
-        }
-        metricsContainer.innerHTML = items
-          .map(i => `<div class="p-4 border rounded"><div class="font-medium">${i[0]}</div><div>${i[1]}</div></div>`)
-          .join('');
-      })
-      .catch(() => {});
-  }
-});
-</script>
-{% endblock %}

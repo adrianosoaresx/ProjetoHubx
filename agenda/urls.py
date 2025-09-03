@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from .views import (
+    EventoListView,
     BriefingEventoCreateView,
     BriefingEventoListView,
     BriefingEventoStatusView,
@@ -31,6 +32,7 @@ from .views import (
 app_name = "agenda"
 
 urlpatterns = [
+    path("lista/", EventoListView.as_view(), name="lista"),
     path("", views.calendario, name="calendario"),
     path("<int:ano>/<int:mes>/", views.calendario, name="calendario_mes"),
     path("dia/<slug:dia_iso>/", views.lista_eventos, name="lista_eventos"),

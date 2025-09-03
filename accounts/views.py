@@ -19,7 +19,8 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Q
+from django.db.models import Q, Count
+from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -56,12 +57,89 @@ User = get_user_model()
 @login_required
 def perfil_home(request):
     """Exibe a página de detalhes do perfil do usuário."""
-    return render(request, "perfil/detail.html")
+    user = request.user
+
+    # Núcleos em que o usuário participa (ativos)
+    from nucleos.models import Nucleo
+    from agenda.models import InscricaoEvento
+    from empresas.models import Empresa
+
+    nucleos = (
+        Nucleo.objects.filter(
+            participacoes__user=user,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        )
+        .annotate(
+            num_membros=Count(
+                "participacoes",
+                filter=Q(
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                ),
+                distinct=True,
+            ),
+            num_eventos=Count("evento", distinct=True),
+        )
+        .prefetch_related("participacoes__user")
+    )
+
+    # Inscrições do usuário em eventos (inclui inscrito/participou)
+    inscricoes = (
+        InscricaoEvento.objects.filter(user=user)
+        .select_related("evento__nucleo", "evento__coordenador")
+        .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
+    )
+
+    # Empresas do usuário
+    empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
+
+    return render(
+        request,
+        "perfil/detail.html",
+        {"nucleos": nucleos, "inscricoes": inscricoes, "empresas": empresas},
+    )
 
 
 def perfil_publico(request, pk):
     perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
-    return render(request, "perfil/publico.html", {"perfil": perfil})
+    from nucleos.models import Nucleo
+    from agenda.models import InscricaoEvento
+    from empresas.models import Empresa
+
+    nucleos = (
+        Nucleo.objects.filter(
+            participacoes__user=perfil,
+            participacoes__status="ativo",
+            participacoes__status_suspensao=False,
+        )
+        .annotate(
+            num_membros=Count(
+                "participacoes",
+                filter=Q(
+                    participacoes__status="ativo",
+                    participacoes__status_suspensao=False,
+                ),
+                distinct=True,
+            ),
+            num_eventos=Count("evento", distinct=True),
+        )
+        .prefetch_related("participacoes__user")
+    )
+
+    inscricoes = (
+        InscricaoEvento.objects.filter(user=perfil)
+        .select_related("evento__nucleo", "evento__coordenador")
+        .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
+    )
+
+    empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
+
+    return render(
+        request,
+        "perfil/publico.html",
+        {"perfil": perfil, "nucleos": nucleos, "inscricoes": inscricoes, "empresas": empresas},
+    )
 
 
 @login_required
@@ -815,10 +893,13 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
 
     def get_queryset(self):
         User = get_user_model()
+        org = self.request.user.organizacao
         qs = (
-            User.objects.filter(
-                user_type=UserType.ASSOCIADO.value,
-                organizacao=self.request.user.organizacao,
+            User.objects.filter(organizacao=org)
+            .filter(
+                Q(is_associado=True)
+                | Q(user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value])
+                | Q(is_coordenador=True)
             )
             .select_related("organizacao", "nucleo")
         )
@@ -830,7 +911,29 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
                 | Q(first_name__icontains=q)
                 | Q(last_name__icontains=q)
             )
-        return qs.order_by("username")
+        # Ordenação alfabética por username (case-insensitive)
+        qs = qs.annotate(_user=Lower("username"))
+        return qs.order_by("_user")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        org = getattr(self.request.user, "organizacao", None)
+        if org:
+            # Totais por organização
+            context["total_usuarios"] = User.objects.filter(organizacao=org).count()
+            # Associados sem vínculo a núcleo
+            context["total_associados"] = (
+                User.objects.filter(organizacao=org, is_associado=True, nucleo__isnull=True).count()
+            )
+            # Nucleados (inclui coordenadores vinculados a um núcleo)
+            context["total_nucleados"] = (
+                User.objects.filter(organizacao=org, is_associado=True, nucleo__isnull=False).count()
+            )
+        else:
+            context["total_usuarios"] = 0
+            context["total_associados"] = 0
+            context["total_nucleados"] = 0
+        return context
 
 
 class UserViewSet(viewsets.ModelViewSet):

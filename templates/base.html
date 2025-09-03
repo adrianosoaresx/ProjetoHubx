@@ -55,6 +55,7 @@
   {% endif %}
 
   <!-- Navbar -->
+  {% if not hide_nav %}
   <header class="bg-white shadow">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}">HubX</a>
@@ -95,8 +96,8 @@
         <a href="{% url 'nucleos:list' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-users"></i> {% trans "Núcleos" %}
         </a>
-        <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fa-solid fa-calendar-days"></i> {% trans "Agenda" %}
+  <a href="{% url 'eventos:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fa-solid fa-calendar-days"></i> {% trans "Eventos" %}
         </a>
         <a href="{% url 'feed:listar' %}" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-rss"></i> {% trans "Feed" %}
@@ -128,8 +129,8 @@
         </a>
         {% endif %}
         {% if user.user_type != 'root' %}
-        <a href="{% url 'agenda:calendario' %}" class="flex items-center gap-x-2 hover:text-primary transition">
-          <i class="fa-solid fa-calendar-days"></i> {% trans "Agenda" %}
+  <a href="{% url 'eventos:lista' %}" class="flex items-center gap-x-2 hover:text-primary transition">
+          <i class="fa-solid fa-calendar-days"></i> {% trans "Eventos" %}
         </a>
         {% endif %}
   {# App Discussão removido: link ocultado #}
@@ -190,6 +191,7 @@
       </nav>
     </div>
   </header>
+  {% endif %}
 
   <!-- Conteúdo principal -->
   <main id="main-content" class="flex-grow">

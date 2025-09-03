@@ -17,6 +17,21 @@
     />
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
   </form>
+  <!-- Cards de totais -->
+  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Usuários' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_usuarios }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Associados' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_associados }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Nucleados' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_nucleados }}</div>
+    </div>
+  </div>
   <main>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de usuários' %}">
       {% for associado in associados %}
@@ -26,5 +41,17 @@
       {% endfor %}
     </div>
   </main>
+
+  {% if is_paginated %}
+  <nav class="mt-6 flex justify-center items-center gap-2">
+    {% if page_obj.has_previous %}
+      <a class="btn-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}">{% trans 'Anterior' %}</a>
+    {% endif %}
+    <span class="text-sm text-neutral-600">{% blocktrans %}Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}{% endblocktrans %}</span>
+    {% if page_obj.has_next %}
+      <a class="btn-secondary" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}">{% trans 'Próxima' %}</a>
+    {% endif %}
+  </nav>
+  {% endif %}
 </section>
 {% endblock %}

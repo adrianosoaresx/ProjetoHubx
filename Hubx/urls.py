@@ -25,10 +25,12 @@ urlpatterns = [
     path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
-    # Agenda/Eventos
+    # Eventos (novo namespace) e compat com rotas antigas de Agenda
+    path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
+    # Rotas legadas ainda funcionam apontando para o mesmo conjunto
     path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
-    path("eventos/", RedirectView.as_view(url="/agenda/", permanent=True)),
-    path("eventos/<path:rest>/", RedirectView.as_view(url="/agenda/%(rest)s", permanent=True)),
+    # Redireciona /agenda para /eventos no futuro (mantido por enquanto)
+    # path("eventos/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
     # Discussão e Feed (web)
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
@@ -83,6 +85,11 @@ urlpatterns = [
         "api/feed/",
         include(("feed.api_urls", "feed_api"), namespace="feed_api"),
     ),
+    path(
+        "api/eventos/",
+        include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
+    ),
+    # Mantém API antiga
     path(
         "api/agenda/",
         include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),

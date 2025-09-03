@@ -35,9 +35,9 @@
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
         <i class="fa-solid fa-calendar-days text-indigo-600 text-3xl mb-4"></i>
-        <h3 class="font-semibold text-neutral-900">{% trans "Agenda" %}</h3>
+  <h3 class="font-semibold text-neutral-900">{% trans "Eventos" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Organize eventos e gerencie inscrições." %}</p>
-        <a href="{% url 'agenda:calendario' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
+  <a href="{% url 'eventos:calendario' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
         <i class="fa-solid fa-users text-indigo-600 text-3xl mb-4"></i>
@@ -65,7 +65,7 @@
   <div class="max-w-7xl mx-auto px-4">
     {% now 'Y-m-d' as today %}
     <h2 class="text-xl font-semibold mb-4">{% trans "Próximos Eventos" %}</h2>
-    <div id="eventos-destaque" hx-get="{% url 'agenda:lista_eventos' today %}" hx-trigger="load" hx-swap="innerHTML">
+  <div id="eventos-destaque" hx-get="{% url 'eventos:lista_eventos' today %}" hx-trigger="load" hx-swap="innerHTML">
       <p class="text-center text-sm text-gray-500">{% trans "Carregando eventos..." %}</p>
     </div>
   </div>

@@ -13,7 +13,7 @@ from django.contrib.auth.mixins import (
 )
 from django import forms
 from django.core.exceptions import PermissionDenied
-from django.db.models import F, Q
+from django.db.models import F, Q, Count
 from django.http import (
     Http404,
     HttpResponse,
@@ -67,6 +67,46 @@ from .models import (
 from .tasks import notificar_briefing_status, upload_material_divulgacao
 
 User = get_user_model()
+
+
+class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
+    template_name = "agenda/eventos_lista.html"
+    context_object_name = "eventos"
+    paginate_by = 12
+
+    def get_queryset(self):
+        user = self.request.user
+        from django.db.models import Count
+
+        qs = (
+            Evento.objects.filter(organizacao=user.organizacao)
+            .select_related("nucleo", "coordenador", "organizacao")
+            .prefetch_related("inscricoes")
+        )
+        # Filtro: se não for admin, mostra apenas eventos em que está inscrito ou públicos da org
+        if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
+            # Eventos públicos da org ou onde o usuário está inscrito
+            qs = qs.filter(Q(publico_alvo=0) | Q(inscricoes__user=user)).distinct()
+
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q) | Q(nucleo__nome__icontains=q))
+
+        # anotar número de inscritos por evento
+        qs = qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
+        return qs.order_by("-data_inicio")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        ctx["pode_criar_evento"] = user.get_tipo_usuario in {UserType.ADMIN.value}
+        # Totais baseados no queryset filtrado (sem paginação)
+        qs = self.get_queryset()
+        ctx["total_eventos"] = qs.count()
+        ctx["total_eventos_ativos"] = qs.filter(status=0).count()
+        ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
+        ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
+        return ctx
 
 
 def _queryset_por_organizacao(request):
@@ -266,11 +306,13 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
         user = self.request.user
         evento: Evento = self.object
-        confirmada = evento.inscricoes.filter(
-            user=user, status="confirmada"
-        ).exists()
+        minha_inscricao = (
+            evento.inscricoes.filter(user=user, status="confirmada").select_related("user").first()
+        )
+        confirmada = bool(minha_inscricao)
         context["inscricao_confirmada"] = confirmada
         context["avaliacao_permitida"] = confirmada and timezone.now() > evento.data_fim
+        context["inscricao"] = minha_inscricao
 
         evento = context["object"]
         context.update(
@@ -286,13 +328,49 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
                 "orcamento": evento.orcamento,
                 "orcamento_estimado": evento.orcamento_estimado,
                 "valor_gasto": evento.valor_gasto,
-                "inscricao_confirmada": evento.inscricoes.filter(
-                    user=self.request.user, status="confirmada"
-                ).exists(),
+                "inscricao_confirmada": confirmada,
             }
         )
 
         return context
+
+
+class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
+    model = Evento
+    template_name = "agenda/evento_list.html"
+    context_object_name = "eventos"
+    paginate_by = 12
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Evento.objects.select_related("organizacao", "nucleo", "coordenador")
+        q = self.request.GET.get("q", "").strip()
+
+        # Admin da organização vê todos os eventos da organização
+        if getattr(user, "get_tipo_usuario", None) and user.get_tipo_usuario == "admin":
+            qs = qs.filter(organizacao=user.organizacao)
+        else:
+            # Demais usuários: eventos em que está inscrito
+            qs = qs.filter(inscricoes__user=user).distinct()
+
+        if q:
+            qs = qs.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q))
+
+        return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        ctx["is_admin_org"] = getattr(user, "get_tipo_usuario", None) and user.get_tipo_usuario == "admin"
+        ctx["q"] = self.request.GET.get("q", "").strip()
+        # Totais para cards na lista
+        qs = self.get_queryset()
+        ctx["total_eventos"] = qs.count()
+        ctx["total_eventos_ativos"] = qs.filter(status=0).count()
+        ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
+        from .models import InscricaoEvento
+        ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
+        return ctx
 
 
 class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):

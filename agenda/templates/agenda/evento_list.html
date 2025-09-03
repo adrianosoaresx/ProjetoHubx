@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Meus Eventos' %}{% endblock %}
+
+{% block content %}
+<section class="max-w-6xl mx-auto mt-8 px-4">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">{% if is_admin_org %}{% trans 'Eventos da Organização' %}{% else %}{% trans 'Meus Eventos' %}{% endif %}</h1>
+    {% if is_admin_org %}
+      <a href="{% url 'agenda:evento_novo' %}" class="btn-primary">{% trans 'Novo evento' %}</a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="mb-6 flex gap-2">
+    <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
+    <input id="q" name="q" value="{{ q }}" class="border rounded px-3 py-2 flex-grow" placeholder="{% trans 'Buscar' %}" />
+    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
+  </form>
+  <!-- Cards de totais -->
+  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Eventos' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Ativos' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_ativos }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Concluídos' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_concluidos }}</div>
+    </div>
+    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div class="text-sm text-neutral-500">{% trans 'Inscritos (total)' %}</div>
+      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_inscritos }}</div>
+    </div>
+  </div>
+
+  <main>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de eventos' %}">
+      {% for evento in eventos %}
+        {% include 'partials/cards/evento_card.html' %}
+      {% empty %}
+        <p class="col-span-full text-center text-neutral-500">{% trans 'Nenhum evento encontrado.' %}</p>
+      {% endfor %}
+    </div>
+  </main>
+
+  {% if is_paginated %}
+  <nav class="mt-6 flex justify-center items-center gap-2">
+    {% if page_obj.has_previous %}
+      <a class="btn-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ q }}">{% trans 'Anterior' %}</a>
+    {% endif %}
+    <span class="text-sm text-neutral-600">{% blocktrans %}Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}{% endblocktrans %}</span>
+    {% if page_obj.has_next %}
+      <a class="btn-secondary" href="?page={{ page_obj.next_page_number }}&q={{ q }}">{% trans 'Próxima' %}</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

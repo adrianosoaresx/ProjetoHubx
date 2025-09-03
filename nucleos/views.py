@@ -91,6 +91,28 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        # Totais: número de núcleos e membros ativos na organização do usuário
+        qs = self.get_queryset()
+        ctx["total_nucleos"] = len(qs)
+        nucleo_ids = [n.pk for n in qs]
+        # contar membros ativos (sem suspensão) somando participações únicas por usuário
+        from .models import ParticipacaoNucleo
+        ctx["total_membros_org"] = (
+            ParticipacaoNucleo.objects.filter(
+                nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False
+            )
+            .values("user")
+            .distinct()
+            .count()
+        )
+        # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
+        ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
+        ctx["total_eventos_ativos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids, status=0
+        ).count()
+        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
+            nucleo_id__in=nucleo_ids, status=1
+        ).count()
         return ctx
 
 
@@ -215,26 +237,79 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object
-        ctx["membros_ativos"] = nucleo.participacoes.filter(status="ativo")
+        # Lista de membros ativos (nucleados): status ativo e não suspensos
+        ctx["membros_ativos"] = nucleo.participacoes.filter(
+            status="ativo",
+            status_suspensao=False,
+            user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
+        )
         ctx["coordenadores"] = nucleo.participacoes.filter(status="ativo", papel="coordenador")
-        if self.request.user.user_type in {
-            UserType.ADMIN,
-            UserType.COORDENADOR,
-        }:
-            ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
-            ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
-            ctx["convites_pendentes"] = nucleo.convitenucleo_set.filter(usado_em__isnull=True).count()
-            limite = getattr(settings, "CONVITE_NUCLEO_DIARIO_LIMITE", 5)
-            cache_key = f"convites_nucleo:{self.request.user.id}:{timezone.now().date()}"
-            count = cache.get(cache_key, 0)
-            ctx["convites_restantes"] = max(limite - count, 0)
+        # Pendentes e suplentes (somente leitura)
+        ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
+        ctx["suplentes"] = nucleo.coordenadores_suplentes.all()
         part = nucleo.participacoes.filter(user=self.request.user).first()
-        ctx["mostrar_solicitar"] = not part or part.status == "inativo"
+        ctx["mostrar_solicitar"] = (not part) or part.status == "inativo"
         ctx["pode_postar"] = bool(part and part.status == "ativo" and not part.status_suspensao)
 
-        ctx["eventos"] = Evento.objects.filter(nucleo=nucleo).annotate(
-            num_inscritos=Count("inscricoes")
-        )
+        eventos_qs = Evento.objects.filter(nucleo=nucleo)
+        ctx["eventos"] = eventos_qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
+        # Totais para cards
+        ctx["total_membros"] = ctx["membros_ativos"].count()
+        # Total de eventos considerando apenas ativos (0) e concluídos (1)
+        ctx["total_eventos"] = eventos_qs.filter(status__in=[0, 1]).count()
+        ctx["total_eventos_ativos"] = eventos_qs.filter(status=0).count()
+        ctx["total_eventos_concluidos"] = eventos_qs.filter(status=1).count()
+
+        # Posts do feed do núcleo para a aba "Feed"
+        try:
+            from django.db.models import OuterRef, Subquery, Exists
+            from feed.models import Post, Bookmark, Flag, Reacao, ModeracaoPost
+
+            user = self.request.user
+            latest_status = (
+                ModeracaoPost.objects.filter(post=OuterRef("pk")).order_by("-created_at").values("status")[:1]
+            )
+            posts_qs = (
+                Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+                .prefetch_related("reacoes", "comments", "tags", "bookmarks", "flags")
+                .filter(deleted=False, tipo_feed="nucleo", nucleo=nucleo)
+                .annotate(mod_status=Subquery(latest_status))
+                .exclude(mod_status="rejeitado")
+                .annotate(
+                    like_count=Count(
+                        "reacoes",
+                        filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                        distinct=True,
+                    ),
+                    share_count=Count(
+                        "reacoes",
+                        filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                        distinct=True,
+                    ),
+                    is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+                    is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+                    is_liked=Exists(
+                        Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)
+                    ),
+                    is_shared=Exists(
+                        Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)
+                    ),
+                )
+                .distinct()
+            )
+            if not user.is_staff:
+                posts_qs = posts_qs.filter(Q(mod_status="aprovado") | Q(autor=user))
+            ctx["nucleo_posts"] = posts_qs
+        except Exception:
+            # Se algo falhar nas anotações, degrade com lista simples
+            try:
+                from feed.models import Post
+
+                ctx["nucleo_posts"] = Post.objects.filter(
+                    deleted=False, tipo_feed="nucleo", nucleo=nucleo
+                ).select_related("autor").order_by("-created_at")
+            except Exception:
+                ctx["nucleo_posts"] = []
         return ctx
 
 

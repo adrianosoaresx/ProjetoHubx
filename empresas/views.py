@@ -7,6 +7,7 @@ from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext_lazy as _
+from django.utils.http import urlencode
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
@@ -77,6 +78,16 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["empresas"] = context.get("object_list")
+        # Total de empresas considerando filtros atuais
+        qs = self.get_queryset()
+        context["total_empresas"] = qs.count()
+        # querystring sem o parâmetro de página para paginação limpa
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        context["querystring"] = urlencode(params, doseq=True)
         return context
 
     def get_template_names(self):  # type: ignore[override]

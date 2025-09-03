@@ -338,6 +338,15 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         form.instance.autor = self.request.user
         form.instance.organizacao = form.cleaned_data.get("organizacao") or self.request.user.organizacao
         response = super().form_valid(form)
+
+        # Processa tags digitadas no campo de texto (separadas por vírgula)
+        tags_text = (self.request.POST.get("tags_text", "") or "").strip()
+        if tags_text:
+            tag_names = [t.strip() for t in tags_text.split(",") if t.strip()]
+            if tag_names:
+                tags_qs = Tag.objects.filter(nome__in=tag_names, deleted=False)
+                # Associa apenas tags existentes nesta versão
+                self.object.tags.set(list(tags_qs))
         from feed.tasks import POSTS_CREATED, notify_new_post
 
         POSTS_CREATED.inc()
@@ -345,7 +354,8 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
             notify_new_post(str(self.object.id))
         else:
             notify_new_post.delay(str(self.object.id))
-        if self.request.headers.get("HX-Request") == "true":
+        # Se for uma requisição via HTMX, retornar instrução de redirecionamento
+        if self.request.headers.get("HX-Request"):
             return HttpResponse(status=204, headers={"HX-Redirect": self.get_success_url()})
         return response
 

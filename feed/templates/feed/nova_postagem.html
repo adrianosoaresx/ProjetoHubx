@@ -28,8 +28,15 @@
         hx-post="{% url 'feed:nova_postagem' %}"
         hx-encoding="multipart/form-data"
         enctype="multipart/form-data"
+        id="nova-postagem-form"
         class="post-form bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
 
     <!-- Conteúdo -->
     <div>
@@ -43,32 +50,26 @@
           placeholder="{% trans 'O que você gostaria de compartilhar?' %}"
         rows="6"
       >{{ form.conteudo.value|default_if_none:"" }}</textarea>
-      <span id="char-count"></span>
+  <span id="char-count" class="text-xs text-neutral-500"></span>
       {% if form.conteudo.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.conteudo.errors }}</p>
       {% endif %}
         <p class="text-sm text-neutral-500 mt-1">{% trans "Compartilhe ideias, atualizações ou conteúdos com sua rede." %}</p>
     </div>
 
+    <input type="hidden" name="tipo_feed" value="global">
+
     <div class="mb-4">
-        <label for="id_tipo_feed" class="font-semibold mb-1 block">{% trans "Tipo de Feed" %}</label>
-      {{ form.tipo_feed }}
-    </div>
-    <div class="mb-4">
-        <label for="id_organizacao" class="font-semibold mb-1 block">{% trans "Organização" %}</label>
-      {{ form.organizacao }}
-    </div>
-    <div class="mb-4">
-        <label for="id_nucleo" class="font-semibold mb-1 block">{% trans "Núcleo" %}</label>
-      {{ form.nucleo }}
-    </div>
-    <div class="mb-4">
-        <label for="id_evento" class="font-semibold mb-1 block">{% trans "Evento" %}</label>
-      {{ form.evento }}
-    </div>
-    <div class="mb-4">
-        <label for="{{ form.tags.id_for_label }}" class="font-semibold mb-1 block">{% trans "Tags" %}</label>
-      {{ form.tags }}
+      <label for="id_tags_text" class="font-semibold mb-1 block">{% trans "Tags" %}</label>
+      <input
+        type="text"
+        id="id_tags_text"
+        name="tags_text"
+        class="mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+        placeholder="{% trans 'Digite as tags separadas por vírgula (ex.: inovação, eventos, rede)' %}"
+        autocomplete="off"
+      />
+      <p class="text-xs text-neutral-500 mt-1">{% trans "Somente tags já existentes serão associadas nesta versão." %}</p>
     </div>
 
     <!-- Arquivo -->
@@ -86,8 +87,8 @@
 
     <!-- Ações -->
     <div class="flex justify-end gap-4 mt-6">
-      <button type="submit"
-              class="inline-flex items-center gap-2 rounded bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500" aria-label="{% trans 'Salvar' %}">
+  <button type="submit"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Salvar' %}">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
           <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 0 1 0 1.42l-7.5 7.5a1 1 0 0 1-1.42 0l-3.5-3.5a1 1 0 1 1 1.42-1.42l2.79 2.79 6.79-6.79a1 1 0 0 1 1.42 0Z" clip-rule="evenodd" />
         </svg>
