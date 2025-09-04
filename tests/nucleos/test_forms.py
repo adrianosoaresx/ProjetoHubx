@@ -13,7 +13,6 @@ def test_nucleo_form_fields():
     form = NucleoForm()
     assert list(form.fields) == [
         "nome",
-        "slug",
         "descricao",
         "avatar",
         "cover",
@@ -23,13 +22,13 @@ def test_nucleo_form_fields():
 
 
 def test_form_validation_errors():
-    form = NucleoForm(data={"nome": "", "slug": ""})
+    form = NucleoForm(data={"nome": ""})
     assert not form.is_valid()
     assert "nome" in form.errors
 
 
 def test_mensalidade_negative_value():
-    form = NucleoForm(data={"nome": "N", "slug": "n", "mensalidade": -1})
+    form = NucleoForm(data={"nome": "N", "mensalidade": -1})
     assert not form.is_valid()
     assert "mensalidade" in form.errors
 
@@ -40,15 +39,13 @@ def test_search_form_contains_field():
 
 
 def test_suplente_form_date_validation():
-    form = SuplenteForm(
-        data={"usuario": None, "periodo_inicio": "2024-01-02", "periodo_fim": "2024-01-01"}
-    )
+    form = SuplenteForm(data={"usuario": None, "periodo_inicio": "2024-01-02", "periodo_fim": "2024-01-01"})
     assert not form.is_valid()
 
 
 def test_suplente_form_usuario_queryset_filters_active_members():
     org = Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=org)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=org)
     User = get_user_model()
     ativo = User.objects.create_user(
         username="a",

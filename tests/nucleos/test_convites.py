@@ -50,7 +50,7 @@ def _auth(client, user):
 
 
 def test_convite_flow(api_client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     before_generated = convites_gerados_total._value.get()
     before_used = convites_usados_total._value.get()
 
@@ -65,14 +65,12 @@ def test_convite_flow(api_client, admin_user, membro_user, organizacao):
     accept_url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={token}"
     resp = api_client.get(accept_url)
     assert resp.status_code == 200
-    assert ParticipacaoNucleo.objects.filter(
-        user=membro_user, nucleo=nucleo, status="ativo"
-    ).exists()
+    assert ParticipacaoNucleo.objects.filter(user=membro_user, nucleo=nucleo, status="ativo").exists()
     assert convites_usados_total._value.get() == before_used + 1
 
 
 def test_convite_apenas_admin(api_client, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N2", organizacao=organizacao)
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-convites", kwargs={"pk": nucleo.pk})
     resp = api_client.post(url, {"email": "alguem@example.com", "papel": "membro"})
@@ -80,13 +78,9 @@ def test_convite_apenas_admin(api_client, membro_user, organizacao):
 
 
 def test_convite_expirado(api_client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
-    convite = ConviteNucleo.objects.create(
-        email=membro_user.email, papel="membro", nucleo=nucleo
-    )
-    ConviteNucleo.objects.filter(pk=convite.pk).update(
-        created_at=timezone.now() - timezone.timedelta(days=8)
-    )
+    nucleo = Nucleo.objects.create(nome="N3", organizacao=organizacao)
+    convite = ConviteNucleo.objects.create(email=membro_user.email, papel="membro", nucleo=nucleo)
+    ConviteNucleo.objects.filter(pk=convite.pk).update(created_at=timezone.now() - timezone.timedelta(days=8))
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
     resp = api_client.get(url)
@@ -94,7 +88,7 @@ def test_convite_expirado(api_client, admin_user, membro_user, organizacao):
 
 
 def test_user_belongs_to_nucleo_suspenso(membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N4", slug="n4", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N4", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(
         user=membro_user,
         nucleo=nucleo,
@@ -108,7 +102,7 @@ def test_user_belongs_to_nucleo_suspenso(membro_user, organizacao):
 
 
 def test_revogar_convite(api_client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N5", slug="n5", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N5", organizacao=organizacao)
     _auth(api_client, admin_user)
     create_url = reverse("nucleos_api:nucleo-convites", kwargs={"pk": nucleo.pk})
     resp = api_client.post(create_url, {"email": membro_user.email, "papel": "membro"})
@@ -127,7 +121,7 @@ def test_convite_quota_diaria(api_client, admin_user, organizacao):
     from django.core.cache import cache
     from django.test import override_settings
 
-    nucleo = Nucleo.objects.create(nome="N6", slug="n6", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N6", organizacao=organizacao)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-convites", kwargs={"pk": nucleo.pk})
     cache.clear()
@@ -139,10 +133,8 @@ def test_convite_quota_diaria(api_client, admin_user, organizacao):
 
 
 def test_convite_nao_pode_ser_reutilizado(api_client, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
-    convite = ConviteNucleo.objects.create(
-        email=membro_user.email, papel="membro", nucleo=nucleo
-    )
+    nucleo = Nucleo.objects.create(nome="N7", organizacao=organizacao)
+    convite = ConviteNucleo.objects.create(email=membro_user.email, papel="membro", nucleo=nucleo)
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
     resp1 = api_client.get(url)
@@ -150,4 +142,3 @@ def test_convite_nao_pode_ser_reutilizado(api_client, membro_user, organizacao):
     resp2 = api_client.get(url)
     assert resp2.status_code == 400
     assert resp2.data["detail"] == "Convite já utilizado."
-

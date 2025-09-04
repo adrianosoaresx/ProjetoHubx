@@ -18,15 +18,15 @@ def api_client():
 def organizacao():
     from organizacoes.models import Organizacao
 
-    return Organizacao.objects.create(nome='Org', cnpj='00.000.000/0001-00', slug='org')
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
 def membro_user(organizacao, django_user_model):
     return django_user_model.objects.create_user(
-        username='user',
-        email='user@example.com',
-        password='pass',
+        username="user",
+        email="user@example.com",
+        password="pass",
         user_type=UserType.NUCLEADO,
         organizacao=organizacao,
     )
@@ -35,9 +35,9 @@ def membro_user(organizacao, django_user_model):
 @pytest.fixture
 def outro_user(organizacao, django_user_model):
     return django_user_model.objects.create_user(
-        username='other',
-        email='other@example.com',
-        password='pass',
+        username="other",
+        email="other@example.com",
+        password="pass",
         user_type=UserType.NUCLEADO,
         organizacao=organizacao,
     )
@@ -48,19 +48,19 @@ def _auth(client, user):
 
 
 def test_postar_no_feed(api_client, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome='N', slug='n', organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status='ativo')
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
+    ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, membro_user)
-    url = reverse('nucleos_api:nucleo-posts', kwargs={'pk': nucleo.pk})
-    resp = api_client.post(url, {'conteudo': 'olá'})
+    url = reverse("nucleos_api:nucleo-posts", kwargs={"pk": nucleo.pk})
+    resp = api_client.post(url, {"conteudo": "olá"})
     assert resp.status_code == 201
     assert Post.objects.filter(nucleo=nucleo, autor=membro_user).exists()
 
 
 def test_postar_requer_membro(api_client, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome='N2', slug='n2', organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N2", organizacao=organizacao)
     _auth(api_client, outro_user)
-    url = reverse('nucleos_api:nucleo-posts', kwargs={'pk': nucleo.pk})
-    resp = api_client.post(url, {'conteudo': 'oi'})
+    url = reverse("nucleos_api:nucleo-posts", kwargs={"pk": nucleo.pk})
+    resp = api_client.post(url, {"conteudo": "oi"})
     assert resp.status_code == 403
     assert Post.objects.count() == 0

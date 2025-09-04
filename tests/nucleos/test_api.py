@@ -70,7 +70,7 @@ def _auth(client, user):
 
 
 def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizacao, django_user_model):
-    nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N1", organizacao=organizacao)
 
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
@@ -99,7 +99,7 @@ def test_solicitar_aprovar_recusar(api_client, admin_user, outro_user, organizac
 
 
 def test_expiracao_automatica(api_client, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N2", organizacao=organizacao)
     part = ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo)
     ParticipacaoNucleo.objects.filter(pk=part.pk).update(data_solicitacao=timezone.now() - timedelta(days=31))
     expirar_solicitacoes_pendentes()
@@ -108,7 +108,7 @@ def test_expiracao_automatica(api_client, outro_user, organizacao):
 
 
 def test_solicitar_reuse_soft_deleted(api_client, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N3", organizacao=organizacao)
     part = ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     part.soft_delete()
 
@@ -120,13 +120,11 @@ def test_solicitar_reuse_soft_deleted(api_client, outro_user, organizacao):
     part.refresh_from_db()
     assert part.status == "pendente"
     assert part.deleted is False and part.deleted_at is None
-    assert (
-        ParticipacaoNucleo.all_objects.filter(user=outro_user, nucleo=nucleo).count() == 1
-    )
+    assert ParticipacaoNucleo.all_objects.filter(user=outro_user, nucleo=nucleo).count() == 1
 
 
 def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N3", slug="n3", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N3", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=coord_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
@@ -147,7 +145,7 @@ def test_suplente_crud(api_client, admin_user, coord_user, organizacao):
 
 
 def test_suplente_validations(api_client, admin_user, coord_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N5", slug="n5", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N5", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=coord_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
@@ -166,9 +164,8 @@ def test_suplente_validations(api_client, admin_user, coord_user, outro_user, or
     assert resp.status_code == 400
 
 
-
 def test_permission_denied(api_client, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N6", slug="n6", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N6", organizacao=organizacao)
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-suplentes", args=[nucleo.pk])
     resp = api_client.post(
@@ -184,7 +181,7 @@ def test_permission_denied(api_client, outro_user, organizacao):
 
 def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):
     outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
-    nucleo = Nucleo.objects.create(nome="Nextra", slug="nextra", organizacao=outra)
+    nucleo = Nucleo.objects.create(nome="Nextra", organizacao=outra)
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-solicitar", args=[nucleo.pk])
     resp = api_client.post(url)
@@ -193,7 +190,7 @@ def test_solicitar_outro_nucleo(api_client, outro_user, organizacao):
 
 def test_aceitar_convite_outro_nucleo(api_client, outro_user, organizacao):
     outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
-    nucleo = Nucleo.objects.create(nome="Nextra", slug="nextra", organizacao=outra)
+    nucleo = Nucleo.objects.create(nome="Nextra", organizacao=outra)
     convite = ConviteNucleo.objects.create(email=outro_user.email, papel="membro", nucleo=nucleo)
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-aceitar-convite") + f"?token={convite.token}"
@@ -210,7 +207,7 @@ def test_inter_org_forbidden(api_client, admin_user, organizacao, django_user_mo
         user_type=UserType.ADMIN,
         organizacao=outra,
     )
-    nucleo = Nucleo.objects.create(nome="N8", slug="n8", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N8", organizacao=organizacao)
     _auth(api_client, outsider)
     url = reverse("nucleos_api:nucleo-aprovar-membro", args=[nucleo.pk, admin_user.pk])
     assert api_client.post(url).status_code == 403
@@ -225,7 +222,7 @@ def test_list_forbidden_organizacao(api_client, organizacao, django_user_model):
         user_type=UserType.ADMIN,
         organizacao=outra,
     )
-    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N1", organizacao=organizacao)
     _auth(api_client, outsider)
     url = reverse("nucleos_api:nucleo-list")
     resp = api_client.get(url + f"?organizacao={organizacao.pk}")
@@ -233,7 +230,7 @@ def test_list_forbidden_organizacao(api_client, organizacao, django_user_model):
 
 
 def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N9", slug="n9", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N9", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo", papel="coordenador")
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True)
     _auth(api_client, admin_user)
@@ -245,7 +242,7 @@ def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao
 
 
 def test_financeiro_signal(api_client, admin_user, outro_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N10", slug="n10", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N10", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo)
     calls: list[tuple] = []
     monkeypatch.setattr("nucleos.signals.atualizar_cobranca", lambda *args: calls.append(args))
@@ -256,7 +253,7 @@ def test_financeiro_signal(api_client, admin_user, outro_user, organizacao, monk
 
 
 def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user):
-    nucleo = Nucleo.objects.create(nome="N7", slug="n7", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N7", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo", status_suspensao=True)
     _auth(api_client, admin_user)
@@ -270,7 +267,7 @@ def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user)
 
 
 def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N11", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-coordenador", args=[nucleo.pk, outro_user.pk])
@@ -290,7 +287,7 @@ def test_coordenador_actions(api_client, admin_user, outro_user, organizacao):
 
 
 def test_promover_membro(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N14", slug="n14", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N14", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-promover-membro", args=[nucleo.pk, outro_user.pk])
@@ -301,7 +298,7 @@ def test_promover_membro(api_client, admin_user, outro_user, organizacao):
 
 
 def test_remover_membro(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N15", slug="n15", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N15", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-remover-membro", args=[nucleo.pk, outro_user.pk])
@@ -311,8 +308,8 @@ def test_remover_membro(api_client, admin_user, outro_user, organizacao):
 
 
 def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N12", slug="n12", organizacao=organizacao)
-    Nucleo.objects.create(nome="N13", slug="n13", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N12", organizacao=organizacao)
+    Nucleo.objects.create(nome="N13", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, outro_user)
     url = reverse("nucleos_api:nucleo-meus")
@@ -322,7 +319,7 @@ def test_meus_nucleos(api_client, admin_user, outro_user, organizacao):
 
 
 def test_nucleo_ativo_api(api_client, admin_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N11", slug="n11", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N11", organizacao=organizacao)
     _auth(api_client, admin_user)
     url = reverse("nucleos_api:nucleo-detail", args=[nucleo.pk])
     resp = api_client.patch(url, {"ativo": False})
@@ -337,10 +334,10 @@ def test_usuario_comum_nao_pode_alterar_nucleo(api_client, outro_user, organizac
     list_url = reverse("nucleos_api:nucleo-list")
     resp = api_client.post(
         list_url,
-        {"nome": "N1", "slug": "n1", "organizacao": organizacao.pk},
+        {"nome": "N1", "organizacao": organizacao.pk},
     )
     assert resp.status_code == 403
-    nucleo = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N2", organizacao=organizacao)
     detail_url = reverse("nucleos_api:nucleo-detail", args=[nucleo.pk])
     assert api_client.patch(detail_url, {"nome": "new"}).status_code == 403
     assert api_client.delete(detail_url).status_code == 403

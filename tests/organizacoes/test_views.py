@@ -147,9 +147,7 @@ def test_change_logs_on_update_view(superadmin_user, organizacao):
         "contato_telefone",
     ]
     for campo in fields:
-        assert OrganizacaoChangeLog.all_objects.filter(
-            organizacao=organizacao, campo_alterado=campo
-        ).exists()
+        assert OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao, campo_alterado=campo).exists()
 
 
 def test_update_view_denied_for_admin(admin_user, organizacao):
@@ -305,7 +303,7 @@ def test_detail_view_lists_associations_admin_user(faker_ptbr):
         organizacao=org,
     )
     client.force_login(user)
-    Nucleo.objects.create(organizacao=org, nome="N1", slug="n1")
+    Nucleo.objects.create(organizacao=org, nome="N1")
     Empresa.objects.create(
         organizacao=org,
         usuario=user,
@@ -347,7 +345,7 @@ def test_detail_view_lists_hidden_for_root(superadmin_user, faker_ptbr):
         user_type=UserType.ADMIN,
         organizacao=org,
     )
-    Nucleo.objects.create(organizacao=org, nome="N1", slug="n1")
+    Nucleo.objects.create(organizacao=org, nome="N1")
     Empresa.objects.create(
         organizacao=org,
         usuario=user,
@@ -392,19 +390,13 @@ def test_detail_view_lists_hidden_for_root(superadmin_user, faker_ptbr):
         ("posts_modal", "posts", "organizacoes_api:organizacao-posts-list", "posts"),
     ],
 )
-def test_modal_views_context(
-    superadmin_user, organizacao, url_name, section, api_url_name, context_key
-):
+def test_modal_views_context(superadmin_user, organizacao, url_name, section, api_url_name, context_key):
     url = reverse(f"organizacoes:{url_name}", args=[organizacao.pk])
     resp = superadmin_user.get(url)
     assert resp.status_code == 200
     ctx = resp.context
-    assert ctx["refresh_url"] == reverse(
-        "organizacoes:detail", args=[organizacao.pk]
-    ) + f"?section={section}"
-    assert ctx["api_url"] == reverse(
-        api_url_name, kwargs={"organizacao_pk": organizacao.pk}
-    )
+    assert ctx["refresh_url"] == reverse("organizacoes:detail", args=[organizacao.pk]) + f"?section={section}"
+    assert ctx["api_url"] == reverse(api_url_name, kwargs={"organizacao_pk": organizacao.pk})
     assert context_key in ctx
 
 
@@ -422,12 +414,11 @@ def test_list_view_cache_invalidation(superadmin_user, organizacao, faker_ptbr):
     url = reverse("organizacoes:list")
     superadmin_user.get(url)
     superadmin_user.get(url)
-    Organizacao.objects.create(
-        nome="Nova", cnpj=faker_ptbr.cnpj(), slug="nova"
-    )
+    Organizacao.objects.create(nome="Nova", cnpj=faker_ptbr.cnpj(), slug="nova")
     resp = superadmin_user.get(url)
     assert resp["X-Cache"] == "MISS"
     assert "Nova" in resp.content.decode()
+
 
 def test_history_view_denied_for_admin(admin_user, organizacao):
     url = reverse("organizacoes:historico", args=[organizacao.pk])

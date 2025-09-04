@@ -155,7 +155,7 @@ def test_topico_create_success(client, admin_user, categoria):
 
 def test_topico_create_invalid_nucleo(client, admin_user, categoria, nucleo):
     cat = CategoriaDiscussao.objects.create(nome="N", organizacao=categoria.organizacao, nucleo=nucleo)
-    outro = Nucleo.objects.create(nome="Outro", slug="outro", organizacao=categoria.organizacao)
+    outro = Nucleo.objects.create(nome="Outro", organizacao=categoria.organizacao)
     client.force_login(admin_user)
     url = reverse("discussao:topico_criar", args=[cat.slug])
     resp = client.post(
@@ -378,10 +378,12 @@ def test_topico_detail_shows_edit_links_for_author(rf, nucleado_user, categoria,
     comentario = context["comentarios"][0]
     child = comentario.respostas_filhas[0]
 
-    tpl = Template("""
+    tpl = Template(
+        """
     {% if comentario.pode_editar %}EDIT{% endif %}
     {% if comentario.pode_editar or user_type in allowed %}DEL{% endif %}
-    """)
+    """
+    )
     ctx = {"user_type": nucleado_user.get_tipo_usuario, "allowed": ["admin", "coordenador", "root"]}
     root_render = tpl.render(Context({"comentario": comentario, **ctx}))
     child_render = tpl.render(Context({"comentario": child, **ctx}))
@@ -447,9 +449,7 @@ def test_resposta_edicao_limite(client, nucleado_user, categoria, topico):
     with freeze_time("2025-07-10 12:16:00"):
         resp = client.post(url, {"conteudo": "b"})
     assert resp.status_code == 302
-    assert resp.headers["Location"].endswith(
-        reverse("discussao:topico_detalhe", args=[categoria.slug, topico.slug])
-    )
+    assert resp.headers["Location"].endswith(reverse("discussao:topico_detalhe", args=[categoria.slug, topico.slug]))
     msgs = [str(m) for m in get_messages(resp.wsgi_request)]
     assert any("Prazo de edição expirado" in m for m in msgs)
     r.refresh_from_db()
@@ -467,9 +467,7 @@ def test_topico_edicao_limite(client, associado_user, categoria):
     with freeze_time("2025-07-10 12:16:00"):
         resp = client.post(url, data=data)
     assert resp.status_code == 302
-    assert resp.headers["Location"].endswith(
-        reverse("discussao:topico_detalhe", args=[categoria.slug, t.slug])
-    )
+    assert resp.headers["Location"].endswith(reverse("discussao:topico_detalhe", args=[categoria.slug, t.slug]))
     msgs = [str(m) for m in get_messages(resp.wsgi_request)]
     assert any("Prazo de edição expirado" in m for m in msgs)
     t.refresh_from_db()
@@ -502,9 +500,7 @@ def test_interacao_requires_login(client, categoria, topico):
     assert "/accounts/login" in resp.headers["Location"]
 
 
-def test_topico_mark_resolved_view_triggers_tasks(
-    associado_user, nucleado_user, categoria, monkeypatch
-):
+def test_topico_mark_resolved_view_triggers_tasks(associado_user, nucleado_user, categoria, monkeypatch):
     topico = TopicoDiscussao.objects.create(
         categoria=categoria, titulo="T", conteudo="c", autor=associado_user, publico_alvo=0
     )

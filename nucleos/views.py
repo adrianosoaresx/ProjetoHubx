@@ -81,7 +81,7 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
             qs = qs.filter(organizacao=user.organizacao)
 
         if q:
-            qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
+            qs = qs.filter(nome__icontains=q)
 
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
@@ -97,22 +97,17 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         nucleo_ids = [n.pk for n in qs]
         # contar membros ativos (sem suspensão) somando participações únicas por usuário
         from .models import ParticipacaoNucleo
+
         ctx["total_membros_org"] = (
-            ParticipacaoNucleo.objects.filter(
-                nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False
-            )
+            ParticipacaoNucleo.objects.filter(nucleo_id__in=nucleo_ids, status="ativo", status_suspensao=False)
             .values("user")
             .distinct()
             .count()
         )
         # totais de eventos (todos os status) e por status (0=Ativo, 1=Concluído)
         ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
-        ctx["total_eventos_ativos_org"] = Evento.objects.filter(
-            nucleo_id__in=nucleo_ids, status=0
-        ).count()
-        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(
-            nucleo_id__in=nucleo_ids, status=1
-        ).count()
+        ctx["total_eventos_ativos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=0).count()
+        ctx["total_eventos_concluidos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=1).count()
         return ctx
 
 
@@ -160,7 +155,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         )
 
         if q:
-            qs = qs.filter(Q(nome__icontains=q) | Q(slug__icontains=q))
+            qs = qs.filter(nome__icontains=q)
 
         ids = list(qs.order_by("nome").distinct().values_list("pk", flat=True))
         cache.set(cache_key, ids, 300)
@@ -307,9 +302,7 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
                     ),
                     is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
                     is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
-                    is_liked=Exists(
-                        Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)
-                    ),
+                    is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)),
                     is_shared=Exists(
                         Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)
                     ),
@@ -324,9 +317,11 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
             try:
                 from feed.models import Post
 
-                ctx["nucleo_posts"] = Post.objects.filter(
-                    deleted=False, tipo_feed="nucleo", nucleo=nucleo
-                ).select_related("autor").order_by("-created_at")
+                ctx["nucleo_posts"] = (
+                    Post.objects.filter(deleted=False, tipo_feed="nucleo", nucleo=nucleo)
+                    .select_related("autor")
+                    .order_by("-created_at")
+                )
             except Exception:
                 ctx["nucleo_posts"] = []
         return ctx
