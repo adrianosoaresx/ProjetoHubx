@@ -157,6 +157,10 @@ else:
         }
     }
 
+# Habilita/desabilita inicialização de sockets no front (templates)
+# Em ambientes que iniciam com runserver (sem ASGI), defina como False para evitar 404
+WEBSOCKETS_ENABLED = os.getenv("WEBSOCKETS_ENABLED", "1").strip().lower() in {"1", "true", "yes", "on"}
+
 # Database
 DATABASES = {
     "default": {

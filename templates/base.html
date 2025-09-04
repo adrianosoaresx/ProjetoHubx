@@ -211,7 +211,9 @@
     </div>
   </footer>
 
+  {% if WEBSOCKETS_ENABLED %}
   <script src="{% static 'notificacoes/js/push_socket.js' %}"></script>
+  {% endif %}
   <script src="{% static 'js/vendor/htmx-1.9.12.min.js' %}"></script>
   <script src="{% static 'js/dashboard.js' %}"></script>
   <script>

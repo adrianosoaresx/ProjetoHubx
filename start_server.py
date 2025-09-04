@@ -14,13 +14,19 @@ def is_venv_active():
 
 def runserver():
     print("🚀 Iniciando com Django runserver...")
-    subprocess.run([sys.executable, str(manage_path), "runserver"])
+    env = os.environ.copy()
+    # Desativa WebSockets no template quando usando runserver (sem ASGI server)
+    env.setdefault("WEBSOCKETS_ENABLED", "0")
+    subprocess.run([sys.executable, str(manage_path), "runserver"], env=env)
 
 
 def uvicorn_server():
     print("🌐 Iniciando com uvicorn (WebSocket ready)...")
+    env = os.environ.copy()
+    env.setdefault("WEBSOCKETS_ENABLED", "1")
     subprocess.run(
-        [sys.executable, "-m", "uvicorn", asgi_path, "--reload", "--port", "8000"]
+        [sys.executable, "-m", "uvicorn", asgi_path, "--reload", "--port", "8000"],
+        env=env,
     )
 
 

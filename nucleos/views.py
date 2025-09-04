@@ -182,7 +182,13 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         messages.success(self.request, _("Núcleo criado com sucesso."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        # Se a submissão vier via HTMX (ex.: hx-boost/hx-post), informe o redirecionamento explícito
+        if self.request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Redirect"] = str(self.get_success_url())
+            return resp
+        return response
 
 
 class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
@@ -202,7 +208,12 @@ class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMix
 
     def form_valid(self, form):
         messages.success(self.request, _("Núcleo atualizado com sucesso."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if self.request.headers.get("HX-Request"):
+            resp = HttpResponse(status=204)
+            resp["HX-Redirect"] = str(self.get_success_url())
+            return resp
+        return response
 
 
 class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, View):
