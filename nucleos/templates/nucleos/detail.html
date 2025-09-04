@@ -121,6 +121,17 @@
     <div id="modal"></div>
   </div>
 
+  <div class="flex justify-end mt-4">
+    {% if perms.nucleos.delete_nucleo %}
+    <a
+      href="{% url 'nucleos:delete' object.pk %}"
+      class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200"
+      hx-confirm="Deseja realmente excluir?"
+      >{% trans "Excluir" %}</a
+    >
+    {% endif %}
+  </div>
+
   <script>
     // Tabs simples em JS vanilla
     const tabButtons = document.querySelectorAll('.tab-btn');
