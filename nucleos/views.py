@@ -420,10 +420,12 @@ class ParticipacaoDecisaoView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequ
             participacao.status = "ativo"
             participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
             notify_participacao_aprovada.delay(participacao.id)
+            messages.success(self.request, _("Solicitação aprovada."))
         else:
             participacao.status = "inativo"
             participacao.save(update_fields=["status", "decidido_por", "data_decisao"])
             notify_participacao_recusada.delay(participacao.id)
+            messages.success(self.request, _("Solicitação recusada."))
         return redirect("nucleos:detail", pk=nucleo.pk)
 
 
@@ -451,6 +453,10 @@ class MembroPromoverView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredM
                 "nucleos/partials/membro.html",
                 {"part": participacao, "object": nucleo},
             )
+        if novo_papel == "coordenador":
+            messages.success(request, _("Membro promovido a coordenador."))
+        else:
+            messages.success(request, _("Cargo alterado para membro."))
         return redirect("nucleos:detail", pk=pk)
 
 
@@ -516,6 +522,8 @@ class NucleoToggleActiveView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequi
             return redirect("nucleos:list")
         if nucleo.deleted:
             nucleo.undelete()
+            messages.success(request, _("Núcleo ativado."))
         else:
             nucleo.soft_delete()
+            messages.success(request, _("Núcleo desativado."))
         return redirect("nucleos:list")
