@@ -87,7 +87,7 @@ INSTALLED_APPS = [
     "tokens.apps.TokensConfig",
     "nucleos",
     # App legado (mantém label e migrações)
-    "agenda",
+    "eventos.apps.EventosConfig",
     "feed",
     "configuracoes",
     "financeiro.apps.FinanceiroConfig",
