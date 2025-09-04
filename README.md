@@ -64,6 +64,13 @@ Para notificações push, defina também:
 - `ONESIGNAL_APP_ID` e `ONESIGNAL_API_KEY` para o cliente OneSignal (`onesignal_sdk`).
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_CLAIMS_SUBJECT` usados pelo `pywebpush`.
 
+Exemplo de configuração no `.env`:
+
+```env
+ONESIGNAL_APP_ID=2a1e1809-79e2-4fc0-8738-69f9a5d9d6c0
+ONESIGNAL_API_KEY=sua-chave-api
+```
+
 Sem essas variáveis, os serviços de push permanecem indisponíveis.
 
 Além disso, o Hubx depende do utilitário de linha de comando `ffmpeg` para gerar previews de vídeos.

@@ -182,6 +182,9 @@ TOKEN_WEBHOOK_SECRET = os.getenv("TOKEN_WEBHOOK_SECRET", "")
 # Número de dias antes da expiração para rotacionar tokens automaticamente
 TOKENS_ROTATE_BEFORE_DAYS = int(os.getenv("TOKENS_ROTATE_BEFORE_DAYS", "7"))
 
+ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
+ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
