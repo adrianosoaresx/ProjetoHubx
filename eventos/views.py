@@ -44,7 +44,7 @@ from core.permissions import (
     no_superadmin_required,
 )
 
-from .forms import (
+from agenda.forms import (
     BriefingEventoCreateForm,
     BriefingEventoForm,
     EventoForm,
@@ -53,7 +53,7 @@ from .forms import (
     ParceriaEventoForm,
     TarefaForm,
 )
-from .models import (
+from agenda.models import (
     BriefingEvento,
     Evento,
     EventoLog,
@@ -64,13 +64,13 @@ from .models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from .tasks import notificar_briefing_status, upload_material_divulgacao
+from agenda.tasks import notificar_briefing_status, upload_material_divulgacao
 
 User = get_user_model()
 
 
 class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
-    template_name = "agenda/eventos_lista.html"
+    template_name = "eventos/eventos_lista.html"
     context_object_name = "eventos"
     paginate_by = 12
 
@@ -165,7 +165,7 @@ def calendario(request, ano: int | None = None, mes: int | None = None):
         "next_ano": next_month.year,
         "next_mes": next_month.month,
     }
-    return TemplateResponse(request, "agenda/calendario.html", context)
+    return TemplateResponse(request, "eventos/calendario.html", context)
 
 
 def lista_eventos(request, dia_iso):
@@ -187,7 +187,7 @@ def lista_eventos(request, dia_iso):
 
     return render(
         request,
-        "agenda/_lista_eventos_dia.html",
+        "eventos/_lista_eventos_dia.html",
         {"eventos": eventos, "dia": dia, "dia_iso": dia_iso},
     )
 
@@ -201,7 +201,7 @@ class EventoCreateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "agenda/create.html"
+    template_name = "eventos/create.html"
     success_url = reverse_lazy("agenda:calendario")
 
     permission_required = "agenda.add_evento"
@@ -232,7 +232,7 @@ class EventoUpdateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "agenda/update.html"
+    template_name = "eventos/update.html"
     success_url = reverse_lazy("agenda:calendario")
 
     permission_required = "agenda.change_evento"
@@ -270,7 +270,7 @@ class EventoDeleteView(
     DeleteView,
 ):
     model = Evento
-    template_name = "agenda/delete.html"
+    template_name = "eventos/delete.html"
     success_url = reverse_lazy("agenda:calendario")
 
     permission_required = "agenda.delete_evento"
@@ -292,7 +292,7 @@ class EventoDeleteView(
 
 class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Evento
-    template_name = "agenda/detail.html"
+    template_name = "eventos/detail.html"
 
     def get_queryset(self):
         return (
@@ -337,7 +337,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
 class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = Evento
-    template_name = "agenda/evento_list.html"
+    template_name = "eventos/evento_list.html"
     context_object_name = "eventos"
     paginate_by = 12
 
@@ -375,7 +375,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 
 class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Tarefa
-    template_name = "agenda/tarefa_detail.html"
+    template_name = "eventos/tarefa_detail.html"
 
     def get_queryset(self):
         qs = Tarefa.objects.select_related("organizacao")
@@ -396,7 +396,7 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 
 class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = Tarefa
-    template_name = "agenda/tarefa_list.html"
+    template_name = "eventos/tarefa_list.html"
     context_object_name = "tarefas"
 
     def get_queryset(self):
@@ -414,7 +414,7 @@ class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin
 class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "agenda/tarefa_form.html"
+    template_name = "eventos/tarefa_form.html"
     success_url = reverse_lazy("agenda:tarefa_list")
 
     def get_form(self, form_class=None):
@@ -437,7 +437,7 @@ class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
 class TarefaUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "agenda/tarefa_form.html"
+    template_name = "eventos/tarefa_form.html"
     success_url = reverse_lazy("agenda:tarefa_list")
 
     def get_queryset(self):
@@ -547,7 +547,7 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
                 "Feedback só pode ser enviado após o evento."
             )
 
-        return render(request, "agenda/avaliacao_form.html", {"evento": evento})
+        return render(request, "eventos/avaliacao_form.html", {"evento": evento})
 
     def post(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
@@ -680,14 +680,14 @@ def avaliar_parceria(request, pk: int):
             }
         )
 
-    return render(request, "agenda/parceria_avaliar.html", {"parceria": parceria})
+    return render(request, "eventos/parceria_avaliar.html", {"parceria": parceria})
 
 
 @login_required
 @no_superadmin_required
 def checkin_form(request, pk: int):
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
-    return render(request, "agenda/checkin_form.html", {"inscricao": inscricao})
+    return render(request, "eventos/checkin_form.html", {"inscricao": inscricao})
 
 
 def checkin_inscricao(request, pk: int):
@@ -707,7 +707,7 @@ def checkin_inscricao(request, pk: int):
 
 class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
-    template_name = "agenda/inscricao_list.html"
+    template_name = "eventos/inscricao_list.html"
     context_object_name = "inscricoes"
 
     def get_queryset(self):
@@ -728,7 +728,7 @@ class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequ
 class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
-    template_name = "agenda/inscricao_form.html"
+    template_name = "eventos/inscricao_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(
@@ -760,7 +760,7 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
 
 class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = MaterialDivulgacaoEvento
-    template_name = "agenda/material_list.html"
+    template_name = "eventos/material_list.html"
     context_object_name = "materiais"
     paginate_by = 10
 
@@ -788,7 +788,7 @@ class MaterialDivulgacaoEventoCreateView(
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
-    template_name = "agenda/material_form.html"
+    template_name = "eventos/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
 
 
@@ -830,7 +830,7 @@ class MaterialDivulgacaoEventoUpdateView(
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
-    template_name = "agenda/material_form.html"
+    template_name = "eventos/material_form.html"
     success_url = reverse_lazy("agenda:material_list")
 
     permission_required = "agenda.change_materialdivulgacaoevento"
@@ -880,7 +880,7 @@ class ParceriaPermissionMixin(UserPassesTestMixin):
 
 class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, ListView):
     model = ParceriaEvento
-    template_name = "agenda/parceria_list.html"
+    template_name = "eventos/parceria_list.html"
     context_object_name = "parcerias"
 
     def get_queryset(self):
@@ -901,7 +901,7 @@ class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPerm
 class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
-    template_name = "agenda/parceria_form.html"
+    template_name = "eventos/parceria_form.html"
     success_url = reverse_lazy("agenda:parceria_list")
 
     def get_form(self, form_class=None):
@@ -930,7 +930,7 @@ class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
 class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
-    template_name = "agenda/parceria_form.html"
+    template_name = "eventos/parceria_form.html"
     success_url = reverse_lazy("agenda:parceria_list")
 
     def get_queryset(self):
@@ -968,7 +968,7 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
 
 class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
-    template_name = "agenda/parceria_confirm_delete.html"
+    template_name = "eventos/parceria_confirm_delete.html"
     success_url = reverse_lazy("agenda:parceria_list")
 
     def get_queryset(self):
@@ -995,7 +995,7 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
 
 class BriefingEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = BriefingEvento
-    template_name = "agenda/briefing_list.html"
+    template_name = "eventos/briefing_list.html"
     context_object_name = "briefings"
 
     def get_queryset(self):
@@ -1016,7 +1016,7 @@ class BriefingEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
 class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = BriefingEvento
     form_class = BriefingEventoCreateForm
-    template_name = "agenda/briefing_form.html"
+    template_name = "eventos/briefing_form.html"
 
     def form_valid(self, form):
         evento = form.cleaned_data.get("evento")
@@ -1039,7 +1039,7 @@ class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView
 class BriefingEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = BriefingEvento
     form_class = BriefingEventoForm
-    template_name = "agenda/briefing_form.html"
+    template_name = "eventos/briefing_form.html"
 
     def get_queryset(self):
         qs = BriefingEvento.objects.all()

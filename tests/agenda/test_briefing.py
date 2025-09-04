@@ -23,7 +23,7 @@ def test_briefing_status_updates(client):
         status="orcamentado",
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "aprovado"])
-    with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
+    with patch("eventos.views.notificar_briefing_status.delay") as mock_delay:
         response = client.post(url)
     assert response.status_code == 302
     briefing.refresh_from_db()
