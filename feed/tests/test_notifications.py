@@ -82,7 +82,7 @@ class FeedNotificationTest(TestCase):
         self.assertEqual(enviar.call_count, 1)
 
 
-@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True, ONESIGNAL_ENABLED=True)
 @patch("notificacoes.services.notificacoes.enviar_notificacao_async.delay")
 def test_notify_new_post_uses_template(enviar) -> None:
     from feed.models import Post
@@ -98,5 +98,23 @@ def test_notify_new_post_uses_template(enviar) -> None:
         assert False, f"notify_new_post raised ValueError: {err}"
 
     enviar.assert_called()
+
+
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True, ONESIGNAL_ENABLED=False)
+@patch("notificacoes.services.notificacoes.enviar_notificacao_async.delay")
+def test_notify_new_post_without_push_when_disabled(enviar) -> None:
+    from feed.models import Post
+    from feed.tasks import notify_new_post
+
+    org = OrganizacaoFactory()
+    user = UserFactory(organizacao=org)
+    UserFactory(organizacao=org)
+    post = Post.objects.create(autor=user, organizacao=user.organizacao, conteudo="ola")
+    try:
+        notify_new_post(str(post.id))
+    except ValueError as err:
+        assert False, f"notify_new_post raised ValueError: {err}"
+
+    enviar.assert_not_called()
 
 

@@ -65,7 +65,8 @@ def test_template_inexistente() -> None:
         svc.enviar_para_usuario(user, "x", {})
 
 
-def test_enviar_multiplos_canais(monkeypatch) -> None:
+def test_enviar_multiplos_canais(monkeypatch, settings) -> None:
+    settings.ONESIGNAL_ENABLED = True
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
     called = {}
@@ -84,7 +85,8 @@ def test_enviar_multiplos_canais(monkeypatch) -> None:
     assert NotificationLog.objects.count() == 3
 
 
-def test_enviar_todos_sem_canais() -> None:
+def test_enviar_todos_sem_canais(settings) -> None:
+    settings.ONESIGNAL_ENABLED = True
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
     prefs = UserNotificationPreference.objects.get(user=user)
@@ -120,7 +122,8 @@ def test_enviar_todos_sem_canais() -> None:
     assert dest_por_canal[Canal.PUSH] == "dev1"
 
 
-def test_enviar_todos_com_canais_desativados(monkeypatch) -> None:
+def test_enviar_todos_com_canais_desativados(monkeypatch, settings) -> None:
+    settings.ONESIGNAL_ENABLED = True
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="t", assunto="Oi", corpo="C", canal="todos")
     prefs = UserNotificationPreference.objects.get(user=user)
@@ -166,7 +169,8 @@ def test_enviar_todos_com_canais_desativados(monkeypatch) -> None:
     assert whatsapp_log.destinatario == user.whatsapp
 
 
-def test_enviar_para_usuario_respeita_push(monkeypatch) -> None:
+def test_enviar_para_usuario_respeita_push(monkeypatch, settings) -> None:
+    settings.ONESIGNAL_ENABLED = True
     user = UserFactory()
     NotificationTemplate.objects.create(codigo="p", assunto="Oi", corpo="C", canal="push")
     prefs = UserNotificationPreference.objects.get(user=user)
