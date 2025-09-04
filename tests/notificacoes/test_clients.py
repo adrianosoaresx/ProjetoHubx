@@ -67,6 +67,7 @@ def test_send_push_success(monkeypatch, settings, caplog):
     user = UserFactory()
     settings.ONESIGNAL_APP_ID = "app"
     settings.ONESIGNAL_API_KEY = "key"
+    settings.ONESIGNAL_ENABLED = True
 
     class FakeClient:
         def __init__(self, app_id, rest_api_key):
@@ -86,6 +87,7 @@ def test_send_push_invalida_inscricao(monkeypatch, settings, caplog):
     user = UserFactory()
     settings.ONESIGNAL_APP_ID = "app"
     settings.ONESIGNAL_API_KEY = "key"
+    settings.ONESIGNAL_ENABLED = True
     sub = PushSubscription.objects.create(
         user=user,
         device_id="d1",

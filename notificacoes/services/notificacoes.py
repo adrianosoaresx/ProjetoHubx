@@ -76,7 +76,7 @@ def enviar_para_usuario(
             canais_desabilitados.append(Canal.EMAIL)
 
     if template.canal in {Canal.PUSH, Canal.TODOS}:
-        if prefs.push:
+        if prefs.push and getattr(settings, "ONESIGNAL_ENABLED", False):
             canais.append(Canal.PUSH)
         else:
             canais_desabilitados.append(Canal.PUSH)
