@@ -72,7 +72,7 @@
       </a>
       <div class="mt-2">
         <p class="text-sm font-medium text-gray-700">{{ media.descricao }}</p>
-        <p class="text-xs text-gray-400">{{ media.created_at|date:SHORT_DATETIME_FORMAT }}</p>
+  <p class="text-xs text-gray-400">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
         <div class="flex flex-wrap gap-1 mt-1">
           {% for tag in media.tags.all %}
             <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>

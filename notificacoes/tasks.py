@@ -44,18 +44,26 @@ def enviar_notificacao_async(self, subject: str, body: str, log_id: str) -> None
             send_whatsapp(user, body)
         config = getattr(user, "configuracao", None)
         if config and config.receber_notificacoes_push and config.frequencia_notificacoes_push == "imediata":
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f"notificacoes_{user.id}",
-                {
-                    "type": "notification.message",
-                    "event": "notification_message",
-                    "titulo": subject,
-                    "mensagem": body,
-                    "canal": canal,
-                    "timestamp": timezone.now().isoformat(),
-                },
-            )
+            try:
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"notificacoes_{user.id}",
+                    {
+                        "type": "notification.message",
+                        "event": "notification_message",
+                        "titulo": subject,
+                        "mensagem": body,
+                        "canal": canal,
+                        "timestamp": timezone.now().isoformat(),
+                    },
+                )
+            except Exception as ws_exc:  # pragma: no cover - camada WS é best-effort
+                logger.warning(
+                    "ws_notify_failed",
+                    user_id=user.id,
+                    canal=canal,
+                    error=str(ws_exc),
+                )
         log.status = NotificationStatus.ENVIADA
         metrics.notificacoes_enviadas_total.labels(canal=canal).inc()
     except Exception as exc:  # pragma: no cover - integração externa
@@ -162,18 +170,26 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
                 tipo_frequencia=tipo,
             )
         if config.receber_notificacoes_push and config.frequencia_notificacoes_push == tipo:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f"notificacoes_{config.user.id}",
-                {
-                    "type": "notification.message",
-                    "event": "notification_message",
-                    "titulo": subject,
-                    "mensagem": body,
-                    "canal": canal,
-                    "timestamp": envio.isoformat(),
-                },
-            )
+            try:
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f"notificacoes_{config.user.id}",
+                    {
+                        "type": "notification.message",
+                        "event": "notification_message",
+                        "titulo": subject,
+                        "mensagem": body,
+                        "canal": canal,
+                        "timestamp": envio.isoformat(),
+                    },
+                )
+            except Exception as ws_exc:  # pragma: no cover - camada WS é best-effort
+                logger.warning(
+                    "ws_notify_failed",
+                    user_id=config.user.id,
+                    canal=canal,
+                    error=str(ws_exc),
+                )
         duration = time.perf_counter() - start
         metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(duration)
         logger.info(

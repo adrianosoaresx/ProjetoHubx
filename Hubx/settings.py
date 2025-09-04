@@ -137,12 +137,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "Hubx.wsgi.application"
 ASGI_APPLICATION = "Hubx.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+# Channels / Redis
+# Em desenvolvimento (DEBUG=True) e sem REDIS_URL definido, usa camada em memória
+# para evitar dependência do Redis local e quedas de requisição.
+_REDIS_URL = os.getenv("REDIS_URL") or os.getenv("CHANNEL_REDIS_URL")
+_CHANNEL_LAYER_BACKEND = os.getenv("CHANNEL_LAYER_BACKEND", "").lower()
+if _CHANNEL_LAYER_BACKEND in {"inmemory", "memory", "local"} or (DEBUG and not _REDIS_URL):
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
     }
-}
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            # aceita tanto tupla (host, port) quanto URL redis://
+            "CONFIG": {"hosts": [_REDIS_URL or "redis://127.0.0.1:6379/0"]},
+        }
+    }
 
 # Database
 DATABASES = {
@@ -184,6 +197,18 @@ TOKENS_ROTATE_BEFORE_DAYS = int(os.getenv("TOKENS_ROTATE_BEFORE_DAYS", "7"))
 
 ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
 ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
+# Permite desativar OneSignal mesmo que as chaves existam.
+# Valores aceitos (case-insensitive): 1/true/yes/on para ativar; 0/false/no/off para desativar.
+ONESIGNAL_ENABLED = (
+    os.getenv(
+        "ONESIGNAL_ENABLED",
+        # padrão: ativa somente se houver chaves definidas
+        "1" if (ONESIGNAL_APP_ID and ONESIGNAL_API_KEY) else "0",
+    )
+    .strip()
+    .lower()
+    in {"1", "true", "yes", "on"}
+)
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

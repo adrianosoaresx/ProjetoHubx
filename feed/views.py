@@ -63,7 +63,6 @@ def meu_mural(request):
             | Q(
                 tipo_feed="global",
                 organizacao=request.user.organizacao,
-                mod_status="aprovado",
             )
         )
         .order_by("-created_at")

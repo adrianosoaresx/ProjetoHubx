@@ -26,7 +26,7 @@
         </a>
         <div>
           <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-          <p class="text-xs text-neutral-500">{{ post.created_at|date:SHORT_DATETIME_FORMAT }}</p>
+          <p class="text-xs text-neutral-500">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
         </div>
       </div>
       <div class="text-sm text-neutral-800 whitespace-pre-line">

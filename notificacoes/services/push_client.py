@@ -17,7 +17,13 @@ logger = logging.getLogger(__name__)
 
 def send_push(user, message: str) -> None:
     """Enviar push usando OneSignal."""
-    # Se não estiver configurado, não tenta enviar e evita quebrar o fluxo
+    # Se desativado por flag ou não configurado, não tenta enviar e evita quebrar o fluxo
+    if not getattr(settings, "ONESIGNAL_ENABLED", False):
+        logger.info(
+            "push_desativado",
+            extra={"user": getattr(user, "id", None)},
+        )
+        return
     app_id = getattr(settings, "ONESIGNAL_APP_ID", None)
     api_key = getattr(settings, "ONESIGNAL_API_KEY", None)
     if not app_id or not api_key:
