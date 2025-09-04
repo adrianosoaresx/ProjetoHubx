@@ -28,7 +28,7 @@ urlpatterns = [
     # Eventos (novo namespace) e compat com rotas antigas de Agenda
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
     # Rotas legadas ainda funcionam apontando para o mesmo conjunto
-    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
     # Redireciona /agenda para /eventos no futuro (mantido por enquanto)
     # path("eventos/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
     # Discussão e Feed (web)
@@ -92,7 +92,7 @@ urlpatterns = [
     # Mantém API antiga
     path(
         "api/agenda/",
-        include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
+        include(("eventos.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
     path("", include("django_prometheus.urls")),
 ]
