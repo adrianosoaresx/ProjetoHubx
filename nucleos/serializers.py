@@ -63,7 +63,6 @@ class NucleoSerializer(serializers.ModelSerializer):
             "id",
             "organizacao",
             "nome",
-            "slug",
             "descricao",
             "avatar",
             "cover",

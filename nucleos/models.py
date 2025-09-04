@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import SET_NULL
 from django.utils import timezone
-from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
@@ -61,7 +60,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
         db_column="organizacao",
     )
     nome = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, blank=True)
     descricao = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
@@ -69,7 +67,7 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     mensalidade = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal("30.00"))
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=("organizacao", "slug"), name="uniq_org_slug")]
+        constraints = [models.UniqueConstraint(fields=("organizacao", "nome"), name="uniq_org_nome")]
         verbose_name = "Núcleo"
         verbose_name_plural = "Núcleos"
 
@@ -87,16 +85,6 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     @property
     def coordenadores(self):
         return self.membros.filter(participacoes__papel="coordenador")
-
-    def save(self, *args, **kwargs):
-        base_slug = slugify(self.slug or self.nome)
-        slug = base_slug
-        counter = 1
-        while self.__class__.objects.filter(organizacao=self.organizacao, slug=slug).exclude(pk=self.pk).exists():
-            slug = f"{base_slug}-{counter}"
-            counter += 1
-        self.slug = slug
-        super().save(*args, **kwargs)
 
 
 class CoordenadorSuplente(TimeStampedModel, SoftDeleteModel):

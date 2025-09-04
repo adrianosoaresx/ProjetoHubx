@@ -38,7 +38,7 @@ def usuario(organizacao):
 
 
 def test_str_representation(organizacao):
-    nucleo = Nucleo.objects.create(nome="Núcleo Alpha", slug="alpha", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="Núcleo Alpha", organizacao=organizacao)
     assert str(nucleo) == "Núcleo Alpha"
 
 
@@ -48,7 +48,6 @@ def test_create_with_required_fields(media_root, organizacao):
     nucleo = Nucleo.objects.create(
         organizacao=organizacao,
         nome="Núcleo Teste",
-        slug="teste",
         descricao="Desc",
         avatar=avatar,
         cover=cover,
@@ -62,14 +61,14 @@ def test_create_with_required_fields(media_root, organizacao):
 
 
 def test_participacao_unique_constraint(organizacao, usuario):
-    nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N1", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo)
     with pytest.raises(IntegrityError):
         ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo)
 
 
 def test_membros_property(organizacao, usuario):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="pendente")
     u2 = get_user_model().objects.create_user(
         username="u2", email="u2@example.com", password="pass", user_type=UserType.NUCLEADO, organizacao=organizacao
@@ -83,7 +82,7 @@ def test_membros_property(organizacao, usuario):
 
 
 def test_suplente_ativo(organizacao, usuario):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=usuario, nucleo=nucleo, status="ativo")
     now = timezone.now()
     suplente = CoordenadorSuplente.objects.create(
@@ -95,22 +94,18 @@ def test_suplente_ativo(organizacao, usuario):
     assert suplente.ativo
 
 
-def test_slug_unico_por_organizacao(organizacao):
+def test_nome_unico_por_organizacao(organizacao):
     outra = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
-    Nucleo.objects.create(nome="N1", slug="igual", organizacao=organizacao)
-    Nucleo.objects.create(nome="N2", slug="igual", organizacao=outra)
+    Nucleo.objects.create(nome="Igual", organizacao=organizacao)
+    Nucleo.objects.create(nome="Igual", organizacao=outra)
     with pytest.raises(IntegrityError):
-        Nucleo.objects.create(nome="N3", slug="igual", organizacao=organizacao)
+        Nucleo.objects.create(nome="Igual", organizacao=organizacao)
 
 
-def test_slug_incremental_para_nomes_iguais(organizacao):
-    n1 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
-    n2 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
-    n3 = Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
-
-    assert n1.slug == "nucleo-teste"
-    assert n2.slug == "nucleo-teste-1"
-    assert n3.slug == "nucleo-teste-2"
+def test_nome_nao_permite_duplicados_na_mesma_organizacao(organizacao):
+    Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
+    with pytest.raises(IntegrityError):
+        Nucleo.objects.create(nome="Núcleo Teste", organizacao=organizacao)
 
 
 @pytest.mark.xfail(reason="Arquivos não são removidos ao deletar o núcleo")
@@ -120,7 +115,6 @@ def test_upload_cleanup(media_root, organizacao):
     nucleo = Nucleo.objects.create(
         organizacao=organizacao,
         nome="Cleanup",
-        slug="cleanup",
         avatar=avatar,
         cover=cover,
     )

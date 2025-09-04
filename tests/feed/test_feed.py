@@ -29,7 +29,7 @@ class FeedPublicPrivateTests(TestCase):
         # associar usuários à organização para que apareçam no feed
         self.user.organizacao = self.org
         self.user.save()
-        self.nucleo = Nucleo.objects.create(nome="N1", slug="n1", organizacao=self.org)
+        self.nucleo = Nucleo.objects.create(nome="N1", organizacao=self.org)
         self.nucleo.participacoes.create(user=self.user)
         self.client.force_login(self.user)
 
@@ -67,9 +67,7 @@ class FeedPublicPrivateTests(TestCase):
         resp = self.client.get(reverse("feed:listar"))
         self.assertEqual(len(resp.context.get("posts", [])), 0)
 
-        resp = self.client.get(
-            reverse("feed:listar") + f"?tipo_feed=nucleo&nucleo={self.nucleo.id}"
-        )
+        resp = self.client.get(reverse("feed:listar") + f"?tipo_feed=nucleo&nucleo={self.nucleo.id}")
         posts = resp.context.get("posts", [])
         self.assertEqual(len(posts), 1)
 

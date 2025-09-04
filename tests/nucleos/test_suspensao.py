@@ -48,7 +48,7 @@ def _auth(client, user):
 
 
 def test_suspender_e_reativar(api_client, admin_user, membro_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
     calls = []
@@ -72,7 +72,7 @@ def test_suspender_e_reativar(api_client, admin_user, membro_user, organizacao, 
 
 
 def test_membro_status_endpoint(api_client, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, membro_user)
     url = reverse("nucleos_api:nucleo-membro-status", args=[nucleo.pk])

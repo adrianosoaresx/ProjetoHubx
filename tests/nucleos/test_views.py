@@ -63,7 +63,6 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
         reverse("nucleos:create"),
         data={
             "nome": "N1",
-            "slug": "n1",
             "descricao": "d",
             "ativo": True,
             "mensalidade": "30.00",
@@ -80,7 +79,7 @@ def test_nucleo_create_and_soft_delete(client, admin_user, organizacao):
 
 
 def test_participacao_flow(client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     client.force_login(membro_user)
     client.post(reverse("nucleos:participacao_solicitar", args=[nucleo.pk]))
     part = ParticipacaoNucleo.objects.get(user=membro_user, nucleo=nucleo)
@@ -96,7 +95,7 @@ def test_participacao_flow(client, admin_user, membro_user, organizacao):
 
 
 def test_participacao_reuse_soft_deleted(client, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     part = ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
     part.soft_delete()
 
@@ -111,7 +110,7 @@ def test_participacao_reuse_soft_deleted(client, membro_user, organizacao):
 
 
 def test_toggle_active(client, admin_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     client.force_login(admin_user)
     resp = client.post(reverse("nucleos:toggle_active", args=[nucleo.pk]))
     assert resp.status_code == 302
@@ -121,7 +120,7 @@ def test_toggle_active(client, admin_user, organizacao):
 
 def test_toggle_active_admin_other_org(client, organizacao, admin_user):
     other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/1111-11", slug="org2")
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     User = get_user_model()
     other_admin = User.objects.create_user(
         username="admin2",
@@ -138,7 +137,7 @@ def test_toggle_active_admin_other_org(client, organizacao, admin_user):
 
 
 def test_suplente_create_non_member(admin_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     User = get_user_model()
     nao_membro = User.objects.create_user(
         username="x",
@@ -177,7 +176,7 @@ def test_suplente_create_non_member(admin_user, organizacao, monkeypatch):
 
 
 def test_suplente_create_overlap(admin_user, membro_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(nucleo=nucleo, user=membro_user, status="ativo")
     now = timezone.now()
     CoordenadorSuplente.objects.create(
@@ -215,7 +214,7 @@ def test_suplente_create_overlap(admin_user, membro_user, organizacao, monkeypat
 
 
 def test_suplente_create_success(client, admin_user, membro_user, organizacao):
-    nucleo = Nucleo.objects.create(nome="N", slug="n", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(nucleo=nucleo, user=membro_user, status="ativo")
     client.force_login(admin_user)
     inicio = timezone.now()
@@ -233,8 +232,8 @@ def test_suplente_create_success(client, admin_user, membro_user, organizacao):
 
 
 def test_meus_nucleos_view(client, membro_user, organizacao):
-    nucleo1 = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    nucleo2 = Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
+    nucleo1 = Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    nucleo2 = Nucleo.objects.create(nome="N2", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(nucleo=nucleo1, user=membro_user, status="ativo")
     ParticipacaoNucleo.objects.create(nucleo=nucleo2, user=membro_user, status="inativo")
     client.force_login(membro_user)
@@ -253,7 +252,7 @@ def test_meus_nucleos_view_admin_redirect(client, admin_user):
 
 def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_queries):
     User = get_user_model()
-    nucleo = Nucleo.objects.create(nome="NQ", slug="nq", organizacao=organizacao)
+    nucleo = Nucleo.objects.create(nome="NQ", organizacao=organizacao)
     members = []
     for i in range(3):
         u = User.objects.create_user(
@@ -310,8 +309,8 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
 
 def test_nucleo_list_filtra_para_associado(client, organizacao):
     other_org = Organizacao.objects.create(nome="Org2", cnpj="11.111.111/0001-11", slug="org2")
-    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    Nucleo.objects.create(nome="N2", slug="n2", organizacao=other_org)
+    Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", organizacao=other_org)
     User = get_user_model()
     assoc = User.objects.create_user(
         username="assoc",
@@ -330,8 +329,8 @@ def test_nucleo_list_filtra_para_associado(client, organizacao):
 
 def test_nucleo_list_filtra_para_nucleado(client, organizacao):
     other_org = Organizacao.objects.create(nome="Org2", cnpj="22.222.222/0002-22", slug="org22")
-    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    Nucleo.objects.create(nome="N2", slug="n2", organizacao=other_org)
+    Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", organizacao=other_org)
     User = get_user_model()
     nucleado = User.objects.create_user(
         username="nuc",
@@ -350,8 +349,8 @@ def test_nucleo_list_filtra_para_nucleado(client, organizacao):
 
 def test_nucleo_list_filtra_para_admin(client, organizacao, admin_user):
     other_org = Organizacao.objects.create(nome="Org2", cnpj="33.333.333/0003-33", slug="org3")
-    Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    Nucleo.objects.create(nome="N2", slug="n2", organizacao=other_org)
+    Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", organizacao=other_org)
     client.force_login(admin_user)
     resp = client.get(reverse("nucleos:list"))
     assert resp.status_code == 200
@@ -362,9 +361,9 @@ def test_nucleo_list_filtra_para_admin(client, organizacao, admin_user):
 
 def test_nucleo_list_filtra_para_coordenador(client, organizacao):
     other_org = Organizacao.objects.create(nome="Org2", cnpj="44.444.444/0004-44", slug="org4")
-    n1 = Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
-    Nucleo.objects.create(nome="N2", slug="n2", organizacao=organizacao)
-    Nucleo.objects.create(nome="N3", slug="n3", organizacao=other_org)
+    n1 = Nucleo.objects.create(nome="N1", organizacao=organizacao)
+    Nucleo.objects.create(nome="N2", organizacao=organizacao)
+    Nucleo.objects.create(nome="N3", organizacao=other_org)
     User = get_user_model()
     coord = User.objects.create_user(
         username="coord",

@@ -24,7 +24,7 @@ def outra_organizacao(db):
 
 @pytest.fixture
 def nucleo(organizacao):
-    return Nucleo.objects.create(nome="Nucleo", slug="nucleo", organizacao=organizacao)
+    return Nucleo.objects.create(nome="Nucleo", organizacao=organizacao)
 
 
 @pytest.fixture
@@ -132,12 +132,8 @@ def override_urls(settings):
 
 @pytest.fixture(autouse=True)
 def dummy_cache(settings):
-    settings.CACHES = {
-        "default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}
-    }
-    settings.CHANNEL_LAYERS = {
-        "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
-    }
+    settings.CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+    settings.CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 
 @pytest.fixture(autouse=True)

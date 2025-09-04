@@ -1,4 +1,3 @@
-
 import logging
 
 import pytest
@@ -10,7 +9,6 @@ from organizacoes.models import Organizacao
 
 
 pytestmark = pytest.mark.django_db
-
 
 
 @pytest.fixture
@@ -31,7 +29,7 @@ def usuario(organizacao, django_user_model):
 
 @pytest.fixture
 def nucleo(organizacao):
-    return Nucleo.objects.create(nome="N1", slug="n1", organizacao=organizacao)
+    return Nucleo.objects.create(nome="N1", organizacao=organizacao)
 
 
 @pytest.mark.parametrize("task", [notify_participacao_aprovada, notify_participacao_recusada])
@@ -61,6 +59,7 @@ def test_notify_participacao_tasks_missing(task, monkeypatch, caplog):
     assert "participacao_nucleo_not_found" in caplog.text
     assert not called
 
+
 def test_limpar_contadores_convites_without_delete_pattern(monkeypatch):
     cache.clear()
     cache.set("convites_nucleo:1", "a")
@@ -75,4 +74,3 @@ def test_limpar_contadores_convites_without_delete_pattern(monkeypatch):
     assert cache.get("convites_nucleo:1") is None
     assert cache.get("convites_nucleo:2") is None
     assert cache.get("other") == "c"
-
