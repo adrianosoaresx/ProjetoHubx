@@ -278,5 +278,15 @@
       window.getThemePreference = getThemePreference;
     })();
   </script>
-  {% block extra_js %}{% endblock %}
+  {% block extra_js %}
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "{{ ONESIGNAL_APP_ID|default:'107f7e3e-2720-46ac-9068-d595d762dda4' }}",
+      });
+    });
+  </script>
+  {% endblock %}
 </body></html>
