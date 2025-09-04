@@ -11,7 +11,13 @@
   <div class="flex items-center gap-4 mt-4">
     {% if object.avatar %}<img src="{{ object.avatar.url }}" class="w-16 h-16 rounded-full" alt="{{ object.nome }}" />{% endif %}
     <div>
-      <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
+      <div class="flex items-center gap-2">
+        <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
+        {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+        <a href="{% url 'nucleos:update' object.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Editar' %}</a>
+        <a href="{% url 'nucleos:delete' object.pk %}" class="px-4 py-2 bg-red-600 text-white rounded">{% trans 'Excluir' %}</a>
+        {% endif %}
+      </div>
       <p class="text-sm text-gray-500">{{ object.slug }}</p>
     </div>
   </div>
