@@ -19,7 +19,7 @@ from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
 
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
 # Moderação desativada: não é necessário notificar moderação

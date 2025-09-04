@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db

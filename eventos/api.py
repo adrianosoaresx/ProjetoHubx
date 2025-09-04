@@ -14,7 +14,11 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
+<<<<<<< HEAD:agenda/api.py
+from eventos.models import (
+=======
 from agenda.models import (
+>>>>>>> main:eventos/api.py
     BriefingEvento,
     Evento,
     EventoLog,

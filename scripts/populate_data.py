@@ -45,7 +45,7 @@ def main() -> None:
     from django.db.models import Case, DecimalField, F, Sum, Value, When
     from django.utils.text import slugify
 
-    from agenda.models import Evento
+    from eventos.models import Evento
     from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
     from nucleos.models import Nucleo, ParticipacaoNucleo
     from organizacoes.models import Organizacao

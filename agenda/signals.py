@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
-from .models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from .tasks import promover_lista_espera
 
 

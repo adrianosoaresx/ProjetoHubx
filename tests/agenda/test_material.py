@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from accounts.models import UserType
 from agenda.factories import EventoFactory
 from agenda.forms import MaterialDivulgacaoEventoForm
-from agenda.models import MaterialDivulgacaoEvento
+from eventos.models import MaterialDivulgacaoEvento
 from organizacoes.factories import OrganizacaoFactory
 
 User = get_user_model()

@@ -10,7 +10,7 @@ from django.utils import timezone
 from faker import Faker
 
 from accounts.models import UserType
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from empresas.models import Empresa, Tag
 from nucleos.models import Nucleo, ParticipacaoNucleo
 from organizacoes.models import Organizacao

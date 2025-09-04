@@ -34,7 +34,7 @@ from django.views.generic import (
     View,
 )
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from audit.services import hash_ip, log_audit
 from tokens.utils import get_client_ip
 from core.permissions import (

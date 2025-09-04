@@ -11,7 +11,7 @@ from empresas.factories import EmpresaFactory
 from feed.factories import PostFactory
 from accounts.factories import UserFactory
 from nucleos.models import Nucleo
-from agenda.models import Evento
+from eventos.models import Evento
 from empresas.models import Empresa
 from feed.models import Post
 

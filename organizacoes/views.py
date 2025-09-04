@@ -23,7 +23,7 @@ from sentry_sdk import capture_exception
 from typing import Any
 
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
 from empresas.models import Empresa

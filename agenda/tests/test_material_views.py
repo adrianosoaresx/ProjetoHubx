@@ -3,7 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
-from agenda.models import MaterialDivulgacaoEvento
+from eventos.models import MaterialDivulgacaoEvento
 from accounts.models import UserType
 
 

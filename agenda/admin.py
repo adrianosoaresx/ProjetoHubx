@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import EventoForm
-from .models import (
+from eventos.models import (
     BriefingEvento,
     Evento,
     InscricaoEvento,

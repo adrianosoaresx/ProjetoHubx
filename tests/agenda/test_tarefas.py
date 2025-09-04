@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from accounts.models import UserType
-from agenda.models import Tarefa, TarefaLog
+from eventos.models import Tarefa, TarefaLog
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.urls("Hubx.urls")

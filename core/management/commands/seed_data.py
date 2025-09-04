@@ -6,7 +6,7 @@ from faker import Faker
 
 from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
-from agenda.models import FeedbackNota, InscricaoEvento, ParceriaEvento
+from eventos.models import FeedbackNota, InscricaoEvento, ParceriaEvento
 # O app 'discussao' foi removido; factories opcionais
 try:  # pragma: no cover
     from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory  # type: ignore

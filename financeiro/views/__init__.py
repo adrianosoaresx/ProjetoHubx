@@ -39,7 +39,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from notificacoes.services.email_client import send_email
 
 from ..models import (

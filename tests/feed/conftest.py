@@ -15,7 +15,7 @@ def add_nucleos_property():
     if not hasattr(User, "nucleos"):
         User.add_to_class("nucleos", property(lambda self: Nucleo.objects.filter(participacoes__user=self)))
     if not hasattr(User, "eventos"):
-        from agenda.models import Evento
+        from eventos.models import Evento
 
         User.add_to_class("eventos", property(lambda self: Evento.objects.filter(organizacao=self.organizacao)))
 

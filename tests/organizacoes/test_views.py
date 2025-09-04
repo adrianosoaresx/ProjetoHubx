@@ -7,7 +7,7 @@ from django.utils.text import slugify
 from django.core.cache import cache
 
 from accounts.models import User, UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from empresas.models import Empresa
 from feed.models import Post
 from nucleos.models import Nucleo

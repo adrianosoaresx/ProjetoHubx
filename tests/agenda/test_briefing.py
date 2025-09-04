@@ -6,7 +6,7 @@ from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
 from accounts.models import UserType
 from agenda.factories import EventoFactory
-from agenda.models import BriefingEvento, EventoLog
+from eventos.models import BriefingEvento, EventoLog
 
 
 @pytest.mark.django_db

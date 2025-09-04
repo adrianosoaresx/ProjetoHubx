@@ -6,7 +6,7 @@ from django.utils.timezone import make_aware
 from unittest.mock import patch
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento, EventoLog
+from eventos.models import Evento, InscricaoEvento, EventoLog
 from organizacoes.models import Organizacao
 
 
@@ -72,7 +72,7 @@ def test_lista_espera(client, usuario_comum, gerente, evento):
 
     with patch("agenda.tasks.enviar_para_usuario", lambda *a, **k: None), \
         patch(
-            "agenda.models.InscricaoEvento.gerar_qrcode",
+            "eventos.models.InscricaoEvento.gerar_qrcode",
             lambda self: setattr(self, "qrcode_url", "/fake.png"),
         ):
         promover_lista_espera(evento.pk)

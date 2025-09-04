@@ -6,7 +6,7 @@ from django.utils.timezone import make_aware
 from freezegun import freeze_time
 
 from accounts.models import User, UserType
-from agenda.models import Evento, FeedbackNota, InscricaoEvento
+from eventos.models import Evento, FeedbackNota, InscricaoEvento
 from organizacoes.models import Organizacao
 
 pytestmark = pytest.mark.django_db

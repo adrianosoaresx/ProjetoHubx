@@ -1,5 +1,9 @@
-"""App 'eventos' mantendo label 'agenda' para compatibilidade.
+"""Configuração inicial do app ``eventos``.
 
-Este pacote reexporta módulos do app original 'agenda' para evitar
-duplicação de código durante a transição.
+O aplicativo substitui o antigo ``agenda`` mantendo o mesmo *label*
+para garantir compatibilidade com migrações e chaves estrangeiras
+existentes.
 """
+
+__all__ = ["apps"]
+

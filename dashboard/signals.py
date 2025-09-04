@@ -2,7 +2,7 @@ from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from agenda.models import InscricaoEvento
+from eventos.models import InscricaoEvento
 
 
 def _invalidate_dashboard_cache(prefix: str) -> None:

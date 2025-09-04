@@ -53,7 +53,11 @@ from agenda.forms import (
     ParceriaEventoForm,
     TarefaForm,
 )
+<<<<<<< HEAD:agenda/views.py
+from eventos.models import (
+=======
 from agenda.models import (
+>>>>>>> main:eventos/views.py
     BriefingEvento,
     Evento,
     EventoLog,
@@ -368,7 +372,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["total_eventos"] = qs.count()
         ctx["total_eventos_ativos"] = qs.filter(status=0).count()
         ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
-        from .models import InscricaoEvento
+        from eventos.models import InscricaoEvento
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
         return ctx
 
