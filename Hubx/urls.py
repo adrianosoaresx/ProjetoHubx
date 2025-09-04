@@ -25,11 +25,11 @@ urlpatterns = [
     path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
-    # Eventos (novo namespace) e compat com rotas antigas de Agenda
+    # Eventos (novo namespace) com compatibilidade para rotas antigas de Agenda
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
-    # Rotas legadas ainda funcionam apontando para o mesmo conjunto
+    # Rotas legadas em /agenda/ ainda funcionam apontando para o mesmo conjunto
     path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
-    # Redireciona /agenda para /eventos no futuro (mantido por enquanto)
+    # Futuro: redirecionar /agenda/ para /eventos/
     # path("eventos/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
     # Discussão e Feed (web)
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
