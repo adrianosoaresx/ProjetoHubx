@@ -192,7 +192,9 @@ npm run build
   com `DashboardCustomMetricService.register_source("chave", Modelo, {"campo"})`.
 
 ### Parcerias de Eventos
-- **CRUD Web**: gerenciamento de `ParceriaEvento` em `/eventos/parcerias/` (rotas legadas em `/agenda/parcerias/`) com criação, edição e exclusão restritas a administradores e coordenadores.
+
+- **CRUD Web**: gerenciamento de `ParceriaEvento` em `/eventos/parcerias/` com criação, edição e exclusão restritas a administradores e coordenadores.
+
 
 ### Monitoramento de Desempenho
 - **Django‑Silk** disponível em `/silk/` para análise de tempo de resposta das listagens e APIs.

@@ -8,7 +8,7 @@ from celery import shared_task
 from django.db import models
 from django.utils import timezone
 
-from agenda.models import Evento
+from eventos.models import Evento
 from feed.models import Post
 from notificacoes.services.notificacoes import enviar_para_usuario
 from notificacoes.services.push_client import send_push
