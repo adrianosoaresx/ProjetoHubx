@@ -86,7 +86,11 @@ INSTALLED_APPS = [
     "organizacoes",
     "tokens.apps.TokensConfig",
     "nucleos",
+<<<<<<< HEAD
     # App de eventos (mantém label antigo 'agenda' para compatibilidade)
+=======
+    # App legado (mantém label e migrações)
+>>>>>>> main
     "eventos.apps.EventosConfig",
     "feed",
     "configuracoes",

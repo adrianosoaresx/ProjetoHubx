@@ -25,7 +25,7 @@ def test_aprovar_briefing(client):
         status="orcamentado",
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "aprovado"])
-    with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
+    with patch("eventos.views.notificar_briefing_status.delay") as mock_delay:
         response = client.post(url)
     assert response.status_code == 302
     briefing.refresh_from_db()
@@ -50,7 +50,7 @@ def test_orcamentar_briefing(client):
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "orcamentado"])
     prazo = (timezone.now() + timezone.timedelta(days=5)).isoformat()
-    with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
+    with patch("eventos.views.notificar_briefing_status.delay") as mock_delay:
         response = client.post(url, {"prazo_limite_resposta": prazo})
     assert response.status_code == 302
     briefing.refresh_from_db()
@@ -76,7 +76,7 @@ def test_recusar_briefing_com_motivo(client):
     )
     url = reverse("agenda:briefing_status", args=[briefing.pk, "recusado"])
     motivo = "Sem orçamento"
-    with patch("agenda.views.notificar_briefing_status.delay") as mock_delay:
+    with patch("eventos.views.notificar_briefing_status.delay") as mock_delay:
         response = client.post(url, {"motivo_recusa": motivo})
     assert response.status_code == 302
     briefing.refresh_from_db()

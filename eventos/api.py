@@ -14,7 +14,11 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
+<<<<<<< HEAD:agenda/api.py
 from eventos.models import (
+=======
+from agenda.models import (
+>>>>>>> main:eventos/api.py
     BriefingEvento,
     Evento,
     EventoLog,
@@ -25,8 +29,8 @@ from eventos.models import (
     Tarefa,
     TarefaLog,
 )
-from .permissions import IsAdminOrCoordenadorOrReadOnly
-from .serializers import (
+from agenda.permissions import IsAdminOrCoordenadorOrReadOnly
+from agenda.serializers import (
     BriefingEventoSerializer,
     EventoSerializer,
     InscricaoEventoSerializer,
@@ -34,7 +38,7 @@ from .serializers import (
     ParceriaEventoSerializer,
     TarefaSerializer,
 )
-from .tasks import notificar_briefing_status
+from agenda.tasks import notificar_briefing_status
 
 
 class DefaultPagination(PageNumberPagination):
@@ -186,9 +190,9 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         if request.headers.get("HX-Request"):
             messages.success(request, _("Material aprovado com sucesso."))
             row_html = render_to_string(
-                "agenda/_material_row.html", {"material": material}, request=request
+                "eventos/_material_row.html", {"material": material}, request=request
             )
-            messages_html = render_to_string("agenda/_messages.html", request=request)
+            messages_html = render_to_string("eventos/_messages.html", request=request)
             return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 
@@ -200,10 +204,10 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
             if request.headers.get("HX-Request"):
                 messages.error(request, _("Motivo de devolução é obrigatório."))
                 row_html = render_to_string(
-                    "agenda/_material_row.html", {"material": material}, request=request
+                    "eventos/_material_row.html", {"material": material}, request=request
                 )
                 messages_html = render_to_string(
-                    "agenda/_messages.html", request=request
+                    "eventos/_messages.html", request=request
                 )
                 return HttpResponse(row_html + messages_html, status=status.HTTP_400_BAD_REQUEST)
             return Response(
@@ -232,9 +236,9 @@ class MaterialDivulgacaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelView
         if request.headers.get("HX-Request"):
             messages.success(request, _("Material devolvido com sucesso."))
             row_html = render_to_string(
-                "agenda/_material_row.html", {"material": material}, request=request
+                "eventos/_material_row.html", {"material": material}, request=request
             )
-            messages_html = render_to_string("agenda/_messages.html", request=request)
+            messages_html = render_to_string("eventos/_messages.html", request=request)
             return HttpResponse(row_html + messages_html)
         return Response(self.get_serializer(material).data)
 

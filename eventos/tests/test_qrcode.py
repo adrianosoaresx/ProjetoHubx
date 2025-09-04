@@ -11,13 +11,13 @@ from organizacoes.models import Organizacao
 
 urlpatterns = [
     path("", include(("core.urls", "core"), namespace="core")),
-    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
+    path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
 ]
 
 pytestmark = pytest.mark.django_db
 
 
-@override_settings(ROOT_URLCONF="agenda.tests.test_qrcode")
+@override_settings(ROOT_URLCONF="eventos.tests.test_qrcode")
 def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
     monkeypatch.setattr(
         InscricaoEvento,
@@ -53,7 +53,7 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
         numero_presentes=0,
     )
 
-    url = reverse("agenda:evento_subscribe", args=[evento.pk])
+    url = reverse("eventos:evento_subscribe", args=[evento.pk])
     response = client.post(url, follow=True)
 
     assert response.status_code == 200
