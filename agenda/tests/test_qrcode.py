@@ -11,7 +11,7 @@ from organizacoes.models import Organizacao
 
 urlpatterns = [
     path("", include(("core.urls", "core"), namespace="core")),
-    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
 ]
 
 pytestmark = pytest.mark.django_db

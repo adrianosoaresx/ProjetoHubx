@@ -15,7 +15,7 @@ urlpatterns = [
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
-    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
@@ -51,7 +51,7 @@ urlpatterns = [
     ),
     path(
         "api/agenda/",
-        include(("agenda.api_urls", "agenda_api"), namespace="agenda_api"),
+        include(("eventos.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
     path(
         "api/dashboard/",

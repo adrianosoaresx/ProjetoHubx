@@ -10,7 +10,7 @@
     <a href="{% url 'agenda:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
   </header>
 
-{% include "agenda/_messages.html" %}
+{% include "eventos/_messages.html" %}
 
   <form
     hx-get="{% url 'agenda:material_list' %}"
@@ -47,7 +47,7 @@
         </thead>
         <tbody class="divide-y divide-neutral-200">
           {% for material in materiais %}
-            {% include "agenda/_material_row.html" with material=material %}
+            {% include "eventos/_material_row.html" with material=material %}
           {% empty %}
             <tr>
               <td colspan="5" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhum material disponível." %}</td>

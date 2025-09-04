@@ -13,7 +13,7 @@ from agenda.models import EventoLog
 pytestmark = pytest.mark.django_db
 
 urlpatterns = [
-    path("agenda/", include(("agenda.urls", "agenda"), namespace="agenda")),
+    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
 ]
 
 
