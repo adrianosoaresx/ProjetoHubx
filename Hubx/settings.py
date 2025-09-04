@@ -255,7 +255,7 @@ if os.getenv("AWS_STORAGE_BUCKET_NAME"):
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-FEED_IMAGE_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif"]
+FEED_IMAGE_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif",".webp"]
 FEED_PDF_ALLOWED_EXTS = [".pdf"]
 FEED_VIDEO_ALLOWED_EXTS = [".mp4", ".webm"]
 FEED_IMAGE_MAX_SIZE = 5 * 1024 * 1024

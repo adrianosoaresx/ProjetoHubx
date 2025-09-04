@@ -27,7 +27,7 @@ def _upload_media(file: IO[bytes]) -> str | tuple[str, str]:
     size = getattr(file, "size", 0)
     ext = Path(file.name).suffix.lower()
 
-    image_exts = getattr(settings, "FEED_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif"])
+    image_exts = getattr(settings, "FEED_IMAGE_ALLOWED_EXTS", [".jpg", ".jpeg", ".png", ".gif",".webp"])
     pdf_exts = getattr(settings, "FEED_PDF_ALLOWED_EXTS", [".pdf"])
     video_exts = getattr(settings, "FEED_VIDEO_ALLOWED_EXTS", [".mp4", ".webm"])
 
