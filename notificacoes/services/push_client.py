@@ -17,9 +17,27 @@ logger = logging.getLogger(__name__)
 
 def send_push(user, message: str) -> None:
     """Enviar push usando OneSignal."""
+    # Se não estiver configurado, não tenta enviar e evita quebrar o fluxo
+    app_id = getattr(settings, "ONESIGNAL_APP_ID", None)
+    api_key = getattr(settings, "ONESIGNAL_API_KEY", None)
+    if not app_id or not api_key:
+        logger.info(
+            "push_nao_configurado",
+            extra={"user": getattr(user, "id", None)},
+        )
+        return
+
     try:
-        from onesignal_sdk.client import Client as OneSignalClient  # type: ignore
-        client = OneSignalClient(app_id=settings.ONESIGNAL_APP_ID, rest_api_key=settings.ONESIGNAL_API_KEY)
+        try:
+            from onesignal_sdk.client import Client as OneSignalClient  # type: ignore
+        except Exception:  # Lib não instalada/configurada
+            logger.info(
+                "push_cliente_indisponivel",
+                extra={"user": getattr(user, "id", None)},
+            )
+            return
+
+        client = OneSignalClient(app_id=app_id, rest_api_key=api_key)
         client.send_notification(
             {
                 "contents": {"en": message},
@@ -45,12 +63,12 @@ def send_push(user, message: str) -> None:
                     )
         else:
             logger.exception("erro_push", extra={"user": getattr(user, "id", None)})
-            raise
-    except Exception as exc:  # pragma: no cover - falha de integração
+            return
+    except Exception:  # pragma: no cover - falha de integração
         logger.exception(
             "erro_push",
             extra={"user": getattr(user, "id", None)},
         )
-        raise
+        return
     else:
         logger.info("push_enviado", extra={"user": getattr(user, "id", None)})
