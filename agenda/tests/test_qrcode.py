@@ -5,7 +5,7 @@ from django.utils.timezone import make_aware
 from django.test import override_settings
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 

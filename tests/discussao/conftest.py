@@ -4,7 +4,7 @@ from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 from discussao.models import CategoriaDiscussao
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao

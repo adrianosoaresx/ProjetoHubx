@@ -14,7 +14,7 @@ from sentry_sdk import capture_exception
 
 from accounts.models import UserType
 from accounts.serializers import UserSerializer
-from agenda.models import Evento
+from eventos.models import Evento
 from agenda.serializers import EventoSerializer
 from core.cache import get_cache_version
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot

@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from agenda.models import Evento
+from eventos.models import Evento
 
 from ..models import CentroCusto, LancamentoFinanceiro, FinanceiroLog, ContaAssociado
 from .auditoria import log_financeiro

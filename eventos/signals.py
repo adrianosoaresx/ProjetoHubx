@@ -4,7 +4,7 @@ from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
 from eventos.models import Evento, InscricaoEvento
-from .tasks import promover_lista_espera
+from agenda.tasks import promover_lista_espera
 
 
 @receiver(pre_save, sender=InscricaoEvento)

@@ -8,7 +8,7 @@ from django.db.models import Avg, Count, F, Q, Sum
 from django.utils import timezone
 
 from accounts.models import User, UserType
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 # O app 'discussao' foi removido. Tornamos a dependência opcional.

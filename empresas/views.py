@@ -20,7 +20,7 @@ from core.permissions import (
 )
 from empresas.tasks import nova_avaliacao
 from organizacoes.models import Organizacao
-from agenda.models import Evento
+from eventos.models import Evento
 
 from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
 from .models import (

@@ -8,7 +8,7 @@ from rest_framework.test import APIClient
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
-from agenda.models import Tarefa, TarefaLog
+from eventos.models import Tarefa, TarefaLog
 
 
 pytestmark = pytest.mark.django_db

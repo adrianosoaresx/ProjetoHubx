@@ -9,5 +9,5 @@ class EventosConfig(AppConfig):
     verbose_name = "Eventos"
 
     def ready(self) -> None:  # pragma: no cover - configuração
-        # Reutiliza os sinais do app legado
-        from agenda import signals  # noqa: F401
+        # Registra os sinais do app de eventos
+        from eventos import signals  # noqa: F401

@@ -8,7 +8,7 @@ from rest_framework import status
 from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
 from agenda.factories import EventoFactory
-from agenda.models import FeedbackNota, InscricaoEvento
+from eventos.models import FeedbackNota, InscricaoEvento
 
 pytestmark = pytest.mark.django_db
 

@@ -25,7 +25,7 @@ from django.views.generic import (
 from accounts.models import UserType
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, GerenteRequiredMixin, NoSuperadminMixin
-from agenda.models import Evento
+from eventos.models import Evento
 
 from .forms import NucleoForm, NucleoSearchForm, ParticipacaoDecisaoForm, SuplenteForm
 from .models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo

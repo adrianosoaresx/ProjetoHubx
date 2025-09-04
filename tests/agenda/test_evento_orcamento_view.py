@@ -7,7 +7,7 @@ from accounts.factories import UserFactory
 from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 from agenda.factories import EventoFactory
-from agenda.models import EventoLog
+from eventos.models import EventoLog
 
 
 pytestmark = pytest.mark.django_db

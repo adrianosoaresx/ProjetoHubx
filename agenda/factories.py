@@ -8,7 +8,7 @@ from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
-from .models import Evento
+from eventos.models import Evento
 
 
 class EventoFactory(DjangoModelFactory):

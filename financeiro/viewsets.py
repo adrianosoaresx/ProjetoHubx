@@ -18,7 +18,7 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from agenda.models import Evento
+from eventos.models import Evento
 
 from nucleos.models import Nucleo
 

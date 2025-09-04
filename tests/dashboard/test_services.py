@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from accounts.models import User, UserType
 from agenda.factories import EventoFactory
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory

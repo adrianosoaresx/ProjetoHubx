@@ -13,7 +13,7 @@ from accounts.factories import UserFactory
 from organizacoes.factories import OrganizacaoFactory
 from empresas.factories import EmpresaFactory
 from agenda.factories import EventoFactory
-from agenda.models import (
+from eventos.models import (
     BriefingEvento,
     EventoLog,
     MaterialDivulgacaoEvento,

@@ -14,7 +14,7 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
-from .models import (
+from eventos.models import (
     BriefingEvento,
     Evento,
     EventoLog,

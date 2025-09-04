@@ -11,7 +11,7 @@ from accounts.models import UserType
 
 from .validators import validate_uploaded_file
 
-from .models import (
+from eventos.models import (
     BriefingEvento,
     Evento,
     EventoLog,

@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from accounts.models import UserType
 from agenda.factories import EventoFactory
-from agenda.models import ParceriaEvento
+from eventos.models import ParceriaEvento
 from empresas.factories import EmpresaFactory
 from organizacoes.factories import OrganizacaoFactory
 

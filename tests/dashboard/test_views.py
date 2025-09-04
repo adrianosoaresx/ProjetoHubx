@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.utils import timezone
 
-from agenda.models import InscricaoEvento
+from eventos.models import InscricaoEvento
 from django.contrib.auth import get_user_model
 from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory

@@ -61,7 +61,7 @@ def perfil_home(request):
 
     # Núcleos em que o usuário participa (ativos)
     from nucleos.models import Nucleo
-    from agenda.models import InscricaoEvento
+    from eventos.models import InscricaoEvento
     from empresas.models import Empresa
 
     nucleos = (
@@ -107,7 +107,7 @@ def perfil_publico(request, pk=None, public_id=None):
     else:
         perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
     from nucleos.models import Nucleo
-    from agenda.models import InscricaoEvento
+    from eventos.models import InscricaoEvento
     from empresas.models import Empresa
 
     nucleos = (

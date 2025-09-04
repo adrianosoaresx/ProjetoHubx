@@ -7,7 +7,7 @@ from django.utils.timezone import make_aware
 from django.utils.formats import date_format
 
 from accounts.models import UserType
-from agenda.models import Evento, InscricaoEvento
+from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
 

@@ -10,7 +10,7 @@ from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 from empresas.factories import EmpresaFactory
 from agenda.factories import EventoFactory
-from agenda.models import InscricaoEvento, ParceriaEvento
+from eventos.models import InscricaoEvento, ParceriaEvento
 
 
 pytestmark = pytest.mark.django_db

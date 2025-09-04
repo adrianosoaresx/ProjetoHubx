@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404, render
 
 from accounts.models import UserType
-from agenda.models import Evento
+from eventos.models import Evento
 
 from ..models import (
     CentroCusto,

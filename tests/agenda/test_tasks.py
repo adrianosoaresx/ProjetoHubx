@@ -2,7 +2,7 @@ import pytest
 
 from accounts.factories import UserFactory
 from agenda.factories import EventoFactory
-from agenda.models import BriefingEvento
+from eventos.models import BriefingEvento
 from agenda.tasks import notificar_briefing_status
 
 
