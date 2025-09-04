@@ -48,28 +48,42 @@ function bindFeedEvents(root = document) {
   const postForm = root.querySelector(".post-form");
 
   if (postForm) {
-    postForm.addEventListener("submit", (e) => {
-      const content = textarea ? textarea.value.trim() : "";
+    // Área de mensagens inline
+    let msgArea = root.querySelector('#form-messages');
+    if (!msgArea) {
+      msgArea = document.createElement('div');
+      msgArea.id = 'form-messages';
+      msgArea.className = 'hidden';
+      postForm.prepend(msgArea);
+    }
+    const showMsg = (text, variant = 'error') => {
+      if (!msgArea) return;
+      const base = 'rounded-xl text-sm p-3 mt-2';
+      const styles = variant === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700';
+      msgArea.className = `${base} ${styles}`;
+      msgArea.textContent = text;
+      msgArea.classList.remove('hidden');
+    };
+    const clearMsg = () => {
+      if (!msgArea) return;
+      msgArea.className = 'hidden';
+      msgArea.textContent = '';
+    };
+    postForm.addEventListener('submit', (e) => {
+      clearMsg();
+      const content = textarea ? textarea.value.trim() : '';
       const hasFile = fileInput && fileInput.files.length > 0;
-
       if (content.length === 0 && !hasFile) {
         e.preventDefault();
-        const msg = window.gettext
-          ? gettext(
-              "Por favor, escreva algo ou selecione um arquivo antes de publicar.",
-            )
-          : "Por favor, escreva algo ou selecione um arquivo antes de publicar.";
-        alert(msg);
+        const msg = window.gettext ? gettext('Por favor, escreva algo ou selecione um arquivo antes de publicar.') : 'Por favor, escreva algo ou selecione um arquivo antes de publicar.';
+        showMsg(msg, 'error');
         if (textarea) textarea.focus();
         return false;
       }
-
       if (content.length > 500) {
         e.preventDefault();
-        const msg = window.gettext
-          ? gettext("O conteúdo deve ter no máximo 500 caracteres.")
-          : "O conteúdo deve ter no máximo 500 caracteres.";
-        alert(msg);
+        const msg = window.gettext ? gettext('O conteúdo deve ter no máximo 500 caracteres.') : 'O conteúdo deve ter no máximo 500 caracteres.';
+        showMsg(msg, 'error');
         if (textarea) textarea.focus();
         return false;
       }
@@ -92,6 +106,103 @@ function bindFeedEvents(root = document) {
         .map((o) => o.value)
         .join(",");
       tagsHidden.value = values;
+    });
+  }
+
+  // Visibilidade/Destino: sincroniza seleção de núcleo com tipo_feed
+  const tipoGlobal = root.querySelector('input[name="tipo_feed"][value="global"]');
+  const tipoUsuario = root.querySelector('input[name="tipo_feed"][value="usuario"]');
+  const tipoNucleoHidden = root.querySelector('#tipo_feed_nucleo_hidden');
+  const nucleoRadios = root.querySelectorAll('input[name="nucleo"]');
+  if (nucleoRadios && tipoNucleoHidden) {
+    nucleoRadios.forEach(r => {
+      r.addEventListener('change', () => {
+        if (r.checked) {
+          // Marcar tipo_feed como "nucleo" quando escolher um núcleo
+          tipoNucleoHidden.checked = true;
+        }
+      });
+    });
+  }
+  const clearNucleos = () => {
+    nucleoRadios.forEach(r => {
+      r.checked = false;
+    });
+  };
+  if (tipoGlobal) {
+    tipoGlobal.addEventListener('change', () => {
+      if (tipoGlobal.checked) clearNucleos();
+    });
+  }
+  if (tipoUsuario) {
+    tipoUsuario.addEventListener('change', () => {
+      if (tipoUsuario.checked) clearNucleos();
+    });
+  }
+
+  // Tags: chips input
+  const tagsInput = root.querySelector('#tags-input');
+  const chipsContainer = root.querySelector('#tags-chips');
+  const tagsHiddenText = root.querySelector('#id_tags_text');
+  const updateHiddenTags = () => {
+    if (!chipsContainer || !tagsHiddenText) return;
+    const values = Array.from(chipsContainer.querySelectorAll('[data-tag]')).map(n => n.getAttribute('data-tag'));
+    tagsHiddenText.value = values.join(',');
+  };
+  const addChip = (text) => {
+    const value = (text || '').trim();
+    if (!value) return;
+    // Evita duplicadas (case-insensitive)
+    const exists = Array.from(chipsContainer.querySelectorAll('[data-tag]')).some(n => (n.getAttribute('data-tag')||'').toLowerCase() === value.toLowerCase());
+    if (exists) return;
+    const chip = document.createElement('span');
+    chip.className = 'inline-flex items-center gap-1 bg-neutral-100 text-neutral-800 rounded-full px-3 py-1 text-xs';
+    chip.setAttribute('data-tag', value);
+    chip.innerHTML = `${value} <button type="button" class="ml-1 text-neutral-500 hover:text-neutral-700" aria-label="Remover">&times;</button>`;
+    chip.querySelector('button').addEventListener('click', () => {
+      chip.remove();
+      updateHiddenTags();
+    });
+    chipsContainer.appendChild(chip);
+    updateHiddenTags();
+  };
+  if (tagsInput && chipsContainer && tagsHiddenText) {
+    // Pre-popular a partir do hidden (ex: após erro de validação)
+    const initial = (tagsHiddenText.value || '').split(',').map(t => t.trim()).filter(Boolean);
+    if (initial.length) {
+      // Evita duplicatas caso o container já tenha itens
+      chipsContainer.innerHTML = '';
+      initial.forEach(addChip);
+    }
+
+    // Permite colar lista separada por vírgulas
+    tagsInput.addEventListener('paste', (e) => {
+      const txt = (e.clipboardData || window.clipboardData).getData('text');
+      if (txt && txt.includes(',')) {
+        e.preventDefault();
+        txt.split(',').map(t => t.trim()).filter(Boolean).forEach(addChip);
+        tagsInput.value = '';
+      }
+    });
+    // Criar chip ao sair do campo com valor
+    tagsInput.addEventListener('change', () => {
+      if (tagsInput.value && tagsInput.value.trim()) {
+        addChip(tagsInput.value);
+        tagsInput.value = '';
+      }
+    });
+    tagsInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addChip(tagsInput.value);
+        tagsInput.value = '';
+      } else if (e.key === 'Backspace' && !tagsInput.value) {
+        const last = chipsContainer.querySelector('[data-tag]:last-child');
+        if (last) {
+          last.remove();
+          updateHiddenTags();
+        }
+      }
     });
   }
 }

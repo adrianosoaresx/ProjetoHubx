@@ -319,6 +319,19 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
+        context["tags_disponiveis"] = Tag.objects.all()
+        # Seleção segura para o template (evita lookup direto em request.POST)
+        selected_tipo = (
+            self.request.POST.get("tipo_feed")
+            or self.request.GET.get("tipo_feed")
+            or "global"
+        ).strip()
+        context["selected_tipo_feed"] = selected_tipo
+        context["selected_nucleo"] = (
+            self.request.POST.get("nucleo")
+            or self.request.GET.get("nucleo")
+            or ""
+        ).strip()
         return context
 
     def form_valid(self, form):
@@ -337,9 +350,11 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         if tags_text:
             tag_names = [t.strip() for t in tags_text.split(",") if t.strip()]
             if tag_names:
-                tags_qs = Tag.objects.filter(nome__in=tag_names, deleted=False)
-                # Associa apenas tags existentes nesta versão
-                self.object.tags.set(list(tags_qs))
+                tags_objs = []
+                for name in tag_names:
+                    tag, _ = Tag.objects.get_or_create(nome=name, deleted=False)
+                    tags_objs.append(tag)
+                self.object.tags.set(tags_objs)
         from feed.tasks import POSTS_CREATED, notify_new_post
 
         POSTS_CREATED.inc()
