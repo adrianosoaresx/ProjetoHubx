@@ -25,7 +25,6 @@ urlpatterns = [
     path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
-    # Eventos (novo namespace) e compat com rotas antigas de Agenda
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
     # Rotas legadas ainda funcionam apontando para o mesmo conjunto
     path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
@@ -89,11 +88,13 @@ urlpatterns = [
         "api/eventos/",
         include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
     ),
+
     # Mantém API antiga
     path(
         "api/agenda/",
         include(("eventos.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
+
     path("", include("django_prometheus.urls")),
 ]
 
