@@ -1,12 +1,12 @@
 ---
-id: REQ-AGENDA-001
-title: Requisitos Agenda Hubx
-module: agenda
+id: REQ-EVENTOS-001
+title: Requisitos Eventos Hubx
+module: eventos
 status: Em vigor
 version: "1.1.0"
 authors: [preencher@hubx.space]
 created: "2025-07-25"
-updated: "2025-08-13"
+updated: "2025-09-05"
 owners: [preencher]
 reviewers: [preencher]
 tags: [backend]
@@ -16,7 +16,7 @@ dependencies: []
 
 ## 1. Visão Geral
 
-O App **Agenda** do Hubx administra todo o ciclo de vida de eventos e as suas relações com participantes, parceiros, materiais de divulgação e fluxos de briefing. Ele vai além do CRUD básico de eventos, implementando controle de inscrições com pagamentos e lista de espera, geração de QR codes para check‑in, upload e aprovação de materiais, avaliação de eventos e parcerias, gerenciamento de orçamentos e tarefas associadas.
+O App **Eventos** do Hubx administra todo o ciclo de vida de eventos e as suas relações com participantes, parceiros, materiais de divulgação e fluxos de briefing. Ele vai além do CRUD básico de eventos, implementando controle de inscrições com pagamentos e lista de espera, geração de QR codes para check‑in, upload e aprovação de materiais, avaliação de eventos e parcerias, gerenciamento de orçamentos e tarefas associadas.
 
 Principais destaques:
 
