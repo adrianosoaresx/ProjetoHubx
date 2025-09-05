@@ -1,20 +1,13 @@
 {% load i18n %}
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-white border-r flex flex-col transition-all">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-white border-r flex flex-col transform -translate-x-full md:translate-x-0 transition-transform">
   <div class="flex items-center justify-between p-4 border-b">
     <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}"><span class="sidebar-label">HubX</span></a>
-    <button id="sidebar-toggle" class="text-gray-800" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
-      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 5h16" />
-        <path d="M4 12h16" />
-        <path d="M4 19h16" />
-      </svg>
-    </button>
   </div>
   <nav class="flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
     <ul class="flex flex-col gap-2 text-sm">
       {% for item in NAV_MENU %}
         <li>
-          <a href="{{ item.path }}" class="{{ item.classes }}" aria-label="{% trans item.label %}" aria-current="{% if request.path == item.path %}page{% endif %}">
+          <a href="{{ item.path }}" class="{{ item.classes }} {% if item.active %}text-primary font-semibold{% endif %}" aria-label="{% trans item.label %}" aria-current="{% if item.active %}page{% endif %}">
             {% if item.id == 'perfil' and user.avatar %}
               <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" />
             {% else %}

@@ -13,6 +13,7 @@ class MenuItem:
     icon: str
     permissions: List[str] | None = None
     classes: str = "flex items-center gap-x-2 hover:text-primary transition"
+    active: bool = False
 
 
 # Icons as raw HTML so they can be injected into the template safely
@@ -211,11 +212,21 @@ def build_menu(request) -> List[MenuItem]:
     for item in items:
         perms = item.permissions or []
         if "anonymous" in perms and not user.is_authenticated:
-            filtered.append(item)
+            pass_condition = True
         elif "authenticated" in perms and user.is_authenticated:
-            filtered.append(item)
+            pass_condition = True
         elif user.is_authenticated and user.user_type in perms:
-            filtered.append(item)
+            pass_condition = True
         elif not perms:
+            pass_condition = True
+        else:
+            pass_condition = False
+
+        if pass_condition:
+            if item.path == "/":
+                item.active = request.path == "/"
+            else:
+                item.active = request.path.startswith(item.path)
             filtered.append(item)
+
     return filtered
