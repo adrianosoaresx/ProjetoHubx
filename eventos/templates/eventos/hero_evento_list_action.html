@@ -1,0 +1,4 @@
+{% load i18n %}
+{% if is_admin_org %}
+<a href="{% url 'eventos:evento_novo' %}" class="btn-primary">{% trans 'Novo evento' %}</a>
+{% endif %}

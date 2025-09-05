@@ -2,16 +2,8 @@
 {% load i18n %}
 {% block title %}{% trans 'Templates de Notificação' %} | HubX{% endblock %}
 {% block content %}
+{% include 'components/hero.html' with title=_('Templates de Notificação') subtitle=_('Gerencie as mensagens utilizadas nos envios.') action_template='notificacoes/hero_action.html' %}
 <div class="max-w-6xl mx-auto px-4 py-10">
-  <div class="flex items-center justify-between mb-8">
-    <div>
-      <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Templates de Notificação' %}</h1>
-      <p class="text-sm text-neutral-600">{% trans 'Gerencie as mensagens utilizadas nos envios.' %}</p>
-    </div>
-    <a href="{% url 'notificacoes:template_create' %}" class="inline-flex items-center gap-2 bg-primary-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-primary-700">
-      <span class="text-xl leading-none">+</span> {% trans 'Novo Template' %}
-    </a>
-  </div>
   {% if messages %}
   <div class="mb-4 space-y-2" aria-live="polite">
       {% for message in messages %}
