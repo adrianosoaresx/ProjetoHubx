@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n tz %}
+{% load i18n tz lucide_icons %}
 
 {% block title %}{% trans "Bem-vindo ao HubX" %}{% endblock %}
 
@@ -28,31 +28,31 @@
     <h2 class="text-2xl font-bold text-neutral-900 mb-8">{% trans "Principais Funcionalidades" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
-        <i class="fa-solid fa-rss text-indigo-600 text-3xl mb-4"></i>
+        {% lucide 'rss' class='text-indigo-600 w-8 h-8 mb-4' %}
         <h3 class="font-semibold text-neutral-900">{% trans "Feed/Mural" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Compartilhe novidades e acompanhe atualizações." %}</p>
         <a href="{% url 'feed:listar' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
-        <i class="fa-solid fa-calendar-days text-indigo-600 text-3xl mb-4"></i>
+        {% lucide 'calendar-days' class='text-indigo-600 w-8 h-8 mb-4' %}
   <h3 class="font-semibold text-neutral-900">{% trans "Eventos" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Organize eventos e gerencie inscrições." %}</p>
   <a href="{% url 'eventos:calendario' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
-        <i class="fa-solid fa-users text-indigo-600 text-3xl mb-4"></i>
+        {% lucide 'users' class='text-indigo-600 w-8 h-8 mb-4' %}
         <h3 class="font-semibold text-neutral-900">{% trans "Núcleos" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Encontre grupos de interesse e colabore." %}</p>
         <a href="{% url 'nucleos:list' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
-        <i class="fa-solid fa-chart-line text-indigo-600 text-3xl mb-4"></i>
+        {% lucide 'chart-line' class='text-indigo-600 w-8 h-8 mb-4' %}
         <h3 class="font-semibold text-neutral-900">{% trans "Dashboard/Financeiro" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Acompanhe métricas e controle financeiro." %}</p>
         <a href="{% url 'dashboard:dashboard' %}" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>
       </div>
       <div class="bg-white rounded-xl shadow-lg p-6 text-center flex flex-col items-center">
-        <i class="fa-solid fa-bell text-indigo-600 text-3xl mb-4"></i>
+        {% lucide 'bell' class='text-indigo-600 w-8 h-8 mb-4' %}
         <h3 class="font-semibold text-neutral-900">{% trans "Notificações" %}</h3>
         <p class="text-sm text-neutral-600 mb-4">{% trans "Centralize alertas e preferências de contato." %}</p>
         <a href="{% url 'configuracoes' %}?tab=preferencias" class="text-sm font-medium text-indigo-600 hover:underline">{% trans "Acessar" %}</a>

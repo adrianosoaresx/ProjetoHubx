@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 {% block title %}{% trans "Meu Mural" %}{% endblock %}
 
 {% block content %}
 {% if request.user.user_type == 'root' %}
   <p class="text-center text-neutral-500">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
+{% include 'components/hero.html' with title=_('Meu Mural') action_template='feed/hero_actions_mural.html' %}
 <section class="max-w-6xl mx-auto px-4 py-10">
-
   <!-- Cabeçalho -->
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Meu Mural" %}</h1>
@@ -16,15 +16,15 @@
       <a href="{% url 'feed:bookmarks' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Favoritos' %}">{% trans "Favoritos" %}</a>
       {% if request.user.user_type != 'root' %}
       <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Nova postagem' %}">
-        <i class="fa-solid fa-circle-plus"></i>
+        {% lucide 'circle-plus' class='w-5 h-5' %}
         {% trans "Nova postagem" %}
       </a>
       {% endif %}
     </div>
   </div>
 
-  {% include "feed/_grid.html" with posts=posts %}
 
+  {% include "feed/_grid.html" with posts=posts %}
 </section>
 {% endif %}
 {% endblock %}

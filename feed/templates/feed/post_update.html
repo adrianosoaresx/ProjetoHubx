@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 {% block title %}{% trans "Editar Postagem" %} - Hubx{% endblock %}
 
 {% block content %}
@@ -70,10 +70,10 @@
         <div class="relative mt-2">
           <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl shadow-sm">
           <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
-            <i class="fa-solid fa-eye"></i>
+            {% lucide 'eye' class='w-4 h-4' %}
           </a>
           <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
-            <i class="fa-solid fa-download"></i>
+            {% lucide 'download' class='w-4 h-4' %}
           </a>
         </div>
       {% elif post.image %}
