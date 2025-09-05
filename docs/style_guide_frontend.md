@@ -37,6 +37,23 @@ Aplique utilitários Tailwind diretamente nas tags para garantir consistência e
 - Ícones meramente decorativos devem incluir `aria-hidden="true"`.
 - Quando o ícone transmitir significado, forneça um `aria-label` no elemento ou um texto auxiliar escondido com `sr-only`.
 
+## Paleta de cores oficial
+
+A identidade do Hubx usa um gradiente de marca e tokens de cores para garantir
+consistência entre componentes.
+
+- **Gradiente:** utilize `bg-gradient-to-r from-primary-600 to-primary-400` para
+  barras ou destaques de marca.
+- **Primárias:** `text-primary-600`, `bg-primary-500` e `border-primary-400`.
+- **Neutras:** `bg-background`, `text-foreground`, `border-border` e
+  `text-muted-foreground`.
+- **Sucesso/Erro:** `text-success-600`, `bg-success-100`, `bg-destructive` e
+  `text-destructive-foreground`.
+
+```html
+<div class="h-8 bg-gradient-to-r from-primary-600 to-primary-400"></div>
+```
+
 ## Estrutura de layout
 
 ### Header com seletor de tema
@@ -121,8 +138,9 @@ acessibilidade.
 
 ### Modo claro/escuro e acessibilidade
 
-Use as variantes `dark:` para garantir contraste adequado em ambos os temas e
-sempre informe textos alternativos.
+As variantes `dark:` do Tailwind aplicam estilos quando o elemento `html` ou
+`body` possui a classe `dark`. Combine classes para definir versões dos dois
+temas:
 
 ```html
 <main class="p-4 bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
@@ -134,5 +152,27 @@ sempre informe textos alternativos.
 </main>
 ```
 
+Botões com o atributo `data-theme-option` alternam o tema global (`claro`,
+`escuro` ou `automatico`) atualizando o `aria-pressed` automaticamente:
+
+```html
+<div class="flex gap-2" role="group" aria-label="Tema">
+  <button type="button" data-theme-option="claro" class="btn-secondary">Claro</button>
+  <button type="button" data-theme-option="escuro" class="btn-secondary">Escuro</button>
+  <button type="button" data-theme-option="automatico" class="btn-secondary">Automático</button>
+</div>
+```
+
 Evite usar apenas cores para transmitir significado e garanta que botões
 interativos tenham `aria-label` quando não houver texto visível.
+
+### Componentes em modo claro e escuro
+
+Os componentes devem apresentar boa aparência em ambos os temas:
+
+```html
+<div class="p-4 rounded bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100">
+  <p class="mb-2">Conteúdo do cartão</p>
+  <button class="btn btn-primary">Ação</button>
+</div>
+```
