@@ -4,10 +4,10 @@
 {% block title %}{% trans "Bem-vindo ao HubX" %}{% endblock %}
 
 {% block content %}
-<header class="bg-white">
+<header class="bg-gradient-to-r from-primary-600 to-primary-700 text-white">
   <div class="max-w-7xl mx-auto px-4 py-16 text-center">
-    <h1 class="text-4xl font-bold text-neutral-900 mb-4">{% trans "Junte-se à comunidade Hubx.space" %}</h1>
-    <p class="text-neutral-600 mb-8">{% trans "Plataforma colaborativa que conecta organizações, empresas e pessoas." %}</p>
+    <h1 class="text-4xl font-bold mb-4">{% trans "Junte-se à comunidade Hubx.space" %}</h1>
+    <p class="text-neutral-100 mb-8">{% trans "Plataforma colaborativa que conecta organizações, empresas e pessoas." %}</p>
     {% if user.is_authenticated %}
     <div class="flex justify-center gap-4">
       <a href="{% url 'dashboard:dashboard' %}" class="bg-primary text-white px-5 py-3 rounded-xl shadow hover:bg-primary/90">{% trans "Ir para Dashboard" %}</a>
