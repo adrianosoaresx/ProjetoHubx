@@ -40,8 +40,8 @@
   - Título: Eventos
   - Módulo: Eventos
   - Status: Em vigor
-  - Versão: 1.0
-  - Última atualização: 2025-07-25
+  - Versão: 1.1.0
+  - Última atualização: 2025-09-05
 
 - **REQ-FEED-001**
   - Título: Feed
