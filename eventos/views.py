@@ -335,44 +335,6 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         return context
 
 
-class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
-    model = Evento
-    template_name = "eventos/evento_list.html"
-    context_object_name = "eventos"
-    paginate_by = 12
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = Evento.objects.select_related("organizacao", "nucleo", "coordenador")
-        q = self.request.GET.get("q", "").strip()
-
-        # Admin da organização vê todos os eventos da organização
-        if getattr(user, "get_tipo_usuario", None) and user.get_tipo_usuario == "admin":
-            qs = qs.filter(organizacao=user.organizacao)
-        else:
-            # Demais usuários: eventos em que está inscrito
-            qs = qs.filter(inscricoes__user=user).distinct()
-
-        if q:
-            qs = qs.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q))
-
-        return qs.annotate(num_inscritos=Count("inscricoes", distinct=True)).order_by("-data_inicio")
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        user = self.request.user
-        ctx["is_admin_org"] = getattr(user, "get_tipo_usuario", None) and user.get_tipo_usuario == "admin"
-        ctx["q"] = self.request.GET.get("q", "").strip()
-        # Totais para cards na lista
-        qs = self.get_queryset()
-        ctx["total_eventos"] = qs.count()
-        ctx["total_eventos_ativos"] = qs.filter(status=0).count()
-        ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
-        from eventos.models import InscricaoEvento
-        ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
-        return ctx
-
-
 class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Tarefa
     template_name = "eventos/tarefa_detail.html"
