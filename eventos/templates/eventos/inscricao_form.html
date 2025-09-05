@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans "Inscrição" %} | Hubx{% endblock %}
 
@@ -20,8 +20,8 @@
       {{ form.valor_pago.errors }}
     </div>
     <div>
-      {{ form.comprovante_pagamento.label_tag }}
-      {{ form.comprovante_pagamento.as_widget(attrs={'accept': '.jpg,.jpeg,.png,.pdf'}) }}
+  {{ form.comprovante_pagamento.label_tag }}
+  {{ form.comprovante_pagamento|attr:'accept:.jpg,.jpeg,.png,.pdf' }}
       {{ form.comprovante_pagamento.errors }}
     </div>
     <div>

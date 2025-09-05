@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 {% block title %}{% trans "Novo Evento" %} | Hubx{% endblock %}
 
 {% block content %}
@@ -17,7 +17,7 @@
             {{ field.label }}
           </label>
           {% if field.name == 'avatar' or field.name == 'cover' %}
-            {{ field.as_widget(attrs={'accept': 'image/*', 'class': 'mt-1 block w-full'}) }}
+            {{ field|add_class:'mt-1 block w-full'|attr:'accept:image/*' }}
           {% else %}
             {{ field }}
           {% endif %}

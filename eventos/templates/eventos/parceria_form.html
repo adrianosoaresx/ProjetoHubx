@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans "Parceria" %} | Hubx{% endblock %}
 
@@ -12,8 +12,8 @@
     {% for field in form %}
     <div>
       {{ field.label_tag }}
-      {% if field.name == 'acordo' %}
-      {{ field.as_widget(attrs={'accept': '.pdf'}) }}
+  {% if field.name == 'acordo' %}
+  {{ field|attr:'accept:.pdf' }}
       {% else %}
       {{ field }}
       {% endif %}

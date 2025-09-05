@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 {% block title %}{% trans "Editar Evento" %} | Hubx{% endblock %}
 
 {% block content %}
@@ -18,7 +18,7 @@
           {% if field.value %}
             <img src="{{ field.value.url }}" alt="{{ field.label }}" class="w-32 h-32 object-cover mb-2">
           {% endif %}
-          {{ field.as_widget(attrs={'accept': 'image/*', 'class': 'mt-1 block w-full'}) }}
+          {{ field|add_class:'mt-1 block w-full'|attr:'accept:image/*' }}
           {% else %}
           {{ field }}
           {% endif %}

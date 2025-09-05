@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 {% block title %}{% if object %}{% trans "Editar Material" %}{% else %}{% trans "Novo Material" %}{% endif %} | Hubx{% endblock %}
 
 {% block content %}
@@ -13,10 +13,10 @@
     {% for field in form %}
     <div>
       {{ field.label_tag }}
-      {% if field.name == 'arquivo' %}
-      {{ field.as_widget(attrs={'accept': '.jpg,.jpeg,.png,.pdf'}) }}
-      {% elif field.name == 'imagem_thumb' %}
-      {{ field.as_widget(attrs={'accept': '.jpg,.jpeg,.png'}) }}
+  {% if field.name == 'arquivo' %}
+  {{ field|attr:'accept:.jpg,.jpeg,.png,.pdf' }}
+  {% elif field.name == 'imagem_thumb' %}
+  {{ field|attr:'accept:.jpg,.jpeg,.png' }}
       {% else %}
       {{ field }}
       {% endif %}

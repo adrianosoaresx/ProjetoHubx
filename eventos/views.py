@@ -83,10 +83,13 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             .select_related("nucleo", "coordenador", "organizacao")
             .prefetch_related("inscricoes")
         )
-        # Filtro: se não for admin, mostra apenas eventos em que está inscrito ou públicos da org
+
+        # Visibilidade:
+        # - ADMIN: vê todos os eventos da organização
+        # - COORDENADOR/NUCLEADO (não ROOT): vê eventos públicos da organização ou do(s) seu(s) núcleo(s)
         if user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
-            # Eventos públicos da org ou onde o usuário está inscrito
-            qs = qs.filter(Q(publico_alvo=0) | Q(inscricoes__user=user)).distinct()
+            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+            qs = qs.filter(Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)).distinct()
 
         q = self.request.GET.get("q", "").strip()
         if q:
@@ -226,7 +229,7 @@ class EventoCreateView(
 class EventoUpdateView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    GerenteRequiredMixin,
+    AdminRequiredMixin,
     PermissionRequiredMixin,
     UpdateView,
 ):
@@ -265,7 +268,7 @@ class EventoUpdateView(
 class EventoDeleteView(
     LoginRequiredMixin,
     NoSuperadminMixin,
-    GerenteRequiredMixin,
+    AdminRequiredMixin,
     PermissionRequiredMixin,
     DeleteView,
 ):
@@ -290,16 +293,23 @@ class EventoDeleteView(
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
+class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
     template_name = "eventos/detail.html"
 
     def get_queryset(self):
-        return (
-            _queryset_por_organizacao(self.request)
-            .select_related("organizacao")
-            .prefetch_related("inscricoes", "feedbacks")
-        )
+        user = self.request.user
+        base = Evento.objects.select_related("organizacao").prefetch_related("inscricoes", "feedbacks")
+        # ROOT já é bloqueado por NoSuperadminMixin
+        if user.user_type == UserType.ADMIN:
+            return base.filter(organizacao=user.organizacao)
+        # Associados / Coordenadores / Nucleados: leitura de eventos públicos da org ou do(s) seu(s) núcleo(s)
+        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
+        return base.filter(
+            organizacao=user.organizacao
+        ).filter(
+            Q(publico_alvo=0) | Q(nucleo__in=nucleo_ids)
+        ).distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
