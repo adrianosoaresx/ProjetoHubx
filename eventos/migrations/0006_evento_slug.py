@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("agenda", "0005_remove_avaliacao_feedback_from_inscricao"),
+        ("eventos", "0005_remove_avaliacao_feedback_from_inscricao"),
     ]
 
     operations = [

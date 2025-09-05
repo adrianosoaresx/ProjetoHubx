@@ -14,11 +14,7 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
-<<<<<<< HEAD:agenda/api.py
-from eventos.models import (
-=======
-from agenda.models import (
->>>>>>> main:eventos/api.py
+from .models import (
     BriefingEvento,
     Evento,
     EventoLog,
@@ -29,8 +25,8 @@ from agenda.models import (
     Tarefa,
     TarefaLog,
 )
-from agenda.permissions import IsAdminOrCoordenadorOrReadOnly
-from agenda.serializers import (
+from .permissions import IsAdminOrCoordenadorOrReadOnly
+from .serializers import (
     BriefingEventoSerializer,
     EventoSerializer,
     InscricaoEventoSerializer,
@@ -38,7 +34,7 @@ from agenda.serializers import (
     ParceriaEventoSerializer,
     TarefaSerializer,
 )
-from agenda.tasks import notificar_briefing_status
+from .tasks import notificar_briefing_status
 
 
 class DefaultPagination(PageNumberPagination):

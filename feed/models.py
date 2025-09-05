@@ -69,7 +69,7 @@ class Post(TimeStampedModel, SoftDeleteModel):
     video = models.FileField(upload_to="videos/", null=True, blank=True)
     video_preview = models.ImageField(upload_to="video_previews/", null=True, blank=True)
     nucleo = models.ForeignKey("nucleos.Nucleo", null=True, blank=True, on_delete=models.SET_NULL)
-    evento = models.ForeignKey("agenda.Evento", null=True, blank=True, on_delete=models.SET_NULL)
+    evento = models.ForeignKey("eventos.Evento", null=True, blank=True, on_delete=models.SET_NULL)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
 
     objects = SoftDeleteManager()

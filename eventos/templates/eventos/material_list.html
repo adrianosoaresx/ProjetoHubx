@@ -7,13 +7,13 @@
 <section id="material-container" class="max-w-7xl mx-auto px-4 py-10">
   <header class="mb-6 flex items-center justify-between">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Materiais de Divulgação" %}</h1>
-    <a href="{% url 'agenda:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
+    <a href="{% url 'eventos:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
   </header>
 
 {% include "eventos/_messages.html" %}
 
   <form
-    hx-get="{% url 'agenda:material_list' %}"
+    hx-get="{% url 'eventos:material_list' %}"
     hx-target="#material-container"
     hx-push-url="true"
     class="mb-6 flex gap-2"
@@ -59,7 +59,7 @@
   </main>
 
   <footer class="mt-6 text-right">
-    <a href="{% url 'agenda:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à agenda" %}</a>
+    <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>
   </footer>
 </section>
 {% endblock %}

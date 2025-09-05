@@ -35,7 +35,7 @@ def test_parceria_list_template(client):
     client.force_login(user)
     resp = client.get(reverse("eventos:parceria_list"))
     assert resp.status_code == 200
-    assert "agenda/parceria_list.html" in [t.name for t in resp.templates]
+    assert "eventos/parceria_list.html" in [t.name for t in resp.templates]
 
 
 @pytest.mark.django_db

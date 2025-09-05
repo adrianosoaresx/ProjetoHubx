@@ -50,7 +50,7 @@
     </div>
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      <a href="{% url 'eventos:calendario' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
       <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
     </div>
   </form>
@@ -58,7 +58,7 @@
   <!-- Orçamento -->
   <div class="mt-10">
     <h2 class="text-lg font-semibold text-neutral-900 mb-4">{% trans "Orçamento" %}</h2>
-    <form id="orcamento-form" method="post" action="{% url 'agenda:evento_orcamento' object.pk %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+    <form id="orcamento-form" method="post" action="{% url 'eventos:evento_orcamento' object.pk %}" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
       {% csrf_token %}
       <div>
         <label for="id_orcamento_estimado" class="block text-sm font-medium text-neutral-700 mb-1">{% trans "Orçamento estimado" %}</label>
@@ -87,7 +87,7 @@
             <p class="text-xs text-neutral-500">{{ inscrito.email }}</p>
           </div>
           {% if user.user_type == "admin" or user.user_type == "gerente" %}
-          <form method="post" action="{% url 'agenda:evento_remover_inscrito' object.pk inscrito.pk %}">
+          <form method="post" action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}">
             {% csrf_token %}
             <button type="submit" class="text-sm text-red-600 hover:underline" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
           </form>

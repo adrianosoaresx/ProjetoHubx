@@ -1,7 +1,6 @@
 # Eventos
 
-Este app substitui o antigo módulo **Agenda**, mantendo o label `agenda`
-para compatibilidade com migrations e chaves estrangeiras existentes.
+Este app substitui o antigo módulo **Agenda**.
 
 Todos os modelos deste app herdam de `core.models.TimeStampedModel`,
 disponibilizando os campos `created_at` e `updated_at` para registro de

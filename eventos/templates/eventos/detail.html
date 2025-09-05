@@ -60,7 +60,7 @@
       <div class="mb-10 space-y-4">
         <img src="{{ inscricao.qrcode_url }}" alt="{% trans 'QR Code da inscrição' %}" class="mx-auto h-48 w-48" />
         {% if avaliacao_permitida %}
-          <form method="post" action="{% url 'agenda:evento_feedback' object.pk %}" class="space-y-4">
+          <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-4">
             {% csrf_token %}
             <div>
               <label for="nota" class="block text-sm font-medium">{% trans "Nota" %}</label>
@@ -79,7 +79,7 @@
             </div>
           </form>
         {% else %}
-          <form method="post" action="{% url 'agenda:evento_subscribe' object.pk %}">
+          <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}">
             {% csrf_token %}
             <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
           </form>
@@ -87,7 +87,7 @@
       </div>
     {% else %}
       <div class="mb-10">
-        <a href="{% url 'agenda:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
+        <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
       </div>
     {% endif %}
   {% endif %}
@@ -121,7 +121,7 @@
 
   <!-- Voltar -->
   <div class="flex justify-end mt-10">
-    <a href="{% url 'agenda:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+    <a href="{% url 'eventos:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
   </div>
 </section>
 {% endblock %}

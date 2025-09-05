@@ -3,7 +3,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("agenda", "0004_inscricao_avaliacao_constraint"),
+        ("eventos", "0004_inscricao_avaliacao_constraint"),
     ]
 
     operations = [

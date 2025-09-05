@@ -19,6 +19,6 @@ def test_briefing_create_exibe_mensagem(client):
     }
     resp = client.post(reverse("eventos:briefing_criar"), data, follow=True)
     assert resp.status_code == 200
-    assert "agenda/briefing_list.html" in [t.name for t in resp.templates]
+    assert "eventos/briefing_list.html" in [t.name for t in resp.templates]
     messages = list(get_messages(resp.wsgi_request))
     assert any("Briefing criado com sucesso" in m.message for m in messages)

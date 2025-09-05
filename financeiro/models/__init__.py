@@ -39,7 +39,7 @@ class CentroCusto(TimeStampedModel, SoftDeleteModel):
         related_name="centros_custo",
     )
     evento = models.ForeignKey(
-        "agenda.Evento",
+        "eventos.Evento",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
