@@ -4,49 +4,68 @@
 {% block title %}{{ _('Extrato') }}{% endblock %}
 
 {% block content %}
-{% include 'components/hero.html' with title=_('Extrato') %}
-<section class="max-w-4xl mx-auto p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="card col-span-full">
-    <div class="card-header">
-      <h2 class="text-xl font-semibold">{{ _('Extrato') }}</h2>
+
+<main class="p-4 max-w-4xl mx-auto">
+  <h1 class="text-2xl font-semibold mb-2">{{ _('Extrato') }}</h1>
+  <form id="filtros" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4"
+        hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none"
+        hx-trigger="change from:select,change from:input, submit"
+        hx-on="htmx:afterRequest: renderLancamentos(event)">
+    <legend class="sr-only">{{ _('Filtros') }}</legend>
+    <div>
+      <label for="filtro-status" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Status') }}</label>
+      <select name="status" id="filtro-status" class="border p-2 rounded">
+        <option value="">{{ _('Todos Status') }}</option>
+        <option value="pendente">{{ _('Pendente') }}</option>
+        <option value="pago">{{ _('Pago') }}</option>
+        <option value="cancelado">{{ _('Cancelado') }}</option>
+      </select>
     </div>
-    <div class="card-body">
-      <form id="filtros" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4"
-            hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none"
-            hx-trigger="change from:select,change from:input, submit"
-            hx-on="htmx:afterRequest: renderLancamentos(event)">
-        <legend class="sr-only">{{ _('Filtros') }}</legend>
-        <div>
-          <label for="filtro-status" class="block text-sm font-medium text-gray-700">{{ _('Status') }}</label>
-          <select name="status" id="filtro-status" class="border p-2 rounded">
-            <option value="">{{ _('Todos Status') }}</option>
-            <option value="pendente">{{ _('Pendente') }}</option>
-            <option value="pago">{{ _('Pago') }}</option>
-            <option value="cancelado">{{ _('Cancelado') }}</option>
-          </select>
-        </div>
-        <div>
-          <label for="filtro-periodo-inicial" class="block text-sm font-medium text-gray-700">{{ _('Período inicial') }}</label>
-          <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
-        </div>
-        <div>
-          <label for="filtro-periodo-final" class="block text-sm font-medium text-gray-700">{{ _('Período final') }}</label>
-          <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
-        </div>
-      </form>
-      <div id="lista" aria-live="polite">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Tipo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Lançamento') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Status') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for l in lancamentos %}
+    <div>
+      <label for="filtro-periodo-inicial" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período inicial') }}</label>
+      <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
+    </div>
+    <div>
+      <label for="filtro-periodo-final" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período final') }}</label>
+      <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
+    </div>
+  </form>
+  <div id="lista" aria-live="polite">
+    <table class="min-w-full divide-y divide-[var(--border-primary)]">
+      <thead>
+        <tr class="bg-[var(--bg-tertiary)]">
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Centro de Custo') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Tipo') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Valor') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Data de Lançamento') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Status') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in lancamentos %}
+        <tr>
+          <td class="px-3 py-2">{{ l.centro_custo }}</td>
+          <td class="px-3 py-2">{{ l.tipo }}</td>
+          <td class="px-3 py-2">{{ l.valor }}</td>
+          <td class="px-3 py-2">{{ l.data_lancamento }}</td>
+          <td class="px-3 py-2">{{ l.status }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="px-3 py-2 text-center">{{ _('Nenhum lançamento') }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <script src="{% url 'javascript-catalog' %}"></script>
+  <script>
+    function renderLancamentos(evt) {
+      const tbody = document.querySelector('#lista tbody');
+      tbody.innerHTML = '';
+      try {
+        const data = JSON.parse(evt.detail.xhr.response);
+        const itens = data.results || data;
+        const rows = itens
+          .map(l => `
             <tr>
               <td class="px-3 py-2">{{ l.centro_custo }}</td>
               <td class="px-3 py-2">{{ l.tipo }}</td>
