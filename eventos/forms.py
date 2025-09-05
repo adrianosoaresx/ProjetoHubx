@@ -52,7 +52,6 @@ class EventoForm(forms.ModelForm):
             "status",
             "publico_alvo",
             "numero_convidados",
-            "numero_presentes",
             "participantes_maximo",
             "espera_habilitada",
             "valor_ingresso",

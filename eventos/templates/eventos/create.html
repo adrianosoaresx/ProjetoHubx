@@ -11,7 +11,7 @@
 
     {{ form.non_field_errors }}
     {% for field in form %}
-      {% if field.name != 'participantes_maximo' and field.name != 'espera_habilitada' %}
+      {% if field.name != 'participantes_maximo' and field.name != 'espera_habilitada' and field.name != 'numero_presentes' %}
         <div>
           <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">
             {{ field.label }}

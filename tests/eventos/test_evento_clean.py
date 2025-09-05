@@ -21,7 +21,6 @@ def test_evento_data_fim_posterior_data_inicio():
     "campo, valor",
     [
         ("numero_convidados", -1),
-        ("numero_presentes", -1),
         ("valor_ingresso", Decimal("-1")),
         ("orcamento", Decimal("-1")),
         ("orcamento_estimado", Decimal("-1")),
