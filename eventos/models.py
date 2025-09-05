@@ -219,7 +219,7 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         choices=[(0, "Público"), (1, "Somente nucleados"), (2, "Apenas associados")]
     )
     numero_convidados = models.PositiveIntegerField()
-    numero_presentes = models.PositiveIntegerField()
+    numero_presentes = models.PositiveIntegerField(default=0, editable=False)
     valor_ingresso = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     orcamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -267,7 +267,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
             errors["data_fim"] = _("A data de fim deve ser posterior à data de início.")
         positive_fields = [
             "numero_convidados",
-            "numero_presentes",
             "valor_ingresso",
             "orcamento",
             "orcamento_estimado",
