@@ -1,6 +1,6 @@
 # Eventos
 
-Documentação do app de eventos, sucessor do módulo **Agenda**.
+Documentação do app de eventos, sucessor do módulo **Eventos**.
 
 Todos os modelos herdam de `core.models.TimeStampedModel`, com os campos
 `created_at` e `updated_at` para registrar criação e atualização.

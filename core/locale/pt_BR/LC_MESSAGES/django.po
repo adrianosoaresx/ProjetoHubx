@@ -84,7 +84,7 @@ msgid "Acessar"
 msgstr ""
 
 #: templates/core/home.html:38
-msgid "Agenda"
+msgid "Eventos"
 msgstr ""
 
 #: templates/core/home.html:39

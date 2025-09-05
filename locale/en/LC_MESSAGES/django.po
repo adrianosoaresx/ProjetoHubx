@@ -81,7 +81,7 @@ msgid "Empresas"
 msgstr ""
 
 #: templates/base.html:104
-msgid "Agenda"
+msgid "Eventos"
 msgstr ""
 
 #: templates/base.html:107

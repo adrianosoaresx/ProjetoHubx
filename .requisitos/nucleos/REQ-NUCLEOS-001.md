@@ -303,7 +303,7 @@ Feature: Gestão de Núcleos
 - **App Financeiro**: ajuste de cobranças ao suspender/reativar.
 - **App Notificações**: envio de mensagens assíncronas.
 - **App Tokens**: geração de tokens para convites.
-- **App Agenda**: dados usados no relatório geral.
+- **App Eventos**: dados usados no relatório geral.
 - **Storage S3**: armazenamento de avatar e capa.
 - **Celery**: processamento assíncrono de notificações e expirações.
 - **Sentry/Prometheus**: monitoramento de erros e métricas.
