@@ -35,8 +35,22 @@
     <form id="emailForm" method="post" action="{% url 'accounts:email' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="email" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Email" %}</label>
-        <input type="email" id="email" name="email" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite seu email' %}" required autofocus aria-describedby="email_help email_validation">
+        <div class="relative">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder=" "
+            required
+            autofocus
+            aria-describedby="email_help email_validation"
+          />
+          <label
+            for="email"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+          >{% trans "Email" %}</label>
+        </div>
         <div class="text-sm text-red-600" id="email_validation"></div>
         <small id="email_help" class="text-sm text-neutral-500">{% trans "Enviaremos um link de confirmação" %}</small>
       </div>
