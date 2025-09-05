@@ -36,9 +36,9 @@
   - Versão: 1.0
   - Última atualização: 2025-07-25
 
-- **REQ-AGENDA-001**
-  - Título: Agenda
-  - Módulo: Agenda
+- **REQ-EVENTOS-001**
+  - Título: Eventos
+  - Módulo: Eventos
   - Status: Em vigor
   - Versão: 1.0
   - Última atualização: 2025-07-25

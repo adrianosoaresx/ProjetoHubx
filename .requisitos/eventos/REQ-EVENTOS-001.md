@@ -1,7 +1,7 @@
 ---
-id: REQ-AGENDA-001
-title: Requisitos Agenda Hubx
-module: agenda
+id: REQ-EVENTOS-001
+title: Requisitos Eventos Hubx
+module: eventos
 status: Em vigor
 version: "1.1.0"
 authors: [preencher@hubx.space]
@@ -16,7 +16,7 @@ dependencies: []
 
 ## 1. Visão Geral
 
-O App **Agenda** do Hubx administra todo o ciclo de vida de eventos e as suas relações com participantes, parceiros, materiais de divulgação e fluxos de briefing. Ele vai além do CRUD básico de eventos, implementando controle de inscrições com pagamentos e lista de espera, geração de QR codes para check‑in, upload e aprovação de materiais, avaliação de eventos e parcerias, gerenciamento de orçamentos e tarefas associadas.
+O App **Eventos** do Hubx administra todo o ciclo de vida de eventos e as suas relações com participantes, parceiros, materiais de divulgação e fluxos de briefing. Ele vai além do CRUD básico de eventos, implementando controle de inscrições com pagamentos e lista de espera, geração de QR codes para check‑in, upload e aprovação de materiais, avaliação de eventos e parcerias, gerenciamento de orçamentos e tarefas associadas.
 
 Principais destaques:
 
@@ -164,7 +164,7 @@ Principais destaques:
 
 *Observação:* todos os modelos herdam de `TimeStampedModel` (campos `created` e `modified`) e de `SoftDeleteModel` para exclusão lógica. Campos de auditoria não são listados individualmente.
 
-### Agenda.Evento
+### Eventos.Evento
 Descrição: ...
 Campos:
 - `id`: UUID
@@ -202,7 +202,7 @@ Métodos:
 - `calcular_media_feedback()`
 - `endereco_completo()`
 
-### Agenda.InscricaoEvento
+### Eventos.InscricaoEvento
 Descrição: ...
 Campos:
 - `user`: FK → User.id
@@ -225,7 +225,7 @@ Métodos:
 - `realizar_check_in()`
 - `gerar_qrcode()`
 
-### Agenda.MaterialDivulgacaoEvento
+### Eventos.MaterialDivulgacaoEvento
 Descrição: ...
 Campos:
 - `evento`: FK → Evento.id
@@ -243,7 +243,7 @@ Campos:
 Métodos:
 - `url_publicacao()`
 
-### Agenda.ParceriaEvento
+### Eventos.ParceriaEvento
 Descrição: ...
 Campos:
 - `evento`: FK → Evento.id
@@ -260,7 +260,7 @@ Campos:
 - `avaliacao`: integer (1–5) — opcional
 - `comentario`: text — opcional
 
-### Agenda.BriefingEvento
+### Eventos.BriefingEvento
 Descrição: ...
 Campos:
 - `evento`: FK → Evento.id
@@ -281,7 +281,7 @@ Campos:
 - `prazo_limite_resposta`: datetime — opcional
 - `avaliado_em`: datetime — opcional
 
-### Agenda.FeedbackNota
+### Eventos.FeedbackNota
 Descrição: ...
 Campos:
 - `evento`: FK → Evento.id
@@ -290,7 +290,7 @@ Campos:
 - `comentario`: text
 - `data_feedback`: datetime — auto
 
-### Agenda.Tarefa
+### Eventos.Tarefa
 Descrição: ...
 Campos:
 - `id`: UUID
@@ -304,7 +304,7 @@ Campos:
 - `mensagem_origem`: FK → ChatMessage.id — opcional
 - `status`: enum {pendente, concluida}
 
-### Agenda.TarefaLog
+### Eventos.TarefaLog
 Descrição: ...
 Campos:
 - `tarefa`: FK → Tarefa.id
@@ -312,7 +312,7 @@ Campos:
 - `acao`: string
 - `detalhes`: JSON
 
-### Agenda.EventoLog
+### Eventos.EventoLog
 Descrição: ...
 Campos:
 - `evento`: FK → Evento.id
