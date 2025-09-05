@@ -3,70 +3,81 @@
 {% block title %}{% trans "Tokens de API" %} | HubX{% endblock %}
 
 {% block content %}
-<section class="max-w-3xl mx-auto px-4 py-10">
-  <h1 class="text-2xl font-bold mb-6">{% trans "Tokens de API" %}</h1>
-  {% if tokens %}
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-neutral-200 bg-white shadow-sm rounded-2xl">
-      <thead class="bg-neutral-50">
-        <tr>
-          <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Cliente" %}</th>
-          <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Escopo" %}</th>
-          <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Ações" %}</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-neutral-200">
-        {% for token in tokens %}
-        <tr>
-          <td class="px-4 py-2 text-sm text-neutral-900">{{ token.client_name }}</td>
-          <td class="px-4 py-2 text-sm text-neutral-900">{{ token.get_scope_display }}</td>
-          <td class="px-4 py-2 text-sm">
-            {% if token.revoked_at %}
-              <span class="text-neutral-400">{% trans "Revogado" %}</span>
-            {% else %}
-            <form method="post" action="{% url 'tokens:revogar_api_token' token.id %}" hx-confirm="{% trans 'Confirmar revogação?' %}">
-              {% csrf_token %}
-              <button type="submit" class="text-red-600 hover:underline">{% trans "Revogar" %}</button>
-            </form>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-    <p class="text-sm text-neutral-600">{% trans "Nenhum token de API encontrado." %}</p>
-  {% endif %}
-  <div class="mt-10">
-    <h2 class="text-xl font-bold mb-4">{% trans "Gerar novo token" %}</h2>
-    <form method="post" action="{% url 'tokens:gerar_api_token' %}" hx-post="{% url 'tokens:gerar_api_token' %}" hx-target="#resultado" hx-swap="innerHTML" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
-      {% csrf_token %}
-      <div class="space-y-4">
-        {% for field in form %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
-          {% if field.field.widget.input_type == 'select' %}
-            {{ field|add_class:"form-select" }}
-          {% else %}
-            {{ field|add_class:"form-input" }}
-          {% endif %}
-          {% if field.errors %}
-            <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
-          {% endif %}
-        </div>
-        {% endfor %}
+{% include 'components/hero.html' with title=_('Tokens de API') %}
+<section class="max-w-3xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Tokens de API" %}</h2>
+    </div>
+    <div class="card-body">
+      {% if tokens %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Cliente" %}</th>
+              <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Escopo" %}</th>
+              <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Ações" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200">
+            {% for token in tokens %}
+            <tr>
+              <td class="px-4 py-2 text-sm text-neutral-900">{{ token.client_name }}</td>
+              <td class="px-4 py-2 text-sm text-neutral-900">{{ token.get_scope_display }}</td>
+              <td class="px-4 py-2 text-sm">
+                {% if token.revoked_at %}
+                  <span class="text-neutral-400">{% trans "Revogado" %}</span>
+                {% else %}
+                <form method="post" action="{% url 'tokens:revogar_api_token' token.id %}" hx-confirm="{% trans 'Confirmar revogação?' %}">
+                  {% csrf_token %}
+                  <button type="submit" class="text-red-600 hover:underline">{% trans "Revogar" %}</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-        <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Gerar Token" %}</button>
-      </div>
-    </form>
-    <div id="resultado" class="mt-6 text-center" aria-live="polite">
-      {% include "tokens/_resultado.html" %}
+      {% else %}
+        <p class="text-sm text-neutral-600">{% trans "Nenhum token de API encontrado." %}</p>
+      {% endif %}
     </div>
   </div>
-  <div class="mt-6 text-center">
-    <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Gerar novo token" %}</h2>
+    </div>
+    <div class="card-body">
+      <form method="post" action="{% url 'tokens:gerar_api_token' %}" hx-post="{% url 'tokens:gerar_api_token' %}" hx-target="#resultado" hx-swap="innerHTML" class="space-y-6">
+        {% csrf_token %}
+        <div class="space-y-4">
+          {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
+            {% if field.field.widget.input_type == 'select' %}
+              {{ field|add_class:"form-select" }}
+            {% else %}
+              {{ field|add_class:"form-input" }}
+            {% endif %}
+            {% if field.errors %}
+              <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+          <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Gerar Token" %}</button>
+        </div>
+      </form>
+      <div id="resultado" class="mt-6 text-center" aria-live="polite">
+        {% include "tokens/_resultado.html" %}
+      </div>
+      <div class="mt-6 text-center">
+        <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+      </div>
+    </div>
   </div>
 </section>
 {% endblock %}
