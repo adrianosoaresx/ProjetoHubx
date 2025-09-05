@@ -34,7 +34,7 @@
   {% block extra_css %}{% endblock %}
 </head>
 
-<body class="min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+<body class="min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}" style="visibility:hidden">
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
 
   {% if messages %}
@@ -182,6 +182,19 @@
       const content = document.getElementById('content');
       if (sidebarToggle && sidebar && content) {
         const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
+        const saved = localStorage.getItem('sidebar') || 'expanded';
+        if (saved === 'collapsed') {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-16');
+          content.classList.remove(baseMargin);
+          content.classList.add('ml-16');
+          sidebarToggle.setAttribute('aria-expanded', 'false');
+          document.querySelectorAll('#sidebar .sidebar-label').forEach(el => {
+            el.classList.add('hidden');
+          });
+        } else {
+          sidebarToggle.setAttribute('aria-expanded', 'true');
+        }
         sidebarToggle.addEventListener('click', () => {
           const expanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
           sidebarToggle.setAttribute('aria-expanded', String(!expanded));
@@ -192,8 +205,10 @@
           document.querySelectorAll('#sidebar .sidebar-label').forEach(el => {
             el.classList.toggle('hidden');
           });
+          localStorage.setItem('sidebar', expanded ? 'collapsed' : 'expanded');
         });
       }
+      document.body.style.visibility = 'visible';
     })();
   </script>
   {% block extra_js %}
