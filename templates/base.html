@@ -78,21 +78,23 @@
             </button>
           </div>
           <a href="#" class="relative" aria-label="{% trans 'Notificações' %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M10 21a1 1 0 0 0 2 0" />
               <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
             </svg>
+            <span class="sr-only">{% trans "Notificações" %}</span>
           </a>
           {% if request.user.is_authenticated %}
           <a href="{% url 'accounts:perfil' %}" class="block w-8 h-8 rounded-full overflow-hidden" aria-label="{% trans 'Perfil' %}">
             {% if request.user.avatar %}
             <img src="{{ request.user.avatar.url }}" alt="{{ request.user.username }}" class="w-full h-full object-cover" />
             {% else %}
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
             {% endif %}
+            <span class="sr-only">{% trans "Perfil" %}</span>
           </a>
           {% endif %}
         </div>
