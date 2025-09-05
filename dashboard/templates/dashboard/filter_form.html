@@ -2,23 +2,27 @@
 {% load i18n %}
 {% block title %}{% trans 'Salvar filtro' %}{% endblock %}
 {% block content %}
-<main class="max-w-md mx-auto p-4" role="main">
-  <h1 class="text-2xl font-semibold mb-4">{% trans 'Salvar filtro' %}</h1>
-  <form method="post" class="space-y-4" aria-label="{% trans 'Formulário de filtro rápido' %}">
-    {% csrf_token %}
-    <div>
-      <label for="id_nome" class="block text-sm font-medium text-neutral-700">{% trans 'Nome' %}</label>
-      {{ form.nome }}
+{% include 'components/hero.html' with title=_('Salvar filtro') %}
+<section class="container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="card col-span-full">
+    <div class="card-body">
+      <form method="post" class="space-y-4" aria-label="{% trans 'Formulário de filtro rápido' %}">
+        {% csrf_token %}
+        <div>
+          <label for="id_nome" class="block text-sm font-medium text-neutral-700">{% trans 'Nome' %}</label>
+          {{ form.nome }}
+        </div>
+      {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
+        <div class="flex items-center gap-2">
+          {{ form.publico }}
+          <label for="id_publico" class="text-sm text-neutral-700">{% trans 'Público' %}</label>
+        </div>
+        {% else %}
+        <p class="text-sm text-neutral-700">{% trans 'Apenas administradores podem publicar itens.' %}</p>
+        {% endif %}
+        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro' %}">{% trans 'Salvar' %}</button>
+      </form>
     </div>
-  {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
-    <div class="flex items-center gap-2">
-      {{ form.publico }}
-      <label for="id_publico" class="text-sm text-neutral-700">{% trans 'Público' %}</label>
-    </div>
-    {% else %}
-    <p class="text-sm text-neutral-700">{% trans 'Apenas administradores podem publicar itens.' %}</p>
-    {% endif %}
-    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro' %}">{% trans 'Salvar' %}</button>
-  </form>
-</main>
+  </div>
+</section>
 {% endblock %}
