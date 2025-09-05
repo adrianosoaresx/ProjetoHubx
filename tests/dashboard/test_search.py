@@ -6,7 +6,7 @@ from accounts.models import UserType
 from nucleos.models import ParticipacaoNucleo
 from organizacoes.factories import OrganizacaoFactory
 from nucleos.factories import NucleoFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 
 User = get_user_model()
 

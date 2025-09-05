@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
 from accounts.models import User, UserType
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from eventos.models import Evento, InscricaoEvento
 from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao

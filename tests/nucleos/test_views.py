@@ -12,7 +12,7 @@ from nucleos.forms import SuplenteForm
 from nucleos.models import CoordenadorSuplente, Nucleo, ParticipacaoNucleo
 from nucleos.views import NucleoDetailView, SuplenteCreateView
 from organizacoes.models import Organizacao
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 
 pytestmark = pytest.mark.django_db
 

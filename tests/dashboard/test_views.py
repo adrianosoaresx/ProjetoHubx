@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from accounts.models import UserType
 from organizacoes.factories import OrganizacaoFactory
 from nucleos.factories import NucleoFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from core.permissions import (
     AdminRequiredMixin,
     ClienteRequiredMixin,

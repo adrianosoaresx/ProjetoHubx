@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 
 from accounts.models import UserType
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
