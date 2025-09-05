@@ -32,9 +32,18 @@
   <link rel="stylesheet" href="{% static 'tailwind.css' %}">
   <!-- Font Awesome removed: icons are now inline SVGs -->
   {% block extra_css %}{% endblock %}
+  <style>
+    .preload { opacity: 0; }
+  </style>
 </head>
 
-<body class="min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}" style="visibility:hidden">
+<body class="preload min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+  <noscript>
+    <style>body.preload { opacity: 1; }</style>
+    <div class="p-4 text-center bg-red-500 text-white">
+      {% trans "Este site requer JavaScript. Por favor, habilite-o para continuar." %}
+    </div>
+  </noscript>
   <a href="#main-content" class="sr-only focus:not-sr-only">{% trans "Pular para o conteúdo principal" %}</a>
 
   {% if messages %}
@@ -210,7 +219,7 @@
           localStorage.setItem('sidebar', expanded ? 'collapsed' : 'expanded');
         });
       }
-      document.body.style.visibility = 'visible';
+      document.body.classList.remove('preload');
     })();
   </script>
   {% block extra_js %}
