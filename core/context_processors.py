@@ -7,3 +7,8 @@ def htmx_version(request):
         # Flag para habilitar/desabilitar inicialização de WebSocket no template
         "WEBSOCKETS_ENABLED": getattr(settings, "WEBSOCKETS_ENABLED", True),
     }
+
+def menu_items(request):
+    from .menu import build_menu
+
+    return {"NAV_MENU": build_menu(request)}
