@@ -1,24 +1,16 @@
 {% load i18n %}
-<header class="bg-white shadow">
-  <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-    <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}">HubX</a>
-    <button
-      id="menu-toggle"
-      class="md:hidden text-gray-800"
-      aria-label="{% trans 'Abrir menu' %}"
-      aria-controls="menu"
-      aria-expanded="false">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-white border-r flex flex-col transition-all">
+  <div class="flex items-center justify-between p-4 border-b">
+    <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}"><span class="sidebar-label">HubX</span></a>
+    <button id="sidebar-toggle" class="text-gray-800" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 5h16" />
         <path d="M4 12h16" />
         <path d="M4 19h16" />
       </svg>
     </button>
-    <nav
-      id="menu"
-      class="hidden md:flex flex-col md:flex-row md:items-center gap-4 text-sm"
-      role="navigation"
-      aria-label="{% trans 'Menu' %}">
+  </div>
+  <nav class="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2 text-sm" role="navigation" aria-label="{% trans 'Menu' %}">
       {% if user.is_authenticated %}
         {% url 'accounts:perfil' as perfil_url %}
         <a href="{{ perfil_url }}" class="flex items-center hover:text-primary transition" aria-label="{% trans 'Perfil' %}" aria-current="{% if request.path == perfil_url %}page{% endif %}">
@@ -41,7 +33,7 @@
             <rect width="7" height="5" x="14" y="3" rx="1" />
             <rect width="7" height="9" x="14" y="12" rx="1" />
             <rect width="7" height="5" x="3" y="16" rx="1" />
-          </svg> {% trans "Dashboard" %}
+          </svg><span class="sidebar-label">{% trans "Dashboard" %}</span>
         </a>
         {% url 'associados_lista' as associados_lista_url %}
         <a href="{{ associados_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == associados_lista_url %}page{% endif %}">
@@ -50,7 +42,7 @@
             <path d="M16 3.128a4 4 0 0 1 0 7.744" />
             <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
             <circle cx="9" cy="7" r="4" />
-          </svg> {% trans "Associados" %}
+          </svg><span class="sidebar-label">{% trans "Associados" %}</span>
         </a>
         {% url 'empresas:lista' as empresas_lista_url %}
         <a href="{{ empresas_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == empresas_lista_url %}page{% endif %}">
@@ -62,7 +54,7 @@
             <path d="M10 10h4" />
             <path d="M10 14h4" />
             <path d="M10 18h4" />
-          </svg> {% trans "Empresas" %}
+          </svg><span class="sidebar-label">{% trans "Empresas" %}</span>
         </a>
         {% url 'nucleos:list' as nucleos_list_url %}
         <a href="{{ nucleos_list_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == nucleos_list_url %}page{% endif %}">
@@ -71,7 +63,7 @@
             <path d="M16 3.128a4 4 0 0 1 0 7.744" />
             <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
             <circle cx="9" cy="7" r="4" />
-          </svg> {% trans "Núcleos" %}
+          </svg><span class="sidebar-label">{% trans "Núcleos" %}</span>
         </a>
         {% url 'eventos:lista' as eventos_lista_url %}
         <a href="{{ eventos_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == eventos_lista_url %}page{% endif %}">
@@ -86,7 +78,7 @@
             <path d="M8 18h.01" />
             <path d="M12 18h.01" />
             <path d="M16 18h.01" />
-          </svg> {% trans "Eventos" %}
+          </svg><span class="sidebar-label">{% trans "Eventos" %}</span>
         </a>
         {% url 'feed:listar' as feed_listar_url %}
         <a href="{{ feed_listar_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == feed_listar_url %}page{% endif %}">
@@ -94,7 +86,7 @@
             <path d="M4 11a9 9 0 0 1 9 9" />
             <path d="M4 4a16 16 0 0 1 16 16" />
             <circle cx="5" cy="19" r="1" />
-          </svg> {% trans "Feed" %}
+          </svg><span class="sidebar-label">{% trans "Feed" %}</span>
         </a>
         {% url 'financeiro:repasses' as financeiro_repasses_url %}
         <a href="{{ financeiro_repasses_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == financeiro_repasses_url %}page{% endif %}">
@@ -104,7 +96,7 @@
             <path d="m2 16 6 6" />
             <circle cx="16" cy="9" r="2.9" />
             <circle cx="6" cy="5" r="3" />
-          </svg> {% trans "Financeiro" %}
+          </svg><span class="sidebar-label">{% trans "Financeiro" %}</span>
         </a>
         {% url 'tokens:listar_api_tokens' as listar_api_tokens_url %}
         <a href="{{ listar_api_tokens_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == listar_api_tokens_url %}page{% endif %}">
@@ -112,14 +104,14 @@
             <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
             <path d="m21 2-9.6 9.6" />
             <circle cx="7.5" cy="15.5" r="5.5" />
-          </svg> {% trans "Tokens" %}
+          </svg><span class="sidebar-label">{% trans "Tokens" %}</span>
         </a>
         {% url 'configuracoes' as configuracoes_url %}
         <a href="{{ configuracoes_url }}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}" aria-current="{% if request.path == configuracoes_url %}page{% endif %}">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
             <circle cx="12" cy="12" r="3" />
-          </svg>
+          </svg><span class="sidebar-label">{% trans "Configurações" %}</span>
         </a>
         {% url 'accounts:logout' as logout_url %}
         <a href="{{ logout_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == logout_url %}page{% endif %}">
@@ -127,7 +119,7 @@
             <path d="m16 17 5-5-5-5" />
             <path d="M21 12H9" />
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          </svg> {% trans "Sair" %}
+          </svg><span class="sidebar-label">{% trans "Sair" %}</span>
         </a>
       {% else %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == '/' %}page{% endif %}">
@@ -136,7 +128,7 @@
             <rect width="7" height="5" x="14" y="3" rx="1" />
             <rect width="7" height="9" x="14" y="12" rx="1" />
             <rect width="7" height="5" x="3" y="16" rx="1" />
-          </svg> {% trans "Dashboard" %}
+          </svg><span class="sidebar-label">{% trans "Dashboard" %}</span>
         </a>
         {% if user.user_type != 'root' %}
           {% url 'empresas:lista' as empresas_lista_url %}
@@ -149,7 +141,7 @@
               <path d="M10 10h4" />
               <path d="M10 14h4" />
               <path d="M10 18h4" />
-            </svg> {% trans "Empresas" %}
+            </svg><span class="sidebar-label">{% trans "Empresas" %}</span>
           </a>
         {% endif %}
         {% if user.user_type != 'root' %}
@@ -158,7 +150,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m21 21-4.34-4.34" />
               <circle cx="11" cy="11" r="8" />
-            </svg> {% trans "Buscar Empresas" %}
+            </svg><span class="sidebar-label">{% trans "Buscar Empresas" %}</span>
           </a>
         {% endif %}
         {% if user.user_type != 'root' %}
@@ -175,7 +167,7 @@
               <path d="M8 18h.01" />
               <path d="M12 18h.01" />
               <path d="M16 18h.01" />
-            </svg> {% trans "Eventos" %}
+            </svg><span class="sidebar-label">{% trans "Eventos" %}</span>
           </a>
         {% endif %}
         {% if user.user_type != 'root' %}
@@ -185,7 +177,7 @@
               <path d="M4 11a9 9 0 0 1 9 9" />
               <path d="M4 4a16 16 0 0 1 16 16" />
               <circle cx="5" cy="19" r="1" />
-            </svg> {% trans "Feed" %}
+            </svg><span class="sidebar-label">{% trans "Feed" %}</span>
           </a>
         {% endif %}
         {% if user.user_type != 'root' %}
@@ -196,7 +188,7 @@
               <path d="M16 3.128a4 4 0 0 1 0 7.744" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
               <circle cx="9" cy="7" r="4" />
-            </svg> {% trans "Núcleos" %}
+            </svg><span class="sidebar-label">{% trans "Núcleos" %}</span>
           </a>
         {% endif %}
         {% if user.user_type != 'root' and user.user_type != 'admin' %}
@@ -206,7 +198,7 @@
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
               <circle cx="9" cy="7" r="4" />
-            </svg> {% trans "Meus Núcleos" %}
+            </svg><span class="sidebar-label">{% trans "Meus Núcleos" %}</span>
           </a>
         {% endif %}
         {% if user.is_authenticated %}
@@ -219,7 +211,7 @@
                 <path d="m2 16 6 6" />
                 <circle cx="16" cy="9" r="2.9" />
                 <circle cx="6" cy="5" r="3" />
-              </svg> {% trans "Financeiro" %}
+              </svg><span class="sidebar-label">{% trans "Financeiro" %}</span>
             </a>
           {% endif %}
         {% endif %}
@@ -232,7 +224,7 @@
               <rect x="9" y="2" width="6" height="6" rx="1" />
               <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
               <path d="M12 12V8" />
-            </svg> {% trans "Organizações" %}
+            </svg><span class="sidebar-label">{% trans "Organizações" %}</span>
           </a>
         {% endif %}
         {% if user.is_authenticated %}
@@ -244,7 +236,7 @@
                   <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
                   <path d="m21 2-9.6 9.6" />
                   <circle cx="7.5" cy="15.5" r="5.5" />
-                </svg> {% trans "Token" %}
+                </svg><span class="sidebar-label">{% trans "Token" %}</span>
               </a>
             {% else %}
               {% url 'tokens:gerar_convite' as gerar_convite_url %}
@@ -253,7 +245,7 @@
                   <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
                   <path d="m21 2-9.6 9.6" />
                   <circle cx="7.5" cy="15.5" r="5.5" />
-                </svg> {% trans "Token" %}
+                </svg><span class="sidebar-label">{% trans "Token" %}</span>
               </a>
             {% endif %}
           {% endif %}
@@ -264,7 +256,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
               <circle cx="12" cy="12" r="3" />
-            </svg>
+            </svg><span class="sidebar-label">{% trans "Configurações" %}</span>
           </a>
           {% url 'accounts:logout' as logout_url %}
           <a href="{{ logout_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == logout_url %}page{% endif %}">
@@ -272,7 +264,7 @@
               <path d="m16 17 5-5-5-5" />
               <path d="M21 12H9" />
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            </svg> {% trans "Sair" %}
+            </svg><span class="sidebar-label">{% trans "Sair" %}</span>
           </a>
         {% else %}
           {% url 'accounts:login' as login_url %}
@@ -281,7 +273,7 @@
               <path d="m10 17 5-5-5-5" />
               <path d="M15 12H3" />
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-            </svg> {% trans "Entrar" %}
+            </svg><span class="sidebar-label">{% trans "Entrar" %}</span>
           </a>
           {% url 'accounts:onboarding' as onboarding_url %}
           <a href="{{ onboarding_url }}" class="flex items-center gap-x-2 bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition" aria-current="{% if request.path == onboarding_url %}page{% endif %}">
@@ -290,10 +282,11 @@
               <circle cx="9" cy="7" r="4" />
               <line x1="19" x2="19" y1="8" y2="14" />
               <line x1="22" x2="16" y1="11" y2="11" />
-            </svg> {% trans "Cadastrar" %}
+            </svg><span class="sidebar-label">{% trans "Cadastrar" %}</span>
           </a>
         {% endif %}
       {% endif %}
+
       <div class="flex items-center gap-2" role="group" aria-label="{% trans 'Tema' %}">
         <button
           type="button"
@@ -320,3 +313,7 @@
     </nav>
   </div>
 </header>
+
+  </nav>
+</aside>
+

@@ -4,15 +4,8 @@
 {% block title %}{% trans "Integrações" %}{% endblock %}
 
 {% block content %}
+{% include 'components/hero.html' with title=_('Integrações') action_template='financeiro/hero_integracoes_action.html' %}
 <main class="p-4 max-w-5xl mx-auto">
-  <header class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-semibold">{% trans "Integrações" %}</h1>
-    <button class="bg-blue-600 text-white px-4 py-2 rounded"
-            hx-get="{% url 'financeiro:integracao_form' %}"
-            hx-target="#modal" hx-trigger="click">
-      {% trans "Nova Configuração" %}
-    </button>
-  </header>
   <section id="integracoes-list" class="overflow-x-auto" aria-live="polite">
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
