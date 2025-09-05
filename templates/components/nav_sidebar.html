@@ -23,13 +23,13 @@
               <circle cx="12" cy="7" r="4" />
             </svg>
           {% endif %}
-
+          <span class="sidebar-label">{% trans "Perfil" %}</span>
         </a><span id="notif-count" class="hidden"></span></li>
       {% endif %}
 
       {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
         <li><a href="/" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Dashboard' %}" aria-current="{% if request.path == '/' %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect width="7" height="9" x="3" y="3" rx="1" />
             <rect width="7" height="5" x="14" y="3" rx="1" />
             <rect width="7" height="9" x="14" y="12" rx="1" />
@@ -38,7 +38,7 @@
         </a></li>
         {% url 'associados_lista' as associados_lista_url %}
         <li><a href="{{ associados_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Associados' %}" aria-current="{% if request.path == associados_lista_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <path d="M16 3.128a4 4 0 0 1 0 7.744" />
@@ -48,7 +48,7 @@
         </a></li>
         {% url 'empresas:lista' as empresas_lista_url %}
         <li><a href="{{ empresas_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Empresas' %}" aria-current="{% if request.path == empresas_lista_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
             <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
@@ -62,7 +62,7 @@
         {% url 'nucleos:list' as nucleos_list_url %}
 
         <li><a href="{{ nucleos_list_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Núcleos' %}" aria-current="{% if request.path == nucleos_list_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
             <path d="M16 3.128a4 4 0 0 1 0 7.744" />
@@ -72,8 +72,7 @@
         </a></li>
         {% url 'eventos:lista' as eventos_lista_url %}
         <li><a href="{{ eventos_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Eventos' %}" aria-current="{% if request.path == eventos_lista_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M8 2v4" />
             <path d="M16 2v4" />
             <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -89,7 +88,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% url 'feed:listar' as feed_listar_url %}
 
         <li><a href="{{ feed_listar_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Feed' %}" aria-current="{% if request.path == feed_listar_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4 11a9 9 0 0 1 9 9" />
             <path d="M4 4a16 16 0 0 1 16 16" />
             <circle cx="5" cy="19" r="1" />
@@ -98,7 +97,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% url 'financeiro:repasses' as financeiro_repasses_url %}
 
         <li><a href="{{ financeiro_repasses_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Financeiro' %}" aria-current="{% if request.path == financeiro_repasses_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" />
             <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
@@ -110,7 +109,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% url 'tokens:listar_api_tokens' as listar_api_tokens_url %}
 
         <li><a href="{{ listar_api_tokens_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Tokens' %}" aria-current="{% if request.path == listar_api_tokens_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
             <path d="m21 2-9.6 9.6" />
@@ -119,7 +118,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         </a></li>
         {% url 'configuracoes' as configuracoes_url %}
         <li><a href="{{ configuracoes_url }}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}" aria-current="{% if request.path == configuracoes_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
             <circle cx="12" cy="12" r="3" />
@@ -127,7 +126,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         </a></li>
         {% url 'accounts:logout' as logout_url %}
         <li><a href="{{ logout_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Sair' %}" aria-current="{% if request.path == logout_url %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <path d="m16 17 5-5-5-5" />
             <path d="M21 12H9" />
@@ -136,7 +135,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         </a></li>
       {% else %}
         <li><a href="/" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Dashboard' %}" aria-current="{% if request.path == '/' %}page{% endif %}">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
             <rect width="7" height="9" x="3" y="3" rx="1" />
             <rect width="7" height="5" x="14" y="3" rx="1" />
@@ -147,7 +146,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' %}
           {% url 'empresas:lista' as empresas_lista_url %}
           <li><a href="{{ empresas_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Empresas' %}" aria-current="{% if request.path == empresas_lista_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
               <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
@@ -162,7 +161,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' %}
           {% url 'empresas:buscar' as empresas_buscar_url %}
           <li><a href="{{ empresas_buscar_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Buscar Empresas' %}" aria-current="{% if request.path == empresas_buscar_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m21 21-4.34-4.34" />
               <circle cx="11" cy="11" r="8" />
             </svg><span class="sidebar-label">{% trans "Buscar Empresas" %}</span>
@@ -171,7 +170,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' %}
           {% url 'eventos:lista' as eventos_lista_url %}
           <li><a href="{{ eventos_lista_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Eventos' %}" aria-current="{% if request.path == eventos_lista_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="M8 2v4" />
               <path d="M16 2v4" />
@@ -189,7 +188,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' %}
           {% url 'feed:listar' as feed_listar_url %}
           <li><a href="{{ feed_listar_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Feed' %}" aria-current="{% if request.path == feed_listar_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 11a9 9 0 0 1 9 9" />
               <path d="M4 4a16 16 0 0 1 16 16" />
               <circle cx="5" cy="19" r="1" />
@@ -199,7 +198,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' %}
           {% url 'nucleos:list' as nucleos_list_url %}
           <li><a href="{{ nucleos_list_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Núcleos' %}" aria-current="{% if request.path == nucleos_list_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <path d="M16 3.128a4 4 0 0 1 0 7.744" />
@@ -211,7 +210,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.user_type != 'root' and user.user_type != 'admin' %}
           {% url 'nucleos:meus' as nucleos_meus_url %}
           <li><a href="{{ nucleos_meus_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Meus Núcleos' %}" aria-current="{% if request.path == nucleos_meus_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -223,7 +222,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
           {% if user.user_type == 'financeiro' or user.user_type == 'admin' %}
             {% url 'financeiro:repasses' as financeiro_repasses_url %}
             <li><a href="{{ financeiro_repasses_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Financeiro' %}" aria-current="{% if request.path == financeiro_repasses_url %}page{% endif %}">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
                 <path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" />
                 <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
@@ -237,7 +236,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
         {% if user.is_authenticated and user.user_type == 'root' %}
           {% url 'organizacoes:list' as organizacoes_list_url %}
           <li><a href="{{ organizacoes_list_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Organizações' %}" aria-current="{% if request.path == organizacoes_list_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <rect x="16" y="16" width="6" height="6" rx="1" />
               <rect x="2" y="16" width="6" height="6" rx="1" />
@@ -253,8 +252,7 @@ ia-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" 
               {% url 'tokens:listar_api_tokens' as listar_api_tokens_url %}
 
               <li><a href="{{ listar_api_tokens_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Token' %}" aria-current="{% if request.path == listar_api_tokens_url %}page{% endif %}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-n
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
                   <path d="m21 2-9.6 9.6" />
                   <circle cx="7.5" cy="15.5" r="5.5" />
@@ -263,7 +261,7 @@ n
             {% else %}
               {% url 'tokens:gerar_convite' as gerar_convite_url %}
               <li><a href="{{ gerar_convite_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Token' %}" aria-current="{% if request.path == gerar_convite_url %}page{% endif %}">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
                   <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
                   <path d="m21 2-9.6 9.6" />
@@ -277,14 +275,14 @@ n
           {% url 'configuracoes' as configuracoes_url %}
 
           <li><a href="{{ configuracoes_url }}" class="hover:text-primary transition" aria-label="{% trans 'Configurações' %}" aria-current="{% if request.path == configuracoes_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
               <circle cx="12" cy="12" r="3" />
             </svg><span class="sidebar-label">{% trans "Configurações" %}</span>
           </a></li>
           {% url 'accounts:logout' as logout_url %}
           <li><a href="{{ logout_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Sair' %}" aria-current="{% if request.path == logout_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="m16 17 5-5-5-5" />
               <path d="M21 12H9" />
@@ -295,7 +293,7 @@ n
           {% url 'accounts:login' as login_url %}
 
           <li><a href="{{ login_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-label="{% trans 'Entrar' %}" aria-current="{% if request.path == login_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="m10 17 5-5-5-5" />
               <path d="M15 12H3" />
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
@@ -303,7 +301,7 @@ n
           </a></li>
           {% url 'accounts:onboarding' as onboarding_url %}
           <li><a href="{{ onboarding_url }}" class="flex items-center gap-x-2 bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition" aria-label="{% trans 'Cadastrar' %}" aria-current="{% if request.path == onboarding_url %}page{% endif %}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
