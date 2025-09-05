@@ -10,12 +10,6 @@
     <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
     <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
   </form>
-    {% if request.user.user_type == 'admin' %}
-  <div class="mb-4">
-    <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
-  </div>
-  {% endif %}
-
     <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
     {% for nucleo in object_list %}
