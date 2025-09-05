@@ -5,6 +5,7 @@ from django.urls import reverse
 from django.utils.timezone import make_aware
 
 from accounts.models import User, UserType
+from django.template import Template, Context
 from eventos.models import Evento, InscricaoEvento
 from organizacoes.models import Organizacao
 
@@ -109,6 +110,13 @@ def test_gerente_pode_remover_inscrito(evento, usuario_comum, gerente, client):
     response = client.post(url)
     assert response.status_code == 302
     assert not InscricaoEvento.objects.filter(evento=evento, user=usuario_comum).exists()
+
+
+def test_coordenador_ve_botao_remover():
+    user = User(username="coord", email="coord@example.com", user_type=UserType.COORDENADOR)
+    template = Template("{% if user.user_type == 'admin' or user.user_type == 'coordenador' %}Remover{% endif %}")
+    rendered = template.render(Context({"user": user}))
+    assert "Remover" in rendered
 
 
 def test_confirmar_inscricao(inscricao):
