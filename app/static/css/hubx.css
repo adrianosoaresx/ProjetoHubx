@@ -135,6 +135,18 @@
   --shadow-light: 0 1px 3px 0 var(--shadow-color);
   --shadow-medium: 0 4px 6px -1px var(--shadow-color);
   --shadow-heavy: 0 10px 15px -3px var(--shadow-color);
+
+  /* Legacy Matrix theme variable mappings */
+  --primary-dark: var(--color-neutral-900);
+  --matrix-green: var(--color-primary-500);
+  --matrix-light: var(--color-primary-300);
+  --matrix-dark: var(--color-primary-700);
+  --white: var(--color-neutral-50);
+  --glass-border: var(--color-neutral-200);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --error-color: var(--color-error-600);
+  --warning-color: var(--color-warning-600);
+  --success-color: var(--color-success-600);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -458,5 +470,17 @@
   }
   .dropdown-divider {
     @apply h-px bg-[var(--border-primary)] my-2;
+  }
+}
+
+@layer components {
+  /* Form Error List */
+  .errorlist {
+    @apply mt-2 text-sm list-none;
+    color: var(--error);
+  }
+
+  .errorlist li {
+    @apply mb-1;
   }
 }
