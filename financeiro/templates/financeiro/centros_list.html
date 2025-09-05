@@ -4,13 +4,8 @@
 {% block title %}{% trans "Centros de Custo" %}{% endblock %}
 
 {% block content %}
+{% include 'components/hero.html' with title=_('Centros de Custo') action_template='financeiro/hero_centros_action.html' %}
 <main class="p-4 max-w-5xl mx-auto">
-  <header class="flex items-center justify-between mb-4">
-    <h1 class="text-2xl font-semibold">{% trans "Centros de Custo" %}</h1>
-      <button class="bg-blue-600 text-white px-4 py-2 rounded" hx-get="/financeiro/centros/form/" hx-target="#modal" hx-trigger="click">
-        {% trans "Novo Centro" %}
-      </button>
-  </header>
   <section id="centros-list" class="overflow-x-auto" aria-live="polite">
     <table class="min-w-full divide-y divide-gray-200">
       <thead class="bg-gray-50">
