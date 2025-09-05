@@ -53,11 +53,7 @@ from agenda.forms import (
     ParceriaEventoForm,
     TarefaForm,
 )
-<<<<<<< HEAD:agenda/views.py
-from eventos.models import (
-=======
 from agenda.models import (
->>>>>>> main:eventos/views.py
     BriefingEvento,
     Evento,
     EventoLog,
