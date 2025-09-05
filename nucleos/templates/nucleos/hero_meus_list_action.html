@@ -1,2 +1,7 @@
 {% load i18n %}
-<a href="{% url 'nucleos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver todos os núcleos' %}">{% trans 'Todos os Núcleos' %}</a>
+<div class="flex gap-2">
+  <a href="{% url 'nucleos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver todos os núcleos' %}">{% trans 'Todos os Núcleos' %}</a>
+  {% if request.user.user_type == 'admin' %}
+  <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
+  {% endif %}
+</div>
