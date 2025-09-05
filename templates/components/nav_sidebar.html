@@ -235,25 +235,27 @@
             </svg> {% trans "Organizações" %}
           </a>
         {% endif %}
-        {% if user.is_authenticated and user.user_type in 'root,admin,coordenador' %}
-          {% if user.user_type in 'root,admin' %}
-            {% url 'tokens:listar_api_tokens' as listar_api_tokens_url %}
-            <a href="{{ listar_api_tokens_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == listar_api_tokens_url %}page{% endif %}">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
-                <path d="m21 2-9.6 9.6" />
-                <circle cx="7.5" cy="15.5" r="5.5" />
-              </svg> {% trans "Token" %}
-            </a>
-          {% else %}
-            {% url 'tokens:gerar_convite' as gerar_convite_url %}
-            <a href="{{ gerar_convite_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == gerar_convite_url %}page{% endif %}">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
-                <path d="m21 2-9.6 9.6" />
-                <circle cx="7.5" cy="15.5" r="5.5" />
-              </svg> {% trans "Token" %}
-            </a>
+        {% if user.is_authenticated %}
+          {% if user.user_type == 'root' or user.user_type == 'admin' or user.user_type == 'coordenador' %}
+            {% if user.user_type == 'root' or user.user_type == 'admin' %}
+              {% url 'tokens:listar_api_tokens' as listar_api_tokens_url %}
+              <a href="{{ listar_api_tokens_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == listar_api_tokens_url %}page{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+                  <path d="m21 2-9.6 9.6" />
+                  <circle cx="7.5" cy="15.5" r="5.5" />
+                </svg> {% trans "Token" %}
+              </a>
+            {% else %}
+              {% url 'tokens:gerar_convite' as gerar_convite_url %}
+              <a href="{{ gerar_convite_url }}" class="flex items-center gap-x-2 hover:text-primary transition" aria-current="{% if request.path == gerar_convite_url %}page{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+                  <path d="m21 2-9.6 9.6" />
+                  <circle cx="7.5" cy="15.5" r="5.5" />
+                </svg> {% trans "Token" %}
+              </a>
+            {% endif %}
           {% endif %}
         {% endif %}
         {% if user.is_authenticated %}
