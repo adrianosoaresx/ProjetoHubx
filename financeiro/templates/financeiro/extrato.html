@@ -4,6 +4,7 @@
 {% block title %}{{ _('Extrato') }}{% endblock %}
 
 {% block content %}
+
 <main class="p-4 max-w-4xl mx-auto">
   <h1 class="text-2xl font-semibold mb-2">{{ _('Extrato') }}</h1>
   <form id="filtros" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4"
@@ -66,22 +67,47 @@
         const rows = itens
           .map(l => `
             <tr>
-              <td class="px-3 py-2">${l.centro_custo || ''}</td>
-              <td class="px-3 py-2">${l.tipo}</td>
-              <td class="px-3 py-2">${l.valor}</td>
-              <td class="px-3 py-2">${l.data_lancamento}</td>
-              <td class="px-3 py-2">${l.status}</td>
+              <td class="px-3 py-2">{{ l.centro_custo }}</td>
+              <td class="px-3 py-2">{{ l.tipo }}</td>
+              <td class="px-3 py-2">{{ l.valor }}</td>
+              <td class="px-3 py-2">{{ l.data_lancamento }}</td>
+              <td class="px-3 py-2">{{ l.status }}</td>
             </tr>
-          `)
-          .join('');
-        tbody.innerHTML = rows || `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
-      }
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      htmx.trigger('#filtros', 'submit');
-    });
-  </script>
-</main>
+            {% empty %}
+            <tr><td colspan="5" class="px-3 py-2 text-center">{{ _('Nenhum lançamento') }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <script src="{% url 'javascript-catalog' %}"></script>
+      <script>
+        function renderLancamentos(evt) {
+          const tbody = document.querySelector('#lista tbody');
+          tbody.innerHTML = '';
+          try {
+            const data = JSON.parse(evt.detail.xhr.response);
+            const itens = data.results || data;
+            const rows = itens
+              .map(l => `
+                <tr>
+                  <td class="px-3 py-2">${l.centro_custo || ''}</td>
+                  <td class="px-3 py-2">${l.tipo}</td>
+                  <td class="px-3 py-2">${l.valor}</td>
+                  <td class="px-3 py-2">${l.data_lancamento}</td>
+                  <td class="px-3 py-2">${l.status}</td>
+                </tr>
+              `)
+              .join('');
+            tbody.innerHTML = rows || `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
+          }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+          htmx.trigger('#filtros', 'submit');
+        });
+      </script>
+    </div>
+  </div>
+</section>
 {% endblock %}
