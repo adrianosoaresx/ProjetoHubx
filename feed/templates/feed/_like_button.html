@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
 {% with liked=post.is_liked count=post.like_count %}
 <button
@@ -7,11 +7,11 @@
   hx-vals='{"vote":"like"}'
   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
   hx-swap="none"
-  hx-on="htmx:afterRequest: if(event.detail.xhr.status===201){const i=this.querySelector('i');i.classList.add('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)+1;}else if(event.detail.xhr.status===204){const i=this.querySelector('i');i.classList.remove('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)-1;}"
+  hx-on="htmx:afterRequest: if(event.detail.xhr.status===201){const i=this.querySelector('svg');i.classList.add('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)+1;}else if(event.detail.xhr.status===204){const i=this.querySelector('svg');i.classList.remove('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)-1;}"
   class="inline-flex items-center gap-1 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded"
   aria-label="{% if liked %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}"
 >
-  <i class="fa-solid fa-heart {% if liked %}text-emerald-600{% endif %}"></i>
+  {% lucide 'heart' class='w-4 h-4 {% if liked %}text-emerald-600{% endif %}' %}
   <span>{{ count }}</span>
 </button>
 {% endwith %}

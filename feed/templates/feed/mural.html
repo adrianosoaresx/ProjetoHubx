@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 {% block title %}{% trans "Meu Mural" %}{% endblock %}
 
 {% block content %}
@@ -16,7 +16,7 @@
       <a href="{% url 'feed:bookmarks' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Favoritos' %}">{% trans "Favoritos" %}</a>
       {% if request.user.user_type != 'root' %}
       <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Nova postagem' %}">
-        <i class="fa-solid fa-circle-plus"></i>
+        {% lucide 'circle-plus' class='w-5 h-5' %}
         {% trans "Nova postagem" %}
       </a>
       {% endif %}
