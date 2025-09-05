@@ -7,6 +7,7 @@ Este guia resume o padrão visual dos templates do Hubx.
 - HTML5 semântico
 - Tailwind CSS 3
 - HTMX para interações dinâmicas
+- CSS base em `app/static/css/hubx.css`
 
 Evite JavaScript customizado sempre que possível. Utilize `hx-get` e `hx-post` para enviar e atualizar partes da página.
 
