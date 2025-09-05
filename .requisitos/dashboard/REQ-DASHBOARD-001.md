@@ -16,7 +16,7 @@ dependencies: [REQ-OUTRO-001]
 
 ## 1. Visão Geral
 
-Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para diferentes tipos de usuário do Hubx, permitindo que cada pessoa personalize filtros, layouts e exportações conforme suas necessidades. O dashboard integra dados de diversos módulos (Agenda, Financeiro, Feed, Tokens, etc.) e pode ser estendido por novos aplicativos.
+Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para diferentes tipos de usuário do Hubx, permitindo que cada pessoa personalize filtros, layouts e exportações conforme suas necessidades. O dashboard integra dados de diversos módulos (Eventos, Financeiro, Feed, Tokens, etc.) e pode ser estendido por novos aplicativos.
 
 ## 2. Escopo
 
@@ -57,7 +57,7 @@ Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para dife
   - Rastreabilidade: ...
 
 - **RF-07 — Integração de Dados**
-  - Descrição: As métricas devem abranger dados de múltiplos módulos: contas (usuários), organizações, núcleos, empresas, eventos (Agenda), inscrições, posts e reações (Feed), mensagens (Chat), discussões (Discussão), lançamentos financeiros (Financeiro) e tokens (Tokens).
+  - Descrição: As métricas devem abranger dados de múltiplos módulos: contas (usuários), organizações, núcleos, empresas, eventos (Eventos), inscrições, posts e reações (Feed), mensagens (Chat), discussões (Discussão), lançamentos financeiros (Financeiro) e tokens (Tokens).
   - Critérios de Aceite: Para cada métrica suportada, as consultas devem respeitar o escopo e as permissões do usuário.
   - Rastreabilidade: ...
 - **RF-08 — Atualizações em Tempo Real**
@@ -177,7 +177,7 @@ Feature: Criar e compartilhar dashboard
 ## 9. Dependências e Integrações
 
 - **services/dashboard_metrics.py** – Responsável por calcular métricas, aplicar filtros e escopo e armazenar resultados em cache.
-- **Agenda** – Fornece dados de eventos, inscrições e avaliações para métricas.
+- **Eventos** – Fornece dados de eventos, inscrições e avaliações para métricas.
 - **Financeiro** – Fornece lançamentos financeiros e status pendentes.
 - **Feed/Discussão/Chat/Tokens** – Fornecem métricas adicionais (posts, reações, tópicos, respostas, mensagens e tokens gerados/consumidos).
 - **audit.services** – Serviço de auditoria para registrar ações.
