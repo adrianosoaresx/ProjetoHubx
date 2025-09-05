@@ -9,14 +9,13 @@
   <meta name="theme-color" content="#0f172a">
   <script>
     (function () {
-      let theme = localStorage.getItem('tema');
-      if (!theme) {
-        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-        theme = match ? match[1] : null;
-      }
-      if (!theme || theme === 'automatico') {
-        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
-      }
+      const stored = localStorage.getItem('tema');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored && stored !== 'automatico'
+        ? stored
+        : prefersDark
+          ? 'escuro'
+          : 'claro';
       document.documentElement.classList.toggle('dark', theme === 'escuro');
 
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
@@ -31,7 +30,7 @@
   <link rel="preconnect" href="https://rsms.me/">
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
   <link rel="stylesheet" href="{% static 'tailwind.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <!-- Font Awesome removed: icons are now inline SVGs -->
   {% block extra_css %}{% endblock %}
 </head>
 
@@ -95,40 +94,45 @@
     (function () {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-      function getThemePreference() {
-        const stored = localStorage.getItem('tema');
-        if (stored) return stored;
-        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-        return match ? match[1] : 'automatico';
-      }
-
       function applyTheme(theme) {
-        document.documentElement.classList.toggle('dark', theme === 'escuro');
-      }
-
-      function toggleTheme(theme) {
         if (theme === 'automatico') {
-          document.cookie = 'tema=automatico;path=/';
-          localStorage.setItem('tema', 'automatico');
-          applyTheme(mediaQuery.matches ? 'escuro' : 'claro');
+          document.documentElement.classList.toggle('dark', mediaQuery.matches);
         } else {
-          document.cookie = `tema=${theme};path=/`;
-          localStorage.setItem('tema', theme);
-          applyTheme(theme);
+          document.documentElement.classList.toggle('dark', theme === 'escuro');
         }
       }
 
-      toggleTheme(getThemePreference());
-      mediaQuery.addEventListener('change', e => {
-        if (getThemePreference() === 'automatico') {
-          toggleTheme(e.matches ? 'escuro' : 'claro');
+      function setTheme(theme) {
+        localStorage.setItem('tema', theme);
+        applyTheme(theme);
+        updatePressed(theme);
+      }
+
+      function getTheme() {
+        return localStorage.getItem('tema') || 'automatico';
+      }
+
+      function updatePressed(theme) {
+        document.querySelectorAll('[data-theme-option]').forEach(btn => {
+          const active = btn.getAttribute('data-theme-option') === theme;
+          btn.setAttribute('aria-pressed', String(active));
+        });
+      }
+
+      const current = getTheme();
+      applyTheme(current);
+      updatePressed(current);
+
+      mediaQuery.addEventListener('change', () => {
+        if (getTheme() === 'automatico') {
+          applyTheme('automatico');
         }
       });
 
-      const themeMatch = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-      if (themeMatch) {
-        localStorage.setItem('tema', themeMatch[1]);
-      }
+      document.querySelectorAll('[data-theme-option]').forEach(btn => {
+        btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-option')));
+      });
+
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
         localStorage.setItem('idioma', langMatch[1]);
@@ -143,9 +147,6 @@
           menu.classList.toggle('hidden');
         });
       }
-
-      window.toggleTheme = toggleTheme;
-      window.getThemePreference = getThemePreference;
     })();
   </script>
   {% block extra_js %}
