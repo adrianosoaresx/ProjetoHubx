@@ -35,15 +35,42 @@
     <form id="senhaForm" method="post" action="{% url 'accounts:senha' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Senha" %}</label>
-        <input type="password" id="senha" name="senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite sua senha' %}" required autofocus aria-describedby="senha_help senha_validation">
+        <div class="relative">
+          <input
+            type="password"
+            id="senha"
+            name="senha"
+            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder=" "
+            required
+            autofocus
+            aria-describedby="senha_help senha_validation"
+          />
+          <label
+            for="senha"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+          >{% trans "Senha" %}</label>
+        </div>
         <div class="text-sm text-red-600" id="senha_validation"></div>
         <small id="senha_help" class="text-sm text-neutral-500">{% trans "Use ao menos 8 caracteres com letras e números" %}</small>
       </div>
 
       <div>
-        <label for="confirmar_senha" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Confirmar Senha" %}</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" class="w-full rounded-lg border border-neutral-300 px-4 py-2 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Confirme sua senha' %}" required aria-describedby="confirmar_senha_help confirmar_senha_validation">
+        <div class="relative">
+          <input
+            type="password"
+            id="confirmar_senha"
+            name="confirmar_senha"
+            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder=" "
+            required
+            aria-describedby="confirmar_senha_help confirmar_senha_validation"
+          />
+          <label
+            for="confirmar_senha"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+          >{% trans "Confirmar Senha" %}</label>
+        </div>
         <div class="text-sm text-red-600" id="confirmar_senha_validation"></div>
         <small id="confirmar_senha_help" class="text-sm text-neutral-500">{% trans "Repita a senha para confirmação" %}</small>
       </div>

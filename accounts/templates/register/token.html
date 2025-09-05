@@ -42,8 +42,21 @@
     <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <label for="token" class="mb-1 block text-sm font-medium text-neutral-700">{% trans "Token de Convite" %}</label>
-        <input type="text" id="token" name="token" class="w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder="{% trans 'Digite seu token de convite' %}" required autofocus>
+        <div class="relative">
+          <input
+            type="text"
+            id="token"
+            name="token"
+            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder=" "
+            required
+            autofocus
+          />
+          <label
+            for="token"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+          >{% trans "Token de Convite" %}</label>
+        </div>
         <p class="mt-1 text-sm text-neutral-500">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
       </div>
 
