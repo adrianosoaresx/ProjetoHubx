@@ -11,7 +11,11 @@
   class="inline-flex items-center gap-1 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded"
   aria-label="{% if liked %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}"
 >
-  {% lucide 'heart' class='w-4 h-4 {% if liked %}text-emerald-600{% endif %}' %}
+  {% if liked %}
+    {% lucide 'heart' class='w-4 h-4 text-emerald-600' %}
+  {% else %}
+    {% lucide 'heart' class='w-4 h-4' %}
+  {% endif %}
   <span>{{ count }}</span>
 </button>
 {% endwith %}
