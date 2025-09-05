@@ -12,22 +12,25 @@
         hx-trigger="change from:select,change from:input, submit"
         hx-on="htmx:afterRequest: renderLancamentos(event)">
     <legend class="sr-only">{{ _('Filtros') }}</legend>
-    <div>
-      <label for="filtro-status" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Status') }}</label>
-      <select name="status" id="filtro-status" class="border p-2 rounded">
+
+    <div class="relative">
+      <label for="filtro-status" class="label-float">{{ _('Status') }}</label>
+      <select name="status" id="filtro-status" class="peer placeholder-transparent form-input">
         <option value="">{{ _('Todos Status') }}</option>
         <option value="pendente">{{ _('Pendente') }}</option>
         <option value="pago">{{ _('Pago') }}</option>
         <option value="cancelado">{{ _('Cancelado') }}</option>
       </select>
     </div>
-    <div>
-      <label for="filtro-periodo-inicial" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período inicial') }}</label>
-      <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
+
+    <div class="relative">
+      <label for="filtro-periodo-inicial" class="label-float">{{ _('Período inicial') }}</label>
+      <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="peer placeholder-transparent form-input" />
     </div>
-    <div>
-      <label for="filtro-periodo-final" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período final') }}</label>
-      <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
+    <div class="relative">
+      <label for="filtro-periodo-final" class="label-float">{{ _('Período final') }}</label>
+      <input id="filtro-periodo-final" type="month" name="periodo_final" class="peer placeholder-transparent form-input" />
+
     </div>
   </form>
   <div id="lista" aria-live="polite">
