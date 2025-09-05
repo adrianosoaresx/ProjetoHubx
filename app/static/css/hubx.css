@@ -397,3 +397,66 @@
     @apply bg-[var(--bg-tertiary)] text-[var(--text-secondary)];
   }
 }
+
+@layer components {
+  /* Modal Component */
+  .modal {
+    @apply fixed inset-0 flex items-center justify-center bg-black/50 z-[1000] opacity-0 invisible transition-opacity;
+  }
+  .modal.active {
+    @apply opacity-100 visible;
+  }
+  .modal-content {
+    @apply bg-[var(--bg-secondary)] rounded-lg shadow-lg max-w-lg w-11/12 max-h-[90vh] overflow-y-auto transform scale-90 transition-transform;
+  }
+  .modal.active .modal-content {
+    @apply scale-100;
+  }
+  .modal-header {
+    @apply p-6 border-b border-[var(--border-primary)] flex items-center justify-between;
+  }
+  .modal-title {
+    @apply text-xl font-semibold text-[var(--text-primary)] m-0;
+  }
+  .modal-close {
+    @apply bg-transparent border-none text-xl text-[var(--text-muted)] cursor-pointer p-2 rounded-sm transition-colors;
+  }
+  .modal-close:hover {
+    @apply bg-[var(--bg-tertiary)] text-[var(--text-primary)];
+  }
+  .modal-body {
+    @apply p-6;
+  }
+  .modal-footer {
+    @apply p-6 border-t border-[var(--border-primary)] flex gap-3 justify-end;
+  }
+
+  /* Dropdown Component */
+  .dropdown {
+    @apply relative inline-block;
+  }
+  .dropdown-toggle {
+    @apply bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md py-3 px-4 text-[var(--text-primary)] cursor-pointer flex items-center gap-2 transition-colors;
+  }
+  .dropdown-toggle:hover {
+    @apply bg-[var(--bg-tertiary)] border-[var(--border-secondary)];
+  }
+  .dropdown-menu {
+    @apply absolute top-full left-0 min-w-[200px] bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md shadow-md z-50 opacity-0 invisible -translate-y-2 transition-all mt-1;
+  }
+  .dropdown.active .dropdown-menu {
+    @apply opacity-100 visible translate-y-0;
+  }
+  .dropdown-item {
+    @apply block py-3 px-4 text-[var(--text-secondary)] no-underline transition-colors border-b border-[var(--border-primary)];
+  }
+  .dropdown-item:last-child {
+    @apply border-b-0;
+  }
+  .dropdown-item:hover {
+    @apply bg-[var(--bg-tertiary)] text-[var(--text-primary)];
+  }
+  .dropdown-divider {
+    @apply h-px bg-[var(--border-primary)] my-2;
+  }
+}
