@@ -186,15 +186,9 @@
     padding: 0 var(--space-3);
   }
 
-  .card-header,
-  .card-body,
-  .card-footer {
-    padding: var(--space-4);
-  }
+    /* Card padding moved to app/static/css/hubx.css */
 
-  .btn {
-    padding: var(--space-3) var(--space-5);
-  }
+    /* Button spacing moved to app/static/css/hubx.css */
 
   .nav {
     gap: var(--space-3);
