@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("agenda", "0001_initial"),
+        ("eventos", "0001_initial"),
         ("nucleos", "0001_initial"),
         ("organizacoes", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -89,7 +89,7 @@ class Migration(migrations.Migration):
                 (
                     "evento",
                     models.ForeignKey(
-                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="agenda.evento"
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="eventos.evento"
                     ),
                 ),
                 (

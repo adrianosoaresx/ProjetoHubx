@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from accounts.factories import UserFactory
 from nucleos.factories import NucleoFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from empresas.factories import EmpresaFactory
 from organizacoes.factories import OrganizacaoFactory
 

@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Card de Evento: cover, avatar, nome, inscritos, núcleo, coordenador, status #}
-<a href="{% url 'agenda:evento_detalhe' evento.pk %}"
+<a href="{% url 'eventos:evento_detalhe' evento.pk %}"
    class="group block rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
    aria-label="{{ evento.titulo }}">
   <article class="overflow-hidden rounded-2xl" role="article">

@@ -44,7 +44,7 @@ from core.permissions import (
     no_superadmin_required,
 )
 
-from agenda.forms import (
+from .forms import (
     BriefingEventoCreateForm,
     BriefingEventoForm,
     EventoForm,
@@ -53,11 +53,7 @@ from agenda.forms import (
     ParceriaEventoForm,
     TarefaForm,
 )
-<<<<<<< HEAD:agenda/views.py
-from eventos.models import (
-=======
-from agenda.models import (
->>>>>>> main:eventos/views.py
+from .models import (
     BriefingEvento,
     Evento,
     EventoLog,
@@ -68,7 +64,7 @@ from agenda.models import (
     MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from agenda.tasks import notificar_briefing_status, upload_material_divulgacao
+from .tasks import notificar_briefing_status, upload_material_divulgacao
 
 User = get_user_model()
 
@@ -206,9 +202,9 @@ class EventoCreateView(
     model = Evento
     form_class = EventoForm
     template_name = "eventos/create.html"
-    success_url = reverse_lazy("agenda:calendario")
+    success_url = reverse_lazy("eventos:calendario")
 
-    permission_required = "agenda.add_evento"
+    permission_required = "eventos.add_evento"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.username == "root":
@@ -237,9 +233,9 @@ class EventoUpdateView(
     model = Evento
     form_class = EventoForm
     template_name = "eventos/update.html"
-    success_url = reverse_lazy("agenda:calendario")
+    success_url = reverse_lazy("eventos:calendario")
 
-    permission_required = "agenda.change_evento"
+    permission_required = "eventos.change_evento"
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
@@ -275,9 +271,9 @@ class EventoDeleteView(
 ):
     model = Evento
     template_name = "eventos/delete.html"
-    success_url = reverse_lazy("agenda:calendario")
+    success_url = reverse_lazy("eventos:calendario")
 
-    permission_required = "agenda.delete_evento"
+    permission_required = "eventos.delete_evento"
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
@@ -419,7 +415,7 @@ class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
     model = Tarefa
     form_class = TarefaForm
     template_name = "eventos/tarefa_form.html"
-    success_url = reverse_lazy("agenda:tarefa_list")
+    success_url = reverse_lazy("eventos:tarefa_list")
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -442,7 +438,7 @@ class TarefaUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
     model = Tarefa
     form_class = TarefaForm
     template_name = "eventos/tarefa_form.html"
-    success_url = reverse_lazy("agenda:tarefa_list")
+    success_url = reverse_lazy("eventos:tarefa_list")
 
     def get_queryset(self):
         qs = Tarefa.objects.select_related("organizacao")
@@ -490,7 +486,7 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
             messages.error(
                 request, _("Administradores não podem se inscrever em eventos.")
             )  # pragma: no cover
-            return redirect("agenda:evento_detalhe", pk=pk)
+            return redirect("eventos:evento_detalhe", pk=pk)
 
         inscricao, created = InscricaoEvento.objects.get_or_create(
             user=request.user, evento=evento
@@ -507,7 +503,7 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
                 messages.success(request, _("Inscrição realizada."))  # pragma: no cover
             else:
                 messages.success(request, _("Você está na lista de espera."))  # pragma: no cover
-        return redirect("agenda:evento_detalhe", pk=pk)
+        return redirect("eventos:evento_detalhe", pk=pk)
 
 
 class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, View):
@@ -520,7 +516,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             and evento.organizacao != request.user.organizacao
         ):
             messages.error(request, _("Acesso negado."))  # pragma: no cover
-            return redirect("agenda:calendario")
+            return redirect("eventos:calendario")
         inscrito = get_object_or_404(User, pk=user_id)
         inscricao = get_object_or_404(InscricaoEvento, user=inscrito, evento=evento)
         inscricao.cancelar_inscricao()
@@ -531,7 +527,7 @@ class EventoRemoveInscritoView(LoginRequiredMixin, NoSuperadminMixin, GerenteReq
             detalhes={"inscrito_id": inscrito.id},
         )
         messages.success(request, _("Inscrito removido."))  # pragma: no cover
-        return redirect("agenda:evento_editar", pk=pk)
+        return redirect("eventos:evento_editar", pk=pk)
 
 
 class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
@@ -585,11 +581,11 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
             detalhes={"nota": nota},
         )
         messages.success(request, _("Feedback registrado com sucesso."))
-        return redirect("agenda:evento_detalhe", pk=pk)
+        return redirect("eventos:evento_detalhe", pk=pk)
 
 
 def eventos_por_dia(request):
-    """Compatível com reverse('agenda:eventos_por_dia') via ?dia=YYYY-MM-DD"""
+    """Compatível com reverse('eventos:eventos_por_dia') via ?dia=YYYY-MM-DD"""
     dia_iso = request.GET.get("dia")
     if not dia_iso:
         raise Http404("Parâmetro 'dia' ausente.")
@@ -742,7 +738,7 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
             messages.error(
                 request, _("Administradores não podem se inscrever em eventos.")
             )
-            return redirect("agenda:evento_detalhe", pk=kwargs["pk"])
+            return redirect("eventos:evento_detalhe", pk=kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -759,7 +755,7 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         return response
 
     def get_success_url(self):
-        return reverse_lazy("agenda:evento_detalhe", kwargs={"pk": self.evento.pk})
+        return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
 
 
 class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
@@ -793,7 +789,7 @@ class MaterialDivulgacaoEventoCreateView(
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "eventos/material_form.html"
-    success_url = reverse_lazy("agenda:material_list")
+    success_url = reverse_lazy("eventos:material_list")
 
 
     def get_form(self, form_class=None):
@@ -806,7 +802,7 @@ class MaterialDivulgacaoEventoCreateView(
             )
         return form
 
-    permission_required = "agenda.add_materialdivulgacaoevento"
+    permission_required = "eventos.add_materialdivulgacaoevento"
 
 
     def form_valid(self, form):
@@ -835,9 +831,9 @@ class MaterialDivulgacaoEventoUpdateView(
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
     template_name = "eventos/material_form.html"
-    success_url = reverse_lazy("agenda:material_list")
+    success_url = reverse_lazy("eventos:material_list")
 
-    permission_required = "agenda.change_materialdivulgacaoevento"
+    permission_required = "eventos.change_materialdivulgacaoevento"
 
     def get_queryset(self):  # pragma: no cover - simples
         qs = MaterialDivulgacaoEvento.objects.all()
@@ -906,7 +902,7 @@ class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
     model = ParceriaEvento
     form_class = ParceriaEventoForm
     template_name = "eventos/parceria_form.html"
-    success_url = reverse_lazy("agenda:parceria_list")
+    success_url = reverse_lazy("eventos:parceria_list")
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -935,7 +931,7 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
     model = ParceriaEvento
     form_class = ParceriaEventoForm
     template_name = "eventos/parceria_form.html"
-    success_url = reverse_lazy("agenda:parceria_list")
+    success_url = reverse_lazy("eventos:parceria_list")
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -973,7 +969,7 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
 class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
     template_name = "eventos/parceria_confirm_delete.html"
-    success_url = reverse_lazy("agenda:parceria_list")
+    success_url = reverse_lazy("eventos:parceria_list")
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -1089,7 +1085,7 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
         )
         if not briefing.can_transition_to(status):
             messages.error(request, _("Transição de status inválida."))
-            return redirect("agenda:briefing_list")
+            return redirect("eventos:briefing_list")
         now = timezone.now()
         update_fields = ["status", "avaliado_por", "avaliado_em", "updated_at"]
         briefing.avaliado_por = request.user
@@ -1099,11 +1095,11 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
             prazo_str = request.POST.get("prazo_limite_resposta")
             if not prazo_str:
                 messages.error(request, _("Informe o prazo limite de resposta."))
-                return redirect("agenda:briefing_list")
+                return redirect("eventos:briefing_list")
             prazo = parse_datetime(prazo_str)
             if prazo is None:
                 messages.error(request, _("Prazo limite inválido."))
-                return redirect("agenda:briefing_list")
+                return redirect("eventos:briefing_list")
             if timezone.is_naive(prazo):
                 prazo = timezone.make_aware(prazo)
             briefing.status = "orcamentado"
@@ -1119,7 +1115,7 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
             motivo = request.POST.get("motivo_recusa", "").strip()
             if not motivo:
                 messages.error(request, _("Informe o motivo da recusa."))
-                return redirect("agenda:briefing_list")
+                return redirect("eventos:briefing_list")
             briefing.status = "recusado"
             briefing.recusado_em = now
             briefing.recusado_por = request.user
@@ -1137,4 +1133,4 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
         )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         messages.success(request, _("Status do briefing atualizado."))
-        return redirect("agenda:briefing_list")
+        return redirect("eventos:briefing_list")

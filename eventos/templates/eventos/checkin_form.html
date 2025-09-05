@@ -5,7 +5,7 @@
 {% block content %}
 <main class="max-w-md mx-auto py-8 px-4">
   <h1 class="text-xl font-semibold mb-4">{% trans "Check-in do evento" %}</h1>
-  <form method="post" action="{% url 'agenda:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
+  <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
     {% csrf_token %}
     <label for="codigo" class="block text-sm font-medium">{% trans "Código do check-in" %}</label>
     <input type="text" id="codigo" name="codigo" class="form-input w-full" placeholder="{% trans 'Escaneie ou digite o código' %}" required>

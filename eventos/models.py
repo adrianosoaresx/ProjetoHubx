@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from __future__ import annotations
 
 # ruff: noqa: I001
@@ -544,9 +543,3 @@ class EventoLog(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-created_at"]
-=======
-"""Reexporta modelos do app legado 'agenda'."""
-from agenda.models import *  # noqa: F401,F403
-
-
->>>>>>> main

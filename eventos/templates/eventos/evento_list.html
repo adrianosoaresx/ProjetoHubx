@@ -8,7 +8,7 @@
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">{% if is_admin_org %}{% trans 'Eventos da Organização' %}{% else %}{% trans 'Meus Eventos' %}{% endif %}</h1>
     {% if is_admin_org %}
-      <a href="{% url 'agenda:evento_novo' %}" class="btn-primary">{% trans 'Novo evento' %}</a>
+      <a href="{% url 'eventos:evento_novo' %}" class="btn-primary">{% trans 'Novo evento' %}</a>
     {% endif %}
   </div>
 

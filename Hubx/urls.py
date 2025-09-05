@@ -26,10 +26,8 @@ urlpatterns = [
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
-    # Rotas legadas ainda funcionam apontando para o mesmo conjunto
-    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
-    # Redireciona /agenda para /eventos no futuro (mantido por enquanto)
-    # path("eventos/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
+    path("agenda/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
+    path("agenda/", RedirectView.as_view(url="/eventos/", permanent=True)),
     # Discussão e Feed (web)
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
@@ -87,12 +85,6 @@ urlpatterns = [
     path(
         "api/eventos/",
         include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
-    ),
-
-    # Mantém API antiga
-    path(
-        "api/agenda/",
-        include(("eventos.api_urls", "agenda_api"), namespace="agenda_api"),
     ),
 
     path("", include("django_prometheus.urls")),

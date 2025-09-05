@@ -18,7 +18,7 @@
   {% endif %}
 
   <form
-    hx-get="{% url 'agenda:inscricao_list' %}"
+    hx-get="{% url 'eventos:inscricao_list' %}"
     hx-target="#inscricao-container"
     hx-push-url="true"
     class="mb-6 flex gap-2"
@@ -81,14 +81,14 @@
               <td class="px-4 py-2">{{ inscricao.observacao }}</td>
               <td class="px-4 py-2">
                 <a
-                  href="{% url 'agenda:evento_detalhe' inscricao.evento.pk %}"
+                  href="{% url 'eventos:evento_detalhe' inscricao.evento.pk %}"
                   class="text-blue-600 hover:underline"
                 >
                   {% trans "Ver" %}
                 </a>
                 |
                 <a
-                  href="{% url 'agenda:inscricao_checkin_form' inscricao.pk %}"
+                  href="{% url 'eventos:inscricao_checkin_form' inscricao.pk %}"
                   class="text-blue-600 hover:underline"
                 >
                   {% trans "Check-in" %}
@@ -106,7 +106,7 @@
   </main>
 
   <footer class="mt-6 text-right">
-    <a href="{% url 'agenda:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à agenda" %}</a>
+    <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>
   </footer>
 </section>
 {% endblock %}

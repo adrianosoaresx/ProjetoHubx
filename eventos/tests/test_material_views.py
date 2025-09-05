@@ -32,7 +32,7 @@ def test_material_list_shows_only_approved(client):
     client.force_login(user)
     resp = client.get(reverse("eventos:material_list"))
     assert resp.status_code == 200
-    assert "agenda/material_list.html" in [t.name for t in resp.templates]
+    assert "eventos/material_list.html" in [t.name for t in resp.templates]
     materiais = list(resp.context["materiais"])
     assert len(materiais) == 1
     assert materiais[0].titulo == "Aprovado"

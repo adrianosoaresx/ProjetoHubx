@@ -171,7 +171,7 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
-                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="agenda.evento")),
+                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="eventos.evento")),
             ],
             options={
                 "verbose_name": "Briefing de Evento",
@@ -200,7 +200,7 @@ class Migration(migrations.Migration):
                 (
                     "evento",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="agenda.evento"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="eventos.evento"
                     ),
                 ),
                 (
@@ -254,7 +254,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.DO_NOTHING,
                         related_name="+",
-                        to="agenda.evento",
+                        to="eventos.evento",
                     ),
                 ),
                 (
@@ -333,7 +333,7 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
-                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="agenda.evento")),
+                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="eventos.evento")),
             ],
             options={
                 "verbose_name": "Material de Divulgação de Evento",
@@ -397,7 +397,7 @@ class Migration(migrations.Migration):
                         on_delete=django.db.models.deletion.PROTECT, related_name="parcerias", to="empresas.empresa"
                     ),
                 ),
-                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="agenda.evento")),
+                ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="eventos.evento")),
                 (
                     "nucleo",
                     models.ForeignKey(
@@ -483,7 +483,7 @@ class Migration(migrations.Migration):
                 (
                     "tarefa",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="agenda.tarefa"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="logs", to="eventos.tarefa"
                     ),
                 ),
                 (
@@ -527,7 +527,7 @@ class Migration(migrations.Migration):
                 (
                     "evento",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="feedbacks", to="agenda.evento"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="feedbacks", to="eventos.evento"
                     ),
                 ),
                 (
@@ -595,7 +595,7 @@ class Migration(migrations.Migration):
                 (
                     "evento",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="inscricoes", to="agenda.evento"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="inscricoes", to="eventos.evento"
                     ),
                 ),
                 (

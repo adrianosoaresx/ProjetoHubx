@@ -1,11 +1,10 @@
-<<<<<<< HEAD
 from __future__ import annotations
 
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 
-from eventos.models import Evento, InscricaoEvento
-from agenda.tasks import promover_lista_espera
+from .models import Evento, InscricaoEvento
+from .tasks import promover_lista_espera
 
 
 @receiver(pre_save, sender=InscricaoEvento)
@@ -50,8 +49,4 @@ def _evento_trigger_waitlist(sender, instance, created, **kwargs):
     new = instance.participantes_maximo
     if new is not None and (old is None or new > old):
         promover_lista_espera.delay(str(instance.pk))
-=======
-"""Reexporta sinais do app legado `agenda`."""
-from agenda.signals import *  # noqa: F401,F403
 
->>>>>>> main

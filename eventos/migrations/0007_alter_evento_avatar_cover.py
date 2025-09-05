@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("agenda", "0006_evento_slug"),
+        ("eventos", "0006_evento_slug"),
     ]
 
     operations = [

@@ -2,7 +2,7 @@ import pytest
 from decimal import Decimal
 
 from accounts.factories import UserFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from financeiro.services.distribuicao import distribuir_receita_evento
 from nucleos.factories import NucleoFactory

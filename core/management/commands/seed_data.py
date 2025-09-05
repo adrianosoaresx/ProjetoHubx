@@ -5,7 +5,7 @@ from django.utils import timezone
 from faker import Faker
 
 from accounts.factories import UserFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from eventos.models import FeedbackNota, InscricaoEvento, ParceriaEvento
 # O app 'discussao' foi removido; factories opcionais
 try:  # pragma: no cover

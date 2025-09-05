@@ -1,4 +1,5 @@
 from django.urls import include, path
+from django.views.generic import RedirectView
 from django.contrib import admin
 from django.views.i18n import JavaScriptCatalog
 
@@ -15,7 +16,9 @@ urlpatterns = [
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
-    path("agenda/", include(("eventos.urls", "agenda"), namespace="agenda")),
+    path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
+    path("agenda/<path:rest>/", RedirectView.as_view(url="/eventos/%(rest)s", permanent=True)),
+    path("agenda/", RedirectView.as_view(url="/eventos/", permanent=True)),
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
@@ -50,8 +53,8 @@ urlpatterns = [
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
     ),
     path(
-        "api/agenda/",
-        include(("eventos.api_urls", "agenda_api"), namespace="agenda_api"),
+        "api/eventos/",
+        include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
     ),
     path(
         "api/dashboard/",

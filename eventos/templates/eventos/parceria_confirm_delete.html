@@ -10,7 +10,7 @@
     <p class="text-sm text-neutral-700">{% blocktrans %}Tem certeza que deseja remover <strong>{{ object.empresa.nome }}</strong>?{% endblocktrans %}</p>
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'agenda:parceria_list' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</a>
+      <a href="{% url 'eventos:parceria_list' %}" class="btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</a>
       <button type="submit" class="btn-danger" aria-label="{% trans 'Remover' %}">{% trans 'Remover' %}</button>
     </form>
   </div>

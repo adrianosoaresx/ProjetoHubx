@@ -8,7 +8,7 @@
   <header class="mb-6 flex items-center justify-between">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Briefings de Eventos" %}</h1>
     <a
-      href="{% url 'agenda:briefing_criar' %}"
+      href="{% url 'eventos:briefing_criar' %}"
       class="btn-primary"
     >{% trans "Novo Briefing" %}</a>
   </header>
@@ -22,7 +22,7 @@
   {% endif %}
 
   <form
-    hx-get="{% url 'agenda:briefing_list' %}"
+    hx-get="{% url 'eventos:briefing_list' %}"
     hx-target="#briefing-container"
     hx-push-url="true"
     class="mb-6 flex gap-2"
@@ -69,12 +69,12 @@
               <td class="px-4 py-2">{{ briefing.observacoes }}</td>
               <td class="px-4 py-2 space-x-2">
                 <a
-                  href="{% url 'agenda:briefing_editar' briefing.pk %}"
+                  href="{% url 'eventos:briefing_editar' briefing.pk %}"
                   class="text-blue-600 hover:underline"
                 >{% trans "Editar" %}</a>
                 <form
                   method="post"
-                  action="{% url 'agenda:briefing_status' briefing.pk 'orcamentado' %}"
+                  action="{% url 'eventos:briefing_status' briefing.pk 'orcamentado' %}"
                   class="inline space-x-1"
                 >
                   {% csrf_token %}
@@ -90,7 +90,7 @@
                 </form>
                 <form
                   method="post"
-                  action="{% url 'agenda:briefing_status' briefing.pk 'aprovado' %}"
+                  action="{% url 'eventos:briefing_status' briefing.pk 'aprovado' %}"
                   class="inline"
                 >
                   {% csrf_token %}
@@ -100,7 +100,7 @@
                 </form>
                 <form
                   method="post"
-                  action="{% url 'agenda:briefing_status' briefing.pk 'recusado' %}"
+                  action="{% url 'eventos:briefing_status' briefing.pk 'recusado' %}"
                   class="inline space-x-1"
                 >
                   {% csrf_token %}
@@ -128,7 +128,7 @@
   </main>
 
   <footer class="mt-6 text-right">
-    <a href="{% url 'agenda:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à agenda" %}</a>
+    <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>
   </footer>
 </section>
 {% endblock %}
