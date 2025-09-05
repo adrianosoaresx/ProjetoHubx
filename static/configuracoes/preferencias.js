@@ -77,7 +77,6 @@ function initPreferencias() {
     const applyTheme = () => {
       const temaValue = temaSelectEl.value;
       localStorage.setItem('tema', temaValue);
-      document.cookie = `tema=${temaValue};path=/`;
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const theme =
         temaValue === 'automatico'
@@ -94,7 +93,6 @@ function initPreferencias() {
     const temaValue = tema;
     const idiomaValue = idioma;
     localStorage.setItem('tema', temaValue);
-    document.cookie = `tema=${temaValue};path=/`;
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const theme =
       temaValue === 'automatico'

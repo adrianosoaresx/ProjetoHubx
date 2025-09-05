@@ -9,14 +9,13 @@
   <meta name="theme-color" content="#0f172a">
   <script>
     (function () {
-      let theme = localStorage.getItem('tema');
-      if (!theme) {
-        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-        theme = match ? match[1] : null;
-      }
-      if (!theme || theme === 'automatico') {
-        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
-      }
+      const stored = localStorage.getItem('tema');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored && stored !== 'automatico'
+        ? stored
+        : prefersDark
+          ? 'escuro'
+          : 'claro';
       document.documentElement.classList.toggle('dark', theme === 'escuro');
 
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
@@ -83,6 +82,17 @@
         </a>
         <span id="notif-count" class="hidden"></span>
         {% endif %}
+        <div class="flex items-center gap-2" role="group" aria-label="{% trans 'Selecionar tema' %}">
+          <button type="button" class="p-2 rounded hover:text-primary focus:outline-none focus:ring" data-theme-option="claro" aria-pressed="false" aria-label="{% trans 'Tema claro' %}">
+            <i class="fa-solid fa-sun"></i>
+          </button>
+          <button type="button" class="p-2 rounded hover:text-primary focus:outline-none focus:ring" data-theme-option="escuro" aria-pressed="false" aria-label="{% trans 'Tema escuro' %}">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <button type="button" class="p-2 rounded hover:text-primary focus:outline-none focus:ring" data-theme-option="automatico" aria-pressed="false" aria-label="{% trans 'Tema automático' %}">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+          </button>
+        </div>
         {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
         <a href="/" class="flex items-center gap-x-2 hover:text-primary transition">
           <i class="fa-solid fa-gauge"></i> {% trans "Dashboard" %}
@@ -229,40 +239,45 @@
     (function () {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-      function getThemePreference() {
-        const stored = localStorage.getItem('tema');
-        if (stored) return stored;
-        const match = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-        return match ? match[1] : 'automatico';
-      }
-
       function applyTheme(theme) {
-        document.documentElement.classList.toggle('dark', theme === 'escuro');
-      }
-
-      function toggleTheme(theme) {
         if (theme === 'automatico') {
-          document.cookie = 'tema=automatico;path=/';
-          localStorage.setItem('tema', 'automatico');
-          applyTheme(mediaQuery.matches ? 'escuro' : 'claro');
+          document.documentElement.classList.toggle('dark', mediaQuery.matches);
         } else {
-          document.cookie = `tema=${theme};path=/`;
-          localStorage.setItem('tema', theme);
-          applyTheme(theme);
+          document.documentElement.classList.toggle('dark', theme === 'escuro');
         }
       }
 
-      toggleTheme(getThemePreference());
-      mediaQuery.addEventListener('change', e => {
-        if (getThemePreference() === 'automatico') {
-          toggleTheme(e.matches ? 'escuro' : 'claro');
+      function setTheme(theme) {
+        localStorage.setItem('tema', theme);
+        applyTheme(theme);
+        updatePressed(theme);
+      }
+
+      function getTheme() {
+        return localStorage.getItem('tema') || 'automatico';
+      }
+
+      function updatePressed(theme) {
+        document.querySelectorAll('[data-theme-option]').forEach(btn => {
+          const active = btn.getAttribute('data-theme-option') === theme;
+          btn.setAttribute('aria-pressed', String(active));
+        });
+      }
+
+      const current = getTheme();
+      applyTheme(current);
+      updatePressed(current);
+
+      mediaQuery.addEventListener('change', () => {
+        if (getTheme() === 'automatico') {
+          applyTheme('automatico');
         }
       });
 
-      const themeMatch = document.cookie.match(/(?:^|; )tema=([^;]+)/);
-      if (themeMatch) {
-        localStorage.setItem('tema', themeMatch[1]);
-      }
+      document.querySelectorAll('[data-theme-option]').forEach(btn => {
+        btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-option')));
+      });
+
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
         localStorage.setItem('idioma', langMatch[1]);
@@ -277,9 +292,6 @@
           menu.classList.toggle('hidden');
         });
       }
-
-      window.toggleTheme = toggleTheme;
-      window.getThemePreference = getThemePreference;
     })();
   </script>
   {% block extra_js %}
