@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from organizacoes.factories import OrganizacaoFactory
 from nucleos.factories import NucleoFactory
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 
 
 @pytest.mark.django_db

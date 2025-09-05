@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from agenda.factories import EventoFactory
+from eventos.factories import EventoFactory
 from empresas.factories import EmpresaFactory
 from feed.factories import PostFactory
 from nucleos.factories import NucleoFactory
