@@ -5,9 +5,13 @@ Cada componente deve manter semântica HTML, classes do Tailwind e suporte a
 tradução.
 
 ## nav_sidebar.html
-Barra de navegação responsiva que alterna entre menu superior e sidebar.
-Todos os links utilizam `{% trans %}` para i18n e incluem atributos de
-acessibilidade como `aria-label` e `aria-current`.
+Sidebar fixa e colapsável posicionada à esquerda da página. Os itens exibidos
+são controlados por permissões do usuário e cada entrada usa ícones SVG da
+biblioteca Lucide, sem dependência do Font Awesome.
+
+Todo texto visível e atributos de acessibilidade (`aria-label`, `aria-current`,
+`aria-expanded`, `aria-controls`) devem utilizar `{% trans %}` ou
+`{% blocktrans %}` para suporte a i18n e conformidade com padrões ARIA.
 
 ```django
 {% include "components/nav_sidebar.html" %}
