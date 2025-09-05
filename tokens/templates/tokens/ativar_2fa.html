@@ -13,7 +13,7 @@
   {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+        <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
           {{ message }}
         </p>
       {% endfor %}
@@ -29,15 +29,15 @@
     {% endif %}
     <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
       {% csrf_token %}
-      <div>
-        <label for="{{ form.codigo_totp.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo_totp.label }}</label>
-        {{ form.codigo_totp|add_class:"form-input"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
+      <div class="relative">
+        <label for="{{ form.codigo_totp.id_for_label }}" class="label-float">{{ form.codigo_totp.label }}</label>
+        {{ form.codigo_totp|add_class:"peer placeholder-transparent form-input"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
         {% if form.codigo_totp.errors %}
-          <p class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
+          <p role="alert" class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
         {% endif %}
       </div>
       <div class="text-right">
-        <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Ativar" %}</button>
+        <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>
       </div>
     </form>
   </main>
