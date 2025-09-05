@@ -207,7 +207,7 @@ class EventoCreateView(
     permission_required = "eventos.add_evento"
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.username == "root":
+        if request.user.user_type == UserType.ROOT:
             raise PermissionDenied("Usuário root não pode criar eventos.")
         return super().dispatch(request, *args, **kwargs)
 
