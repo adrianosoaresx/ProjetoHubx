@@ -4,12 +4,13 @@
 {% block title %}{% trans "Entrar" %} - HubX{% endblock %}
 
 {% block content %}
-<main class="bg-muted min-h-screen flex items-center justify-center px-4">
-  <div class="bg-white p-8 rounded-2xl shadow max-w-md w-full mx-auto" role="dialog" aria-labelledby="login-title">
-    <h1 id="login-title" class="text-2xl font-bold text-center text-gray-900 mb-1">{% trans "Bem-vindo de volta" %}</h1>
-    <p class="text-center text-sm text-gray-600 mb-6">
-      {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
-    </p>
+{% include 'components/hero.html' with title=_('Bem-vindo de volta') %}
+<div class="bg-muted min-h-screen flex items-center justify-center px-4">
+  <div class="card max-w-md w-full mx-auto" role="dialog">
+    <div class="card-body">
+      <p class="text-center text-sm text-gray-600 mb-6">
+        {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
+      </p>
 
     {% if form.non_field_errors %}
       <div class="text-red-600 text-sm mb-4" role="alert">{{ form.non_field_errors }}</div>
@@ -90,6 +91,7 @@
         {% trans "Cadastre-se gratuitamente" %}
       </a>
     </div>
+    </div>
   </div>
-</main>
+</div>
 {% endblock %}
