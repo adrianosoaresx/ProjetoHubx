@@ -1,6 +1,6 @@
 """Configuração inicial do app ``eventos``.
 
-Este aplicativo substitui o antigo ``agenda``.
+Aplicativo de Eventos do Hubx.
 """
 
 __all__ = ["apps"]

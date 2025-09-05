@@ -1,6 +1,6 @@
 # Eventos
 
-Este app substitui o antigo módulo **Agenda**.
+Este app substitui o antigo módulo **Eventos**.
 
 Todos os modelos deste app herdam de `core.models.TimeStampedModel`,
 disponibilizando os campos `created_at` e `updated_at` para registro de

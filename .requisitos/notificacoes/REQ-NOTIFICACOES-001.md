@@ -65,7 +65,7 @@ O módulo **Notificações** centraliza o envio de mensagens transacionais (como
 - Rastreabilidade: `/metrics`; services.metrics; Model: Notificacoes.NotificationTemplate
 
 **RF-07 — Integração com Outros Módulos**
-- Descrição: Permitir que módulos como Financeiro, Agenda e Núcleos chamem `enviar_para_usuario` para notificar seus usuários.
+- Descrição: Permitir que módulos como Financeiro, Eventos e Núcleos chamem `enviar_para_usuario` para notificar seus usuários.
 - Critérios de Aceite: Chamadas funcionam sem conhecimento da implementação interna do app.
 - Rastreabilidade: UC-01; `service.enviar_para_usuario`; Model: Notificacoes.NotificationTemplate
 
