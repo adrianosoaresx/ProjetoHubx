@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Feed" %} | Hubx{% endblock %}
 
@@ -9,6 +9,21 @@
 {% else %}
 {% include 'components/hero.html' with title=_('Feed de Postagens') action_template='feed/hero_actions.html' %}
 <section class="max-w-7xl mx-auto px-4 py-10">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Feed de Postagens" %}</h1>
+    <div class="flex gap-2">
+      <a href="{% url 'feed:meu_mural' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Mural' %}">{% trans "Mural" %}</a>
+      <a href="{% url 'feed:bookmarks' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Favoritos' %}">{% trans "Favoritos" %}</a>
+      {% if request.user.user_type != 'root' %}
+      <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Nova postagem' %}">
+        {% lucide 'circle-plus' class='w-5 h-5' %}
+        {% trans "Nova postagem" %}
+      </a>
+      {% endif %}
+    </div>
+  </div>
 
   <!-- Busca simples -->
   <form id="feed-search-form" class="flex items-center gap-2 mb-6" hx-get="{% url 'feed:listar' %}" hx-target="#feed-grid" hx-indicator="#feed-loading">

@@ -64,7 +64,7 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
             "source": "posts",
             "aggregation": "count",
             "filters": {"organizacao_id": "$organizacao_id"},
-            "icon": "fa-star",
+            "icon": "star",
         },
         escopo="organizacao",
     )
@@ -78,7 +78,7 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
     )
     assert metrics[metric.code]["total"] == 1
     assert metricas_info[metric.code]["label"] == "Total Posts"
-    assert metricas_info[metric.code]["icon"] == "fa-star"
+    assert metricas_info[metric.code]["icon"] == "star"
     assert metric.code not in views.METRICAS_INFO
 
 

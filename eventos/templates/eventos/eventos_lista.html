@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% trans 'Eventos' %}{% endblock %}
 
@@ -10,7 +10,7 @@
     {% if pode_criar_evento %}
       <a href="{% url 'eventos:evento_novo' %}"
          class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded">
-          <i class="fa-solid fa-plus"></i> {% trans 'Novo evento' %}
+          {% lucide 'plus' class='w-4 h-4' %} {% trans 'Novo evento' %}
       </a>
     {% endif %}
   </div>

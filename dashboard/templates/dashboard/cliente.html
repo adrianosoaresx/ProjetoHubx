@@ -1,6 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
-{% load i18n %}
+{% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Dashboard Cliente" %} | Hubx{% endblock %}
 
@@ -43,11 +42,11 @@
     <h2 class="text-xl font-semibold mb-4">{% trans "Atalhos" %}</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
   <a href="{% url 'eventos:calendario' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Inscrever-se em Eventos' %}">
-        <i class="fa-solid fa-calendar-plus mb-2"></i>
+        {% lucide 'calendar-plus' class='mb-2 mx-auto w-6 h-6' %}
         <span class="block">{% trans "Inscrever-se em Eventos" %}</span>
       </a>
       <a href="{% url 'feed:listar' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Ver Feed' %}">
-        <i class="fa-solid fa-rss mb-2"></i>
+        {% lucide 'rss' class='mb-2 mx-auto w-6 h-6' %}
         <span class="block">{% trans "Ver Feed" %}</span>
       </a>
     </div>

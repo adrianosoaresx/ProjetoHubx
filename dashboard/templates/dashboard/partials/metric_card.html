@@ -1,17 +1,21 @@
-{% load i18n l10n %}
+{% load i18n l10n lucide_icons %}
 <div class="card p-4 bg-white rounded-lg shadow" id="{{ id }}" aria-label="{{ title }}">
   <div class="flex items-center justify-between">
     <h3 class="text-sm font-medium text-neutral-700">{{ title }}</h3>
     <div class="flex items-center space-x-2">
-      {% if icon %}<i class="fa-solid {{ icon }} text-primary-600" aria-label="{{ title }}"></i>{% endif %}
-      <i class="fa-solid fa-grip-dots card-handle cursor-move text-neutral-400" aria-hidden="true"></i>
+      {% if icon %}{% lucide icon label=title class="w-4 h-4 text-primary-600" %}{% endif %}
+      {% lucide 'grip-vertical' class='w-4 h-4 card-handle cursor-move text-neutral-400' %}
     </div>
   </div>
 
   <p class="text-3xl font-bold text-neutral-900" aria-label="{{ title }}">{{ value|localize }}</p>
   {% if crescimento is not None %}
     <p class="flex items-center text-sm font-medium mt-1 {% if crescimento >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
-      <i class="fa-solid {% if crescimento >= 0 %}fa-arrow-up{% else %}fa-arrow-down{% endif %} mr-1"></i>
+      {% if crescimento >= 0 %}
+        {% lucide 'arrow-up' class='w-4 h-4 mr-1' %}
+      {% else %}
+        {% lucide 'arrow-down' class='w-4 h-4 mr-1' %}
+      {% endif %}
       {{ crescimento|floatformat:2|localize }}%
     </p>
   {% endif %}

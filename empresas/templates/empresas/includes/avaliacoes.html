@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 <div id="avaliacoes">
   <h2 class="text-lg font-semibold text-neutral-900">{% trans "Avaliações" %}</h2>
   <p class="text-sm text-neutral-600">
@@ -21,7 +21,11 @@
           class="text-yellow-400"
           aria-label="{% trans 'Avaliar com' %} {{ forloop.counter }} {% trans 'estrelas' %}"
         >
-          <i class="{% if avaliacao_usuario and forloop.counter <= avaliacao_usuario.nota %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i>
+          {% if avaliacao_usuario and forloop.counter <= avaliacao_usuario.nota %}
+            {% lucide 'star' class='w-5 h-5' fill='currentColor' %}
+          {% else %}
+            {% lucide 'star' class='w-5 h-5' fill='none' %}
+          {% endif %}
         </button>
       {% endfor %}
     </div>
@@ -40,13 +44,11 @@
         var notaInput = document.getElementById('avaliacao-nota');
         notaInput.value = this.dataset.star;
         document.querySelectorAll('#avaliacoes [data-star]').forEach(function (b) {
-          var icon = b.querySelector('i');
+          var icon = b.querySelector('svg');
           if (parseInt(b.dataset.star) <= notaInput.value) {
-            icon.classList.remove('fa-regular');
-            icon.classList.add('fa-solid');
+            icon.setAttribute('fill', 'currentColor');
           } else {
-            icon.classList.remove('fa-solid');
-            icon.classList.add('fa-regular');
+            icon.setAttribute('fill', 'none');
           }
         });
       });

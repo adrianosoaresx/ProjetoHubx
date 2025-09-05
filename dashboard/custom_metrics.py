@@ -60,7 +60,7 @@ class DashboardCustomMetricService:
         raise ValueError("Agregação inválida")
 
 
-DEFAULT_ICON = "fa-chart-bar"
+DEFAULT_ICON = "chart-bar"
 
 
 def get_metrics_info(metrics: Iterable[Any]) -> Dict[str, Dict[str, str]]:
