@@ -16,14 +16,13 @@ dependencies: [REQ-OUTRO-001]
 
 ## 1. Visão Geral
 
-Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para diferentes tipos de usuário do Hubx, permitindo que cada pessoa personalize filtros, layouts e exportações conforme suas necessidades. O dashboard integra dados de diversos módulos (Agenda, Financeiro, Feed, Chat, Discussão, Tokens, etc.) e pode ser estendido por novos aplicativos.
+Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para diferentes tipos de usuário do Hubx, permitindo que cada pessoa personalize filtros, layouts e exportações conforme suas necessidades. O dashboard integra dados de diversos módulos (Agenda, Financeiro, Feed, Tokens, etc.) e pode ser estendido por novos aplicativos.
 
 ## 2. Escopo
 
 - **Inclui**
   - Exibição de métricas agregadas e variação percentual por período e escopo.
   - Criação, salvamento e compartilhamento de configurações de dashboards e filtros personalizados.
-  - Personalização de layout (arranjo dos widgets) e seleção de métricas exibidas.
   - Exportação de métricas em múltiplos formatos (CSV, PDF, XLSX, PNG).
   - Endpoints de dados parciais via HTMX para atualizar seções específicas sem recarregar a página.
 - **Exclui**
@@ -56,27 +55,24 @@ Fornecer painéis dinâmicos de métricas, estatísticas e indicadores para dife
   - Descrição: Usuários podem criar múltiplos dashboards salvos (`DashboardConfig`) contendo período, escopo e filtros. Cada configuração possui nome e pode ser marcada como pública para compartilhamento. Deve existir CRUD completo.
   - Critérios de Aceite: Configurações são persistidas em JSON; ao aplicar uma configuração, os parâmetros são enviados na URL; usuários não podem acessar configurações privadas de outros.
   - Rastreabilidade: ...
-- **RF-07 — Filtros Personalizados**
-  - Descrição: Usuários podem salvar e aplicar filtros de métricas (`DashboardFilter`), contendo critérios como data de início/fim, organização, núcleo, evento e métricas selecionadas. Filtros podem ser públicos se o usuário for admin/root.
-  - Critérios de Aceite: Filtros salvos podem ser reaplicados; apenas criador ou admins podem excluir; filtros públicos aparecem para membros da mesma organização.
-  - Rastreabilidade: ...
-- **RF-08 — Integração de Dados**
+
+- **RF-07 — Integração de Dados**
   - Descrição: As métricas devem abranger dados de múltiplos módulos: contas (usuários), organizações, núcleos, empresas, eventos (Agenda), inscrições, posts e reações (Feed), mensagens (Chat), discussões (Discussão), lançamentos financeiros (Financeiro) e tokens (Tokens).
   - Critérios de Aceite: Para cada métrica suportada, as consultas devem respeitar o escopo e as permissões do usuário.
   - Rastreabilidade: ...
-- **RF-09 — Atualizações em Tempo Real**
+- **RF-08 — Atualizações em Tempo Real**
   - Descrição: O dashboard deve disponibilizar atualizações parciais de métricas, lançamentos, notificações, tarefas e eventos sem recarregar toda a página, via HTMX ou WebSocket.
   - Critérios de Aceite: Endpoints retornam HTML parcial; requisições periódicas atualizam seções do dashboard; se implementado WebSocket, conexões são seguras e escaláveis.
   - Rastreabilidade: ...
-- **RF-10 — Exportação de Métricas**
+- **RF-9 — Exportação de Métricas**
   - Descrição: Usuários autorizados (`root`, `admin`, `coordenador`) podem exportar métricas filtradas em formatos CSV, PDF, XLSX e PNG. A exportação deve registrar log de auditoria com tipo, filtros e status.
   - Critérios de Aceite: Arquivos gerados contêm colunas "Métrica", "Valor" e "Variação (%)"; exportações falham com mensagens claras se houver erro.
   - Rastreabilidade: ...
-- **RF-11 — Layout Personalizado**
+- **RF-10 — Layout Personalizado**
   - Descrição: O sistema deve permitir que usuários salvem layouts personalizados (`DashboardLayout`) em JSON, definindo a disposição e tamanho de cada widget. Deve haver CRUD completo para layouts; apenas criador, root ou admin podem editá-los ou excluí-los.
   - Critérios de Aceite: Layouts aplicados reproduzem a disposição salva; layouts públicos são visíveis a todos; restrições de acesso são respeitadas.
   - Rastreabilidade: ...
-  - **RF-13 — Log de Auditoria**
+  - **RF-11 — Log de Auditoria**
   - Descrição: Todas as ações relevantes (criar, aplicar, excluir filtros/configurações/layouts, exportar métricas) devem ser registradas em logs imutáveis com identificação do usuário, tipo de ação, data/hora, IP anoniminizado e metadados.
   - Critérios de Aceite: Somente superadmins podem consultar logs completos; tarefas periódicas removem registros mais antigos que `AUDIT_LOG_RETENTION_YEARS`.
   - Rastreabilidade: ...
@@ -159,14 +155,6 @@ Campos:
 - `publico`: boolean
 - `deleted`: boolean
 
-### DashboardLayout
-Descrição: Layout personalizado de widgets.
-Campos:
-- `user`: FK → User
-- `nome`: string
-- `layout_json`: JSON
-- `publico`: boolean
-- `deleted`: boolean
 
 ## 8. Critérios de Aceite (Gherkin)
 

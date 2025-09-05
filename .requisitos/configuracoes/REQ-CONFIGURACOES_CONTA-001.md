@@ -30,7 +30,6 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
 * Visualização, edição e teste das configurações pessoais via interface e API.
 * Criação de configurações de conta no momento do cadastro de usuário.
 * Registro de alterações em log para fins de auditoria.
-* Possibilidade de criar configurações específicas para escopos (organização, núcleo, evento) que sobrepõem as preferências globais.
 
 ### Exclui
 
@@ -80,11 +79,6 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
   - Critérios de Aceite: Após cadastro, existe instância de `ConfiguracaoConta` associada ao usuário.
   - Rastreabilidade: UC-01; Model: Configuracoes.ConfiguracaoConta
 
-- **RF-09 — Configurações Contextuais por Escopo**
-  - Descrição: O usuário pode criar configurações específicas para um escopo (`organizacao`, `nucleo` ou `evento`) que sobrepõem preferências globais.
-  - Critérios de Aceite: Modelo `ConfiguracaoContextual` aceita definições por escopo e substitui valores globais quando disponível.
-  - Rastreabilidade: UC-03; Model: Configuracoes.ConfiguracaoContextual
-
 - **RF-10 — Registro de Alterações**
   - Descrição: Todas as alterações nas preferências do usuário são registradas em `ConfiguracaoContaLog`.
   - Critérios de Aceite: Uma entrada de log é criada para cada alteração salva.
@@ -127,7 +121,7 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
 - ...
 
 ### Resiliência
-- Garantir relação 1:1 entre `ConfiguracaoConta` e usuário e unicidade de `ConfiguracaoContextual` por usuário + escopo.
+- Garantir relação 1:1 entre `ConfiguracaoConta` e usuário 
 - Tarefas de envio de resumos devem executar no minuto configurado pelo usuário com tolerância de ±1 minuto; permitir reenvio em caso de falhas.
 - As tarefas de envio de resumos devem garantir entrega confiável, com retries e logs de falhas de integrações externas.
 
@@ -152,20 +146,13 @@ O App de Configurações de Conta (Configuracoes_Conta) permite que cada usuári
 2. Salva as alterações.
 3. O sistema atualiza a interface imediatamente (via cookie/localStorage) e persiste a configuração.
 
-### UC‑03 – Configuração Contextual
-
-1. Usuário acessa a página de configurações avançadas.
-2. Seleciona o escopo (organização, núcleo ou evento) e define frequências, idioma e tema específicos.
-3. Salva as alterações.
-4. Sistema cria ou atualiza uma entrada em `ConfiguracaoContextual` e utiliza essas preferências quando o usuário acessa o respectivo escopo.
-
-### UC‑04 – Envio de Resumo Periódico
+### UC‑03 – Envio de Resumo Periódico
 
 1. Em horário programado, a tarefa Celery seleciona usuários com frequência “diária” ou “semanal” para o canal correspondente.
 2. Calcula contagens de itens pendentes de chat, feed e eventos desde o último envio.
 3. Envia e‑mail e/ou mensagem de WhatsApp com o resumo, conforme as preferências.
 
-### UC‑05 – Testar Notificação
+### UC‑04 – Testar Notificação
 
 1. Usuário chama o endpoint de teste e informa o canal desejado e, opcionalmente, escopo.
 2. Sistema verifica se o canal está habilitado nas preferências resolvidas para aquele escopo.
@@ -198,22 +185,6 @@ Campos:
 - `hora_notificacao_diaria`: time
 - `hora_notificacao_semanal`: time
 - `dia_semana_notificacao`: integer
-- `deleted`: boolean
-
-### Configuracoes.ConfiguracaoContextual
-Descrição: Preferências específicas por escopo.
-Campos:
-- `user`: ForeignKey(User)
-- `escopo_tipo`: enum('organizacao','nucleo','evento')
-- `escopo_id`: UUID
-- `receber_notificacoes_email`: boolean
-- `frequencia_notificacoes_email`: enum
-- `receber_notificacoes_whatsapp`: boolean
-- `frequencia_notificacoes_whatsapp`: enum
-- `receber_notificacoes_push`: boolean
-- `frequencia_notificacoes_push`: enum
-- `idioma`: string
-- `tema`: enum
 - `deleted`: boolean
 
 ### Configuracoes.ConfiguracaoContaLog
