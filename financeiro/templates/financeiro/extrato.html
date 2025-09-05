@@ -4,6 +4,7 @@
 {% block title %}{{ _('Extrato') }}{% endblock %}
 
 {% block content %}
+
 <main class="p-4 max-w-4xl mx-auto">
   <h1 class="text-2xl font-semibold mb-2">{{ _('Extrato') }}</h1>
   <form id="filtros" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4"
@@ -11,6 +12,7 @@
         hx-trigger="change from:select,change from:input, submit"
         hx-on="htmx:afterRequest: renderLancamentos(event)">
     <legend class="sr-only">{{ _('Filtros') }}</legend>
+
     <div class="relative">
       <label for="filtro-status" class="label-float">{{ _('Status') }}</label>
       <select name="status" id="filtro-status" class="peer placeholder-transparent form-input">
@@ -20,6 +22,7 @@
         <option value="cancelado">{{ _('Cancelado') }}</option>
       </select>
     </div>
+
     <div class="relative">
       <label for="filtro-periodo-inicial" class="label-float">{{ _('Período inicial') }}</label>
       <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="peer placeholder-transparent form-input" />
@@ -27,17 +30,18 @@
     <div class="relative">
       <label for="filtro-periodo-final" class="label-float">{{ _('Período final') }}</label>
       <input id="filtro-periodo-final" type="month" name="periodo_final" class="peer placeholder-transparent form-input" />
+
     </div>
   </form>
   <div id="lista" aria-live="polite">
-    <table class="min-w-full divide-y divide-gray-200">
+    <table class="min-w-full divide-y divide-[var(--border-primary)]">
       <thead>
-        <tr class="bg-gray-50">
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Tipo') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Lançamento') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Status') }}</th>
+        <tr class="bg-[var(--bg-tertiary)]">
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Centro de Custo') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Tipo') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Valor') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Data de Lançamento') }}</th>
+          <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Status') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -66,22 +70,47 @@
         const rows = itens
           .map(l => `
             <tr>
-              <td class="px-3 py-2">${l.centro_custo || ''}</td>
-              <td class="px-3 py-2">${l.tipo}</td>
-              <td class="px-3 py-2">${l.valor}</td>
-              <td class="px-3 py-2">${l.data_lancamento}</td>
-              <td class="px-3 py-2">${l.status}</td>
+              <td class="px-3 py-2">{{ l.centro_custo }}</td>
+              <td class="px-3 py-2">{{ l.tipo }}</td>
+              <td class="px-3 py-2">{{ l.valor }}</td>
+              <td class="px-3 py-2">{{ l.data_lancamento }}</td>
+              <td class="px-3 py-2">{{ l.status }}</td>
             </tr>
-          `)
-          .join('');
-        tbody.innerHTML = rows || `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
-      }
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      htmx.trigger('#filtros', 'submit');
-    });
-  </script>
-</main>
+            {% empty %}
+            <tr><td colspan="5" class="px-3 py-2 text-center">{{ _('Nenhum lançamento') }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <script src="{% url 'javascript-catalog' %}"></script>
+      <script>
+        function renderLancamentos(evt) {
+          const tbody = document.querySelector('#lista tbody');
+          tbody.innerHTML = '';
+          try {
+            const data = JSON.parse(evt.detail.xhr.response);
+            const itens = data.results || data;
+            const rows = itens
+              .map(l => `
+                <tr>
+                  <td class="px-3 py-2">${l.centro_custo || ''}</td>
+                  <td class="px-3 py-2">${l.tipo}</td>
+                  <td class="px-3 py-2">${l.valor}</td>
+                  <td class="px-3 py-2">${l.data_lancamento}</td>
+                  <td class="px-3 py-2">${l.status}</td>
+                </tr>
+              `)
+              .join('');
+            tbody.innerHTML = rows || `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
+          }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+          htmx.trigger('#filtros', 'submit');
+        });
+      </script>
+    </div>
+  </div>
+</section>
 {% endblock %}
