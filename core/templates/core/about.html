@@ -4,9 +4,16 @@
 {% block title %}{% trans "Sobre" %} - HubX{% endblock %}
 
 {% block content %}
-<section class="max-w-3xl mx-auto px-4 py-12 prose prose-indigo">
-  <h1>{% trans "Sobre o HubX" %}</h1>
-  <p>{% trans "HubX é uma plataforma colaborativa que integra comunidades de organizações, empresas e voluntários." %}</p>
-  <p>{% trans "Nosso objetivo é facilitar a comunicação, gestão de eventos e colaboração entre membros." %}</p>
+{% include 'components/hero.html' with title=_('Sobre o HubX') %}
+<section class="max-w-3xl mx-auto px-4 py-12 grid grid-cols-1 gap-6">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Sobre o HubX" %}</h2>
+    </div>
+    <div class="card-body prose prose-indigo">
+      <p>{% trans "HubX é uma plataforma colaborativa que integra comunidades de organizações, empresas e voluntários." %}</p>
+      <p>{% trans "Nosso objetivo é facilitar a comunicação, gestão de eventos e colaboração entre membros." %}</p>
+    </div>
+  </div>
 </section>
 {% endblock %}
