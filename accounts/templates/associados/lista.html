@@ -7,14 +7,19 @@
 <section class="max-w-6xl mx-auto mt-8 px-4">
   <h1 class="text-2xl font-bold mb-6">{% trans 'Associados' %}</h1>
   <form method="get" class="mb-6 flex gap-2">
-    <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
-    <input
-      id="q"
-      name="q"
-      value="{{ request.GET.q }}"
-      class="border rounded px-3 py-2 flex-grow"
-      placeholder="{% trans 'Buscar' %}"
-    />
+    <div class="relative flex-grow">
+      <input
+        id="q"
+        name="q"
+        value="{{ request.GET.q }}"
+        class="peer placeholder-transparent border rounded px-3 py-2 w-full"
+        placeholder="{% trans 'Buscar' %}"
+      />
+      <label
+        for="q"
+        class="absolute left-3 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+      >{% trans 'Buscar' %}</label>
+    </div>
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
   </form>
   <!-- Cards de totais -->
