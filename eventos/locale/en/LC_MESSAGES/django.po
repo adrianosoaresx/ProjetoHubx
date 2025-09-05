@@ -1,0 +1,796 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-05 10:49-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: eventos/api.py:187
+msgid "Material aprovado com sucesso."
+msgstr ""
+
+#: eventos/api.py:201
+msgid "Motivo de devolução é obrigatório."
+msgstr ""
+
+#: eventos/api.py:233
+msgid "Material devolvido com sucesso."
+msgstr ""
+
+#: eventos/api.py:342 eventos/api.py:361 eventos/api.py:378
+#: eventos/views.py:1087
+msgid "Transição de status inválida."
+msgstr ""
+
+#: eventos/forms.py:108
+msgid "O valor pago deve ser positivo."
+msgstr ""
+
+#: eventos/forms.py:151
+msgid "Formato de imagem não permitido."
+msgstr ""
+
+#: eventos/forms.py:153
+msgid "Imagem excede o tamanho máximo de 10MB."
+msgstr ""
+
+#: eventos/forms.py:197
+msgid "CNPJ deve conter 14 dígitos."
+msgstr ""
+
+#: eventos/forms.py:199
+msgid "CNPJ inválido."
+msgstr ""
+
+#: eventos/models.py:267
+msgid "A data de fim deve ser posterior à data de início."
+msgstr ""
+
+#: eventos/models.py:280
+msgid "Deve ser um valor positivo."
+msgstr ""
+
+#: eventos/templates/eventos/_lista_eventos_dia.html:4
+#, python-format
+msgid "Eventos de %(date)s"
+msgstr ""
+
+#: eventos/templates/eventos/_lista_eventos_dia.html:6
+msgid "itens"
+msgstr ""
+
+#: eventos/templates/eventos/_lista_eventos_dia.html:7
+msgid "Lista de eventos do dia"
+msgstr ""
+
+#: eventos/templates/eventos/_lista_eventos_dia.html:15
+msgid "Sem eventos."
+msgstr ""
+
+#: eventos/templates/eventos/_material_row.html:10
+msgid "Download"
+msgstr ""
+
+#: eventos/templates/eventos/_material_row.html:20
+#: eventos/templates/eventos/briefing_list.html:98
+msgid "Aprovar"
+msgstr ""
+
+#: eventos/templates/eventos/_material_row.html:32
+#: eventos/templates/eventos/briefing_list.html:110
+msgid "Motivo"
+msgstr ""
+
+#: eventos/templates/eventos/_material_row.html:36
+msgid "Devolver"
+msgstr ""
+
+#: eventos/templates/eventos/avaliacao_form.html:3
+#: eventos/templates/eventos/avaliacao_form.html:7
+msgid "Avaliar evento"
+msgstr ""
+
+#: eventos/templates/eventos/avaliacao_form.html:11
+#: eventos/templates/eventos/detail.html:66
+#: eventos/templates/eventos/parceria_avaliar.html:16
+msgid "Nota"
+msgstr ""
+
+#: eventos/templates/eventos/avaliacao_form.html:19
+#: eventos/templates/eventos/detail.html:74
+#: eventos/templates/eventos/parceria_avaliar.html:24
+#: eventos/templates/eventos/parceria_list.html:22
+msgid "Comentário"
+msgstr ""
+
+#: eventos/templates/eventos/avaliacao_form.html:20
+#: eventos/templates/eventos/detail.html:75
+#: eventos/templates/eventos/parceria_avaliar.html:25
+msgid "Opcional"
+msgstr ""
+
+#: eventos/templates/eventos/avaliacao_form.html:23
+#: eventos/templates/eventos/detail.html:78
+#: eventos/templates/eventos/parceria_avaliar.html:28
+msgid "Enviar avaliação"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_form.html:3
+#: eventos/templates/eventos/briefing_form.html:8
+msgid "Editar Briefing"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_form.html:3
+#: eventos/templates/eventos/briefing_form.html:8
+#: eventos/templates/eventos/briefing_list.html:13
+msgid "Novo Briefing"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_form.html:29
+#: eventos/templates/eventos/create.html:52
+#: eventos/templates/eventos/delete.html:13
+#: eventos/templates/eventos/inscricao_form.html:33
+#: eventos/templates/eventos/material_form.html:27
+#: eventos/templates/eventos/parceria_confirm_delete.html:13
+#: eventos/templates/eventos/parceria_form.html:24
+#: eventos/templates/eventos/tarefa_form.html:44
+#: eventos/templates/eventos/update.html:53
+msgid "Cancelar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_form.html:30
+#: eventos/templates/eventos/create.html:53
+#: eventos/templates/eventos/inscricao_form.html:34
+#: eventos/templates/eventos/material_form.html:28
+#: eventos/templates/eventos/parceria_form.html:25
+#: eventos/templates/eventos/tarefa_form.html:45
+#: eventos/templates/eventos/update.html:54
+#: eventos/templates/eventos/update.html:72
+msgid "Salvar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:4
+msgid "Briefings"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:9
+msgid "Briefings de Eventos"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:34
+msgid "Buscar por evento"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:41
+#: eventos/templates/eventos/inscricao_list.html:37
+#: eventos/templates/eventos/material_list.html:32
+msgid "Filtrar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:50
+#: eventos/templates/eventos/inscricao_list.html:47
+#: eventos/templates/eventos/parceria_list.html:19
+msgid "Evento"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:51
+msgid "Objetivos"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:52
+msgid "Público Alvo"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:53
+msgid "Requisitos Técnicos"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:54
+msgid "Cronograma Resumido"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:55
+msgid "Conteúdo Programático"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:56
+msgid "Observações"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:57
+#: eventos/templates/eventos/inscricao_list.html:55
+#: eventos/templates/eventos/material_list.html:45
+#: eventos/templates/eventos/parceria_list.html:23
+msgid "Ações"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:74
+#: eventos/templates/eventos/parceria_list.html:50
+msgid "Editar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:88
+msgid "Orçar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:115
+msgid "Recusar"
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:122
+msgid "Nenhum briefing encontrado."
+msgstr ""
+
+#: eventos/templates/eventos/briefing_list.html:131
+#: eventos/templates/eventos/inscricao_list.html:109
+#: eventos/templates/eventos/material_list.html:62
+msgid "Voltar aos eventos"
+msgstr ""
+
+#: eventos/templates/eventos/calendario.html:15
+#: eventos/templates/eventos/calendario.html:19
+#: eventos/templates/eventos/create.html:3
+msgid "Novo Evento"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:3
+#: eventos/templates/eventos/inscricao_list.html:94
+msgid "Check-in"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:7
+msgid "Check-in do evento"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:10
+msgid "Código do check-in"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:11
+msgid "Escaneie ou digite o código"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:15
+msgid "Confirmar presença"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:26
+msgid "Check-in realizado com sucesso!"
+msgstr ""
+
+#: eventos/templates/eventos/checkin_form.html:55
+msgid "Erro ao realizar check-in"
+msgstr ""
+
+#: eventos/templates/eventos/create.html:7
+msgid "Cadastrar Evento"
+msgstr ""
+
+#: eventos/templates/eventos/delete.html:3
+#: eventos/templates/eventos/delete.html:8
+msgid "Remover Evento"
+msgstr ""
+
+#: eventos/templates/eventos/delete.html:9
+#, python-format
+msgid "Tem certeza que deseja remover <strong>%(title)s</strong>?"
+msgstr ""
+
+#: eventos/templates/eventos/delete.html:14
+#: eventos/templates/eventos/parceria_confirm_delete.html:14
+#: eventos/templates/eventos/update.html:92
+msgid "Remover"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:22
+msgid "Início"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:23
+msgid "Fim"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:24
+msgid "Local"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:25
+msgid "Cidade"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:26
+msgid "Estado"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:27
+msgid "CEP"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:29
+msgid "Contato"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:35
+msgid "Participantes máximo"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:38
+msgid "Lista de espera"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:40
+msgid "Habilitada"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:42
+msgid "Desabilitada"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:46
+#: eventos/templates/eventos/update.html:60
+msgid "Orçamento"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:49
+#: eventos/templates/eventos/update.html:64
+msgid "Orçamento estimado"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:52
+#: eventos/templates/eventos/update.html:68
+msgid "Valor gasto"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:61
+msgid "QR Code da inscrição"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:84
+msgid "Cancelar inscrição"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:90
+msgid "Inscrever-se"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:96
+#: eventos/templates/eventos/partials/card.html:31
+#: eventos/templates/eventos/update.html:79
+msgid "Inscritos"
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:119
+#: eventos/templates/eventos/update.html:100
+msgid "Nenhum inscrito."
+msgstr ""
+
+#: eventos/templates/eventos/detail.html:124
+#: eventos/templates/eventos/tarefa_detail.html:9
+msgid "Voltar"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:4
+#: eventos/templates/eventos/evento_list.html:9
+msgid "Meus Eventos"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:9
+msgid "Eventos da Organização"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:11
+#: eventos/templates/eventos/eventos_lista.html:14
+msgid "Novo evento"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:16
+#: eventos/templates/eventos/evento_list.html:17
+#: eventos/templates/eventos/evento_list.html:18
+#: eventos/templates/eventos/eventos_lista.html:20
+#: eventos/templates/eventos/eventos_lista.html:21
+#: eventos/templates/eventos/eventos_lista.html:22
+msgid "Buscar"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:23
+#: eventos/templates/eventos/eventos_lista.html:4
+#: eventos/templates/eventos/eventos_lista.html:9
+#: eventos/templates/eventos/eventos_lista.html:28
+msgid "Eventos"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:27
+#: eventos/templates/eventos/eventos_lista.html:32
+msgid "Ativos"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:31
+#: eventos/templates/eventos/eventos_lista.html:36
+msgid "Concluídos"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:35
+#: eventos/templates/eventos/eventos_lista.html:40
+msgid "Inscritos (total)"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:41
+#: eventos/templates/eventos/eventos_lista.html:46
+msgid "Lista de eventos"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:45
+#: eventos/templates/eventos/eventos_lista.html:50
+msgid "Nenhum evento encontrado."
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:53
+msgid "Anterior"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:55
+#, python-format
+msgid "Página %(page_obj.number)s de %(page_obj.paginator.num_pages)s"
+msgstr ""
+
+#: eventos/templates/eventos/evento_list.html:57
+msgid "Próxima"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_form.html:4
+#: eventos/templates/eventos/inscricao_form.html:8
+msgid "Inscrição"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:4
+msgid "Inscrições"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:9
+msgid "Lista de Inscrições"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:30
+msgid "Buscar por usuário ou evento"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:46
+#: eventos/templates/eventos/tarefa_detail.html:30
+msgid "Usuário"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:48
+#: eventos/templates/eventos/material_list.html:43
+#: eventos/templates/eventos/partials/card.html:45
+#: eventos/templates/eventos/tarefa_detail.html:20
+msgid "Status"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:49
+msgid "Posição na espera"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:50
+msgid "Presente"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:51
+msgid "Valor Pago"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:52
+msgid "Método de Pagamento"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:53
+msgid "Comprovante"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:54
+msgid "Observação"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:76
+#: eventos/templates/eventos/inscricao_list.html:87
+msgid "Ver"
+msgstr ""
+
+#: eventos/templates/eventos/inscricao_list.html:100
+msgid "Nenhuma inscrição encontrada."
+msgstr ""
+
+#: eventos/templates/eventos/material_form.html:3
+#: eventos/templates/eventos/material_form.html:8
+msgid "Editar Material"
+msgstr ""
+
+#: eventos/templates/eventos/material_form.html:3
+#: eventos/templates/eventos/material_form.html:8
+#: eventos/templates/eventos/material_list.html:10
+msgid "Novo Material"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:4
+#: eventos/templates/eventos/material_list.html:9
+msgid "Materiais de Divulgação"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:25
+msgid "Buscar por título"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:41
+msgid "Título"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:42
+msgid "Descrição"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:44
+msgid "Arquivo"
+msgstr ""
+
+#: eventos/templates/eventos/material_list.html:53
+msgid "Nenhum material disponível."
+msgstr ""
+
+#: eventos/templates/eventos/parceria_avaliar.html:3
+#: eventos/templates/eventos/parceria_avaliar.html:7
+msgid "Avaliar parceria"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_confirm_delete.html:4
+#: eventos/templates/eventos/parceria_confirm_delete.html:9
+msgid "Remover Parceria"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_confirm_delete.html:10
+#, python-format
+msgid ""
+"Tem certeza que deseja remover <strong>%(object.empresa.nome)s</strong>?"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_form.html:4
+#: eventos/templates/eventos/parceria_form.html:8
+msgid "Parceria"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:4
+#: eventos/templates/eventos/parceria_list.html:9
+msgid "Parcerias"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:10
+msgid "Nova Parceria"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:18
+msgid "Empresa"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:20
+msgid "Tipo"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:21
+msgid "Avaliação"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:44
+msgid "Avaliar"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:55
+msgid "Excluir"
+msgstr ""
+
+#: eventos/templates/eventos/parceria_list.html:61
+msgid "Nenhuma parceria encontrada."
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:9
+msgid "Capa do evento"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:35
+msgid "Núcleo"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:39
+msgid "Coordenador"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:47
+msgid "Ativo"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:48
+msgid "Concluído"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:49
+msgid "Cancelado"
+msgstr ""
+
+#: eventos/templates/eventos/partials/card.html:56
+msgid "Ver detalhes do evento"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:17
+msgid "Data de início"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:18
+msgid "Data de fim"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:19
+msgid "Responsável"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:23
+msgid "Logs"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:29
+msgid "Data"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:31
+msgid "Ação"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_detail.html:46
+msgid "Nenhum log disponível."
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_form.html:3
+#: eventos/templates/eventos/tarefa_form.html:8
+msgid "Editar Tarefa"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_form.html:3
+#: eventos/templates/eventos/tarefa_list.html:9
+msgid "Nova Tarefa"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_form.html:8
+msgid "Cadastrar Tarefa"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_list.html:3
+#: eventos/templates/eventos/tarefa_list.html:8
+msgid "Tarefas"
+msgstr ""
+
+#: eventos/templates/eventos/tarefa_list.html:18
+msgid "Nenhuma tarefa encontrada."
+msgstr ""
+
+#: eventos/templates/eventos/update.html:3
+#: eventos/templates/eventos/update.html:7
+msgid "Editar Evento"
+msgstr ""
+
+#: eventos/templates/eventos/update.html:125
+msgid "Orçamento atualizado com sucesso."
+msgstr ""
+
+#: eventos/templates/eventos/update.html:128
+#: eventos/templates/eventos/update.html:132
+msgid "Erro ao atualizar orçamento."
+msgstr ""
+
+#: eventos/validators.py:22
+msgid "Tipo de arquivo não permitido."
+msgstr ""
+
+#: eventos/validators.py:24
+msgid "Extensão do arquivo não corresponde ao tipo MIME."
+msgstr ""
+
+#: eventos/validators.py:30
+msgid "Arquivo excede o tamanho máximo permitido."
+msgstr ""
+
+#: eventos/views.py:216
+msgid "Evento criado com sucesso."
+msgstr ""
+
+#: eventos/views.py:254
+msgid "Evento atualizado com sucesso."
+msgstr ""
+
+#: eventos/views.py:289
+msgid "Evento removido."
+msgstr ""
+
+#: eventos/views.py:487 eventos/views.py:739
+msgid "Administradores não podem se inscrever em eventos."
+msgstr ""
+
+#: eventos/views.py:497
+msgid "Inscrição cancelada."
+msgstr ""
+
+#: eventos/views.py:503 eventos/views.py:754
+msgid "Inscrição realizada."
+msgstr ""
+
+#: eventos/views.py:505
+msgid "Você está na lista de espera."
+msgstr ""
+
+#: eventos/views.py:518
+msgid "Acesso negado."
+msgstr ""
+
+#: eventos/views.py:529
+msgid "Inscrito removido."
+msgstr ""
+
+#: eventos/views.py:583
+msgid "Feedback registrado com sucesso."
+msgstr ""
+
+#: eventos/views.py:666
+msgid "Parceria já avaliada."
+msgstr ""
+
+#: eventos/views.py:672
+msgid "Nota inválida."
+msgstr ""
+
+#: eventos/views.py:677
+msgid "Avaliação registrada com sucesso."
+msgstr ""
+
+#: eventos/views.py:813 eventos/views.py:925
+msgid "Evento de outra organização"
+msgstr ""
+
+#: eventos/views.py:816
+msgid "Evento de outro núcleo"
+msgstr ""
+
+#: eventos/views.py:1024
+msgid "Já existe briefing para este evento."
+msgstr ""
+
+#: eventos/views.py:1033
+msgid "Evento de outra organização ou núcleo"
+msgstr ""
+
+#: eventos/views.py:1035
+msgid "Briefing criado com sucesso."
+msgstr ""
+
+#: eventos/views.py:1097
+msgid "Informe o prazo limite de resposta."
+msgstr ""
+
+#: eventos/views.py:1101
+msgid "Prazo limite inválido."
+msgstr ""
+
+#: eventos/views.py:1117
+msgid "Informe o motivo da recusa."
+msgstr ""
+
+#: eventos/views.py:1135
+msgid "Status do briefing atualizado."
+msgstr ""
