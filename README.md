@@ -160,7 +160,7 @@ npm install
 npm run build
 ```
 
-> Isso gerará o CSS final otimizado para produção em `static/css/`.
+> Isso gerará o CSS final otimizado para produção em `static/tailwind.css`.
 
 ---
 

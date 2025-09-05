@@ -204,8 +204,67 @@
   --shadow-heavy: 0 10px 15px -3px var(--shadow-color);
 }
 
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+  html {
+    @apply text-base leading-[1.5];
+  }
+  body {
+    @apply font-sans text-base font-normal text-[var(--text-primary)] bg-[var(--bg-primary)] leading-relaxed antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold leading-tight text-[var(--text-primary)] mb-4;
+  }
+  h1 {
+    @apply text-4xl font-bold mb-6;
+  }
+  h2 {
+    @apply text-3xl mb-5;
+  }
+  h3 {
+    @apply text-2xl mb-4;
+  }
+  h4 {
+    @apply text-xl mb-3;
+  }
+  h5 {
+    @apply text-lg mb-3;
+  }
+  h6 {
+    @apply text-base mb-2;
+  }
+  p {
+    @apply mb-4 text-[var(--text-secondary)];
+  }
+  a {
+    @apply text-[var(--primary)] no-underline transition-colors;
+  }
+  a:hover {
+    @apply text-[var(--primary-hover)] underline;
+  }
+  a:focus {
+    @apply outline-none ring-2 ring-offset-2 ring-[var(--border-focus)] rounded-sm;
+  }
+}
+
 /* Shared utilities */
 @layer components {
+  .container {
+    @apply max-w-[1200px] mx-auto px-4;
+  }
+  .container-sm {
+    @apply max-w-[640px] mx-auto px-4;
+  }
+  .container-lg {
+    @apply max-w-[1400px] mx-auto px-4;
+  }
   .card {
     @apply rounded-lg border shadow-sm overflow-hidden transition-shadow bg-[var(--bg-secondary)] border-[var(--border-primary)];
   }
