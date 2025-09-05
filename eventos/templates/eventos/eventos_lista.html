@@ -10,15 +10,15 @@
     {% if pode_criar_evento %}
       <a href="{% url 'eventos:evento_novo' %}"
          class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded">
-        <i class="fa-solid fa-plus"></i>
-        {% trans 'Novo evento' %}
+          <i class="fa-solid fa-plus"></i> {% trans 'Novo evento' %}
       </a>
     {% endif %}
   </div>
 
   <form method="get" class="mb-6 flex gap-2">
     <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
-    <input id="q" name="q" value="{{ request.GET.q }}" class="border rounded px-3 py-2 flex-grow" placeholder="{% trans 'Buscar' %}" />
+    <input id="q" name="q" value="{{ request.GET.q }}" class="border rounded px-3 py-2 flex-grow"
+           placeholder="{% trans 'Buscar' %}" />
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
   </form>
 
