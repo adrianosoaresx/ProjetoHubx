@@ -3,8 +3,7 @@
 {% block title %}{% trans "Meu Perfil" %} | Hubx{% endblock %}
 {% block perfil_content %}
 
-<section class="max-w-5xl mx-auto px-4">
-  <!-- Abas -->
+<div class="card-header">
   <div class="mt-2 border-b border-neutral-200">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
       <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
@@ -15,11 +14,12 @@
       {% endif %}
     </nav>
   </div>
+</div>
 
+<div class="card-body">
   <div id="tab-panels" class="mt-6">
     <!-- Painel: Informações -->
     <div class="tab-panel" data-tab="informacoes">
-      <section class="max-w-4xl mx-auto px-4 py-6 bg-white rounded-xl shadow">
 
         {% if user.biografia %}
           <div class="mb-6">
@@ -27,7 +27,7 @@
           </div>
         {% endif %}
 
-        <div class="grid sm:grid-cols-2 gap-6 text-sm text-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700">
           <div>
             <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
             <p>{% trans "Email" %}: {{ user.email }}</p>
@@ -53,13 +53,12 @@
         <div class="mt-6 text-right">
           <a href="{% url 'accounts:informacoes_pessoais' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
         </div>
-      </section>
     </div>
 
     {% if user.get_tipo_usuario != 'admin' %}
     <!-- Painel: Empresas -->
     <div class="tab-panel hidden" data-tab="empresas">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for empresa in empresas %}
           {% include 'partials/cards/empresa_card.html' with empresa=empresa %}
         {% empty %}
@@ -70,7 +69,7 @@
 
     <!-- Painel: Núcleos -->
     <div class="tab-panel hidden" data-tab="nucleos">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for nucleo in nucleos %}
           {% include 'partials/cards/nucleo_card.html' with nucleo=nucleo %}
         {% empty %}
@@ -81,7 +80,7 @@
 
     <!-- Painel: Eventos -->
     <div class="tab-panel hidden" data-tab="eventos">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for ins in inscricoes %}
           {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
         {% empty %}
@@ -104,6 +103,6 @@
     activate('informacoes');
     tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
   </script>
-</section>
+</div>
 
 {% endblock %}
