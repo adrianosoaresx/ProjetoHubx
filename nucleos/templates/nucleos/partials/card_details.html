@@ -1,0 +1,23 @@
+{% load i18n %}
+<dl class="mt-3 grid grid-cols-3 gap-2 text-xs text-neutral-600">
+  <div>
+    <dt class="text-neutral-500">{% trans 'Membros' %}</dt>
+    <dd class="font-medium">{{ nucleo.membros.count }}</dd>
+  </div>
+  <div>
+    <dt class="text-neutral-500">{% trans 'Coordenador' %}</dt>
+    <dd class="font-medium">
+      {% with coords=nucleo.coordenadores %}
+        {% if coords.exists %}
+          {{ coords.first.get_full_name|default:coords.first.username }}
+        {% else %}
+          —
+        {% endif %}
+      {% endwith %}
+    </dd>
+  </div>
+  <div>
+    <dt class="text-neutral-500">{% trans 'Eventos' %}</dt>
+    <dd class="font-medium">{{ nucleo.evento_set.count|default:0 }}</dd>
+  </div>
+</dl>
