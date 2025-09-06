@@ -6,6 +6,7 @@
 {% block content %}
 
 {% include 'components/hero.html' with title=_('Eventos') action_template='eventos/hero_eventos_lista_action.html' %}
+<div class="container mx-auto p-6">
 <section class="max-w-6xl mx-auto mt-8 px-4">
 
   {% include 'components/search_form.html' with q=request.GET.q %}
@@ -29,4 +30,5 @@
   </main>
   {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
+</div>
 {% endblock %}
