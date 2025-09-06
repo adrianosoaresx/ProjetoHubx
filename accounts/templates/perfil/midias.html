@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Mídias" %} | Hubx{% endblock %}
 
@@ -56,8 +56,12 @@
     {% for media in medias %}
     <div class="bg-white border rounded-lg shadow p-3 relative">
       <div class="absolute top-2 right-2 flex gap-2">
-        <a href="{% url 'accounts:midia_edit' media.pk %}" class="text-sm text-blue-600 hover:underline" aria-label="{% trans 'Editar' %}">✏️</a>
-        <a href="{% url 'accounts:midia_delete' media.pk %}" class="text-sm text-red-600 hover:underline" aria-label="{% trans 'Excluir' %}">🗑️</a>
+        <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
+          {% lucide 'edit' class='w-4 h-4' %}
+        </a>
+        <a href="{% url 'accounts:midia_delete' media.pk %}" class="btn-danger btn-sm" aria-label="{% trans 'Excluir' %}">
+          {% lucide 'trash' class='w-4 h-4' %}
+        </a>
       </div>
       <a href="{% url 'accounts:midia_detail' media.pk %}">
         {% if media.media_type == 'image' %}

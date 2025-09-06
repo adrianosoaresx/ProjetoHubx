@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load static i18n %}
+{% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Minhas Conexões" %} | HubX{% endblock %}
 
@@ -29,7 +29,9 @@
           placeholder="{% trans 'Buscar conexões...' %}"
           class="flex-grow border rounded-lg p-2 text-sm"
         />
-        <button type="submit" class="text-gray-600 text-sm" aria-label="{% trans 'Buscar' %}">🔍</button>
+        <button type="submit" class="btn-secondary btn-sm" aria-label="{% trans 'Buscar' %}">
+          {% lucide 'search' class='w-4 h-4' %}
+        </button>
       </form>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -51,7 +53,9 @@
           <div class="flex gap-2">
             <form method="post" action="{% url 'accounts:remover_conexao' connection.id %}" onsubmit="return confirm('{% trans 'Tem certeza que deseja remover esta conexão?' %}');">
               {% csrf_token %}
-              <button title="{% trans 'Remover conexão' %}" class="text-red-500 hover:text-red-600">❌</button>
+              <button title="{% trans 'Remover conexão' %}" class="btn-danger btn-sm" aria-label="{% trans 'Remover conexão' %}">
+                {% lucide 'trash' class='w-4 h-4' %}
+              </button>
             </form>
           </div>
         </div>
