@@ -6,7 +6,8 @@ const config: Config = {
     darkMode: ["class"],
     content: [
         "*.{js,ts,jsx,tsx,mdx}",
-        "./**/templates/**/*.html",
+        "./templates/**/*.html",
+        "./empresas/templates/**/*.html",
         "./static/src/**/*.{js,ts}",
         "./**/*.py"
     ],
