@@ -6,37 +6,36 @@
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
   <h3 class="text-xl font-semibold mb-1">{% trans "Redes Sociais" %}</h3>
-  <p class="text-sm text-gray-500 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
+  <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
 
   <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
     {% csrf_token %}
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        {{ form.facebook.label_tag }}
-        {{ form.facebook|add_class:'w-full' }}
+      <div class="relative">
+        {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.facebook.id_for_label }}" class="label-float">{{ form.facebook.label }}</label>
         {{ form.facebook.errors }}
       </div>
-      <div>
-        {{ form.twitter.label_tag }}
-        {{ form.twitter|add_class:'w-full' }}
+      <div class="relative">
+        {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.twitter.id_for_label }}" class="label-float">{{ form.twitter.label }}</label>
         {{ form.twitter.errors }}
       </div>
-      <div>
-        {{ form.instagram.label_tag }}
-        {{ form.instagram|add_class:'w-full' }}
+      <div class="relative">
+        {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.instagram.id_for_label }}" class="label-float">{{ form.instagram.label }}</label>
         {{ form.instagram.errors }}
       </div>
-      <div>
-        {{ form.linkedin.label_tag }}
-        {{ form.linkedin|add_class:'w-full' }}
+      <div class="relative">
+        {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.linkedin.id_for_label }}" class="label-float">{{ form.linkedin.label }}</label>
         {{ form.linkedin.errors }}
       </div>
     </div>
 
     <div class="pt-4">
-      <button type="submit"
-              class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+      <button type="submit" class="btn btn-primary">
         {% trans "Salvar Alterações" %}
       </button>
     </div>

@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load i18n %}
+{% load i18n custom_filters %}
 
 {% block title %}{% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Nova Mídia" %}{% endif %} | Hubx{% endblock %}
 
@@ -11,10 +11,26 @@
 
   <form method="post" enctype="multipart/form-data" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <div class="relative">
+      {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.file.id_for_label }}" class="label-float">{{ form.file.label }}</label>
+      {{ form.file.errors }}
+    </div>
+    <div class="relative">
+      {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.descricao.id_for_label }}" class="label-float">{{ form.descricao.label }}</label>
+      {{ form.descricao.errors }}
+    </div>
+    <div class="relative">
+      {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.tags_field.id_for_label }}" class="label-float">{{ form.tags_field.label }}</label>
+      {{ form.tags_field.errors }}
+    </div>
+
     <div class="flex justify-end gap-2">
-      <a href="{% url 'accounts:midias' %}" class="text-sm px-4 py-2 border rounded hover:bg-gray-100">{% trans "Cancelar" %}</a>
-      <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-emerald-600">{% trans "Salvar" %}</button>
+      <a href="{% url 'accounts:midias' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+      <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
     </div>
   </form>
 </section>
