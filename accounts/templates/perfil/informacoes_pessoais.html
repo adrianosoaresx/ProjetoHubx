@@ -6,57 +6,61 @@
 {% block perfil_content %}
 <div class="max-w-3xl mx-auto">
   <h3 class="text-xl font-semibold mb-1">{% trans "Informações Pessoais" %}</h3>
-  <p class="text-sm text-gray-500 mb-6">{% trans "Atualize seus dados básicos e de contato" %}</p>
+  <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-6">{% trans "Atualize seus dados básicos e de contato" %}</p>
 
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        {{ form.first_name.label_tag }}
-        {{ form.first_name }}
+      <div class="relative">
+        {{ form.first_name|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.first_name.id_for_label }}" class="label-float">{{ form.first_name.label }}</label>
         {{ form.first_name.errors }}
       </div>
-      <div>
-        {{ form.last_name.label_tag }}
-        {{ form.last_name }}
+      <div class="relative">
+        {{ form.last_name|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.last_name.id_for_label }}" class="label-float">{{ form.last_name.label }}</label>
         {{ form.last_name.errors }}
       </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-      <div>
-        {{ form.username.label_tag }}
-        {{ form.username }}
+      <div class="relative">
+        {{ form.username|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.username.id_for_label }}" class="label-float">{{ form.username.label }}</label>
         {{ form.username.errors }}
       </div>
 
-      <div>
-        {{ form.email.label_tag }}
-        {{ form.email }}
+      <div class="relative">
+        {{ form.email|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.email.id_for_label }}" class="label-float">{{ form.email.label }}</label>
         {{ form.email.errors }}
       </div>
     </div>
 
-    <div>
-      {{ form.cpf.label_tag }}
-      {{ form.cpf }}
+    <div class="relative">
+      {{ form.cpf|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.cpf.id_for_label }}" class="label-float">{{ form.cpf.label }}</label>
       {{ form.cpf.errors }}
     </div>
 
-    <div>
-      {{ form.biografia.label_tag }}
-      {{ form.biografia }}
+    <div class="relative">
+      {{ form.biografia|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.biografia.id_for_label }}" class="label-float">{{ form.biografia.label }}</label>
       {{ form.biografia.errors }}
     </div>
 
-    <div>
-      {{ form.avatar.label_tag }}
-      {{ form.avatar }}
-      {{ form.avatar.errors }}
-      {{ form.cover.label_tag }}
-      {{ form.cover }}
-      {{ form.cover.errors }}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="relative">
+        {{ form.avatar|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.avatar.id_for_label }}" class="label-float">{{ form.avatar.label }}</label>
+        {{ form.avatar.errors }}
+      </div>
+      <div class="relative">
+        {{ form.cover|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.cover.id_for_label }}" class="label-float">{{ form.cover.label }}</label>
+        {{ form.cover.errors }}
+      </div>
     </div>
 
     <hr class="my-6">
@@ -64,45 +68,44 @@
     <h4 class="text-lg font-semibold">{% trans "Informações de Contato" %}</h4>
 
     <div class="grid md:grid-cols-2 gap-4">
-      <div>
-        {{ form.phone_number.label_tag }}
-        {{ form.phone_number }}
+      <div class="relative">
+        {{ form.phone_number|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.phone_number.id_for_label }}" class="label-float">{{ form.phone_number.label }}</label>
         {{ form.phone_number.errors }}
       </div>
-      <div>
-        {{ form.whatsapp.label_tag }}
-        {{ form.whatsapp }}
+      <div class="relative">
+        {{ form.whatsapp|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.whatsapp.id_for_label }}" class="label-float">{{ form.whatsapp.label }}</label>
         {{ form.whatsapp.errors }}
       </div>
     </div>
 
-    <div>
-      {{ form.endereco.label_tag }}
-      {{ form.endereco|add_class:'w-full' }}
+    <div class="relative">
+      {{ form.endereco|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+      <label for="{{ form.endereco.id_for_label }}" class="label-float">{{ form.endereco.label }}</label>
       {{ form.endereco.errors }}
     </div>
 
     <div class="grid md:grid-cols-3 gap-4">
-      <div>
-        {{ form.cidade.label_tag }}
-        {{ form.cidade }}
+      <div class="relative">
+        {{ form.cidade|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.cidade.id_for_label }}" class="label-float">{{ form.cidade.label }}</label>
         {{ form.cidade.errors }}
       </div>
-      <div>
-        {{ form.estado.label_tag }}
-        {{ form.estado }}
+      <div class="relative">
+        {{ form.estado|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.estado.id_for_label }}" class="label-float">{{ form.estado.label }}</label>
         {{ form.estado.errors }}
       </div>
-      <div>
-        {{ form.cep.label_tag }}
-        {{ form.cep }}
+      <div class="relative">
+        {{ form.cep|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
+        <label for="{{ form.cep.id_for_label }}" class="label-float">{{ form.cep.label }}</label>
         {{ form.cep.errors }}
       </div>
     </div>
 
     <div class="pt-4">
-      <button type="submit"
-              class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+      <button type="submit" class="btn btn-primary">
         {% trans "Salvar Alterações" %}
       </button>
     </div>
