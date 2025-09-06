@@ -6,6 +6,7 @@
 {% block content %}
 {% include 'components/hero.html' with title=_('Associados') action_template='associados/partials/hero_action.html' %}
 
+
 <section class="max-w-6xl mx-auto mt-8 px-4">
   <form method="get" class="mb-6 flex gap-2">
     <div class="relative flex-grow">
@@ -23,6 +24,7 @@
     </div>
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
   </form>
+
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">

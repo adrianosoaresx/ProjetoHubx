@@ -17,26 +17,8 @@
     </div>
   {% endif %}
 
-  <form
-    hx-get="{% url 'eventos:inscricao_list' %}"
-    hx-target="#inscricao-container"
-    hx-push-url="true"
-    class="mb-6 flex gap-2"
-  >
-    <input
-      type="text"
-      name="q"
-      value="{{ request.GET.q }}"
-      placeholder="{% trans 'Buscar por usuário ou evento' %}"
-      class="w-full rounded-md border-gray-300 px-3 py-2"
-    />
-    <button
-      type="submit"
-      class="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90"
-    >
-      {% trans "Filtrar" %}
-    </button>
-  </form>
+  {% url 'eventos:inscricao_list' as inscricao_list_url %}
+  {% include 'components/search_form.html' with q=request.GET.q hx_get=inscricao_list_url hx_target='#inscricao-container' hx_push_url='true' %}
 
   <main>
     <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">

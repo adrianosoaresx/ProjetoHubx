@@ -6,10 +6,7 @@
 {% block content %}
 <section class="max-w-6xl mx-auto py-8 px-4">
   <h1 class="text-2xl font-bold mb-4">{% trans "Núcleos" %}</h1>
-  <form method="get" class="mb-4 flex gap-2">
-      <input type="text" name="q" value="{{ form.q.value|default:'' }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
-    <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
-  </form>
+  {% include 'components/search_form.html' with q=request.GET.q %}
   {% if request.user.user_type != 'admin' %}
   <div class="mb-4">
     <a href="{% url 'nucleos:meus' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>

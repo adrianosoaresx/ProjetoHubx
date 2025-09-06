@@ -61,8 +61,7 @@ User = get_user_model()
 
 def token(request):
     if request.user.is_authenticated and (
-        request.user.is_superuser
-        or request.user.user_type in [UserType.ROOT, UserType.ADMIN]
+        request.user.is_superuser or request.user.user_type in [UserType.ROOT, UserType.ADMIN]
     ):
         return redirect("tokens:listar_api_tokens")
 
@@ -80,7 +79,17 @@ def listar_convites(request):
         messages.error(request, _("Você não tem permissão para visualizar convites."))
         return redirect("accounts:perfil")
     convites = TokenAcesso.objects.filter(gerado_por=request.user)
-    return render(request, "tokens/listar_convites.html", {"convites": convites})
+
+    totais = {
+        "total": convites.count(),
+        "novos": convites.filter(estado=TokenAcesso.Estado.NOVO).count(),
+        "usados": convites.filter(estado=TokenAcesso.Estado.USADO).count(),
+        "expirados": convites.filter(estado=TokenAcesso.Estado.EXPIRADO).count(),
+        "revogados": convites.filter(estado=TokenAcesso.Estado.REVOGADO).count(),
+    }
+
+    context = {"convites": convites, "totais": totais}
+    return render(request, "tokens/listar_convites.html", context)
 
 
 @login_required
