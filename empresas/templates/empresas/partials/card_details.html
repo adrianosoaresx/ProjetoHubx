@@ -7,9 +7,9 @@
   <div>
     <dt class="text-neutral-500">{% trans 'Proprietário' %}</dt>
     <dd class="font-medium">
-      <a href="{% url 'accounts:perfil_publico_uuid' empresa.usuario.public_id %}" class="text-primary hover:underline">
+      <span class="text-primary">
         {{ empresa.usuario.get_full_name|default:empresa.usuario.username }}
-      </a>
+      </span>
     </dd>
   </div>
 </dl>

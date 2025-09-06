@@ -18,11 +18,14 @@
 
   <div
     id="empresas-grid"
-    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
     role="list"
     aria-label="{% translate 'Lista de empresas' %}"
   >
     {% include "empresas/includes/empresas_grid.html" %}
+  </div>
+  <div class="mt-6">
+    {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
   </div>
 </section>
 </div>

@@ -1,13 +1,8 @@
 {% load i18n %}
 {% if empresas %}
   {% for empresa in empresas %}
-    <div role="listitem">
-      {% include 'empresas/partials/card.html' with empresa=empresa %}
-    </div>
+  {% include 'empresas/partials/card.html' with empresa=empresa %}
   {% endfor %}
-  <div class="col-span-full">
-    {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
-  </div>
 {% else %}
   <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
 {% endif %}
