@@ -131,6 +131,11 @@ TEMPLATES = [
                 "core.context_processors.htmx_version",
                 "core.context_processors.menu_items",
             ],
+            # Torna os filtros/tags do widget_tweaks disponíveis globalmente
+            # evitando a necessidade de `{% load widget_tweaks %}` em cada template.
+            "builtins": [
+                "widget_tweaks.templatetags.widget_tweaks",
+            ],
         },
     },
 ]
