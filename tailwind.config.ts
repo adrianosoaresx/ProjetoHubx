@@ -7,6 +7,7 @@ const config: Config = {
     content: [
         "*.{js,ts,jsx,tsx,mdx}",
         "./templates/**/*.html",
+        "./accounts/templates/**/*.html",
         "./static/src/**/*.{js,ts}",
         "./**/*.py"
     ],
