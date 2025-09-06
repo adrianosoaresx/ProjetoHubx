@@ -6,10 +6,7 @@
 {% block content %}
 {% include 'components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
 <section class="max-w-5xl mx-auto py-8">
-  <form method="get" class="mb-4 flex gap-2">
-    <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
-    <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
-  </form>
+  {% include 'components/search_form.html' with q=request.GET.q %}
     <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
     {% for nucleo in object_list %}
