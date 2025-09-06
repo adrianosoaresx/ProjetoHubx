@@ -10,29 +10,13 @@
 {% include 'components/hero.html' with title=_('Meus Eventos') action_template='eventos/hero_evento_list_action.html' %}
 {% endif %}
 <section class="max-w-6xl mx-auto mt-8 px-4">
-  <form method="get" class="mb-6 flex gap-2">
-    <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
-    <input id="q" name="q" value="{{ q }}" class="border rounded px-3 py-2 flex-grow" placeholder="{% trans 'Buscar' %}" />
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
-  </form>
+  {% include 'components/search_form.html' with q=request.GET.q %}
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Eventos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Ativos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_ativos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Concluídos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_concluidos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Inscritos (total)' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_inscritos }}</div>
-    </div>
+    {% include "partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos %}
+    {% include "partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos %}
+    {% include "partials/cards/total_card.html" with label=_('Concluídos') valor=total_eventos_concluidos %}
+    {% include "partials/cards/total_card.html" with label=_('Inscritos (total)') valor=total_inscritos %}
   </div>
 
   <main>
@@ -48,11 +32,11 @@
   {% if is_paginated %}
   <nav class="mt-6 flex justify-center items-center gap-2">
     {% if page_obj.has_previous %}
-      <a class="btn-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ q }}">{% trans 'Anterior' %}</a>
+      <a class="btn-secondary" href="?page={{ page_obj.previous_page_number }}&q={{ request.GET.q }}">{% trans 'Anterior' %}</a>
     {% endif %}
     <span class="text-sm text-neutral-600">{% blocktrans %}Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}{% endblocktrans %}</span>
     {% if page_obj.has_next %}
-      <a class="btn-secondary" href="?page={{ page_obj.next_page_number }}&q={{ q }}">{% trans 'Próxima' %}</a>
+      <a class="btn-secondary" href="?page={{ page_obj.next_page_number }}&q={{ request.GET.q }}">{% trans 'Próxima' %}</a>
     {% endif %}
   </nav>
   {% endif %}

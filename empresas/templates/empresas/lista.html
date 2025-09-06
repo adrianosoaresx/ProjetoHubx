@@ -4,30 +4,15 @@
 {% block title %}{% trans 'Empresas' %}{% endblock %}
 
 {% block content %}
-<section class="max-w-6xl mx-auto py-8 px-4">
-  <header class="mb-4 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Empresas' %}</h1>
-    <a href="{% url 'empresas:empresa_criar' %}" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">{% trans 'Nova Empresa' %}</a>
-  </header>
+{% include 'components/hero.html' with title=_('Empresas') action_template='empresas/partials/hero_action.html' %}
+<section class="max-w-6xl mx-auto mt-8 px-4">
 
-  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-grid" hx-push-url="true" method="get" class="mb-6 flex gap-2">
-    <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
-    <input
-      id="q"
-      name="q"
-      value="{{ request.GET.q }}"
-  class="border rounded px-3 py-2 flex-grow"
-      placeholder="{% trans 'Buscar' %}"
-    />
-    <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
-  </form>
+  {% url 'empresas:lista' as empresas_lista_url %}
+  {% include 'components/search_form.html' with q=request.GET.q hx_get=empresas_lista_url hx_target='#empresas-grid' hx_push_url='true' %}
 
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Empresas' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_empresas }}</div>
-    </div>
+    {% include "partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
   </div>
 
   <main>
