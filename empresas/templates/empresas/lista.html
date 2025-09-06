@@ -16,7 +16,12 @@
   </div>
 
   <main>
-    <div id="empresas-grid">
+    <div
+      id="empresas-grid"
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      role="list"
+      aria-label="{% translate 'Lista de empresas' %}"
+    >
       {% include "empresas/includes/empresas_grid.html" %}
     </div>
   </main>

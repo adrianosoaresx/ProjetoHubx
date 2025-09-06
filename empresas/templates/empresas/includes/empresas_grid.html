@@ -1,15 +1,13 @@
 {% load i18n %}
 {% if empresas %}
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
   {% for empresa in empresas %}
     <div role="listitem">
       {% include 'empresas/partials/card.html' with empresa=empresa %}
     </div>
   {% endfor %}
-</div>
-{% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
+  <div class="col-span-full">
+    {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
+  </div>
 {% else %}
-<div class="grid grid-cols-1">
   <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
-</div>
 {% endif %}
