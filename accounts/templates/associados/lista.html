@@ -31,9 +31,11 @@
     {% include "partials/cards/total_card.html" with label=_('Associados') valor=total_associados %}
     {% include "partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados %}
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div role="list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     {% for user in associados %}
-      {% include "associados/partials/card.html" with user=user %}
+      <div role="listitem">
+        {% include "associados/partials/card.html" with user=user %}
+      </div>
     {% empty %}
       <p class="text-neutral-500">{% trans "Nenhum associado encontrado." %}</p>
     {% endfor %}
