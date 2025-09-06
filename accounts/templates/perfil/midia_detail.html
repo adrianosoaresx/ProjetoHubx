@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% trans "Mídia" %} | Hubx{% endblock %}
 
@@ -16,17 +16,26 @@
       <embed src="{{ media.file.url }}" type="application/pdf" />
       <p class="text-center text-gray-700">
         {% trans "Este navegador não suporta visualização de PDF." %}
-        <a href="{{ media.file.url }}" class="text-primary hover:underline" download>{% trans "Baixar PDF" %}</a>
+        <a href="{{ media.file.url }}" class="inline-flex items-center gap-1 text-primary hover:underline" download>
+          {% lucide 'download' class='w-4 h-4' %}
+          {% trans "Baixar PDF" %}
+        </a>
       </p>
     </object>
   {% else %}
     <p class="text-center">
-      <a href="{{ media.file.url }}" class="text-primary hover:underline" download>{{ media.file.name }}</a>
+      <a href="{{ media.file.url }}" class="inline-flex items-center gap-1 text-primary hover:underline" download>
+        {% lucide 'download' class='w-4 h-4' %}
+        {{ media.file.name }}
+      </a>
     </p>
   {% endif %}
   <p class="text-center text-gray-700">{{ media.descricao }}</p>
   <div class="text-center">
-    <a href="{% url 'accounts:midias' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar para mídias" %}</a>
+    <a href="{% url 'accounts:midias' %}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+      {% lucide 'arrow-left' class='w-4 h-4' %}
+      {% trans "Voltar para mídias" %}
+    </a>
   </div>
 </section>
 {% endblock %}

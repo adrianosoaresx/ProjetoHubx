@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 {% block title %}{% trans "Remover Mídia" %} | Hubx{% endblock %}
 
 {% block perfil_content %}
@@ -8,8 +8,14 @@
   <p class="text-gray-600">{% trans "Tem certeza que deseja remover esta mídia?" %}</p>
   <form method="post" class="flex justify-end gap-2">
     {% csrf_token %}
-    <a href="{% url 'accounts:midias' %}" class="px-4 py-2 border rounded text-sm hover:bg-gray-100">{% trans "Cancelar" %}</a>
-    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">{% trans "Remover" %}</button>
+    <a href="{% url 'accounts:midias' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
+      {% lucide 'arrow-left' class='w-4 h-4' %}
+      {% trans "Cancelar" %}
+    </a>
+    <button type="submit" class="btn-danger btn-sm inline-flex items-center gap-1">
+      {% lucide 'trash' class='w-4 h-4' %}
+      {% trans "Remover" %}
+    </button>
   </form>
 </section>
 {% endblock %}
