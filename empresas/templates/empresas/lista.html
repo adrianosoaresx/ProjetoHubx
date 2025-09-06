@@ -10,7 +10,7 @@
     <a href="{% url 'empresas:empresa_criar' %}" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">{% trans 'Nova Empresa' %}</a>
   </header>
 
-  <form hx-get="{% url 'empresas:lista' %}" hx-target="#empresas-grid" hx-push-url="true" method="get" class="mb-6 flex gap-2">
+  <form method="get" class="mb-6 flex gap-2">
     <label for="q" class="sr-only">{% trans 'Buscar' %}</label>
     <input
       id="q"

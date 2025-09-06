@@ -51,5 +51,6 @@
       {% endfor %}
     </div>
   </main>
+  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
 {% endblock %}

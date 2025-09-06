@@ -27,15 +27,6 @@
       {% endfor %}
     </tbody>
   </table>
-  {% if is_paginated %}
-  <nav class="flex justify-between mt-4" aria-label="{% trans 'Paginação' %}">
-    {% if page_obj.has_previous %}
-      <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded">{% trans "Anterior" %}</a>
-    {% endif %}
-    {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded">{% trans "Próxima" %}</a>
-    {% endif %}
-  </nav>
-  {% endif %}
+  {% include 'components/pagination.html' with page_obj=page_obj %}
 </section>
 {% endblock %}
