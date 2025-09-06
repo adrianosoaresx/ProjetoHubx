@@ -1,40 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'perfil/perfil.html' %}
 {% load static i18n %}
 {% block title %}{{ perfil.get_full_name|default:perfil.username }} | Hubx{% endblock %}
-{% block content %}
-<div class="max-w-3xl mx-auto mt-8 px-4">
-  <div class="bg-white rounded-2xl shadow overflow-hidden">
-    <div class="profile-cover h-48 w-full">
-      {% if perfil.cover %}
-        <img src="{{ perfil.cover.url }}" alt="{% trans "Capa do usuário" %}" class="w-full h-full object-cover">
-      {% else %}
-        <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
-      {% endif %}
-    </div>
-    <div class="p-6">
-      <div class="flex items-center gap-4">
-        {% if perfil.avatar %}
-          <img src="{{ perfil.avatar.url }}" alt="{{ perfil.username }}" class="w-20 h-20 rounded-full object-cover">
-        {% else %}
-          <div class="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-xl font-semibold text-primary" role="img" aria-label="{{ perfil.username }}">
-            {{ perfil.username|first|upper }}
-          </div>
-        {% endif %}
-        <div>
-          <h1 class="text-lg font-bold">{{ perfil.get_full_name|default:perfil.username }}</h1>
-          <p class="text-sm text-gray-500">@{{ perfil.username }}</p>
-        </div>
-      </div>
-      {% if perfil.biografia %}
-        <p class="mt-4 text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
-      {% endif %}
-    </div>
-  </div>
-</div>
+{% block hero_title %}{{ perfil.get_full_name|default:perfil.username }}{% endblock %}
+{% block hero_subtitle %}@{{ perfil.username }}{% endblock %}
 
-{# Abas: Informações, Empresas, Núcleos, Eventos #}
-<section class="max-w-6xl mx-auto mt-8 px-4">
-  {# Navegação das abas #}
+{% block perfil_content %}
+<div class="card-header">
   <nav class="border-b border-gray-200">
     <ul class="-mb-px flex flex-wrap gap-2" role="tablist" aria-label="{% trans 'Navegação de abas do perfil' %}">
       <li>
@@ -65,55 +36,51 @@
       {% endif %}
     </ul>
   </nav>
+</div>
 
-  {# Conteúdo das abas #}
+<div class="card-body">
   <div class="mt-4">
-    {# Informações #}
-    <section id="tab-informacoes" role="tabpanel" data-tab-panel class="block">
-      <div class="bg-white rounded-xl shadow p-5">
-        <h2 class="text-base font-semibold mb-4">{% trans "Informações do usuário" %}</h2>
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-          <div>
-            <dt class="text-gray-500">{% trans "Nome completo" %}</dt>
-            <dd class="font-medium">{{ perfil.get_full_name|default:perfil.username }}</dd>
-          </div>
-          <div>
-            <dt class="text-gray-500">{% trans "Usuário" %}</dt>
-            <dd class="font-medium">@{{ perfil.username }}</dd>
-          </div>
-          {% if perfil.email %}
-          <div>
-            <dt class="text-gray-500">{% trans "E-mail" %}</dt>
-            <dd class="font-medium">{{ perfil.email }}</dd>
-          </div>
-          {% endif %}
-          {% if perfil.date_joined %}
-          <div>
-            <dt class="text-gray-500">{% trans "Membro desde" %}</dt>
-            <dd class="font-medium">{{ perfil.date_joined|date:"d/m/Y H:i" }}</dd>
-          </div>
-          {% endif %}
-          {% if perfil.last_login %}
-          <div>
-            <dt class="text-gray-500">{% trans "Último acesso" %}</dt>
-            <dd class="font-medium">{{ perfil.last_login|date:"d/m/Y H:i" }}</dd>
-          </div>
-          {% endif %}
-        </dl>
-        {% if perfil.biografia %}
-          <div class="mt-4">
-            <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
-            <p class="text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
-          </div>
+    <div id="tab-informacoes" role="tabpanel" data-tab-panel class="block">
+      <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
+        <div>
+          <dt class="text-gray-500">{% trans "Nome completo" %}</dt>
+          <dd class="font-medium">{{ perfil.get_full_name|default:perfil.username }}</dd>
+        </div>
+        <div>
+          <dt class="text-gray-500">{% trans "Usuário" %}</dt>
+          <dd class="font-medium">@{{ perfil.username }}</dd>
+        </div>
+        {% if perfil.email %}
+        <div>
+          <dt class="text-gray-500">{% trans "E-mail" %}</dt>
+          <dd class="font-medium">{{ perfil.email }}</dd>
+        </div>
         {% endif %}
-      </div>
-    </section>
+        {% if perfil.date_joined %}
+        <div>
+          <dt class="text-gray-500">{% trans "Membro desde" %}</dt>
+          <dd class="font-medium">{{ perfil.date_joined|date:"d/m/Y H:i" }}</dd>
+        </div>
+        {% endif %}
+        {% if perfil.last_login %}
+        <div>
+          <dt class="text-gray-500">{% trans "Último acesso" %}</dt>
+          <dd class="font-medium">{{ perfil.last_login|date:"d/m/Y H:i" }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+      {% if perfil.biografia %}
+        <div class="mt-4">
+          <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
+          <p class="text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
+        </div>
+      {% endif %}
+    </div>
 
     {% if not perfil.is_superuser %}
-    {# Empresas #}
-    <section id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
+    <div id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
       {% if empresas %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% translate 'Lista de empresas' %}">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
         {% for empresa in empresas %}
           <div role="listitem">
             {% include 'empresas/partials/card.html' with empresa=empresa %}
@@ -125,35 +92,31 @@
         <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
       </div>
       {% endif %}
-    </section>
+    </div>
 
-    {# Núcleos #}
-    <section id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
+      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for nucleo in nucleos %}
           {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
         {% empty %}
           <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
       </div>
-    </section>
+    </div>
 
-    {# Eventos #}
-    <section id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de eventos' %}">
+    <div id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
         {% for ins in inscricoes %}
           {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
         {% empty %}
           <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}
       </div>
-    </section>
+    </div>
     {% endif %}
   </div>
-</section>
 
-{# Script leve para navegação das abas (sem dependências) #}
-<script>
+  <script>
   (function () {
     const container = document.currentScript && document.currentScript.previousElementSibling;
     if (!container) return;
@@ -171,7 +134,6 @@
       if (current) current.classList.remove('hidden');
     }
 
-    // Estado inicial pelo hash da URL, se houver
     const initial = (location.hash || '#tab-informacoes').replace('#', '');
     if (container.querySelector('[data-tab-target="' + initial + '"]')) {
       activate(initial);
@@ -188,6 +150,7 @@
       });
     });
   })();
-</script>
-
+  </script>
+</div>
 {% endblock %}
+
