@@ -24,10 +24,7 @@
 
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Empresas' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_empresas }}</div>
-    </div>
+    {% include "partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
   </div>
 
   <main>
