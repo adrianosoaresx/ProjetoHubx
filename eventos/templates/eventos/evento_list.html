@@ -13,22 +13,10 @@
   {% include 'components/search_form.html' with q=request.GET.q %}
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Eventos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Ativos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_ativos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Concluídos' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_eventos_concluidos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Inscritos (total)' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_inscritos }}</div>
-    </div>
+    {% include "partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos %}
+    {% include "partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos %}
+    {% include "partials/cards/total_card.html" with label=_('Concluídos') valor=total_eventos_concluidos %}
+    {% include "partials/cards/total_card.html" with label=_('Inscritos (total)') valor=total_inscritos %}
   </div>
 
   <main>
