@@ -5,6 +5,7 @@
 
 {% block content %}
 {% include 'components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
+<div class="container mx-auto p-6">
 <section class="max-w-5xl mx-auto py-8">
   <form method="get" class="mb-4 flex gap-2">
     <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
@@ -39,4 +40,5 @@
   </div>
   {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
+</div>
 {% endblock %}

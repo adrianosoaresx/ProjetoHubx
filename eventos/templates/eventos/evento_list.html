@@ -9,6 +9,7 @@
 {% else %}
 {% include 'components/hero.html' with title=_('Meus Eventos') action_template='eventos/hero_evento_list_action.html' %}
 {% endif %}
+<div class="container mx-auto p-6">
 <section class="max-w-6xl mx-auto mt-8 px-4">
   {% include 'components/search_form.html' with q=request.GET.q %}
   <!-- Cards de totais -->
@@ -32,4 +33,5 @@
   {% include 'components/pagination.html' with page_obj=page_obj querystring="q="|add:q %}
 
 </section>
+</div>
 {% endblock %}

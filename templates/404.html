@@ -5,6 +5,7 @@
 
 {% block content %}
 {% include 'components/hero.html' with title=_('404') %}
+<div class="container mx-auto p-6">
 <div class="py-16 text-center">
   <div class="card max-w-md mx-auto">
     <div class="card-body">
@@ -12,5 +13,6 @@
       <a href="{% url 'core:home' %}" class="text-sm bg-primary text-white px-4 py-2 rounded hover:bg-primary/90">{% trans "Voltar para a Home" %}</a>
     </div>
   </div>
+</div>
 </div>
 {% endblock %}

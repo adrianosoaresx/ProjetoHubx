@@ -5,6 +5,7 @@
 
 {% block content %}
 {% include 'components/hero.html' with title=_('Integrações') action_template='financeiro/hero_integracoes_action.html' %}
+<div class="container mx-auto p-6">
 <main class="p-4 max-w-5xl mx-auto">
   <section id="integracoes-list" class="overflow-x-auto" aria-live="polite">
     <table class="min-w-full divide-y divide-gray-200">
@@ -54,4 +55,5 @@
   </section>
   <div id="modal" class="mt-4" aria-live="assertive"></div>
 </main>
+</div>
 {% endblock %}
