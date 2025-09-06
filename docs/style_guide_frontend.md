@@ -95,7 +95,8 @@ entre visual mobile e desktop automaticamente.
 
 Seções de destaque devem ocupar a área inicial da página com uma mensagem
 principal e call to action opcional. Utilize `components/hero.html` para manter
-consistência de espaçamento e tipografia.
+consistência de espaçamento e tipografia. Páginas de listagem devem iniciar com
+este componente, destacando o título e ações relevantes.
 
 ```django
 {% include "components/hero.html" with title="Bem-vindo" subtitle="Resumo do app" %}
