@@ -1,0 +1,15 @@
+{% load i18n %}
+<dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600">
+  <div>
+    <dt class="text-neutral-500">CNPJ</dt>
+    <dd class="font-medium">{{ empresa.cnpj }}</dd>
+  </div>
+  <div>
+    <dt class="text-neutral-500">{% trans 'Proprietário' %}</dt>
+    <dd class="font-medium">
+      <a href="{% url 'accounts:perfil_publico_uuid' empresa.usuario.public_id %}" class="text-primary hover:underline">
+        {{ empresa.usuario.get_full_name|default:empresa.usuario.username }}
+      </a>
+    </dd>
+  </div>
+</dl>

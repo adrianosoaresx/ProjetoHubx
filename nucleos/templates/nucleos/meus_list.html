@@ -10,28 +10,29 @@
     <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
     <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
   </form>
-    <ul role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
+  <div role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {% for nucleo in object_list %}
-      <a
-  href="{% url 'nucleos:detail_uuid' nucleo.public_id %}"
-        class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
-      >
-        {% if nucleo.avatar %}
-          <img
-            src="{{ nucleo.avatar.url }}"
-            alt="{{ nucleo.nome }}"
-            class="w-24 h-24 rounded-full object-cover mb-2"
-          />
-        {% else %}
-          <div
-            class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2"
-          >
-            {{ nucleo.nome|first|upper }}
-          </div>
-        {% endif %}
-        <h2 class="font-medium">{{ nucleo.nome }}</h2>
-      </a>
+      <div role="listitem">
+        <a
+          href="{% url 'nucleos:detail_uuid' nucleo.public_id %}"
+          class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
+        >
+          {% if nucleo.avatar %}
+            <img
+              src="{{ nucleo.avatar.url }}"
+              alt="{{ nucleo.nome }}"
+              class="w-24 h-24 rounded-full object-cover mb-2"
+            />
+          {% else %}
+            <div
+              class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary mb-2"
+            >
+              {{ nucleo.nome|first|upper }}
+            </div>
+          {% endif %}
+          <h2 class="font-medium">{{ nucleo.nome }}</h2>
+        </a>
+      </div>
     {% empty %}
       <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
     {% endfor %}

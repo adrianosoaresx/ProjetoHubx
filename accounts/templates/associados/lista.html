@@ -4,9 +4,10 @@
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
 {% block content %}
+{% include 'components/hero.html' with title=_('Associados') action_template='associados/partials/hero_action.html' %}
+
 
 <section class="max-w-6xl mx-auto mt-8 px-4">
-  <h1 class="text-2xl font-bold mb-6">{% trans 'Associados' %}</h1>
   <form method="get" class="mb-6 flex gap-2">
     <div class="relative flex-grow">
       <input
@@ -23,25 +24,18 @@
     </div>
     <button type="submit" class="bg-primary text-white px-4 py-2 rounded">{% trans 'Buscar' %}</button>
   </form>
+
   <!-- Cards de totais -->
   <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Usuários' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_usuarios }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Associados' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_associados }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans 'Nucleados' %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ total_nucleados }}</div>
-
-    </div>
+    {% include "partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios %}
+    {% include "partials/cards/total_card.html" with label=_('Associados') valor=total_associados %}
+    {% include "partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados %}
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div role="list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     {% for user in associados %}
-      {% include "associados/partials/card.html" with user=user %}
+      <div role="listitem">
+        {% include "associados/partials/card.html" with user=user %}
+      </div>
     {% empty %}
       <p class="text-neutral-500">{% trans "Nenhum associado encontrado." %}</p>
     {% endfor %}

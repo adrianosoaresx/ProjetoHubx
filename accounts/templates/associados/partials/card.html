@@ -1,43 +1,4 @@
 {% load i18n %}
-{# Card de Usuário: cover, avatar, nome, username, status e tipo #}
-<a href="{% url 'accounts:perfil_publico_uuid' user.public_id %}"
-   class="group block rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
-   aria-label="{{ user.get_full_name|default:user.username }}">
-  <article class="overflow-hidden rounded-2xl" role="article">
-    <header class="relative">
-      {% if user.cover %}
-        <img src="{{ user.cover.url }}" alt="{% trans 'Capa do usuário' %}"
-             class="h-24 w-full object-cover" />
-      {% else %}
-        <div class="h-24 w-full bg-gradient-to-r from-primary-500 to-primary-700"></div>
-      {% endif %}
-      <div class="absolute -bottom-8 left-4">
-        {% if user.avatar %}
-          <img src="{{ user.avatar.url }}" alt="{{ user.username }}"
-               class="h-16 w-16 rounded-full ring-4 ring-white object-cover" />
-        {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-white bg-neutral-200 flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ user.username }}">
-            {{ user.username|first|upper }}
-          </div>
-        {% endif %}
-      </div>
-    </header>
-    <div class="px-4 pt-10 pb-4">
-      <h3 class="text-base font-semibold text-neutral-900 group-hover:underline">
-        {{ user.get_full_name|default:user.username }}
-      </h3>
-      <p class="text-sm text-neutral-500">@{{ user.username }}</p>
-      <dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600">
-        <div>
-          <dt class="text-neutral-500">{% trans 'Status' %}</dt>
-          <dd class="font-medium">{% if user.is_active %}{% trans 'Ativo' %}{% else %}{% trans 'Inativo' %}{% endif %}</dd>
-        </div>
-        <div>
-          <dt class="text-neutral-500">{% trans 'Tipo' %}</dt>
-          <dd class="font-medium">{{ user.get_user_type_display|default:user.user_type }}</dd>
-        </div>
-      </dl>
-    </div>
-  </article>
-  <span class="sr-only">{% trans 'Ver detalhes do usuário' %}</span>
-</a>
+{% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
+{% trans 'Ver detalhes do usuário' as sr_label %}
+{% include 'partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=user.get_full_name|default:user.username details='associados/partials/card_details.html' sr_label=sr_label %}
