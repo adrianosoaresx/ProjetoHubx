@@ -1,45 +1,13 @@
 {% load i18n %}
-<a href="{% url 'empresas:detail' empresa.pk %}"
-  class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
-   aria-label="{{ empresa.nome }}">
-  <article class="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform" role="article">
-    <header class="relative">
-      {% if empresa.cover %}
-        <img src="{{ empresa.cover.url }}" alt="{% trans 'Capa da empresa' %}"
-             class="h-24 w-full object-cover" />
-      {% else %}
-        <div class="h-24 w-full bg-gradient-to-r from-primary-500 to-primary-700"></div>
-      {% endif %}
-      <div class="absolute -bottom-8 left-4">
-        {% if empresa.avatar %}
-          <img src="{{ empresa.avatar.url }}" alt="{{ empresa.nome }}"
-               class="h-16 w-16 rounded-full ring-4 ring-white object-cover" />
-        {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-white bg-neutral-200 flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ empresa.nome }}">
-            {{ empresa.nome|first|upper }}
-          </div>
-        {% endif %}
-      </div>
-    </header>
-  <div class="px-4 pt-10 pb-4">
-  <h3 class="text-base font-semibold text-neutral-900 group-hover:underline">
-        {{ empresa.nome }}{% if empresa.deleted %} ({% translate 'excluída' %}){% endif %}
-      </h3>
-  <dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600">
-        <div>
-          <dt class="text-neutral-500">CNPJ</dt>
-          <dd class="font-medium">{{ empresa.cnpj }}</dd>
-        </div>
-        <div>
-          <dt class="text-neutral-500">{% trans 'Proprietário' %}</dt>
-          <dd class="font-medium">
-            <a href="{% url 'accounts:perfil_publico_uuid' empresa.usuario.public_id %}" class="text-primary hover:underline">
-              {{ empresa.usuario.get_full_name|default:empresa.usuario.username }}
-            </a>
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </article>
-  <span class="sr-only">{% trans 'Ver detalhes da empresa' %}</span>
-</a>
+{% url 'empresas:detail' empresa.pk as detail_url %}
+{% trans 'Ver detalhes da empresa' as sr_label %}
+{% with base_title=empresa.nome %}
+  {% if empresa.deleted %}
+    {% trans 'excluída' as excluida %}
+    {% with title=base_title|add:' ('|add:excluida|add:')' %}
+      {% include 'partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=title details='empresas/partials/card_details.html' sr_label=sr_label %}
+    {% endwith %}
+  {% else %}
+      {% include 'partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=base_title details='empresas/partials/card_details.html' sr_label=sr_label %}
+  {% endif %}
+{% endwith %}
