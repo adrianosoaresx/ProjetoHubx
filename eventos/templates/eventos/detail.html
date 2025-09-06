@@ -3,125 +3,126 @@
 {% block title %}{{ object.titulo }} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
-
-  <!-- Cabeçalho -->
-  <div class="text-center mb-6">
-    <div class="mx-auto w-20 h-20 bg-neutral-100 rounded-xl flex items-center justify-center text-2xl font-bold text-neutral-700 mb-4" role="img" aria-label="{{ object.titulo }}">
-      {{ object.titulo|make_list|first|upper }}
-    </div>
-    <h1 class="text-2xl font-semibold text-neutral-900">{{ object.titulo }}</h1>
-    {% if object.descricao %}
-      <p class="text-sm text-neutral-600 mt-2">{{ object.descricao }}</p>
-    {% endif %}
-  </div>
-
-  <!-- Informações -->
-  <div class="space-y-2 text-sm text-neutral-800 mb-6">
-
-    <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</p>
-    <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</p>
-    <p><strong>{% trans "Local" %}:</strong> {{ object.local }}</p>
-    <p><strong>{% trans "Cidade" %}:</strong> {{ object.cidade }}</p>
-    <p><strong>{% trans "Estado" %}:</strong> {{ object.estado }}</p>
-    <p><strong>{% trans "CEP" %}:</strong> {{ object.cep }}</p>
-    <p>
-      <strong>{% trans "Contato" %}:</strong>
-      {{ object.contato_nome }}
-      {% if object.contato_email %}- {{ object.contato_email }}{% endif %}
-      {% if object.contato_whatsapp %}- {{ object.contato_whatsapp }}{% endif %}
-    </p>
-    {% if object.participantes_maximo %}
-      <p><strong>{% trans "Participantes máximo" %}:</strong> {{ object.participantes_maximo }}</p>
-    {% endif %}
-    <p>
-      <strong>{% trans "Lista de espera" %}:</strong>
-      {% if object.espera_habilitada %}
-        {% trans "Habilitada" %}
-      {% else %}
-        {% trans "Desabilitada" %}
-      {% endif %}
-    </p>
-    {% if object.orcamento %}
-      <p><strong>{% trans "Orçamento" %}:</strong> {{ object.orcamento }}</p>
-    {% endif %}
-    {% if object.orcamento_estimado %}
-      <p><strong>{% trans "Orçamento estimado" %}:</strong> {{ object.orcamento_estimado }}</p>
-    {% endif %}
-    {% if object.valor_gasto %}
-      <p><strong>{% trans "Valor gasto" %}:</strong> {{ object.valor_gasto }}</p>
-    {% endif %}
-
-  </div>
-
-  <!-- Inscrição -->
-  {% if user.is_authenticated and user.user_type != 'admin' %}
-    {% if inscricao %}
-      <div class="mb-10 space-y-4">
-        <img src="{{ inscricao.qrcode_url }}" alt="{% trans 'QR Code da inscrição' %}" class="mx-auto h-48 w-48" />
-        {% if avaliacao_permitida %}
-          <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-4">
-            {% csrf_token %}
-            <div>
-              <label for="nota" class="block text-sm font-medium">{% trans "Nota" %}</label>
-              <select id="nota" name="nota" class="form-select w-full" required>
-                {% for n in '12345' %}
-                <option value="{{ n }}">{{ n }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label for="comentario" class="block text-sm font-medium">{% trans "Comentário" %}</label>
-              <textarea id="comentario" name="comentario" rows="4" class="form-textarea w-full" placeholder="{% trans 'Opcional' %}"></textarea>
-            </div>
-            <div class="text-right">
-              <button type="submit" class="btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
-            </div>
-          </form>
-        {% else %}
-          <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans "Cancelar inscrição" %}</button>
-          </form>
+{% include 'components/hero.html' with title=object.titulo %}
+<section class="container mx-auto p-6">
+  <div class="grid gap-6 md:grid-cols-2">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+      </div>
+      <div class="card-body space-y-2 text-sm">
+        <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</p>
+        <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</p>
+        <p><strong>{% trans "Local" %}:</strong> {{ object.local }}</p>
+        <p><strong>{% trans "Cidade" %}:</strong> {{ object.cidade }}</p>
+        <p><strong>{% trans "Estado" %}:</strong> {{ object.estado }}</p>
+        <p><strong>{% trans "CEP" %}:</strong> {{ object.cep }}</p>
+        <p>
+          <strong>{% trans "Contato" %}:</strong>
+          {{ object.contato_nome }}
+          {% if object.contato_email %}- {{ object.contato_email }}{% endif %}
+          {% if object.contato_whatsapp %}- {{ object.contato_whatsapp }}{% endif %}
+        </p>
+        {% if object.participantes_maximo %}
+          <p><strong>{% trans "Participantes máximo" %}:</strong> {{ object.participantes_maximo }}</p>
+        {% endif %}
+        <p>
+          <strong>{% trans "Lista de espera" %}:</strong>
+          {% if object.espera_habilitada %}
+            {% trans "Habilitada" %}
+          {% else %}
+            {% trans "Desabilitada" %}
+          {% endif %}
+        </p>
+        {% if object.orcamento %}
+          <p><strong>{% trans "Orçamento" %}:</strong> {{ object.orcamento }}</p>
+        {% endif %}
+        {% if object.orcamento_estimado %}
+          <p><strong>{% trans "Orçamento estimado" %}:</strong> {{ object.orcamento_estimado }}</p>
+        {% endif %}
+        {% if object.valor_gasto %}
+          <p><strong>{% trans "Valor gasto" %}:</strong> {{ object.valor_gasto }}</p>
         {% endif %}
       </div>
-    {% else %}
-      <div class="mb-10">
-        <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans "Inscrever-se" %}</a>
-      </div>
-    {% endif %}
-  {% endif %}
-
-  <!-- Lista de Inscritos -->
-  <h2 class="text-lg font-semibold text-neutral-900 mb-4">{% trans "Inscritos" %}</h2>
-
-  {% if object.inscricoes.all %}
-    <div class="grid gap-4 sm:grid-cols-2">
-      {% for ins in object.inscricoes.all %}
-        {% with inscrito=ins.user %}
-        <div class="flex items-center gap-4 border border-neutral-200 rounded-xl p-4 bg-white shadow-sm">
-          {% if inscrito.avatar %}
-            <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
-          {% else %}
-            <div class="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center text-sm font-semibold text-neutral-700" role="img" aria-label="{{ inscrito.username }}">
-              {{ inscrito.username|make_list|first|upper }}
-            </div>
-          {% endif %}
-          <div>
-            <h4 class="text-sm font-medium text-neutral-800">{{ inscrito.get_full_name|default:inscrito.username }}</h4>
-            <p class="text-xs text-neutral-500">@{{ inscrito.username }}</p>
-          </div>
-        </div>
-        {% endwith %}
-      {% endfor %}
     </div>
-  {% else %}
-    <p class="text-sm text-neutral-500 mb-6">{% trans "Nenhum inscrito." %}</p>
-  {% endif %}
 
-  <!-- Voltar -->
-  <div class="flex justify-end mt-10">
-    <a href="{% url 'eventos:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+    {% if user.is_authenticated and user.user_type != 'admin' %}
+    <div class="card">
+      <div class="card-header">
+        {% if inscricao and avaliacao_permitida %}
+          <h2 class="text-xl font-semibold">{% trans "Avaliação" %}</h2>
+        {% else %}
+          <h2 class="text-xl font-semibold">{% trans "Inscrição" %}</h2>
+        {% endif %}
+      </div>
+      <div class="card-body space-y-4">
+        {% if inscricao %}
+          {% if avaliacao_permitida %}
+            <form method="post" action="{% url 'eventos:evento_feedback' object.pk %}" class="space-y-4">
+              {% csrf_token %}
+              <div class="relative">
+                <select id="nota" name="nota" class="floating peer w-full" required>
+                  {% for n in '12345' %}
+                  <option value="{{ n }}">{{ n }}</option>
+                  {% endfor %}
+                </select>
+                <label for="nota" class="label-float">{% trans "Nota" %}</label>
+              </div>
+              <div class="relative">
+                <textarea id="comentario" name="comentario" rows="4" placeholder=" " class="floating peer w-full"></textarea>
+                <label for="comentario" class="label-float">{% trans "Comentário" %}</label>
+              </div>
+              <div class="text-right">
+                <button type="submit" class="btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+              </div>
+            </form>
+          {% else %}
+            <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card md:col-span-2">
+      <div class="card-header">
+        <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
+      </div>
+      <div class="card-body">
+        {% if object.inscricoes.all %}
+          <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {% for ins in object.inscricoes.all %}
+              {% with inscrito=ins.user %}
+              <div class="flex items-center gap-4 p-4 border rounded-xl bg-base-100 shadow-sm">
+                {% if inscrito.avatar %}
+                  <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
+                {% else %}
+                  <div class="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
+                    {{ inscrito.username|make_list|first|upper }}
+                  </div>
+                {% endif %}
+                <div>
+                  <h4 class="text-sm font-medium">{{ inscrito.get_full_name|default:inscrito.username }}</h4>
+                  <p class="text-xs">@{{ inscrito.username }}</p>
+                </div>
+              </div>
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-end mt-6">
+    <a href="{% url 'eventos:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
   </div>
 </section>
 {% endblock %}
