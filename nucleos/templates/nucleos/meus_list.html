@@ -37,16 +37,6 @@
       <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
     {% endfor %}
   </div>
-  {% if is_paginated %}
-    <div class="mt-4">
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="mr-2" aria-label="{% trans 'Página anterior' %}">{% trans 'Anterior' %}</a>
-      {% endif %}
-      <span class="mr-2">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" aria-label="{% trans 'Próxima página' %}">{% trans 'Próxima' %}</a>
-      {% endif %}
-    </div>
-  {% endif %}
+  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
 {% endblock %}

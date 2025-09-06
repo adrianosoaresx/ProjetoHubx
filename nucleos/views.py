@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import (
     CreateView,
@@ -108,6 +109,12 @@ class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         ctx["total_eventos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids).count()
         ctx["total_eventos_ativos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=0).count()
         ctx["total_eventos_concluidos_org"] = Evento.objects.filter(nucleo_id__in=nucleo_ids, status=1).count()
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
 
 
@@ -165,6 +172,12 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["form"] = NucleoSearchForm(self.request.GET or None)
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
 
 

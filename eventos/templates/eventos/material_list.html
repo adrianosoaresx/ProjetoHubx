@@ -12,12 +12,7 @@
 
 {% include "eventos/_messages.html" %}
 
-  <form
-    hx-get="{% url 'eventos:material_list' %}"
-    hx-target="#material-container"
-    hx-push-url="true"
-    class="mb-6 flex gap-2"
-  >
+  <form method="get" class="mb-6 flex gap-2">
     <input
       type="text"
       name="q"
@@ -57,6 +52,7 @@
       </table>
     </div>
   </main>
+  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 
   <footer class="mt-6 text-right">
     <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>

@@ -26,6 +26,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 from django.views.generic import (
@@ -109,6 +110,12 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["total_eventos_ativos"] = qs.filter(status=0).count()
         ctx["total_eventos_concluidos"] = qs.filter(status=1).count()
         ctx["total_inscritos"] = InscricaoEvento.objects.filter(evento__in=qs).count()
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
 
 
@@ -753,6 +760,16 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, Li
         if q:
             qs = qs.filter(titulo__icontains=q)
         return qs.order_by("id")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        ctx["querystring"] = urlencode(params, doseq=True)
+        return ctx
 
 
 class MaterialDivulgacaoEventoCreateView(

@@ -36,16 +36,6 @@
       {% endfor %}
     </div>
   </main>
-  {% if is_paginated %}
-    <nav class="mt-4 text-sm flex items-center gap-2" aria-label="{% trans 'Paginação' %}">
-      {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 border rounded" aria-label="{% trans 'Página anterior' %}">{% trans 'Anterior' %}</a>
-      {% endif %}
-      <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-      {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 border rounded" aria-label="{% trans 'Próxima página' %}">{% trans 'Próxima' %}</a>
-      {% endif %}
-    </nav>
-  {% endif %}
+  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
 {% endblock %}
