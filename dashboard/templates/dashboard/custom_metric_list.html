@@ -2,23 +2,29 @@
 {% load i18n %}
 {% block title %}{% trans 'Métricas personalizadas' %}{% endblock %}
 {% block content %}
-<main class="max-w-2xl mx-auto p-4" role="main">
-  <h1 class="text-2xl font-semibold mb-4">{% trans 'Métricas personalizadas' %}</h1>
-  {% include 'dashboard/partials/messages.html' %}
-  <a href="{% url 'dashboard:custom-metric-create' %}" class="inline-block mb-4 px-4 py-2 bg-primary-600 text-white rounded" aria-label="{% trans 'Nova métrica' %}">{% trans 'Nova métrica' %}</a>
-  <ul class="space-y-2">
-    {% for m in object_list %}
-      <li class="flex justify-between items-center p-2 bg-white rounded shadow">
-        <span>{{ m.nome }}</span>
-        <div class="space-x-2">
-          <a href="{% url 'dashboard:custom-metric-edit' m.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar métrica' %}">{% trans 'Editar' %}</a>
-          <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
-        </div>
-      </li>
-    {% empty %}
-      <li>{% trans 'Nenhuma métrica cadastrada.' %}</li>
-    {% endfor %}
-  </ul>
-</main>
+{% include 'components/hero.html' with title=_('Métricas personalizadas') %}
+<div class="container mx-auto p-6">
+  <div class="max-w-2xl mx-auto">
+    <div class="card">
+      <div class="card-body">
+        {% include 'dashboard/partials/messages.html' %}
+        <a href="{% url 'dashboard:custom-metric-create' %}" class="btn-primary mb-4" aria-label="{% trans 'Nova métrica' %}">{% trans 'Nova métrica' %}</a>
+        <ul class="space-y-2">
+          {% for m in object_list %}
+            <li class="flex justify-between items-center p-2 bg-white rounded shadow">
+              <span>{{ m.nome }}</span>
+              <div class="space-x-2">
+                <a href="{% url 'dashboard:custom-metric-edit' m.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar métrica' %}">{% trans 'Editar' %}</a>
+                <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
+              </div>
+            </li>
+          {% empty %}
+            <li>{% trans 'Nenhuma métrica cadastrada.' %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 

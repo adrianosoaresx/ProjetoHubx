@@ -1,160 +1,48 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans "Editar Organização" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-2xl mx-auto px-4 py-10">
-  <header class="mb-6 flex items-center gap-4">
-    <a href="{% url 'organizacoes:list' %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-      <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="15,18 9,12 15,6" />
-      </svg>
-      {% trans "Voltar" %}
-    </a>
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Editar Organização" %}</h1>
-  </header>
+{% include 'components/hero.html' with title=_('Editar Organização') %}
+<div class="container mx-auto p-6">
+  <div class="max-w-2xl mx-auto">
+    <div class="card">
+      <div class="card-body">
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+            <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-  {% if messages %}
-  <div class="mb-4 space-y-2">
-    {% for message in messages %}
-      <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
-    {% endfor %}
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+          {% csrf_token %}
+          {% for field in form %}
+          <div class="relative">
+            {% if field.errors %}
+              {% render_field field class="peer w-full rounded border border-neutral-300 px-3 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder=field.label aria-describedby=field.name|add:'_error' aria-invalid="true" %}
+            {% else %}
+              {% render_field field class="peer w-full rounded border border-neutral-300 px-3 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder=field.label aria-describedby=field.name|add:'_error' %}
+            {% endif %}
+            <label for="{{ field.id_for_label }}" class="absolute left-3 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600">{{ field.label }}</label>
+            {% if field.errors %}
+              <div id="{{ field.name }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ field.errors }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+          <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+            <a href="{% url 'organizacoes:list' %}" class="btn-secondary" aria-label="{% trans 'Cancelar edição' %}">{% trans "Cancelar" %}</a>
+            <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar organização' %}">{% trans "Salvar" %}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="text-right mt-6">
+      <a href="{% url 'organizacoes:list' %}" class="text-sm text-primary hover:underline">{% trans "Voltar à lista" %}</a>
+    </div>
   </div>
-  {% endif %}
-
-  <main>
-  <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
-    {% csrf_token %}
-
-    <div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.nome.label }}</label>
-        {{ form.nome }}
-        {% if form.nome.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.nome.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-        <label for="{{ form.cnpj.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cnpj.label }}</label>
-        {{ form.cnpj }}
-        {% if form.cnpj.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.cnpj.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-    <div>
-      <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.tipo.label }}</label>
-      {{ form.tipo }}
-      {% if form.tipo.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.tipo.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.descricao.label }}</label>
-      {{ form.descricao }}
-      {% if form.descricao.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.descricao.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="md:col-span-3">
-        <label for="{{ form.rua.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rua.label }}</label>
-        {{ form.rua }}
-        {% if form.rua.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.rua.errors }}</p>
-        {% endif %}
-      </div>
-      <div class="md:col-span-2">
-        <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cidade.label }}</label>
-        {{ form.cidade }}
-        {% if form.cidade.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.cidade.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-        <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.estado.label }}</label>
-        {{ form.estado }}
-        {% if form.estado.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.estado.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div>
-        <label for="{{ form.contato_nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_nome.label }}</label>
-        {{ form.contato_nome }}
-        {% if form.contato_nome.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_nome.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-        <label for="{{ form.contato_email.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_email.label }}</label>
-        {{ form.contato_email }}
-        {% if form.contato_email.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_email.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-        <label for="{{ form.contato_telefone.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_telefone.label }}</label>
-        {{ form.contato_telefone }}
-        {% if form.contato_telefone.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_telefone.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div>
-      <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.slug.label }}</label>
-      {{ form.slug }}
-      {% if form.slug.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.slug.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.rate_limit_multiplier.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rate_limit_multiplier.label }}</label>
-      {{ form.rate_limit_multiplier }}
-      {% if form.rate_limit_multiplier.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.rate_limit_multiplier.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.indice_reajuste.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.indice_reajuste.label }}</label>
-      {{ form.indice_reajuste }}
-      {% if form.indice_reajuste.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.indice_reajuste.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
-      {{ form.avatar }}
-      {% if form.avatar.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.avatar.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cover.label }}</label>
-      {{ form.cover }}
-      {% if form.cover.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.cover.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans "Cancelar" %}</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700">{% trans "Salvar" %}</button>
-    </div>
-  </form>
-  </main>
-  <footer class="mt-6 text-right">
-    <a href="{% url 'organizacoes:list' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar à lista" %}</a>
-  </footer>
-</section>
+</div>
 {% endblock %}
+
