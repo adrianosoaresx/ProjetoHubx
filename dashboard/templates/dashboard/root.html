@@ -4,76 +4,73 @@
 {% block title %}{% trans "Dashboard Root" %} | Hubx{% endblock %}
 
 {% block content %}
-<main class="max-w-7xl mx-auto px-4 py-10" role="main" aria-label="{% trans 'Dashboard' %}">
-  <h1 class="text-3xl font-semibold text-neutral-900 text-center mb-10">{% trans "Dashboard Root" %}</h1>
-
-  {% include 'dashboard/partials/messages.html' %}
-  {% include 'dashboard/partials/filters_form.html' %}
-
-  <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-    {% include 'dashboard/partials/metrics_list.html' %}
+{% include 'components/hero.html' with title=_('Dashboard Root') %}
+<div class="container mx-auto p-6">
+  <div class="max-w-7xl mx-auto">
+    <div class="card">
+      <div class="card-body space-y-8">
+        {% include 'dashboard/partials/messages.html' %}
+        {% include 'dashboard/partials/filters_form.html' %}
+        <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
+          {% include 'dashboard/partials/metrics_list.html' %}
+        </div>
+        {% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
+        {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
+        {% endwith %}
+        <section class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">{% trans "Status dos Serviços" %}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-white rounded-lg shadow">
+              <span class="block font-medium">{% trans "Celery" %}</span>
+              <span>{{ service_status.celery }}</span>
+            </div>
+            <div class="p-4 bg-white rounded-lg shadow">
+              <span class="block font-medium">{% trans "Fila de Mensagens" %}</span>
+              <span>{{ service_status.fila_mensagens }}</span>
+            </div>
+            <div class="p-4 bg-white rounded-lg shadow">
+              <span class="block font-medium">{% trans "Uso de Disco" %}</span>
+              <span>{{ service_status.disco }}%</span>
+            </div>
+          </div>
+        </section>
+        <section class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">{% trans "Métricas de Segurança" %}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-white rounded-lg shadow">
+              <span class="block font-medium">{% trans "Tentativas de Login Bloqueadas" %}</span>
+              <span>{{ security_metrics.login_bloqueados }}</span>
+            </div>
+          </div>
+        </section>
+        <section class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">{% trans "Organizações" %}</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% include 'dashboard/partials/org_cards.html' %}
+          </div>
+        </section>
+        <section
+          id="notifications"
+          hx-get="{% url 'dashboard:notificacoes-partial' %}"
+          hx-trigger="load, every 20s"
+          hx-target="this"
+          hx-swap="innerHTML"
+        ></section>
+        <section class="mb-8">
+          <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <a href="{% url 'admin:index' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Django Admin' %}">
+              {% lucide 'wrench' class='mb-2 mx-auto w-6 h-6' %}
+              <span class="block">{% trans "Django Admin" %}</span>
+            </a>
+            <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
+              {% lucide 'chart-line' class='mb-2 mx-auto w-6 h-6' %}
+              <span class="block">{% trans "Métricas Personalizadas" %}</span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
   </div>
-
-  {% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
-  {% include 'dashboard/partials/chart.html' with chart_id='root_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
-  {% endwith %}
-
-  <section class="mb-8">
-    <h2 class="text-xl font-semibold mb-4">{% trans "Status dos Serviços" %}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="p-4 bg-white rounded-lg shadow">
-        <span class="block font-medium">{% trans "Celery" %}</span>
-        <span>{{ service_status.celery }}</span>
-      </div>
-      <div class="p-4 bg-white rounded-lg shadow">
-        <span class="block font-medium">{% trans "Fila de Mensagens" %}</span>
-        <span>{{ service_status.fila_mensagens }}</span>
-      </div>
-      <div class="p-4 bg-white rounded-lg shadow">
-        <span class="block font-medium">{% trans "Uso de Disco" %}</span>
-        <span>{{ service_status.disco }}%</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="mb-8">
-    <h2 class="text-xl font-semibold mb-4">{% trans "Métricas de Segurança" %}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="p-4 bg-white rounded-lg shadow">
-        <span class="block font-medium">{% trans "Tentativas de Login Bloqueadas" %}</span>
-        <span>{{ security_metrics.login_bloqueados }}</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="mb-8">
-    <h2 class="text-xl font-semibold mb-4">{% trans "Organizações" %}</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {% include 'dashboard/partials/org_cards.html' %}
-    </div>
-  </section>
-
-  <section
-    id="notifications"
-    hx-get="{% url 'dashboard:notificacoes-partial' %}"
-    hx-trigger="load, every 20s"
-    hx-target="this"
-    hx-swap="innerHTML"
-  ></section>
-
-  <section class="mb-8">
-    <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <a href="{% url 'admin:index' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Django Admin' %}">
-          {% lucide 'wrench' class='mb-2 mx-auto w-6 h-6' %}
-          <span class="block">{% trans "Django Admin" %}</span>
-        </a>
-        <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
-          {% lucide 'chart-line' class='mb-2 mx-auto w-6 h-6' %}
-          <span class="block">{% trans "Métricas Personalizadas" %}</span>
-        </a>
-      </div>
-    </section>
-
-</main>
+</div>
 {% endblock %}
