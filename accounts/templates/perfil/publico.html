@@ -1,8 +1,8 @@
 {% extends 'perfil/perfil.html' %}
 {% load static i18n %}
-{% block title %}{{ perfil.get_full_name|default:perfil.username }} | Hubx{% endblock %}
-{% block hero_title %}{{ perfil.get_full_name|default:perfil.username }}{% endblock %}
-{% block hero_subtitle %}@{{ perfil.username }}{% endblock %}
+{% block title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }} | Hubx{% endwith %}{% endblock %}
+{% block hero_title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }}{% endwith %}{% endblock %}
+{% block hero_subtitle %}{% with perfil as profile %}@{{ profile.username }}{% endwith %}{% endblock %}
 
 {% block perfil_content %}
 <div class="card-header">
@@ -14,7 +14,7 @@
           {% trans "Informações" %}
         </a>
       </li>
-      {% if not perfil.is_superuser %}
+      {% if not profile.is_superuser %}
       <li>
         <a href="#tab-empresas" data-tab-target="tab-empresas" role="tab" aria-selected="false"
            class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
@@ -44,40 +44,40 @@
       <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
         <div>
           <dt class="text-gray-500">{% trans "Nome completo" %}</dt>
-          <dd class="font-medium">{{ perfil.get_full_name|default:perfil.username }}</dd>
+          <dd class="font-medium">{{ profile.get_full_name|default:profile.username }}</dd>
         </div>
         <div>
           <dt class="text-gray-500">{% trans "Usuário" %}</dt>
-          <dd class="font-medium">@{{ perfil.username }}</dd>
+          <dd class="font-medium">@{{ profile.username }}</dd>
         </div>
-        {% if perfil.email %}
+        {% if profile.email %}
         <div>
           <dt class="text-gray-500">{% trans "E-mail" %}</dt>
-          <dd class="font-medium">{{ perfil.email }}</dd>
+          <dd class="font-medium">{{ profile.email }}</dd>
         </div>
         {% endif %}
-        {% if perfil.date_joined %}
+        {% if profile.date_joined %}
         <div>
           <dt class="text-gray-500">{% trans "Membro desde" %}</dt>
-          <dd class="font-medium">{{ perfil.date_joined|date:"d/m/Y H:i" }}</dd>
+          <dd class="font-medium">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
         </div>
         {% endif %}
-        {% if perfil.last_login %}
+        {% if profile.last_login %}
         <div>
           <dt class="text-gray-500">{% trans "Último acesso" %}</dt>
-          <dd class="font-medium">{{ perfil.last_login|date:"d/m/Y H:i" }}</dd>
+          <dd class="font-medium">{{ profile.last_login|date:"d/m/Y H:i" }}</dd>
         </div>
         {% endif %}
       </dl>
-      {% if perfil.biografia %}
+      {% if profile.biografia %}
         <div class="mt-4">
           <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
-          <p class="text-gray-700 whitespace-pre-line">{{ perfil.biografia }}</p>
+          <p class="text-gray-700 whitespace-pre-line">{{ profile.biografia }}</p>
         </div>
       {% endif %}
     </div>
 
-    {% if not perfil.is_superuser %}
+    {% if not profile.is_superuser %}
     <div id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
       {% if empresas %}
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
