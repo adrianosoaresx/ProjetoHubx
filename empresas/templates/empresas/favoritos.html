@@ -4,29 +4,27 @@
 {% block title %}{% translate "Empresas Favoritas" %}{% endblock %}
 
 {% block content %}
-<main class="max-w-7xl mx-auto px-4 py-10">
-  <header class="mb-4">
-    <h1 class="text-2xl font-bold text-neutral-900">{% translate "Empresas Favoritas" %}</h1>
-  </header>
-  <ul
-    class="space-y-4"
-    id="lista-favoritos"
-    hx-on:afterRequest="if (this.children.length === 0) { const li=document.createElement('li'); li.className='text-neutral-600'; li.textContent='{{ _('Nenhuma empresa favorita.')|escapejs }}'; this.appendChild(li); }"
-  >
-    {% for empresa in empresas %}
-      <li id="empresa-{{ empresa.id }}" class="p-4 bg-white rounded shadow">
-        <h2 class="text-lg font-semibold">{{ empresa.nome }}</h2>
-        <button
-          class="text-sm text-red-600 hover:underline"
-          hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
-          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-          hx-target="#empresa-{{ empresa.id }}"
-          hx-swap="outerHTML"
-        >{% translate "Remover" %}</button>
-      </li>
-    {% empty %}
-      <li class="text-neutral-600">{% translate "Nenhuma empresa favorita." %}</li>
-    {% endfor %}
-  </ul>
-</main>
+{% include 'components/hero.html' with title=_('Empresas Favoritas') %}
+<div class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-body">
+      <ul class="space-y-4" id="lista-favoritos" hx-on:afterRequest="if (this.children.length === 0) { const li=document.createElement('li'); li.className='text-neutral-600'; li.textContent='{{ _('Nenhuma empresa favorita.')|escapejs }}'; this.appendChild(li); }">
+        {% for empresa in empresas %}
+          <li id="empresa-{{ empresa.id }}" class="p-4 bg-white rounded shadow">
+            <h2 class="text-lg font-semibold">{{ empresa.nome }}</h2>
+            <button
+              class="text-sm text-red-600 hover:underline"
+              hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+              hx-target="#empresa-{{ empresa.id }}"
+              hx-swap="outerHTML"
+            >{% translate "Remover" %}</button>
+          </li>
+        {% empty %}
+          <li class="text-neutral-600">{% translate "Nenhuma empresa favorita." %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
 {% endblock %}

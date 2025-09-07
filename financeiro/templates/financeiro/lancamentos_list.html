@@ -4,104 +4,108 @@
 {% block title %}{{ _('Lançamentos Financeiros') }}{% endblock %}
 
 {% block content %}
-<main class="p-4 max-w-6xl mx-auto">
-  <h1 class="text-2xl font-semibold mb-2">{{ _('Lançamentos') }}</h1>
-  <form id="filtros" class="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4" hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderLancamentos(event)">
-    <legend class="sr-only">{{ _('Filtros') }}</legend>
-    <div>
-      <label for="filtro-status" class="block text-sm font-medium text-gray-700">{{ _('Status') }}</label>
-      <select name="status" id="filtro-status" class="border p-2 rounded">
-        <option value="">{{ _('Todos Status') }}</option>
-        <option value="pendente">{{ _('Pendente') }}</option>
-        <option value="pago">{{ _('Pago') }}</option>
-        <option value="cancelado">{{ _('Cancelado') }}</option>
-      </select>
+{% include 'components/hero.html' with title=_('Lançamentos') %}
+<div class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-header">
+      <form id="filtros" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderLancamentos(event)">
+        <legend class="sr-only">{{ _('Filtros') }}</legend>
+        <div>
+          <label for="filtro-status" class="block text-sm font-medium text-gray-700">{{ _('Status') }}</label>
+          <select name="status" id="filtro-status" class="border p-2 rounded">
+            <option value="">{{ _('Todos Status') }}</option>
+            <option value="pendente">{{ _('Pendente') }}</option>
+            <option value="pago">{{ _('Pago') }}</option>
+            <option value="cancelado">{{ _('Cancelado') }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="filtro-centro" class="block text-sm font-medium text-gray-700">{{ _('Centro de Custo') }}</label>
+          <select name="centro" id="filtro-centro" class="border p-2 rounded">
+            <option value="">{{ _('Todos Centros') }}</option>
+            {% for c in centros %}
+              <option value="{{ c.id }}">{{ c.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="filtro-nucleo" class="block text-sm font-medium text-gray-700">{{ _('Núcleo') }}</label>
+          <select name="nucleo" id="filtro-nucleo" class="border p-2 rounded">
+            <option value="">{{ _('Todos Núcleos') }}</option>
+            {% for n in nucleos %}
+              <option value="{{ n.id }}">{{ n.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="filtro-periodo-inicial" class="block text-sm font-medium text-gray-700">{{ _('Período inicial') }}</label>
+          <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
+        </div>
+        <div>
+          <label for="filtro-periodo-final" class="block text-sm font-medium text-gray-700">{{ _('Período final') }}</label>
+          <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
+        </div>
+      </form>
     </div>
-    <div>
-      <label for="filtro-centro" class="block text-sm font-medium text-gray-700">{{ _('Centro de Custo') }}</label>
-      <select name="centro" id="filtro-centro" class="border p-2 rounded">
-        <option value="">{{ _('Todos Centros') }}</option>
-        {% for c in centros %}
-          <option value="{{ c.id }}">{{ c.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="filtro-nucleo" class="block text-sm font-medium text-gray-700">{{ _('Núcleo') }}</label>
-      <select name="nucleo" id="filtro-nucleo" class="border p-2 rounded">
-        <option value="">{{ _('Todos Núcleos') }}</option>
-        {% for n in nucleos %}
-          <option value="{{ n.id }}">{{ n.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="filtro-periodo-inicial" class="block text-sm font-medium text-gray-700">{{ _('Período inicial') }}</label>
-      <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
-    </div>
-    <div>
-      <label for="filtro-periodo-final" class="block text-sm font-medium text-gray-700">{{ _('Período final') }}</label>
-      <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
-    </div>
-  </form>
-  <div id="lista" aria-live="polite">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead>
-        <tr class="bg-gray-50">
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('ID') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Conta Associada') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Tipo') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Lançamento') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Status') }}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Vencimento') }}</th>
-          <th class="px-3 py-2"></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <script src="{% url 'javascript-catalog' %}"></script>
-  <script>
-    const csrfToken = "{{ csrf_token }}";
-    function renderLancamentos(evt) {
-      const tbody = document.querySelector('#lista tbody');
-      tbody.innerHTML = '';
-      try {
-        const data = JSON.parse(evt.detail.xhr.response);
-        const itens = data.results || data;
-        const rows = itens
-          .map(l => `
-            <tr>
-              <td class="px-3 py-2">${l.id}</td>
-              <td class="px-3 py-2">${l.centro_custo || ''}</td>
-              <td class="px-3 py-2">${l.conta_associado || ''}</td>
-              <td class="px-3 py-2">${l.tipo}</td>
-              <td class="px-3 py-2">${l.valor}</td>
-              <td class="px-3 py-2">${l.data_lancamento}</td>
-              <td class="px-3 py-2">${l.status}</td>
-              <td class="px-3 py-2">${l.data_vencimento || ''}</td>
-              <td class="px-3 py-2 space-x-2">
-                ${l.status === 'pendente' ? `
-                <button hx-post="/api/financeiro/lancamentos/${l.id}/pagar/" hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
-                <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"cancelado"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-red-600 hover:underline">{% trans "Cancelar" %}</button>
-                <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
-                ` : ''}
-              </td>
+    <div class="card-body">
+      <div id="lista" aria-live="polite">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('ID') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Conta Associada') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Tipo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Lançamento') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Status') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Vencimento') }}</th>
+              <th class="px-3 py-2"></th>
             </tr>
-          `)
-          .join('');
-        tbody.innerHTML = rows || `<tr><td colspan="9" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="9" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
-      }
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      htmx.trigger('#filtros', 'submit');
-    });
-  </script>
-</main>
-
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <script src="{% url 'javascript-catalog' %}"></script>
+      <script>
+        const csrfToken = "{{ csrf_token }}";
+        function renderLancamentos(evt) {
+          const tbody = document.querySelector('#lista tbody');
+          tbody.innerHTML = '';
+          try {
+            const data = JSON.parse(evt.detail.xhr.response);
+            const itens = data.results || data;
+            const rows = itens
+              .map(l => `
+                <tr>
+                  <td class="px-3 py-2">${l.id}</td>
+                  <td class="px-3 py-2">${l.centro_custo || ''}</td>
+                  <td class="px-3 py-2">${l.conta_associado || ''}</td>
+                  <td class="px-3 py-2">${l.tipo}</td>
+                  <td class="px-3 py-2">${l.valor}</td>
+                  <td class="px-3 py-2">${l.data_lancamento}</td>
+                  <td class="px-3 py-2">${l.status}</td>
+                  <td class="px-3 py-2">${l.data_vencimento || ''}</td>
+                  <td class="px-3 py-2 space-x-2">
+                    ${l.status === 'pendente' ? `
+                    <button hx-post="/api/financeiro/lancamentos/${l.id}/pagar/" hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
+                    <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"cancelado"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-red-600 hover:underline">{% trans "Cancelar" %}</button>
+                    <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
+                    ` : ''}
+                  </td>
+                </tr>
+              `)
+              .join('');
+            tbody.innerHTML = rows || `<tr><td colspan="9" class="px-3 py-2 text-center">${gettext('Nenhum lançamento')}</td></tr>`;
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="9" class="px-3 py-2 text-center">${gettext('Erro ao carregar')}</td></tr>`;
+          }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+          htmx.trigger('#filtros', 'submit');
+        });
+      </script>
+    </div>
+  </div>
+</div>
 {% endblock %}
-
