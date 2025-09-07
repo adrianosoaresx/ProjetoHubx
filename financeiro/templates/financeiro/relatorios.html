@@ -8,52 +8,52 @@
   <h1 class="text-2xl font-semibold mb-2">{% trans "Relatórios" %}</h1>
   <form id="relatorio-form" class="space-y-4">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label for="rel-centro" class="block text-sm font-medium text-gray-700">{% trans "Centro de Custo" %}</label>
-        <select id="rel-centro" name="centro" class="mt-1 block w-full border rounded p-2">
+      <div class="relative">
+        <select id="rel-centro" name="centro" class="peer form-input placeholder-transparent">
           <option value="">{% trans "Todos" %}</option>
           {% for c in centros %}
             <option value="{{ c.id }}">{{ c.nome }}</option>
           {% endfor %}
         </select>
+        <label for="rel-centro" class="label-float">{% trans "Centro de Custo" %}</label>
       </div>
-      <div>
-        <label for="rel-nucleo" class="block text-sm font-medium text-gray-700">{% trans "Núcleo" %}</label>
-        <select id="rel-nucleo" name="nucleo" class="mt-1 block w-full border rounded p-2">
+      <div class="relative">
+        <select id="rel-nucleo" name="nucleo" class="peer form-input placeholder-transparent">
           <option value="">{% trans "Todos" %}</option>
           {% for n in nucleos %}
             <option value="{{ n.id }}">{{ n.nome }}</option>
           {% endfor %}
         </select>
+        <label for="rel-nucleo" class="label-float">{% trans "Núcleo" %}</label>
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label for="rel-periodo-inicial" class="block text-sm font-medium text-gray-700">{% trans "Período inicial" %}</label>
-        <input id="rel-periodo-inicial" type="month" name="periodo_inicial" class="mt-1 block w-full border rounded p-2" />
+      <div class="relative">
+        <input id="rel-periodo-inicial" type="month" name="periodo_inicial" class="peer form-input placeholder-transparent" placeholder=" " />
+        <label for="rel-periodo-inicial" class="label-float">{% trans "Período inicial" %}</label>
       </div>
-      <div>
-        <label for="rel-periodo-final" class="block text-sm font-medium text-gray-700">{% trans "Período final" %}</label>
-        <input id="rel-periodo-final" type="month" name="periodo_final" class="mt-1 block w-full border rounded p-2" />
+      <div class="relative">
+        <input id="rel-periodo-final" type="month" name="periodo_final" class="peer form-input placeholder-transparent" placeholder=" " />
+        <label for="rel-periodo-final" class="label-float">{% trans "Período final" %}</label>
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label for="rel-tipo" class="block text-sm font-medium text-gray-700">{% trans "Tipo" %}</label>
-        <select id="rel-tipo" name="tipo" class="mt-1 block w-full border rounded p-2">
+      <div class="relative">
+        <select id="rel-tipo" name="tipo" class="peer form-input placeholder-transparent">
           <option value="">{% trans "Todos" %}</option>
           <option value="receitas">{% trans "Receitas" %}</option>
           <option value="despesas">{% trans "Despesas" %}</option>
         </select>
+        <label for="rel-tipo" class="label-float">{% trans "Tipo" %}</label>
       </div>
-      <div>
-        <label for="rel-status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
-        <select id="rel-status" name="status" class="mt-1 block w-full border rounded p-2">
+      <div class="relative">
+        <select id="rel-status" name="status" class="peer form-input placeholder-transparent">
           <option value="">{% trans "Todos" %}</option>
           <option value="pendente">{% trans "Pendente" %}</option>
           <option value="pago">{% trans "Pago" %}</option>
           <option value="cancelado">{% trans "Cancelado" %}</option>
         </select>
+        <label for="rel-status" class="label-float">{% trans "Status" %}</label>
       </div>
     </div>
     <button type="button" id="gerar-relatorio" class="bg-primary text-white px-4 py-2 rounded"
