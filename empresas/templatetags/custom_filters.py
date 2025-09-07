@@ -1,9 +1,22 @@
-from django import template
+"""Custom template filters for empresas app."""
 
-def add_class(value, css_class):
-    if hasattr(value, 'as_widget'):
-        return value.as_widget(attrs={"class": css_class})
-    return value
+from django import template
+from django.forms.boundfield import BoundField
+
 
 register = template.Library()
-register.filter("add_class", add_class)
+
+
+@register.filter(name="add_class")
+def add_class(value: BoundField, css_class: str) -> BoundField:
+    """Add a CSS class to a form field and return the original ``BoundField``.
+
+    This modifies the widget's ``class`` attribute in place and returns the
+    unrendered ``BoundField`` so that additional filters (e.g. ``attr`` from
+    ``widget_tweaks``) can be chained afterwards.
+    """
+
+    existing = value.field.widget.attrs.get("class", "")
+    value.field.widget.attrs["class"] = f"{existing} {css_class}".strip()
+    return value
+
