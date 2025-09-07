@@ -11,13 +11,13 @@
 <div class="container mx-auto p-6">
   <div class="card flex flex-col min-h-[80vh] overflow-hidden">
     {% with perfil|default:user as profile %}
-    <div class="profile-cover relative h-48 w-full">
+    <div class="profile-cover relative h-48 w-full overflow-hidden">
       {% if profile.cover %}
         <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="w-full h-full object-cover">
       {% else %}
         <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
       {% endif %}
-      <div class="absolute inset-0 flex flex-col items-center justify-center text-white drop-shadow">
+      <div class="absolute inset-0 z-10 flex flex-col items-center justify-center text-white drop-shadow">
         {% if profile.avatar %}
           <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
                class="w-28 h-28 rounded-full object-cover shadow mb-3">
