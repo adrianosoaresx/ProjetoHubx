@@ -13,26 +13,27 @@
     {% with perfil|default:user as profile %}
     <div class="profile-cover relative h-48 w-full overflow-hidden">
       {% if profile.cover %}
-        <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="w-full h-full object-cover">
+        <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="absolute inset-0 w-full h-full object-cover z-0" aria-hidden="true">
       {% else %}
-        <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
+        <div class="absolute inset-0 w-full h-full bg-gray-200 z-0" role="img" aria-label="{% trans "Capa padrão" %}"></div>
       {% endif %}
 
-      <div class="absolute inset-0 z-20 flex flex-col items-center justify-center text-white drop-shadow">
-
-        {% if profile.avatar %}
-          <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
-               class="w-28 h-28 rounded-full object-cover shadow mb-3">
-        {% else %}
-          <div class="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold text-primary shadow mb-3" role="img" aria-label="{{ profile.username }}">
-            {{ profile.username|first|upper }}
-          </div>
-        {% endif %}
-        <h2 class="text-lg font-bold">{{ profile.get_full_name }}</h2>
-        <p class="text-sm mb-2">@{{ profile.username }}</p>
-        {% if profile == request.user %}
-        <button class="text-sm hover:underline">{% trans "Alterar foto" %}</button>
-        {% endif %}
+      <div class="absolute inset-0 z-50 text-white drop-shadow" style="display:flex;align-items:center;justify-content:center;text-align:center;">
+        <div>
+          {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
+                 class="rounded-full object-cover shadow mb-3" style="width:7rem;height:7rem;">
+          {% else %}
+            <div class="rounded-full bg-gray-200 text-2xl font-semibold text-primary shadow mb-3" style="width:7rem;height:7rem;display:flex;align-items:center;justify-content:center;" role="img" aria-label="{{ profile.username }}">
+              {{ profile.username|first|upper }}
+            </div>
+          {% endif %}
+          <h2 class="text-lg font-bold" style="margin-bottom:2px;">{{ profile.get_full_name }}</h2>
+          <p class="text-sm" style="margin-top:0;">@{{ profile.username }}</p>
+          {% if profile == request.user %}
+          <button class="text-sm hover:underline">{% trans "Alterar foto" %}</button>
+          {% endif %}
+        </div>
       </div>
     </div>
     <div class="card-body flex flex-col flex-grow">
