@@ -7,28 +7,26 @@
 
 {% include 'components/hero.html' with title=_('Eventos') action_template='eventos/hero_eventos_lista_action.html' %}
 <div class="container mx-auto p-6">
-<section class="max-w-6xl mx-auto mt-8 px-4">
-
-  {% include 'components/search_form.html' with q=request.GET.q %}
-
-  <!-- Cards de totais (organização) -->
-  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    {% include "partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos %}
-    {% include "partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos %}
-    {% include "partials/cards/total_card.html" with label=_('Concluídos') valor=total_eventos_concluidos %}
-    {% include "partials/cards/total_card.html" with label=_('Inscritos (total)') valor=total_inscritos %}
-  </div>
-
-  <main>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de eventos' %}">
-      {% for evento in eventos %}
-        {% include 'partials/cards/evento_card.html' %}
-      {% empty %}
-        <p class="col-span-full text-center text-neutral-500">{% trans 'Nenhum evento encontrado.' %}</p>
-      {% endfor %}
+  <div class="card">
+    <div class="card-header">
+      {% include 'components/search_form.html' with q=request.GET.q %}
     </div>
-  </main>
-  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
-</section>
+    <div class="card-body">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+        {% include "partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos %}
+        {% include "partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos %}
+        {% include "partials/cards/total_card.html" with label=_('Concluídos') valor=total_eventos_concluidos %}
+        {% include "partials/cards/total_card.html" with label=_('Inscritos (total)') valor=total_inscritos %}
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
+        {% for evento in eventos %}
+          {% include 'partials/cards/evento_card.html' %}
+        {% empty %}
+          <p class="col-span-full text-center text-neutral-500">{% trans 'Nenhum evento encontrado.' %}</p>
+        {% endfor %}
+      </div>
+      {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
+    </div>
+  </div>
 </div>
 {% endblock %}

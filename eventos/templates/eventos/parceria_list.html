@@ -4,66 +4,55 @@
 {% block title %}{% trans "Parcerias" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-7xl mx-auto px-4 py-10">
-  <header class="mb-6 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Parcerias" %}</h1>
-    <a href="{% url 'eventos:parceria_criar' %}" class="btn-primary">{% trans "Nova Parceria" %}</a>
-  </header>
-
-  <main>
-    <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-      <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
-        <thead class="bg-neutral-50">
-          <tr>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Empresa" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Tipo" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Avaliação" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comentário" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-neutral-200">
-          {% for parceria in parcerias %}
-            <tr>
-              <td class="px-4 py-2">{{ parceria.empresa.nome }}</td>
-              <td class="px-4 py-2">{{ parceria.evento.titulo }}</td>
-              <td class="px-4 py-2">{{ parceria.get_tipo_parceria_display }}</td>
-              {% if parceria.avaliacao is not None %}
-                <td class="px-4 py-2">{{ parceria.avaliacao }}</td>
-                <td class="px-4 py-2">{{ parceria.comentario }}</td>
-              {% else %}
-                <td class="px-4 py-2">-</td>
-                <td class="px-4 py-2">-</td>
-              {% endif %}
-              <td class="px-4 py-2 space-x-2">
-                {% if parceria.avaliacao is None %}
-                  <a
-                    href="{% url 'eventos:parceria_avaliar' parceria.pk %}"
-                    class="text-green-600 hover:underline"
-                    >{% trans "Avaliar" %}</a
-                  >
-                {% endif %}
-                <a
-                  href="{% url 'eventos:parceria_editar' parceria.pk %}"
-                  class="text-blue-600 hover:underline"
-                  >{% trans "Editar" %}</a
-                >
-                <a
-                  href="{% url 'eventos:parceria_excluir' parceria.pk %}"
-                  class="text-red-600 hover:underline"
-                  >{% trans "Excluir" %}</a
-                >
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="6" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+{% include 'components/hero.html' with title=_('Parcerias') %}
+<div class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-header flex items-center justify-between">
+      <a href="{% url 'eventos:parceria_criar' %}" class="btn-primary">{% trans "Nova Parceria" %}</a>
     </div>
-  </main>
-</section>
+    <div class="card-body">
+      <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+        <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Empresa" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Tipo" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Avaliação" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comentário" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200">
+            {% for parceria in parcerias %}
+              <tr>
+                <td class="px-4 py-2">{{ parceria.empresa.nome }}</td>
+                <td class="px-4 py-2">{{ parceria.evento.titulo }}</td>
+                <td class="px-4 py-2">{{ parceria.get_tipo_parceria_display }}</td>
+                {% if parceria.avaliacao is not None %}
+                  <td class="px-4 py-2">{{ parceria.avaliacao }}</td>
+                  <td class="px-4 py-2">{{ parceria.comentario }}</td>
+                {% else %}
+                  <td class="px-4 py-2">-</td>
+                  <td class="px-4 py-2">-</td>
+                {% endif %}
+                <td class="px-4 py-2 space-x-2">
+                  {% if parceria.avaliacao is None %}
+                    <a href="{% url 'eventos:parceria_avaliar' parceria.pk %}" class="text-green-600 hover:underline">{% trans "Avaliar" %}</a>
+                  {% endif %}
+                  <a href="{% url 'eventos:parceria_editar' parceria.pk %}" class="text-blue-600 hover:underline">{% trans "Editar" %}</a>
+                  <a href="{% url 'eventos:parceria_excluir' parceria.pk %}" class="text-red-600 hover:underline">{% trans "Excluir" %}</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

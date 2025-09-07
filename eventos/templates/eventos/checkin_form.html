@@ -3,19 +3,23 @@
 {% block title %}{% trans "Check-in" %}{% endblock %}
 
 {% block content %}
-<main class="max-w-md mx-auto py-8 px-4">
-  <h1 class="text-xl font-semibold mb-4">{% trans "Check-in do evento" %}</h1>
-  <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
-    {% csrf_token %}
-    <label for="codigo" class="block text-sm font-medium">{% trans "Código do check-in" %}</label>
-    <input type="text" id="codigo" name="codigo" class="form-input w-full" placeholder="{% trans 'Escaneie ou digite o código' %}" required>
-    <div id="feedback" class="text-sm"></div>
-    <div id="reader" class="w-full mb-4"></div>
-    <div class="text-right">
-      <button type="submit" class="btn-primary" aria-label="{% trans 'Confirmar presença' %}">{% trans 'Confirmar presença' %}</button>
+{% include 'components/hero.html' with title=_('Check-in do evento') %}
+<div class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-body">
+      <form method="post" action="{% url 'eventos:inscricao_checkin' inscricao.id %}" id="checkin-form" class="space-y-4">
+        {% csrf_token %}
+        <label for="codigo" class="block text-sm font-medium">{% trans "Código do check-in" %}</label>
+        <input type="text" id="codigo" name="codigo" class="form-input w-full" placeholder="{% trans 'Escaneie ou digite o código' %}" required>
+        <div id="feedback" class="text-sm"></div>
+        <div id="reader" class="w-full mb-4"></div>
+        <div class="text-right">
+          <button type="submit" class="btn-primary" aria-label="{% trans 'Confirmar presença' %}">{% trans 'Confirmar presença' %}</button>
+        </div>
+      </form>
     </div>
-  </form>
-</main>
+  </div>
+</div>
 
 <script src="https://unpkg.com/html5-qrcode" defer></script>
 <script>
@@ -26,7 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const successMessage = "{% trans 'Check-in realizado com sucesso!' %}";
   const readerEl = document.getElementById("reader");
 
-  // Inicializa o leitor de QR code
   if (window.Html5Qrcode && readerEl) {
     const qr = new Html5Qrcode("reader");
     qr.start(

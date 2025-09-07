@@ -7,12 +7,10 @@
   <p class="sr-only">{% trans 'Lista de eventos do dia' %}</p>
 </header>
 
-<main>
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% for ev in eventos %}
-      {% include 'eventos/partials/card.html' with evento=ev %}
-    {% empty %}
-      <p class="text-sm text-neutral-400">{% trans "Sem eventos." %}</p>
-    {% endfor %}
-  </div>
-</main>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {% for ev in eventos %}
+    {% include 'eventos/partials/card.html' with evento=ev %}
+  {% empty %}
+    <p class="text-sm text-neutral-400">{% trans "Sem eventos." %}</p>
+  {% endfor %}
+</div>

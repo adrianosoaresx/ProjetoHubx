@@ -4,91 +4,79 @@
 {% block title %}{% trans "Inscrições" %} | Hubx{% endblock %}
 
 {% block content %}
-<section id="inscricao-container" class="max-w-7xl mx-auto px-4 py-10">
-  <header class="mb-6">
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Lista de Inscrições" %}</h1>
-  </header>
-
-  {% if messages %}
-    <div class="mb-4 space-y-2">
-        {% for message in messages %}
-          <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
-        {% endfor %}
-    </div>
-  {% endif %}
-
-  {% url 'eventos:inscricao_list' as inscricao_list_url %}
-  {% include 'components/search_form.html' with q=request.GET.q hx_get=inscricao_list_url hx_target='#inscricao-container' hx_push_url='true' %}
-
-  <main>
-    <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-      <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
-        <thead class="bg-neutral-50">
-          <tr>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Usuário" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Status" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Posição na espera" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Presente" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Valor Pago" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Método de Pagamento" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comprovante" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Observação" %}</th>
-            <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-neutral-200">
-          {% for inscricao in inscricoes %}
-            <tr>
-              <td class="px-4 py-2">{{ inscricao.user }}</td>
-              <td class="px-4 py-2">{{ inscricao.evento }}</td>
-              <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
-              <td class="px-4 py-2">
-                {% if inscricao.status == 'pendente' %}
-                  {{ inscricao.posicao_espera }}
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td class="px-4 py-2">{{ inscricao.presente }}</td>
-              <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
-              <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
-              <td class="px-4 py-2">
-                {% if inscricao.comprovante_pagamento %}
-                  <a href="{{ inscricao.comprovante_pagamento.url }}" class="text-blue-600 hover:underline" target="_blank">{% trans "Ver" %}</a>
-                {% else %}
-                  -
-                {% endif %}
-              </td>
-              <td class="px-4 py-2">{{ inscricao.observacao }}</td>
-              <td class="px-4 py-2">
-                <a
-                  href="{% url 'eventos:evento_detalhe' inscricao.evento.pk %}"
-                  class="text-blue-600 hover:underline"
-                >
-                  {% trans "Ver" %}
-                </a>
-                |
-                <a
-                  href="{% url 'eventos:inscricao_checkin_form' inscricao.pk %}"
-                  class="text-blue-600 hover:underline"
-                >
-                  {% trans "Check-in" %}
-                </a>
-              </td>
-            </tr>
-          {% empty %}
-            <tr>
-              <td colspan="10" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
-            </tr>
+{% include 'components/hero.html' with title=_('Lista de Inscrições') %}
+<div id="inscricao-container" class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-body">
+      {% if messages %}
+        <div class="mb-4 space-y-2">
+          {% for message in messages %}
+            <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
           {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </main>
+        </div>
+      {% endif %}
 
-  <footer class="mt-6 text-right">
-    <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>
-  </footer>
-</section>
+      {% url 'eventos:inscricao_list' as inscricao_list_url %}
+      {% include 'components/search_form.html' with q=request.GET.q hx_get=inscricao_list_url hx_target='#inscricao-container' hx_push_url='true' %}
+
+      <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm mt-6">
+        <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Usuário" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Status" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Posição na espera" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Presente" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Valor Pago" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Método de Pagamento" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comprovante" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Observação" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200">
+            {% for inscricao in inscricoes %}
+              <tr>
+                <td class="px-4 py-2">{{ inscricao.user }}</td>
+                <td class="px-4 py-2">{{ inscricao.evento }}</td>
+                <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
+                <td class="px-4 py-2">
+                  {% if inscricao.status == 'pendente' %}
+                    {{ inscricao.posicao_espera }}
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2">{{ inscricao.presente }}</td>
+                <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
+                <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>
+                <td class="px-4 py-2">
+                  {% if inscricao.comprovante_pagamento %}
+                    <a href="{{ inscricao.comprovante_pagamento.url }}" class="text-blue-600 hover:underline" target="_blank">{% trans "Ver" %}</a>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td class="px-4 py-2">{{ inscricao.observacao }}</td>
+                <td class="px-4 py-2">
+                  <a href="{% url 'eventos:evento_detalhe' inscricao.evento.pk %}" class="text-blue-600 hover:underline">{% trans "Ver" %}</a> |
+                  <a href="{% url 'eventos:inscricao_checkin_form' inscricao.pk %}" class="text-blue-600 hover:underline">{% trans "Check-in" %}</a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="10" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma inscrição encontrada." %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <footer class="mt-6 text-right">
+        <a href="{% url 'eventos:calendario' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar aos eventos" %}</a>
+      </footer>
+    </div>
+  </div>
+</div>
 {% endblock %}

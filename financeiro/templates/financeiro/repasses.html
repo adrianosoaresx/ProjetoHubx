@@ -4,58 +4,64 @@
 {% block title %}{% trans "Repasses de Receita" %}{% endblock %}
 
 {% block content %}
-<main class="p-4 max-w-5xl mx-auto">
-  <h1 class="text-2xl font-semibold mb-2">{% trans "Repasses" %}</h1>
-  <form id="filtros" class="mb-4 flex gap-4" hx-get="/api/financeiro/repasses/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderRepasses(event)">
-    <div>
-      <label for="filtro-evento" class="block text-sm font-medium text-gray-700">{% trans "Evento" %}</label>
-      <select id="filtro-evento" name="evento" class="border p-2 rounded">
-        <option value="">{% trans "Todos" %}</option>
-        {% for e in eventos %}
-          <option value="{{ e.id }}">{{ e.titulo }}</option>
-        {% endfor %}
-      </select>
+{% include 'components/hero.html' with title=_('Repasses') %}
+<div class="container mx-auto p-6">
+  <div class="card">
+    <div class="card-header">
+      <form id="filtros" class="flex gap-4" hx-get="/api/financeiro/repasses/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderRepasses(event)">
+        <div>
+          <label for="filtro-evento" class="block text-sm font-medium text-gray-700">{% trans "Evento" %}</label>
+          <select id="filtro-evento" name="evento" class="border p-2 rounded">
+            <option value="">{% trans "Todos" %}</option>
+            {% for e in eventos %}
+              <option value="{{ e.id }}">{{ e.titulo }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
     </div>
-  </form>
-  <div id="lista" aria-live="polite">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead>
-        <tr class="bg-gray-50">
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "ID" %}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Centro de Custo" %}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Conta Associada" %}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Valor" %}</th>
-          <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Data de Lançamento" %}</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="card-body">
+      <div id="lista" aria-live="polite">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "ID" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Centro de Custo" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Conta Associada" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Valor" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Data de Lançamento" %}</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <script src="{% url 'javascript-catalog' %}"></script>
+      <script>
+        function renderRepasses(evt) {
+          const tbody = document.querySelector('#lista tbody');
+          tbody.innerHTML = '';
+          try {
+            const data = JSON.parse(evt.detail.xhr.response);
+            const itens = data.results || data;
+            const rows = itens.map(r => `
+              <tr>
+                <td class=\"px-3 py-2\">${r.id}</td>
+                <td class=\"px-3 py-2\">${r.centro_custo || ''}</td>
+                <td class=\"px-3 py-2\">${r.conta_associado || ''}</td>
+                <td class=\"px-3 py-2\">${r.valor}</td>
+                <td class=\"px-3 py-2\">${r.data_lancamento}</td>
+              </tr>
+            `).join('');
+            tbody.innerHTML = rows || `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Nenhum repasse')}</td></tr>`;
+          } catch (e) {
+            tbody.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Erro ao carregar')}</td></tr>`;
+          }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+          htmx.trigger('#filtros', 'submit');
+        });
+      </script>
+    </div>
   </div>
-  <script src="{% url 'javascript-catalog' %}"></script>
-  <script>
-    function renderRepasses(evt) {
-      const tbody = document.querySelector('#lista tbody');
-      tbody.innerHTML = '';
-      try {
-        const data = JSON.parse(evt.detail.xhr.response);
-        const itens = data.results || data;
-        const rows = itens.map(r => `
-          <tr>
-            <td class=\"px-3 py-2\">${r.id}</td>
-            <td class=\"px-3 py-2\">${r.centro_custo || ''}</td>
-            <td class=\"px-3 py-2\">${r.conta_associado || ''}</td>
-            <td class=\"px-3 py-2\">${r.valor}</td>
-            <td class=\"px-3 py-2\">${r.data_lancamento}</td>
-          </tr>
-        `).join('');
-        tbody.innerHTML = rows || `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Nenhum repasse')}</td></tr>`;
-      } catch (e) {
-        tbody.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Erro ao carregar')}</td></tr>`;
-      }
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-      htmx.trigger('#filtros', 'submit');
-    });
-  </script>
-</main>
+</div>
 {% endblock %}
