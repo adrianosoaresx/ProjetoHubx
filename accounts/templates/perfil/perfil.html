@@ -11,17 +11,13 @@
 <div class="container mx-auto p-6">
   <div class="card flex flex-col min-h-[80vh] overflow-hidden">
     {% with perfil|default:user as profile %}
-    <div class="profile-cover h-48 w-full">
+    <div class="profile-cover relative h-48 w-full">
       {% if profile.cover %}
         <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="w-full h-full object-cover">
       {% else %}
         <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
       {% endif %}
-    </div>
-    <div class="card-body flex flex-col flex-grow">
-
-      <!-- Avatar + Nome -->
-      <div class="flex flex-col items-center">
+      <div class="absolute inset-0 flex flex-col items-center justify-center text-white drop-shadow">
         {% if profile.avatar %}
           <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
                class="w-28 h-28 rounded-full object-cover shadow mb-3">
@@ -30,13 +26,14 @@
             {{ profile.username|first|upper }}
           </div>
         {% endif %}
-
         <h2 class="text-lg font-bold">{{ profile.get_full_name }}</h2>
-        <p class="text-sm text-gray-500 mb-2">@{{ profile.username }}</p>
+        <p class="text-sm mb-2">@{{ profile.username }}</p>
         {% if profile == request.user %}
-        <button class="text-sm text-primary hover:underline">{% trans "Alterar foto" %}</button>
+        <button class="text-sm hover:underline">{% trans "Alterar foto" %}</button>
         {% endif %}
       </div>
+    </div>
+    <div class="card-body flex flex-col flex-grow">
 
       <!-- Abas de navegação -->
 
