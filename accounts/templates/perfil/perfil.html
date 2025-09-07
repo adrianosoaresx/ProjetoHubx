@@ -17,7 +17,9 @@
       {% else %}
         <div class="w-full h-full bg-gray-200" role="img" aria-label="{% trans "Capa padrão" %}"></div>
       {% endif %}
+
       <div class="absolute inset-0 z-20 flex flex-col items-center justify-center text-white drop-shadow">
+
         {% if profile.avatar %}
           <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
                class="w-28 h-28 rounded-full object-cover shadow mb-3">
