@@ -16,18 +16,18 @@ const config: Config = {
   	extend: {
                 colors: {
                         primary: {
-                                50: '#eff6ff',
-                                100: '#dbeafe',
-                                200: '#bfdbfe',
-                                300: '#93c5fd',
-                                400: '#60a5fa',
-                                500: '#3b82f6',
-                                600: '#2563eb',
-                                700: '#1d4ed8',
-                                800: '#1e40af',
-                                900: '#1e3a8a',
-                                DEFAULT: '#3b82f6',
-                                foreground: '#ffffff'
+                                50: 'var(--color-primary-50)',
+                                100: 'var(--color-primary-100)',
+                                200: 'var(--color-primary-200)',
+                                300: 'var(--color-primary-300)',
+                                400: 'var(--color-primary-400)',
+                                500: 'var(--color-primary-500)',
+                                600: 'var(--color-primary-600)',
+                                700: 'var(--color-primary-700)',
+                                800: 'var(--color-primary-800)',
+                                900: 'var(--color-primary-900)',
+                                DEFAULT: 'var(--primary)',
+                                foreground: 'var(--text-inverse)'
                         },
                         accent: {
                                 50: 'var(--color-accent-50)',
