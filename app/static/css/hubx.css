@@ -20,17 +20,17 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
-  /* Accent Colors (Alias of Primary) */
-  --color-accent-50: var(--color-primary-50);
-  --color-accent-100: var(--color-primary-100);
-  --color-accent-200: var(--color-primary-200);
-  --color-accent-300: var(--color-primary-300);
-  --color-accent-400: var(--color-primary-400);
-  --color-accent-500: var(--color-primary-500);
-  --color-accent-600: var(--color-primary-600);
-  --color-accent-700: var(--color-primary-700);
-  --color-accent-800: var(--color-primary-800);
-  --color-accent-900: var(--color-primary-900);
+  /* Accent Colors */
+  --color-accent-50: #faf5ff;
+  --color-accent-100: #f3e8ff;
+  --color-accent-200: #e9d5ff;
+  --color-accent-300: #d8b4fe;
+  --color-accent-400: #c084fc;
+  --color-accent-500: #a855f7;
+  --color-accent-600: #9333ea;
+  --color-accent-700: #7e22ce;
+  --color-accent-800: #6b21a8;
+  --color-accent-900: #581c87;
 
   /* Neutral Colors - Light */
   --color-neutral-50: #f8fafc;
@@ -152,9 +152,9 @@
   --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-100);
 
-  --accent: #a855f7;
-  --accent-light: #f3e8ff;
-  --accent-dark: #7e22ce;
+  --accent: var(--color-accent-500);
+  --accent-light: var(--color-accent-100);
+  --accent-dark: var(--color-accent-700);
 
   --success: var(--color-success-600);
   --success-light: var(--color-success-100);
@@ -202,9 +202,9 @@
     --primary-hover: var(--color-primary-800);
     --primary-light: var(--color-primary-900);
 
-    --accent: #a855f7;
-    --accent-light: #f3e8ff;
-    --accent-dark: #7e22ce;
+    --accent: var(--color-accent-500);
+    --accent-light: var(--color-accent-100);
+    --accent-dark: var(--color-accent-700);
 
     --success: var(--color-success-500);
     --success-light: var(--color-success-900);
@@ -240,9 +240,9 @@
   --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-900);
 
-  --accent: #a855f7;
-  --accent-light: #f3e8ff;
-  --accent-dark: #7e22ce;
+  --accent: var(--color-accent-500);
+  --accent-light: var(--color-accent-100);
+  --accent-dark: var(--color-accent-700);
 
   --success: var(--color-success-500);
   --success-light: var(--color-success-900);
