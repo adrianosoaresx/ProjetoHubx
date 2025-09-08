@@ -1,0 +1,43 @@
+{% load i18n %}
+<div class="space-y-4">
+  {% for solicitante in connection_requests %}
+  <div class="request-card flex items-start justify-between p-4 border rounded-xl bg-white shadow-sm">
+    <div class="flex items-center gap-3">
+      {% if solicitante.avatar %}
+        <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.username }}" class="w-10 h-10 rounded-full object-cover" />
+      {% else %}
+        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600" role="img" aria-label="{{ solicitante.username }}">
+          {{ solicitante.username|first|upper }}
+        </div>
+      {% endif %}
+      <div>
+        <p class="font-medium">{{ solicitante.get_full_name }}</p>
+        <p class="text-sm text-gray-500">@{{ solicitante.username }}</p>
+      </div>
+    </div>
+    <div class="flex flex-col gap-1">
+      <form
+        hx-post="{% url 'accounts:aceitar_conexao' solicitante.id %}"
+        hx-target="closest .request-card"
+        hx-swap="outerHTML"
+      >
+        {% csrf_token %}
+        <button class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded">{% trans "Aceitar" %}</button>
+      </form>
+      <form
+        hx-post="{% url 'accounts:recusar_conexao' solicitante.id %}"
+        hx-target="closest .request-card"
+        hx-swap="outerHTML"
+      >
+        {% csrf_token %}
+        <button class="text-sm bg-red-100 text-red-600 px-3 py-1 rounded">{% trans "Recusar" %}</button>
+      </form>
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center text-sm text-gray-500">
+    <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
+  </div>
+  {% endfor %}
+</div>
+

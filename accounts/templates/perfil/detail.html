@@ -90,19 +90,6 @@
     </div>
     {% endif %}
   </div>
-
-  <script>
-    // Tabs simples em JS vanilla (perfil)
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    function activate(tab) {
-      tabButtons.forEach(btn => btn.dataset.active = (btn.dataset.tab === tab));
-      panels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.tab !== tab));
-    }
-    // Ativa 'informacoes' por padrão
-    activate('informacoes');
-    tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
-  </script>
 </div>
 
 {% endblock %}

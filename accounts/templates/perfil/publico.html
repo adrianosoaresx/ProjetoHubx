@@ -20,18 +20,23 @@
            class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 dark:text-gray-400 hover:text-primary hover:border-primary">
           {% trans "Empresas" %}
         </a>
+
       </li>
       <li>
-        <a href="#tab-nucleos" data-tab-target="tab-nucleos" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
-          {% trans "Núcleos" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary"
+          hx-get="?tab=nucleos"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Núcleos" %}</a>
       </li>
       <li>
-        <a href="#tab-eventos" data-tab-target="tab-eventos" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
-          {% trans "Eventos" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary"
+          hx-get="?tab=eventos"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Eventos" %}</a>
       </li>
       {% endif %}
     </ul>
@@ -114,43 +119,8 @@
       </div>
     </div>
     {% endif %}
+
   </div>
-
-  <script>
-  (function () {
-    const container = document.currentScript && document.currentScript.previousElementSibling;
-    if (!container) return;
-    const tabLinks = container.querySelectorAll('[data-tab-target]');
-    const panels = container.querySelectorAll('[data-tab-panel]');
-
-    function activate(id) {
-      panels.forEach(p => p.classList.add('hidden'));
-      tabLinks.forEach(a => {
-        const isActive = a.getAttribute('data-tab-target') === id;
-        a.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        if (isActive) a.setAttribute('data-active', 'true'); else a.removeAttribute('data-active');
-      });
-      const current = container.querySelector('#' + CSS.escape(id));
-      if (current) current.classList.remove('hidden');
-    }
-
-    const initial = (location.hash || '#tab-informacoes').replace('#', '');
-    if (container.querySelector('[data-tab-target="' + initial + '"]')) {
-      activate(initial);
-    } else {
-      activate('tab-informacoes');
-    }
-
-    tabLinks.forEach(a => {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const id = a.getAttribute('data-tab-target');
-        history.replaceState(null, '', '#' + id);
-        activate(id);
-      });
-    });
-  })();
-  </script>
 </div>
 {% endblock %}
 
