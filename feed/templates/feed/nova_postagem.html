@@ -6,13 +6,13 @@
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-10">
   {% if request.user.user_type == 'root' %}
-    <p class="text-center text-neutral-500">{% trans "Usuário root não tem acesso ao feed." %}</p>
+    <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
   {% else %}
 
   {% with selected=selected_tipo_feed|default:"global" %}
   <!-- Cabeçalho -->
   <div class="mb-6">
-    <p class="text-sm text-neutral-600 text-center">{% trans "Compartilhe algo com sua comunidade" %}</p>
+    <p class="text-sm text-[var(--text-secondary)] text-center">{% trans "Compartilhe algo com sua comunidade" %}</p>
   </div>
 
   <!-- Container para HTMX swaps -->
@@ -24,11 +24,11 @@
           hx-swap="outerHTML"
           hx-encoding="multipart/form-data"
           enctype="multipart/form-data"
-          class="post-form bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+          class="post-form bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 space-y-6">
       {% csrf_token %}
 
       {% if form.errors %}
-        <div class="rounded-xl border border-red-200 bg-red-50 text-red-700 text-sm p-3">
+        <div class="rounded-xl border border-[var(--error)] bg-[var(--error-light)] text-[var(--error)] text-sm p-3">
           <ul class="list-disc list-inside space-y-1">
             {% for field in form %}
               {% for error in field.errors %}
@@ -44,7 +44,7 @@
 
       <!-- Visibilidade / Destino -->
       <div>
-        <label class="block text-sm font-medium text-neutral-700 mb-2">{% trans "Destino" %} <span class="text-red-600">*</span></label>
+        <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">{% trans "Destino" %} <span class="text-red-600">*</span></label>
         <div class="flex flex-wrap gap-4 text-sm">
           <label class="inline-flex items-center gap-2">
             <input type="radio" name="tipo_feed" value="global" class="accent-blue-600" {% if selected == 'global' %}checked{% endif %} />
@@ -73,9 +73,9 @@
                 </label>
               {% endfor %}
             </div>
-            <p class="text-xs text-neutral-500 mt-1">{% trans "Selecione um núcleo para publicar lá." %}</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">{% trans "Selecione um núcleo para publicar lá." %}</p>
           {% else %}
-            <p class="text-xs text-neutral-500 mt-1">{% trans "Você não participa de nenhum núcleo." %}</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">{% trans "Você não participa de nenhum núcleo." %}</p>
           {% endif %}
           {% if form.nucleo.errors %}
             <p class="text-red-500 text-xs mt-1">{{ form.nucleo.errors|striptags }}</p>
@@ -85,7 +85,7 @@
 
       <!-- Conteúdo -->
       <div>
-        <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-neutral-700">
+        <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">
           {{ form.conteudo.label }} <span class="text-red-600">*</span>
         </label>
         <textarea
@@ -96,12 +96,12 @@
           rows="6"
         >{{ form.conteudo.value|default_if_none:"" }}</textarea>
         <div class="mt-1">
-          <span id="char-count" class="text-xs text-neutral-500"></span>
+          <span id="char-count" class="text-xs text-[var(--text-muted)]"></span>
         </div>
         {% if form.conteudo.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.conteudo.errors }}</p>
         {% endif %}
-        <p class="text-sm text-neutral-500 mt-1">{% trans "Compartilhe ideias, atualizações ou conteúdos com sua rede." %}</p>
+        <p class="text-sm text-[var(--text-muted)] mt-1">{% trans "Compartilhe ideias, atualizações ou conteúdos com sua rede." %}</p>
       </div>
 
       {% if request.user.organizacao %}
@@ -126,9 +126,9 @@
 
       <!-- Arquivo -->
       <div>
-        <label for="id_file" class="block text-sm font-medium text-neutral-700">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
+        <label for="id_file" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
         <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf"
-               class="mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200">
+               class="mt-2 block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-[var(--text-secondary)] hover:file:bg-neutral-200">
         <span class="file-text">{% trans "Nenhum arquivo selecionado" %}</span>
         {% if form.image.errors or form.pdf.errors or form.video.errors %}
           <p class="text-red-500 text-xs mt-1">
@@ -138,7 +138,7 @@
       </div>
 
       <!-- Legenda de obrigatoriedade -->
-      <div class="mt-2 text-xs text-neutral-600">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</div>
+      <div class="mt-2 text-xs text-[var(--text-secondary)]">{% trans "Campos marcados com * são obrigatórios. Informe conteúdo ou anexe um arquivo." %}</div>
 
       <!-- Ações -->
       <div class="flex justify-end gap-3 mt-6">
