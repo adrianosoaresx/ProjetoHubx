@@ -2,27 +2,30 @@
 {% load i18n %}
 {% block title %}{% trans "Excluir Conta" %} - HubX{% endblock %}
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold text-center mb-6">{% trans "Excluir Conta" %}</h1>
-  <p class="text-red-700 bg-red-100 rounded-xl px-4 py-2 mb-4 text-sm">
+<section class="max-w-md mx-auto px-4 py-12 bg-white dark:bg-neutral-900">
+  <h1 class="text-2xl font-bold text-center mb-6 text-neutral-900 dark:text-neutral-100">{% trans "Excluir Conta" %}</h1>
+  <p class="text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 rounded-xl px-4 py-2 mb-4 text-sm">
     {% trans "A exclusão da conta é permanente e você perderá acesso aos seus dados." %}
   </p>
-  <form method="post" class="bg-white rounded-2xl shadow p-6 space-y-4">
+  <form method="post" class="bg-white dark:bg-neutral-800 rounded-2xl shadow p-6 space-y-4">
     {% csrf_token %}
     <div>
-      <label for="confirm" class="block text-sm font-medium text-neutral-700">{% trans "Digite EXCLUIR para confirmar" %}</label>
+      <label for="confirm" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{% trans "Digite EXCLUIR para confirmar" %}</label>
       <input
         type="text"
         name="confirm"
         id="confirm"
         required
-        class="w-full rounded-md border border-neutral-300 px-3 py-2"
+        class="w-full rounded-md border border-neutral-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 px-3 py-2"
+        placeholder="EXCLUIR"
+        aria-label="{% trans 'Confirmação' %}"
+        aria-invalid="false"
       />
     </div>
     <div class="text-right">
       <button
         type="submit"
-        class="rounded-xl bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+        class="rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2 text-white"
       >
         {% trans "Confirmar exclusão" %}
       </button>

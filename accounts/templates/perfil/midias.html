@@ -6,30 +6,32 @@
 {% block perfil_content %}
 <section id="midias" class="perfil-section active">
   <div class="section-header mb-6">
-    <h2 class="text-xl font-semibold">{% trans "Mídias" %}</h2>
-    <p class="text-sm text-gray-500">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
+    <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">{% trans "Mídias" %}</h2>
+    <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
   </div>
 
   {% if show_form %}
   <form id="formMidias" class="space-y-6" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <div>
-      <label for="id_file" class="block text-sm font-medium text-gray-700">{% trans "Enviar arquivo" %}</label>
-      <input type="file" id="id_file" name="file" class="mt-1 block w-full border rounded-lg p-2 text-sm" required accept="{{ allowed_exts|join:',' }}">
+      <label for="id_file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Enviar arquivo" %}</label>
+      <input type="file" id="id_file" name="file" class="mt-1 block w-full border rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" required accept="{{ allowed_exts|join:',' }}" aria-label="{% trans 'Arquivo' %}" aria-invalid="false" aria-describedby="file_help">
       {% if form.file.errors %}
         <div class="text-sm text-red-600">{{ form.file.errors }}</div>
       {% endif %}
+      <small id="file_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Selecione um arquivo" %}</small>
     </div>
     <div>
-      <label for="id_descricao" class="block text-sm font-medium text-gray-700">{% trans "Descrição" %}</label>
-      <input type="text" id="id_descricao" name="descricao" class="mt-1 block w-full border rounded-lg p-2 text-sm">
+      <label for="id_descricao" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Descrição" %}</label>
+      <input type="text" id="id_descricao" name="descricao" class="mt-1 block w-full border rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" aria-label="{% trans 'Descrição' %}" aria-invalid="false" aria-describedby="descricao_help" placeholder="{% trans 'Descrição' %}">
+      <small id="descricao_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Breve descrição da mídia" %}</small>
       {% if form.descricao.errors %}
         <div class="text-sm text-red-600">{{ form.descricao.errors }}</div>
       {% endif %}
     </div>
     <div>
-      <label for="id_tags_field" class="block text-sm font-medium text-gray-700">{% trans "Tags" %}</label>
-      <input type="text" id="id_tags_field" name="tags_field" class="mt-1 block w-full border rounded-lg p-2 text-sm" placeholder="{% trans 'paisagem, viagem' %}">
+      <label for="id_tags_field" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tags" %}</label>
+      <input type="text" id="id_tags_field" name="tags_field" class="mt-1 block w-full border rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" placeholder="{% trans 'paisagem, viagem' %}" aria-label="{% trans 'Tags' %}" aria-invalid="false">
       {% if form.tags_field.errors %}
         <div class="text-sm text-red-600">{{ form.tags_field.errors }}</div>
       {% endif %}
@@ -49,12 +51,12 @@
 
   <form method="get" class="mt-6">
     <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Buscar por descrição ou tags...' %}"
-           class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm">
+           class="w-full border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 rounded-lg px-4 py-2 text-sm" aria-label="{% trans 'Buscar' %}" aria-invalid="false">
   </form>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
     {% for media in medias %}
-    <div class="bg-white border rounded-lg shadow p-3 relative">
+    <div class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow p-3 relative">
       <div class="absolute top-2 right-2 flex gap-2">
         <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
           {% lucide 'edit' class='w-4 h-4' aria_hidden='true' %}
@@ -75,17 +77,17 @@
         {% endif %}
       </a>
       <div class="mt-2">
-        <p class="text-sm font-medium text-gray-700">{{ media.descricao }}</p>
-  <p class="text-xs text-gray-400">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ media.descricao }}</p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
         <div class="flex flex-wrap gap-1 mt-1">
           {% for tag in media.tags.all %}
-            <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
+            <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
           {% endfor %}
         </div>
       </div>
     </div>
     {% empty %}
-      <p class="text-sm text-gray-500">{% trans "Nenhum arquivo enviado." %}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Nenhum arquivo enviado." %}</p>
     {% endfor %}
   </div>
 </section>
