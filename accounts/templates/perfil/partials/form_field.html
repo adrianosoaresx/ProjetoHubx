@@ -1,0 +1,18 @@
+{% with
+   label_attr="aria-label:"|add:field.label
+   required_attr="aria-required:"|add:(field.field.required|yesno:'true,false')
+   invalid_attr="aria-invalid:"|add:(field.errors|yesno:'true,false')
+   desc_attr="aria-describedby:"|add:field.id_for_label|add:'_error'
+%}
+  {{ field|add_class:'peer form-input placeholder-transparent'
+           |attr:'placeholder:'
+           |attr:label_attr
+           |attr:required_attr
+           |attr:invalid_attr
+           |attr:desc_attr }}
+{% endwith %}
+<label for="{{ field.id_for_label }}" class="label-float">{{ field.label }}</label>
+{% if field.errors %}
+  <p id="{{ field.id_for_label }}_error" class="text-[var(--error)] text-sm mt-1" role="alert">{{ field.errors }}</p>
+{% endif %}
+
