@@ -4,33 +4,33 @@
 {% if request.user.user_type != 'root' %}
 <div class="space-y-6">
   {% for post in posts %}
-    <article class="border border-neutral-200 bg-white rounded-2xl shadow-sm p-6 space-y-4">
+    <article class="card rounded-2xl p-6 space-y-4">
 
       <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold" role="img" aria-label="{{ post.autor.username }}">
+        <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
           {{ post.autor.username|first|upper }}
         </div>
         <div>
-          <p class="text-sm font-medium text-neutral-800">
+          <p class="text-sm font-medium text-[var(--text-primary)]">
             {{ post.autor.get_full_name|default:post.autor.username }}
           </p>
-          <p class="text-xs text-neutral-500">
+          <p class="text-xs text-[var(--text-secondary)]">
             {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}
           </p>
         </div>
       </div>
 
-      <div class="text-sm text-neutral-800">
+      <div class="text-sm text-[var(--text-primary)]">
   {{ post.conteudo|linebreaks }}
       </div>
 
       {% if post.pdf %}
         <div class="relative">
           <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl shadow-sm max-w-full">
-          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-[var(--bg-primary)]/90 hover:bg-[var(--bg-primary)] shadow rounded p-1.5 text-sm">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
-          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-[var(--bg-primary)]/90 hover:bg-[var(--bg-primary)] shadow rounded p-1.5 text-sm">
             {% lucide 'download' class='w-4 h-4' %}
           </a>
         </div>
@@ -45,7 +45,7 @@
       {% endif %}
 
       {% if post.tags.all %}
-        <div class="flex flex-wrap gap-2 text-xs text-neutral-500">
+        <div class="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
           {% for tag in post.tags.all %}
             <span class="px-2 py-1 bg-neutral-100 rounded">{{ tag.nome }}</span>
           {% endfor %}
@@ -53,10 +53,10 @@
       {% endif %}
     </article>
   {% empty %}
-    <div class="text-center border border-neutral-200 rounded-2xl shadow-sm bg-white p-10">
+    <div class="text-center card rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] p-10">
       <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
-      <h3 class="text-lg font-semibold text-neutral-900 mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
-      <p class="text-neutral-500 text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
+      <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
+      <p class="text-sm text-[var(--text-secondary)] mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
       <a href="{% url 'feed:nova_postagem' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
         {{ empty_button|default:_("Criar postagem") }}
       </a>
