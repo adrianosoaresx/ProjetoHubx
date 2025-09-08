@@ -6,9 +6,9 @@
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <h2 class="font-semibold text-2xl mb-4 flex items-center justify-between">
-      <a href="{% url 'eventos:calendario_mes' prev_ano prev_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&laquo;</a>
+      <a href="{% url 'eventos:calendario_mes' prev_ano prev_mes %}" class="px-2 py-1 rounded hover:bg-[var(--bg-tertiary)]">&laquo;</a>
       <span>{{ data_atual|date:'YEAR_MONTH_FORMAT' }}</span>
-      <a href="{% url 'eventos:calendario_mes' next_ano next_mes %}" class="px-2 py-1 rounded hover:bg-gray-100">&raquo;</a>
+      <a href="{% url 'eventos:calendario_mes' next_ano next_mes %}" class="px-2 py-1 rounded hover:bg-[var(--bg-tertiary)]">&raquo;</a>
     </h2>
     {% if perms.eventos.add_evento %}
     <a href="{% url 'eventos:evento_novo' %}"
@@ -23,9 +23,9 @@
   </div>
 
   <section class="mt-6">
-    <div class="grid grid-cols-7 gap-px bg-gray-200 rounded-lg overflow-hidden text-sm leading-tight select-none">
+    <div class="grid grid-cols-7 gap-px bg-[var(--bg-tertiary)] rounded-lg overflow-hidden text-sm leading-tight select-none">
       {% for dia in dias_mes %}
-        <div class="relative bg-white p-4 h-28 align-top {% if not dia.mes_atual %}text-gray-400{% else %}text-gray-900{% endif %}"
+        <div class="relative bg-[var(--bg-primary)] p-4 h-28 align-top {% if not dia.mes_atual %}text-[var(--text-secondary)]{% else %}text-[var(--text-primary)]{% endif %}"
              hx-get="{% url 'eventos:lista_eventos' dia.data|date:'Y-m-d' %}"
              hx-target="#eventos-dia" hx-trigger="click">
           <div class="flex items-center justify-between mb-2">
@@ -40,7 +40,7 @@
             {% for ev in dia.eventos|slice:":3" %}
               <li>
                 <a href="{% url 'eventos:evento_detalhe' ev.id %}"
-                   class="block bg-emerald-50 border border-emerald-200 text-emerald-800 rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-emerald-100 transition line-clamp-3"
+                   class="block bg-[var(--success-light)] border border-[var(--success)] text-[var(--success)] rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-emerald-100 transition line-clamp-3"
                    hx-get="{% url 'eventos:evento_detalhe' ev.id %}"
                    hx-target="#modal" hx-trigger="click" hx-stop-propagation="click">
                   {{ ev.titulo }}
