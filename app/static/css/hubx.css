@@ -39,10 +39,13 @@
   --color-success-600: #16a34a;
   --color-success-700: #15803d;
 
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-warning-200: #fef08a;
+  --color-warning-500: #eab308;
+  --color-warning-600: #ca8a04;
+  --color-warning-800: #854d0e;
+  --color-warning-900: #713f12;
 
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
@@ -128,6 +131,7 @@
   --success-light: var(--color-success-100);
   --warning: var(--color-warning-600);
   --warning-light: var(--color-warning-100);
+  --warning-foreground: var(--color-warning-800);
   --error: var(--color-error-600);
   --error-light: var(--color-error-100);
 
@@ -174,6 +178,7 @@
     --success-light: var(--color-success-900);
     --warning: var(--color-warning-500);
     --warning-light: var(--color-warning-900);
+    --warning-foreground: var(--color-warning-200);
     --error: var(--color-error-500);
     --error-light: var(--color-error-900);
 
@@ -208,6 +213,7 @@
   --success-light: var(--color-success-900);
   --warning: var(--color-warning-500);
   --warning-light: var(--color-warning-900);
+  --warning-foreground: var(--color-warning-200);
   --error: var(--color-error-500);
   --error-light: var(--color-error-900);
 
@@ -369,7 +375,7 @@
     @apply bg-[var(--success-light)] border-[var(--success)] text-[var(--success)];
   }
   .alert-warning {
-    @apply bg-[var(--warning-light)] border-[var(--warning)] text-[var(--warning)];
+    @apply bg-[var(--warning-light)] border-[var(--warning)] text-[var(--warning-foreground)];
   }
   .alert-error {
     @apply bg-[var(--error-light)] border-[var(--error)] text-[var(--error)];
