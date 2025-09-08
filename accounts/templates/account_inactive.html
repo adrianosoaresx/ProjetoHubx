@@ -4,15 +4,18 @@
 {% block title %}{% trans "Conta inativa" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12 text-center bg-white dark:bg-neutral-900">
-  <div class="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-8 shadow-sm">
-    <h1 class="mb-4 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Conta inativa" %}</h1>
-    <p class="mb-6 text-neutral-600 dark:text-neutral-400">{% trans "Sua conta ainda não foi ativada. Verifique seu e-mail para continuar." %}</p>
+
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' with title=_('Conta inativa') %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-8 rounded-lg shadow text-center">
+    <p class="mb-6 text-neutral-600 dark:text-neutral-400" aria-live="polite">{% trans "Sua conta ainda não foi ativada. Verifique seu e-mail para continuar." %}</p>
     <a
       href="{% url 'accounts:login' %}"
-      class="rounded-xl bg-primary-600 hover:bg-primary-700 text-white dark:bg-primary-700 dark:hover:bg-primary-600 px-4 py-2"
+      class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+
     >{% trans "Ir para login" %}</a>
   </div>
-</section>
+</div>
 {% endblock %}
 
