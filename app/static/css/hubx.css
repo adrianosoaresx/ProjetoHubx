@@ -105,8 +105,8 @@
   --transition-slow: 350ms ease-in-out;
 
   /* Light Theme (Default) */
-  --bg-primary: var(--color-neutral-50);
-  --bg-secondary: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
   --bg-tertiary: var(--color-neutral-100);
   --bg-accent: var(--color-primary-50);
 
