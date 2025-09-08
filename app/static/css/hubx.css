@@ -516,6 +516,10 @@
   .dropdown-divider {
     @apply h-px bg-[var(--border)] my-2;
   }
+
+  #sidebar a[aria-current='page'] {
+    @apply font-semibold text-[var(--primary)] bg-[var(--bg-tertiary)];
+  }
 }
 
 @layer components {
