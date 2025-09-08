@@ -43,16 +43,17 @@ Aplique utilitários Tailwind diretamente nas tags para garantir consistência e
 A identidade do Hubx usa um gradiente de marca e tokens de cores para garantir
 consistência entre componentes.
 
-- **Gradiente:** utilize `bg-gradient-to-r from-primary-600 to-primary-400` para
+- **Gradiente:** utilize `bg-gradient-to-r from-primary-600 to-primary-800` para
   barras ou destaques de marca.
-- **Primárias:** `text-primary-600`, `bg-primary-500` e `border-primary-400`.
+- **Primárias:** `text-[var(--primary)]`, `bg-[var(--primary)]` e
+  `border-[var(--primary)]`.
 - **Neutras:** `bg-background`, `text-foreground`, `border-border` e
-  `text-muted-foreground`.
+  `text-[var(--text-secondary)]`.
 - **Sucesso/Erro:** `text-success-600`, `bg-success-100`, `bg-destructive` e
   `text-destructive-foreground`.
 
 ```html
-<div class="h-8 bg-gradient-to-r from-primary-600 to-primary-400"></div>
+<div class="h-8 bg-gradient-to-r from-primary-600 to-primary-800"></div>
 ```
 
 ## Estrutura de layout
@@ -110,7 +111,7 @@ bordas suaves, espaçamento e adapta automaticamente para o modo escuro.
 ```html
 <div class="card bg-white dark:bg-gray-900">
   <h3 class="font-semibold">Título</h3>
-  <p class="text-sm text-muted-foreground">Descrição ou conteúdo.</p>
+  <p class="text-sm text-[var(--text-secondary)]">Descrição ou conteúdo.</p>
   <button class="btn btn-primary mt-2">Ação</button>
 </div>
 ```
