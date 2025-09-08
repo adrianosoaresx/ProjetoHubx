@@ -15,8 +15,10 @@
         {% csrf_token %}
 
         <div class="relative">
-          {% with label_attr='aria-label:'|add:form.file.label invalid_attr='aria-invalid:'|add:(form.file.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.file.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.file.label %}
-            {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% with invalid_flag=form.file.errors|yesno:'true,false' %}
+            {% with label_attr='aria-label:'|add:form.file.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.file.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.file.label %}
+              {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
+            {% endwith %}
           {% endwith %}
           <label for="{{ form.file.id_for_label }}" class="label-float">{{ form.file.label }}</label>
           {% if form.file.errors %}
@@ -25,8 +27,10 @@
         </div>
 
         <div class="relative">
-          {% with label_attr='aria-label:'|add:form.descricao.label invalid_attr='aria-invalid:'|add:(form.descricao.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.descricao.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.descricao.label %}
-            {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% with invalid_flag=form.descricao.errors|yesno:'true,false' %}
+            {% with label_attr='aria-label:'|add:form.descricao.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.descricao.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.descricao.label %}
+              {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
+            {% endwith %}
           {% endwith %}
           <label for="{{ form.descricao.id_for_label }}" class="label-float">{{ form.descricao.label }}</label>
           {% if form.descricao.errors %}
@@ -35,8 +39,10 @@
         </div>
 
         <div class="relative">
-          {% with label_attr='aria-label:'|add:form.tags_field.label invalid_attr='aria-invalid:'|add:(form.tags_field.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.tags_field.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.tags_field.label %}
-            {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% with invalid_flag=form.tags_field.errors|yesno:'true,false' %}
+            {% with label_attr='aria-label:'|add:form.tags_field.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.tags_field.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.tags_field.label %}
+              {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
+            {% endwith %}
           {% endwith %}
           <label for="{{ form.tags_field.id_for_label }}" class="label-float">{{ form.tags_field.label }}</label>
           {% if form.tags_field.errors %}
