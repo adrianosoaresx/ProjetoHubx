@@ -30,12 +30,6 @@ const config: Config = {
                                 foreground: '#ffffff'
                         },
                         accent: {
-                                DEFAULT: 'var(--accent)',
-                                light: 'var(--accent-light)',
-                                dark: 'var(--accent-dark)'
-
-                        },
-                        accent: {
                                 50: 'var(--color-accent-50)',
                                 100: 'var(--color-accent-100)',
                                 200: 'var(--color-accent-200)',
@@ -46,7 +40,9 @@ const config: Config = {
                                 700: 'var(--color-accent-700)',
                                 800: 'var(--color-accent-800)',
                                 900: 'var(--color-accent-900)',
-                                DEFAULT: 'var(--color-accent-500)',
+                                DEFAULT: 'var(--accent)',
+                                light: 'var(--accent-light)',
+                                dark: 'var(--accent-dark)',
                                 foreground: 'var(--text-inverse)'
                         },
                         success: {
