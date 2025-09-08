@@ -1,11 +1,11 @@
 {% load i18n %}
 {% if user.biografia %}
   <div class="mb-6">
-    <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
+    <p class="text-[var(--text-primary)] italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
   </div>
 {% endif %}
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-[var(--text-primary)]">
   <div>
     <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
     <p>{% trans "Email" %}: {{ user.email }}</p>
