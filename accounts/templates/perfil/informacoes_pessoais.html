@@ -16,18 +16,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.first_name.label required_attr="aria-required:"|add:(form.first_name.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.first_name.id_for_label|add:'_error' %}
-            {{ form.first_name|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.first_name|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.first_name.id_for_label }}" class="label-float">{{ form.first_name.label }}</label>
             {% if form.first_name.errors %}
             <p id="{{ form.first_name.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.first_name.errors }}</p>
             {% endif %}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.last_name.label required_attr="aria-required:"|add:(form.last_name.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.last_name.id_for_label|add:'_error' %}
-            {{ form.last_name|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.last_name|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.last_name.id_for_label }}" class="label-float">{{ form.last_name.label }}</label>
             {% if form.last_name.errors %}
             <p id="{{ form.last_name.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.last_name.errors }}</p>
@@ -37,9 +33,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.username.label required_attr="aria-required:"|add:(form.username.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.username.id_for_label|add:'_error' %}
-            {{ form.username|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.username|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.username.id_for_label }}" class="label-float">{{ form.username.label }}</label>
             {% if form.username.errors %}
             <p id="{{ form.username.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.username.errors }}</p>
@@ -47,9 +41,7 @@
           </div>
 
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.email.label required_attr="aria-required:"|add:(form.email.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.email.id_for_label|add:'_error' %}
-            {{ form.email|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.email|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.email.id_for_label }}" class="label-float">{{ form.email.label }}</label>
             {% if form.email.errors %}
             <p id="{{ form.email.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.email.errors }}</p>
@@ -58,9 +50,7 @@
         </div>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.cpf.label required_attr="aria-required:"|add:(form.cpf.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.cpf.id_for_label|add:'_error' %}
-          {{ form.cpf|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-          {% endwith %}
+          {{ form.cpf|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
           <label for="{{ form.cpf.id_for_label }}" class="label-float">{{ form.cpf.label }}</label>
           {% if form.cpf.errors %}
           <p id="{{ form.cpf.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.cpf.errors }}</p>
@@ -68,9 +58,7 @@
         </div>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.biografia.label required_attr="aria-required:"|add:(form.biografia.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.biografia.id_for_label|add:'_error' %}
-          {{ form.biografia|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-          {% endwith %}
+          {{ form.biografia|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
           <label for="{{ form.biografia.id_for_label }}" class="label-float">{{ form.biografia.label }}</label>
           {% if form.biografia.errors %}
           <p id="{{ form.biografia.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.biografia.errors }}</p>
@@ -79,18 +67,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.avatar.label required_attr="aria-required:"|add:(form.avatar.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.avatar.id_for_label|add:'_error' %}
-            {{ form.avatar|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.avatar|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.avatar.id_for_label }}" class="label-float">{{ form.avatar.label }}</label>
             {% if form.avatar.errors %}
             <p id="{{ form.avatar.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.avatar.errors }}</p>
             {% endif %}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cover.label required_attr="aria-required:"|add:(form.cover.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.cover.id_for_label|add:'_error' %}
-            {{ form.cover|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.cover|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.cover.id_for_label }}" class="label-float">{{ form.cover.label }}</label>
             {% if form.cover.errors %}
             <p id="{{ form.cover.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.cover.errors }}</p>
@@ -104,18 +88,14 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.phone_number.label required_attr="aria-required:"|add:(form.phone_number.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.phone_number.id_for_label|add:'_error' %}
-            {{ form.phone_number|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.phone_number|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.phone_number.id_for_label }}" class="label-float">{{ form.phone_number.label }}</label>
             {% if form.phone_number.errors %}
             <p id="{{ form.phone_number.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.phone_number.errors }}</p>
             {% endif %}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.whatsapp.label required_attr="aria-required:"|add:(form.whatsapp.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.whatsapp.id_for_label|add:'_error' %}
-            {{ form.whatsapp|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.whatsapp|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.whatsapp.id_for_label }}" class="label-float">{{ form.whatsapp.label }}</label>
             {% if form.whatsapp.errors %}
             <p id="{{ form.whatsapp.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.whatsapp.errors }}</p>
@@ -128,9 +108,7 @@
         <h4 class="text-lg font-semibold">{% trans "Endereço" %}</h4>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.endereco.label required_attr="aria-required:"|add:(form.endereco.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.endereco.id_for_label|add:'_error' %}
-          {{ form.endereco|add_class:'w-full peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-          {% endwith %}
+          {{ form.endereco|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
           <label for="{{ form.endereco.id_for_label }}" class="label-float">{{ form.endereco.label }}</label>
           {% if form.endereco.errors %}
           <p id="{{ form.endereco.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.endereco.errors }}</p>
@@ -139,27 +117,21 @@
 
         <div class="grid md:grid-cols-3 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cidade.label required_attr="aria-required:"|add:(form.cidade.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.cidade.id_for_label|add:'_error' %}
-            {{ form.cidade|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.cidade|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.cidade.id_for_label }}" class="label-float">{{ form.cidade.label }}</label>
             {% if form.cidade.errors %}
             <p id="{{ form.cidade.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.cidade.errors }}</p>
             {% endif %}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.estado.label required_attr="aria-required:"|add:(form.estado.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.estado.id_for_label|add:'_error' %}
-            {{ form.estado|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.estado|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.estado.id_for_label }}" class="label-float">{{ form.estado.label }}</label>
             {% if form.estado.errors %}
             <p id="{{ form.estado.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.estado.errors }}</p>
             {% endif %}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cep.label required_attr="aria-required:"|add:(form.cep.field.required|yesno:'true,false') desc_attr="aria-describedby:"|add:form.cep.id_for_label|add:'_error' %}
-            {{ form.cep|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr |attr:desc_attr }}
-            {% endwith %}
+            {{ form.cep|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
             <label for="{{ form.cep.id_for_label }}" class="label-float">{{ form.cep.label }}</label>
             {% if form.cep.errors %}
             <p id="{{ form.cep.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.cep.errors }}</p>
