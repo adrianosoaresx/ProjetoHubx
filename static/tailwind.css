@@ -955,7 +955,7 @@ a:focus {
   overflow: hidden;
   border-radius: var(--radius);
   border-width: 1px;
-  border-color: var(--border-primary);
+  border-color: var(--border);
   background-color: var(--bg-secondary);
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
@@ -975,7 +975,7 @@ a:focus {
 
 .card-header {
   border-bottom-width: 1px;
-  border-color: var(--border-primary);
+  border-color: var(--border);
   background-color: var(--bg-tertiary);
   padding: 1rem;
 }
@@ -1063,7 +1063,7 @@ a:focus {
   border-width: 1px;
   background-color: var(--bg-secondary);
   color: var(--text-primary);
-  border-color: var(--border-secondary);
+  border-color: var(--border);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -1073,7 +1073,25 @@ a:focus {
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   background-color: var(--bg-tertiary);
-  border-color: var(--border-secondary);
+  border-color: var(--border);
+}
+
+.btn-danger {
+  border-width: 1px;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  background-color: var(--error);
+  border-color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  --tw-translate-y: -1px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  background-color: var(--color-error-700);
+  border-color: var(--color-error-700);
 }
 
 .btn-danger {
@@ -2328,6 +2346,7 @@ a:focus {
   --text-tertiary: var(--color-neutral-600);
   --text-muted: var(--color-neutral-500);
   --text-inverse: #ffffff;
+  --border: var(--color-neutral-200);
   --border-primary: var(--color-neutral-200);
   --border-secondary: var(--color-neutral-300);
   --border-focus: var(--color-primary-500);
@@ -2369,6 +2388,7 @@ a:focus {
     --text-tertiary: var(--color-neutral-400);
     --text-muted: var(--color-neutral-500);
     --text-inverse: var(--color-neutral-900);
+    --border: var(--color-neutral-700);
     --border-primary: var(--color-neutral-700);
     --border-secondary: var(--color-neutral-600);
     --border-focus: var(--color-primary-400);
@@ -2399,6 +2419,7 @@ a:focus {
   --text-tertiary: var(--color-neutral-400);
   --text-muted: var(--color-neutral-500);
   --text-inverse: var(--color-neutral-900);
+  --border: var(--color-neutral-700);
   --border-primary: var(--color-neutral-700);
   --border-secondary: var(--color-neutral-600);
   --border-focus: var(--color-primary-400);
