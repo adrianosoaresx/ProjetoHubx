@@ -19,7 +19,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Q, Count
+from django.db.models import Count, Q
 from django.db.models.functions import Lower
 from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
@@ -60,9 +60,9 @@ def perfil_home(request):
     user = request.user
 
     # Núcleos em que o usuário participa (ativos)
-    from nucleos.models import Nucleo
-    from eventos.models import InscricaoEvento
     from empresas.models import Empresa
+    from eventos.models import InscricaoEvento
+    from nucleos.models import Nucleo
 
     nucleos = (
         Nucleo.objects.filter(
@@ -98,7 +98,7 @@ def perfil_home(request):
         "nucleos": nucleos,
         "inscricoes": inscricoes,
         "empresas": empresas,
-        "hero_title": _("Meu Perfil"),
+        "hero_title": _("Perfil"),
     }
 
     tab = request.GET.get("tab", "informacoes")
@@ -113,9 +113,9 @@ def perfil_publico(request, pk=None, public_id=None):
         perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
     else:
         perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
-    from nucleos.models import Nucleo
-    from eventos.models import InscricaoEvento
     from empresas.models import Empresa
+    from eventos.models import InscricaoEvento
+    from nucleos.models import Nucleo
 
     nucleos = (
         Nucleo.objects.filter(
@@ -150,6 +150,8 @@ def perfil_publico(request, pk=None, public_id=None):
         "nucleos": nucleos,
         "inscricoes": inscricoes,
         "empresas": empresas,
+        "hero_title": perfil.get_full_name() or perfil.username,
+        "hero_subtitle": f"@{perfil.username}",
     }
 
     tab = request.GET.get("tab", "informacoes")
@@ -173,7 +175,7 @@ def perfil_informacoes(request):
     else:
         form = InformacoesPessoaisForm(instance=request.user)
 
-    return render(request, "perfil/informacoes_pessoais.html", {"form": form})
+    return render(request, "perfil/informacoes_pessoais.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -187,7 +189,7 @@ def perfil_redes_sociais(request):
     else:
         form = RedesSociaisForm(instance=request.user)
 
-    return render(request, "perfil/redes_sociais.html", {"form": form})
+    return render(request, "perfil/redes_sociais.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -250,7 +252,7 @@ def enable_2fa(request):
             )
             messages.error(request, _("Senha incorreta."))
 
-    return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64})
+    return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -288,7 +290,7 @@ def disable_2fa(request):
             )
             messages.error(request, _("Senha incorreta."))
 
-    return render(request, "perfil/disable_2fa.html")
+    return render(request, "perfil/disable_2fa.html", {"hero_title": _("Perfil")})
 
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)
@@ -312,11 +314,7 @@ def perfil_conexoes(request):
     )
 
     if q:
-        filters = (
-            Q(username__icontains=q)
-            | Q(first_name__icontains=q)
-            | Q(last_name__icontains=q)
-        )
+        filters = Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
         connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
 
@@ -324,6 +322,7 @@ def perfil_conexoes(request):
         "connections": connections,
         "connection_requests": connection_requests,
         "q": q,
+        "hero_title": _("Perfil"),
     }
 
     tab = request.GET.get("tab", "minhas-conexoes")
@@ -438,6 +437,7 @@ def perfil_midias(request):
             "show_form": show_form,
             "q": q,
             "allowed_exts": getattr(settings, "USER_MEDIA_ALLOWED_EXTS", []),
+            "hero_title": _("Perfil"),
         },
     )
 
@@ -445,7 +445,7 @@ def perfil_midias(request):
 @login_required
 def perfil_midia_detail(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    return render(request, "perfil/midia_detail.html", {"media": media})
+    return render(request, "perfil/midia_detail.html", {"media": media, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -460,7 +460,7 @@ def perfil_midia_edit(request, pk):
     else:
         form = MediaForm(instance=media)
 
-    return render(request, "perfil/midia_form.html", {"form": form})
+    return render(request, "perfil/midia_form.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -470,7 +470,7 @@ def perfil_midia_delete(request, pk):
         media.delete(soft=False)
         messages.success(request, "Mídia removida.")
         return redirect("accounts:midias")
-    return render(request, "perfil/midia_confirm_delete.html", {"media": media})
+    return render(request, "perfil/midia_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
 
 
 # ====================== AUTENTICAÇÃO ======================
@@ -938,11 +938,7 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
         # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
         q = self.request.GET.get("q")
         if q:
-            qs = qs.filter(
-                Q(username__icontains=q)
-                | Q(first_name__icontains=q)
-                | Q(last_name__icontains=q)
-            )
+            qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q))
         # Ordenação alfabética por username (case-insensitive)
         qs = qs.annotate(_user=Lower("username"))
         return qs.order_by("_user")
@@ -954,13 +950,13 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
             # Totais por organização
             context["total_usuarios"] = User.objects.filter(organizacao=org).count()
             # Associados sem vínculo a núcleo
-            context["total_associados"] = (
-                User.objects.filter(organizacao=org, is_associado=True, nucleo__isnull=True).count()
-            )
+            context["total_associados"] = User.objects.filter(
+                organizacao=org, is_associado=True, nucleo__isnull=True
+            ).count()
             # Nucleados (inclui coordenadores vinculados a um núcleo)
-            context["total_nucleados"] = (
-                User.objects.filter(organizacao=org, is_associado=True, nucleo__isnull=False).count()
-            )
+            context["total_nucleados"] = User.objects.filter(
+                organizacao=org, is_associado=True, nucleo__isnull=False
+            ).count()
         else:
             context["total_usuarios"] = 0
             context["total_associados"] = 0
@@ -1000,5 +996,3 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save(organizacao=organizacao, is_associado=False, is_staff=False)
         else:
             raise PermissionError("Você não tem permissão para criar usuários.")
-
-
