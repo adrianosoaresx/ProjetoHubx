@@ -175,7 +175,15 @@ def perfil_informacoes(request):
     else:
         form = InformacoesPessoaisForm(instance=request.user)
 
-    return render(request, "perfil/informacoes_pessoais.html", {"form": form, "hero_title": _("Perfil")})
+    return render(
+        request,
+        "perfil/informacoes_pessoais.html",
+        {
+            "form": form,
+            "hero_title": _("Perfil"),
+            "hero_subtitle": f"@{request.user.username}",
+        },
+    )
 
 
 @login_required
