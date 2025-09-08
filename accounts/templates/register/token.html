@@ -4,16 +4,18 @@
 {% block title %}{% trans "Token de Convite" %} - HubX{% endblock %}
 
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
     <div class="mb-8">
       {% with step=1 total=8 %}
       <div class="mb-2 flex items-center justify-between">
         <span class="text-sm font-medium text-primary-600">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         {% widthratio step total 100 as progress %}
-        <span class="text-sm text-neutral-500">{{ progress }}%</span>
+        <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ progress }}%</span>
       </div>
-      <div class="h-2 w-full rounded-xl bg-neutral-200">
+      <div class="h-2 w-full rounded-xl bg-neutral-200 dark:bg-slate-700">
         <div class="h-full rounded-xl bg-primary-600" style="width: {{ progress }}%;"></div>
       </div>
       {% endwith %}
@@ -27,8 +29,8 @@
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
       </div>
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Token de Convite" %}</h1>
-      <p class="text-neutral-600">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Token de Convite" %}</h1>
+      <p class="text-neutral-600 dark:text-neutral-400">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
     </div>
 
     {% if messages %}
@@ -47,31 +49,34 @@
             type="text"
             id="token"
             name="token"
-            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
             placeholder=" "
             required
             autofocus
+            aria-label="Token"
+            aria-invalid="false"
+            aria-describedby="token_help"
           />
           <label
             for="token"
-            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
           >{% trans "Token de Convite" %}</label>
         </div>
-        <p class="mt-1 text-sm text-neutral-500">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
+        <p id="token_help" class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 dark:border-slate-600 px-4 py-2 text-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700">{% trans "Voltar" %}</a>
         <button type="submit" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
 
     <div class="mt-8 text-center">
-      <p class="text-sm text-neutral-600">
+      <p class="text-sm text-neutral-600 dark:text-neutral-400">
         {% trans "Já tem uma conta?" %}
         <a href="{% url 'accounts:login' %}" class="font-medium text-primary-600 hover:text-primary-700">{% trans "Entrar" %}</a>
       </p>
     </div>
   </div>
-</section>
+</div>
 {% endblock %}
