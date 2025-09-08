@@ -1,5 +1,5 @@
 {% load i18n %}
-<section class="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+<section class="bg-gradient-to-r from-[#3b82f6] to-[#1e40af] text-white">
   <div class="max-w-7xl mx-auto px-4 py-10">
     {% if breadcrumb_template %}
       <div class="mb-4">{% include breadcrumb_template %}</div>
@@ -8,7 +8,7 @@
       <div>
         <h1 class="text-4xl font-bold">{{ title }}</h1>
         {% if subtitle %}
-          <p class="text-base text-[var(--text-secondary)]">{{ subtitle }}</p>
+          <p class="text-base text-secondary">{{ subtitle }}</p>
         {% endif %}
       </div>
       {% if action_template %}

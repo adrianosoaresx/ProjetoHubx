@@ -14,7 +14,7 @@
     <ul class="flex flex-col gap-2 text-sm">
       {% for item in NAV_MENU %}
         <li>
-          <a href="{{ item.path }}" class="{{ item.classes }}" aria-label="{% trans item.label %}" aria-current="{% if request.path|startswith:item.path %}page{% endif %}">
+          <a href="{{ item.path }}" class="flex items-center gap-2 p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition {{ item.classes }} {% if request.path|startswith:item.path %}bg-slate-200 dark:bg-slate-800 font-semibold{% endif %}" aria-label="{% trans item.label %}" aria-current="{% if request.path|startswith:item.path %}page{% endif %}">
             {% if item.id == 'perfil' and user.avatar %}
               <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" />
             {% else %}

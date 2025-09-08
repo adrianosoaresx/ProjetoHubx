@@ -9,14 +9,11 @@
   <meta name="theme-color" content="">
   <script>
     (function () {
-      const stored = localStorage.getItem('tema');
+      const stored = localStorage.getItem('tema') || 'automatico';
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = stored && stored !== 'automatico'
-        ? stored
-        : prefersDark
-          ? 'escuro'
-          : 'claro';
-      document.documentElement.classList.toggle('dark', theme === 'escuro');
+      if (stored === 'escuro' || (stored === 'automatico' && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
 
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
@@ -115,7 +112,8 @@
         </div>
       </div>
     </header>
-    <main id="main-content" class="flex-grow">
+    {% block hero %}{% endblock %}
+    <main id="main-content" class="container mx-auto p-6 flex-grow">
       {% block content %}{% endblock %}
     </main>
 
