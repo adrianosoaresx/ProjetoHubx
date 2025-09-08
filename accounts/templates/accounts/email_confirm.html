@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block title %}{% trans "Confirmação de Email" %} - HubX{% endblock %}
 {% block content %}
+
 {% include 'components/nav_sidebar.html' %}
 {% include 'components/hero.html' with title=_('Confirmação de Email') %}
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -17,4 +18,5 @@
     {% endif %}
   </div>
 </div>
+
 {% endblock %}

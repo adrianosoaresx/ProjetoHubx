@@ -1,0 +1,54 @@
+{% load i18n lucide_icons %}
+<form method="get" class="flex gap-2 mb-4">
+  <input
+    type="text"
+    name="q"
+    value="{{ q }}"
+    placeholder="{% trans 'Buscar conexões...' %}"
+    class="flex-grow border rounded-lg p-2 text-sm"
+  />
+  <button type="submit" class="btn-secondary btn-sm" aria-label="{% trans 'Buscar' %}">
+    {% lucide 'search' class='w-4 h-4' aria_hidden='true' %}
+  </button>
+</form>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {% for connection in connections %}
+  <div class="connection-card bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        {% if connection.avatar %}
+          <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
+        {% else %}
+          <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-600" role="img" aria-label="{{ connection.username }}">
+            {{ connection.username|first|upper }}
+          </div>
+        {% endif %}
+        <div>
+          <p class="font-medium">{{ connection.get_full_name }}</p>
+          <p class="text-sm text-gray-500">@{{ connection.username }}</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <form
+          hx-post="{% url 'accounts:remover_conexao' connection.id %}"
+          hx-target="closest .connection-card"
+          hx-swap="outerHTML"
+          hx-confirm="{% trans 'Tem certeza que deseja remover esta conexão?' %}"
+        >
+          {% csrf_token %}
+          <button title="{% trans 'Remover conexão' %}" class="btn-danger btn-sm" aria-label="{% trans 'Remover conexão' %}">
+            {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center text-sm text-gray-500 col-span-full">
+    <p>{% trans "Você ainda não tem conexões." %}</p>
+    <a href="#" class="mt-2 inline-block bg-gray-100 px-4 py-2 rounded hover:bg-gray-200 text-sm">{% trans "Encontrar Pessoas" %}</a>
+  </div>
+  {% endfor %}
+</div>
+

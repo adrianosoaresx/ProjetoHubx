@@ -4,6 +4,7 @@
 {% block title %}{% trans "Conta inativa" %} | Hubx{% endblock %}
 
 {% block content %}
+
 {% include 'components/nav_sidebar.html' %}
 {% include 'components/hero.html' with title=_('Conta inativa') %}
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -12,6 +13,7 @@
     <a
       href="{% url 'accounts:login' %}"
       class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+
     >{% trans "Ir para login" %}</a>
   </div>
 </div>

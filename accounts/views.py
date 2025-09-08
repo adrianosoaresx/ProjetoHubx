@@ -94,11 +94,17 @@ def perfil_home(request):
     # Empresas do usuário
     empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
 
-    return render(
-        request,
-        "perfil/detail.html",
-        {"nucleos": nucleos, "inscricoes": inscricoes, "empresas": empresas},
-    )
+    context = {
+        "nucleos": nucleos,
+        "inscricoes": inscricoes,
+        "empresas": empresas,
+    }
+
+    tab = request.GET.get("tab", "informacoes")
+    if request.headers.get("HX-Request"):
+        return render(request, f"perfil/partials/detail_{tab}.html", context)
+
+    return render(request, "perfil/detail.html", context)
 
 
 def perfil_publico(request, pk=None, public_id=None):
@@ -138,11 +144,18 @@ def perfil_publico(request, pk=None, public_id=None):
 
     empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
 
-    return render(
-        request,
-        "perfil/publico.html",
-        {"perfil": perfil, "nucleos": nucleos, "inscricoes": inscricoes, "empresas": empresas},
-    )
+    context = {
+        "perfil": perfil,
+        "nucleos": nucleos,
+        "inscricoes": inscricoes,
+        "empresas": empresas,
+    }
+
+    tab = request.GET.get("tab", "informacoes")
+    if request.headers.get("HX-Request"):
+        return render(request, f"perfil/partials/publico_{tab}.html", context)
+
+    return render(request, "perfil/publico.html", context)
 
 
 @login_required
@@ -312,6 +325,15 @@ def perfil_conexoes(request):
         "q": q,
     }
 
+    tab = request.GET.get("tab", "minhas-conexoes")
+    if request.headers.get("HX-Request"):
+        template = (
+            "perfil/partials/conexoes_solicitacoes.html"
+            if tab == "solicitacoes"
+            else "perfil/partials/conexoes_minhas.html"
+        )
+        return render(request, template, context)
+
     return render(request, "perfil/conexoes.html", context)
 
 
@@ -325,6 +347,8 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
+    if request.headers.get("HX-Request"):
+        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 
@@ -345,6 +369,8 @@ def aceitar_conexao(request, id):
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
     messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
+    if request.headers.get("HX-Request"):
+        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 
@@ -364,6 +390,8 @@ def recusar_conexao(request, id):
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
+    if request.headers.get("HX-Request"):
+        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 

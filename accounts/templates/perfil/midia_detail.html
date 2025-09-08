@@ -30,9 +30,9 @@
       </a>
     </p>
   {% endif %}
-  <p class="text-center text-gray-700">{{ media.descricao }}</p>
+  <p class="text-center text-gray-700 dark:text-gray-200">{{ media.descricao }}</p>
   <div class="text-center">
-    <a href="{% url 'accounts:midias' %}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+    <a href="{% url 'accounts:midias' %}" class="inline-flex items-center gap-1 text-sm text-primary dark:text-primary hover:underline">
       {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Voltar para mídias" %}
     </a>

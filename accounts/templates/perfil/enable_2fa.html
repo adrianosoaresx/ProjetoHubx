@@ -8,12 +8,14 @@
 <form method="post" class="space-y-4">
   {% csrf_token %}
   <div class="relative">
-    <input type="text" name="code" id="code" class="peer form-input placeholder-transparent" placeholder=" " required />
+    <input type="text" name="code" id="code" class="peer form-input placeholder-transparent" placeholder="{% trans 'Código' %}" aria-label="{% trans 'Código 2FA' %}" aria-invalid="false" aria-describedby="code_help" required />
     <label for="code" class="label-float">{% trans "Código" %}</label>
+    <small id="code_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Código gerado pelo aplicativo" %}</small>
   </div>
   <div class="relative">
-    <input type="password" name="password" id="password" class="peer form-input placeholder-transparent" placeholder=" " required />
+    <input type="password" name="password" id="password" class="peer form-input placeholder-transparent" placeholder="{% trans 'Senha' %}" aria-label="{% trans 'Senha' %}" aria-invalid="false" aria-describedby="password_help" required />
     <label for="password" class="label-float">{% trans "Senha" %}</label>
+    <small id="password_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Informe sua senha para confirmar" %}</small>
   </div>
   <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>
 </form>
