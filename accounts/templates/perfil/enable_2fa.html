@@ -1,22 +1,30 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans "Ativar 2FA" %} | HubX{% endblock %}
-{% block perfil_content %}
-<h3 class="text-xl font-semibold mb-4">{% trans "Ativar 2FA" %}</h3>
-<p class="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{% trans "Escaneie o QR-code abaixo com seu aplicativo autenticador e informe o código gerado." %}</p>
-<img src="data:image/png;base64,{{ qr_base64 }}" alt="{% trans 'QR Code' %}" class="mb-4 mx-auto"/>
-<form method="post" class="space-y-4">
-  {% csrf_token %}
-  <div class="relative">
-    <input type="text" name="code" id="code" class="peer form-input placeholder-transparent" placeholder="{% trans 'Código' %}" aria-label="{% trans 'Código 2FA' %}" aria-invalid="false" aria-describedby="code_help" required />
-    <label for="code" class="label-float">{% trans "Código" %}</label>
-    <small id="code_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Código gerado pelo aplicativo" %}</small>
-  </div>
-  <div class="relative">
-    <input type="password" name="password" id="password" class="peer form-input placeholder-transparent" placeholder="{% trans 'Senha' %}" aria-label="{% trans 'Senha' %}" aria-invalid="false" aria-describedby="password_help" required />
-    <label for="password" class="label-float">{% trans "Senha" %}</label>
-    <small id="password_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Informe sua senha para confirmar" %}</small>
-  </div>
-  <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>
-</form>
+
+{% block content %}
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' with title=_("Ativar 2FA") %}
+<div class="container mx-auto p-6">
+  <form method="post" class="max-w-md mx-auto space-y-6">
+    {% csrf_token %}
+    <img src="data:image/png;base64,{{ qr_base64 }}" alt="{% trans 'QR Code' %}" class="mx-auto" />
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+      <div class="relative">
+        <input type="text" name="code" id="code" class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100" placeholder=" " required aria-label="{% trans 'Código' %}" aria-invalid="false" aria-describedby="code_help" />
+        <label for="code" class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600">{% trans "Código" %}</label>
+        <div id="code_help" class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{% trans "Código gerado pelo aplicativo autenticador" %}</div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+      <div class="relative">
+        <input type="password" name="password" id="password" class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100" placeholder=" " required aria-label="{% trans 'Senha' %}" aria-invalid="false" aria-describedby="password_help" />
+        <label for="password" class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600">{% trans "Senha" %}</label>
+        <div id="password_help" class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">{% trans "Digite sua senha para confirmar" %}</div>
+      </div>
+    </div>
+    <button type="submit" class="w-full rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600">{% trans "Ativar" %}</button>
+  </form>
+</div>
+
 {% endblock %}
