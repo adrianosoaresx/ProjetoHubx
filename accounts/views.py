@@ -98,6 +98,7 @@ def perfil_home(request):
         "nucleos": nucleos,
         "inscricoes": inscricoes,
         "empresas": empresas,
+        "hero_title": _("Meu Perfil"),
     }
 
     tab = request.GET.get("tab", "informacoes")
