@@ -30,9 +30,9 @@
     <div class="mb-4 space-y-2">
       {% for message in messages %}
         {% if message.tags == 'success' %}
-        <p class="rounded-xl px-4 py-2 text-sm bg-green-100 text-green-700">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">{{ message }}</p>
         {% else %}
-        <p class="rounded-xl px-4 py-2 text-sm bg-red-100 text-red-700">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">{{ message }}</p>
         {% endif %}
       {% endfor %}
     </div>
@@ -47,7 +47,7 @@
             id="usuario"
             name="usuario"
             class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
-            placeholder=" "
+            placeholder="{% trans 'Nome de usuário' %}"
             required
             autofocus
             aria-label="Usuário"

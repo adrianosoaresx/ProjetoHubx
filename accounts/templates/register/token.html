@@ -22,8 +22,8 @@
     </div>
 
     <div class="mb-8 text-center">
-      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2" aria-hidden="true">
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
           <circle cx="12" cy="16" r="1"/>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -36,7 +36,7 @@
     {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
     {% endif %}
@@ -50,7 +50,7 @@
             id="token"
             name="token"
             class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
-            placeholder=" "
+            placeholder="{% trans 'Token de convite' %}"
             required
             autofocus
             aria-label="Token"
