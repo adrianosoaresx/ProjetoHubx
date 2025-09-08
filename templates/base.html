@@ -78,7 +78,7 @@
         <a href="/" class="text-xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}">HubX</a>
         <form action="#" method="get" role="search" class="flex-1 max-w-md">
           <label for="header-search"><span class="sr-only">{% trans 'Buscar' %}</span></label>
-          <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border rounded px-3 py-2" />
+          <input id="header-search" name="q" type="search" placeholder="{% trans 'Buscar' %}" class="w-full border border-[var(--border)] bg-[var(--bg-primary)] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" />
         </form>
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-2" role="group" aria-label="{% trans 'Tema' %}">
