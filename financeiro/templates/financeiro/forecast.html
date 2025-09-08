@@ -28,7 +28,7 @@
         <input type="range" name="reducao_despesa" id="reducao" min="0" max="100" value="0" class="w-full" />
       </div>
     </div>
-    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{% trans "Atualizar" %}</button>
+    <button type="submit" class="bg-[var(--primary)] text-white px-4 py-2 rounded hover:opacity-90">{% trans "Atualizar" %}</button>
   </form>
   <div id="forecast-result" class="mt-6">
     <!-- gráfico e tabela serão inseridos aqui -->
@@ -73,13 +73,18 @@ function renderForecast(xhr){
       canvas.className = 'mt-4';
       container.appendChild(canvas);
       const ctx = canvas.getContext('2d');
+      const styles = getComputedStyle(document.documentElement);
+      const successColor = styles.getPropertyValue('--success').trim();
+      const errorColor = styles.getPropertyValue('--error').trim();
+      const successBg = successColor + '33';
+      const errorBg = errorColor + '33';
       new Chart(ctx, {
         type: 'line',
         data: {
           labels: rows.map(r => r.mes),
           datasets: [
-            {label: '{% trans "Receita" %}', data: rows.map(r => r.receita), borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.2)'},
-            {label: '{% trans "Despesa" %}', data: rows.map(r => r.despesa), borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.2)'}
+            {label: '{% trans "Receita" %}', data: rows.map(r => r.receita), borderColor: successColor, backgroundColor: successBg},
+            {label: '{% trans "Despesa" %}', data: rows.map(r => r.despesa), borderColor: errorColor, backgroundColor: errorBg}
           ]
         },
         options: {responsive: true}
