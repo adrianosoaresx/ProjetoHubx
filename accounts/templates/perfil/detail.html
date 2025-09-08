@@ -4,13 +4,13 @@
 {% block perfil_content %}
 
 <div class="card-header">
-  <div class="mt-2 border-b border-neutral-200">
+  <div class="mt-2 border-b border-neutral-200 dark:border-neutral-700">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
+      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
       {% if user.get_tipo_usuario != 'admin' %}
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="empresas">{% trans 'Empresas' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="nucleos">{% trans 'Núcleos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="empresas">{% trans 'Empresas' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="nucleos">{% trans 'Núcleos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>
       {% endif %}
     </nav>
   </div>
@@ -23,11 +23,11 @@
 
         {% if user.biografia %}
           <div class="mb-6">
-            <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
+            <p class="text-gray-700 dark:text-gray-300 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
           </div>
         {% endif %}
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700 dark:text-gray-300">
           <div>
             <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
             <p>{% trans "Email" %}: {{ user.email }}</p>
@@ -62,7 +62,7 @@
         {% for empresa in empresas %}
           {% include 'partials/cards/empresa_card.html' with empresa=empresa %}
         {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhuma empresa encontrada." %}</p>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhuma empresa encontrada." %}</p>
         {% endfor %}
       </div>
     </div>
@@ -73,7 +73,7 @@
         {% for nucleo in nucleos %}
           {% include 'partials/cards/nucleo_card.html' with nucleo=nucleo %}
         {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
       </div>
     </div>
@@ -84,25 +84,12 @@
         {% for ins in inscricoes %}
           {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
         {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}
       </div>
     </div>
     {% endif %}
   </div>
-
-  <script>
-    // Tabs simples em JS vanilla (perfil)
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    function activate(tab) {
-      tabButtons.forEach(btn => btn.dataset.active = (btn.dataset.tab === tab));
-      panels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.tab !== tab));
-    }
-    // Ativa 'informacoes' por padrão
-    activate('informacoes');
-    tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
-  </script>
 </div>
 
 {% endblock %}

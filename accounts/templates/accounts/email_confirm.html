@@ -2,15 +2,21 @@
 {% load i18n %}
 {% block title %}{% trans "Confirmação de Email" %} - HubX{% endblock %}
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  {% if status == 'sucesso' %}
-    <div class="bg-green-100 text-green-700 rounded-xl px-4 py-3 text-center">
-      {% trans "Seu e-mail foi confirmado com sucesso." %}
-    </div>
-  {% else %}
-    <div class="bg-red-100 text-red-700 rounded-xl px-4 py-3 text-center">
-      {% trans "Link inválido ou expirado." %}
-    </div>
-  {% endif %}
-</section>
+
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' with title=_('Confirmação de Email') %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-8 rounded-lg shadow text-center">
+    {% if status == 'sucesso' %}
+      <p class="rounded-xl px-4 py-2 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100" role="status" aria-live="polite">
+        {% trans "Seu e-mail foi confirmado com sucesso." %}
+      </p>
+    {% else %}
+      <p class="rounded-xl px-4 py-2 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100" role="alert" aria-live="assertive">
+        {% trans "Link inválido ou expirado." %}
+      </p>
+    {% endif %}
+  </div>
+</div>
+
 {% endblock %}
