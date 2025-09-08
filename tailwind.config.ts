@@ -28,6 +28,11 @@ const config: Config = {
                                 900: '#1e3a8a',
                                 DEFAULT: '#3b82f6',
                                 foreground: '#ffffff'
+                        },
+                        accent: {
+                                DEFAULT: 'var(--accent)',
+                                light: 'var(--accent-light)',
+                                dark: 'var(--accent-dark)'
                         }
                 },
                 fontFamily: {

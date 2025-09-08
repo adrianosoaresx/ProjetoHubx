@@ -124,6 +124,10 @@
   --primary-hover: var(--color-primary-700);
   --primary-light: var(--color-primary-100);
 
+  --accent: #a855f7;
+  --accent-light: #f3e8ff;
+  --accent-dark: #7e22ce;
+
   --success: var(--color-success-600);
   --success-light: var(--color-success-100);
   --warning: var(--color-warning-600);
@@ -170,6 +174,10 @@
     --primary-hover: var(--color-primary-400);
     --primary-light: var(--color-primary-900);
 
+    --accent: #a855f7;
+    --accent-light: #f3e8ff;
+    --accent-dark: #7e22ce;
+
     --success: var(--color-success-500);
     --success-light: var(--color-success-900);
     --warning: var(--color-warning-500);
@@ -203,6 +211,10 @@
   --primary: var(--color-primary-500);
   --primary-hover: var(--color-primary-400);
   --primary-light: var(--color-primary-900);
+
+  --accent: #a855f7;
+  --accent-light: #f3e8ff;
+  --accent-dark: #7e22ce;
 
   --success: var(--color-success-500);
   --success-light: var(--color-success-900);
