@@ -17,16 +17,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.first_name.label required_raw=form.first_name.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.first_name.label required_flag=form.first_name.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.first_name|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.first_name.id_for_label }}" class="label-float">{{ form.first_name.label }}</label>
             {{ form.first_name.errors }}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.last_name.label required_raw=form.last_name.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.last_name.label required_flag=form.last_name.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.last_name|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.last_name.id_for_label }}" class="label-float">{{ form.last_name.label }}</label>
             {{ form.last_name.errors }}
           </div>
@@ -34,50 +34,50 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.username.label required_raw=form.username.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.username.label required_flag=form.username.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.username|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.username.id_for_label }}" class="label-float">{{ form.username.label }}</label>
             {{ form.username.errors }}
           </div>
 
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.email.label required_raw=form.email.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.email.label required_flag=form.email.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.email|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.email.id_for_label }}" class="label-float">{{ form.email.label }}</label>
             {{ form.email.errors }}
           </div>
         </div>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.cpf.label required_raw=form.cpf.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+          {% with label_attr="aria-label:"|add:form.cpf.label required_flag=form.cpf.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
           {{ form.cpf|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-          {% endwith %}{% endwith %}
+          {% endwith %}
           <label for="{{ form.cpf.id_for_label }}" class="label-float">{{ form.cpf.label }}</label>
           {{ form.cpf.errors }}
         </div>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.biografia.label required_raw=form.biografia.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+          {% with label_attr="aria-label:"|add:form.biografia.label required_flag=form.biografia.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
           {{ form.biografia|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-          {% endwith %}{% endwith %}
+          {% endwith %}
           <label for="{{ form.biografia.id_for_label }}" class="label-float">{{ form.biografia.label }}</label>
           {{ form.biografia.errors }}
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.avatar.label required_raw=form.avatar.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.avatar.label required_flag=form.avatar.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.avatar|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.avatar.id_for_label }}" class="label-float">{{ form.avatar.label }}</label>
             {{ form.avatar.errors }}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cover.label required_raw=form.cover.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.cover.label required_flag=form.cover.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.cover|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.cover.id_for_label }}" class="label-float">{{ form.cover.label }}</label>
             {{ form.cover.errors }}
           </div>
@@ -89,16 +89,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.phone_number.label required_raw=form.phone_number.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.phone_number.label required_flag=form.phone_number.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.phone_number|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.phone_number.id_for_label }}" class="label-float">{{ form.phone_number.label }}</label>
             {{ form.phone_number.errors }}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.whatsapp.label required_raw=form.whatsapp.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.whatsapp.label required_flag=form.whatsapp.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.whatsapp|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.whatsapp.id_for_label }}" class="label-float">{{ form.whatsapp.label }}</label>
             {{ form.whatsapp.errors }}
           </div>
@@ -109,32 +109,32 @@
         <h4 class="text-lg font-semibold">{% trans "Endereço" %}</h4>
 
         <div class="relative">
-          {% with label_attr="aria-label:"|add:form.endereco.label required_raw=form.endereco.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+          {% with label_attr="aria-label:"|add:form.endereco.label required_flag=form.endereco.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
           {{ form.endereco|add_class:'w-full peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-          {% endwith %}{% endwith %}
+          {% endwith %}
           <label for="{{ form.endereco.id_for_label }}" class="label-float">{{ form.endereco.label }}</label>
           {{ form.endereco.errors }}
         </div>
 
         <div class="grid md:grid-cols-3 gap-4">
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cidade.label required_raw=form.cidade.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.cidade.label required_flag=form.cidade.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.cidade|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.cidade.id_for_label }}" class="label-float">{{ form.cidade.label }}</label>
             {{ form.cidade.errors }}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.estado.label required_raw=form.estado.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.estado.label required_flag=form.estado.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.estado|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.estado.id_for_label }}" class="label-float">{{ form.estado.label }}</label>
             {{ form.estado.errors }}
           </div>
           <div class="relative">
-            {% with label_attr="aria-label:"|add:form.cep.label required_raw=form.cep.field.required|yesno:'true,false' %}{% with required_attr="aria-required:"|add:required_raw %}
+            {% with label_attr="aria-label:"|add:form.cep.label required_flag=form.cep.field.required|yesno:'true,false' required_attr="aria-required:"|add:required_flag %}
             {{ form.cep|add_class:'peer form-input placeholder-transparent' |attr:'placeholder: ' |attr:label_attr |attr:required_attr }}
-            {% endwith %}{% endwith %}
+            {% endwith %}
             <label for="{{ form.cep.id_for_label }}" class="label-float">{{ form.cep.label }}</label>
             {{ form.cep.errors }}
           </div>
