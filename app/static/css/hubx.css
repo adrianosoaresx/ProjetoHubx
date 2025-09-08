@@ -116,6 +116,7 @@
   --text-muted: var(--color-neutral-500);
   --text-inverse: #ffffff;
 
+  --border: var(--color-neutral-200);
   --border-primary: var(--color-neutral-200);
   --border-secondary: var(--color-neutral-300);
   --border-focus: var(--color-primary-500);
@@ -162,6 +163,7 @@
     --text-muted: var(--color-neutral-500);
     --text-inverse: var(--color-neutral-900);
 
+    --border: var(--color-neutral-700);
     --border-primary: var(--color-neutral-700);
     --border-secondary: var(--color-neutral-600);
     --border-focus: var(--color-primary-400);
@@ -196,6 +198,7 @@
   --text-muted: var(--color-neutral-500);
   --text-inverse: var(--color-neutral-900);
 
+  --border: var(--color-neutral-700);
   --border-primary: var(--color-neutral-700);
   --border-secondary: var(--color-neutral-600);
   --border-focus: var(--color-primary-400);
@@ -279,19 +282,19 @@
     @apply max-w-[1400px] mx-auto px-4;
   }
   .card {
-    @apply rounded-lg border shadow-sm overflow-hidden transition-shadow bg-[var(--bg-secondary)] border-[var(--border-primary)];
+    @apply rounded-lg border shadow-sm overflow-hidden transition-shadow bg-[var(--bg-secondary)] border-[var(--border)];
   }
   .card:hover {
     @apply shadow-md -translate-y-0.5;
   }
   .card-header {
-    @apply p-4 sm:p-6 border-b bg-[var(--bg-tertiary)] border-[var(--border-primary)];
+    @apply p-4 sm:p-6 border-b bg-[var(--bg-tertiary)] border-[var(--border)];
   }
   .card-body {
     @apply p-4 sm:p-6;
   }
   .card-footer {
-    @apply p-4 sm:p-6 border-t bg-[var(--bg-tertiary)] border-[var(--border-primary)];
+    @apply p-4 sm:p-6 border-t bg-[var(--bg-tertiary)] border-[var(--border)];
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 py-3 px-5 sm:px-4 text-sm font-medium leading-none rounded-md border transition-all duration-150 no-underline whitespace-nowrap;
@@ -314,12 +317,12 @@
   }
   .btn-secondary {
     @apply border bg-[var(--bg-secondary)] text-[var(--text-primary)];
-    border-color: var(--border-secondary);
+    border-color: var(--border);
   }
   .btn-secondary:hover:not(:disabled) {
     @apply -translate-y-px shadow-sm;
     background-color: var(--bg-tertiary);
-    border-color: var(--border-secondary);
+    border-color: var(--border);
   }
   .btn-success {
     @apply text-white border;
@@ -425,7 +428,7 @@
     @apply scale-100;
   }
   .modal-header {
-    @apply p-6 border-b border-[var(--border-primary)] flex items-center justify-between;
+    @apply p-6 border-b border-[var(--border)] flex items-center justify-between;
   }
   .modal-title {
     @apply text-xl font-semibold text-[var(--text-primary)] m-0;
@@ -440,7 +443,7 @@
     @apply p-6;
   }
   .modal-footer {
-    @apply p-6 border-t border-[var(--border-primary)] flex gap-3 justify-end;
+    @apply p-6 border-t border-[var(--border)] flex gap-3 justify-end;
   }
 
   /* Dropdown Component */
@@ -448,19 +451,19 @@
     @apply relative inline-block;
   }
   .dropdown-toggle {
-    @apply bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md py-3 px-4 text-[var(--text-primary)] cursor-pointer flex items-center gap-2 transition-colors;
+    @apply bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md py-3 px-4 text-[var(--text-primary)] cursor-pointer flex items-center gap-2 transition-colors;
   }
   .dropdown-toggle:hover {
-    @apply bg-[var(--bg-tertiary)] border-[var(--border-secondary)];
+    @apply bg-[var(--bg-tertiary)] border-[var(--border)];
   }
   .dropdown-menu {
-    @apply absolute top-full left-0 min-w-[200px] bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-md shadow-md z-50 opacity-0 invisible -translate-y-2 transition-all mt-1;
+    @apply absolute top-full left-0 min-w-[200px] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md shadow-md z-50 opacity-0 invisible -translate-y-2 transition-all mt-1;
   }
   .dropdown.active .dropdown-menu {
     @apply opacity-100 visible translate-y-0;
   }
   .dropdown-item {
-    @apply block py-3 px-4 text-[var(--text-secondary)] no-underline transition-colors border-b border-[var(--border-primary)];
+    @apply block py-3 px-4 text-[var(--text-secondary)] no-underline transition-colors border-b border-[var(--border)];
   }
   .dropdown-item:last-child {
     @apply border-b-0;
@@ -469,7 +472,7 @@
     @apply bg-[var(--bg-tertiary)] text-[var(--text-primary)];
   }
   .dropdown-divider {
-    @apply h-px bg-[var(--border-primary)] my-2;
+    @apply h-px bg-[var(--border)] my-2;
   }
 }
 
