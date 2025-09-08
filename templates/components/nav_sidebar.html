@@ -1,8 +1,8 @@
 {% load i18n %}
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-secondary border-r flex flex-col transition-all">
-  <div class="flex items-center justify-between p-4 border-b">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col transition-all">
+  <div class="flex items-center justify-between p-4 border-b border-[var(--border)]">
     <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}"><span class="sidebar-label">HubX</span></a>
-    <button id="sidebar-toggle" class="text-gray-800" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
+    <button id="sidebar-toggle" class="text-[var(--text-primary)]" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
       <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 5h16" />
         <path d="M4 12h16" />
