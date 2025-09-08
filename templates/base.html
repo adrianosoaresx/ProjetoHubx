@@ -6,7 +6,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="{% static 'manifest.json' %}">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="">
   <script>
     (function () {
       const stored = localStorage.getItem('tema');
@@ -21,6 +21,12 @@
       const langMatch = document.cookie.match(/(?:^|; )django_language=([^;]+)/);
       if (langMatch) {
         document.documentElement.setAttribute('lang', langMatch[1]);
+      }
+
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        const color = getComputedStyle(document.documentElement).getPropertyValue('--primary-dark').trim();
+        if (color) metaTheme.setAttribute('content', color);
       }
     })();
   </script>
@@ -40,7 +46,7 @@
 <body class="preload min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
   <noscript>
     <style>body.preload { opacity: 1; }</style>
-    <div class="p-4 text-center bg-red-500 text-white">
+    <div class="p-4 text-center bg-[var(--error)] text-white">
       {% trans "Este site requer JavaScript. Por favor, habilite-o para continuar." %}
     </div>
   </noscript>
@@ -49,7 +55,7 @@
   {% if messages %}
   <div id="messages" class="fixed top-4 right-4 space-y-2 z-50">
     {% for message in messages %}
-      <div class="px-4 py-2 rounded shadow text-white {% if 'error' in message.tags %}bg-red-500{% elif 'success' in message.tags %}bg-green-500{% else %}bg-blue-500{% endif %}">
+      <div class="px-4 py-2 rounded shadow text-white {% if 'error' in message.tags %}bg-[var(--error)]{% elif 'success' in message.tags %}bg-[var(--success)]{% else %}bg-[var(--primary)]{% endif %}">
         {{ message }}
       </div>
     {% endfor %}
