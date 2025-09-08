@@ -16,39 +16,47 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
             {% with invalid_flag=form.facebook.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.facebook.label aria_invalid='aria-invalid:'|add:invalid_flag %}
-                {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid }}
+              {% with label_attr='aria-label:'|add:form.facebook.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.facebook.id_for_label|add:'_error' %}
+                {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
               {% endwith %}
             {% endwith %}
             <label for="{{ form.facebook.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.facebook.label }}</label>
-            {{ form.facebook.errors }}
+            {% if form.facebook.errors %}
+            <p id="{{ form.facebook.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.facebook.errors }}</p>
+            {% endif %}
           </div>
           <div class="relative">
             {% with invalid_flag=form.twitter.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.twitter.label aria_invalid='aria-invalid:'|add:invalid_flag %}
-                {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid }}
+              {% with label_attr='aria-label:'|add:form.twitter.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.twitter.id_for_label|add:'_error' %}
+                {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
               {% endwith %}
             {% endwith %}
             <label for="{{ form.twitter.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.twitter.label }}</label>
-            {{ form.twitter.errors }}
+            {% if form.twitter.errors %}
+            <p id="{{ form.twitter.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.twitter.errors }}</p>
+            {% endif %}
           </div>
           <div class="relative">
             {% with invalid_flag=form.instagram.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.instagram.label aria_invalid='aria-invalid:'|add:invalid_flag %}
-                {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid }}
+              {% with label_attr='aria-label:'|add:form.instagram.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.instagram.id_for_label|add:'_error' %}
+                {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
               {% endwith %}
             {% endwith %}
             <label for="{{ form.instagram.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.instagram.label }}</label>
-            {{ form.instagram.errors }}
+            {% if form.instagram.errors %}
+            <p id="{{ form.instagram.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.instagram.errors }}</p>
+            {% endif %}
           </div>
           <div class="relative">
             {% with invalid_flag=form.linkedin.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.linkedin.label aria_invalid='aria-invalid:'|add:invalid_flag %}
-                {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid }}
+              {% with label_attr='aria-label:'|add:form.linkedin.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.linkedin.id_for_label|add:'_error' %}
+                {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
               {% endwith %}
             {% endwith %}
             <label for="{{ form.linkedin.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.linkedin.label }}</label>
-            {{ form.linkedin.errors }}
+            {% if form.linkedin.errors %}
+            <p id="{{ form.linkedin.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.linkedin.errors }}</p>
+            {% endif %}
           </div>
         </div>
 
