@@ -1,8 +1,8 @@
 {% load i18n lucide_icons %}
 <form method="get" class="mb-6 flex gap-2" {% if hx_get %}hx-get="{{ hx_get }}"{% endif %} {% if hx_target %}hx-target="{{ hx_target }}"{% endif %} {% if hx_push_url %}hx-push-url="{{ hx_push_url }}"{% endif %}>
   <label for="q"><span class="sr-only">{% trans 'Buscar' %}</span></label>
-  <input id="q" name="q" value="{{ q }}" class="border rounded px-3 py-2 w-full" placeholder="{% trans 'Buscar' %}" />
-  <button type="submit" class="bg-primary text-white px-4 py-2 rounded" aria-label="{% trans 'Buscar' %}">
+  <input id="q" name="q" value="{{ q }}" class="form-input w-full" placeholder="{% trans 'Buscar' %}" />
+  <button type="submit" class="btn btn-primary" aria-label="{% trans 'Buscar' %}">
     {% lucide 'search' class='w-4 h-4' aria_hidden='true' %}
   </button>
 </form>
