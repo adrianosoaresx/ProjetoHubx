@@ -1,7 +1,7 @@
 {% load static i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full bg-gray-50">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" class="h-full bg-[var(--bg-primary)]">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -43,7 +43,7 @@
   </style>
 </head>
 
-<body class="preload min-h-screen flex font-sans text-gray-800" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
+<body class="preload min-h-screen flex font-sans text-[var(--text-primary)]" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
   <noscript>
     <style>body.preload { opacity: 1; }</style>
     <div class="p-4 text-center bg-[var(--error)] text-white">
@@ -73,7 +73,7 @@
   {% endif %}
 
   <div id="content" class="flex flex-col flex-1 {% if not hide_nav %}ml-64{% else %}ml-0{% endif %} transition-all">
-    <header class="bg-secondary border-b">
+    <header class="bg-[var(--bg-secondary)] border-[var(--border)]">
       <div class="container mx-auto p-4 flex items-center gap-4 justify-between">
         <a href="/" class="text-xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}">HubX</a>
         <form action="#" method="get" role="search" class="flex-1 max-w-md">
@@ -119,8 +119,8 @@
       {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-secondary border-t mt-10">
-      <div class="container mx-auto px-4 py-6 text-sm text-gray-500 flex flex-col items-center gap-2 md:flex-row md:justify-between">
+    <footer class="bg-[var(--bg-secondary)] border-[var(--border)] mt-10">
+      <div class="container mx-auto px-4 py-6 text-sm text-[var(--text-secondary)] flex flex-col items-center gap-2 md:flex-row md:justify-between">
         <p>{% blocktrans with year=now|date:"Y" %}© {{ year }} HubX. Todos os direitos reservados.{% endblocktrans %}</p>
         <nav class="flex gap-4">
           <a href="{% url 'core:about' %}" class="hover:text-primary">{% trans "Sobre" %}</a>
