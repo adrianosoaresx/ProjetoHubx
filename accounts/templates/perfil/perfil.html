@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 {% load static i18n widget_tweaks %}
 
-{% block title %}{% trans "Perfil" %} | HubX{% endblock %}
-
+{# O título da página será definido pela variável `hero_title` fornecida pela view. #}
 {% block hero_title %}{% endblock %}
 {% block hero_subtitle %}{% endblock %}
 
 {% block content %}
-{% include 'components/hero.html' with title=block.hero_title|default:_('Meu Perfil') subtitle=block.hero_subtitle %}
+{% include 'components/hero.html' with title=hero_title|default:block.hero_title|default:_('Meu Perfil') subtitle=hero_subtitle|default:block.hero_subtitle %}
 <div class="container mx-auto p-6">
   <div class="grid grid-cols-1 gap-6">
     <div class="bg-[var(--bg-secondary)] p-6 rounded-lg shadow">
