@@ -4,45 +4,57 @@
 {% block title %}{% trans "Redes Sociais" %} | HubX{% endblock %}
 
 {% block perfil_content %}
-<div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">{% trans "Redes Sociais" %}</h3>
-  <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
+  <div class="card lg:col-span-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
+    <div class="card-body">
+      <h3 class="text-xl font-semibold mb-1 text-neutral-900 dark:text-neutral-100">{% trans "Redes Sociais" %}</h3>
+      <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
 
-  <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
-    {% csrf_token %}
+      <form method="post" action="{% url 'accounts:redes_sociais' %}" class="space-y-6">
+        {% csrf_token %}
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="relative">
-        {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-        <label for="{{ form.facebook.id_for_label }}" class="label-float">{{ form.facebook.label }}</label>
-        {{ form.facebook.errors }}
-      </div>
-      <div class="relative">
-        {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-        <label for="{{ form.twitter.id_for_label }}" class="label-float">{{ form.twitter.label }}</label>
-        {{ form.twitter.errors }}
-      </div>
-      <div class="relative">
-        {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-        <label for="{{ form.instagram.id_for_label }}" class="label-float">{{ form.instagram.label }}</label>
-        {{ form.instagram.errors }}
-      </div>
-      <div class="relative">
-        {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-        <label for="{{ form.linkedin.id_for_label }}" class="label-float">{{ form.linkedin.label }}</label>
-        {{ form.linkedin.errors }}
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="relative">
+            {% with invalid=form.facebook.errors|yesno:'true,false' %}
+              {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:'aria-label:'|add:form.facebook.label|attr:'aria-invalid:'|add:invalid }}
+            {% endwith %}
+            <label for="{{ form.facebook.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.facebook.label }}</label>
+            {{ form.facebook.errors }}
+          </div>
+          <div class="relative">
+            {% with invalid=form.twitter.errors|yesno:'true,false' %}
+              {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:'aria-label:'|add:form.twitter.label|attr:'aria-invalid:'|add:invalid }}
+            {% endwith %}
+            <label for="{{ form.twitter.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.twitter.label }}</label>
+            {{ form.twitter.errors }}
+          </div>
+          <div class="relative">
+            {% with invalid=form.instagram.errors|yesno:'true,false' %}
+              {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:'aria-label:'|add:form.instagram.label|attr:'aria-invalid:'|add:invalid }}
+            {% endwith %}
+            <label for="{{ form.instagram.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.instagram.label }}</label>
+            {{ form.instagram.errors }}
+          </div>
+          <div class="relative">
+            {% with invalid=form.linkedin.errors|yesno:'true,false' %}
+              {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:'aria-label:'|add:form.linkedin.label|attr:'aria-invalid:'|add:invalid }}
+            {% endwith %}
+            <label for="{{ form.linkedin.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.linkedin.label }}</label>
+            {{ form.linkedin.errors }}
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit" class="btn btn-primary">
+            {% trans "Salvar Alterações" %}
+          </button>
+        </div>
+      </form>
     </div>
-
-    <div class="pt-4">
-      <button type="submit" class="btn btn-primary">
-        {% trans "Salvar Alterações" %}
-      </button>
-    </div>
-  </form>
+  </div>
 </div>
 
 <div class="mt-6 text-center">
-  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary dark:text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}
