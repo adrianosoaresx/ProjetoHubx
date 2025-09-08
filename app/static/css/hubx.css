@@ -118,10 +118,10 @@
 
   --border-primary: var(--color-neutral-200);
   --border-secondary: var(--color-neutral-300);
-  --border-focus: var(--color-primary-500);
+  --border-focus: var(--color-primary-600);
 
   --primary: var(--color-primary-600);
-  --primary-hover: var(--color-primary-700);
+  --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-100);
 
   --success: var(--color-success-600);
@@ -138,9 +138,9 @@
 
   /* Legacy Matrix theme variable mappings */
   --primary-dark: var(--color-neutral-900);
-  --matrix-green: var(--color-primary-500);
-  --matrix-light: var(--color-primary-300);
-  --matrix-dark: var(--color-primary-700);
+  --matrix-green: var(--color-primary-600);
+  --matrix-light: var(--color-primary-400);
+  --matrix-dark: var(--color-primary-800);
   --white: var(--color-neutral-50);
   --glass-border: var(--color-neutral-200);
   --glass-bg: rgba(255, 255, 255, 0.1);
@@ -166,8 +166,8 @@
     --border-secondary: var(--color-neutral-600);
     --border-focus: var(--color-primary-400);
 
-    --primary: var(--color-primary-500);
-    --primary-hover: var(--color-primary-400);
+    --primary: var(--color-primary-600);
+    --primary-hover: var(--color-primary-800);
     --primary-light: var(--color-primary-900);
 
     --success: var(--color-success-500);
@@ -200,8 +200,8 @@
   --border-secondary: var(--color-neutral-600);
   --border-focus: var(--color-primary-400);
 
-  --primary: var(--color-primary-500);
-  --primary-hover: var(--color-primary-400);
+  --primary: var(--color-primary-600);
+  --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-900);
 
   --success: var(--color-success-500);
