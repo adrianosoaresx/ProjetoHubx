@@ -1,0 +1,11 @@
+<script>
+  document.querySelectorAll('.tab-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.dataset.tab;
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      document.getElementById(targetId).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('text-primary', 'border-b-2', 'border-primary'));
+      button.classList.add('text-primary', 'border-b-2', 'border-primary');
+    });
+  });
+</script>

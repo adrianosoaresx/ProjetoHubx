@@ -17,7 +17,7 @@
       <p class="text-center text-gray-700">
         {% trans "Este navegador não suporta visualização de PDF." %}
         <a href="{{ media.file.url }}" class="inline-flex items-center gap-1 text-primary hover:underline" download>
-          {% lucide 'download' class='w-4 h-4' %}
+          {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}
           {% trans "Baixar PDF" %}
         </a>
       </p>
@@ -25,7 +25,7 @@
   {% else %}
     <p class="text-center">
       <a href="{{ media.file.url }}" class="inline-flex items-center gap-1 text-primary hover:underline" download>
-        {% lucide 'download' class='w-4 h-4' %}
+        {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}
         {{ media.file.name }}
       </a>
     </p>
@@ -33,7 +33,7 @@
   <p class="text-center text-gray-700">{{ media.descricao }}</p>
   <div class="text-center">
     <a href="{% url 'accounts:midias' %}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
-      {% lucide 'arrow-left' class='w-4 h-4' %}
+      {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Voltar para mídias" %}
     </a>
   </div>
