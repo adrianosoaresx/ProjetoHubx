@@ -9,59 +9,59 @@
 {% block content %}
 {% include 'components/hero.html' with title=block.hero_title|default:_('Meu Perfil') subtitle=block.hero_subtitle %}
 <div class="container mx-auto p-6">
-  <div class="card flex flex-col min-h-[80vh] overflow-hidden">
-    {% with perfil|default:user as profile %}
-    <div class="profile-cover relative h-48 w-full overflow-hidden">
-      {% if profile.cover %}
-        <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="absolute inset-0 w-full h-full object-cover z-0" aria-hidden="true">
-      {% else %}
-        <div class="absolute inset-0 w-full h-full bg-neutral-200 z-0" role="img" aria-label="{% trans "Capa padrão" %}"></div>
-      {% endif %}
+  <div class="grid grid-cols-1 gap-6">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+      {% with perfil|default:user as profile %}
+      <div class="profile-cover relative h-48 w-full overflow-hidden">
+        {% if profile.cover %}
+          <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="absolute inset-0 w-full h-full object-cover z-0" aria-hidden="true">
+        {% else %}
+          <div class="absolute inset-0 w-full h-full bg-neutral-200 dark:bg-slate-700 z-0" role="img" aria-label="{% trans "Capa padrão" %}"></div>
+        {% endif %}
 
-      <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-shadow">
-        <div>
-          {% if profile.avatar %}
-            <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
-                 class="w-28 h-28 rounded-full object-cover shadow mb-3">
-          {% else %}
-            <div class="w-28 h-28 rounded-full bg-gray-200 text-2xl font-semibold text-primary shadow mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
-              {{ profile.username|first|upper }}
-            </div>
-          {% endif %}
-          <h2 class="mb-0.5 text-lg font-bold">{{ profile.get_full_name }}</h2>
-          <p class="mt-0 text-sm">@{{ profile.username }}</p>
-          {% if profile == request.user %}
-          <button class="text-sm hover:underline">{% trans "Alterar foto" %}</button>
-          {% endif %}
+        <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-shadow">
+          <div>
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
+                   class="w-28 h-28 rounded-full object-cover shadow mb-3">
+            {% else %}
+              <div class="w-28 h-28 rounded-full bg-gray-200 dark:bg-slate-600 text-2xl font-semibold text-primary dark:text-primary shadow mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
+                {{ profile.username|first|upper }}
+              </div>
+            {% endif %}
+            <h2 class="mb-0.5 text-lg font-bold text-gray-900 dark:text-gray-100">{{ profile.get_full_name }}</h2>
+            <p class="mt-0 text-sm text-gray-600 dark:text-gray-400">@{{ profile.username }}</p>
+            {% if profile == request.user %}
+            <button class="text-sm text-gray-700 dark:text-gray-300 hover:underline">{% trans "Alterar foto" %}</button>
+            {% endif %}
+          </div>
         </div>
       </div>
-    </div>
-    <div class="card-body flex flex-col flex-grow">
 
       <!-- Abas de navegação -->
 
-    {% if request.resolver_match.url_name == 'informacoes_pessoais' or request.resolver_match.url_name == 'redes_sociais' %}
+      {% if request.resolver_match.url_name == 'informacoes_pessoais' or request.resolver_match.url_name == 'redes_sociais' %}
 
-      <nav class="mt-6 border-b flex space-x-4 text-sm font-medium text-gray-600" role="tablist">
-        <a href="{% url 'accounts:informacoes_pessoais' %}"
-           class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
-           role="tab"
-           aria-selected="{% if request.resolver_match.url_name == 'informacoes_pessoais' %}true{% else %}false{% endif %}">{% trans "Informações Pessoais" %}</a>
+        <nav class="mt-6 border-b flex space-x-4 text-sm font-medium text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700" role="tablist">
+          <a href="{% url 'accounts:informacoes_pessoais' %}"
+             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary dark:text-primary{% else %}border-transparent hover:text-primary dark:hover:text-primary{% endif %}"
+             role="tab"
+             aria-selected="{% if request.resolver_match.url_name == 'informacoes_pessoais' %}true{% else %}false{% endif %}">{% trans "Informações Pessoais" %}</a>
 
-        <a href="{% url 'accounts:redes_sociais' %}"
-           class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
-           role="tab"
-           aria-selected="{% if request.resolver_match.url_name == 'redes_sociais' %}true{% else %}false{% endif %}">{% trans "Redes Sociais" %}</a>
-      </nav>
-    {% endif %}
-      <!-- Bloco dinâmico para subpáginas -->
-      <div class="flex-grow mt-8">
-        {% block perfil_content %}
-        {% endblock %}
-      </div>
+          <a href="{% url 'accounts:redes_sociais' %}"
+             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary dark:text-primary{% else %}border-transparent hover:text-primary dark:hover:text-primary{% endif %}"
+             role="tab"
+             aria-selected="{% if request.resolver_match.url_name == 'redes_sociais' %}true{% else %}false{% endif %}">{% trans "Redes Sociais" %}</a>
+        </nav>
+      {% endif %}
+        <!-- Bloco dinâmico para subpáginas -->
+        <div class="mt-8">
+          {% block perfil_content %}
+          {% endblock %}
+        </div>
 
+      {% endwith %}
     </div>
-    {% endwith %}
   </div>
 </div>
 {% endblock %}
