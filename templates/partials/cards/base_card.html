@@ -1,6 +1,6 @@
 {% load i18n %}
 <a href="{{ url }}"
-  class="group block rounded-2xl border border-neutral-200 bg-secondary shadow-sm hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-primary/40"
+  class="group block rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-primary/40"
   aria-label="{{ title }}">
   <article class="overflow-hidden rounded-2xl" role="article">
     <header class="relative">
@@ -11,16 +11,16 @@
       {% endif %}
       <div class="absolute -bottom-8 left-4">
         {% if avatar %}
-          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-white object-cover" />
+          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" />
         {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-white bg-neutral-200 flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ title }}">
+          <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ title }}">
             {{ title|first|upper }}
           </div>
         {% endif %}
       </div>
     </header>
   <div class="px-4 pt-10 pb-4">
-      <h3 class="text-base font-semibold text-neutral-900 group-hover:underline">{{ title }}</h3>
+      <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>
   </article>
