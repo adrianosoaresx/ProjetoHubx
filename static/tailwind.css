@@ -1094,6 +1094,24 @@ a:focus {
   border-color: var(--color-error-700);
 }
 
+.btn-danger {
+  border-width: 1px;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  background-color: var(--error);
+  border-color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
+  --tw-translate-y: -1px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  background-color: var(--color-error-700);
+  border-color: var(--color-error-700);
+}
+
 .btn-sm {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
@@ -2259,10 +2277,13 @@ a:focus {
   --color-success-500: #22c55e;
   --color-success-600: #16a34a;
   --color-success-700: #15803d;
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-warning-200: #fef08a;
+  --color-warning-500: #eab308;
+  --color-warning-600: #ca8a04;
+  --color-warning-800: #854d0e;
+  --color-warning-900: #713f12;
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
   --color-error-500: #ef4444;
@@ -2336,6 +2357,7 @@ a:focus {
   --success-light: var(--color-success-100);
   --warning: var(--color-warning-600);
   --warning-light: var(--color-warning-100);
+  --warning-foreground: var(--color-warning-800);
   --error: var(--color-error-600);
   --error-light: var(--color-error-100);
   --shadow-color: rgb(0 0 0 / 0.1);
@@ -2377,6 +2399,7 @@ a:focus {
     --success-light: var(--color-success-900);
     --warning: var(--color-warning-500);
     --warning-light: var(--color-warning-900);
+    --warning-foreground: var(--color-warning-200);
     --error: var(--color-error-500);
     --error-light: var(--color-error-900);
     --shadow-color: rgb(0 0 0 / 0.3);
@@ -2407,6 +2430,7 @@ a:focus {
   --success-light: var(--color-success-900);
   --warning: var(--color-warning-500);
   --warning-light: var(--color-warning-900);
+  --warning-foreground: var(--color-warning-200);
   --error: var(--color-error-500);
   --error-light: var(--color-error-900);
   --shadow-color: rgb(0 0 0 / 0.3);

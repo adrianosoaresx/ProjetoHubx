@@ -20,6 +20,18 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 
+  /* Accent Colors */
+  --color-accent-50: #faf5ff;
+  --color-accent-100: #f3e8ff;
+  --color-accent-200: #e9d5ff;
+  --color-accent-300: #d8b4fe;
+  --color-accent-400: #c084fc;
+  --color-accent-500: #a855f7;
+  --color-accent-600: #9333ea;
+  --color-accent-700: #7e22ce;
+  --color-accent-800: #6b21a8;
+  --color-accent-900: #581c87;
+
   /* Neutral Colors - Light */
   --color-neutral-50: #f8fafc;
   --color-neutral-100: #f1f5f9;
@@ -35,20 +47,35 @@
   /* Semantic Colors */
   --color-success-50: #f0fdf4;
   --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
   --color-success-500: #22c55e;
   --color-success-600: #16a34a;
   --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
 
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
+
+  --color-warning-50: #fefce8;
+  --color-warning-100: #fef9c3;
+  --color-warning-200: #fef08a;
+  --color-warning-500: #eab308;
+  --color-warning-600: #ca8a04;
+  --color-warning-800: #854d0e;
+  --color-warning-900: #713f12;
+
 
   --color-error-50: #fef2f2;
   --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
   --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
 
   /* Typography */
   --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -105,8 +132,8 @@
   --transition-slow: 350ms ease-in-out;
 
   /* Light Theme (Default) */
-  --bg-primary: var(--color-neutral-50);
-  --bg-secondary: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f1f5f9;
   --bg-tertiary: var(--color-neutral-100);
   --bg-accent: var(--color-primary-50);
 
@@ -119,16 +146,21 @@
   --border: var(--color-neutral-200);
   --border-primary: var(--color-neutral-200);
   --border-secondary: var(--color-neutral-300);
-  --border-focus: var(--color-primary-500);
+  --border-focus: var(--color-primary-600);
 
   --primary: var(--color-primary-600);
-  --primary-hover: var(--color-primary-700);
+  --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-100);
+
+  --accent: var(--color-accent-500);
+  --accent-light: var(--color-accent-100);
+  --accent-dark: var(--color-accent-700);
 
   --success: var(--color-success-600);
   --success-light: var(--color-success-100);
   --warning: var(--color-warning-600);
   --warning-light: var(--color-warning-100);
+  --warning-foreground: var(--color-warning-800);
   --error: var(--color-error-600);
   --error-light: var(--color-error-100);
 
@@ -139,9 +171,9 @@
 
   /* Legacy Matrix theme variable mappings */
   --primary-dark: var(--color-neutral-900);
-  --matrix-green: var(--color-primary-500);
-  --matrix-light: var(--color-primary-300);
-  --matrix-dark: var(--color-primary-700);
+  --matrix-green: var(--color-primary-600);
+  --matrix-light: var(--color-primary-400);
+  --matrix-dark: var(--color-primary-800);
   --white: var(--color-neutral-50);
   --glass-border: var(--color-neutral-200);
   --glass-bg: rgba(255, 255, 255, 0.1);
@@ -168,14 +200,19 @@
     --border-secondary: var(--color-neutral-600);
     --border-focus: var(--color-primary-400);
 
-    --primary: var(--color-primary-500);
-    --primary-hover: var(--color-primary-400);
+    --primary: var(--color-primary-600);
+    --primary-hover: var(--color-primary-800);
     --primary-light: var(--color-primary-900);
+
+    --accent: var(--color-accent-500);
+    --accent-light: var(--color-accent-100);
+    --accent-dark: var(--color-accent-700);
 
     --success: var(--color-success-500);
     --success-light: var(--color-success-900);
     --warning: var(--color-warning-500);
     --warning-light: var(--color-warning-900);
+    --warning-foreground: var(--color-warning-200);
     --error: var(--color-error-500);
     --error-light: var(--color-error-900);
 
@@ -203,14 +240,19 @@
   --border-secondary: var(--color-neutral-600);
   --border-focus: var(--color-primary-400);
 
-  --primary: var(--color-primary-500);
-  --primary-hover: var(--color-primary-400);
+  --primary: var(--color-primary-600);
+  --primary-hover: var(--color-primary-800);
   --primary-light: var(--color-primary-900);
+
+  --accent: var(--color-accent-500);
+  --accent-light: var(--color-accent-100);
+  --accent-dark: var(--color-accent-700);
 
   --success: var(--color-success-500);
   --success-light: var(--color-success-900);
   --warning: var(--color-warning-500);
   --warning-light: var(--color-warning-900);
+  --warning-foreground: var(--color-warning-200);
   --error: var(--color-error-500);
   --error-light: var(--color-error-900);
 
@@ -372,7 +414,7 @@
     @apply bg-[var(--success-light)] border-[var(--success)] text-[var(--success)];
   }
   .alert-warning {
-    @apply bg-[var(--warning-light)] border-[var(--warning)] text-[var(--warning)];
+    @apply bg-[var(--warning-light)] border-[var(--warning)] text-[var(--warning-foreground)];
   }
   .alert-error {
     @apply bg-[var(--error-light)] border-[var(--error)] text-[var(--error)];
