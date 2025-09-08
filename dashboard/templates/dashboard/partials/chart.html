@@ -8,9 +8,10 @@
   (function(){
     const ctx = document.getElementById('{{ chart_id }}');
     if(ctx){
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
       new Chart(ctx, {
         type: '{{ type|default:"bar" }}',
-        data: {labels: {{ labels|safe }}, datasets:[{label: '{{ title }}', data: {{ data|safe }}, backgroundColor: '#3b82f6'}]},
+        data: {labels: {{ labels|safe }}, datasets:[{label: '{{ title }}', data: {{ data|safe }}, backgroundColor: primaryColor}]},
         options: {responsive: true, maintainAspectRatio: false}
       });
     }

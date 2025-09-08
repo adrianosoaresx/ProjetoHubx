@@ -14,13 +14,13 @@
   <form method="post" action="" class="bg-white rounded-2xl shadow p-6 space-y-4">
     {% csrf_token %}
     <div class="text-right">
-      <button type="submit" class="rounded-xl bg-red-500 px-4 py-2 text-white hover:bg-red-600">
+      <button type="submit" class="rounded-xl bg-[var(--error)] px-4 py-2 text-white hover:opacity-90">
         {% trans "Desativar" %}
       </button>
     </div>
   </form>
   <footer class="mt-6 text-center">
-    <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">
+    <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">
       {% trans "Voltar ao perfil de segurança" %}
     </a>
   </footer>
