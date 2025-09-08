@@ -11,7 +11,7 @@
       <form id="relatorio-form" class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div>
-            <label for="rel-centro" class="block text-sm font-medium text-gray-700">{% trans "Centro de Custo" %}</label>
+            <label for="rel-centro" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Centro de Custo" %}</label>
             <select id="rel-centro" name="centro" class="mt-1 block w-full border rounded p-2">
               <option value="">{% trans "Todos" %}</option>
               {% for c in centros %}
@@ -20,7 +20,7 @@
             </select>
           </div>
           <div>
-            <label for="rel-nucleo" class="block text-sm font-medium text-gray-700">{% trans "Núcleo" %}</label>
+            <label for="rel-nucleo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Núcleo" %}</label>
             <select id="rel-nucleo" name="nucleo" class="mt-1 block w-full border rounded p-2">
               <option value="">{% trans "Todos" %}</option>
               {% for n in nucleos %}
@@ -31,17 +31,17 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div>
-            <label for="rel-periodo-inicial" class="block text-sm font-medium text-gray-700">{% trans "Período inicial" %}</label>
+            <label for="rel-periodo-inicial" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Período inicial" %}</label>
             <input id="rel-periodo-inicial" type="month" name="periodo_inicial" class="mt-1 block w-full border rounded p-2" />
           </div>
           <div>
-            <label for="rel-periodo-final" class="block text-sm font-medium text-gray-700">{% trans "Período final" %}</label>
+            <label for="rel-periodo-final" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Período final" %}</label>
             <input id="rel-periodo-final" type="month" name="periodo_final" class="mt-1 block w-full border rounded p-2" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div>
-            <label for="rel-tipo" class="block text-sm font-medium text-gray-700">{% trans "Tipo" %}</label>
+            <label for="rel-tipo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Tipo" %}</label>
             <select id="rel-tipo" name="tipo" class="mt-1 block w-full border rounded p-2">
               <option value="">{% trans "Todos" %}</option>
               <option value="receitas">{% trans "Receitas" %}</option>
@@ -49,7 +49,7 @@
             </select>
           </div>
           <div>
-            <label for="rel-status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
+            <label for="rel-status" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Status" %}</label>
             <select id="rel-status" name="status" class="mt-1 block w-full border rounded p-2">
               <option value="">{% trans "Todos" %}</option>
               <option value="pendente">{% trans "Pendente" %}</option>
@@ -83,7 +83,7 @@
             container.innerHTML = `
               <p class=\"mb-2 font-medium\">{% trans "Saldo atual" %}: ${data.saldo_atual}</p>
               <p class=\"mb-2 font-medium\">{% trans "Total inadimplentes" %}: ${data.total_inadimplentes}</p>
-              <table class=\"min-w-full divide-y divide-gray-200\"><thead><tr><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Mês" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Receitas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Despesas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-gray-500\">{% trans "Saldo" %}</th></tr></thead><tbody>${rows}</tbody></table>`;
+              <table class=\"min-w-full divide-y divide-[var(--border)]\"><thead><tr><th class=\"px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]\">{% trans "Mês" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]\">{% trans "Receitas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]\">{% trans "Despesas" %}</th><th class=\"px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]\">{% trans "Saldo" %}</th></tr></thead><tbody>${rows}</tbody></table>`;
           } catch (e) {
             container.textContent = gettext('Erro ao gerar relatório');
           }
