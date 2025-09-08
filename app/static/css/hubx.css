@@ -9,16 +9,16 @@
 /* CSS Variables */
 :root {
   /* Light Theme Colors */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
 
   /* Accent Colors */
   --color-accent-50: #faf5ff;
@@ -45,37 +45,40 @@
   --color-neutral-900: #0f172a;
 
   /* Semantic Colors */
-  --color-success-50: #f0fdf4;
-  --color-success-100: #dcfce7;
-  --color-success-200: #bbf7d0;
-  --color-success-300: #86efac;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
-  --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-  --color-success-800: #166534;
-  --color-success-900: #14532d;
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-300: #6ee7b7;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-800: #065f46;
+  --color-success-900: #064e3b;
 
 
-  --color-warning-50: #fefce8;
-  --color-warning-100: #fef9c3;
-  --color-warning-200: #fef08a;
-  --color-warning-500: #eab308;
-  --color-warning-600: #ca8a04;
-  --color-warning-800: #854d0e;
-  --color-warning-900: #713f12;
+  --color-warning-50: #fff7ed;
+  --color-warning-100: #ffedd5;
+  --color-warning-200: #fed7aa;
+  --color-warning-300: #fdba74;
+  --color-warning-400: #fb923c;
+  --color-warning-500: #f97316;
+  --color-warning-600: #ea580c;
+  --color-warning-700: #c2410c;
+  --color-warning-800: #9a3412;
+  --color-warning-900: #7c2d12;
 
 
-  --color-error-50: #fef2f2;
-  --color-error-100: #fee2e2;
-  --color-error-200: #fecaca;
-  --color-error-300: #fca5a5;
-  --color-error-400: #f87171;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
-  --color-error-700: #b91c1c;
-  --color-error-800: #991b1b;
-  --color-error-900: #7f1d1d;
+  --color-error-50: #fff1f2;
+  --color-error-100: #ffe4e6;
+  --color-error-200: #fecdd3;
+  --color-error-300: #fda4af;
+  --color-error-400: #fb7185;
+  --color-error-500: #f43f5e;
+  --color-error-600: #e11d48;
+  --color-error-700: #be123c;
+  --color-error-800: #9f1239;
+  --color-error-900: #881337;
 
   /* Typography */
   --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -133,7 +136,7 @@
 
   /* Light Theme (Default) */
   --bg-primary: #ffffff;
-  --bg-secondary: #f1f5f9;
+  --bg-secondary: var(--color-neutral-50);
   --bg-tertiary: var(--color-neutral-100);
   --bg-accent: var(--color-primary-50);
 
@@ -149,18 +152,18 @@
   --border-focus: var(--color-primary-600);
 
   --primary: var(--color-primary-600);
-  --primary-hover: var(--color-primary-800);
+  --primary-hover: var(--color-primary-700);
   --primary-light: var(--color-primary-100);
 
   --accent: var(--color-accent-500);
   --accent-light: var(--color-accent-100);
   --accent-dark: var(--color-accent-700);
 
-  --success: var(--color-success-600);
+  --success: var(--color-success-700);
   --success-light: var(--color-success-100);
-  --warning: var(--color-warning-600);
+  --warning: var(--color-warning-700);
   --warning-light: var(--color-warning-100);
-  --warning-foreground: var(--color-warning-800);
+  --warning-foreground: #ffffff;
   --error: var(--color-error-600);
   --error-light: var(--color-error-100);
 
@@ -200,9 +203,9 @@
     --border-secondary: var(--color-neutral-600);
     --border-focus: var(--color-primary-400);
 
-    --primary: var(--color-primary-600);
-    --primary-hover: var(--color-primary-800);
-    --primary-light: var(--color-primary-900);
+    --primary: var(--color-primary-500);
+    --primary-hover: var(--color-primary-400);
+    --primary-light: var(--color-primary-700);
 
     --accent: var(--color-accent-500);
     --accent-light: var(--color-accent-100);
@@ -212,7 +215,7 @@
     --success-light: var(--color-success-900);
     --warning: var(--color-warning-500);
     --warning-light: var(--color-warning-900);
-    --warning-foreground: var(--color-warning-200);
+    --warning-foreground: var(--text-inverse);
     --error: var(--color-error-500);
     --error-light: var(--color-error-900);
 
@@ -240,9 +243,9 @@
   --border-secondary: var(--color-neutral-600);
   --border-focus: var(--color-primary-400);
 
-  --primary: var(--color-primary-600);
-  --primary-hover: var(--color-primary-800);
-  --primary-light: var(--color-primary-900);
+  --primary: var(--color-primary-500);
+  --primary-hover: var(--color-primary-400);
+  --primary-light: var(--color-primary-700);
 
   --accent: var(--color-accent-500);
   --accent-light: var(--color-accent-100);
@@ -252,7 +255,7 @@
   --success-light: var(--color-success-900);
   --warning: var(--color-warning-500);
   --warning-light: var(--color-warning-900);
-  --warning-foreground: var(--color-warning-200);
+  --warning-foreground: var(--text-inverse);
   --error: var(--color-error-500);
   --error-light: var(--color-error-900);
 
