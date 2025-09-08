@@ -1,0 +1,9 @@
+{% load i18n %}
+<div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  {% for nucleo in nucleos %}
+    {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
+  {% empty %}
+    <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
+  {% endfor %}
+</div>
+
