@@ -135,6 +135,7 @@ TEMPLATES = [
             # evitando a necessidade de `{% load widget_tweaks %}` em cada template.
             "builtins": [
                 "widget_tweaks.templatetags.widget_tweaks",
+                "core.templatetags.string_filters",
             ],
         },
     },
