@@ -4,24 +4,26 @@
 {% block title %}{% trans "Registro - CPF" %} | Hubx{% endblock %}
 
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
     <div class="mb-8">
       {% with step=4 total=8 %}
       <div class="mb-2 flex items-center justify-between">
         <span class="text-sm font-medium text-primary-600">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         {% widthratio step total 100 as progress %}
-        <span class="text-sm text-neutral-500">{{ progress }}%</span>
+        <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ progress }}%</span>
       </div>
-      <div class="h-2 w-full rounded-xl bg-neutral-200">
+      <div class="h-2 w-full rounded-xl bg-neutral-200 dark:bg-slate-700">
         <div class="h-full rounded-xl bg-primary-600" style="width: {{ progress }}%;"></div>
       </div>
       {% endwith %}
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900">{% trans "Qual seu CPF?" %}</h1>
-      <p class="text-neutral-600">{% trans "Precisamos para validar sua identidade e segurança" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Qual seu CPF?" %}</h1>
+      <p class="text-neutral-600 dark:text-neutral-400">{% trans "Precisamos para validar sua identidade e segurança" %}</p>
     </div>
 
     {% if messages %}
@@ -41,26 +43,28 @@
             id="cpf"
             name="cpf"
             maxlength="14"
-            class="peer w-full rounded-lg border border-neutral-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
             placeholder=" "
             required
             autofocus
+            aria-label="CPF"
+            aria-invalid="false"
             aria-describedby="cpf_help cpf_validation"
           />
           <label
             for="cpf"
-            class="absolute left-4 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
+            class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
           >{% trans "CPF" %}</label>
         </div>
         <div class="text-sm text-red-600" id="cpf_validation"></div>
-        <small id="cpf_help" class="text-sm text-neutral-500">{% trans "Formato 000.000.000-00" %}</small>
+        <small id="cpf_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Formato 000.000.000-00" %}</small>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 px-4 py-2 text-center text-neutral-700 hover:bg-neutral-100">{% trans "Voltar" %}</a>
+        <a href="{% url 'accounts:nome' %}" class="flex-1 rounded-xl border border-neutral-300 dark:border-slate-600 px-4 py-2 text-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700">{% trans "Voltar" %}</a>
         <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
       </div>
     </form>
   </div>
-</section>
+</div>
 {% endblock %}

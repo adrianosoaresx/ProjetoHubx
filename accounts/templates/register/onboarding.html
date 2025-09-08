@@ -4,8 +4,10 @@
 {% block title %}{% trans "Cadastre-se" %} - HubX{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen">
-    <div class="max-w-md mx-auto p-6 rounded-2xl shadow bg-white text-center w-full">
+{% include 'components/nav_sidebar.html' %}
+{% include 'components/hero.html' %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow text-center">
         <div class="mb-8">
             <div class="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2">
@@ -15,10 +17,10 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold mb-6 text-center">
+            <h1 class="text-2xl font-bold mb-6 text-center text-neutral-900 dark:text-neutral-100">
                 {% trans "Junte-se ao HubX" %}
             </h1>
-            <p class="text-neutral-600 mb-6">
+            <p class="text-neutral-600 dark:text-neutral-400 mb-6">
                 {% trans "Conecte-se com comunidades, empresas e organizações em uma única plataforma" %}
             </p>
         </div>
@@ -40,8 +42,8 @@
                         <line x1="12" y1="14" x2="12" y2="3"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Compartilhe" %}</h3>
-                <p class="text-sm text-neutral-600">
+                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Compartilhe" %}</h3>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">
                     {% trans "Publique conteúdo e mantenha sua comunidade informada" %}
                 </p>
             </div>
@@ -54,8 +56,8 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Conecte" %}</h3>
-                <p class="text-sm text-neutral-600">
+                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Conecte" %}</h3>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">
                     {% trans "Encontre e conecte-se com pessoas e organizações" %}
                 </p>
             </div>
@@ -68,8 +70,8 @@
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 mb-2">{% trans "Organize" %}</h3>
-                <p class="text-sm text-neutral-600">
+                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Organize" %}</h3>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">
                     {% trans "Crie e participe de eventos da sua comunidade" %}
                 </p>
             </div>
@@ -85,17 +87,16 @@
                 </svg>
                 {% trans "Começar Cadastro" %}
             </a>
-            <a href="{% url 'accounts:login' %}" class="bg-gray-100 text-neutral-700 font-semibold py-2 px-4 rounded-xl">
+            <a href="{% url 'accounts:login' %}" class="bg-gray-100 text-neutral-700 dark:bg-slate-700 dark:text-neutral-300 font-semibold py-2 px-4 rounded-xl">
                 {% trans "Já tenho conta" %}
             </a>
         </div>
 
-        <div class="mt-8 pt-6 border-t border-neutral-200">
-            <p class="text-xs text-neutral-500">
+        <div class="mt-8 pt-6 border-t border-neutral-200 dark:border-slate-700">
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">
                 {% blocktrans trimmed %}Ao se cadastrar, você concorda com nossos <a href="#" class="text-primary-600 hover:text-primary-700">Termos de Uso</a> e <a href="#" class="text-primary-600 hover:text-primary-700">Política de Privacidade</a>{% endblocktrans %}
             </p>
-            </div>
         </div>
-    </div>
+  </div>
 </div>
 {% endblock %}
