@@ -9,29 +9,47 @@
     {% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Cadastrar Mídia" %}{% endif %}
   </h2>
 
-  <form method="post" enctype="multipart/form-data" class="space-y-4">
-    {% csrf_token %}
+  <div class="grid grid-cols-1">
+    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+      <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
 
-    <div class="relative">
-      {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-      <label for="{{ form.file.id_for_label }}" class="label-float">{{ form.file.label }}</label>
-      {{ form.file.errors }}
-    </div>
-    <div class="relative">
-      {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-      <label for="{{ form.descricao.id_for_label }}" class="label-float">{{ form.descricao.label }}</label>
-      {{ form.descricao.errors }}
-    </div>
-    <div class="relative">
-      {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: ' }}
-      <label for="{{ form.tags_field.id_for_label }}" class="label-float">{{ form.tags_field.label }}</label>
-      {{ form.tags_field.errors }}
-    </div>
+        <div class="relative">
+          {% with label_attr='aria-label:'|add:form.file.label invalid_attr='aria-invalid:'|add:(form.file.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.file.id_for_label|add:'_error' %}
+            {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: '|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% endwith %}
+          <label for="{{ form.file.id_for_label }}" class="label-float">{{ form.file.label }}</label>
+          {% if form.file.errors %}
+            <div id="{{ form.file.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.file.errors }}</div>
+          {% endif %}
+        </div>
 
-    <div class="flex justify-end gap-2">
-      <a href="{% url 'accounts:midias' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
-      <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
+        <div class="relative">
+          {% with label_attr='aria-label:'|add:form.descricao.label invalid_attr='aria-invalid:'|add:(form.descricao.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.descricao.id_for_label|add:'_error' %}
+            {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: '|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% endwith %}
+          <label for="{{ form.descricao.id_for_label }}" class="label-float">{{ form.descricao.label }}</label>
+          {% if form.descricao.errors %}
+            <div id="{{ form.descricao.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.descricao.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="relative">
+          {% with label_attr='aria-label:'|add:form.tags_field.label invalid_attr='aria-invalid:'|add:(form.tags_field.errors|yesno:'true,false') desc_attr='aria-describedby:'|add:form.tags_field.id_for_label|add:'_error' %}
+            {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:'placeholder: '|attr:label_attr|attr:invalid_attr|attr:desc_attr }}
+          {% endwith %}
+          <label for="{{ form.tags_field.id_for_label }}" class="label-float">{{ form.tags_field.label }}</label>
+          {% if form.tags_field.errors %}
+            <div id="{{ form.tags_field.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.tags_field.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div class="flex justify-end gap-2">
+          <a href="{% url 'accounts:midias' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+          <button type="submit" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/90 dark:bg-primary-700 dark:hover:bg-primary-600">{% trans "Salvar" %}</button>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
 </section>
 {% endblock %}
