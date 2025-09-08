@@ -1,0 +1,36 @@
+{% load i18n %}
+<dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
+  <div>
+    <dt class="text-gray-500">{% trans "Nome completo" %}</dt>
+    <dd class="font-medium">{{ profile.get_full_name|default:profile.username }}</dd>
+  </div>
+  <div>
+    <dt class="text-gray-500">{% trans "Usuário" %}</dt>
+    <dd class="font-medium">@{{ profile.username }}</dd>
+  </div>
+  {% if profile.email %}
+  <div>
+    <dt class="text-gray-500">{% trans "E-mail" %}</dt>
+    <dd class="font-medium">{{ profile.email }}</dd>
+  </div>
+  {% endif %}
+  {% if profile.date_joined %}
+  <div>
+    <dt class="text-gray-500">{% trans "Membro desde" %}</dt>
+    <dd class="font-medium">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
+  </div>
+  {% endif %}
+  {% if profile.last_login %}
+  <div>
+    <dt class="text-gray-500">{% trans "Último acesso" %}</dt>
+    <dd class="font-medium">{{ profile.last_login|date:"d/m/Y H:i" }}</dd>
+  </div>
+  {% endif %}
+</dl>
+{% if profile.biografia %}
+  <div class="mt-4">
+    <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
+    <p class="text-gray-700 whitespace-pre-line">{{ profile.biografia }}</p>
+  </div>
+{% endif %}
+

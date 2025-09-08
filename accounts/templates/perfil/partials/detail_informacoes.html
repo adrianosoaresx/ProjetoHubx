@@ -1,0 +1,34 @@
+{% load i18n %}
+{% if user.biografia %}
+  <div class="mb-6">
+    <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
+  </div>
+{% endif %}
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700">
+  <div>
+    <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
+    <p>{% trans "Email" %}: {{ user.email }}</p>
+    <p>{% trans "Telefone" %}: {{ user.phone_number }}</p>
+    <p>{% trans "WhatsApp" %}: {{ user.whatsapp }}</p>
+  </div>
+  <div>
+    <h4 class="font-medium mb-1">{% trans "Localização" %}</h4>
+    <p>{{ user.endereco }}</p>
+    <p>{{ user.cidade }} - {{ user.estado }}</p>
+    <p>{{ user.cep }}</p>
+  </div>
+  <div>
+    <h4 class="font-medium mb-1">{% trans "Redes Sociais" %}</h4>
+    {% if user.redes_sociais %}
+      {% for nome, link in user.redes_sociais.items %}
+        <p><a href="{{ link }}" class="text-primary hover:underline" target="_blank">{{ nome|title }}</a></p>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-6 text-right">
+  <a href="{% url 'accounts:informacoes_pessoais' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
+</div>
+

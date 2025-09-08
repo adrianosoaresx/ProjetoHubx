@@ -9,29 +9,37 @@
   <nav class="border-b border-gray-200">
     <ul class="-mb-px flex flex-wrap gap-2" role="tablist" aria-label="{% trans 'Navegação de abas do perfil' %}">
       <li>
-        <a href="#tab-informacoes" data-tab-target="tab-informacoes" role="tab" aria-selected="true"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary data-[active=true]:border-primary data-[active=true]:text-primary">
-          {% trans "Informações" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary"
+          hx-get="?tab=informacoes"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Informações" %}</a>
       </li>
       {% if not profile.is_superuser %}
       <li>
-        <a href="#tab-empresas" data-tab-target="tab-empresas" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
-          {% trans "Empresas" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary"
+          hx-get="?tab=empresas"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Empresas" %}</a>
       </li>
       <li>
-        <a href="#tab-nucleos" data-tab-target="tab-nucleos" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
-          {% trans "Núcleos" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary"
+          hx-get="?tab=nucleos"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Núcleos" %}</a>
       </li>
       <li>
-        <a href="#tab-eventos" data-tab-target="tab-eventos" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary">
-          {% trans "Eventos" %}
-        </a>
+        <a
+          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-gray-600 hover:text-primary hover:border-primary"
+          hx-get="?tab=eventos"
+          hx-target="#tab-content"
+          role="tab"
+        >{% trans "Eventos" %}</a>
       </li>
       {% endif %}
     </ul>
@@ -39,118 +47,9 @@
 </div>
 
 <div class="card-body">
-  <div class="mt-4">
-    <div id="tab-informacoes" role="tabpanel" data-tab-panel class="block">
-      <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
-        <div>
-          <dt class="text-gray-500">{% trans "Nome completo" %}</dt>
-          <dd class="font-medium">{{ profile.get_full_name|default:profile.username }}</dd>
-        </div>
-        <div>
-          <dt class="text-gray-500">{% trans "Usuário" %}</dt>
-          <dd class="font-medium">@{{ profile.username }}</dd>
-        </div>
-        {% if profile.email %}
-        <div>
-          <dt class="text-gray-500">{% trans "E-mail" %}</dt>
-          <dd class="font-medium">{{ profile.email }}</dd>
-        </div>
-        {% endif %}
-        {% if profile.date_joined %}
-        <div>
-          <dt class="text-gray-500">{% trans "Membro desde" %}</dt>
-          <dd class="font-medium">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
-        </div>
-        {% endif %}
-        {% if profile.last_login %}
-        <div>
-          <dt class="text-gray-500">{% trans "Último acesso" %}</dt>
-          <dd class="font-medium">{{ profile.last_login|date:"d/m/Y H:i" }}</dd>
-        </div>
-        {% endif %}
-      </dl>
-      {% if profile.biografia %}
-        <div class="mt-4">
-          <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
-          <p class="text-gray-700 whitespace-pre-line">{{ profile.biografia }}</p>
-        </div>
-      {% endif %}
-    </div>
-
-    {% if not profile.is_superuser %}
-    <div id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
-      {% if empresas %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
-        {% for empresa in empresas %}
-          <div role="listitem">
-            {% include 'empresas/partials/card.html' with empresa=empresa %}
-          </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="grid grid-cols-1">
-        <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
-      </div>
-      {% endif %}
-    </div>
-
-    <div id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for nucleo in nucleos %}
-          {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
-        {% empty %}
-          <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
-        {% endfor %}
-      </div>
-    </div>
-
-    <div id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
-        {% for ins in inscricoes %}
-          {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
-        {% empty %}
-          <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
+  <div class="mt-4" id="tab-content" hx-target="this">
+    {% include 'perfil/partials/publico_informacoes.html' %}
   </div>
-
-  <script>
-  (function () {
-    const container = document.currentScript && document.currentScript.previousElementSibling;
-    if (!container) return;
-    const tabLinks = container.querySelectorAll('[data-tab-target]');
-    const panels = container.querySelectorAll('[data-tab-panel]');
-
-    function activate(id) {
-      panels.forEach(p => p.classList.add('hidden'));
-      tabLinks.forEach(a => {
-        const isActive = a.getAttribute('data-tab-target') === id;
-        a.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        if (isActive) a.setAttribute('data-active', 'true'); else a.removeAttribute('data-active');
-      });
-      const current = container.querySelector('#' + CSS.escape(id));
-      if (current) current.classList.remove('hidden');
-    }
-
-    const initial = (location.hash || '#tab-informacoes').replace('#', '');
-    if (container.querySelector('[data-tab-target="' + initial + '"]')) {
-      activate(initial);
-    } else {
-      activate('tab-informacoes');
-    }
-
-    tabLinks.forEach(a => {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const id = a.getAttribute('data-tab-target');
-        history.replaceState(null, '', '#' + id);
-        activate(id);
-      });
-    });
-  })();
-  </script>
 </div>
 {% endblock %}
 

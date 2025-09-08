@@ -6,103 +6,36 @@
 <div class="card-header">
   <div class="mt-2 border-b border-neutral-200">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
+      <button
+        class="tab-btn py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600"
+        hx-get="{% url 'accounts:perfil' %}?tab=informacoes"
+        hx-target="#tab-panels"
+      >{% trans 'Informações' %}</button>
       {% if user.get_tipo_usuario != 'admin' %}
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="empresas">{% trans 'Empresas' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="nucleos">{% trans 'Núcleos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>
+        <button
+          class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600"
+          hx-get="{% url 'accounts:perfil' %}?tab=empresas"
+          hx-target="#tab-panels"
+        >{% trans 'Empresas' %}</button>
+        <button
+          class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600"
+          hx-get="{% url 'accounts:perfil' %}?tab=nucleos"
+          hx-target="#tab-panels"
+        >{% trans 'Núcleos' %}</button>
+        <button
+          class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600"
+          hx-get="{% url 'accounts:perfil' %}?tab=eventos"
+          hx-target="#tab-panels"
+        >{% trans 'Eventos' %}</button>
       {% endif %}
     </nav>
   </div>
 </div>
 
 <div class="card-body">
-  <div id="tab-panels" class="mt-6">
-    <!-- Painel: Informações -->
-    <div class="tab-panel" data-tab="informacoes">
-
-        {% if user.biografia %}
-          <div class="mb-6">
-            <p class="text-gray-700 italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
-          </div>
-        {% endif %}
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-gray-700">
-          <div>
-            <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
-            <p>{% trans "Email" %}: {{ user.email }}</p>
-            <p>{% trans "Telefone" %}: {{ user.phone_number }}</p>
-            <p>{% trans "WhatsApp" %}: {{ user.whatsapp }}</p>
-          </div>
-          <div>
-            <h4 class="font-medium mb-1">{% trans "Localização" %}</h4>
-            <p>{{ user.endereco }}</p>
-            <p>{{ user.cidade }} - {{ user.estado }}</p>
-            <p>{{ user.cep }}</p>
-          </div>
-          <div>
-            <h4 class="font-medium mb-1">{% trans "Redes Sociais" %}</h4>
-            {% if user.redes_sociais %}
-              {% for nome, link in user.redes_sociais.items %}
-                <p><a href="{{ link }}" class="text-primary hover:underline" target="_blank">{{ nome|title }}</a></p>
-              {% endfor %}
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="mt-6 text-right">
-          <a href="{% url 'accounts:informacoes_pessoais' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
-        </div>
-    </div>
-
-    {% if user.get_tipo_usuario != 'admin' %}
-    <!-- Painel: Empresas -->
-    <div class="tab-panel hidden" data-tab="empresas">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for empresa in empresas %}
-          {% include 'partials/cards/empresa_card.html' with empresa=empresa %}
-        {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhuma empresa encontrada." %}</p>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Painel: Núcleos -->
-    <div class="tab-panel hidden" data-tab="nucleos">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for nucleo in nucleos %}
-          {% include 'partials/cards/nucleo_card.html' with nucleo=nucleo %}
-        {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Painel: Eventos -->
-    <div class="tab-panel hidden" data-tab="eventos">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {% for ins in inscricoes %}
-          {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
-        {% empty %}
-          <p class="text-sm text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
-        {% endfor %}
-      </div>
-    </div>
-    {% endif %}
+  <div id="tab-panels" class="mt-6" hx-target="this">
+    {% include 'perfil/partials/detail_informacoes.html' %}
   </div>
-
-  <script>
-    // Tabs simples em JS vanilla (perfil)
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    function activate(tab) {
-      tabButtons.forEach(btn => btn.dataset.active = (btn.dataset.tab === tab));
-      panels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.tab !== tab));
-    }
-    // Ativa 'informacoes' por padrão
-    activate('informacoes');
-    tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
-  </script>
 </div>
 
 {% endblock %}
