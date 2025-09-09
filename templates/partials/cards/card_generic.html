@@ -1,0 +1,14 @@
+<article class="card">
+  {% if title %}
+    <header class="card-header">{{ title }}</header>
+  {% endif %}
+  <div class="card-body">
+    {% if subtitle %}<p class="text-[var(--text-secondary)] text-sm">{{ subtitle }}</p>{% endif %}
+    {% if content %}{{ content|safe }}{% endif %}
+  </div>
+  <footer class="card-footer">
+    {% if href %}<a href="{{ href }}" class="btn-secondary">Detalhes</a>{% endif %}
+    {% if actions %}{{ actions|safe }}{% endif %}
+  </footer>
+  {% if meta %}<div class="mt-3 text-xs text-[var(--text-secondary)]">{{ meta }}</div>{% endif %}
+</article>

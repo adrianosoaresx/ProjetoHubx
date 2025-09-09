@@ -536,3 +536,45 @@
     @apply mb-1;
   }
 }
+
+/* === Hubx UI: tokens/utilitários extras =================================== */
+
+/* Hero gradient parametrizável */
+:root {
+  --hero-from: #3b82f6; /* azul-500 */
+  --hero-to:   #1e40af; /* azul-900 */
+}
+
+@layer components {
+  /* Containers */
+  .container    { @apply mx-auto px-4; }
+  .container-sm { @apply mx-auto px-3 max-w-screen-sm; }
+  .container-lg { @apply mx-auto px-6 max-w-screen-lg; }
+
+  /* Grid/Card */
+  .card-grid { @apply grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4; }
+
+  .card        { @apply bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl shadow p-6 border border-[var(--border)]; }
+  .card-header { @apply mb-3 font-semibold; }
+  .card-body   { @apply text-sm leading-6; }
+  .card-footer { @apply mt-4 pt-4 border-t border-[var(--border)]; }
+
+  /* Botões */
+  .btn            { @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border transition; }
+  .btn-primary    { @apply btn bg-[var(--accent)] text-[var(--on-accent)] border-transparent hover:opacity-90; }
+  .btn-secondary  { @apply btn bg-[var(--bg-tertiary)] text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-accent)]; }
+  .btn-outline    { @apply btn bg-transparent text-[var(--text-primary)] border-[var(--border)] hover:bg-[var(--bg-tertiary)]; }
+
+  /* Sidebar */
+  .sidebar-item { @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)] transition; }
+  .sidebar-item[aria-current="page"] { @apply bg-[var(--bg-accent)] text-[var(--text-primary)] font-medium; }
+
+  /* Tabelas */
+  .table           { @apply w-full text-sm; }
+  .table thead th  { @apply text-left font-medium border-b border-[var(--border)] py-2; }
+  .table tbody tr  { @apply border-b border-[var(--border)]; }
+  .table td        { @apply py-2 align-middle; }
+
+  /* Forms */
+  .errorlist { @apply mt-1 text-xs text-red-600 dark:text-red-400; }
+}
