@@ -8,13 +8,13 @@
 {% block content %}
 <section class="max-w-6xl mx-auto px-4 py-10 space-y-6">
   <header class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-neutral-900">{% translate 'Produtos e Serviços' %}</h1>
+    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% translate 'Produtos e Serviços' %}</h1>
     <a href="{% url 'empresas:tags_create' %}" class="bg-primary-600 text-white text-sm px-4 py-2 rounded-md hover:bg-primary-700">{% translate 'Novo Item' %}</a>
   </header>
 
-  <form method="get" class="bg-white border border-neutral-200 p-4 rounded-md flex flex-col sm:flex-row gap-4 sm:items-end">
+  <form method="get" class="bg-[var(--bg-secondary)] border border-[var(--border)] p-4 rounded-md flex flex-col sm:flex-row gap-4 sm:items-end">
     <div>
-      <label for="categoria" class="block text-sm font-medium text-neutral-700">{% translate 'Categoria' %}</label>
+      <label for="categoria" class="block text-sm font-medium text-[var(--text-secondary)]">{% translate 'Categoria' %}</label>
       <select name="categoria" id="categoria" onchange="this.form.submit()" class="w-full p-2 border rounded">
         <option value="" {% if not request.GET.categoria %}selected{% endif %}>{% translate 'Todas' %}</option>
         <option value="prod" {% if request.GET.categoria == 'prod' %}selected{% endif %}>{% translate 'Produtos' %}</option>
@@ -22,40 +22,32 @@
       </select>
     </div>
     <div class="flex-1">
-      <label for="id_tag" class="block text-sm font-medium text-neutral-700">{% translate 'Palavra-chave' %}</label>
+      <label for="id_tag" class="block text-sm font-medium text-[var(--text-secondary)]">{% translate 'Palavra-chave' %}</label>
       {{ form.tag|add_class:'w-full p-2 border rounded' }}
     </div>
     <noscript>
-      <button type="submit" class="bg-neutral-200 text-neutral-800 px-4 py-2 rounded text-sm hover:bg-neutral-300">{% translate 'Filtrar' %}</button>
+      <button type="submit" class="bg-[var(--bg-tertiary)] text-[var(--text-primary)] px-4 py-2 rounded text-sm hover:bg-[var(--bg-accent)]">{% translate 'Filtrar' %}</button>
     </noscript>
   </form>
 
   {% if object_list %}
-  <table class="min-w-full text-sm">
-    <thead class="bg-neutral-100">
-      <tr>
-        <th class="px-3 py-2 text-left font-semibold">{% translate 'Nome' %}</th>
-        <th class="px-3 py-2 text-left font-semibold">{% translate 'Categoria' %}</th>
-        <th class="px-3 py-2 text-left font-semibold">{% translate 'Item Pai' %}</th>
-        <th class="px-3 py-2 text-center font-semibold">{% translate 'Ações' %}</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-neutral-200 bg-white">
-      {% for tag in object_list %}
-      <tr>
-        <td class="px-3 py-2">{{ tag.nome }}</td>
-        <td class="px-3 py-2">{{ tag.get_categoria_display }}</td>
-        <td class="px-3 py-2">{{ tag.parent }}</td>
-        <td class="px-3 py-2 text-center space-x-2">
-          <a href="{% url 'empresas:tags_update' tag.id %}" class="text-blue-600 hover:underline">{% translate 'Editar' %}</a>
-          <a href="{% url 'empresas:tags_delete' tag.id %}" class="text-red-600 hover:underline">{% translate 'Remover' %}</a>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="card-grid">
+    {% for tag in object_list %}
+    <article class="card">
+      <header class="card-header">{{ tag.nome }}</header>
+      <div class="card-body text-sm text-[var(--text-secondary)] space-y-1">
+        <p><span class="font-medium text-[var(--text-primary)]">{% translate 'Categoria' %}:</span> {{ tag.get_categoria_display }}</p>
+        <p><span class="font-medium text-[var(--text-primary)]">{% translate 'Item Pai' %}:</span> {{ tag.parent }}</p>
+      </div>
+      <footer class="card-footer flex gap-2">
+        <a href="{% url 'empresas:tags_update' tag.id %}" class="btn-secondary">{% translate 'Editar' %}</a>
+        <a href="{% url 'empresas:tags_delete' tag.id %}" class="btn-danger">{% translate 'Remover' %}</a>
+      </footer>
+    </article>
+    {% endfor %}
+  </div>
   {% else %}
-  <p class="text-center text-neutral-500">{% translate 'Nenhum item cadastrado.' %}</p>
+  <p class="text-center text-[var(--text-secondary)]">{% translate 'Nenhum item cadastrado.' %}</p>
   {% endif %}
 </section>
 {% endblock %}
