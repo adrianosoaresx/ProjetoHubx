@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load custom_filters i18n static %}
+
+{% block title %}{% if form.instance.pk %}{% translate 'Editar Empresa' %}{% else %}{% translate 'Nova Empresa' %}{% endif %}{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto px-4 py-10 space-y-6">
+  <header class="flex items-start gap-4">
+    <a href="{% url 'empresas:lista' %}" class="text-sm px-3 py-2 border rounded hover:bg-neutral-100">{% translate 'Voltar' %}</a>
+    <div>
+      <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% translate 'Editar Empresa' %}{% else %}{% translate 'Nova Empresa' %}{% endif %}</h1>
+      <p class="text-sm text-neutral-600">{% translate 'Cadastre sua empresa na plataforma' %}</p>
+    </div>
+  </header>
+
+  <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-md shadow-sm p-6 space-y-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+    <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
+    <div class="flex justify-end gap-3 border-t pt-4">
+      <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 border rounded">{% translate 'Cancelar' %}</a>
+      <button type="submit" class="text-sm px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 inline-flex items-center gap-2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        {% if form.instance.pk %}{% translate 'Salvar' %}{% else %}{% translate 'Cadastrar Empresa' %}{% endif %}
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'django_select2/django_select2.js' %}"></script>
+{% endblock %}

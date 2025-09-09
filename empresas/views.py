@@ -99,7 +99,7 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 class EmpresaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = Empresa
     form_class = EmpresaForm
-    template_name = "empresas/nova.html"
+    template_name = "empresas/empresa_form.html"
     success_url = reverse_lazy("empresas:lista")
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
@@ -122,7 +122,7 @@ class EmpresaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
 class EmpresaUpdateView(NoSuperadminMixin, LoginRequiredMixin, UpdateView):
     model = Empresa
     form_class = EmpresaForm
-    template_name = "empresas/nova.html"
+    template_name = "empresas/empresa_form.html"
     success_url = reverse_lazy("empresas:lista")
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
