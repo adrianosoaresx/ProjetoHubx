@@ -1,30 +1,26 @@
 {% load i18n %}
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col transition-all">
   <div class="flex items-center justify-between p-4 border-b border-[var(--border)]">
-    <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}"><span class="sidebar-label">HubX</span></a>
+    <a href="/" class="text-2xl font-bold text-primary" aria-label="{% trans 'Página inicial' %}" aria-current="{% if request.path == '/' %}page{% endif %}">
+      {% trans 'Hubx' %}
+    </a>
     <button id="sidebar-toggle" class="text-[var(--text-primary)]" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
-      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 5h16" />
-        <path d="M4 12h16" />
-        <path d="M4 19h16" />
+      <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
   </div>
   <nav class="flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
-    <ul class="flex flex-col gap-2 text-sm">
-      {% for item in NAV_MENU %}
-        <li>
-          <a href="{{ item.path }}" class="flex items-center gap-2 p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition {{ item.classes }} {% if request.path|startswith:item.path %}bg-slate-200 dark:bg-slate-800 font-semibold{% endif %}" aria-label="{% trans item.label %}" aria-current="{% if request.path|startswith:item.path %}page{% endif %}">
-            {% if item.id == 'perfil' and user.avatar %}
-              <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" />
-            {% else %}
-              {{ item.icon|safe }}
-            {% endif %}
-            <span class="sidebar-label">{% trans item.label %}</span>
-          </a>
-          {% if item.id == 'perfil' %}<span id="notif-count" class="hidden"></span>{% endif %}
-        </li>
-      {% endfor %}
-    </ul>
+    {% for item in NAV_MENU %}
+      <a href="{{ item.path }}" class="sidebar-item" aria-current="{% if request.path == item.path %}page{% else %}false{% endif %}">
+        {% if item.id == 'perfil' and user.avatar %}
+          <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" />
+        {% else %}
+          {{ item.icon|safe }}
+        {% endif %}
+        <span>{{ item.label }}</span>
+      </a>
+      {% if item.id == 'perfil' %}<span id="notif-count" class="hidden"></span>{% endif %}
+    {% endfor %}
   </nav>
 </aside>
