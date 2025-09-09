@@ -2,9 +2,12 @@
 {% load i18n %}
 {% block title %}{% trans "Convites Emitidos" %} | HubX{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Convites Emitidos') action_template='tokens/hero_action.html' %}
+{% endblock %}
+
 {% block content %}
 
-{% include '_components/hero.html' with title=_('Convites Emitidos') action_template='tokens/hero_action.html' %}
 <div class="container mx-auto p-6">
 
 <section class="max-w-6xl mx-auto mt-8 px-4">

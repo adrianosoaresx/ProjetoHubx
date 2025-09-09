@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Meus Núcleos" %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
 <div class="container mx-auto p-6">
 <section class="max-w-5xl mx-auto py-8">
   <form method="get" class="mb-4 flex gap-2">

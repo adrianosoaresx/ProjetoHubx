@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Núcleos" %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Núcleos') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Núcleos') %}
 <div class="container mx-auto p-6">
   <div class="card">
     <div class="card-header space-y-4">

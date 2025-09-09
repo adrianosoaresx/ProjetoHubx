@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n widget_tweaks %}
 {% block title %}{% trans 'Salvar configuração' %}{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Salvar configuração') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Salvar configuração') %}
 <div class="container mx-auto p-6">
   <div class="max-w-md mx-auto">
     <div class="card">

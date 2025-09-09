@@ -2,9 +2,12 @@
 {% load i18n %}
 {% block title %}{% trans "Desativar 2FA" %} | HubX{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Desativar 2FA") %}
+{% endblock %}
+
 {% block content %}
 {% include '_partials/sidebar.html' %}
-{% include '_components/hero.html' with title=_("Desativar 2FA") %}
 <div class="container mx-auto p-6">
   <form method="post" class="max-w-md mx-auto space-y-6">
     {% csrf_token %}

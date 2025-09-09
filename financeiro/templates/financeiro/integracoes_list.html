@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Integrações" %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Integrações') action_template='financeiro/hero_integracoes_action.html' %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Integrações') action_template='financeiro/hero_integracoes_action.html' %}
 <div class="container mx-auto p-6">
   <div class="card">
     <div class="card-body">

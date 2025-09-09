@@ -4,8 +4,11 @@
 
 {% block title %}{% trans "Dashboard Coordenador" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Dashboard Coordenador') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Dashboard Coordenador') %}
 <div class="container mx-auto p-6">
   <div class="max-w-7xl mx-auto">
     <div class="card">

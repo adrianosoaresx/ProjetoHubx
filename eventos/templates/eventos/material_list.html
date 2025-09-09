@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Materiais de Divulgação" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Materiais de Divulgação') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Materiais de Divulgação') %}
 <div id="material-container" class="container mx-auto p-6">
   <div class="card">
     <div class="card-header flex items-center justify-between">

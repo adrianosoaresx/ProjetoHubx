@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Briefings" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Briefings de Eventos') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Briefings de Eventos') %}
 <div id="briefing-container" class="container mx-auto p-6">
   <div class="card">
     <div class="card-header flex items-center justify-between">

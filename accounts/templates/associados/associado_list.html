@@ -3,8 +3,11 @@
 
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Associados') action_template='associados/partials/hero_action.html' %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Associados') action_template='associados/partials/hero_action.html' %}
 <div class="container mx-auto p-6">
 
 

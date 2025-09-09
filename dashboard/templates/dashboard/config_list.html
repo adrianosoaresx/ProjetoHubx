@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans 'Configurações salvas' %}{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Configurações salvas') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Configurações salvas') %}
 <div class="container mx-auto p-6">
   <div class="max-w-2xl mx-auto">
     <div class="card">

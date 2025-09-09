@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Entrar" %} - HubX{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Bem-vindo de volta') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Bem-vindo de volta') %}
 <div class="container mx-auto p-6">
 <div class="bg-muted min-h-screen flex items-center justify-center px-4">
   <div class="card max-w-md w-full mx-auto" role="dialog">
