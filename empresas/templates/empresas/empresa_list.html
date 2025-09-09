@@ -8,32 +8,30 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-<section class="max-w-6xl mx-auto py-8 px-4">
+  <section class="max-w-6xl mx-auto py-8 px-4">
 
-  {% url 'empresas:lista' as empresas_lista_url %}
-  {% include '_components/search_form.html' with q=request.GET.q hx_get=empresas_lista_url hx_target='#empresas-grid' hx_push_url='true' %}
+    {% url 'empresas:lista' as empresas_lista_url %}
+    {% include '_components/search_form.html' with q=request.GET.q hx_get=empresas_lista_url hx_target='#empresas-grid' hx_push_url='true' %}
 
-  <!-- Cards de totais -->
-  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {% include "_partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
-  </div>
+    <!-- Cards de totais -->
+    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {% include "_partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
+    </div>
 
-  <div
-    id="empresas-grid"
-    class="card-grid"
-    role="list"
-    aria-label="{% translate 'Lista de empresas' %}"
-  >
-    {% for empresa in empresas %}
-      {% include '_components/card_empresa.html' with empresa=empresa %}
-    {% empty %}
-      <p class="col-span-full py-10 text-center text-[var(--text-secondary)]">{% translate 'Nenhuma empresa encontrada.' %}</p>
-    {% endfor %}
-  </div>
-  <div class="mt-6">
-    {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
-  </div>
-</section>
-</div>
+    <div
+      id="empresas-grid"
+      class="card-grid"
+      role="list"
+      aria-label="{% translate 'Lista de empresas' %}"
+    >
+      {% for empresa in empresas %}
+        {% include '_components/card_empresa.html' with empresa=empresa %}
+      {% empty %}
+        <p class="col-span-full py-10 text-center text-[var(--text-secondary)]">{% translate 'Nenhuma empresa encontrada.' %}</p>
+      {% endfor %}
+    </div>
+    <div class="mt-6">
+      {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
+    </div>
+  </section>
 {% endblock %}
