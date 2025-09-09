@@ -1,6 +1,6 @@
 {% load i18n %}
 {% if empresas %}
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
+<div class="card-grid" role="list" aria-label="{% translate 'Lista de empresas' %}">
   {% for empresa in empresas %}
     <div role="listitem">
       {% include '_components/card_empresa.html' with empresa=empresa %}
