@@ -1,4 +1,0 @@
-{% load i18n %}
-{% url 'nucleos:detail_uuid' nucleo.public_id as detail_url %}
-{% trans 'Ver detalhes do núcleo' as sr_label %}
-{% include '_partials/cards/base_card.html' with url=detail_url cover=nucleo.cover avatar=nucleo.avatar title=nucleo.nome details='nucleos/partials/card_details.html' sr_label=sr_label %}

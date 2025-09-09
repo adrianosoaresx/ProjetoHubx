@@ -1,17 +1,17 @@
 {% load i18n %}
-<div class="p-4 bg-white rounded shadow max-w-md" id="convites-modal">
+<div class="p-4 bg-[var(--bg-secondary)] rounded shadow max-w-md" id="convites-modal">
   <h2 class="text-lg font-semibold mb-2">{% trans 'Convites do núcleo' %}</h2>
   <p class="text-sm text-gray-600">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
   <form id="convite-form" class="mt-2 flex flex-col gap-2" hx-post="{% url 'nucleos_api:nucleo-convites' nucleo.pk %}" hx-swap="none">
     {% csrf_token %}
-    <input type="email" name="email" class="border rounded px-2 py-1" placeholder="{% trans 'email@example.com' %}" required />
-    <select name="papel" class="border rounded px-2 py-1">
+    <input type="email" name="email" class="border border-[var(--border)] bg-[var(--bg-secondary)] rounded px-2 py-1" placeholder="{% trans 'email@example.com' %}" required />
+    <select name="papel" class="border border-[var(--border)] bg-[var(--bg-secondary)] rounded px-2 py-1">
       <option value="membro">{% trans 'Membro' %}</option>
       <option value="coordenador">{% trans 'Coordenador' %}</option>
     </select>
     <div class="flex justify-end gap-2">
-      <button type="button" class="px-3 py-1 border rounded" hx-on="click: document.getElementById('convites-modal').remove()">{% trans 'Fechar' %}</button>
-      <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Enviar convite' %}</button>
+      <button type="button" class="btn btn-secondary" hx-on="click: document.getElementById('convites-modal').remove()">{% trans 'Fechar' %}</button>
+      <button type="submit" class="btn btn-primary">{% trans 'Enviar convite' %}</button>
     </div>
   </form>
   <ul id="convites-list" class="mt-4 space-y-2">

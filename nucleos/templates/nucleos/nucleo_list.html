@@ -10,23 +10,32 @@
     <div class="card-header space-y-4">
       {% include '_components/search_form.html' with q=request.GET.q %}
       {% if request.user.user_type != 'admin' %}
-      <a href="{% url 'nucleos:meus' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
+      <a href="{% url 'nucleos:meus' %}" class="btn btn-secondary text-sm" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
       {% endif %}
       {% if request.user.user_type == 'admin' %}
-      <a href="{% url 'nucleos:create' %}" class="px-3 py-2 bg-green-600 text-white rounded" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
+      <a href="{% url 'nucleos:create' %}" class="btn btn-primary" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
       {% endif %}
     </div>
     <div class="card-body">
+<<<<<<< HEAD:nucleos/templates/nucleos/nucleo_list.html
+      <div class="card-grid mb-6">
+        {% include "partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos %}
+        {% include "partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org %}
+        {% include "partials/cards/total_card.html" with label=_('Eventos (todos)') valor=total_eventos_org %}
+        {% include "partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos_org %}
+        {% include "partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos_org %}
+=======
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
         {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos %}
         {% include "_partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org %}
         {% include "_partials/cards/total_card.html" with label=_('Eventos (todos)') valor=total_eventos_org %}
         {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos_org %}
         {% include "_partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos_org %}
+>>>>>>> main:nucleos/templates/nucleos/list.html
       </div>
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid">
         {% for nucleo in object_list %}
-          {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
+          {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
           <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
