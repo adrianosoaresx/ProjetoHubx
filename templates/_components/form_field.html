@@ -1,0 +1,15 @@
+{% load widget_tweaks %}
+<div class="space-y-1">
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">
+    {{ field.label }}{% if field.field.required %} *{% endif %}
+  </label>
+  {% render_field field class+="block w-full rounded-lg border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)]" %}
+  {% if field.errors %}
+    <ul class="errorlist">
+      {% for e in field.errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+  {% if field.help_text %}
+    <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+  {% endif %}
+</div>

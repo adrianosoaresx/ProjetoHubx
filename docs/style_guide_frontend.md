@@ -84,23 +84,23 @@ ou `body` para ativar as variantes `dark:` do Tailwind.
 
 ### Sidebar
 
-Use a partial `components/nav_sidebar.html` para menus de navegação fixos e
+Use a partial `_partials/sidebar.html` para menus de navegação fixos e
 responsivos. Ela traz links contextualizados pelo tipo de usuário e alterna
 entre visual mobile e desktop automaticamente.
 
 ```django
-{% include "components/nav_sidebar.html" with active="dashboard" %}
+{% include "_partials/sidebar.html" with active="dashboard" %}
 ```
 
 ### Hero
 
 Seções de destaque devem ocupar a área inicial da página com uma mensagem
-principal e call to action opcional. Utilize `components/hero.html` para manter
+principal e call to action opcional. Utilize `_components/hero.html` para manter
 consistência de espaçamento e tipografia. Páginas de listagem devem iniciar com
 este componente, destacando o título e ações relevantes.
 
 ```django
-{% include "components/hero.html" with title="Bem-vindo" subtitle="Resumo do app" %}
+{% include "_components/hero.html" with title="Bem-vindo" subtitle="Resumo do app" %}
 ```
 
 ### Cartões e botões

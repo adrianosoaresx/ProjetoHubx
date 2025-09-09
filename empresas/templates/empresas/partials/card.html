@@ -5,9 +5,9 @@
   {% if empresa.deleted %}
     {% trans 'excluída' as excluida %}
     {% with title=base_title|add:' ('|add:excluida|add:')' %}
-      {% include 'partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=title details='empresas/partials/card_details.html' sr_label=sr_label %}
+      {% include '_partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=title details='empresas/partials/card_details.html' sr_label=sr_label %}
     {% endwith %}
   {% else %}
-      {% include 'partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=base_title details='empresas/partials/card_details.html' sr_label=sr_label %}
+      {% include '_partials/cards/base_card.html' with url=detail_url cover=empresa.cover avatar=empresa.avatar title=base_title details='empresas/partials/card_details.html' sr_label=sr_label %}
   {% endif %}
 {% endwith %}
