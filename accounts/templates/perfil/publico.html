@@ -85,7 +85,7 @@
     {% if not profile.is_superuser %}
     <div id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
       {% if empresas %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% translate 'Lista de empresas' %}">
+        <div class="card-grid" role="list" aria-label="{% translate 'Lista de empresas' %}">
         {% for empresa in empresas %}
           <div role="listitem">
             {% include '_components/card_empresa.html' with empresa=empresa %}
@@ -110,7 +110,7 @@
     </div>
 
     <div id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
+        <div class="card-grid" role="list" aria-label="{% trans 'Lista de eventos' %}">
         {% for ins in inscricoes %}
           {% include '_components/card_evento.html' with evento=ins.evento %}
         {% empty %}

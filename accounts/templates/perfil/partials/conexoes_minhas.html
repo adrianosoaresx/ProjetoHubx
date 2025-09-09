@@ -12,10 +12,10 @@
   </button>
 </form>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div class="card-grid">
   {% for connection in connections %}
-  <div class="connection-card bg-[var(--bg-secondary)] p-6 rounded-lg shadow">
-    <div class="flex items-center justify-between">
+    <article class="card connection-card">
+      <div class="card-body flex items-center justify-between">
       <div class="flex items-center gap-3">
         {% if connection.avatar %}
           <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
@@ -42,10 +42,9 @@
           </button>
         </form>
       </div>
-    </div>
-  </div>
-  {% empty %}
-  <div class="text-center text-sm text-[var(--text-secondary)] col-span-full">
+      </article>
+    {% empty %}
+    <div class="text-center text-sm text-[var(--text-secondary)] col-span-full">
     <p>{% trans "Você ainda não tem conexões." %}</p>
     <a href="#" class="mt-2 inline-block btn btn-primary btn-sm">{% trans "Encontrar Pessoas" %}</a>
   </div>
