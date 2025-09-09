@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% if object %}{{ object.nome }}{% else %}{% trans 'Novo Núcleo' %}{% endif %}{% endblock %}
+
+{% block content %}
+<section class="max-w-2xl mx-auto py-8">
+  <form method="post" enctype="multipart/form-data" class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
+    {% url 'nucleos:list' as cancel_url %}
+    {% if object %}{% url 'nucleos:detail_uuid' object.public_id as cancel_url %}{% endif %}
+    <div class="flex justify-end gap-2">
+      <a href="{{ cancel_url }}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+      <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

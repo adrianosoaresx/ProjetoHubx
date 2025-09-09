@@ -100,9 +100,9 @@
     </div>
 
     <div id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid">
         {% for nucleo in nucleos %}
-          {% include 'nucleos/partials/card.html' with nucleo=nucleo %}
+          {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
           <p class="col-span-full text-center text-neutral-500 dark:text-neutral-400">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}

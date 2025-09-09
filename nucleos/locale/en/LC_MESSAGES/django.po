@@ -53,19 +53,19 @@ msgstr ""
 msgid "Nenhum convite pendente."
 msgstr ""
 
-#: templates/nucleos/create.html:4
+#: templates/nucleos/nucleo_form.html:4
 msgid "Novo Núcleo"
 msgstr ""
 
-#: templates/nucleos/create.html:12 templates/nucleos/delete.html:16
+#: templates/nucleos/nucleo_form.html:12 templates/nucleos/delete.html:16
 #: templates/nucleos/delete.html:17 templates/nucleos/postar_modal.html:14
 #: templates/nucleos/solicitar_modal.html:9
-#: templates/nucleos/suplente_form.html:12 templates/nucleos/update.html:12
+#: templates/nucleos/suplente_form.html:12 templates/nucleos/nucleo_form.html:12
 msgid "Cancelar"
 msgstr ""
 
-#: templates/nucleos/create.html:13 templates/nucleos/suplente_form.html:13
-#: templates/nucleos/update.html:13
+#: templates/nucleos/nucleo_form.html:13 templates/nucleos/suplente_form.html:13
+#: templates/nucleos/nucleo_form.html:13
 msgid "Salvar"
 msgstr ""
 
@@ -87,7 +87,7 @@ msgstr ""
 msgid "Remover"
 msgstr ""
 
-#: templates/nucleos/detail.html:19 templates/nucleos/list.html:27
+#: templates/nucleos/detail.html:19 templates/nucleos/nucleo_list.html:27
 msgid "Membros"
 msgstr ""
 
@@ -183,39 +183,39 @@ msgstr ""
 msgid "Postar no feed"
 msgstr ""
 
-#: templates/nucleos/list.html:4
+#: templates/nucleos/nucleo_list.html:4
 msgid "Núcleos"
 msgstr ""
 
-#: templates/nucleos/list.html:9
+#: templates/nucleos/nucleo_list.html:9
 msgid "Buscar..."
 msgstr ""
 
-#: templates/nucleos/list.html:10
+#: templates/nucleos/nucleo_list.html:10
 msgid "Buscar"
 msgstr ""
 
-#: templates/nucleos/list.html:14
+#: templates/nucleos/nucleo_list.html:14
 msgid "Novo"
 msgstr ""
 
-#: templates/nucleos/list.html:29
+#: templates/nucleos/nucleo_list.html:29
 msgid "Detalhes"
 msgstr ""
 
-#: templates/nucleos/list.html:32
+#: templates/nucleos/nucleo_list.html:32
 msgid "Excluir"
 msgstr ""
 
-#: templates/nucleos/list.html:38
+#: templates/nucleos/nucleo_list.html:38
 msgid "Nenhum núcleo encontrado."
 msgstr ""
 
-#: templates/nucleos/list.html:44
+#: templates/nucleos/nucleo_list.html:44
 msgid "Anterior"
 msgstr ""
 
-#: templates/nucleos/list.html:48
+#: templates/nucleos/nucleo_list.html:48
 msgid "Próxima"
 msgstr ""
 

@@ -1,18 +1,18 @@
 {% load i18n %}
-<div class="p-4 bg-white rounded shadow max-w-md">
+<div class="p-4 bg-[var(--bg-secondary)] rounded shadow max-w-md">
   <h2 class="text-lg font-semibold mb-4">{% trans 'Postar no feed do núcleo' %}</h2>
   <form hx-post="{% url 'nucleos_api:nucleo-posts' nucleo.pk %}"
         hx-encoding="multipart/form-data"
         hx-swap="none"
         hx-on="htmx:afterRequest: document.getElementById('modal').innerHTML='';">
     {% csrf_token %}
-    <textarea name="conteudo" class="w-full border rounded mb-2" placeholder="{% trans 'Escreva algo...' %}"></textarea>
+    <textarea name="conteudo" class="w-full border border-[var(--border)] rounded mb-2 bg-[var(--bg-secondary)]" placeholder="{% trans 'Escreva algo...' %}"></textarea>
     <input type="file" name="image" class="mb-2" />
     <input type="file" name="pdf" class="mb-2" />
     <input type="file" name="video" class="mb-4" />
       <div class="flex justify-end gap-2">
-        <button type="button" class="px-3 py-1 border rounded" hx-on="click: document.getElementById('modal').innerHTML=''">{% trans 'Cancelar' %}</button>
-        <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded">{% trans 'Postar' %}</button>
+        <button type="button" class="btn btn-secondary" hx-on="click: document.getElementById('modal').innerHTML=''">{% trans 'Cancelar' %}</button>
+        <button type="submit" class="btn btn-primary">{% trans 'Postar' %}</button>
       </div>
     </form>
   </div>
