@@ -46,7 +46,7 @@ def buscar(request):
 
 class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Empresa
-    template_name = "empresas/lista.html"
+    template_name = "empresas/empresa_list.html"
     paginate_by = 10
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
@@ -99,7 +99,7 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 class EmpresaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
     model = Empresa
     form_class = EmpresaForm
-    template_name = "empresas/nova.html"
+    template_name = "empresas/empresa_form.html"
     success_url = reverse_lazy("empresas:lista")
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
@@ -122,7 +122,7 @@ class EmpresaCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
 class EmpresaUpdateView(NoSuperadminMixin, LoginRequiredMixin, UpdateView):
     model = Empresa
     form_class = EmpresaForm
-    template_name = "empresas/nova.html"
+    template_name = "empresas/empresa_form.html"
     success_url = reverse_lazy("empresas:lista")
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]
@@ -368,7 +368,7 @@ def detalhes_empresa(request, pk):
         "nucleos_dono": nucleos_dono,
         "eventos_dono": eventos_dono,
     }
-    return render(request, "empresas/detail.html", context)
+    return render(request, "empresas/empresa_detail.html", context)
 
 
 # ------------------------------------------------------------------

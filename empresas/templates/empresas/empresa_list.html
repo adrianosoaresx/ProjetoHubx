@@ -3,8 +3,11 @@
 
 {% block title %}{% trans 'Empresas' %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Empresas') action_template='empresas/partials/hero_action.html' %}
+{% endblock %}
+
 {% block content %}
-{% include 'components/hero.html' with title=_('Empresas') action_template='empresas/partials/hero_action.html' %}
 <div class="container mx-auto p-6">
 <section class="max-w-6xl mx-auto py-8 px-4">
 
@@ -12,17 +15,21 @@
   {% include 'components/search_form.html' with q=request.GET.q hx_get=empresas_lista_url hx_target='#empresas-grid' hx_push_url='true' %}
 
   <!-- Cards de totais -->
-  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="mb-6 card-grid">
     {% include "partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
   </div>
 
   <div
     id="empresas-grid"
-  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+    class="card-grid"
     role="list"
     aria-label="{% translate 'Lista de empresas' %}"
   >
-    {% include "empresas/includes/empresas_grid.html" %}
+    {% for empresa in empresas %}
+      {% include '_components/card_empresa.html' with empresa=empresa %}
+    {% empty %}
+      <p class="col-span-full py-10 text-center text-[var(--text-secondary)]">{% translate 'Nenhuma empresa encontrada.' %}</p>
+    {% endfor %}
   </div>
   <div class="mt-6">
     {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
