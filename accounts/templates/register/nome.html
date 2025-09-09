@@ -4,32 +4,35 @@
 {% block title %}{% trans "Registro - Nome" %} | Hubx{% endblock %}
 
 {% block content %}
+<<<<<<< HEAD
+=======
 {% include '_partials/sidebar.html' %}
 {% include '_components/hero.html' %}
+>>>>>>> main
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+  <div class="card">
     <div class="mb-8">
       {% with step=3 total=8 %}
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         {% widthratio step total 100 as progress %}
-        <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ progress }}%</span>
+        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
       </div>
-      <div class="h-2 w-full rounded-xl bg-neutral-200 dark:bg-slate-700">
-        <div class="h-full rounded-xl bg-primary-600" style="width: {{ progress }}%;"></div>
+      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
       </div>
       {% endwith %}
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Como podemos te chamar?" %}</h1>
-      <p class="text-neutral-600 dark:text-neutral-400">{% trans "Digite seu nome completo" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Como podemos te chamar?" %}</h1>
+      <p class="text-[var(--text-secondary)]">{% trans "Digite seu nome completo" %}</p>
     </div>
 
     {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
     {% endif %}
@@ -37,30 +40,13 @@
     <form id="nomeForm" method="post" action="{% url 'accounts:nome' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <div class="relative">
-          <input
-            type="text"
-            id="nome"
-            name="nome"
-            class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
-            placeholder="{% trans 'Nome completo' %}"
-            required
-            autofocus
-            aria-label="Nome"
-            aria-invalid="false"
-            aria-describedby="nome_validation"
-          />
-          <label
-            for="nome"
-            class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
-          >{% trans "Nome Completo" %}</label>
-        </div>
-        <div class="text-sm text-red-600" id="nome_validation"></div>
+        {% include "_forms/field.html" with id="nome" name="nome" label=_("Nome Completo") placeholder=_("Nome completo") required=True autofocus=True describedby="nome_validation" %}
+        <div class="text-sm text-[var(--error)]" id="nome_validation"></div>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:usuario' %}" class="flex-1 rounded-xl border border-neutral-300 dark:border-slate-600 px-4 py-2 text-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
+        <a href="{% url 'accounts:usuario' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
       </div>
     </form>
   </div>
