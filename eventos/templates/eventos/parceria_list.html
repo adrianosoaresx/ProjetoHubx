@@ -11,19 +11,19 @@
       <a href="{% url 'eventos:parceria_criar' %}" class="btn-primary">{% trans "Nova Parceria" %}</a>
     </div>
     <div class="card-body">
-      <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-        <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
-          <thead class="bg-neutral-50">
+      <div class="overflow-x-auto bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm">
+        <table class="min-w-full divide-y divide-[var(--border)] table-auto text-sm">
+          <thead class="bg-[var(--bg-secondary)]">
             <tr>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Empresa" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Evento" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Tipo" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Avaliação" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Comentário" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Empresa" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Evento" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Tipo" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Avaliação" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Comentário" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Ações" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200">
+          <tbody class="divide-y divide-[var(--border)]">
             {% for parceria in parcerias %}
               <tr>
                 <td class="px-4 py-2">{{ parceria.empresa.nome }}</td>
@@ -46,7 +46,7 @@
               </tr>
             {% empty %}
               <tr>
-                <td colspan="6" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhuma parceria encontrada." %}</td>
+                <td colspan="6" class="px-4 py-4 text-center text-[var(--text-secondary)]">{% trans "Nenhuma parceria encontrada." %}</td>
               </tr>
             {% endfor %}
           </tbody>
