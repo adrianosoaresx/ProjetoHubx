@@ -40,7 +40,7 @@ def buscar(request):
     empresas = search_empresas(request.user, request.GET)
     context = {"empresas": empresas, "q": request.GET.get("q", "")}
     if request.headers.get("HX-Request"):
-        return render(request, "empresas/includes/empresas_grid.html", context)
+        return render(request, "_components/empresas_grid.html", context)
     return render(request, "empresas/busca.html", context)
 
 
@@ -92,7 +92,7 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 
     def get_template_names(self):  # type: ignore[override]
         if self.request.headers.get("HX-Request"):
-            return ["empresas/includes/empresas_grid.html"]
+            return ["_components/empresas_grid.html"]
         return [self.template_name]
 
 
@@ -277,7 +277,7 @@ class AvaliacaoCreateView(NoSuperadminMixin, LoginRequiredMixin, CreateView):
                 "media_avaliacoes": self.empresa.media_avaliacoes(),
                 "avaliacao_usuario": avaliacoes.filter(usuario=self.request.user).first(),
             }
-            return render(self.request, "empresas/includes/avaliacoes.html", context)
+            return render(self.request, "_components/avaliacoes_empresa.html", context)
         return response
 
     def get_success_url(self):  # type: ignore[override]
@@ -311,7 +311,7 @@ class AvaliacaoUpdateView(NoSuperadminMixin, LoginRequiredMixin, UpdateView):
                 "media_avaliacoes": self.empresa.media_avaliacoes(),
                 "avaliacao_usuario": avaliacoes.filter(usuario=self.request.user).first(),
             }
-            return render(self.request, "empresas/includes/avaliacoes.html", context)
+            return render(self.request, "_components/avaliacoes_empresa.html", context)
         return response
 
     def get_success_url(self):  # type: ignore[override]
