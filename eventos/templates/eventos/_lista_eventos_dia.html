@@ -9,7 +9,7 @@
 
 <div class="card-grid">
   {% for ev in eventos %}
-    {% include 'eventos/partials/card.html' with evento=ev %}
+    {% include '_components/card_evento.html' with evento=ev %}
   {% empty %}
     <p class="text-sm text-neutral-400">{% trans "Sem eventos." %}</p>
   {% endfor %}

@@ -94,7 +94,7 @@
       <div class="tab-panel hidden" data-tab="eventos">
         <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {% for evento in eventos %}
-            {% include 'eventos/partials/card.html' with evento=evento %}
+            {% include '_components/card_evento.html' with evento=evento %}
           {% empty %}
             <p class="text-sm text-gray-500">{% trans 'Sem eventos.' %}</p>
           {% endfor %}

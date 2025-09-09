@@ -1,3 +1,4 @@
 {% load i18n %}
 {% url 'eventos:evento_detalhe' evento.pk as detail_url %}
-{% include '_partials/cards/base_card.html' with url=detail_url cover=evento.cover avatar=evento.avatar title=evento.titulo details='_partials/cards/evento_card_details.html' %}
+{% trans 'Ver detalhes do evento' as sr_label %}
+{% include '_partials/cards/base_card.html' with url=detail_url cover=evento.cover avatar=evento.avatar title=evento.titulo details='_partials/cards/evento_card_details.html' sr_label=sr_label %}
