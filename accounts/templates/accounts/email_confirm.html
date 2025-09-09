@@ -3,8 +3,8 @@
 {% block title %}{% trans "Confirmação de Email" %} - HubX{% endblock %}
 {% block content %}
 
-{% include 'components/nav_sidebar.html' %}
-{% include 'components/hero.html' with title=_('Confirmação de Email') %}
+{% include '_partials/sidebar.html' %}
+{% include '_components/hero.html' with title=_('Confirmação de Email') %}
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
   <div class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-8 rounded-lg shadow text-center">
     {% if status == 'sucesso' %}
