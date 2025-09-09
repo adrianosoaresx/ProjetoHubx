@@ -12,21 +12,23 @@
       <div class="card-body">
         <ul class="space-y-2">
           {% for layout in object_list %}
-            <li class="flex justify-between items-center p-2 bg-white rounded shadow">
-              <span>{{ layout.nome }}</span>
+            <li class="card">
+              <div class="card-body">
+                <span>{{ layout.nome }}</span>
+              </div>
               {% if layout.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
-                <span class="flex gap-2">
-                  <a href="{% url 'dashboard:layout-edit' layout.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar layout' %}">{% trans 'Editar' %}</a>
-                  <a href="{% url 'dashboard:layout-delete' layout.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir layout' %}">{% trans 'Excluir' %}</a>
-                </span>
+                <div class="card-footer flex gap-2 justify-end">
+                  <a href="{% url 'dashboard:layout-edit' layout.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar layout' %}">{% trans 'Editar' %}</a>
+                  <a href="{% url 'dashboard:layout-delete' layout.pk %}" class="btn btn-secondary btn-sm text-danger-600" aria-label="{% trans 'Excluir layout' %}">{% trans 'Excluir' %}</a>
+                </div>
               {% endif %}
             </li>
           {% empty %}
-            <li>{% trans "Nenhum layout" %}</li>
+            <li class="card"><div class="card-body">{% trans "Nenhum layout" %}</div></li>
           {% endfor %}
         </ul>
         <div class="pt-4 border-t border-neutral-100 mt-4">
-          <a href="{% url 'dashboard:layout-create' %}" class="btn-primary" aria-label="{% trans 'Novo Layout' %}">{% trans "Novo Layout" %}</a>
+          <a href="{% url 'dashboard:layout-create' %}" class="btn btn-primary" aria-label="{% trans 'Novo Layout' %}">{% trans "Novo Layout" %}</a>
         </div>
       </div>
     </div>

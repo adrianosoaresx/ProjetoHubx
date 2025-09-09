@@ -43,10 +43,10 @@
         {% endif %}
         <input type="hidden" name="layout_json" id="layout_json" value="{{ object.layout_json|default:'{}' }}">
         <div class="flex justify-end pt-4 border-t border-neutral-100">
-          <button type="submit" class="btn-primary" aria-label="{% trans 'Salvar layout' %}">{% trans "Salvar" %}</button>
+          <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar layout' %}">{% trans "Salvar" %}</button>
         </div>
         </form>
-        {% include 'dashboard/partials/metrics_list.html' %}
+        {% include '_partials/metrics_list.html' %}
       </div>
     </div>
   </div>

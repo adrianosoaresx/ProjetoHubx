@@ -15,11 +15,11 @@
       <h2 class="text-xl font-semibold text-center">{% trans "Dashboard Administrativo" %}</h2>
     </div>
     <div class="card-body">
-      {% include 'dashboard/partials/messages.html' %}
-      {% include 'dashboard/partials/filters_form.html' %}
+      {% include '_partials/messages.html' %}
+      {% include '_components/filters_form.html' %}
 
       <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-        {% include 'dashboard/partials/metrics_list.html' %}
+        {% include '_partials/metrics_list.html' %}
       </div>
 
       <div class="mb-8">
@@ -43,7 +43,7 @@
       <script src="{% static 'dashboard/admin.js' %}"></script>
 
       {% with labels='["'|add:_('Usuários')|add:'","'|add:_('Eventos')|add:'","'|add:_('Posts')|add:'"]' %}
-      {% include 'dashboard/partials/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
+      {% include '_components/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
       {% endwith %}
 
       <div hx-get="{% url 'dashboard:lancamentos-partial' %}" hx-trigger="load, every 30s" hx-target="#lancamentos" hx-swap="innerHTML"></div>
@@ -62,19 +62,19 @@
       <section class="mb-8">
         <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
         <div class="card-grid gap-4">
-          <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
+          <a href="{% url 'dashboard:custom-metrics' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Métricas Personalizadas' %}">
             {% lucide 'chart-line' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Métricas Personalizadas" %}</span>
           </a>
-          <a href="{% url 'admin:accounts_user_changelist' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Administrar Usuários' %}">
+          <a href="{% url 'admin:accounts_user_changelist' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Administrar Usuários' %}">
             {% lucide 'user-cog' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Administrar Usuários" %}</span>
           </a>
-          <a href="{% url 'financeiro:relatorios' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Relatórios Financeiros' %}">
+          <a href="{% url 'financeiro:relatorios' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Relatórios Financeiros' %}">
             {% lucide 'receipt-text' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Relatórios Financeiros" %}</span>
           </a>
-          <a href="{% url 'notificacoes:logs_list' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Logs de Notificações' %}">
+          <a href="{% url 'notificacoes:logs_list' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Logs de Notificações' %}">
             {% lucide 'bell' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Logs de Notificações" %}</span>
           </a>

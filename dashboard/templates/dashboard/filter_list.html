@@ -10,24 +10,26 @@
   <div class="max-w-2xl mx-auto">
     <div class="card">
       <div class="card-body">
-        {% include 'dashboard/partials/messages.html' %}
+        {% include '_partials/messages.html' %}
         <ul class="space-y-2">
           {% for f in object_list %}
-            <li class="flex justify-between items-center p-2 bg-white rounded shadow">
-              <span>{{ f.nome }}</span>
-              <span class="flex gap-2">
-                <a href="{% url 'dashboard:filter-apply' f.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Aplicar filtro' %}">{% trans 'Aplicar' %}</a>
+            <li class="card">
+              <div class="card-body">
+                <span>{{ f.nome }}</span>
+              </div>
+              <div class="card-footer flex gap-2 justify-end">
+                <a href="{% url 'dashboard:filter-apply' f.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Aplicar filtro' %}">{% trans 'Aplicar' %}</a>
                 {% if f.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
-                  <a href="{% url 'dashboard:filter-edit' f.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar filtro' %}">{% trans 'Editar' %}</a>
+                  <a href="{% url 'dashboard:filter-edit' f.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar filtro' %}">{% trans 'Editar' %}</a>
                   <form method="post" action="{% url 'dashboard:filter-delete' f.pk %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="text-red-600 underline" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
+                    <button type="submit" class="btn btn-secondary btn-sm text-red-600" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
                   </form>
                 {% endif %}
-              </span>
+              </div>
             </li>
           {% empty %}
-            <li>{% trans 'Nenhum filtro salvo.' %}</li>
+            <li class="card"><div class="card-body">{% trans 'Nenhum filtro salvo.' %}</div></li>
           {% endfor %}
         </ul>
       </div>
