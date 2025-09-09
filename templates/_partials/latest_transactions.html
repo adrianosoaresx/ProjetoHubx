@@ -1,0 +1,18 @@
+{% load i18n l10n %}
+<section class="mb-8" id="lancamentos">
+  <h2 class="text-xl font-semibold mb-4">{% trans "Últimos Lançamentos" %}</h2>
+  <ul class="space-y-2">
+    {% for lanc in lancamentos %}
+    <li class="card">
+      <div class="card-body flex justify-between">
+        <span>{{ lanc.get_tipo_display }} - {{ lanc.valor|localize }}</span>
+        <time datetime="{{ lanc.data_lancamento|date:'c' }}" class="text-sm text-neutral-600">{{ lanc.data_lancamento|date:'d/m/Y' }}</time>
+      </div>
+    </li>
+    {% empty %}
+    <li class="card">
+      <div class="card-body text-neutral-500">{% trans "Nenhum lançamento encontrado." %}</div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

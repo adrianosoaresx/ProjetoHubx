@@ -10,19 +10,21 @@
   <div class="max-w-2xl mx-auto">
     <div class="card">
       <div class="card-body">
-        {% include 'dashboard/partials/messages.html' %}
-        <a href="{% url 'dashboard:custom-metric-create' %}" class="btn-primary mb-4" aria-label="{% trans 'Nova métrica' %}">{% trans 'Nova métrica' %}</a>
+        {% include '_partials/messages.html' %}
+        <a href="{% url 'dashboard:custom-metric-create' %}" class="btn btn-primary mb-4" aria-label="{% trans 'Nova métrica' %}">{% trans 'Nova métrica' %}</a>
         <ul class="space-y-2">
           {% for m in object_list %}
-            <li class="flex justify-between items-center p-2 bg-white rounded shadow">
-              <span>{{ m.nome }}</span>
-              <div class="space-x-2">
-                <a href="{% url 'dashboard:custom-metric-edit' m.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar métrica' %}">{% trans 'Editar' %}</a>
-                <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
+            <li class="card">
+              <div class="card-body">
+                <span>{{ m.nome }}</span>
+              </div>
+              <div class="card-footer flex gap-2 justify-end">
+                <a href="{% url 'dashboard:custom-metric-edit' m.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar métrica' %}">{% trans 'Editar' %}</a>
+                <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="btn btn-secondary btn-sm text-danger-600" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
               </div>
             </li>
           {% empty %}
-            <li>{% trans 'Nenhuma métrica cadastrada.' %}</li>
+            <li class="card"><div class="card-body">{% trans 'Nenhuma métrica cadastrada.' %}</div></li>
           {% endfor %}
         </ul>
       </div>

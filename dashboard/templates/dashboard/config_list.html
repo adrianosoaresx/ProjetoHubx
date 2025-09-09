@@ -10,21 +10,23 @@
   <div class="max-w-2xl mx-auto">
     <div class="card">
       <div class="card-body">
-        {% include 'dashboard/partials/messages.html' %}
+        {% include '_partials/messages.html' %}
         <ul class="space-y-2">
           {% for cfg in object_list %}
-            <li class="flex justify-between items-center p-2 bg-white rounded shadow">
-              <span>{{ cfg.nome }}</span>
-              <div class="space-x-2">
-                <a href="{% url 'dashboard:config-apply' cfg.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Aplicar configuração' %}">{% trans 'Aplicar' %}</a>
+            <li class="card">
+              <div class="card-body">
+                <span>{{ cfg.nome }}</span>
+              </div>
+              <div class="card-footer flex gap-2 justify-end">
+                <a href="{% url 'dashboard:config-apply' cfg.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Aplicar configuração' %}">{% trans 'Aplicar' %}</a>
                 {% if cfg.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
-                  <a href="{% url 'dashboard:config-edit' cfg.pk %}" class="text-primary-600 underline" aria-label="{% trans 'Editar configuração' %}">{% trans 'Editar' %}</a>
-                  <a href="{% url 'dashboard:config-delete' cfg.pk %}" class="text-danger-600 underline" aria-label="{% trans 'Excluir configuração' %}">{% trans 'Excluir' %}</a>
+                  <a href="{% url 'dashboard:config-edit' cfg.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar configuração' %}">{% trans 'Editar' %}</a>
+                  <a href="{% url 'dashboard:config-delete' cfg.pk %}" class="btn btn-secondary btn-sm text-danger-600" aria-label="{% trans 'Excluir configuração' %}">{% trans 'Excluir' %}</a>
                 {% endif %}
               </div>
             </li>
           {% empty %}
-            <li>{% trans 'Nenhuma configuração salva.' %}</li>
+            <li class="card"><div class="card-body">{% trans 'Nenhuma configuração salva.' %}</div></li>
           {% endfor %}
         </ul>
       </div>

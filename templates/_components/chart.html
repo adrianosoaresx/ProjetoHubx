@@ -1,7 +1,9 @@
 {% load i18n static %}
-<div class="p-4 bg-white rounded-lg shadow" role="figure" aria-labelledby="{{ chart_id }}-title">
-  <h2 id="{{ chart_id }}-title" class="text-xl font-semibold mb-4">{{ title }}</h2>
-  <canvas id="{{ chart_id }}" class="w-full h-64" role="img" aria-label="{{ title }}"></canvas>
+<div class="card" role="figure" aria-labelledby="{{ chart_id }}-title">
+  <div class="card-body">
+    <h2 id="{{ chart_id }}-title" class="text-xl font-semibold mb-4">{{ title }}</h2>
+    <canvas id="{{ chart_id }}" class="w-full h-64" role="img" aria-label="{{ title }}"></canvas>
+  </div>
 </div>
 <script src="{% static 'js/vendor/chart-4.5.0.min.js' %}"></script>
 <script>

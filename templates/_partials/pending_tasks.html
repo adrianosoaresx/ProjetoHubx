@@ -1,0 +1,18 @@
+{% load i18n l10n %}
+<section class="mb-8" id="tasks">
+  <h2 class="text-xl font-semibold mb-4">{% trans "Tarefas Pendentes" %}</h2>
+  <ul class="space-y-2">
+    {% for task in tarefas %}
+    <li class="card">
+      <div class="card-body flex justify-between">
+        <span>{{ task.get_tipo_display }} - {{ task.valor|localize }}</span>
+        <time datetime="{{ task.data_vencimento|date:'c' }}" class="text-sm text-neutral-600">{{ task.data_vencimento|date:'d/m/Y' }}</time>
+      </div>
+    </li>
+    {% empty %}
+    <li class="card">
+      <div class="card-body text-neutral-500">{% trans "Nenhuma tarefa pendente." %}</div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>

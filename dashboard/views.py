@@ -87,7 +87,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             messages.error(request, _("Acesso negado"))
             if request.headers.get("Hx-Request") == "true":
                 html = render_to_string(
-                    "dashboard/partials/filters_form.html",
+                    "_components/filters_form.html",
                     self.get_filters_context(),
                     request=request,
                 )
@@ -97,7 +97,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             messages.error(request, str(exc))
             if request.headers.get("Hx-Request") == "true":
                 html = render_to_string(
-                    "dashboard/partials/filters_form.html",
+                    "_components/filters_form.html",
                     self.get_filters_context(),
                     request=request,
                 )
@@ -419,7 +419,7 @@ def metrics_partial(request):
             if m in metrics
         ]
         html = render_to_string(
-            "dashboard/partials/metrics_list.html",
+            "_partials/metrics_list.html",
             {"metricas_iter": metricas_iter, "metricas_selecionadas": metricas},
             request=request,
         )
@@ -427,17 +427,17 @@ def metrics_partial(request):
     except PermissionError:
         logger.exception("Acesso negado ao carregar métricas")
         messages.error(request, _("Acesso negado"))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
+        html = render_to_string("_partials/messages.html", request=request)
         return HttpResponse(html, status=403)
     except ValueError as exc:
         logger.exception("Erro de valor ao carregar métricas")
         messages.error(request, str(exc))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
+        html = render_to_string("_partials/messages.html", request=request)
         return HttpResponse(html, status=400)
     except Exception:  # pragma: no cover - logado
         logger.exception("Erro inesperado ao carregar métricas")
         messages.error(request, _("Erro ao carregar métricas."))
-        html = render_to_string("dashboard/partials/messages.html", request=request)
+        html = render_to_string("_partials/messages.html", request=request)
         return HttpResponse(html, status=500)
 
 
@@ -450,7 +450,7 @@ def lancamentos_partial(request):
     try:
         lancamentos = DashboardService.ultimos_lancamentos(request.user)
         html = render_to_string(
-            "dashboard/partials/latest_transactions.html",
+            "_partials/latest_transactions.html",
             {"lancamentos": lancamentos},
             request=request,
         )
@@ -470,7 +470,7 @@ def notificacoes_partial(request):
     try:
         notificacoes = DashboardService.ultimas_notificacoes(request.user)
         html = render_to_string(
-            "dashboard/partials/notifications_list.html",
+            "_partials/notifications_list.html",
             {"notificacoes": notificacoes},
             request=request,
         )
@@ -490,7 +490,7 @@ def tarefas_partial(request):
     try:
         tarefas = DashboardService.tarefas_pendentes(request.user)
         html = render_to_string(
-            "dashboard/partials/pending_tasks.html",
+            "_partials/pending_tasks.html",
             {"tarefas": tarefas},
             request=request,
         )
@@ -589,7 +589,7 @@ def eventos_partial(request):
     try:
         eventos = DashboardService.proximos_eventos(request.user)
         html = render_to_string(
-            "dashboard/partials/upcoming_events.html",
+            "_partials/upcoming_events.html",
             {"eventos": eventos},
             request=request,
         )
@@ -609,7 +609,7 @@ class DashboardExportView(LoginRequiredMixin, View):
         def _response_with_message(msg: str, status: int) -> HttpResponse:
             messages.error(request, msg)
             if request.headers.get("Hx-Request") == "true":
-                html = render_to_string("dashboard/partials/messages.html", request=request)
+                html = render_to_string("_partials/messages.html", request=request)
                 return HttpResponse(html, status=status)
             return HttpResponse(msg, status=status)
 

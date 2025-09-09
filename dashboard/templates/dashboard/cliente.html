@@ -12,10 +12,10 @@
   <div class="max-w-7xl mx-auto">
     <div class="card">
       <div class="card-body space-y-8">
-        {% include 'dashboard/partials/messages.html' %}
-        {% include 'dashboard/partials/filters_form.html' %}
+        {% include '_partials/messages.html' %}
+        {% include '_components/filters_form.html' %}
         <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
-          {% include 'dashboard/partials/metrics_list.html' %}
+          {% include '_partials/metrics_list.html' %}
         </div>
         <section
           id="upcoming-events"
@@ -41,11 +41,11 @@
         <section class="mb-8">
           <h2 class="text-xl font-semibold mb-4">{% trans "Atalhos" %}</h2>
           <div class="card-grid gap-4">
-            <a href="{% url 'eventos:calendario' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Inscrever-se em Eventos' %}">
+            <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Inscrever-se em Eventos' %}">
               {% lucide 'calendar-plus' class='mb-2 mx-auto w-6 h-6' %}
               <span class="block">{% trans "Inscrever-se em Eventos" %}</span>
             </a>
-            <a href="{% url 'feed:listar' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Ver Feed' %}">
+            <a href="{% url 'feed:listar' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Ver Feed' %}">
               {% lucide 'rss' class='mb-2 mx-auto w-6 h-6' %}
               <span class="block">{% trans "Ver Feed" %}</span>
             </a>

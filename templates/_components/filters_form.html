@@ -79,19 +79,19 @@
     </div>
   </fieldset>
   <div class="flex gap-2 mt-4">
-      <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded focus:outline-none focus:ring" aria-label="{% trans 'Aplicar filtros' %}">{% trans 'Filtrar' %}</button>
+      <button type="submit" class="btn btn-primary" aria-label="{% trans 'Aplicar filtros' %}">{% trans 'Filtrar' %}</button>
       {% if can_export %}
       <label for="formato" class="sr-only">{% trans 'Formato de exportação' %}</label>
       <select id="formato" name="formato" class="border-gray-300 rounded" aria-label="{% trans 'Formato de exportação' %}">
         <option value="pdf">{% trans 'PDF' %}</option>
         <option value="png">{% trans 'PNG' %}</option>
       </select>
-    <button type="submit" formaction="{% url 'dashboard:export' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Exportar métricas' %}">{% trans 'Exportar' %}</button>
+    <button type="submit" formaction="{% url 'dashboard:export' %}" class="btn btn-secondary" aria-label="{% trans 'Exportar métricas' %}">{% trans 'Exportar' %}</button>
     {% endif %}
-    <a href="{% url 'dashboard:filter-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar filtro rápido' %}">{% trans 'Salvar filtro' %}</a>
-    <a href="{% url 'dashboard:filters' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver filtros salvos' %}">{% trans 'Meus filtros' %}</a>
-    <a href="{% url 'dashboard:config-create' %}?{{ request.GET.urlencode }}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Salvar configuração' %}">{% trans 'Salvar configuração' %}</a>
-    <a href="{% url 'dashboard:configs' %}" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded focus:outline-none focus:ring" aria-label="{% trans 'Ver configurações salvas' %}">{% trans 'Minhas configurações' %}</a>
+    <a href="{% url 'dashboard:filter-create' %}?{{ request.GET.urlencode }}" class="btn btn-secondary" aria-label="{% trans 'Salvar filtro rápido' %}">{% trans 'Salvar filtro' %}</a>
+    <a href="{% url 'dashboard:filters' %}" class="btn btn-secondary" aria-label="{% trans 'Ver filtros salvos' %}">{% trans 'Meus filtros' %}</a>
+    <a href="{% url 'dashboard:config-create' %}?{{ request.GET.urlencode }}" class="btn btn-secondary" aria-label="{% trans 'Salvar configuração' %}">{% trans 'Salvar configuração' %}</a>
+    <a href="{% url 'dashboard:configs' %}" class="btn btn-secondary" aria-label="{% trans 'Ver configurações salvas' %}">{% trans 'Minhas configurações' %}</a>
   </div>
 </form>
 <script>
