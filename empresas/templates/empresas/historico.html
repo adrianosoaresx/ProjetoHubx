@@ -21,7 +21,7 @@
   {% else %}
   <p class="text-center text-sm text-[var(--text-secondary)]">{% trans "Nenhuma alteração registrada." %}</p>
   {% endif %}
-  {% include 'components/pagination.html' with page_obj=page_obj %}
+  {% include '_partials/pagination.html' with page_obj=page_obj %}
 
 </section>
 {% endblock %}
