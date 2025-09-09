@@ -1,17 +1,17 @@
 {% load i18n %}
-<div id="membro-{{ part.id }}" class="p-4 bg-white border rounded shadow-sm flex flex-col gap-2">
+<div id="membro-{{ part.id }}" class="p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded shadow-sm flex flex-col gap-2">
   <div class="flex items-center gap-4">
     {% if part.user.avatar %}
     <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" />
     {% else %}
-    <div class="w-12 h-12 rounded-full bg-gray-200"></div>
+    <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]"></div>
     {% endif %}
     <div>
-  <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-gray-800">
+  <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-[var(--text-primary)]">
         {{ part.user.get_full_name|default:part.user.username }}
       </a>
       {% if part.papel == 'coordenador' %}
-        <span class="text-sm text-gray-500"> - {% trans 'Coordenador' %}</span>
+        <span class="text-sm text-[var(--text-secondary)]"> - {% trans 'Coordenador' %}</span>
       {% endif %}
       {% if part.status_suspensao %}
         <span class="text-sm text-red-600">({% trans 'Suspenso' %})</span>

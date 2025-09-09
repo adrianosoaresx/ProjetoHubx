@@ -1,7 +1,7 @@
 {% load i18n %}
 {# Card de Membro do Núcleo, inspirado nos cards de associados #}
 <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}"
-   class="group block rounded-2xl border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
+   class="group block rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm hover:shadow-lg hover:scale-[1.01] transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40"
    aria-label="{{ part.user.get_full_name|default:part.user.username }}">
   <article class="overflow-hidden rounded-2xl" role="article">
     <header class="relative">
@@ -14,9 +14,9 @@
       <div class="absolute -bottom-8 left-4">
         {% if part.user.avatar %}
           <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}"
-               class="h-16 w-16 rounded-full ring-4 ring-white object-cover" />
+               class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" />
         {% else %}
-          <div class="h-16 w-16 rounded-full ring-4 ring-white bg-neutral-200 flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ part.user.username }}">
+          <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-primary" role="img" aria-label="{{ part.user.username }}">
             {{ part.user.username|first|upper }}
           </div>
         {% endif %}

@@ -4,64 +4,67 @@
 {% block title %}{% trans "Registro - Termos" %} | Hubx{% endblock %}
 
 {% block content %}
-{% include 'components/nav_sidebar.html' %}
-{% include 'components/hero.html' %}
+<<<<<<< HEAD
+=======
+{% include '_partials/sidebar.html' %}
+{% include '_components/hero.html' %}
+>>>>>>> main
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+  <div class="card">
     <div class="mb-8">
       {% with step=8 total=8 %}
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         {% widthratio step total 100 as progress %}
-        <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ progress }}%</span>
+        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
       </div>
-      <div class="h-2 w-full rounded-xl bg-neutral-200 dark:bg-slate-700">
-        <div class="h-full rounded-xl bg-primary-600" style="width: {{ progress }}%;"></div>
+      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
       </div>
       {% endwith %}
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Quase lá!" %}</h1>
-      <p class="text-neutral-600 dark:text-neutral-400">{% trans "Revise e aceite os termos para finalizar" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Quase lá!" %}</h1>
+      <p class="text-[var(--text-secondary)]">{% trans "Revise e aceite os termos para finalizar" %}</p>
     </div>
 
     {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
     {% endif %}
 
     <form id="termosForm" method="post" action="{% url 'accounts:termos' %}" class="space-y-6">
       {% csrf_token %}
-      <div class="space-y-4 max-h-64 overflow-y-auto p-4 border border-neutral-200 dark:border-slate-700 rounded-lg">
-        <h3 class="font-semibold">{% trans "Termos de Uso e Política de Privacidade" %}</h3>
-        <p>{% trans "Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:" %}</p>
-        <h4 class="font-medium">{% trans "1. Uso da Plataforma" %}</h4>
-        <p>{% trans "O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários." %}</p>
-        <h4 class="font-medium">{% trans "2. Privacidade" %}</h4>
-        <p>{% trans "Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade." %}</p>
-        <h4 class="font-medium">{% trans "3. Conteúdo" %}</h4>
-        <p>{% trans "Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros." %}</p>
-        <h4 class="font-medium">{% trans "4. Segurança" %}</h4>
-        <p>{% trans "Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado." %}</p>
+      <div class="space-y-4 max-h-64 overflow-y-auto p-4 border border-[var(--border)] rounded-lg">
+        <h3 class="font-semibold text-[var(--text-primary)]">{% trans "Termos de Uso e Política de Privacidade" %}</h3>
+        <p class="text-[var(--text-secondary)]">{% trans "Ao utilizar o HubX, você concorda com nossos termos de uso e política de privacidade. Abaixo estão os principais pontos:" %}</p>
+        <h4 class="font-medium text-[var(--text-primary)]">{% trans "1. Uso da Plataforma" %}</h4>
+        <p class="text-[var(--text-secondary)]">{% trans "O HubX é uma plataforma para comunidades, entidades e associações. Você concorda em utilizar a plataforma de acordo com as leis aplicáveis e não violar os direitos de outros usuários." %}</p>
+        <h4 class="font-medium text-[var(--text-primary)]">{% trans "2. Privacidade" %}</h4>
+        <p class="text-[var(--text-secondary)]">{% trans "Respeitamos sua privacidade. Seus dados serão utilizados apenas para os fins especificados em nossa política de privacidade." %}</p>
+        <h4 class="font-medium text-[var(--text-primary)]">{% trans "3. Conteúdo" %}</h4>
+        <p class="text-[var(--text-secondary)]">{% trans "Você é responsável pelo conteúdo que compartilha na plataforma. Não toleramos conteúdo ofensivo, ilegal ou que viole direitos de terceiros." %}</p>
+        <h4 class="font-medium text-[var(--text-primary)]">{% trans "4. Segurança" %}</h4>
+        <p class="text-[var(--text-secondary)]">{% trans "Você é responsável por manter a segurança de sua conta e senha. Notifique-nos imediatamente sobre qualquer uso não autorizado." %}</p>
       </div>
 
       <div class="flex items-start gap-2">
-        <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="mt-1 rounded border-neutral-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500" required aria-label="Aceitar termos" aria-invalid="false" aria-describedby="aceitar_termos_desc">
-        <label for="aceitar_termos" class="text-sm text-neutral-700 dark:text-neutral-300" id="aceitar_termos_desc">{% blocktrans trimmed %}Eu li e concordo com os <a href="/termos/" class="text-primary-600 hover:text-primary-700" target="_blank">Termos de Uso</a> e <a href="/privacidade/" class="text-primary-600 hover:text-primary-700" target="_blank">Política de Privacidade</a>{% endblocktrans %}</label>
+        <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="mt-1 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]" required aria-label="Aceitar termos" aria-invalid="false" aria-describedby="aceitar_termos_desc">
+        <label for="aceitar_termos" class="text-sm text-[var(--text-primary)]" id="aceitar_termos_desc">{% blocktrans trimmed %}Eu li e concordo com os <a href="/termos/" class="text-[var(--primary)] hover:underline" target="_blank">Termos de Uso</a> e <a href="/privacidade/" class="text-[var(--primary)] hover:underline" target="_blank">Política de Privacidade</a>{% endblocktrans %}</label>
       </div>
 
       <div class="flex items-start gap-2">
-        <input type="checkbox" id="newsletter" name="newsletter" class="mt-1 rounded border-neutral-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500" aria-label="Receber novidades" aria-invalid="false" aria-describedby="newsletter_desc">
-        <label for="newsletter" class="text-sm text-neutral-700 dark:text-neutral-300" id="newsletter_desc">{% trans "Quero receber atualizações e novidades do HubX" %}</label>
+        <input type="checkbox" id="newsletter" name="newsletter" class="mt-1 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]" aria-label="Receber novidades" aria-invalid="false" aria-describedby="newsletter_desc">
+        <label for="newsletter" class="text-sm text-[var(--text-primary)]" id="newsletter_desc">{% trans "Quero receber atualizações e novidades do HubX" %}</label>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:foto' %}" class="flex-1 rounded-xl border border-neutral-300 dark:border-slate-600 px-4 py-2 text-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700">{% trans "Voltar" %}</a>
-        <button type="submit" id="submitButton" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Finalizar Cadastro" %}</button>
+        <a href="{% url 'accounts:foto' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+        <button type="submit" id="submitButton" class="btn btn-primary flex-1">{% trans "Finalizar Cadastro" %}</button>
       </div>
     </form>
   </div>

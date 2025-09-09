@@ -4,19 +4,19 @@
 {% block title %}{% trans "Meus Núcleos" %}{% endblock %}
 
 {% block content %}
-{% include 'components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
+{% include '_components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
 <div class="container mx-auto p-6">
 <section class="max-w-5xl mx-auto py-8">
   <form method="get" class="mb-4 flex gap-2">
-    <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border rounded px-2 py-1 flex-1" />
-    <button class="px-3 py-1 bg-blue-600 text-white rounded" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
+    <input type="text" name="q" value="{{ form.q.value }}" placeholder="{% trans 'Buscar...' %}" class="border border-[var(--border)] bg-[var(--bg-secondary)] rounded px-2 py-1 flex-1" />
+    <button class="btn btn-primary" aria-label="{% trans 'Buscar núcleos' %}">{% trans 'Buscar' %}</button>
   </form>
-  <div role="list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div role="list" class="card-grid">
     {% for nucleo in object_list %}
       <div role="listitem">
         <a
           href="{% url 'nucleos:detail_uuid' nucleo.public_id %}"
-          class="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
+          class="rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] shadow p-4 flex flex-col items-center text-center hover:shadow-md transition"
         >
           {% if nucleo.avatar %}
             <img
@@ -38,7 +38,7 @@
       <p class="col-span-full text-center">{% trans "Nenhum núcleo encontrado." %}</p>
     {% endfor %}
   </div>
-  {% include 'components/pagination.html' with page_obj=page_obj querystring=querystring %}
+  {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
 </section>
 </div>
 {% endblock %}

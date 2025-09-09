@@ -23,15 +23,15 @@
   
   <!-- Cards de totais -->
   <div class="mt-6 grid grid-cols-1 sm:grid-cols-4 gap-4">
-    {% include "partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
-    {% include "partials/cards/total_card.html" with label=_('Eventos (ativos + concluídos)') valor=total_eventos %}
-    {% include "partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos %}
-    {% include "partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos %}
+    {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
+    {% include "_partials/cards/total_card.html" with label=_('Eventos (ativos + concluídos)') valor=total_eventos %}
+    {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos %}
+    {% include "_partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos %}
   </div>
 
   <!-- Abas -->
   <div class="mt-8">
-    <div class="border-b border-neutral-200">
+    <div class="border-b border-[var(--border)]">
       <nav class="-mb-px flex gap-6" aria-label="Tabs">
         <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="membros">{% trans 'Membros' %}</button>
         <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>

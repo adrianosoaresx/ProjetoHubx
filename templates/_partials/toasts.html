@@ -1,0 +1,15 @@
+{% if messages %}
+<div id="messages" class="fixed top-4 right-4 space-y-2 z-50">
+  {% for message in messages %}
+    <div class="px-4 py-2 rounded shadow text-white {% if 'error' in message.tags %}bg-[var(--error)]{% elif 'success' in message.tags %}bg-[var(--success)]{% else %}bg-[var(--primary)]{% endif %}">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+<script>
+  setTimeout(() => {
+    const el = document.getElementById('messages');
+    if (el) { el.remove(); }
+  }, 4000);
+</script>
+{% endif %}

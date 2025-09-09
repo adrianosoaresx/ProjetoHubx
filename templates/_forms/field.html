@@ -1,0 +1,30 @@
+
+{% load widget_tweaks %}
+<div class="space-y-1">
+  {% if field|widget_type == 'checkboxinput' %}
+  <div class="flex items-center gap-2">
+    {% render_field field class+="form-checkbox" %}
+    <label for="{{ field.id_for_label }}" class="text-sm text-neutral-700">
+      {{ field.label }}{% if field.field.required %} *{% endif %}
+    </label>
+  </div>
+  {% else %}
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">
+    {{ field.label }}{% if field.field.required %} *{% endif %}
+  </label>
+  {% if field|widget_type == 'select' %}
+    {% render_field field class+="form-select w-full" %}
+  {% else %}
+    {% render_field field class+="form-input w-full" %}
+  {% endif %}
+  {% endif %}
+  {% if field.errors %}
+  <ul class="errorlist">
+    {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+  {% if field.help_text %}
+  <p class="text-xs text-neutral-500">{{ field.help_text }}</p>
+  {% endif %}
+
+</div>
