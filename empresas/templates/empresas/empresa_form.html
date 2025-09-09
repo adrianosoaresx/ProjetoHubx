@@ -20,6 +20,14 @@
 
   <form method="post" enctype="multipart/form-data" class="bg-white border border-neutral-200 rounded-md shadow-sm p-6 space-y-6">
     {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    {% endif %}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
+
     <div class="grid md:grid-cols-2 gap-6">
       <div>
         <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.nome.label }}</label>
@@ -90,6 +98,7 @@
       {{ form.cover.errors }}
         <p class="text-xs text-neutral-500 mt-1">{% translate 'PNG, JPG até 2MB' %}</p>
     </div>
+
     <div class="flex justify-end gap-3 border-t pt-4">
       <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 border rounded">{% translate 'Cancelar' %}</a>
       <button type="submit" class="text-sm px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 inline-flex items-center gap-2">

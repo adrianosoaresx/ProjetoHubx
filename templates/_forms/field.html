@@ -1,40 +1,30 @@
 
 {% load widget_tweaks %}
 <div class="space-y-1">
-  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">
+  {% if field|widget_type == 'checkboxinput' %}
+  <div class="flex items-center gap-2">
+    {% render_field field class+="form-checkbox" %}
+    <label for="{{ field.id_for_label }}" class="text-sm text-neutral-700">
+      {{ field.label }}{% if field.field.required %} *{% endif %}
+    </label>
+  </div>
+  {% else %}
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">
     {{ field.label }}{% if field.field.required %} *{% endif %}
   </label>
-  {% render_field field class+="block w-full rounded-lg border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--text-primary)]" %}
+  {% if field|widget_type == 'select' %}
+    {% render_field field class+="form-select w-full" %}
+  {% else %}
+    {% render_field field class+="form-input w-full" %}
+  {% endif %}
+  {% endif %}
   {% if field.errors %}
-    <ul class="errorlist">
-      {% for e in field.errors %}<li>{{ e }}</li>{% endfor %}
-    </ul>
+  <ul class="errorlist">
+    {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+  </ul>
   {% endif %}
   {% if field.help_text %}
-    <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
+  <p class="text-xs text-neutral-500">{{ field.help_text }}</p>
   {% endif %}
-
-{% comment %}Generic form field using tailwindcss forms plugin and design tokens.
-Expects: id, name, label, type (default 'text'), value, placeholder, required, autofocus, describedby, attrs.
-{% endcomment %}
-<div class="space-y-1">
-  <div class="relative">
-    <input
-      type="{{ type|default:'text' }}"
-      id="{{ id }}"
-      name="{{ name }}"
-      {% if value is not None %}value="{{ value }}"{% endif %}
-      class="peer w-full rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-2 placeholder-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--text-primary)] {{ extra_classes }}"
-      placeholder="{{ placeholder|default:label }}"
-      {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
-      {% if required %}required{% endif %}
-      {% if autofocus %}autofocus{% endif %}
-      aria-label="{{ label }}"
-      aria-invalid="false"
-      {% if describedby %}aria-describedby="{{ describedby }}"{% endif %}
-      {{ attrs|safe }}
-    />
-    <label for="{{ id }}" class="absolute left-4 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-[var(--text-secondary)] peer-focus:-top-2 peer-focus:text-xs peer-focus:text-[var(--primary)]">{{ label }}</label>
-  </div>
 
 </div>
