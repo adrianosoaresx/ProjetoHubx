@@ -15,13 +15,13 @@
       {% include '_components/search_form.html' with q=request.GET.q %}
     </div>
     <div class="card-body">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-6">
+      <div class="card-grid mb-6">
         {% include "_partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos %}
         {% include "_partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos %}
         {% include "_partials/cards/total_card.html" with label=_('Concluídos') valor=total_eventos_concluidos %}
         {% include "_partials/cards/total_card.html" with label=_('Inscritos (total)') valor=total_inscritos %}
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
+      <div class="card-grid" role="list" aria-label="{% trans 'Lista de eventos' %}">
         {% for evento in eventos %}
           {% include '_components/card_evento.html' %}
         {% empty %}

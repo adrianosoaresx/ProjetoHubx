@@ -14,7 +14,7 @@
     {% include '_components/search_form.html' with q=request.GET.q hx_get=empresas_lista_url hx_target='#empresas-grid' hx_push_url='true' %}
 
     <!-- Cards de totais -->
-    <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="mb-6 card-grid gap-4">
       {% include "_partials/cards/total_card.html" with label=_('Empresas') valor=total_empresas %}
     </div>
 

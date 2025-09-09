@@ -7,7 +7,7 @@
   <p class="sr-only">{% trans 'Lista de eventos do dia' %}</p>
 </header>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="card-grid">
   {% for ev in eventos %}
     {% include 'eventos/partials/card.html' with evento=ev %}
   {% empty %}

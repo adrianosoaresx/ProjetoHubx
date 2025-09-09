@@ -15,12 +15,12 @@
   {% include '_components/search_form.html' with q=request.GET.q %}
 
   <!-- Cards de totais -->
-  <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="mb-6 card-grid gap-4">
     {% include "_partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios %}
     {% include "_partials/cards/total_card.html" with label=_('Associados') valor=total_associados %}
     {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados %}
   </div>
-  <div role="list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+  <div role="list" class="card-grid">
     {% for user in associados %}
       <div role="listitem">
         {% include "associados/partials/card.html" with user=user %}

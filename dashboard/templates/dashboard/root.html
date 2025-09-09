@@ -22,7 +22,7 @@
         {% endwith %}
         <section class="mb-8">
           <h2 class="text-xl font-semibold mb-4">{% trans "Status dos Serviços" %}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card-grid gap-4">
             <div class="p-4 bg-white rounded-lg shadow">
               <span class="block font-medium">{% trans "Celery" %}</span>
               <span>{{ service_status.celery }}</span>
@@ -39,7 +39,7 @@
         </section>
         <section class="mb-8">
           <h2 class="text-xl font-semibold mb-4">{% trans "Métricas de Segurança" %}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card-grid gap-4">
             <div class="p-4 bg-white rounded-lg shadow">
               <span class="block font-medium">{% trans "Tentativas de Login Bloqueadas" %}</span>
               <span>{{ security_metrics.login_bloqueados }}</span>
@@ -48,7 +48,7 @@
         </section>
         <section class="mb-8">
           <h2 class="text-xl font-semibold mb-4">{% trans "Organizações" %}</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card-grid gap-4">
             {% include 'dashboard/partials/org_cards.html' %}
           </div>
         </section>
@@ -61,7 +61,7 @@
         ></section>
         <section class="mb-8">
           <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card-grid gap-4">
             <a href="{% url 'admin:index' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Django Admin' %}">
               {% lucide 'wrench' class='mb-2 mx-auto w-6 h-6' %}
               <span class="block">{% trans "Django Admin" %}</span>
