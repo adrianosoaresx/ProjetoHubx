@@ -1421,7 +1421,7 @@ a:focus {
   background-color: var(--bg-accent);
 }
 
-.sidebar-item[aria-current="page"] {
+.sidebar-item-active {
   background-color: var(--bg-accent);
   font-weight: 500;
   color: var(--text-primary);
