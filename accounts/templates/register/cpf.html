@@ -8,8 +8,7 @@
 {% endblock %}
 
 {% block content %}
-{% include '_partials/sidebar.html' %}
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+<div class="card-grid">
   <div class="card">
     <div class="mb-8">
       {% with step=4 total=8 %}
