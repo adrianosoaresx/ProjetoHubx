@@ -1,8 +1,8 @@
 {% load i18n %}
 {% if empresas %}
   {% for empresa in empresas %}
-  {% include 'empresas/partials/card.html' with empresa=empresa %}
+    {% include '_components/card_empresa.html' with empresa=empresa %}
   {% endfor %}
 {% else %}
-  <p class="col-span-full text-center text-neutral-500 py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
+  <p class="col-span-full text-center text-[var(--text-secondary)] py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
 {% endif %}

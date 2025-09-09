@@ -927,7 +927,7 @@ def registro_sucesso(request):
 
 
 class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
-    template_name = "associados/lista.html"
+    template_name = "associados/associado_list.html"
     context_object_name = "associados"
     paginate_by = 10
 

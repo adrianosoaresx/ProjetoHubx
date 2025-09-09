@@ -14,7 +14,7 @@ Todo texto visível e atributos de acessibilidade (`aria-label`, `aria-current`,
 `{% blocktrans %}` para suporte a i18n e conformidade com padrões ARIA.
 
 ```django
-{% include "components/nav_sidebar.html" %}
+{% include "_partials/sidebar.html" %}
 ```
 
 ## hero.html
@@ -23,7 +23,7 @@ Seção de destaque para cabeçalhos de páginas. Aceita variáveis `title`,
 traduzidos ou envolvidos por `{% trans %}` dentro da partial.
 
 ```django
-{% include "components/hero.html" with title=_("Título") %}
+{% include "_components/hero.html" with title=_("Título") %}
 ```
 
 ## Convenções de i18n

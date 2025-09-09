@@ -2,8 +2,12 @@
 {% load i18n l10n %}
 {% block title %}{{ empresa.nome }} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=empresa.nome subtitle=empresa.descricao %}
+{% endblock %}
+
 {% block content %}
-{% include 'components/hero.html' with title=empresa.nome subtitle=empresa.descricao %}
+{% include '_components/hero.html' with title=empresa.nome subtitle=empresa.descricao %}
 <div class="container mx-auto p-6">
   <div class="card max-w-4xl mx-auto">
     <div class="card-body">
@@ -32,9 +36,9 @@
 
       {% if pode_visualizar_contatos %}
         <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Contatos" %}</h2>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <div class="mt-4 card-grid">
           {% for contato in contatos %}
-            <div class="flex justify-between items-start bg-white border border-neutral-200 rounded-xl p-4">
+            <div class="card flex justify-between items-start p-4">
               <div class="text-sm">
                 <p class="font-medium text-neutral-800">{{ contato.nome }}</p>
                 <p class="text-neutral-600">{{ contato.cargo }}</p>
@@ -42,16 +46,16 @@
                 <p class="text-neutral-600">{{ contato.telefone }}</p>
               </div>
               <div class="flex gap-2">
-                <a href="{% url 'empresas:contato_editar' contato.id %}" class="btn-secondary btn-sm">{% trans "Editar" %}</a>
-                <a href="{% url 'empresas:contato_remover' contato.id %}" class="btn-danger btn-sm">{% trans "Remover" %}</a>
+                <a href="{% url 'empresas:contato_editar' contato.id %}" class="btn btn-secondary btn-sm">{% trans "Editar" %}</a>
+                <a href="{% url 'empresas:contato_remover' contato.id %}" class="btn btn-danger btn-sm">{% trans "Remover" %}</a>
               </div>
             </div>
           {% empty %}
-            <p class="text-sm text-neutral-500">{% trans "Nenhum contato cadastrado." %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum contato cadastrado." %}</p>
           {% endfor %}
         </div>
         <div class="mt-4">
-          <a href="{% url 'empresas:contato_novo' empresa.id %}" class="btn-primary btn-sm">{% trans "Adicionar" %}</a>
+          <a href="{% url 'empresas:contato_novo' empresa.id %}" class="btn btn-primary btn-sm">{% trans "Adicionar" %}</a>
         </div>
       {% endif %}
 
@@ -68,26 +72,26 @@
 
       {% if prod_tags %}
         <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Produtos" %}</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+        <div class="card-grid mt-4">
           {% for tag in prod_tags %}
-            <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
+            <div class="card p-4">
               <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
             </div>
           {% empty %}
-            <p class="text-sm text-neutral-500">{% trans "Nenhum produto cadastrado." %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum produto cadastrado." %}</p>
           {% endfor %}
         </div>
       {% endif %}
 
       {% if serv_tags %}
         <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Serviços" %}</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+        <div class="card-grid mt-4">
           {% for tag in serv_tags %}
-            <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
+            <div class="card p-4">
               <h3 class="text-base font-medium text-neutral-800">{{ tag.nome }}</h3>
             </div>
           {% empty %}
-            <p class="text-sm text-neutral-500">{% trans "Nenhum serviço cadastrado." %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum serviço cadastrado." %}</p>
           {% endfor %}
         </div>
       {% endif %}
@@ -113,9 +117,9 @@
 
       {% if nucleos_dono %}
         <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Núcleos" %}</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+        <div class="card-grid mt-4">
           {% for nucleo in nucleos_dono %}
-            <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm text-center">
+            <div class="card p-4 text-center">
               {% if nucleo.avatar %}
                 <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="w-16 h-16 rounded-full object-cover mx-auto mb-2" />
               {% else %}
@@ -126,21 +130,21 @@
               <h3 class="text-sm font-medium text-neutral-800">{{ nucleo.nome }}</h3>
             </div>
           {% empty %}
-            <p class="text-sm text-neutral-500">{% trans "Nenhum núcleo." %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum núcleo." %}</p>
           {% endfor %}
         </div>
       {% endif %}
 
       {% if eventos_dono %}
         <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Eventos" %}</h2>
-        <div class="grid gap-6 sm:grid-cols-2 md:grid-cols-3 mt-4">
+        <div class="card-grid mt-4">
           {% for evento in eventos_dono %}
-            <div class="bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm">
+            <div class="card p-4">
               <h3 class="text-base font-medium text-neutral-800">{{ evento.titulo }}</h3>
               <p class="text-sm text-neutral-600">{{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}</p>
             </div>
           {% empty %}
-            <p class="text-sm text-neutral-500">{% trans "Nenhum evento." %}</p>
+            <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum evento." %}</p>
           {% endfor %}
         </div>
       {% endif %}
@@ -150,12 +154,12 @@
       </div>
 
       <div class="flex justify-end gap-3 mt-8">
-        <a href="{% url 'empresas:lista' %}" class="btn-secondary btn-sm">{% trans "Voltar" %}</a>
+        <a href="{% url 'empresas:lista' %}" class="btn btn-secondary btn-sm">{% trans "Voltar" %}</a>
         {% translate "Favoritar" as txt_favoritar %}
         {% translate "Desfavoritar" as txt_desfavoritar %}
         <button
           id="favorito-btn"
-          class="btn-secondary btn-sm"
+          class="btn btn-secondary btn-sm"
           {% if empresa.favoritado %}
             hx-delete="{% url 'empresas_api:empresa-favoritar' empresa.id %}"
           {% else %}
@@ -178,7 +182,7 @@
           {% if empresa.favoritado %}{{ txt_desfavoritar }}{% else %}{{ txt_favoritar }}{% endif %}
         </button>
         {% if request.user == empresa.usuario %}
-          <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="btn-primary btn-sm">{% trans "Editar" %}</a>
+          <a href="{% url 'empresas:empresa_editar' empresa.id %}" class="btn btn-primary btn-sm">{% trans "Editar" %}</a>
         {% endif %}
       </div>
     </div>
