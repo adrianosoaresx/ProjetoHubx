@@ -24,10 +24,10 @@
 
       <form hx-get="{% url 'eventos:briefing_list' %}" hx-target="#briefing-container" hx-push-url="true" class="mb-6 flex gap-2">
         <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por evento' %}" class="w-full rounded-md border-gray-300 px-3 py-2" />
-        <button type="submit" class="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Filtrar" %}</button>
+        <button type="submit" class="btn-primary">{% trans "Filtrar" %}</button>
       </form>
 
-      <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+      <div class="overflow-x-auto bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm">
         <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
           <thead class="bg-neutral-50">
             <tr>
@@ -52,20 +52,20 @@
                 <td class="px-4 py-2">{{ briefing.conteudo_programatico }}</td>
                 <td class="px-4 py-2">{{ briefing.observacoes }}</td>
                 <td class="px-4 py-2 space-x-2">
-                  <a href="{% url 'eventos:briefing_editar' briefing.pk %}" class="text-blue-600 hover:underline">{% trans "Editar" %}</a>
+                  <a href="{% url 'eventos:briefing_editar' briefing.pk %}" class="btn-secondary">{% trans "Editar" %}</a>
                   <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'orcamentado' %}" class="inline space-x-1">
                     {% csrf_token %}
                     <input type="datetime-local" name="prazo_limite_resposta" required class="rounded-md border-gray-300 px-2 py-1 text-xs" />
-                    <button type="submit" class="text-green-600 hover:underline">{% trans "Orçar" %}</button>
+                    <button type="submit" class="btn-secondary">{% trans "Orçar" %}</button>
                   </form>
                   <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'aprovado' %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="text-primary hover:underline">{% trans "Aprovar" %}</button>
+                    <button type="submit" class="btn-primary">{% trans "Aprovar" %}</button>
                   </form>
                   <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'recusado' %}" class="inline space-x-1">
                     {% csrf_token %}
                     <input type="text" name="motivo_recusa" placeholder="{% trans 'Motivo' %}" required class="rounded-md border-gray-300 px-2 py-1 text-xs" />
-                    <button type="submit" class="text-red-600 hover:underline">{% trans "Recusar" %}</button>
+                    <button type="submit" class="btn-secondary">{% trans "Recusar" %}</button>
                   </form>
                 </td>
               </tr>
