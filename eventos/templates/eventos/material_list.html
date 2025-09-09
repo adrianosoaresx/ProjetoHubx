@@ -18,10 +18,10 @@
 
       <form method="get" class="mb-6 flex gap-2">
         <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por título' %}" class="w-full rounded-md border-gray-300 px-3 py-2" />
-        <button type="submit" class="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Filtrar" %}</button>
+        <button type="submit" class="btn-primary">{% trans "Filtrar" %}</button>
       </form>
 
-      <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
+      <div class="overflow-x-auto bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm">
         <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
           <thead class="bg-neutral-50">
             <tr>

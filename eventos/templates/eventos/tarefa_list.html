@@ -10,7 +10,7 @@
   </header>
   <ul class="space-y-2">
     {% for tarefa in tarefas %}
-      <li class="p-4 bg-white border border-neutral-200 rounded-2xl shadow-sm">
+      <li class="p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm">
         <a href="{% url 'eventos:tarefa_detalhe' tarefa.pk %}" class="font-semibold">{{ tarefa.titulo }}</a>
         <div class="text-sm text-neutral-600">{{ tarefa.responsavel }} - {{ tarefa.status }}</div>
       </li>
