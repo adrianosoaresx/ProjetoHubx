@@ -46,7 +46,7 @@ def buscar(request):
 
 class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Empresa
-    template_name = "empresas/lista.html"
+    template_name = "empresas/empresa_list.html"
     paginate_by = 10
 
     def dispatch(self, request, *args, **kwargs):  # type: ignore[override]

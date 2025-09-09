@@ -43,7 +43,7 @@ User = get_user_model()
 
 class NucleoListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
     model = Nucleo
-    template_name = "nucleos/list.html"
+    template_name = "nucleos/nucleo_list.html"
     paginate_by = 10
 
     def get_queryset(self):
@@ -184,7 +184,7 @@ class NucleoMeusView(NoSuperadminMixin, LoginRequiredMixin, ListView):
 class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Nucleo
     form_class = NucleoForm
-    template_name = "nucleos/create.html"
+    template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
 
     def form_valid(self, form):
@@ -202,7 +202,7 @@ class NucleoCreateView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
 class NucleoUpdateView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Nucleo
     form_class = NucleoForm
-    template_name = "nucleos/update.html"
+    template_name = "nucleos/nucleo_form.html"
     success_url = reverse_lazy("nucleos:list")
 
     def get_queryset(self):

@@ -4,39 +4,42 @@
 {% block title %}{% trans "Token de Convite" %} - HubX{% endblock %}
 
 {% block content %}
-{% include 'components/nav_sidebar.html' %}
-{% include 'components/hero.html' %}
+<<<<<<< HEAD
+=======
+{% include '_partials/sidebar.html' %}
+{% include '_components/hero.html' %}
+>>>>>>> main
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
+  <div class="card">
     <div class="mb-8">
       {% with step=1 total=8 %}
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-primary-600">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
+        <span class="text-sm font-medium text-[var(--primary)]">{% blocktrans with step=step total=total %}Passo {{ step }} de {{ total }}{% endblocktrans %}</span>
         {% widthratio step total 100 as progress %}
-        <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ progress }}%</span>
+        <span class="text-sm text-[var(--text-secondary)]">{{ progress }}%</span>
       </div>
-      <div class="h-2 w-full rounded-xl bg-neutral-200 dark:bg-slate-700">
-        <div class="h-full rounded-xl bg-primary-600" style="width: {{ progress }}%;"></div>
+      <div class="h-2 w-full rounded-xl bg-[var(--bg-tertiary)]">
+        <div class="h-full rounded-xl bg-[var(--primary)]" style="width: {{ progress }}%;"></div>
       </div>
       {% endwith %}
     </div>
 
     <div class="mb-8 text-center">
-      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
+      <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--primary-light)]">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2" aria-hidden="true">
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
           <circle cx="12" cy="16" r="1"/>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
       </div>
-      <h1 class="mb-2 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Token de Convite" %}</h1>
-      <p class="text-neutral-600 dark:text-neutral-400">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Token de Convite" %}</h1>
+      <p class="text-[var(--text-secondary)]">{% trans "Digite seu token de convite para começar o cadastro" %}</p>
     </div>
 
     {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
     {% endif %}
@@ -44,37 +47,20 @@
     <form method="post" action="{% url 'tokens:token' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        <div class="relative">
-          <input
-            type="text"
-            id="token"
-            name="token"
-            class="peer w-full rounded-lg border border-neutral-300 dark:border-slate-600 px-4 py-2 placeholder-transparent text-center font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-slate-700 dark:text-neutral-100"
-            placeholder="{% trans 'Token de convite' %}"
-            required
-            autofocus
-            aria-label="Token"
-            aria-invalid="false"
-            aria-describedby="token_help"
-          />
-          <label
-            for="token"
-            class="absolute left-4 -top-2 text-xs text-neutral-700 dark:text-neutral-300 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600"
-          >{% trans "Token de Convite" %}</label>
-        </div>
-        <p id="token_help" class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
+        {% include "_forms/field.html" with id="token" name="token" label=_("Token de Convite") placeholder=_("Token de convite") required=True autofocus=True describedby="token_help" extra_classes="text-center font-mono tracking-widest" %}
+        <p id="token_help" class="mt-1 text-sm text-[var(--text-secondary)]">{% trans "O token é necessário para continuar o cadastro na plataforma" %}</p>
       </div>
 
       <div class="flex gap-4">
-        <a href="{% url 'accounts:login' %}" class="flex-1 rounded-xl border border-neutral-300 dark:border-slate-600 px-4 py-2 text-center text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700">{% trans "Voltar" %}</a>
-        <button type="submit" class="flex-1 rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700">{% trans "Continuar" %}</button>
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary flex-1">{% trans "Voltar" %}</a>
+        <button type="submit" class="btn btn-primary flex-1">{% trans "Continuar" %}</button>
       </div>
     </form>
 
     <div class="mt-8 text-center">
-      <p class="text-sm text-neutral-600 dark:text-neutral-400">
+      <p class="text-sm text-[var(--text-secondary)]">
         {% trans "Já tem uma conta?" %}
-        <a href="{% url 'accounts:login' %}" class="font-medium text-primary-600 hover:text-primary-700">{% trans "Entrar" %}</a>
+        <a href="{% url 'accounts:login' %}" class="font-medium text-[var(--primary)] hover:underline">{% trans "Entrar" %}</a>
       </p>
     </div>
   </div>
