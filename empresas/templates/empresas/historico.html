@@ -3,6 +3,7 @@
 {% block title %}{% trans "Histórico de alterações" %} - {{ empresa.nome }}{% endblock %}
 {% block content %}
 <section class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+
   <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Histórico de alterações" %} - {{ empresa.nome }}</h1>
   {% if object_list %}
   <div class="card-grid">
@@ -21,6 +22,7 @@
   <p class="text-center text-sm text-[var(--text-secondary)]">{% trans "Nenhuma alteração registrada." %}</p>
   {% endif %}
   {% include 'components/pagination.html' with page_obj=page_obj %}
+
 </section>
 {% endblock %}
 

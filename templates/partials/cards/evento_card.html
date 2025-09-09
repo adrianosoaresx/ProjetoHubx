@@ -1,3 +1,0 @@
-{% load i18n %}
-{% url 'eventos:evento_detalhe' evento.pk as detail_url %}
-{% include 'partials/cards/base_card.html' with url=detail_url cover=evento.cover avatar=evento.avatar title=evento.titulo details='partials/cards/evento_card_details.html' %}

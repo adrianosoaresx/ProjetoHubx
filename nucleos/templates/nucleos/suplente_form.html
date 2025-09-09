@@ -7,10 +7,12 @@
 <section class="max-w-xl mx-auto py-8">
   <form method="post" class="space-y-4">
     {% csrf_token %}
-    {{ form.as_p }}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
     <div class="flex justify-end gap-2">
-  <a href="{% url 'nucleos:detail' pk %}" class="px-4 py-2 border rounded">{% trans 'Cancelar' %}</a>
-      <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">{% trans 'Salvar' %}</button>
+      <a href="{% url 'nucleos:detail' pk %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+      <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
     </div>
   </form>
 </section>

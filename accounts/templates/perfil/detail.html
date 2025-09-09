@@ -4,7 +4,7 @@
 {% block perfil_content %}
 
 <div class="card-header">
-  <div class="mt-2 border-b border-neutral-200 dark:border-neutral-700">
+  <div class="mt-2 border-b border-[var(--border)] dark:border-[var(--border)]">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
       <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
       {% if user.get_tipo_usuario != 'admin' %}
@@ -60,7 +60,7 @@
     <div class="tab-panel hidden" data-tab="empresas">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for empresa in empresas %}
-          {% include 'partials/cards/empresa_card.html' with empresa=empresa %}
+          {% include '_components/card_empresa.html' with empresa=empresa %}
         {% empty %}
           <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhuma empresa encontrada." %}</p>
         {% endfor %}
@@ -69,9 +69,9 @@
 
     <!-- Painel: Núcleos -->
     <div class="tab-panel hidden" data-tab="nucleos">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div class="card-grid">
         {% for nucleo in nucleos %}
-          {% include 'partials/cards/nucleo_card.html' with nucleo=nucleo %}
+          {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
           <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
@@ -82,7 +82,7 @@
     <div class="tab-panel hidden" data-tab="eventos">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {% for ins in inscricoes %}
-          {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
+          {% include '_components/card_evento.html' with evento=ins.evento %}
         {% empty %}
           <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}

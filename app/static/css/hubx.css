@@ -567,7 +567,7 @@
 
   /* Sidebar */
   .sidebar-item { @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)] transition; }
-  .sidebar-item[aria-current="page"] { @apply bg-[var(--bg-accent)] text-[var(--text-primary)] font-medium; }
+  .sidebar-item-active { @apply bg-[var(--bg-accent)] text-[var(--text-primary)] font-medium; }
 
   /* Tabelas */
   .table           { @apply w-full text-sm; }

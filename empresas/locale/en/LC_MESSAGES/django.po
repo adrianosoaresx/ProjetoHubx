@@ -36,7 +36,7 @@ msgstr ""
 
 #: empresas/templates/empresas/avaliacao_form.html:12
 #: empresas/templates/empresas/contato_form.html:32
-#: empresas/templates/empresas/nova.html:86
+#: empresas/templates/empresas/empresa_form.html:86
 #: empresas/templates/empresas/tag_form.html:24
 msgid "Salvar"
 msgstr ""
@@ -68,7 +68,7 @@ msgid "Confirma remover contato %(contato.nome)s?"
 msgstr ""
 
 #: empresas/templates/empresas/contato_confirm_delete.html:10
-#: empresas/templates/empresas/nova.html:83
+#: empresas/templates/empresas/empresa_form.html:83
 #: empresas/templates/empresas/tag_confirm_delete.html:11
 #: empresas/templates/empresas/tag_form.html:23
 msgid "Cancelar"
@@ -90,7 +90,7 @@ msgstr ""
 
 #: empresas/templates/empresas/contato_form.html:9
 #: empresas/templates/empresas/includes/empresas_table.html:6
-#: empresas/templates/empresas/lista.html:25
+#: empresas/templates/empresas/empresa_list.html:25
 #: empresas/templates/empresas/tags_list.html:33
 msgid "Nome"
 msgstr ""
@@ -139,7 +139,7 @@ msgstr "No contact registered"
 
 #: empresas/templates/empresas/detail.html:46
 #: empresas/templates/empresas/includes/empresas_table.html:10
-#: empresas/templates/empresas/lista.html:37
+#: empresas/templates/empresas/empresa_list.html:37
 msgid "Tags"
 msgstr "Tags"
 
@@ -162,7 +162,7 @@ msgid "Nenhum serviço cadastrado."
 msgstr "No service registered."
 
 #: empresas/templates/empresas/detail.html:86
-#: empresas/templates/empresas/nova.html:9
+#: empresas/templates/empresas/empresa_form.html:9
 msgid "Voltar"
 msgstr "Back"
 
@@ -254,7 +254,7 @@ msgid "Setor"
 msgstr ""
 
 #: empresas/templates/empresas/includes/empresas_table.html:9
-#: empresas/templates/empresas/lista.html:29
+#: empresas/templates/empresas/empresa_list.html:29
 msgid "Município"
 msgstr ""
 
@@ -271,52 +271,52 @@ msgstr ""
 msgid "Nenhuma empresa encontrada."
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:4
-#: empresas/templates/empresas/lista.html:19
+#: empresas/templates/empresas/empresa_list.html:4
+#: empresas/templates/empresas/empresa_list.html:19
 msgid "Empresas"
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:20
-#: empresas/templates/empresas/nova.html:4
-#: empresas/templates/empresas/nova.html:11
+#: empresas/templates/empresas/empresa_list.html:20
+#: empresas/templates/empresas/empresa_form.html:4
+#: empresas/templates/empresas/empresa_form.html:11
 msgid "Nova Empresa"
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:33
+#: empresas/templates/empresas/empresa_list.html:33
 msgid "Estado"
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:45
+#: empresas/templates/empresas/empresa_list.html:45
 msgid "Palavras-chave"
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:49
+#: empresas/templates/empresas/empresa_list.html:49
 msgid "Busca"
 msgstr ""
 
-#: empresas/templates/empresas/lista.html:53
+#: empresas/templates/empresas/empresa_list.html:53
 #: empresas/templates/empresas/tags_list.html:25
 msgid "Filtrar"
 msgstr ""
 
-#: empresas/templates/empresas/nova.html:4
-#: empresas/templates/empresas/nova.html:11
+#: empresas/templates/empresas/empresa_form.html:4
+#: empresas/templates/empresas/empresa_form.html:11
 msgid "Editar Empresa"
 msgstr ""
 
-#: empresas/templates/empresas/nova.html:12
+#: empresas/templates/empresas/empresa_form.html:12
 msgid "Cadastre sua empresa na plataforma"
 msgstr ""
 
-#: empresas/templates/empresas/nova.html:56
+#: empresas/templates/empresas/empresa_form.html:56
 msgid "Descreva brevemente o que sua empresa faz e seus principais objetivos."
 msgstr ""
 
-#: empresas/templates/empresas/nova.html:74
+#: empresas/templates/empresas/empresa_form.html:74
 msgid "Separe por vírgulas."
 msgstr ""
 
-#: empresas/templates/empresas/nova.html:86
+#: empresas/templates/empresas/empresa_form.html:86
 msgid "Cadastrar Empresa"
 msgstr ""
 

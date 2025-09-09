@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
   {% for ins in inscricoes %}
-    {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
+    {% include '_components/card_evento.html' with evento=ins.evento %}
   {% empty %}
     <p class="text-sm text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
   {% endfor %}

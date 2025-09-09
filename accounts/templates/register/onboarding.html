@@ -4,12 +4,15 @@
 {% block title %}{% trans "Cadastre-se" %} - HubX{% endblock %}
 
 {% block content %}
-{% include 'components/nav_sidebar.html' %}
-{% include 'components/hero.html' %}
+<<<<<<< HEAD
+=======
+{% include '_partials/sidebar.html' %}
+{% include '_components/hero.html' %}
+>>>>>>> main
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow text-center">
+  <div class="card text-center">
         <div class="mb-8">
-            <div class="w-20 h-20 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div class="w-20 h-20 bg-[var(--primary-light)] rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2" aria-hidden="true">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
@@ -17,10 +20,10 @@
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                 </svg>
             </div>
-            <h1 class="text-2xl font-bold mb-6 text-center text-neutral-900 dark:text-neutral-100">
+            <h1 class="text-2xl font-bold mb-6 text-[var(--text-primary)]">
                 {% trans "Junte-se ao HubX" %}
             </h1>
-            <p class="text-neutral-600 dark:text-neutral-400 mb-6">
+            <p class="text-[var(--text-secondary)] mb-6">
                 {% trans "Conecte-se com comunidades, empresas e organizações em uma única plataforma" %}
             </p>
         </div>
@@ -28,27 +31,27 @@
         {% if messages %}
         <div class="mb-4 space-y-2">
             {% for message in messages %}
-            <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
+            <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
             {% endfor %}
         </div>
         {% endif %}
 
         <div class="grid md:grid-cols-3 gap-6 mb-8">
             <div class="text-center">
-                <div class="w-15 h-15 bg-success-100 dark:bg-success-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-15 h-15 bg-[var(--success-light)] rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success-600)" stroke-width="2" aria-hidden="true">
                         <path d="M9 11H5a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-4"/>
                         <polyline points="9,11 12,14 15,11"/>
                         <line x1="12" y1="14" x2="12" y2="3"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Compartilhe" %}</h3>
-                <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                <h3 class="font-semibold text-[var(--text-primary)] mb-2">{% trans "Compartilhe" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">
                     {% trans "Publique conteúdo e mantenha sua comunidade informada" %}
                 </p>
             </div>
             <div class="text-center">
-                <div class="w-15 h-15 bg-primary-100 dark:bg-primary-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-15 h-15 bg-[var(--primary-light)] rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-600)" stroke-width="2" aria-hidden="true">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                         <circle cx="9" cy="7" r="4"/>
@@ -56,13 +59,13 @@
                         <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Conecte" %}</h3>
-                <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                <h3 class="font-semibold text-[var(--text-primary)] mb-2">{% trans "Conecte" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">
                     {% trans "Encontre e conecte-se com pessoas e organizações" %}
                 </p>
             </div>
             <div class="text-center">
-                <div class="w-15 h-15 bg-warning-100 dark:bg-warning-900 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-15 h-15 bg-[var(--warning-light)] rounded-full flex items-center justify-center mx-auto mb-3">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" aria-hidden="true">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
@@ -70,15 +73,15 @@
                         <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
                 </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">{% trans "Organize" %}</h3>
-                <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                <h3 class="font-semibold text-[var(--text-primary)] mb-2">{% trans "Organize" %}</h3>
+                <p class="text-sm text-[var(--text-secondary)]">
                     {% trans "Crie e participe de eventos da sua comunidade" %}
                 </p>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="{% url 'tokens:token' %}" class="bg-primary dark:bg-primary text-white font-semibold py-2 px-4 rounded-xl">
+            <a href="{% url 'tokens:token' %}" class="btn btn-primary inline-flex items-center gap-2">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>
@@ -87,14 +90,14 @@
                 </svg>
                 {% trans "Começar Cadastro" %}
             </a>
-            <a href="{% url 'accounts:login' %}" class="bg-gray-100 text-neutral-700 dark:bg-slate-700 dark:text-neutral-300 font-semibold py-2 px-4 rounded-xl">
+            <a href="{% url 'accounts:login' %}" class="btn btn-secondary">
                 {% trans "Já tenho conta" %}
             </a>
         </div>
 
-        <div class="mt-8 pt-6 border-t border-neutral-200 dark:border-slate-700">
-            <p class="text-xs text-neutral-500 dark:text-neutral-400">
-                {% blocktrans trimmed %}Ao se cadastrar, você concorda com nossos <a href="#" class="text-primary-600 hover:text-primary-700">Termos de Uso</a> e <a href="#" class="text-primary-600 hover:text-primary-700">Política de Privacidade</a>{% endblocktrans %}
+        <div class="mt-8 pt-6 border-t border-[var(--border)]">
+            <p class="text-xs text-[var(--text-secondary)]">
+                {% blocktrans trimmed %}Ao se cadastrar, você concorda com nossos <a href="#" class="text-[var(--primary)] hover:underline">Termos de Uso</a> e <a href="#" class="text-[var(--primary)] hover:underline">Política de Privacidade</a>{% endblocktrans %}
             </p>
         </div>
   </div>

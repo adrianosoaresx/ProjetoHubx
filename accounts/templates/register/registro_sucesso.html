@@ -4,23 +4,23 @@
 {% block title %}{% trans "Registro Concluído" %} | Hubx{% endblock %}
 
 {% block content %}
-{% include 'components/nav_sidebar.html' %}
-{% include 'components/hero.html' %}
+<<<<<<< HEAD
+=======
+{% include '_partials/sidebar.html' %}
+{% include '_components/hero.html' %}
+>>>>>>> main
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="bg-white dark:bg-slate-800 p-8 rounded-lg shadow text-center">
+  <div class="card p-8 text-center">
     {% if messages %}
     <div class="mb-4 space-y-2">
       {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300{% else %}bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300{% endif %}">{{ message }}</p>
+        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
       {% endfor %}
     </div>
     {% endif %}
-    <h1 class="mb-4 text-3xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Bem-vindo ao HubX!" %}</h1>
-    <p class="mb-6 text-neutral-600 dark:text-neutral-400">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
-    <a
-      href="{% url 'accounts:login' %}"
-      class="rounded-xl bg-primary-600 px-4 py-2 text-white hover:bg-primary-700"
-    >{% trans "Ir para login" %}</a>
+    <h1 class="mb-4 text-3xl font-bold text-[var(--text-primary)]">{% trans "Bem-vindo ao HubX!" %}</h1>
+    <p class="mb-6 text-[var(--text-secondary)]">{% trans "Seu cadastro foi concluído. Verifique seu e-mail para ativar sua conta." %}</p>
+    <a href="{% url 'accounts:login' %}" class="btn btn-primary">{% trans "Ir para login" %}</a>
   </div>
 </div>
 {% endblock %}

@@ -5,7 +5,7 @@
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-16">
-  <div class="bg-white border border-red-200 rounded-2xl shadow-sm p-6 text-center">
+  <div class="bg-[var(--bg-secondary)] border border-red-200 rounded-2xl shadow-sm p-6 text-center">
     <h2 class="text-xl font-semibold text-red-700 mb-4">{% trans "Confirmar remoção" %}</h2>
     <p class="text-sm text-neutral-700">
       {% blocktrans %}Deseja realmente remover o núcleo <strong>{{ object.nome }}</strong>?{% endblocktrans %}
@@ -13,10 +13,10 @@
 
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'nucleos:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Cancelar' %}">
+      <a href="{% url 'nucleos:list' %}" class="btn btn-secondary text-sm" aria-label="{% trans 'Cancelar' %}">
         {% trans "Cancelar" %}
       </a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700" aria-label="{% trans 'Remover' %}">
+      <button type="submit" class="btn btn-primary text-sm" aria-label="{% trans 'Remover' %}">
         {% trans "Remover" %}
       </button>
     </form>
