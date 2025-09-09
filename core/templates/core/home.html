@@ -4,7 +4,7 @@
 {% block title %}{% trans "Bem-vindo ao HubX" %}{% endblock %}
 
 {% block content %}
-{% include 'components/hero.html' with title=_('Junte-se à comunidade Hubx.space') subtitle=_('Plataforma colaborativa que conecta organizações, empresas e pessoas.') %}
+{% include '_components/hero.html' with title=_('Junte-se à comunidade Hubx.space') subtitle=_('Plataforma colaborativa que conecta organizações, empresas e pessoas.') %}
 <div class="container mx-auto p-6">
 <div class="text-center my-8">
   {% if user.is_authenticated %}

@@ -1,4 +1,4 @@
 {% load i18n %}
 {% url 'accounts:perfil_publico_uuid' user.public_id as profile_url %}
 {% trans 'Ver detalhes do usuário' as sr_label %}
-{% include 'partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=user.get_full_name|default:user.username details='associados/partials/card_details.html' sr_label=sr_label %}
+{% include '_partials/cards/base_card.html' with url=profile_url cover=user.cover avatar=user.avatar title=user.get_full_name|default:user.username details='associados/partials/card_details.html' sr_label=sr_label %}

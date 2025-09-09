@@ -3,7 +3,7 @@
 
 {# O título da página será definido pela variável `hero_title` fornecida pela view. #}
 {% block content %}
-{% include 'components/hero.html' with title=hero_title|default:_('Meu Perfil') subtitle=hero_subtitle %}
+{% include '_components/hero.html' with title=hero_title|default:_('Meu Perfil') subtitle=hero_subtitle %}
 <div class="container mx-auto p-6">
   <div class="grid grid-cols-1 gap-6">
     <div class="bg-[var(--bg-secondary)] p-6 rounded-lg shadow">
