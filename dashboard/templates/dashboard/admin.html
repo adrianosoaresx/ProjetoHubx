@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="container mx-auto p-6">
-<section class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" aria-label="{% trans 'Dashboard' %}">
+<div class="max-w-7xl mx-auto px-4 py-10 card-grid" aria-label="{% trans 'Dashboard' %}">
   <div class="card col-span-full">
     <div class="card-header">
       <h2 class="text-xl font-semibold text-center">{% trans "Dashboard Administrativo" %}</h2>
@@ -52,7 +52,7 @@
 
       <section id="feed-metrics" class="my-8" aria-labelledby="feed-metrics-title" data-feed-metrics-url="{% url 'dashboard_api:feed-metrics' %}">
         <h2 id="feed-metrics-title" class="text-xl font-semibold mb-4">{% trans "Métricas do Feed" %}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card-grid">
           <canvas id="feed-type-chart" aria-label="{% trans 'Posts por tipo' %}" role="img"></canvas>
           <canvas id="feed-tag-chart" aria-label="{% trans 'Top tags' %}" role="img"></canvas>
           <canvas id="feed-author-chart" aria-label="{% trans 'Top autores' %}" role="img"></canvas>
@@ -61,7 +61,7 @@
 
       <section class="mb-8">
         <h2 class="text-xl font-semibold mb-4">{% trans "Ações Rápidas" %}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="card-grid gap-4">
           <a href="{% url 'dashboard:custom-metrics' %}" class="p-4 bg-white rounded-lg shadow text-center hover:bg-neutral-50" aria-label="{% trans 'Métricas Personalizadas' %}">
             {% lucide 'chart-line' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Métricas Personalizadas" %}</span>
@@ -82,6 +82,6 @@
       </section>
     </div>
   </div>
-</section>
+</div>
 </div>
 {% endblock %}
