@@ -4,12 +4,12 @@
   {% if field|widget_type == 'checkboxinput' %}
   <div class="flex items-center gap-2">
     {% render_field field class+="form-checkbox" %}
-    <label for="{{ field.id_for_label }}" class="text-sm text-neutral-700">
+    <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-primary)]">
       {{ field.label }}{% if field.field.required %} *{% endif %}
     </label>
   </div>
   {% else %}
-  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">
+  <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-[var(--text-primary)]">
     {{ field.label }}{% if field.field.required %} *{% endif %}
   </label>
   {% if field|widget_type == 'select' %}
@@ -24,7 +24,7 @@
   </ul>
   {% endif %}
   {% if field.help_text %}
-  <p class="text-xs text-neutral-500">{{ field.help_text }}</p>
+  <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
   {% endif %}
 
 </div>
