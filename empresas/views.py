@@ -368,7 +368,7 @@ def detalhes_empresa(request, pk):
         "nucleos_dono": nucleos_dono,
         "eventos_dono": eventos_dono,
     }
-    return render(request, "empresas/detail.html", context)
+    return render(request, "empresas/empresa_detail.html", context)
 
 
 # ------------------------------------------------------------------

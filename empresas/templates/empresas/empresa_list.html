@@ -3,6 +3,10 @@
 
 {% block title %}{% trans 'Empresas' %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Empresas') action_template='empresas/partials/hero_action.html' %}
+{% endblock %}
+
 {% block content %}
 {% include '_components/hero.html' with title=_('Empresas') action_template='empresas/partials/hero_action.html' %}
 <div class="container mx-auto p-6">
@@ -18,11 +22,15 @@
 
   <div
     id="empresas-grid"
-  class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+    class="card-grid"
     role="list"
     aria-label="{% translate 'Lista de empresas' %}"
   >
-    {% include "empresas/includes/empresas_grid.html" %}
+    {% for empresa in empresas %}
+      {% include '_components/card_empresa.html' with empresa=empresa %}
+    {% empty %}
+      <p class="col-span-full py-10 text-center text-[var(--text-secondary)]">{% translate 'Nenhuma empresa encontrada.' %}</p>
+    {% endfor %}
   </div>
   <div class="mt-6">
     {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
