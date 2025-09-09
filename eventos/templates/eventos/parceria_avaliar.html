@@ -2,8 +2,11 @@
 {% load i18n %}
 {% block title %}{% trans "Avaliar parceria" %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Avaliar parceria') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Avaliar parceria') %}
 <div class="container mx-auto p-6">
   <div class="card">
     <div class="card-body">

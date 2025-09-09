@@ -9,11 +9,9 @@
 {% endblock %}
 
 {% block hero %}
-  {% if form.instance.pk %}
-    {% include '_components/hero.html' with title=_('Editar Empresa') %}
-  {% else %}
-    {% include '_components/hero.html' with title=_('Nova Empresa') %}
-  {% endif %}
+  {% if form.instance.pk %}{% with title=_('Editar Empresa') %}{% else %}{% with title=_('Nova Empresa') %}{% endif %}
+    {% include '_components/hero.html' with title=title %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}

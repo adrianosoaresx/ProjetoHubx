@@ -2,12 +2,13 @@
 {% load i18n widget_tweaks %}
 {% block title %}{% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% if object %}{% with title=_('Editar Briefing') %}{% else %}{% with title=_('Novo Briefing') %}{% endif %}
+    {% include '_components/hero.html' with title=title %}
+  {% endwith %}
+{% endblock %}
+
 {% block content %}
-{% if object %}
-  {% include '_components/hero.html' with title=_('Editar Briefing') %}
-{% else %}
-  {% include '_components/hero.html' with title=_('Novo Briefing') %}
-{% endif %}
 <div class="container mx-auto p-6">
 <section class="max-w-3xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
   <div class="card">

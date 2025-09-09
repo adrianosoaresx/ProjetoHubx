@@ -2,8 +2,11 @@
 {% load i18n %}
 {% block title %}{{ object.titulo }} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=object.titulo %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=object.titulo %}
 <section class="container mx-auto p-6">
   <div class="grid gap-6 md:grid-cols-2">
     <div class="card">

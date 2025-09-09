@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Repasses de Receita" %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Repasses') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Repasses') %}
 <div class="container mx-auto p-6">
   <div class="card">
     <div class="card-header">

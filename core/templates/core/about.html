@@ -3,8 +3,11 @@
 
 {% block title %}{% trans "Sobre" %} - HubX{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Sobre o HubX') %}
+{% endblock %}
+
 {% block content %}
-{% include '_components/hero.html' with title=_('Sobre o HubX') %}
 <div class="container mx-auto p-6">
 <section class="max-w-3xl mx-auto px-4 py-12 grid grid-cols-1 gap-6">
   <div class="card">

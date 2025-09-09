@@ -3,12 +3,13 @@
 
 {% block title %}{% trans 'Meus Eventos' %}{% endblock %}
 
+{% block hero %}
+  {% if is_admin_org %}{% with title=_('Eventos da Organização') %}{% else %}{% with title=_('Meus Eventos') %}{% endif %}
+    {% include '_components/hero.html' with title=title action_template='eventos/hero_evento_list_action.html' %}
+  {% endwith %}
+{% endblock %}
+
 {% block content %}
-{% if is_admin_org %}
-{% include '_components/hero.html' with title=_('Eventos da Organização') action_template='eventos/hero_evento_list_action.html' %}
-{% else %}
-{% include '_components/hero.html' with title=_('Meus Eventos') action_template='eventos/hero_evento_list_action.html' %}
-{% endif %}
 <div class="container mx-auto p-6">
   <div class="card">
     <div class="card-header">
