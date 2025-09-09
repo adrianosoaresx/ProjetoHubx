@@ -1,7 +1,14 @@
+{% extends 'base.html' %}
 {% load i18n %}
+
 {% include "_components/hero.html" with title=title subtitle=subtitle breadcrumb=breadcrumb actions=actions %}
 
-<main class="container my-6">
+
+{% block hero %}
+  {% include "templates/components/hero.html" with title=title subtitle=subtitle breadcrumb=breadcrumb actions=actions %}
+{% endblock %}
+
+{% block content %}
   {% if kpis %}{{ kpis|safe }}{% endif %}
   <section class="card-grid">
     {% block list_items %}
@@ -12,4 +19,4 @@
         #}
     {% endblock %}
   </section>
-</main>
+{% endblock %}
