@@ -112,7 +112,7 @@
     <div id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" role="list" aria-label="{% trans 'Lista de eventos' %}">
         {% for ins in inscricoes %}
-          {% include 'partials/cards/evento_card.html' with evento=ins.evento %}
+          {% include '_components/card_evento.html' with evento=ins.evento %}
         {% empty %}
           <p class="col-span-full text-center text-neutral-500 dark:text-neutral-400">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}
