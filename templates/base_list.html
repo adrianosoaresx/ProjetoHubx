@@ -1,11 +1,8 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% include "_components/hero.html" with title=title subtitle=subtitle breadcrumb=breadcrumb actions=actions %}
-
-
 {% block hero %}
-  {% include "templates/components/hero.html" with title=title subtitle=subtitle breadcrumb=breadcrumb actions=actions %}
+  {% include '_components/hero.html' with title=title subtitle=subtitle breadcrumb=breadcrumb actions=actions %}
 {% endblock %}
 
 {% block content %}
