@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-<div class="max-w-3xl mx-auto px-4 py-12 card-grid">
+<div class="max-w-3xl mx-auto card-grid">
   <div class="card">
     <div class="card-header">
       <h2 class="text-xl font-semibold">{% trans "Tokens de API" %}</h2>
@@ -58,31 +57,20 @@
         {% csrf_token %}
         <div class="space-y-4">
           {% for field in form %}
-          <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
-            {% if field.field.widget.input_type == 'select' %}
-              {{ field|add_class:"form-select" }}
-            {% else %}
-              {{ field|add_class:"form-input" }}
-            {% endif %}
-            {% if field.errors %}
-              <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
-            {% endif %}
-          </div>
+            {% include '_forms/field.html' %}
           {% endfor %}
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-          <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Gerar Token" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Gerar Token" %}</button>
         </div>
       </form>
       <div id="resultado" class="mt-6 text-center" aria-live="polite">
         {% include "tokens/_resultado.html" %}
       </div>
       <div class="mt-6 text-center">
-        <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
       </div>
     </div>
   </div>
-</div>
 </div>
 {% endblock %}

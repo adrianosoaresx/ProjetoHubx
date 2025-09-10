@@ -4,35 +4,35 @@
 {% block title %}{% trans "Validar Código de Autenticação" %} | HubX{% endblock %}
 
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  <header class="text-center mb-6">
-    <h1 class="text-2xl font-bold">{% trans "Validar Código de Autenticação" %}</h1>
-    <p class="text-sm text-neutral-600 mt-2">{% trans "Informe o código recebido para concluir a validação." %}</p>
-  </header>
+<div class="max-w-md mx-auto">
+  <div class="card">
+    <div class="card-body">
+      <header class="text-center mb-6">
+        <h1 class="text-2xl font-bold">{% trans "Validar Código de Autenticação" %}</h1>
+        <p class="mt-2 text-sm text-[var(--text-secondary)]">{% trans "Informe o código recebido para concluir a validação." %}</p>
+      </header>
 
-  <form method="post" action="{% url 'tokens:validar_codigo' %}"
-        hx-post="{% url 'tokens:validar_codigo' %}"
-        hx-target="#resultado" hx-swap="innerHTML"
-        class="bg-white rounded-2xl shadow p-6 space-y-4">
-    {% csrf_token %}
-    <div>
-      <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo.label }}</label>
-      {{ form.codigo|add_class:"form-input text-center tracking-widest"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
-      {% if form.codigo.errors %}
-        <p class="text-sm text-red-600 mt-1">{{ form.codigo.errors.0 }}</p>
-      {% endif %}
-    </div>
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Validar Código" %}</button>
-    </div>
-  </form>
+      <form method="post" action="{% url 'tokens:validar_codigo' %}"
+            hx-post="{% url 'tokens:validar_codigo' %}"
+            hx-target="#resultado" hx-swap="innerHTML"
+            class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+          {% include '_forms/field.html' %}
+        {% endfor %}
+        <div class="text-right">
+          <button type="submit" class="btn btn-primary">{% trans "Validar Código" %}</button>
+        </div>
+      </form>
 
-  <div id="resultado" class="mt-6 text-center" aria-live="polite">
-    {% include "tokens/_resultado.html" %}
+      <div id="resultado" class="mt-6 text-center" aria-live="polite">
+        {% include "tokens/_resultado.html" %}
+      </div>
+
+      <footer class="mt-6 text-center">
+        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+      </footer>
+    </div>
   </div>
-
-  <footer class="mt-6 text-center">
-    <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
-  </footer>
-</section>
+</div>
 {% endblock %}

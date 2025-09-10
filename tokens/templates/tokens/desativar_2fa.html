@@ -4,25 +4,29 @@
 {% block title %}{% trans "Desativar 2FA" %} | HubX{% endblock %}
 
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12">
-  <header class="text-center mb-6">
-    <h1 class="text-2xl font-bold">{% trans "Desativar Autenticação de Dois Fatores" %}</h1>
-    <p class="text-sm text-neutral-600 mt-2">
-      {% trans "Confirme para desativar a autenticação em duas etapas." %}
-    </p>
-  </header>
-  <form method="post" action="" class="bg-white rounded-2xl shadow p-6 space-y-4">
-    {% csrf_token %}
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-[var(--error)] px-4 py-2 text-white hover:opacity-90">
-        {% trans "Desativar" %}
-      </button>
+<div class="max-w-md mx-auto">
+  <div class="card">
+    <div class="card-body">
+      <header class="text-center mb-6">
+        <h1 class="text-2xl font-bold">{% trans "Desativar Autenticação de Dois Fatores" %}</h1>
+        <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          {% trans "Confirme para desativar a autenticação em duas etapas." %}
+        </p>
+      </header>
+      <form method="post" action="" class="space-y-4">
+        {% csrf_token %}
+        <div class="text-right">
+          <button type="submit" class="btn btn-primary">
+            {% trans "Desativar" %}
+          </button>
+        </div>
+      </form>
+      <footer class="mt-6 text-center">
+        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">
+          {% trans "Voltar ao perfil de segurança" %}
+        </a>
+      </footer>
     </div>
-  </form>
-  <footer class="mt-6 text-center">
-    <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">
-      {% trans "Voltar ao perfil de segurança" %}
-    </a>
-  </footer>
-</section>
+  </div>
+</div>
 {% endblock %}
