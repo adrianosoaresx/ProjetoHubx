@@ -11,7 +11,6 @@
         <h1 class="text-2xl font-bold">{% trans "Validar Token de Convite" %}</h1>
         <p class="mt-2 text-sm text-[var(--text-secondary)]">{% trans "Informe o token recebido para concluir o convite." %}</p>
       </header>
-
       <form method="post" action="{% url 'tokens:validar_token' %}"
             hx-post="{% url 'tokens:validar_token' %}"
             hx-target="#resultado" hx-swap="innerHTML"
@@ -24,7 +23,6 @@
           <button type="submit" class="btn btn-primary">{% trans "Validar Token" %}</button>
         </div>
       </form>
-
       <div id="resultado" class="mt-6 text-center" aria-live="polite">
         {% include "tokens/_resultado.html" %}
       </div>

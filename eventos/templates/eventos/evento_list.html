@@ -10,8 +10,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="card">
+  <div class="py-12 card px-4">
     <div class="card-header">
       {% include '_components/search_form.html' with q=request.GET.q %}
     </div>
@@ -32,5 +31,4 @@
       {% include '_partials/pagination.html' with page_obj=page_obj querystring="q="|add:q %}
     </div>
   </div>
-</div>
 {% endblock %}

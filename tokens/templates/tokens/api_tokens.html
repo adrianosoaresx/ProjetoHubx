@@ -15,15 +15,15 @@
     <div class="card-body">
       {% if tokens %}
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200">
-          <thead class="bg-neutral-50">
+        <table class="min-w-full divide-y divide-[var(--border)]">
+          <thead class="bg-[var(--bg-secondary)]">
             <tr>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Cliente" %}</th>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Escopo" %}</th>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Ações" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200">
+          <tbody class="divide-y divide-[var(--border)]">
             {% for token in tokens %}
             <tr>
               <td class="px-4 py-2 text-sm text-neutral-900">{{ token.client_name }}</td>

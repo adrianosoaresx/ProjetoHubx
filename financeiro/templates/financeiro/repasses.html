@@ -8,8 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="card">
+  <div class="py-12 card px-4">
     <div class="card-header">
       <form id="filtros" class="flex gap-4" hx-get="/api/financeiro/repasses/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderRepasses(event)">
         <div>
@@ -66,5 +65,4 @@
       </script>
     </div>
   </div>
-</div>
 {% endblock %}

@@ -11,7 +11,6 @@
         <h1 class="text-2xl font-bold">{% trans "Validar Código de Autenticação" %}</h1>
         <p class="mt-2 text-sm text-[var(--text-secondary)]">{% trans "Informe o código recebido para concluir a validação." %}</p>
       </header>
-
       <form method="post" action="{% url 'tokens:validar_codigo' %}"
             hx-post="{% url 'tokens:validar_codigo' %}"
             hx-target="#resultado" hx-swap="innerHTML"
@@ -24,7 +23,6 @@
           <button type="submit" class="btn btn-primary">{% trans "Validar Código" %}</button>
         </div>
       </form>
-
       <div id="resultado" class="mt-6 text-center" aria-live="polite">
         {% include "tokens/_resultado.html" %}
       </div>

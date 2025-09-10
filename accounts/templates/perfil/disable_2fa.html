@@ -8,7 +8,6 @@
 
 {% block content %}
 {% include '_partials/sidebar.html' %}
-<div class="container mx-auto p-6">
   <form method="post" class="max-w-md mx-auto card">
     <div class="card-body space-y-6">
       {% csrf_token %}
@@ -17,6 +16,5 @@
       <button type="submit" class="btn btn-primary w-full">{% trans "Desativar" %}</button>
     </div>
   </form>
-</div>
 
 {% endblock %}
