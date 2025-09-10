@@ -5,6 +5,15 @@
 {{ block.super }}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {% endblock %}
+
+{% block hero %}
+  {% if form.instance.pk %}
+    {% include '_components/hero.html' with title=_('Editar Item') %}
+  {% else %}
+    {% include '_components/hero.html' with title=_('Novo Item') %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-xl mx-auto px-4 py-10 space-y-6">
   <header>

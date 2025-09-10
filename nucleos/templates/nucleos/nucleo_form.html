@@ -3,6 +3,14 @@
 
 {% block title %}{% if object %}{{ object.nome }}{% else %}{% trans 'Novo Núcleo' %}{% endif %}{% endblock %}
 
+{% block hero %}
+  {% if object %}
+    {% include '_components/hero.html' with title=object.nome %}
+  {% else %}
+    {% include '_components/hero.html' with title=_('Novo Núcleo') %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-2xl mx-auto py-8">
   <form method="post" enctype="multipart/form-data" class="space-y-4">

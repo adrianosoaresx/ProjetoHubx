@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load i18n custom_filters %}
 {% block title %}{% translate 'Contato' %}{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Contato') %}
+{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-8">
   {% if contato %}

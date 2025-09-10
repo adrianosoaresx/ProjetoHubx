@@ -3,6 +3,10 @@
 
 {% block title %}{% trans 'Adicionar Suplente' %}{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Adicionar Suplente') %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-xl mx-auto py-8">
   <form method="post" class="space-y-4">
