@@ -47,7 +47,7 @@ FERNET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "True").lower() in {"1", "true", "yes"}
 
 ALLOWED_HOSTS = [
     "testserver",
@@ -115,6 +115,17 @@ MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusAfterMiddleware",
     "core.middleware.EndpointMetricsMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE = [
+        mw
+        for mw in MIDDLEWARE
+        if mw
+        not in {
+            "django.middleware.cache.UpdateCacheMiddleware",
+            "django.middleware.cache.FetchFromCacheMiddleware",
+        }
+    ]
 
 ROOT_URLCONF = "Hubx.urls"
 
@@ -191,6 +202,13 @@ else:  # pragma: no cover - fallback para testes sem Redis
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "hubx",
+        }
+    }
+
+if DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
         }
     }
 
