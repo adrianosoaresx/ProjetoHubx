@@ -16,12 +16,4 @@
     </tbody>
   </table>
 </div>
-<div class="mt-4 flex justify-center gap-3">
-  {% if historicos.has_previous %}
-    <a hx-get="?page={{ historicos.previous_page_number }}&{{ request.GET.urlencode }}" hx-include="closest form" class="px-3 py-1 rounded-xl border border-[var(--border)] text-sm">{% trans 'Anterior' %}</a>
-  {% endif %}
-  <span class="px-3 py-1 text-sm">{% blocktrans %}Página {{ historicos.number }} de {{ historicos.paginator.num_pages }}{% endblocktrans %}</span>
-  {% if historicos.has_next %}
-    <a hx-get="?page={{ historicos.next_page_number }}&{{ request.GET.urlencode }}" hx-include="closest form" class="px-3 py-1 rounded-xl border border-[var(--border)] text-sm">{% trans 'Próxima' %}</a>
-  {% endif %}
-</div>
+{% include '_partials/pagination.html' with page_obj=historicos querystring=request.GET.urlencode %}

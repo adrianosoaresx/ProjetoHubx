@@ -2,44 +2,22 @@
 {% load i18n %}
 {% block title %}{% trans 'Logs de Notificação' %} | HubX{% endblock %}
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-10">
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans 'Logs de Notificação' %}</h1>
-  </div>
-  <form method="get" class="card mb-6">
-    <div class="card-body flex flex-col sm:flex-row gap-4 sm:items-end">
-      <div>
-        <label for="inicio" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'De' %}</label>
-        <input type="date" name="inicio" id="inicio" value="{{ request.GET.inicio }}" class="form-input" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#logs-container" hx-include="closest form">
+<div class="container mx-auto p-6">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans 'Logs de Notificação' %}</h1>
+    <div class="card">
+      <div class="card-body">
+        <form method="get" class="grid gap-4 sm:flex sm:items-end">
+          {% for field in form %}
+            {% include '_forms/field.html' with field=field %}
+          {% endfor %}
+          <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
+        </form>
       </div>
-      <div>
-        <label for="fim" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Até' %}</label>
-        <input type="date" name="fim" id="fim" value="{{ request.GET.fim }}" class="form-input" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#logs-container" hx-include="closest form">
-      </div>
-      <div>
-        <label for="canal" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Canal' %}</label>
-        <select name="canal" id="canal" class="form-select" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#logs-container" hx-include="closest form">
-          <option value="" {% if not request.GET.canal %}selected{% endif %}>{% trans 'Todos' %}</option>
-          <option value="email" {% if request.GET.canal == 'email' %}selected{% endif %}>{% trans 'E-mail' %}</option>
-          <option value="push" {% if request.GET.canal == 'push' %}selected{% endif %}>{% trans 'Push' %}</option>
-          <option value="whatsapp" {% if request.GET.canal == 'whatsapp' %}selected{% endif %}>{% trans 'WhatsApp' %}</option>
-        </select>
-      </div>
-      <div>
-        <label for="status" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Status' %}</label>
-        <select name="status" id="status" class="form-select" hx-get="{% url 'notificacoes:logs_list' %}" hx-target="#logs-container" hx-include="closest form">
-          <option value="" {% if not request.GET.status %}selected{% endif %}>{% trans 'Todos' %}</option>
-          <option value="pendente" {% if request.GET.status == 'pendente' %}selected{% endif %}>{% trans 'Pendente' %}</option>
-          <option value="enviada" {% if request.GET.status == 'enviada' %}selected{% endif %}>{% trans 'Enviada' %}</option>
-          <option value="falha" {% if request.GET.status == 'falha' %}selected{% endif %}>{% trans 'Falha' %}</option>
-          <option value="lida" {% if request.GET.status == 'lida' %}selected{% endif %}>{% trans 'Lida' %}</option>
-        </select>
-      </div>
-      <noscript><button type="submit" class="btn btn-secondary mt-2 sm:mt-0">{% trans 'Filtrar' %}</button></noscript>
     </div>
-  </form>
-  <div id="logs-container" hx-target="this">
-    {% include 'notificacoes/logs_table.html' %}
+    <div id="logs-container">
+      {% include 'notificacoes/logs_table.html' %}
+    </div>
   </div>
 </div>
 {% endblock %}
