@@ -18,7 +18,7 @@
       <div class="flex items-center gap-2">
         <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
         {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-        <a href="{% url 'nucleos:update' object.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Editar' %}</a>
+        <a href="{% url 'nucleos:update' object.pk %}" class="px-4 py-2 bg-[var(--color-primary-600)] text-[var(--text-inverse)] rounded">{% trans 'Editar' %}</a>
         <a href="{% url 'nucleos:delete' object.pk %}" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</a>
         {% endif %}
       </div>
@@ -50,7 +50,7 @@
           {% for part in membros_ativos %}
             {% include 'nucleos/partials/membro_card.html' with part=part %}
           {% empty %}
-            <p class="col-span-full text-center text-gray-500">{% trans 'Sem membros.' %}</p>
+            <p class="col-span-full text-center text-[var(--color-neutral-500)]">{% trans 'Sem membros.' %}</p>
           {% endfor %}
         </div>
 
@@ -89,7 +89,7 @@
 
         {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
         <div class="mt-4">
-          <button id="solicitar-btn" type="button" class="px-4 py-2 bg-blue-600 text-white rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+          <button id="solicitar-btn" type="button" class="px-4 py-2 bg-[var(--color-primary-600)] text-[var(--text-inverse)] rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
         </div>
         {% endif %}
       </div>
@@ -100,7 +100,7 @@
           {% for evento in eventos %}
             {% include '_components/card_evento.html' with evento=evento %}
           {% empty %}
-            <p class="text-sm text-gray-500">{% trans 'Sem eventos.' %}</p>
+            <p class="text-sm text-[var(--color-neutral-500)]">{% trans 'Sem eventos.' %}</p>
           {% endfor %}
         </div>
       </div>
@@ -109,7 +109,7 @@
       <div class="tab-panel hidden" data-tab="feed">
         {% if pode_postar %}
         <div class="mb-4">
-          <button type="button" class="px-4 py-2 bg-green-600 text-white rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
+          <button type="button" class="px-4 py-2 bg-[var(--color-success-600)] text-[var(--text-inverse)] rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
         </div>
         {% endif %}
         {% include 'feed/_grid.html' with posts=nucleo_posts %}
