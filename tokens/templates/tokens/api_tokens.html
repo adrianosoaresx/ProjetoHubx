@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-<div class="max-w-3xl mx-auto px-4 py-12 card-grid">
+<div class="max-w-3xl mx-auto card-grid">
   <div class="card">
     <div class="card-header">
       <h2 class="text-xl font-semibold">{% trans "Tokens de API" %}</h2>
@@ -67,10 +66,9 @@
         {% include "tokens/_resultado.html" %}
       </div>
       <div class="mt-6 text-center">
-        <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
       </div>
     </div>
   </div>
-</div>
 </div>
 {% endblock %}

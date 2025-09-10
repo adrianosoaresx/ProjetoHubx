@@ -8,8 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="card">
+  <div class="py-12 card px-4">
     <div class="card-header">
       <form id="filtros" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderLancamentos(event)">
         <legend class="sr-only">{{ _('Filtros') }}</legend>
@@ -110,5 +109,4 @@
       </script>
     </div>
   </div>
-</div>
 {% endblock %}

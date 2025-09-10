@@ -15,8 +15,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="max-w-3xl mx-auto space-y-6">
+  <div class="py-12 max-w-3xl mx-auto space-y-6 px-4">
     <a href="{% url 'empresas:lista' %}" class="btn btn-secondary">{% translate 'Voltar' %}</a>
 
     <form method="post" enctype="multipart/form-data" class="card space-y-6">
@@ -198,7 +197,6 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         {% if form.instance.pk %}{% translate 'Salvar' %}{% else %}{% translate 'Cadastrar Empresa' %}{% endif %}
       </button>
-    </div>
   </form>
 </section>
 {% endblock %}
