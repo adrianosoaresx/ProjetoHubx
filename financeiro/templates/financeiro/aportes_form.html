@@ -1,35 +1,39 @@
 {% load i18n %}
-<form
-  hx-post="/api/financeiro/aportes/"
-  hx-target="#aportes-messages"
-  hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();var resp=JSON.parse(event.detail.xhr.response);var msg='{{ _('Aporte registrado com sucesso') }}';if(resp.recibo_url){msg+=' <a href=\"'+resp.recibo_url+'\" target=\"_blank\">{{ _('Baixar recibo') }}</a>'; }document.getElementById('aportes-messages').innerHTML=msg;}else{var resp=JSON.parse(event.detail.xhr.response||'{}');var err=resp.valor?resp.valor[0]:'{{ _('Erro ao registrar aporte') }}';document.getElementById('aportes-messages').textContent=err;}"
-  class="p-4 bg-white rounded shadow max-w-md"
-  aria-live="assertive"
->
-  {% csrf_token %}
-  <div class="mb-2">
-    <label for="id_centro" class="block text-sm font-medium">{{ _('Centro de Custo') }}</label>
-    <select id="id_centro" name="centro_custo" class="border p-2 w-full">
-      {% for c in centros %}
-      <option value="{{ c.id }}">{{ c.nome }}</option>
-      {% endfor %}
-    </select>
+<div class="card max-w-md">
+  <div class="card-body">
+    <form
+      hx-post="/api/financeiro/aportes/"
+      hx-target="#aportes-messages"
+      hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();var resp=JSON.parse(event.detail.xhr.response);var msg='{{ _('Aporte registrado com sucesso') }}';if(resp.recibo_url){msg+=' <a href=\\"'+resp.recibo_url+'\\" target=\\"_blank\\">{{ _('Baixar recibo') }}</a>'; }document.getElementById('aportes-messages').innerHTML=msg;}else{var resp=JSON.parse(event.detail.xhr.response||'{}');var err=resp.valor?resp.valor[0]:'{{ _('Erro ao registrar aporte') }}';document.getElementById('aportes-messages').textContent=err;}"
+      class="space-y-2"
+      aria-live="assertive"
+    >
+      {% csrf_token %}
+      <div>
+        <label for="id_centro" class="block text-sm font-medium">{{ _('Centro de Custo') }}</label>
+        <select id="id_centro" name="centro_custo" class="form-select w-full">
+          {% for c in centros %}
+          <option value="{{ c.id }}">{{ c.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="id_valor" class="block text-sm font-medium">{{ _('Valor') }}</label>
+        <input id="id_valor" type="number" step="0.01" name="valor" class="form-input w-full" required min="0" />
+      </div>
+      <div>
+        <span class="block text-sm font-medium">{{ _('Tipo') }}</span>
+        {% if request.user.user_type == 'admin' %}
+        <label class="mr-4"><input type="radio" name="tipo" value="aporte_interno" /> {{ _('Interno') }}</label>
+        {% endif %}
+        <label><input type="radio" name="tipo" value="aporte_externo" checked /> {{ _('Externo') }}</label>
+      </div>
+      <div>
+        <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
+        <textarea id="id_descricao" name="descricao" class="form-input w-full"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">{{ _('Registrar') }}</button>
+      <div id="aportes-messages" class="mt-2 text-sm" aria-live="polite"></div>
+    </form>
   </div>
-  <div class="mb-2">
-    <label for="id_valor" class="block text-sm font-medium">{{ _('Valor') }}</label>
-    <input id="id_valor" type="number" step="0.01" name="valor" class="border p-2 w-full" required min="0" />
-  </div>
-  <div class="mb-2">
-    <span class="block text-sm font-medium">{{ _('Tipo') }}</span>
-    {% if request.user.user_type == 'admin' %}
-    <label class="mr-4"><input type="radio" name="tipo" value="aporte_interno" /> {{ _('Interno') }}</label>
-    {% endif %}
-    <label><input type="radio" name="tipo" value="aporte_externo" checked /> {{ _('Externo') }}</label>
-  </div>
-  <div class="mb-2">
-    <label for="id_descricao" class="block text-sm font-medium">{{ _('Descrição') }}</label>
-    <textarea id="id_descricao" name="descricao" class="border p-2 w-full"></textarea>
-  </div>
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ _('Registrar') }}</button>
-  <div id="aportes-messages" class="mt-2 text-sm" aria-live="polite"></div>
-</form>
+</div>

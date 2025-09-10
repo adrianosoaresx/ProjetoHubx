@@ -1,15 +1,19 @@
 {% load i18n %}
-<form hx-post="/api/financeiro/lancamentos/{{ lancamento.id }}/ajustar/"
-      hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit'); this.closest('#modal').innerHTML='';"
-      class="p-4 bg-white rounded shadow max-w-md space-y-4" hx-target="this">
-  {% csrf_token %}
-  <div>
-    <label for="id_valor_corrigido" class="block text-sm font-medium">{{ _('Valor corrigido') }}</label>
-    <input id="id_valor_corrigido" name="valor_corrigido" type="number" step="0.01" class="border p-2 w-full" required />
+<div class="card max-w-md">
+  <div class="card-body">
+    <form hx-post="/api/financeiro/lancamentos/{{ lancamento.id }}/ajustar/"
+          hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit'); this.closest('#modal').innerHTML='';"
+          class="space-y-4" hx-target="this">
+      {% csrf_token %}
+      <div>
+        <label for="id_valor_corrigido" class="block text-sm font-medium">{{ _('Valor corrigido') }}</label>
+        <input id="id_valor_corrigido" name="valor_corrigido" type="number" step="0.01" class="form-input w-full" required />
+      </div>
+      <div>
+        <label for="id_descricao_motivo" class="block text-sm font-medium">{{ _('Descrição do motivo') }}</label>
+        <textarea id="id_descricao_motivo" name="descricao_motivo" class="form-input w-full" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">{{ _('Salvar') }}</button>
+    </form>
   </div>
-  <div>
-    <label for="id_descricao_motivo" class="block text-sm font-medium">{{ _('Descrição do motivo') }}</label>
-    <textarea id="id_descricao_motivo" name="descricao_motivo" class="border p-2 w-full" required></textarea>
-  </div>
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">{{ _('Salvar') }}</button>
-</form>
+</div>
