@@ -28,13 +28,7 @@
       <p class="text-[var(--text-secondary)]">{% trans "Revise e aceite os termos para finalizar" %}</p>
     </div>
 
-    {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
+    {% include '_partials/messages.html' %}
 
     <form id="termosForm" method="post" action="{% url 'accounts:termos' %}" class="space-y-6">
       {% csrf_token %}
@@ -52,12 +46,12 @@
       </div>
 
       <div class="flex items-start gap-2">
-        <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="mt-1 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]" required aria-label="Aceitar termos" aria-invalid="false" aria-describedby="aceitar_termos_desc">
+        <input type="checkbox" id="aceitar_termos" name="aceitar_termos" class="form-checkbox mt-1 text-[var(--primary)] focus:ring-[var(--primary)]" required aria-label="Aceitar termos" aria-invalid="false" aria-describedby="aceitar_termos_desc">
         <label for="aceitar_termos" class="text-sm text-[var(--text-primary)]" id="aceitar_termos_desc">{% blocktrans trimmed %}Eu li e concordo com os <a href="/termos/" class="text-[var(--primary)] hover:underline" target="_blank">Termos de Uso</a> e <a href="/privacidade/" class="text-[var(--primary)] hover:underline" target="_blank">Política de Privacidade</a>{% endblocktrans %}</label>
       </div>
 
       <div class="flex items-start gap-2">
-        <input type="checkbox" id="newsletter" name="newsletter" class="mt-1 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]" aria-label="Receber novidades" aria-invalid="false" aria-describedby="newsletter_desc">
+        <input type="checkbox" id="newsletter" name="newsletter" class="form-checkbox mt-1 text-[var(--primary)] focus:ring-[var(--primary)]" aria-label="Receber novidades" aria-invalid="false" aria-describedby="newsletter_desc">
         <label for="newsletter" class="text-sm text-[var(--text-primary)]" id="newsletter_desc">{% trans "Quero receber atualizações e novidades do HubX" %}</label>
       </div>
 

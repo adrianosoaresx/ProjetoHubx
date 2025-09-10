@@ -19,7 +19,7 @@
               </div>
               <div class="card-footer flex gap-2 justify-end">
                 <a href="{% url 'dashboard:custom-metric-edit' m.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar métrica' %}">{% trans 'Editar' %}</a>
-                <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="btn btn-secondary btn-sm text-danger-600" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
+                <a href="{% url 'dashboard:custom-metric-delete' m.pk %}" class="btn btn-secondary btn-sm text-[var(--error)]" aria-label="{% trans 'Excluir métrica' %}">{% trans 'Excluir' %}</a>
               </div>
             </li>
           {% empty %}
