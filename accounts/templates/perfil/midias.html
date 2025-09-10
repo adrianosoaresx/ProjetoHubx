@@ -1,9 +1,13 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Mídias" %} | Hubx{% endblock %}
 
-{% block perfil_content %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Mídias") %}
+{% endblock %}
+
+{% block content %}
 <section id="midias" class="perfil-section active">
   <div class="section-header mb-6">
     <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Mídias" %}</h2>

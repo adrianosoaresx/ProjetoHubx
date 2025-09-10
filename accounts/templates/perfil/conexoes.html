@@ -1,9 +1,13 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load static i18n lucide_icons %}
 
 {% block title %}{% trans "Minhas Conexões" %} | HubX{% endblock %}
 
-{% block perfil_content %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Minhas Conexões") %}
+{% endblock %}
+
+{% block content %}
 <section id="conexoes" class="space-y-6">
   <div>
     <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Minhas Conexões" %}</h2>

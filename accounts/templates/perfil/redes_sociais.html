@@ -1,9 +1,13 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load i18n %}
 
 {% block title %}{% trans "Redes Sociais" %} | HubX{% endblock %}
 
-{% block perfil_content %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Redes Sociais") %}
+{% endblock %}
+
+{% block content %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
   <div class="card lg:col-span-3">
     <div class="card-body">

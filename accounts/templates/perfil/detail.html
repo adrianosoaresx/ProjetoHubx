@@ -1,7 +1,12 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans "Meu Perfil" %} | Hubx{% endblock %}
-{% block perfil_content %}
+
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Meu Perfil") %}
+{% endblock %}
+
+{% block content %}
 
 <div class="card-header">
   <div class="mt-2 border-b border-[var(--border)]">
