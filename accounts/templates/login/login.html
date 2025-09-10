@@ -12,7 +12,7 @@
 <div class="bg-muted min-h-screen flex items-center justify-center px-4">
   <div class="card max-w-md w-full mx-auto" role="dialog">
     <div class="card-body">
-      <p class="text-center text-sm text-gray-600 dark:text-gray-300 mb-6">
+      <p class="text-center text-sm mb-6 text-[var(--text-secondary)]">
         {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
       </p>
 
@@ -34,7 +34,7 @@
                  aria-describedby="email-error"
                  {% if form.email.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
           <label for="id_email"
-                 class="absolute left-3 -top-2 text-xs text-gray-700 dark:text-gray-300 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Email" %}</label>
+                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Email" %}</label>
         </div>
         {% if form.email.errors %}
           <div id="email-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.email.errors }}</div>
@@ -51,7 +51,7 @@
                  aria-describedby="password-error"
                  {% if form.password.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
           <label for="id_password"
-                 class="absolute left-3 -top-2 text-xs text-gray-700 dark:text-gray-300 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Senha" %}</label>
+                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Senha" %}</label>
         </div>
         {% if form.password.errors %}
           <div id="password-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.password.errors }}</div>
@@ -68,9 +68,9 @@
                  aria-describedby="totp-error"
                  {% if form.totp.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
           <label for="id_totp"
-                 class="absolute left-3 -top-2 text-xs text-gray-700 dark:text-gray-300 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "TOTP" %}</label>
+                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "TOTP" %}</label>
         </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{% trans "Deixe em branco se não tiver 2FA" %}</p>
+        <p class="text-xs mt-1 text-[var(--text-muted)]">{% trans "Deixe em branco se não tiver 2FA" %}</p>
         {% if form.totp.errors %}
           <div id="totp-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.totp.errors }}</div>
         {% endif %}
@@ -82,19 +82,19 @@
     </form>
 
     <div class="text-center mt-6 space-y-2">
-      <a href="{% url 'accounts:password_reset' %}" class="text-sm text-primary hover:underline">
+      <a href="{% url 'accounts:password_reset' %}" class="text-sm text-[var(--primary)] hover:underline">
         {% trans "Esqueceu sua senha?" %}
       </a>
       <div>
-        <a href="{% url 'accounts:resend_confirmation' %}" class="text-sm text-primary hover:underline">
+        <a href="{% url 'accounts:resend_confirmation' %}" class="text-sm text-[var(--primary)] hover:underline">
           {% trans "Reenviar confirmação de e-mail" %}
         </a>
       </div>
     </div>
 
-    <div class="text-center mt-4 text-sm text-gray-600 dark:text-gray-300">
+    <div class="text-center mt-4 text-sm text-[var(--text-secondary)]">
       {% trans "Não tem uma conta?" %}
-      <a href="{% url 'accounts:onboarding' %}" class="text-primary dark:text-primary hover:underline">
+      <a href="{% url 'accounts:onboarding' %}" class="text-[var(--primary)] hover:underline">
         {% trans "Cadastre-se gratuitamente" %}
       </a>
     </div>

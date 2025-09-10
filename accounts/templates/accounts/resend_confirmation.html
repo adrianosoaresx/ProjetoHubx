@@ -2,14 +2,14 @@
 {% load i18n %}
 {% block title %}{% trans "Reenviar confirmação" %}{% endblock %}
 {% block content %}
-<section class="max-w-md mx-auto px-4 py-12 text-center bg-white dark:bg-neutral-900">
-  <div class="rounded-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-8 shadow-sm">
-    <h1 class="mb-4 text-2xl font-bold text-neutral-900 dark:text-neutral-100">{% trans "Reenviar confirmação" %}</h1>
+<section class="max-w-md mx-auto px-4 py-12 text-center bg-[var(--bg-primary)]">
+  <div class="rounded-2xl border p-8 shadow-sm bg-[var(--bg-secondary)] border-[var(--border)]">
+    <h1 class="mb-4 text-2xl font-bold text-[var(--text-primary)]">{% trans "Reenviar confirmação" %}</h1>
     <form method="post" class="space-y-4">
       {% csrf_token %}
-      <input type="email" name="email" required class="w-full p-3 border border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100 rounded-lg" placeholder="{% trans 'Seu e-mail' %}" aria-label="{% trans 'E-mail' %}" aria-invalid="false" aria-describedby="email_info">
-      <small id="email_info" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Informe o e-mail cadastrado" %}</small>
-      <button type="submit" class="w-full bg-primary dark:bg-primary text-white py-2 rounded-lg">{% trans "Enviar" %}</button>
+      <input type="email" name="email" required class="w-full p-3 border rounded-lg bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-primary)]" placeholder="{% trans 'Seu e-mail' %}" aria-label="{% trans 'E-mail' %}" aria-invalid="false" aria-describedby="email_info">
+      <small id="email_info" class="text-sm text-[var(--text-muted)]">{% trans "Informe o e-mail cadastrado" %}</small>
+      <button type="submit" class="w-full py-2 rounded-lg text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)]">{% trans "Enviar" %}</button>
     </form>
   </div>
 </section>
