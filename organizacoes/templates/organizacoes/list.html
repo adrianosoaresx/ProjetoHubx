@@ -4,13 +4,13 @@
 {% block title %}{% trans 'Organizações' %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Organizações') subtitle=_('Gerencie as organizações cadastradas') action_template='organizacoes/partials/hero_action.html' %}
+    {% include '_components/hero.html' with title=_('Organizações') subtitle=_('Gerencie as organizações cadastradas') action_template='_components/hero_action_organizacao.html' %}
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto p-6">
 <section class="max-w-6xl mx-auto px-4 py-10" id="org-list">
-  {% include 'organizacoes/partials/list_section.html' %}
+    {% include '_partials/organizacoes/list_section.html' %}
 </section>
 </div>
 {% endblock %}

@@ -30,14 +30,14 @@
     <option value="created_at" {% if request.GET.ordering == 'created_at' %}selected{% endif %}>{% trans 'Data' %}</option>
   </select>
   <div class="md:col-span-5 flex justify-end">
-    <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg">{% trans 'Filtrar' %}</button>
+    <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
   </div>
 </form>
 
-{% if object_list %}
-  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  {% if object_list %}
+    <div class="card-grid">
     {% for organizacao in object_list %}
-    <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-4 flex flex-col">
+      <div class="card flex flex-col">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
           {% if organizacao.avatar %}
@@ -88,10 +88,10 @@
     {% endif %}
   </div>
 {% else %}
-  <div class="text-center border border-neutral-200 rounded-2xl shadow-sm p-10 bg-white">
-    <p class="text-neutral-500 mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
-    <a href="{% url 'organizacoes:create' %}" class="inline-block text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-      {% trans 'Cadastrar' %}
-    </a>
-  </div>
-{% endif %}
+    <div class="card text-center p-10">
+      <p class="text-neutral-500 mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
+      <a href="{% url 'organizacoes:create' %}" class="btn btn-primary">
+        {% trans 'Cadastrar' %}
+      </a>
+    </div>
+  {% endif %}
