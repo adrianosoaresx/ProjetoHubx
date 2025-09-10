@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans 'Histórico' %} | Hubx{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Histórico') %}
+{% endblock %}
 {% block content %}
 <section class="max-w-4xl mx-auto px-4 py-10">
   <h1 class="text-2xl font-bold mb-4">{% trans 'Histórico' %}</h1>

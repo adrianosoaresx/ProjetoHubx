@@ -2,6 +2,10 @@
 {% load i18n %}
 {% block title %}{% trans "Remover Postagem" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Remover Postagem') %}
+{% endblock %}
+
 {% block content %}
 {% if request.user.user_type == 'root' %}
   <p class="text-center text-neutral-500">{% trans "Usuário root não tem acesso ao feed." %}</p>

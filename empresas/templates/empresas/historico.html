@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans "Histórico de alterações" %} - {{ empresa.nome }}{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Histórico de alterações')|add:" - "|add:empresa.nome %}
+{% endblock %}
 {% block content %}
 <section class="max-w-4xl mx-auto px-4 py-10 space-y-6">
 

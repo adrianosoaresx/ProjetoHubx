@@ -3,6 +3,10 @@
 
 {% block title %}{% trans "Remover Núcleo" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Remover Núcleo') %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-16">
   <div class="bg-[var(--bg-secondary)] border border-red-200 rounded-2xl card-sm p-6 text-center">

@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% translate 'Remover Item' %}{% endblock %}
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Remover Item') %}
+{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-16">
   <div class="card bg-[var(--error-light)] text-[var(--error)]">

@@ -2,6 +2,10 @@
 {% load i18n %}
 {% block title %}{% trans "Tarefas" %} | Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Tarefas') %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <header class="mb-6 flex items-center justify-between">
