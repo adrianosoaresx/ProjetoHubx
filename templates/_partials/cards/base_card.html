@@ -1,8 +1,8 @@
 {% load i18n %}
 <a href="{{ url }}"
-  class="group block rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-primary/40"
+  class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
   aria-label="{{ title }}">
-  <article class="overflow-hidden rounded-2xl" role="article">
+  <article class="card overflow-hidden" role="article">
     <header class="relative">
       {% if cover %}
         <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-24 w-full object-cover" />
@@ -19,7 +19,7 @@
         {% endif %}
       </div>
     </header>
-  <div class="px-4 pt-10 pb-4">
+    <div class="card-body pt-10">
       <h3 class="text-base font-semibold text-[var(--text-primary)] group-hover:underline">{{ title }}</h3>
       {% include details %}
     </div>

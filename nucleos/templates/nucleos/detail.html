@@ -22,7 +22,7 @@
   </div>
   
   <!-- Cards de totais -->
-  <div class="mt-6 grid grid-cols-1 sm:grid-cols-4 gap-4">
+  <div class="card-grid mt-6 gap-4">
     {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
     {% include "_partials/cards/total_card.html" with label=_('Eventos (ativos + concluídos)') valor=total_eventos %}
     {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos %}
@@ -42,7 +42,7 @@
     <div id="tab-panels" class="mt-6">
       <!-- Painel: Membros -->
       <div class="tab-panel" data-tab="membros">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
+        <div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
           {% for part in membros_ativos %}
             {% include 'nucleos/partials/membro_card.html' with part=part %}
           {% empty %}
@@ -92,7 +92,7 @@
 
       <!-- Painel: Eventos -->
       <div class="tab-panel hidden" data-tab="eventos">
-        <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="card-grid mt-2 gap-4">
           {% for evento in eventos %}
             {% include '_components/card_evento.html' with evento=evento %}
           {% empty %}

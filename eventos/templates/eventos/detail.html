@@ -8,8 +8,8 @@
 
 {% block content %}
 <section class="container mx-auto p-6">
-  <div class="grid gap-6 md:grid-cols-2">
-    <div class="card">
+  <div class="card-grid gap-6">
+    <article class="card">
       <div class="card-header">
         <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
       </div>
@@ -47,10 +47,10 @@
           <p><strong>{% trans "Valor gasto" %}:</strong> {{ object.valor_gasto }}</p>
         {% endif %}
       </div>
-    </div>
+    </article>
 
     {% if user.is_authenticated and user.user_type != 'admin' %}
-    <div class="card">
+    <article class="card">
       <div class="card-header">
         {% if inscricao and avaliacao_permitida %}
           <h2 class="text-xl font-semibold">{% trans "Avaliação" %}</h2>
@@ -89,31 +89,33 @@
           <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
         {% endif %}
       </div>
-    </div>
+    </article>
     {% endif %}
 
-    <div class="card md:col-span-2">
+    <article class="card md:col-span-2">
       <div class="card-header">
         <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
       </div>
       <div class="card-body">
         {% if object.inscricoes.all %}
-          <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div class="card-grid gap-4">
             {% for ins in object.inscricoes.all %}
               {% with inscrito=ins.user %}
-              <div class="flex items-center gap-4 p-4 border rounded-xl bg-base-100 shadow-sm">
-                {% if inscrito.avatar %}
-                  <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
-                {% else %}
-                  <div class="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
-                    {{ inscrito.username|make_list|first|upper }}
+                <article class="card">
+                  <div class="card-body flex items-center gap-4">
+                    {% if inscrito.avatar %}
+                      <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
+                    {% else %}
+                      <div class="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
+                        {{ inscrito.username|make_list|first|upper }}
+                      </div>
+                    {% endif %}
+                    <div>
+                      <h4 class="text-sm font-medium">{{ inscrito.get_full_name|default:inscrito.username }}</h4>
+                      <p class="text-xs">@{{ inscrito.username }}</p>
+                    </div>
                   </div>
-                {% endif %}
-                <div>
-                  <h4 class="text-sm font-medium">{{ inscrito.get_full_name|default:inscrito.username }}</h4>
-                  <p class="text-xs">@{{ inscrito.username }}</p>
-                </div>
-              </div>
+                </article>
               {% endwith %}
             {% endfor %}
           </div>
@@ -121,7 +123,7 @@
           <p class="text-sm">{% trans "Nenhum inscrito." %}</p>
         {% endif %}
       </div>
-    </div>
+    </article>
   </div>
 
   <div class="flex justify-end mt-6">
