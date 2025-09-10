@@ -29,15 +29,9 @@
         <p class="text-sm text-neutral-600 mb-4 text-center">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>
       {% endif %}
 
-      <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="bg-white rounded-2xl shadow p-6 space-y-4">
+      <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="space-y-4">
         {% csrf_token %}
-        <div class="relative">
-          <label for="{{ form.codigo_totp.id_for_label }}" class="label-float">{{ form.codigo_totp.label }}</label>
-          {{ form.codigo_totp|add_class:"peer placeholder-transparent form-input"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
-          {% if form.codigo_totp.errors %}
-            <p role="alert" class="text-sm text-red-600 mt-1">{{ form.codigo_totp.errors.0 }}</p>
-          {% endif %}
-        </div>
+        {% include '_forms/field.html' with field=form.codigo_totp|attr:'autofocus pattern=\d+ inputmode=numeric' %}
         <div class="text-right">
           <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>
         </div>

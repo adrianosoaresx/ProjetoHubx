@@ -13,27 +13,19 @@
   <form method="post" action="{% url 'tokens:gerar_codigo' %}"
         hx-post="{% url 'tokens:gerar_codigo' %}"
         hx-target="#resultado" hx-swap="innerHTML"
-        class="bg-white rounded-2xl shadow p-6 space-y-4">
+        class="card">
     {% csrf_token %}
-    {% for field in form %}
-      <div>
-        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
-        {% if field.field.widget.input_type == 'select' %}
-          {{ field|add_class:"form-select"|attr:"required" }}
+    <div class="card-body space-y-4">
+      {% for field in form %}
+        {% if forloop.first %}
+          {% include '_forms/field.html' with field=field|attr:'autofocus' %}
         {% else %}
-          {% if forloop.first %}
-            {{ field|add_class:"form-input"|attr:"autofocus required" }}
-          {% else %}
-            {{ field|add_class:"form-input"|attr:"required" }}
-          {% endif %}
+          {% include '_forms/field.html' with field=field %}
         {% endif %}
-        {% if field.errors %}
-          <p class="text-sm text-red-600 mt-1">{{ field.errors.0 }}</p>
-        {% endif %}
+      {% endfor %}
+      <div class="text-right">
+        <button type="submit" class="btn btn-primary">{% trans "Gerar Código" %}</button>
       </div>
-    {% endfor %}
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Gerar Código" %}</button>
     </div>
   </form>
 

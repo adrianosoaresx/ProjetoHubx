@@ -11,10 +11,10 @@
       {% trans "Confirme para desativar a autenticação em duas etapas." %}
     </p>
   </header>
-  <form method="post" action="" class="bg-white rounded-2xl shadow p-6 space-y-4">
+  <form method="post" action="" class="card">
     {% csrf_token %}
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-[var(--error)] px-4 py-2 text-white hover:opacity-90">
+    <div class="card-body text-right">
+      <button type="submit" class="btn btn-primary text-[var(--error)]">
         {% trans "Desativar" %}
       </button>
     </div>

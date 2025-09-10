@@ -14,45 +14,56 @@
   <div class="flex items-center justify-between gap-4 mb-6">
     <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
     <a href="{% url 'tokens:gerar_convite' %}"
-       class="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded">
+       class="btn btn-primary inline-flex items-center gap-2">
       {% trans "Gerar Token" %}
     </a>
   </div>
 
   <div class="mb-6 card-grid gap-4">
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans "Total" %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.total }}</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-sm text-neutral-500">{% trans "Total" %}</div>
+        <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.total }}</div>
+      </div>
     </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans "Não usados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.novos }}</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-sm text-neutral-500">{% trans "Não usados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.novos }}</div>
+      </div>
     </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans "Usados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.usados }}</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-sm text-neutral-500">{% trans "Usados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.usados }}</div>
+      </div>
     </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans "Expirados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.expirados }}</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-sm text-neutral-500">{% trans "Expirados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.expirados }}</div>
+      </div>
     </div>
-    <div class="p-4 rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      <div class="text-sm text-neutral-500">{% trans "Revogados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.revogados }}</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="text-sm text-neutral-500">{% trans "Revogados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-neutral-900">{{ totais.revogados }}</div>
+      </div>
     </div>
   </div>
 
   {% if convites %}
-  <div class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
-    <table class="min-w-full divide-y divide-neutral-200">
-      <thead class="bg-neutral-50">
+  <div class="overflow-x-auto card">
+    <div class="card-body p-0">
+    <table class="min-w-full divide-y divide-[var(--border)]">
+      <thead class="bg-[var(--bg-secondary)]">
         <tr>
           <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Tipo" %}</th>
           <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Estado" %}</th>
           <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Ações" %}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-neutral-200">
+      <tbody class="divide-y divide-[var(--border)]">
         {% for token in convites %}
         <tr>
           <td class="px-4 py-2 text-sm text-neutral-900">{{ token.get_tipo_destino_display }}</td>
@@ -72,6 +83,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   </div>
   {% else %}
     <p class="text-sm text-neutral-600">{% trans "Nenhum convite encontrado." %}</p>
