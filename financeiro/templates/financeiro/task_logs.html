@@ -5,24 +5,24 @@
 
 {% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
-  <h1 class="text-2xl font-bold text-neutral-900 mb-6">{{ _('Histórico de Tarefas Financeiras') }}</h1>
-  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-    <table class="min-w-full divide-y divide-neutral-200 text-sm">
+  <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">{{ _('Histórico de Tarefas Financeiras') }}</h1>
+  <div class="overflow-x-auto card">
+    <table class="min-w-full divide-y divide-[var(--border)] text-sm">
       <thead class="bg-neutral-50">
         <tr>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{{ _('Tarefa') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{{ _('Data') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{{ _('Status') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{{ _('Detalhes') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Tarefa') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Data') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Status') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Detalhes') }}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-neutral-200">
+      <tbody class="divide-y divide-[var(--border)]">
         {% for log in logs %}
         <tr>
           <td class="px-4 py-2">{{ log.nome_tarefa }}</td>
           <td class="px-4 py-2">{{ log.executada_em|date:"SHORT_DATETIME_FORMAT" }}</td>
           <td class="px-4 py-2">{{ log.status }}</td>
-          <td class="px-4 py-2"><a class="text-primary underline" href="{% url 'financeiro:task_log_detail' log.id %}">{{ _('Ver') }}</a></td>
+          <td class="px-4 py-2"><a class="link" href="{% url 'financeiro:task_log_detail' log.id %}">{{ _('Ver') }}</a></td>
         </tr>
         {% empty %}
         <tr>
