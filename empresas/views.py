@@ -6,8 +6,8 @@ from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
-from django.utils.translation import gettext_lazy as _
 from django.utils.http import urlencode
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from rest_framework.status import HTTP_201_CREATED, HTTP_204_NO_CONTENT
 
@@ -19,10 +19,16 @@ from core.permissions import (
     pode_crud_empresa,
 )
 from empresas.tasks import nova_avaliacao
-from organizacoes.models import Organizacao
 from eventos.models import Evento
+from organizacoes.models import Organizacao
 
-from .forms import AvaliacaoForm, ContatoEmpresaForm, EmpresaForm, TagForm, TagSearchForm
+from .forms import (
+    AvaliacaoForm,
+    ContatoEmpresaForm,
+    EmpresaForm,
+    TagForm,
+    TagSearchForm,
+)
 from .models import (
     AvaliacaoEmpresa,
     ContatoEmpresa,
@@ -59,11 +65,7 @@ class EmpresaListView(NoSuperadminMixin, LoginRequiredMixin, ListView):
         return HttpResponseForbidden("Usuário não autorizado.")
 
     def get_queryset(self):
-        qs = (
-            Empresa.objects.filter(
-                organizacao=self.request.user.organizacao, deleted=False
-            ).select_related("usuario")
-        )
+        qs = Empresa.objects.filter(organizacao=self.request.user.organizacao, deleted=False).select_related("usuario")
         q = self.request.GET.get("q")
         if q:
             qs = qs.filter(nome__icontains=q)
@@ -348,13 +350,10 @@ def detalhes_empresa(request, pk):
     if pode_visualizar_contatos:
         contatos = list(empresa.contatos.filter(deleted=False))
     nucleos_dono = empresa.usuario.nucleos
-    eventos_dono = (
-        Evento.objects.filter(
-            inscricoes__user=empresa.usuario,
-            inscricoes__status="confirmada",
-        )
-        .distinct()
-    )
+    eventos_dono = Evento.objects.filter(
+        inscricoes__user=empresa.usuario,
+        inscricoes__status="confirmada",
+    ).distinct()
     context = {
         "empresa": empresa,
         "empresa_tags": empresa.tags.all(),
@@ -387,10 +386,10 @@ def adicionar_contato(request, empresa_id):
             contato.empresa = empresa
             contato.save()
             if request.headers.get("HX-Request"):
+                messages.success(request, _("Contato adicionado"))
                 context = {
                     "contato": contato,
                     "empresa": empresa,
-                    "message": "Contato adicionado",
                 }
                 return render(request, "empresas/contato_form.html", context, status=HTTP_201_CREATED)
             return JsonResponse({"message": "Contato adicionado"}, status=HTTP_201_CREATED)
@@ -410,10 +409,10 @@ def editar_contato(request, pk):
         if form.is_valid():
             contato = form.save()
             if request.headers.get("HX-Request"):
+                messages.success(request, _("Contato atualizado"))
                 context = {
                     "contato": contato,
                     "empresa": contato.empresa,
-                    "message": "Contato atualizado",
                 }
                 return render(request, "empresas/contato_form.html", context)
             return JsonResponse({"message": "Contato atualizado"}, status=200)
