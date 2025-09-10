@@ -20,59 +20,9 @@
 
     <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
       {% csrf_token %}
-      <div>
-        <div class="relative">
-          <input type="email" id="id_email" name="email"
-                 value="{{ form.email.value|default_if_none:'' }}"
-                 autocomplete="email"
-                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                 placeholder="{% trans 'Email' %}"
-                 required
-                 aria-label="{% trans 'Email' %}"
-                 aria-describedby="email-error"
-                 {% if form.email.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
-          <label for="id_email"
-                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Email" %}</label>
-        </div>
-        {% if form.email.errors %}
-          <div id="email-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.email.errors }}</div>
-        {% endif %}
-      </div>
-      <div>
-        <div class="relative">
-          <input type="password" id="id_password" name="password"
-                 autocomplete="current-password"
-                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                 placeholder="{% trans 'Senha' %}"
-                 required
-                 aria-label="{% trans 'Senha' %}"
-                 aria-describedby="password-error"
-                 {% if form.password.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
-          <label for="id_password"
-                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Senha" %}</label>
-        </div>
-        {% if form.password.errors %}
-          <div id="password-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.password.errors }}</div>
-        {% endif %}
-      </div>
-      <div id="totp-field">
-        <div class="relative">
-          <input type="text" id="id_totp" name="totp"
-                 value="{{ form.totp.value|default_if_none:'' }}"
-                 autocomplete="one-time-code"
-                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-                 placeholder="{% trans 'TOTP' %}"
-                 aria-label="{% trans 'TOTP' %}"
-                 aria-describedby="totp-error"
-                 {% if form.totp.errors %}aria-invalid="true"{% else %}aria-invalid="false"{% endif %}>
-          <label for="id_totp"
-                 class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "TOTP" %}</label>
-        </div>
-        <p class="text-xs mt-1 text-[var(--text-muted)]">{% trans "Deixe em branco se não tiver 2FA" %}</p>
-        {% if form.totp.errors %}
-          <div id="totp-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.totp.errors }}</div>
-        {% endif %}
-      </div>
+      {% for field in form %}
+        {% include '_forms/field.html' with field=field %}
+      {% endfor %}
       <button type="submit"
               class="w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold text-sm card hover:bg-primary/90 transition">
         {% trans "Entrar" %}

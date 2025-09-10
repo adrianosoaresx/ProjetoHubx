@@ -234,7 +234,9 @@ class TwoFactorForm(forms.Form):
 class EmailLoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput, label="Senha")
-    totp = forms.CharField(label="TOTP", required=False)
+    totp = forms.CharField(
+        label="TOTP", required=False, help_text=_("Deixe em branco se não tiver 2FA")
+    )
 
     def __init__(self, request=None, *args, **kwargs):
         self.request = request
