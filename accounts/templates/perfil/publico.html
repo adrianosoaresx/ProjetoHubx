@@ -1,10 +1,14 @@
-{% extends 'perfil/perfil.html' %}
+{% extends 'base.html' %}
 {% load static i18n %}
 {% block title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }} | Hubx{% endwith %}{% endblock %}
-{% block hero_title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }}{% endwith %}{% endblock %}
-{% block hero_subtitle %}{% with perfil as profile %}@{{ profile.username }}{% endwith %}{% endblock %}
 
-{% block perfil_content %}
+{% block hero %}
+  {% with perfil as profile %}
+    {% include '_components/hero.html' with title=profile.get_full_name|default:profile.username subtitle='@'|add:profile.username %}
+  {% endwith %}
+{% endblock %}
+
+{% block content %}
 <div class="card-header">
   <nav class="border-b border-[var(--border)]">
     <ul class="-mb-px flex flex-wrap gap-2" role="tablist" aria-label="{% trans 'Navegação de abas do perfil' %}">
