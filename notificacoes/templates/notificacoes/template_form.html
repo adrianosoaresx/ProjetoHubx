@@ -2,34 +2,32 @@
 {% load i18n %}
 {% block title %}{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Novo Template' %}{% endif %} | HubX{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto px-4 py-10">
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
-  </div>
-  {% if messages %}
-  <div class="mb-4 space-y-2" aria-live="polite">
-      {% for message in messages %}
+<section class="max-w-xl mx-auto px-4 py-10 space-y-6">
+  <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
+  <div class="card bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border)]">
+    <div class="card-body">
+      {% if messages %}
+      <div class="mb-4 space-y-2" aria-live="polite">
+        {% for message in messages %}
         <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
-      {% endfor %}
-  </div>
-  {% endif %}
-  <form method="post" class="card">
-    <div class="card-body space-y-6">
-      {% csrf_token %}
-      {% if form.instance.pk %}
-        {% include '_forms/field.html' with field=form.codigo|attr:'readonly' %}
-      {% else %}
-        {% include '_forms/field.html' with field=form.codigo %}
-      {% endif %}
-      {% include '_forms/field.html' with field=form.assunto %}
-      {% include '_forms/field.html' with field=form.corpo %}
-      {% include '_forms/field.html' with field=form.canal %}
-      {% include '_forms/field.html' with field=form.ativo %}
-      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-        <a href="{% url 'notificacoes:templates_list' %}" class="btn btn-outline">{% trans 'Cancelar' %}</a>
-        <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
+        {% endfor %}
       </div>
+      {% endif %}
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% for field in form %}
+          {% if field.name == 'codigo' and form.instance.pk %}
+            {% include '_forms/field.html' with field=field readonly=True %}
+          {% else %}
+            {% include '_forms/field.html' with field=field %}
+          {% endif %}
+        {% endfor %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <a href="{% url 'notificacoes:templates_list' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+          <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
+  </div>
+</section>
 {% endblock %}
