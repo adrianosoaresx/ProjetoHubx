@@ -20,22 +20,22 @@
       </form>
 
       <div class="overflow-x-auto bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm">
-        <table class="min-w-full divide-y divide-neutral-200 table-auto text-sm">
-          <thead class="bg-neutral-50">
+        <table class="min-w-full divide-y divide-[var(--border)] table-auto text-sm">
+          <thead class="bg-[var(--bg-secondary)]">
             <tr>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Título" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Descrição" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Status" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Arquivo" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-neutral-700">{% trans "Ações" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Título" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Descrição" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Status" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Arquivo" %}</th>
+              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Ações" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200">
+          <tbody class="divide-y divide-[var(--border)]">
             {% for material in materiais %}
               {% include "eventos/_material_row.html" with material=material %}
             {% empty %}
               <tr>
-                <td colspan="5" class="px-4 py-4 text-center text-neutral-500">{% trans "Nenhum material disponível." %}</td>
+                <td colspan="5" class="px-4 py-4 text-center text-[var(--text-secondary)]">{% trans "Nenhum material disponível." %}</td>
               </tr>
             {% endfor %}
           </tbody>

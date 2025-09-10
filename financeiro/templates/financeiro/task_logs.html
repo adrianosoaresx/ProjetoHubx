@@ -8,12 +8,12 @@
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">{{ _('Histórico de Tarefas Financeiras') }}</h1>
   <div class="overflow-x-auto card">
     <table class="min-w-full divide-y divide-[var(--border)] text-sm">
-      <thead class="bg-neutral-50">
+      <thead class="bg-[var(--bg-secondary)]">
         <tr>
-          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Tarefa') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Data') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Status') }}</th>
-          <th class="px-4 py-2 text-left font-medium text-[var(--text-primary)]">{{ _('Detalhes') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{{ _('Tarefa') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{{ _('Data') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{{ _('Status') }}</th>
+          <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{{ _('Detalhes') }}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-[var(--border)]">
@@ -26,7 +26,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4" class="px-4 py-2 text-center text-neutral-600">{{ _('Nenhum registro encontrado') }}</td>
+          <td colspan="4" class="px-4 py-2 text-center text-[var(--text-secondary)]">{{ _('Nenhum registro encontrado') }}</td>
         </tr>
         {% endfor %}
       </tbody>

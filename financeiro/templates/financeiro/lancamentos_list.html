@@ -14,7 +14,7 @@
         <legend class="sr-only">{{ _('Filtros') }}</legend>
         <article class="card">
           <div class="card-body">
-            <label for="filtro-status" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Status') }}</label>
+            <label for="filtro-status" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Status') }}</label>
             <select name="status" id="filtro-status" class="border p-2 rounded">
               <option value="">{{ _('Todos Status') }}</option>
               <option value="pendente">{{ _('Pendente') }}</option>
@@ -25,7 +25,7 @@
         </article>
         <article class="card">
           <div class="card-body">
-            <label for="filtro-centro" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Centro de Custo') }}</label>
+            <label for="filtro-centro" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Centro de Custo') }}</label>
             <select name="centro" id="filtro-centro" class="border p-2 rounded">
               <option value="">{{ _('Todos Centros') }}</option>
               {% for c in centros %}
@@ -36,7 +36,7 @@
         </article>
         <article class="card">
           <div class="card-body">
-            <label for="filtro-nucleo" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Núcleo') }}</label>
+            <label for="filtro-nucleo" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Núcleo') }}</label>
             <select name="nucleo" id="filtro-nucleo" class="border p-2 rounded">
               <option value="">{{ _('Todos Núcleos') }}</option>
               {% for n in nucleos %}
@@ -47,13 +47,13 @@
         </article>
         <article class="card">
           <div class="card-body">
-            <label for="filtro-periodo-inicial" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Período inicial') }}</label>
+            <label for="filtro-periodo-inicial" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período inicial') }}</label>
             <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
           </div>
         </article>
         <article class="card">
           <div class="card-body">
-            <label for="filtro-periodo-final" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Período final') }}</label>
+            <label for="filtro-periodo-final" class="block text-sm font-medium text-[var(--text-secondary)]">{{ _('Período final') }}</label>
             <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
           </div>
         </article>
@@ -61,22 +61,24 @@
     </div>
     <div class="card-body">
       <div id="lista" aria-live="polite">
+        <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-[var(--border)]">
           <thead class="bg-[var(--bg-secondary)]">
             <tr>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('ID') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Centro de Custo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Conta Associada') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Tipo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Valor') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Data de Lançamento') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Status') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Data de Vencimento') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('ID') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Centro de Custo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Conta Associada') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Tipo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Valor') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Data de Lançamento') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Status') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Data de Vencimento') }}</th>
               <th class="px-3 py-2"></th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody class="divide-y divide-[var(--border)]"></tbody>
         </table>
+        </div>
       </div>
       <script src="{% url 'javascript-catalog' %}"></script>
       <script>
