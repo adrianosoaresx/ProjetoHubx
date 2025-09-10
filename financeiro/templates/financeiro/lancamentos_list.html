@@ -92,7 +92,7 @@
                     ${l.status === 'pendente' ? `
                     <button hx-post="/api/financeiro/lancamentos/${l.id}/pagar/" hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
                     <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"cancelado"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-red-600 hover:underline">{% trans "Cancelar" %}</button>
-                    <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
+                    <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="link link-hover">{% trans "Ajustar" %}</button>
                     ` : ''}
                   </td>
                 </tr>

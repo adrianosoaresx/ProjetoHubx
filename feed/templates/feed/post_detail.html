@@ -33,7 +33,7 @@
 
     {% if post.pdf %}
       <div class="relative mt-2">
-        <a href="{{ post.pdf.url }}" target="_blank" class="text-blue-500 underline">{% trans "Visualizar PDF" %}</a>
+        <a href="{{ post.pdf.url }}" target="_blank" class="link link-hover">{% trans "Visualizar PDF" %}</a>
       </div>
     {% elif post.image %}
       <div class="mt-2">
@@ -62,7 +62,7 @@
       <div id="like-btn-{{ post.id }}">
         {% include 'feed/_like_button.html' with post=post %}
       </div>
-      <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+      <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-primary{% endif %}" aria-label="{% trans 'Compartilhar' %}">
         {% lucide 'share-2' class='w-4 h-4' %}
         <span class="share-count">{{ post.share_count }}</span>
       </button>

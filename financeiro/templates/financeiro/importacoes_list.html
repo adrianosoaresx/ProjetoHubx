@@ -46,7 +46,7 @@
               const token = basename(i.arquivo);
               const acao = (i.erros && i.erros.length)
                 ? `<div class="space-y-1">
-                     <a href="/media/importacoes/${token}.errors.csv" download class="text-blue-600 underline">{{ _('Baixar erros') }}</a>
+                     <a href="/media/importacoes/${token}.errors.csv" download class="link link-hover">{{ _('Baixar erros') }}</a>
                      <form hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/"
                            hx-target="closest tr"
                            hx-encoding="multipart/form-data"

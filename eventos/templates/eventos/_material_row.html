@@ -6,7 +6,7 @@
   <td class="px-4 py-2">{{ material.arquivo.name }}</td>
   <td class="px-4 py-2">
     <div class="flex flex-col gap-1">
-      <a href="{{ material.arquivo.url }}" class="text-blue-600 hover:underline">
+      <a href="{{ material.arquivo.url }}" class="link link-hover">
         {% trans "Download" %}
       </a>
       {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
