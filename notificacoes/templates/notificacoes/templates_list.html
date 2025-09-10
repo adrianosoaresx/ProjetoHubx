@@ -7,62 +7,65 @@
 
 {% block content %}
 <div class="container mx-auto p-6">
-<div class="max-w-6xl mx-auto px-4 py-10">
-  {% if messages %}
-  <div class="mb-4 space-y-2" aria-live="polite">
+  <div class="max-w-6xl mx-auto space-y-6">
+    {% if messages %}
+    <div class="space-y-2" aria-live="polite">
       {% for message in messages %}
-        <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
+        <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
       {% endfor %}
-  </div>
-  {% endif %}
-  {% if templates %}
-  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-    <table class="min-w-full divide-y divide-neutral-200 text-sm">
-      <caption class="sr-only">{% trans 'Lista de templates de notificação' %}</caption>
-      <thead class="bg-neutral-50">
-        <tr>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Código' %}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Assunto' %}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Canal' %}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ativo' %}</th>
-          <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ações' %}</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-neutral-200" id="templates_table">
-        {% for tpl in templates %}
-        <tr>
-          <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
-          <td class="px-4 py-2">{{ tpl.assunto }}</td>
-          <td class="px-4 py-2">{{ tpl.get_canal_display }}</td>
-          <td class="px-4 py-2">{{ tpl.ativo|yesno:_('Sim,Não') }}</td>
-          <td class="px-4 py-2">
-            <div class="flex items-center gap-2">
-              <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary-600 hover:underline">{% trans 'Editar' %}</a>
-              {% if tpl.ativo %}
-                <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
+    </div>
+    {% endif %}
+    {% if templates %}
+    <div class="overflow-x-auto border border-[var(--border)] rounded-2xl shadow-sm">
+      <table class="min-w-full divide-y divide-[var(--border)] text-sm">
+        <caption class="sr-only">{% trans 'Lista de templates de notificação' %}</caption>
+        <thead class="bg-[var(--bg-tertiary)]">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Código' %}</th>
+            <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Assunto' %}</th>
+            <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Canal' %}</th>
+            <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Ativo' %}</th>
+            <th class="px-4 py-2 text-left font-medium text-[var(--text-secondary)]">{% trans 'Ações' %}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--border)]" id="templates_table">
+          {% for tpl in templates %}
+          <tr>
+            <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
+            <td class="px-4 py-2">{{ tpl.assunto }}</td>
+            <td class="px-4 py-2">{{ tpl.get_canal_display }}</td>
+            <td class="px-4 py-2">{{ tpl.ativo|yesno:_('Sim,Não') }}</td>
+            <td class="px-4 py-2">
+              <div class="flex items-center gap-2">
+                <a href="{% url 'notificacoes:template_edit' tpl.codigo %}" class="text-sm text-primary hover:underline">{% trans 'Editar' %}</a>
+                {% if tpl.ativo %}
+                  <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-sm text-[var(--text-secondary)] hover:underline">{% trans 'Desativar' %}</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-sm text-[var(--text-secondary)] hover:underline">{% trans 'Ativar' %}</button>
+                  </form>
+                {% endif %}
+                <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}" class="inline">
                   {% csrf_token %}
-                  <button type="submit" class="text-sm text-neutral-600 hover:underline">{% trans 'Desativar' %}</button>
+                  <button type="submit" class="text-sm text-[var(--error)] hover:underline">{% trans 'Excluir' %}</button>
                 </form>
-              {% else %}
-                <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
-                  {% csrf_token %}
-                  <button type="submit" class="text-sm text-neutral-600 hover:underline">{% trans 'Ativar' %}</button>
-                </form>
-              {% endif %}
-              <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}" class="inline">
-                {% csrf_token %}
-                <button type="submit" class="text-sm text-red-600 hover:underline">{% trans 'Excluir' %}</button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if templates.has_other_pages %}
+      {% include '_partials/pagination.html' with page_obj=templates querystring=request.GET.urlencode %}
+    {% endif %}
+    {% else %}
+      <p class="text-center text-[var(--text-secondary)]">{% trans 'Nenhum template cadastrado.' %}</p>
+    {% endif %}
   </div>
-  {% else %}
-    <p class="text-center text-neutral-600">{% trans 'Nenhum template cadastrado.' %}</p>
-  {% endif %}
-</div>
 </div>
 {% endblock %}
