@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="grid grid-cols-1 gap-6">
+  <div class="py-12 grid grid-cols-1 gap-6 px-4">
     <div class="bg-[var(--bg-secondary)] p-6 rounded-lg shadow">
       {% with perfil|default:user as profile %}
       <div class="profile-cover relative h-48 w-full overflow-hidden">
@@ -62,5 +61,4 @@
       {% endwith %}
     </div>
   </div>
-</div>
 {% endblock %}

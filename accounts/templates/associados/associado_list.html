@@ -8,10 +8,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
 
 
-<section class="max-w-6xl mx-auto py-8 px-4">
+<section class="max-w-6xl mx-auto py-12 px-4">
   {% include '_components/search_form.html' with q=request.GET.q %}
 
   <!-- Cards de totais -->
@@ -30,5 +29,4 @@
     {% endfor %}
   </div>
 </section>
-</div>
 {% endblock %}

@@ -8,8 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="card">
+  <div class="py-12 card px-4">
     <div class="card-body">
       <ul class="space-y-4" id="lista-favoritos" hx-on:afterRequest="if (this.children.length === 0) { const li=document.createElement('li'); li.className='text-neutral-600'; li.textContent='{{ _('Nenhuma empresa favorita.')|escapejs }}'; this.appendChild(li); }">
         {% for empresa in empresas %}
@@ -29,5 +28,4 @@
       </ul>
     </div>
   </div>
-</div>
 {% endblock %}
