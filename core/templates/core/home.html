@@ -8,8 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-<div class="text-center my-8">
+<div class="py-12 text-center my-8 px-4">
   {% if user.is_authenticated %}
   <div class="flex justify-center gap-4">
     <a href="{% url 'dashboard:dashboard' %}" class="bg-primary text-white px-5 py-3 rounded-xl shadow hover:bg-primary/90">{% trans "Ir para Dashboard" %}</a>
@@ -22,7 +21,7 @@
   </div>
   {% endif %}
 </div>
-<section class="py-12 bg-gray-50">
+<section class="py-12 px-4 bg-gray-50">
   <div class="card max-w-7xl mx-auto px-4 text-center">
     <div class="card-header">
       <h2 class="text-2xl font-bold text-neutral-900 mb-8">{% trans "Principais Funcionalidades" %}</h2>
@@ -74,7 +73,7 @@
   </div>
 </section>
 
-<section class="py-12">
+<section class="py-12 px-4">
   <div class="card max-w-7xl mx-auto px-4">
     <div class="card-header">
       <h2 class="text-xl font-semibold mb-4">{% trans "Próximos Eventos" %}</h2>
@@ -89,7 +88,7 @@
 </section>
 
 {% if user.is_authenticated %}
-<section class="py-12 bg-gray-50">
+<section class="py-12 px-4 bg-gray-50">
   <div class="card max-w-7xl mx-auto px-4">
     <div class="card-header">
       <h2 class="text-xl font-semibold mb-4">{% trans "Posts em destaque" %}</h2>
@@ -105,5 +104,4 @@
 <footer class="py-6 text-center text-sm text-neutral-500">
   &copy; {{ now|date:"Y" }} {% trans "Hubx" %}
 </footer>
-</div>
 {% endblock %}
