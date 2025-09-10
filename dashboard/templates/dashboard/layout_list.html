@@ -18,7 +18,7 @@
               {% if layout.user_id == request.user.id or request.user.user_type == 'admin' or request.user.user_type == 'root' %}
                 <div class="card-footer flex gap-2 justify-end">
                   <a href="{% url 'dashboard:layout-edit' layout.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar layout' %}">{% trans 'Editar' %}</a>
-                  <a href="{% url 'dashboard:layout-delete' layout.pk %}" class="btn btn-secondary btn-sm text-danger-600" aria-label="{% trans 'Excluir layout' %}">{% trans 'Excluir' %}</a>
+                  <a href="{% url 'dashboard:layout-delete' layout.pk %}" class="btn btn-secondary btn-sm text-[var(--error)]" aria-label="{% trans 'Excluir layout' %}">{% trans 'Excluir' %}</a>
                 </div>
               {% endif %}
             </li>
@@ -26,7 +26,7 @@
             <li class="card"><div class="card-body">{% trans "Nenhum layout" %}</div></li>
           {% endfor %}
         </ul>
-        <div class="pt-4 border-t border-neutral-100 mt-4">
+        <div class="pt-4 border-t border-[var(--border)] mt-4">
           <a href="{% url 'dashboard:layout-create' %}" class="btn btn-primary" aria-label="{% trans 'Novo Layout' %}">{% trans "Novo Layout" %}</a>
         </div>
       </div>

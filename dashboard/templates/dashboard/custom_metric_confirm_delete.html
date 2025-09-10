@@ -10,7 +10,7 @@
     <div class="card">
       <div class="card-body space-y-4">
         <p>{% blocktrans %}Tem certeza que deseja excluir a métrica "{{ object.nome }}"?{% endblocktrans %}</p>
-        <form method="post" class="pt-4 border-t border-neutral-100 flex items-center gap-2">
+        <form method="post" class="pt-4 border-t border-[var(--border)] flex items-center gap-2">
           {% csrf_token %}
           <button type="submit" class="btn btn-danger" aria-label="{% trans 'Confirmar exclusão' %}">{% trans 'Excluir' %}</button>
           <a href="{% url 'dashboard:custom-metrics' %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar exclusão' %}">{% trans 'Cancelar' %}</a>
