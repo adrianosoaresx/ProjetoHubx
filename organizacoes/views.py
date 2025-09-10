@@ -148,7 +148,7 @@ class OrganizacaoListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
 class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateView):
     model = Organizacao
     form_class = OrganizacaoForm
-    template_name = "organizacoes/create.html"
+    template_name = "organizacoes/organizacao_form.html"
     success_url = reverse_lazy("organizacoes:list")
 
     def form_valid(self, form):
@@ -172,7 +172,7 @@ class OrganizacaoCreateView(SuperadminRequiredMixin, LoginRequiredMixin, CreateV
 class OrganizacaoUpdateView(SuperadminRequiredMixin, LoginRequiredMixin, UpdateView):
     model = Organizacao
     form_class = OrganizacaoForm
-    template_name = "organizacoes/update.html"
+    template_name = "organizacoes/organizacao_form.html"
     success_url = reverse_lazy("organizacoes:list")
 
     def get_queryset(self):
@@ -330,7 +330,7 @@ class OrganizacaoToggleActiveView(SuperadminRequiredMixin, LoginRequiredMixin, V
 
 
 class OrganizacaoHistoryView(LoginRequiredMixin, View):
-    template_name = "organizacoes/history.html"
+    template_name = "organizacoes/organizacao_history.html"
 
     def get(self, request, pk, *args, **kwargs):
         try:
