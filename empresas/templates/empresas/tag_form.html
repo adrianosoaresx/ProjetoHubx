@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n custom_filters static %}
+{% load i18n static %}
 {% block title %}{% if form.instance.pk %}{% translate 'Editar Item' %}{% else %}{% translate 'Novo Item' %}{% endif %}{% endblock %}
 {% block extra_css %}
 {{ block.super }}
@@ -11,28 +11,20 @@
     <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% translate 'Editar' %}{% else %}{% translate 'Cadastrar' %}{% endif %} {% translate 'Item' %}</h1>
     <p class="text-sm text-neutral-600">{% translate 'Preencha o nome e a categoria do item' %}</p>
   </header>
-  <form method="post" class="bg-white border border-neutral-200 rounded-md p-6 space-y-6">
-    {% csrf_token %}
-    <div>
-      <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.nome.label }}</label>
-      {{ form.nome|add_class:'w-full p-2 border rounded' }}
-      {% if form.nome.errors %}<p class="text-sm text-red-600">{{ form.nome.errors }}</p>{% endif %}
+  <div class="card">
+    <div class="card-body">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% for field in form %}
+          {% include "_forms/field.html" %}
+        {% endfor %}
+        <div class="flex justify-end gap-3 border-t pt-4">
+          <a href="{% url 'empresas:tags_list' %}" class="btn btn-secondary">{% translate 'Cancelar' %}</a>
+          <button type="submit" class="btn btn-primary">{% translate 'Salvar' %}</button>
+        </div>
+      </form>
     </div>
-    <div>
-      <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.categoria.label }}</label>
-      {{ form.categoria|add_class:'w-full p-2 border rounded' }}
-      {% if form.categoria.errors %}<p class="text-sm text-red-600">{{ form.categoria.errors }}</p>{% endif %}
-    </div>
-    <div>
-      <label for="{{ form.parent.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.parent.label }}</label>
-      {{ form.parent|add_class:'w-full p-2 border rounded' }}
-      {% if form.parent.errors %}<p class="text-sm text-red-600">{{ form.parent.errors }}</p>{% endif %}
-    </div>
-  <div class="flex justify-end gap-3 border-t pt-4">
-      <a href="{% url 'empresas:tags_list' %}" class="px-4 py-2 text-sm border rounded">{% translate 'Cancelar' %}</a>
-      <button type="submit" class="px-4 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700">{% translate 'Salvar' %}</button>
-    </div>
-  </form>
+  </div>
 </section>
 {% endblock %}
 {% block extra_js %}
