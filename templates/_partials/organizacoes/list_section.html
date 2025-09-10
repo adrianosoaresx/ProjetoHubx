@@ -30,14 +30,15 @@
     <option value="created_at" {% if request.GET.ordering == 'created_at' %}selected{% endif %}>{% trans 'Data' %}</option>
   </select>
   <div class="md:col-span-5 flex justify-end">
-    <button type="submit" class="btn btn-primary">{% trans 'Filtrar' %}</button>
+    <button type="submit" class="btn">{% trans 'Filtrar' %}</button>
   </div>
 </form>
 
   {% if object_list %}
-    <div class="card-grid">
+    <section class="card-grid">
     {% for organizacao in object_list %}
-      <div class="card flex flex-col">
+      <article class="card flex flex-col">
+      <div class="card-body flex flex-col">
       <div class="flex items-center gap-3 mb-4">
         <div class="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
           {% if organizacao.avatar %}
@@ -70,28 +71,31 @@
       </div>
       {% endif %}
       <div class="flex gap-2 justify-center {% if request.user.user_type == 'root' %}mt-auto{% else %}mt-4{% endif %}">
-        <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-blue-600 hover:underline" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
+        <a href="{% url 'organizacoes:detail' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Visualizar' %}">{% trans 'Visualizar' %}</a>
         {% if perms.organizacoes.change_organizacao %}
-        <a href="{% url 'organizacoes:update' organizacao.id %}" class="text-yellow-700 hover:underline" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
+        <a href="{% url 'organizacoes:update' organizacao.id %}" class="btn btn-secondary" aria-label="{% trans 'Editar' %}">{% trans 'Editar' %}</a>
         {% endif %}
       </div>
-    </div>
+      </div>
+    </article>
     {% endfor %}
-  </div>
+  </section>
   <div class="mt-6 flex justify-center gap-2">
     {% if page_obj.has_previous %}
-      <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Anterior' %}">{% trans 'Anterior' %}</a>
+      <a hx-get="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="btn btn-secondary" aria-label="{% trans 'Anterior' %}">{% trans 'Anterior' %}</a>
     {% endif %}
-    <span class="px-3 py-1">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    <span class="btn btn-secondary">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}
-      <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="px-3 py-1 border rounded" aria-label="{% trans 'Próxima' %}">{% trans 'Próxima' %}</a>
+      <a hx-get="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.tipo %}&tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.cidade %}&cidade={{ request.GET.cidade }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}{% if request.GET.ordering %}&ordering={{ request.GET.ordering }}{% endif %}{% if inativa %}&inativa={{ inativa }}{% endif %}" hx-target="#org-list" hx-push-url="true" class="btn btn-secondary" aria-label="{% trans 'Próxima' %}">{% trans 'Próxima' %}</a>
     {% endif %}
   </div>
 {% else %}
-    <div class="card text-center p-10">
-      <p class="text-neutral-500 mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
-      <a href="{% url 'organizacoes:create' %}" class="btn btn-primary">
-        {% trans 'Cadastrar' %}
-      </a>
-    </div>
+    <article class="card text-center">
+      <div class="card-body p-10">
+        <p class="text-neutral-500 mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
+        <a href="{% url 'organizacoes:create' %}" class="btn">
+          {% trans 'Cadastrar' %}
+        </a>
+      </div>
+    </article>
   {% endif %}
