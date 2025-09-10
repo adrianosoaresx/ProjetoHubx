@@ -1,6 +1,0 @@
-{% load i18n lucide_icons %}
-{% if pode_criar_evento %}
-<a href="{% url 'eventos:evento_novo' %}" class="btn-primary inline-flex items-center gap-2">
-  {% lucide 'plus' class='w-4 h-4' %} {% trans 'Novo evento' %}
-</a>
-{% endif %}
