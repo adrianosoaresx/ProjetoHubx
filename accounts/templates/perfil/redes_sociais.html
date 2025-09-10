@@ -1,11 +1,11 @@
 {% extends 'perfil/perfil.html' %}
-{% load widget_tweaks custom_filters %}
+{% load i18n %}
 
 {% block title %}{% trans "Redes Sociais" %} | HubX{% endblock %}
 
 {% block perfil_content %}
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
-  <div class="card lg:col-span-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700">
+  <div class="card lg:col-span-3">
     <div class="card-body">
       <h3 class="text-xl font-semibold mb-1 text-neutral-900 dark:text-neutral-100">{% trans "Redes Sociais" %}</h3>
       <p class="text-sm text-neutral-500 dark:text-neutral-400 mb-6">{% trans "Conecte suas redes sociais com seu perfil" %}</p>
@@ -14,50 +14,10 @@
         {% csrf_token %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="relative">
-            {% with invalid_flag=form.facebook.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.facebook.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.facebook.id_for_label|add:'_error' %}
-                {{ form.facebook|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-              {% endwith %}
-            {% endwith %}
-            <label for="{{ form.facebook.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.facebook.label }}</label>
-            {% if form.facebook.errors %}
-            <p id="{{ form.facebook.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.facebook.errors }}</p>
-            {% endif %}
-          </div>
-          <div class="relative">
-            {% with invalid_flag=form.twitter.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.twitter.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.twitter.id_for_label|add:'_error' %}
-                {{ form.twitter|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-              {% endwith %}
-            {% endwith %}
-            <label for="{{ form.twitter.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.twitter.label }}</label>
-            {% if form.twitter.errors %}
-            <p id="{{ form.twitter.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.twitter.errors }}</p>
-            {% endif %}
-          </div>
-          <div class="relative">
-            {% with invalid_flag=form.instagram.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.instagram.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.instagram.id_for_label|add:'_error' %}
-                {{ form.instagram|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-              {% endwith %}
-            {% endwith %}
-            <label for="{{ form.instagram.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.instagram.label }}</label>
-            {% if form.instagram.errors %}
-            <p id="{{ form.instagram.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.instagram.errors }}</p>
-            {% endif %}
-          </div>
-          <div class="relative">
-            {% with invalid_flag=form.linkedin.errors|yesno:'true,false' %}
-              {% with label_attr='aria-label:'|add:form.linkedin.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.linkedin.id_for_label|add:'_error' %}
-                {{ form.linkedin|add_class:'w-full peer form-input placeholder-transparent border border-neutral-300 dark:border-neutral-700 dark:text-neutral-100'|attr:'placeholder: '|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-              {% endwith %}
-            {% endwith %}
-            <label for="{{ form.linkedin.id_for_label }}" class="label-float dark:text-neutral-300">{{ form.linkedin.label }}</label>
-            {% if form.linkedin.errors %}
-            <p id="{{ form.linkedin.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.linkedin.errors }}</p>
-            {% endif %}
-          </div>
+          {% include '_forms/field.html' with field=form.facebook %}
+          {% include '_forms/field.html' with field=form.twitter %}
+          {% include '_forms/field.html' with field=form.instagram %}
+          {% include '_forms/field.html' with field=form.linkedin %}
         </div>
 
         <div class="pt-4">
@@ -74,3 +34,4 @@
   <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary dark:text-primary hover:underline">← {% trans "Voltar" %}</a>
 </div>
 {% endblock %}
+

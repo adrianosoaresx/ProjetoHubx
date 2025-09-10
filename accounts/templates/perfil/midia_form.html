@@ -1,5 +1,5 @@
 {% extends 'perfil/perfil.html' %}
-{% load i18n custom_filters %}
+{% load i18n %}
 
 {% block title %}{% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Nova Mídia" %}{% endif %} | Hubx{% endblock %}
 
@@ -9,53 +9,17 @@
     {% if form.instance.pk %}{% trans "Editar Mídia" %}{% else %}{% trans "Cadastrar Mídia" %}{% endif %}
   </h2>
 
-  <div class="grid grid-cols-1">
-    <div class="bg-white dark:bg-slate-800 p-6 rounded-lg shadow">
-      <form method="post" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
-
-        <div class="relative">
-          {% with invalid_flag=form.file.errors|yesno:'true,false' %}
-            {% with label_attr='aria-label:'|add:form.file.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.file.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.file.label %}
-              {{ form.file|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-            {% endwith %}
-          {% endwith %}
-          <label for="{{ form.file.id_for_label }}" class="label-float">{{ form.file.label }}</label>
-          {% if form.file.errors %}
-            <div id="{{ form.file.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.file.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="relative">
-          {% with invalid_flag=form.descricao.errors|yesno:'true,false' %}
-            {% with label_attr='aria-label:'|add:form.descricao.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.descricao.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.descricao.label %}
-              {{ form.descricao|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-            {% endwith %}
-          {% endwith %}
-          <label for="{{ form.descricao.id_for_label }}" class="label-float">{{ form.descricao.label }}</label>
-          {% if form.descricao.errors %}
-            <div id="{{ form.descricao.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.descricao.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="relative">
-          {% with invalid_flag=form.tags_field.errors|yesno:'true,false' %}
-            {% with label_attr='aria-label:'|add:form.tags_field.label aria_invalid='aria-invalid:'|add:invalid_flag desc_attr='aria-describedby:'|add:form.tags_field.id_for_label|add:'_error' placeholder_attr='placeholder:'|add:form.tags_field.label %}
-              {{ form.tags_field|add_class:'peer form-input placeholder-transparent'|attr:placeholder_attr|attr:label_attr|attr:aria_invalid|attr:desc_attr }}
-            {% endwith %}
-          {% endwith %}
-          <label for="{{ form.tags_field.id_for_label }}" class="label-float">{{ form.tags_field.label }}</label>
-          {% if form.tags_field.errors %}
-            <div id="{{ form.tags_field.id_for_label }}_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.tags_field.errors }}</div>
-          {% endif %}
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <a href="{% url 'accounts:midias' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
-          <button type="submit" class="px-4 py-2 rounded bg-primary text-white hover:bg-primary/90 dark:bg-primary-700 dark:hover:bg-primary-600">{% trans "Salvar" %}</button>
-        </div>
-      </form>
+  <form method="post" enctype="multipart/form-data" class="card">
+    <div class="card-body space-y-4">
+      {% csrf_token %}
+      {% include '_forms/field.html' with field=form.file %}
+      {% include '_forms/field.html' with field=form.descricao %}
+      {% include '_forms/field.html' with field=form.tags_field %}
+      <div class="flex justify-end gap-2">
+        <a href="{% url 'accounts:midias' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
+        <button type="submit" class="btn btn-primary">{% trans "Salvar" %}</button>
+      </div>
     </div>
-  </div>
+  </form>
 </section>
 {% endblock %}
