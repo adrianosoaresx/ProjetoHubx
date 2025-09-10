@@ -12,7 +12,6 @@
   <div class="py-12 max-w-7xl mx-auto px-4">
     <div class="card">
       <div class="card-body space-y-8">
-        {% include '_partials/messages.html' %}
         {% include '_components/filters_form.html' %}
         <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">
           {% include '_partials/metrics_list.html' %}

@@ -28,14 +28,6 @@
       <p class="text-[var(--text-secondary)]">{% trans "Precisamos para validar sua identidade e segurança" %}</p>
     </div>
 
-    {% if messages %}
-    <div class="mb-4 space-y-2">
-      {% for message in messages %}
-        <p class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
-      {% endfor %}
-    </div>
-    {% endif %}
-
     <form id="cpfForm" method="post" action="{% url 'accounts:cpf' %}" class="space-y-6">
       {% csrf_token %}
       <div>

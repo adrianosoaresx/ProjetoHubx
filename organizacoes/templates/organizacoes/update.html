@@ -11,8 +11,6 @@
   <div class="py-12 max-w-2xl mx-auto px-4">
     <div class="card">
       <div class="card-body">
-        {% include '_partials/messages.html' %}
-
         <form method="post" enctype="multipart/form-data" class="space-y-6">
           {% csrf_token %}
           {% for field in form %}

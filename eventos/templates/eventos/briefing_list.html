@@ -14,18 +14,6 @@
       <a href="{% url 'eventos:briefing_criar' %}" class="btn-primary">{% trans "Novo Briefing" %}</a>
     </div>
     <div class="card-body">
-<<<<<<< HEAD
-      {% if messages %}
-        <div class="mb-4 space-y-2">
-          {% for message in messages %}
-            <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
-          {% endfor %}
-        </div>
-      {% endif %}
-=======
-      {% include '_partials/messages.html' %}
->>>>>>> main
-
       <form hx-get="{% url 'eventos:briefing_list' %}" hx-target="#briefing-container" hx-push-url="true" class="mb-6 flex gap-2">
         <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por evento' %}" class="form-input w-full rounded-md px-3 py-2" />
         <button type="submit" class="btn-primary">{% trans "Filtrar" %}</button>
