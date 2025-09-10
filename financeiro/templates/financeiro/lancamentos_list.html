@@ -10,58 +10,68 @@
 {% block content %}
   <div class="py-12 card px-4">
     <div class="card-header">
-      <form id="filtros" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderLancamentos(event)">
+      <form id="filtros" class="card-grid" hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderLancamentos(event)">
         <legend class="sr-only">{{ _('Filtros') }}</legend>
-        <div>
-          <label for="filtro-status" class="block text-sm font-medium text-gray-700">{{ _('Status') }}</label>
-          <select name="status" id="filtro-status" class="border p-2 rounded">
-            <option value="">{{ _('Todos Status') }}</option>
-            <option value="pendente">{{ _('Pendente') }}</option>
-            <option value="pago">{{ _('Pago') }}</option>
-            <option value="cancelado">{{ _('Cancelado') }}</option>
-          </select>
-        </div>
-        <div>
-          <label for="filtro-centro" class="block text-sm font-medium text-gray-700">{{ _('Centro de Custo') }}</label>
-          <select name="centro" id="filtro-centro" class="border p-2 rounded">
-            <option value="">{{ _('Todos Centros') }}</option>
-            {% for c in centros %}
-              <option value="{{ c.id }}">{{ c.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label for="filtro-nucleo" class="block text-sm font-medium text-gray-700">{{ _('Núcleo') }}</label>
-          <select name="nucleo" id="filtro-nucleo" class="border p-2 rounded">
-            <option value="">{{ _('Todos Núcleos') }}</option>
-            {% for n in nucleos %}
-              <option value="{{ n.id }}">{{ n.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label for="filtro-periodo-inicial" class="block text-sm font-medium text-gray-700">{{ _('Período inicial') }}</label>
-          <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
-        </div>
-        <div>
-          <label for="filtro-periodo-final" class="block text-sm font-medium text-gray-700">{{ _('Período final') }}</label>
-          <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
-        </div>
+        <article class="card">
+          <div class="card-body">
+            <label for="filtro-status" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Status') }}</label>
+            <select name="status" id="filtro-status" class="border p-2 rounded">
+              <option value="">{{ _('Todos Status') }}</option>
+              <option value="pendente">{{ _('Pendente') }}</option>
+              <option value="pago">{{ _('Pago') }}</option>
+              <option value="cancelado">{{ _('Cancelado') }}</option>
+            </select>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <label for="filtro-centro" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Centro de Custo') }}</label>
+            <select name="centro" id="filtro-centro" class="border p-2 rounded">
+              <option value="">{{ _('Todos Centros') }}</option>
+              {% for c in centros %}
+                <option value="{{ c.id }}">{{ c.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <label for="filtro-nucleo" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Núcleo') }}</label>
+            <select name="nucleo" id="filtro-nucleo" class="border p-2 rounded">
+              <option value="">{{ _('Todos Núcleos') }}</option>
+              {% for n in nucleos %}
+                <option value="{{ n.id }}">{{ n.nome }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <label for="filtro-periodo-inicial" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Período inicial') }}</label>
+            <input id="filtro-periodo-inicial" type="month" name="periodo_inicial" class="border p-2 rounded" />
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-body">
+            <label for="filtro-periodo-final" class="block text-sm font-medium text-[var(--text-primary)]">{{ _('Período final') }}</label>
+            <input id="filtro-periodo-final" type="month" name="periodo_final" class="border p-2 rounded" />
+          </div>
+        </article>
       </form>
     </div>
     <div class="card-body">
       <div id="lista" aria-live="polite">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('ID') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Centro de Custo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Conta Associada') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Tipo') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Valor') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Lançamento') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Status') }}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{{ _('Data de Vencimento') }}</th>
+        <table class="min-w-full divide-y divide-[var(--border)]">
+          <thead class="bg-[var(--bg-secondary)]">
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('ID') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Centro de Custo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Conta Associada') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Tipo') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Valor') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Data de Lançamento') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Status') }}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{{ _('Data de Vencimento') }}</th>
               <th class="px-3 py-2"></th>
             </tr>
           </thead>
@@ -92,7 +102,7 @@
                     ${l.status === 'pendente' ? `
                     <button hx-post="/api/financeiro/lancamentos/${l.id}/pagar/" hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-green-600 hover:underline">{% trans "Pagar" %}</button>
                     <button hx-patch="/api/financeiro/lancamentos/${l.id}/" hx-vals='{"status":"cancelado"}' hx-headers='{"X-CSRFToken": "${csrfToken}"}' hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit')" class="text-red-600 hover:underline">{% trans "Cancelar" %}</button>
-                    <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="text-blue-600 hover:underline">{% trans "Ajustar" %}</button>
+                    <button hx-get="/financeiro/lancamentos/${encodeURIComponent(l.id)}/ajustar/" hx-target="#modal" class="link">{% trans "Ajustar" %}</button>
                     ` : ''}
                   </td>
                 </tr>
