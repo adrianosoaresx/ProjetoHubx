@@ -10,7 +10,7 @@
 {% block content %}
   <div class="py-12 card px-4">
     <div class="card-header">
-      <form id="filtros" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+      <form id="filtros" class="card-grid"
             hx-get="/api/financeiro/lancamentos/" hx-target="#lista" hx-swap="none"
             hx-trigger="change from:select,change from:input, submit"
             hx-on="htmx:afterRequest: renderLancamentos(event)">
