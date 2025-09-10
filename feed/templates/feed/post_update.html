@@ -8,7 +8,7 @@
 {% else %}
 <section class="max-w-2xl mx-auto px-4 py-10">
   <div class="mb-6 flex items-center gap-4">
-    <a href="{% url 'feed:post_detail' post.pk %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Voltar' %}">
+    <a href="{% url 'feed:post_detail' post.pk %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">
       <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6"/>
       </svg>
@@ -20,7 +20,8 @@
     </div>
   </div>
 
-  <form method="post" enctype="multipart/form-data" hx-post="{% url 'feed:post_update' post.pk %}" hx-encoding="multipart/form-data" class="post-form bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
+  <form method="post" enctype="multipart/form-data" hx-post="{% url 'feed:post_update' post.pk %}" hx-encoding="multipart/form-data" class="post-form card">
+    <div class="card-body space-y-6">
     {% csrf_token %}
     <div>
       <label for="{{ form.conteudo.id_for_label }}" class="block text-sm font-medium text-neutral-700">
@@ -68,22 +69,23 @@
       {% endif %}
       {% if post.pdf %}
         <div class="relative mt-2">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl shadow-sm">
-          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl">
+          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
-          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
             {% lucide 'download' class='w-4 h-4' %}
           </a>
         </div>
       {% elif post.image %}
-        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl shadow-sm mt-2">
+        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl mt-2">
       {% endif %}
     </div>
 
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'feed:post_detail' post.pk %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-500" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
+      <a href="{% url 'feed:post_detail' post.pk %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
+      <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
+    </div>
     </div>
   </form>
 </section>

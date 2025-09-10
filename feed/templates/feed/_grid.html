@@ -1,8 +1,9 @@
 {% load static i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
-<section id="feed-grid" class="grid gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+<section id="feed-grid" class="card-grid">
   {% for post in posts %}
-    <article class="rounded-lg bg-white shadow p-6 space-y-4">
+    <article class="card">
+      <div class="card-body space-y-4">
       <p class="text-xs text-neutral-500">
         {% if post.tipo_feed == 'nucleo' %}
           {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
@@ -35,10 +36,10 @@
       {% if post.pdf %}
         <div class="relative">
           <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded">
-          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
-          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-white/90 hover:bg-white shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
             {% lucide 'download' class='w-4 h-4' %}
           </a>
         </div>
@@ -60,20 +61,21 @@
           <div id="like-btn-{{ post.id }}">
             {% include 'feed/_like_button.html' with post=post %}
           </div>
-            <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
             {% lucide 'share-2' class='w-4 h-4' %}
             <span class="share-count">{{ post.share_count }}</span>
           </button>
 
-          <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
+          <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
             {% lucide 'bookmark' class='w-4 h-4' %}
           </button>
-          <button type="button" data-post-id="{{ post.id }}" class="flag-btn hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+          <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
             {% lucide 'flag' class='w-4 h-4' %}
 
           </button>
         </div>
         <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
+      </div>
       </div>
       </article>
   {% empty %}

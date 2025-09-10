@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 <div class="flex gap-2">
-  <a href="{% url 'feed:meu_mural' %}" class="text-sm px-4 py-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" aria-label="{% trans 'Mural' %}">{% trans 'Mural' %}</a>
-  <a href="{% url 'feed:bookmarks' %}" class="text-sm px-4 py-2 rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" aria-label="{% trans 'Favoritos' %}">{% trans 'Favoritos' %}</a>
+  <a href="{% url 'feed:meu_mural' %}" class="btn btn-secondary" aria-label="{% trans 'Mural' %}">{% trans 'Mural' %}</a>
+  <a href="{% url 'feed:bookmarks' %}" class="btn btn-secondary" aria-label="{% trans 'Favoritos' %}">{% trans 'Favoritos' %}</a>
   {% if request.user.user_type != 'root' %}
   <a href="{% url 'feed:nova_postagem' %}" target="_blank" class="btn btn-primary" aria-label="{% trans 'Nova postagem' %}">
     {% lucide 'circle-plus' class='w-4 h-4' %}

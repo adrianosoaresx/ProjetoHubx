@@ -8,10 +8,11 @@
 {% else %}
 <section class="max-w-3xl mx-auto px-4 py-10 space-y-6">
   <div>
-    <a href="{% url 'feed:listar' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
+    <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans "Voltar" %}</a>
   </div>
 
-  <article class="border border-neutral-200 bg-white rounded-2xl shadow-sm p-6 space-y-4">
+  <article class="card">
+    <div class="card-body space-y-4">
     <div class="flex items-center gap-4">
       {% if post.autor.avatar %}
         <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
@@ -36,14 +37,14 @@
       </div>
     {% elif post.image %}
       <div class="mt-2">
-        <img src="{{ post.image.url }}" alt="{% trans 'Imagem' %}" class="rounded-xl shadow-sm max-w-full">
+        <img src="{{ post.image.url }}" alt="{% trans 'Imagem' %}" class="rounded-xl max-w-full">
       </div>
     {% elif post.video %}
       <div class="mt-2">
         {% if post.video_preview %}
-          <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+          <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="rounded-xl max-w-full"></video>
         {% else %}
-          <video src="{{ post.video.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+          <video src="{{ post.video.url }}" controls class="rounded-xl max-w-full"></video>
         {% endif %}
       </div>
     {% endif %}
@@ -61,14 +62,14 @@
       <div id="like-btn-{{ post.id }}">
         {% include 'feed/_like_button.html' with post=post %}
       </div>
-      <button type="button" data-post-id="{{ post.id }}" class="share-btn inline-flex items-center gap-1 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+      <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-blue-600{% endif %}" aria-label="{% trans 'Compartilhar' %}">
         {% lucide 'share-2' class='w-4 h-4' %}
         <span class="share-count">{{ post.share_count }}</span>
       </button>
-      <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn hover:text-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
+      <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
         {% lucide 'bookmark' class='w-4 h-4' %}
       </button>
-      <button type="button" data-post-id="{{ post.id }}" class="flag-btn hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+      <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
         {% lucide 'flag' class='w-4 h-4' %}
       </button>
 
@@ -86,7 +87,7 @@
         {% if comment_form.texto.errors %}
           <p class="text-red-500 text-xs">{{ comment_form.texto.errors }}</p>
         {% endif %}
-        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="{% trans 'Enviar comentário' %}">{% trans "Enviar" %}</button>
+        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Enviar comentário' %}">{% trans "Enviar" %}</button>
       </form>
 
       <ul id="comments" class="mt-4 space-y-4">
@@ -98,10 +99,11 @@
 
     {% if post.autor == user or user_can_moderate %}
     <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100 text-sm">
-      <a href="{% url 'feed:post_update' post.pk %}" class="text-yellow-600 hover:underline focus:outline-none focus:ring-2 focus:ring-yellow-500" aria-label="{% trans 'Editar postagem' %}">{% trans "Editar" %}</a>
-      <a href="{% url 'feed:post_delete' post.pk %}" class="text-red-600 hover:underline focus:outline-none focus:ring-2 focus:ring-red-500" aria-label="{% trans 'Remover postagem' %}">{% trans "Remover" %}</a>
+      <a href="{% url 'feed:post_update' post.pk %}" class="btn btn-secondary text-yellow-600" aria-label="{% trans 'Editar postagem' %}">{% trans "Editar" %}</a>
+      <a href="{% url 'feed:post_delete' post.pk %}" class="btn btn-secondary text-red-600" aria-label="{% trans 'Remover postagem' %}">{% trans "Remover" %}</a>
     </div>
     {% endif %}
+    </div>
   </article>
 </section>
 <script>
