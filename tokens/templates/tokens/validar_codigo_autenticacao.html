@@ -13,17 +13,13 @@
   <form method="post" action="{% url 'tokens:validar_codigo' %}"
         hx-post="{% url 'tokens:validar_codigo' %}"
         hx-target="#resultado" hx-swap="innerHTML"
-        class="bg-white rounded-2xl shadow p-6 space-y-4">
+        class="card">
     {% csrf_token %}
-    <div>
-      <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.codigo.label }}</label>
-      {{ form.codigo|add_class:"form-input text-center tracking-widest"|attr:"autofocus required pattern=\\d+ inputmode=numeric" }}
-      {% if form.codigo.errors %}
-        <p class="text-sm text-red-600 mt-1">{{ form.codigo.errors.0 }}</p>
-      {% endif %}
-    </div>
-    <div class="text-right">
-      <button type="submit" class="rounded-xl bg-primary px-4 py-2 text-white hover:bg-primary/90">{% trans "Validar Código" %}</button>
+    <div class="card-body space-y-4">
+      {% include '_forms/field.html' with field=form.codigo|add_class:'text-center tracking-widest'|attr:'autofocus pattern=\d+ inputmode=numeric' %}
+      <div class="text-right">
+        <button type="submit" class="btn btn-primary">{% trans "Validar Código" %}</button>
+      </div>
     </div>
   </form>
 

@@ -15,15 +15,15 @@
     <div class="card-body">
       {% if tokens %}
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200">
-          <thead class="bg-neutral-50">
+        <table class="min-w-full divide-y divide-[var(--border)]">
+          <thead class="bg-[var(--bg-secondary)]">
             <tr>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Cliente" %}</th>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Escopo" %}</th>
               <th class="px-4 py-2 text-left text-sm font-medium text-neutral-700">{% trans "Ações" %}</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200">
+          <tbody class="divide-y divide-[var(--border)]">
             {% for token in tokens %}
             <tr>
               <td class="px-4 py-2 text-sm text-neutral-900">{{ token.client_name }}</td>
@@ -57,21 +57,15 @@
         {% csrf_token %}
         <div class="space-y-4">
           {% for field in form %}
-          <div>
-            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ field.label }}</label>
-            {% if field.field.widget.input_type == 'select' %}
-              {{ field|add_class:"form-select" }}
+            {% if forloop.first %}
+              {% include '_forms/field.html' with field=field|attr:'autofocus' %}
             {% else %}
-              {{ field|add_class:"form-input" }}
+              {% include '_forms/field.html' with field=field %}
             {% endif %}
-            {% if field.errors %}
-              <p class="text-red-500 text-xs mt-1">{{ field.errors }}</p>
-            {% endif %}
-          </div>
           {% endfor %}
         </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-          <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">{% trans "Gerar Token" %}</button>
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <button type="submit" class="btn btn-primary">{% trans "Gerar Token" %}</button>
         </div>
       </form>
       <div id="resultado" class="mt-6 text-center" aria-live="polite">
