@@ -16,13 +16,13 @@
            hx-target="#importacoes"
            hx-swap="none"
            hx-on="htmx:afterRequest: renderImportacoes(event)">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-[var(--border)]">
+          <thead class="bg-[var(--bg-secondary)]">
             <tr>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Arquivo" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Status" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Processados" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">{% trans "Ações" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{% trans "Arquivo" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{% trans "Status" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{% trans "Processados" %}</th>
+              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-primary)]">{% trans "Ações" %}</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -46,14 +46,14 @@
               const token = basename(i.arquivo);
               const acao = (i.erros && i.erros.length)
                 ? `<div class="space-y-1">
-                     <a href="/media/importacoes/${token}.errors.csv" download class="text-blue-600 underline">{{ _('Baixar erros') }}</a>
+                     <a href="/media/importacoes/${token}.errors.csv" download class="link">{{ _('Baixar erros') }}</a>
                      <form hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/"
                            hx-target="closest tr"
                            hx-encoding="multipart/form-data"
                            hx-headers='{"X-CSRFToken": "${csrfToken}"}'
                            class="space-y-1">
                          <input type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-1 rounded" required />
-                         <button type="submit" class="bg-primary text-white px-2 py-1 rounded">{{ _('Reprocessar') }}</button>
+                         <button type="submit" class="btn btn-primary btn-sm">{{ _('Reprocessar') }}</button>
                      </form>
                    </div>`
                 : '';
@@ -66,10 +66,10 @@
             }).join('');
             tbody.innerHTML = rows || `<tr><td colspan="4" class="px-3 py-2 text-center">{{ _('Nenhuma importação') }}</td></tr>`;
             if (data.previous) {
-              pag.innerHTML += `<button class="px-3 py-1 bg-gray-200 rounded" hx-get="${data.previous}" hx-target="#importacoes" hx-swap="none">{{ _('Anterior') }}</button>`;
+              pag.innerHTML += `<button class="btn btn-secondary btn-sm" hx-get="${data.previous}" hx-target="#importacoes" hx-swap="none">{{ _('Anterior') }}</button>`;
             }
             if (data.next) {
-              pag.innerHTML += `<button class="px-3 py-1 bg-gray-200 rounded ml-auto" hx-get="${data.next}" hx-target="#importacoes" hx-swap="none">{{ _('Próximo') }}</button>`;
+              pag.innerHTML += `<button class="btn btn-secondary btn-sm ml-auto" hx-get="${data.next}" hx-target="#importacoes" hx-swap="none">{{ _('Próximo') }}</button>`;
             }
           } catch (e) {
             tbody.innerHTML = `<tr><td colspan="4" class="px-3 py-2 text-center text-red-600">{{ _('Erro ao carregar') }}</td></tr>`;

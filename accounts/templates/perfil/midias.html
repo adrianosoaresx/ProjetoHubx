@@ -7,14 +7,14 @@
 <section id="midias" class="perfil-section active">
   <div class="section-header mb-6">
     <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">{% trans "Mídias" %}</h2>
-    <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
+    <p class="text-sm text-[var(--text-primary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
   </div>
 
   {% if show_form %}
   <form id="formMidias" class="space-y-6" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <div>
-      <label for="id_file" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Enviar arquivo" %}</label>
+      <label for="id_file" class="block text-sm font-medium text-[var(--text-primary)]">{% trans "Enviar arquivo" %}</label>
       <input type="file" id="id_file" name="file" class="form-input mt-1 block w-full rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" required accept="{{ allowed_exts|join:',' }}" aria-label="{% trans 'Arquivo' %}" aria-invalid="false" aria-describedby="file_help">
       {% if form.file.errors %}
         <div class="text-sm text-red-600">{{ form.file.errors }}</div>
@@ -22,7 +22,7 @@
       <small id="file_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Selecione um arquivo" %}</small>
     </div>
     <div>
-      <label for="id_descricao" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Descrição" %}</label>
+      <label for="id_descricao" class="block text-sm font-medium text-[var(--text-primary)]">{% trans "Descrição" %}</label>
       <input type="text" id="id_descricao" name="descricao" class="form-input mt-1 block w-full rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" aria-label="{% trans 'Descrição' %}" aria-invalid="false" aria-describedby="descricao_help" placeholder="{% trans 'Descrição' %}">
       <small id="descricao_help" class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Breve descrição da mídia" %}</small>
       {% if form.descricao.errors %}
@@ -30,21 +30,20 @@
       {% endif %}
     </div>
     <div>
-      <label for="id_tags_field" class="block text-sm font-medium text-gray-700 dark:text-gray-300">{% trans "Tags" %}</label>
+      <label for="id_tags_field" class="block text-sm font-medium text-[var(--text-primary)]">{% trans "Tags" %}</label>
       <input type="text" id="id_tags_field" name="tags_field" class="form-input mt-1 block w-full rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100" placeholder="{% trans 'paisagem, viagem' %}" aria-label="{% trans 'Tags' %}" aria-invalid="false">
       {% if form.tags_field.errors %}
         <div class="text-sm text-red-600">{{ form.tags_field.errors }}</div>
       {% endif %}
     </div>
     <div>
-      <button type="submit" class="bg-primary text-white px-5 py-2 rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+      <button type="submit" class="btn btn-primary">
         {% trans "Enviar" %}
       </button>
     </div>
   </form>
   {% else %}
-    <a href="{% url 'accounts:midias' %}?adicionar=1"
-       class="inline-block bg-primary text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+    <a href="{% url 'accounts:midias' %}?adicionar=1" class="btn btn-primary">
       {% trans "Adicionar Mídias" %}
     </a>
   {% endif %}
@@ -73,21 +72,21 @@
         {% elif media.media_type == 'pdf' %}
           <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
         {% else %}
-          <span class="text-sm text-gray-500">{{ media.file.name }}</span>
+          <span class="text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
         {% endif %}
         </a>
         <div class="card-body mt-2">
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ media.descricao }}</p>
-          <p class="text-xs text-gray-400 dark:text-gray-500">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+          <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+          <p class="text-xs text-[var(--text-primary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
           <div class="flex flex-wrap gap-1 mt-1">
             {% for tag in media.tags.all %}
-              <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
+              <span class="bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
             {% endfor %}
           </div>
         </div>
       </article>
     {% empty %}
-      <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Nenhum arquivo enviado." %}</p>
+      <p class="text-sm text-[var(--text-primary)]">{% trans "Nenhum arquivo enviado." %}</p>
     {% endfor %}
     </div>
   </section>
