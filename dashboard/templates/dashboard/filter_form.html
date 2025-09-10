@@ -14,13 +14,13 @@
           {% trans 'Nome' as nome_label %}
           <div class="relative">
             {% if form.nome.errors %}
-              {% render_field form.nome class="peer placeholder-transparent w-full rounded border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder=nome_label aria-describedby="nome_error" aria-invalid="true" %}
+              {% render_field form.nome class="peer placeholder-transparent w-full rounded border border-[var(--border)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" placeholder=nome_label aria-describedby="nome_error" aria-invalid="true" %}
             {% else %}
-              {% render_field form.nome class="peer placeholder-transparent w-full rounded border border-neutral-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" placeholder=nome_label aria-describedby="nome_error" %}
+              {% render_field form.nome class="peer placeholder-transparent w-full rounded border border-[var(--border)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]" placeholder=nome_label aria-describedby="nome_error" %}
             {% endif %}
-            <label for="{{ form.nome.id_for_label }}" class="absolute left-3 -top-2 text-xs text-neutral-700 transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-neutral-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary-600">{{ nome_label }}</label>
+            <label for="{{ form.nome.id_for_label }}" class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-2 peer-placeholder-shown:text-sm peer-placeholder-shown:text-[var(--text-muted)] peer-focus:-top-2 peer-focus:text-xs peer-focus:text-[var(--primary)]">{{ nome_label }}</label>
             {% if form.nome.errors %}
-              <div id="nome_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.nome.errors }}</div>
+              <div id="nome_error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.nome.errors }}</div>
             {% endif %}
           </div>
         {% if request.user.user_type == 'root' or request.user.user_type == 'admin' %}
@@ -31,16 +31,16 @@
               {% else %}
                 {% render_field form.publico aria-describedby="publico_error" %}
               {% endif %}
-              <label for="{{ form.publico.id_for_label }}" class="text-sm text-neutral-700">{% trans 'Público' %}</label>
+              <label for="{{ form.publico.id_for_label }}" class="text-sm text-[var(--text-secondary)]">{% trans 'Público' %}</label>
             </div>
             {% if form.publico.errors %}
-              <div id="publico_error" class="text-red-600 text-xs mt-1" role="alert">{{ form.publico.errors }}</div>
+              <div id="publico_error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.publico.errors }}</div>
             {% endif %}
           </div>
         {% else %}
-          <p class="text-sm text-neutral-700">{% trans 'Apenas administradores podem publicar itens.' %}</p>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans 'Apenas administradores podem publicar itens.' %}</p>
         {% endif %}
-          <div class="pt-4 border-t border-neutral-100 flex justify-end">
+          <div class="pt-4 border-t border-[var(--border)] flex justify-end">
             <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar filtro' %}">{% trans 'Salvar' %}</button>
           </div>
         </form>

@@ -11,13 +11,7 @@
   <div class="py-12 max-w-2xl mx-auto px-4">
     <div class="card">
       <div class="card-body">
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-          {% for message in messages %}
-            <p class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">{{ message }}</p>
-          {% endfor %}
-        </div>
-        {% endif %}
+        {% include '_partials/messages.html' %}
 
         <form method="post" enctype="multipart/form-data" class="space-y-6">
           {% csrf_token %}

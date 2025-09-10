@@ -14,10 +14,10 @@
       <a href="{% url 'eventos:material_criar' %}" class="btn-primary">{% trans "Novo Material" %}</a>
     </div>
     <div class="card-body">
-      {% include "eventos/_messages.html" %}
+      {% include '_partials/messages.html' %}
 
       <form method="get" class="mb-6 flex gap-2">
-        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por título' %}" class="w-full rounded-md border-gray-300 px-3 py-2" />
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="{% trans 'Buscar por título' %}" class="form-input w-full rounded-md px-3 py-2" />
         <button type="submit" class="btn-primary">{% trans "Filtrar" %}</button>
       </form>
 
