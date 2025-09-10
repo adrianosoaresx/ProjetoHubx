@@ -3,7 +3,6 @@
 {% block title %}{% translate 'Contato' %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-8">
-  {% include '_partials/messages.html' %}
   {% if contato %}
     <div class="space-y-1 bg-white border border-neutral-200 p-6 rounded-md">
       <p class="text-sm font-medium text-neutral-700">{{ contato.nome }}</p>

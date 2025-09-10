@@ -1,11 +1,11 @@
 {% if messages %}
-<div id="messages" class="fixed top-4 right-4 space-y-2 z-50">
+<ul id="messages" hx-swap-oob="true" class="fixed top-4 right-4 space-y-2 z-50">
   {% for message in messages %}
-    <div class="px-4 py-2 rounded shadow {% if 'error' in message.tags %}bg-[var(--error)] text-[var(--error-contrast)]{% elif 'success' in message.tags %}bg-[var(--success)] text-[var(--success-contrast)]{% else %}bg-[var(--primary)] text-[var(--primary-contrast)]{% endif %}">
+    <li class="px-4 py-2 rounded shadow bg-[var(--bg-secondary)] text-[var(--text-primary)]">
       {{ message }}
-    </div>
+    </li>
   {% endfor %}
-</div>
+</ul>
 <script>
   setTimeout(() => {
     const el = document.getElementById('messages');

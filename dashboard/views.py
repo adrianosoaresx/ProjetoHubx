@@ -427,17 +427,17 @@ def metrics_partial(request):
     except PermissionError:
         logger.exception("Acesso negado ao carregar métricas")
         messages.error(request, _("Acesso negado"))
-        html = render_to_string("_partials/messages.html", request=request)
+        html = render_to_string("_partials/toasts.html", request=request)
         return HttpResponse(html, status=403)
     except ValueError as exc:
         logger.exception("Erro de valor ao carregar métricas")
         messages.error(request, str(exc))
-        html = render_to_string("_partials/messages.html", request=request)
+        html = render_to_string("_partials/toasts.html", request=request)
         return HttpResponse(html, status=400)
     except Exception:  # pragma: no cover - logado
         logger.exception("Erro inesperado ao carregar métricas")
         messages.error(request, _("Erro ao carregar métricas."))
-        html = render_to_string("_partials/messages.html", request=request)
+        html = render_to_string("_partials/toasts.html", request=request)
         return HttpResponse(html, status=500)
 
 
@@ -609,7 +609,7 @@ class DashboardExportView(LoginRequiredMixin, View):
         def _response_with_message(msg: str, status: int) -> HttpResponse:
             messages.error(request, msg)
             if request.headers.get("Hx-Request") == "true":
-                html = render_to_string("_partials/messages.html", request=request)
+                html = render_to_string("_partials/toasts.html", request=request)
                 return HttpResponse(html, status=status)
             return HttpResponse(msg, status=status)
 

@@ -14,7 +14,6 @@
       <h2 class="text-xl font-semibold text-center">{% trans "Dashboard Administrativo" %}</h2>
     </div>
     <div class="card-body">
-      {% include '_partials/messages.html' %}
       {% include '_components/filters_form.html' %}
 
       <div hx-get="{% url 'dashboard:metrics-partial' %}?{{ request.GET.urlencode }}" hx-trigger="load, every 10s" hx-target="#metrics" hx-swap="innerHTML">

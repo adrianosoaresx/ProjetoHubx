@@ -1,7 +1,6 @@
 {% load i18n static %}
 <script src="{% static 'js/vendor/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'js/vendor/select2-4.1.0-rc.0.min.js' %}"></script>
-{% include '_partials/messages.html' %}
 <form method="get" class="mb-6 flex flex-wrap gap-4 items-end" aria-label="{% trans 'Filtros do dashboard' %}">
   <div>
     <label for="periodo" class="block text-sm font-medium text-neutral-700">{% trans 'Período' %}</label>

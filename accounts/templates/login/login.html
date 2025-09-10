@@ -14,8 +14,6 @@
       <p class="text-center text-sm mb-6 text-[var(--text-secondary)]">
         {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
       </p>
-    {% include '_partials/messages.html' %}
-
     {% if form.non_field_errors %}
       <div class="bg-[var(--error-light)] text-[var(--error)] p-2 rounded text-sm mb-4" role="alert">{{ form.non_field_errors }}</div>
     {% endif %}
