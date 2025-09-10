@@ -7,8 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="card max-w-4xl mx-auto">
+  <div class="py-12 card max-w-4xl mx-auto px-4">
     <div class="card-body">
       <div class="space-y-1 text-sm text-neutral-800">
     <p><strong>{% trans "CNPJ" %}:</strong> {{ empresa.cnpj|localize }}</p>
@@ -186,5 +185,4 @@
       </div>
     </div>
   </div>
-</div>
 {% endblock %}
