@@ -11,15 +11,7 @@
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Segurança da conta' %}</legend>
     {% for field in seguranca_form %}
-      <div>
-        <label for="{{ field.id_for_label }}" class="block text-sm font-medium"
-          >{{ field.label }}</label
-        >
-        {{ field|add_class:'w-full p-2 border rounded-lg'|attr:'tabindex:0' }}
-        {% for error in field.errors %}
-          <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-        {% endfor %}
-      </div>
+      {% include '_forms/field.html' with field=field %}
     {% endfor %}
   </fieldset>
   <div class="text-right pt-2">
