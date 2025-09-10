@@ -576,5 +576,7 @@
   .table td        { @apply py-2 align-middle; }
 
   /* Forms */
-  .errorlist { @apply mt-1 text-xs text-[var(--error)]; }
+  .errorlist { @apply mt-1 p-0 list-none text-xs text-[var(--error)]; }
+  .errorlist li { @apply mt-1; }
+  [aria-invalid="true"] { @apply border-[var(--error)] bg-[var(--error-light)]; }
 }

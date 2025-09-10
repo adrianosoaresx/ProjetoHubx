@@ -3,7 +3,11 @@
 <div class="space-y-1">
   {% if field|widget_type == 'checkboxinput' %}
   <div class="flex items-center gap-2">
-    {% render_field field class+="form-checkbox" %}
+    {% if field.errors %}
+      {% render_field field|attr:"aria-invalid:true" class+="form-checkbox" %}
+    {% else %}
+      {% render_field field class+="form-checkbox" %}
+    {% endif %}
     <label for="{{ field.id_for_label }}" class="text-sm text-[var(--text-primary)]">
       {{ field.label }}{% if field.field.required %} *{% endif %}
     </label>
@@ -14,22 +18,40 @@
   </label>
   {% if field|widget_type == 'select' %}
     {% if readonly %}
-      {% render_field field class+="form-select w-full" readonly="readonly" %}
+      {% if field.errors %}
+        {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" readonly="readonly" %}
+      {% else %}
+        {% render_field field class+="form-select w-full" readonly="readonly" %}
+      {% endif %}
     {% else %}
-      {% render_field field class+="form-select w-full" %}
+      {% if field.errors %}
+        {% render_field field|attr:"aria-invalid:true" class+="form-select w-full" %}
+      {% else %}
+        {% render_field field class+="form-select w-full" %}
+      {% endif %}
     {% endif %}
   {% else %}
     {% if readonly %}
-      {% render_field field class+="form-input w-full" readonly="readonly" %}
+      {% if field.errors %}
+        {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" readonly="readonly" %}
+      {% else %}
+        {% render_field field class+="form-input w-full" readonly="readonly" %}
+      {% endif %}
     {% else %}
-      {% render_field field class+="form-input w-full" %}
+      {% if field.errors %}
+        {% render_field field|attr:"aria-invalid:true" class+="form-input w-full" %}
+      {% else %}
+        {% render_field field class+="form-input w-full" %}
+      {% endif %}
     {% endif %}
   {% endif %}
   {% endif %}
   {% if field.errors %}
+  <ul class="errorlist">
     {% for error in field.errors %}
-      <p class="text-[var(--error)] text-sm">{{ error }}</p>
+    <li>{{ error }}</li>
     {% endfor %}
+  </ul>
   {% endif %}
   {% if field.help_text %}
   <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
