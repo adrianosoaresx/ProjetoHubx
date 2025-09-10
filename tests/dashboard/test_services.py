@@ -175,12 +175,8 @@ def test_get_metrics_cache_not_shared_between_users(admin_user):
 
 def test_inscricao_evento_signal_clears_cache_for_user_only(admin_user, cliente_user, evento):
     cache.clear()
-    DashboardMetricsService.get_metrics(
-        admin_user, escopo="auto", metricas=["num_users"]
-    )
-    DashboardMetricsService.get_metrics(
-        cliente_user, escopo="auto", metricas=["num_users"]
-    )
+    DashboardMetricsService.get_metrics(admin_user, escopo="auto", metricas=["num_users"])
+    DashboardMetricsService.get_metrics(cliente_user, escopo="auto", metricas=["num_users"])
     prefix_admin = f"dashboard-{admin_user.pk}-{admin_user.user_type}-"
     prefix_cliente = f"dashboard-{cliente_user.pk}-{cliente_user.user_type}-"
     assert any(prefix_admin in k for k in cache._cache.keys())

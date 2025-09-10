@@ -9,9 +9,7 @@ from sentry_sdk import capture_exception
 
 from .models import AuditLog
 
-AUDIT_LOG_TOTAL = Counter(
-    "audit_log_total", "Total de logs de auditoria por ação", ["action"]
-)
+AUDIT_LOG_TOTAL = Counter("audit_log_total", "Total de logs de auditoria por ação", ["action"])
 
 _SENSITIVE_KEYS = {"password", "token", "cpf", "secret"}
 
@@ -57,9 +55,7 @@ async def log_audit_async(
     if metadata is None:
         metadata = {}
     try:
-        await sync_to_async(_create_log)(
-            user, action, object_type, object_id, ip_hash, status, metadata
-        )
+        await sync_to_async(_create_log)(user, action, object_type, object_id, ip_hash, status, metadata)
     except Exception as exc:  # pragma: no cover - segurança
         capture_exception(exc)
 

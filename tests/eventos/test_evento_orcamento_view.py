@@ -55,4 +55,3 @@ def test_evento_orcamento_valores_invalidos(client):
     assert resp.status_code == 400
     assert "errors" in resp.json()
     assert EventoLog.objects.filter(evento=evento, acao="orcamento_atualizado").count() == 0
-

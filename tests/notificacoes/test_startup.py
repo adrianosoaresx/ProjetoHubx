@@ -3,7 +3,6 @@ import subprocess
 import sys
 
 
-
 def test_django_setup_without_db_warning() -> None:
     env = os.environ.copy()
     env["DJANGO_SETTINGS_MODULE"] = "Hubx.settings"
@@ -19,8 +18,5 @@ def test_django_setup_without_db_warning() -> None:
         text=True,
     )
 
-    assert (
-        "Accessing the database during app initialization is discouraged"
-        not in proc.stderr
-    ), proc.stderr
+    assert "Accessing the database during app initialization is discouraged" not in proc.stderr, proc.stderr
     assert proc.returncode == 0

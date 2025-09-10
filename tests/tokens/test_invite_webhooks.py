@@ -80,9 +80,7 @@ def test_use_convite_triggers_webhook(monkeypatch):
     monkeypatch.setattr("tokens.services.requests.post", fake_post)
 
     admin = UserFactory(is_staff=True)
-    token, _ = create_invite_token(
-        gerado_por=admin, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO
-    )
+    token, _ = create_invite_token(gerado_por=admin, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
     user = UserFactory()
     client = APIClient()
     client.force_authenticate(user=user)
@@ -119,9 +117,7 @@ def test_revogar_convite_triggers_webhook(monkeypatch, client):
     org = OrganizacaoFactory()
     org.users.add(user)
     client.force_login(user)
-    token, _ = create_invite_token(
-        gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO
-    )
+    token, _ = create_invite_token(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
 
     client.get(reverse("tokens:revogar_convite", args=[token.id]))
 
@@ -129,4 +125,3 @@ def test_revogar_convite_triggers_webhook(monkeypatch, client):
     assert payload == {"event": "invite.revoked", "id": str(token.id)}
     expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
     assert calls["headers"]["X-Hubx-Signature"] == expected_sig
-

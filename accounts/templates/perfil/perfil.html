@@ -19,13 +19,13 @@
           <div class="absolute inset-0 w-full h-full bg-[var(--bg-tertiary)] z-0" role="img" aria-label="{% trans "Capa padrão" %}"></div>
         {% endif %}
 
-        <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-shadow">
+        <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-card">
           <div>
         {% if profile.avatar %}
               <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
-                   class="w-28 h-28 rounded-full object-cover shadow mb-3">
+                   class="w-28 h-28 rounded-full object-cover card mb-3">
             {% else %}
-              <div class="w-28 h-28 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-2xl font-semibold shadow mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
+              <div class="w-28 h-28 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-2xl font-semibold card mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
                 {{ profile.username|first|upper }}
               </div>
             {% endif %}

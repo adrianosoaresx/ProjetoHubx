@@ -22,9 +22,7 @@ def revoke_subscription(subscription: WebhookSubscription) -> None:
 
 def emit_event(subscription: WebhookSubscription, event: str, payload: dict[str, Any]) -> WebhookEvent:
     """Cria um evento de webhook e agenda sua entrega."""
-    webhook_event = WebhookEvent.objects.create(
-        subscription=subscription, event=event, payload=payload
-    )
+    webhook_event = WebhookEvent.objects.create(subscription=subscription, event=event, payload=payload)
     from .tasks import deliver_webhook
 
     deliver_webhook.delay(webhook_event.id)

@@ -5,9 +5,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_perfil_publico_respects_privacy(client, django_user_model):
-    public_user = django_user_model.objects.create_user(
-        email="pub@example.com", username="pub", password="pass"
-    )
+    public_user = django_user_model.objects.create_user(email="pub@example.com", username="pub", password="pass")
     private_user = django_user_model.objects.create_user(
         email="priv@example.com", username="priv", password="pass", perfil_publico=False
     )

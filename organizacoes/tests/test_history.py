@@ -45,7 +45,6 @@ def create_org(faker):
     )
 
 
-
 @pytest.mark.parametrize(
     "model, kwargs, field",
     [

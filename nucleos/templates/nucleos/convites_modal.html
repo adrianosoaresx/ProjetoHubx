@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="p-4 bg-[var(--bg-secondary)] rounded shadow max-w-md" id="convites-modal">
+<div class="p-4 bg-[var(--bg-secondary)] rounded card max-w-md" id="convites-modal">
   <h2 class="text-lg font-semibold mb-2">{% trans 'Convites do núcleo' %}</h2>
   <p class="text-sm text-gray-600">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
   <form id="convite-form" class="mt-2 flex flex-col gap-2" hx-post="{% url 'nucleos_api:nucleo-convites' nucleo.pk %}" hx-swap="none">

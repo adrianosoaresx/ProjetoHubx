@@ -12,9 +12,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_login_attempt_created_when_account_locked(rf):
-    user = User.objects.create_user(
-        email="lock@example.com", username="lock", password="pass"
-    )
+    user = User.objects.create_user(email="lock@example.com", username="lock", password="pass")
     cache.set(
         f"lockout_user_{user.pk}",
         timezone.now() + timezone.timedelta(minutes=1),

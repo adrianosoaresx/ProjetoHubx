@@ -52,11 +52,7 @@ def notify_participacao_recusada(participacao_id: int) -> None:
 def notify_suplente_designado(nucleo_id: int, email: str) -> None:
     """Notifica apenas o suplente designado identificado pelo e-mail."""
     nucleo = Nucleo.objects.get(pk=nucleo_id)
-    participacao = (
-        nucleo.participacoes.select_related("user")
-        .filter(user__email=email)
-        .first()
-    )
+    participacao = nucleo.participacoes.select_related("user").filter(user__email=email).first()
     if participacao:
         enviar_para_usuario(
             participacao.user,
@@ -122,9 +118,7 @@ def limpar_contadores_convites() -> None:
 @shared_task
 def expirar_convites_nucleo() -> None:
     agora = timezone.now()
-    expirados = ConviteNucleo.objects.filter(
-        usado_em__isnull=True, data_expiracao__lt=agora
-    )
+    expirados = ConviteNucleo.objects.filter(usado_em__isnull=True, data_expiracao__lt=agora)
     for convite in expirados:
         convite.usado_em = agora
         convite.save(update_fields=["usado_em"])

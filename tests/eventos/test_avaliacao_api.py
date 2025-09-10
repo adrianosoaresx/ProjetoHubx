@@ -97,4 +97,3 @@ def test_avaliar_parceria(api_client: APIClient) -> None:
     parceria.refresh_from_db()
     assert parceria.avaliacao == 5
     assert parceria.comentario == "ok"
-

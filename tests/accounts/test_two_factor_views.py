@@ -27,9 +27,7 @@ def test_enable_2fa_wrong_password_creates_security_event(client, monkeypatch):
     )
 
     assert resp.status_code == 200
-    assert SecurityEvent.objects.filter(
-        usuario=user, evento="2fa_habilitacao_falha", ip="1.1.1.1"
-    ).exists()
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitacao_falha", ip="1.1.1.1").exists()
 
 
 @pytest.mark.django_db
@@ -49,9 +47,7 @@ def test_enable_2fa_wrong_code_creates_security_event(client, monkeypatch):
     )
 
     assert resp.status_code == 200
-    assert SecurityEvent.objects.filter(
-        usuario=user, evento="2fa_habilitacao_falha", ip="1.1.1.2"
-    ).exists()
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_habilitacao_falha", ip="1.1.1.2").exists()
 
 
 @pytest.mark.django_db
@@ -76,9 +72,7 @@ def test_disable_2fa_wrong_password_creates_security_event(client, monkeypatch):
     )
 
     assert resp.status_code == 200
-    assert SecurityEvent.objects.filter(
-        usuario=user, evento="2fa_desabilitacao_falha", ip="2.2.2.2"
-    ).exists()
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitacao_falha", ip="2.2.2.2").exists()
 
 
 @pytest.mark.django_db
@@ -102,6 +96,4 @@ def test_disable_2fa_wrong_code_creates_security_event(client, monkeypatch):
     )
 
     assert resp.status_code == 200
-    assert SecurityEvent.objects.filter(
-        usuario=user, evento="2fa_desabilitacao_falha", ip="2.2.2.3"
-    ).exists()
+    assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitacao_falha", ip="2.2.2.3").exists()

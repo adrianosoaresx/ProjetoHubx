@@ -20,5 +20,3 @@ class NotificationTemplateForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             return self.instance.codigo
         return self.cleaned_data["codigo"]
-
-

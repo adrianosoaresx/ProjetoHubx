@@ -81,11 +81,7 @@ class ConfiguracaoConta(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         ordering = ["-updated_at"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user"], name="configuracao_conta_user_unique"
-            )
-        ]
+        constraints = [models.UniqueConstraint(fields=["user"], name="configuracao_conta_user_unique")]
 
 
 class ConfiguracaoContaLog(TimeStampedModel):

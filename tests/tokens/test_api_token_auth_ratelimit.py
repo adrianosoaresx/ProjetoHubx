@@ -17,6 +17,7 @@ def test_api_token_auth_ratelimit():
         get_redis_connection("default").flushall()
     except Exception:
         from django.core.cache import cache
+
         cache.clear()
 
     user = UserFactory()

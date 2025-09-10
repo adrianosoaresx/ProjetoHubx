@@ -523,5 +523,4 @@ class BookmarkViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):  # pragma: no cover - simples
         return Bookmark.objects.filter(user=self.request.user).select_related("post")
 
-
     # Moderação desativada: serializers e viewsets removidos

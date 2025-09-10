@@ -21,21 +21,15 @@ class AIModerationAPITest(TestCase):
         self.client.force_authenticate(self.user)
 
     def test_rejects_inappropriate_content(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "ruim ruim", "tipo_feed": "global"}
-        )
+        res = self.client.post("/api/feed/posts/", {"conteudo": "ruim ruim", "tipo_feed": "global"})
         self.assertEqual(res.status_code, 400)
 
     def test_flags_suspect_content(self):
-        post = Post.objects.create(
-            autor=self.user, organizacao=self.user.organizacao, conteudo="ruim"
-        )
+        post = Post.objects.create(autor=self.user, organizacao=self.user.organizacao, conteudo="ruim")
         self.assertEqual(post.moderacao.status, "pendente")
 
     def test_multiple_ai_decisions_update_status(self):
-        post = Post.objects.create(
-            autor=self.user, organizacao=self.user.organizacao, conteudo="ok"
-        )
+        post = Post.objects.create(autor=self.user, organizacao=self.user.organizacao, conteudo="ok")
         aplicar_decisao(post, "aceito")
         aplicar_decisao(post, "rejeitado")
         self.assertEqual(ModeracaoPost.objects.filter(post=post).count(), 1)

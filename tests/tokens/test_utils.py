@@ -12,4 +12,3 @@ def test_get_client_ip_fallback_remote_addr(rf):
     request = rf.get("/")
     request.META["REMOTE_ADDR"] = "9.9.9.9"
     assert get_client_ip(request) == "9.9.9.9"
-

@@ -57,12 +57,8 @@ def _send_for_frequency(frequency: str) -> None:
         }
         if sum(counts.values()) == 0:
             continue
-        if (
-            config.receber_notificacoes_email
-            and config.frequencia_notificacoes_email == frequency
-        ) or (
-            config.receber_notificacoes_push
-            and config.frequencia_notificacoes_push == frequency
+        if (config.receber_notificacoes_email and config.frequencia_notificacoes_email == frequency) or (
+            config.receber_notificacoes_push and config.frequencia_notificacoes_push == frequency
         ):
             enviar_para_usuario(config.user, "resumo_notificacoes", counts)
         if config.receber_notificacoes_whatsapp and config.frequencia_notificacoes_whatsapp == frequency:

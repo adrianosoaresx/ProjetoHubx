@@ -85,6 +85,7 @@ def test_coordenador_limita_centro(api_client):
     ids = {item["id"] for item in resp.data}
     assert str(centro1.id) in ids and str(centro2.id) not in ids
 
+
 def test_root_sem_acesso_listagem(api_client):
     user = UserFactory(user_type=UserType.ROOT)
     api_client.force_authenticate(user=user)

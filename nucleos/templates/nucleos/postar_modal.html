@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="p-4 bg-[var(--bg-secondary)] rounded shadow max-w-md">
+<div class="p-4 bg-[var(--bg-secondary)] rounded card max-w-md">
   <h2 class="text-lg font-semibold mb-4">{% trans 'Postar no feed do núcleo' %}</h2>
   <form hx-post="{% url 'nucleos_api:nucleo-posts' nucleo.pk %}"
         hx-encoding="multipart/form-data"

@@ -40,4 +40,3 @@ class BriefingEventoAdmin(admin.ModelAdmin):
 @admin.register(Tarefa)
 class TarefaAdmin(admin.ModelAdmin):
     list_display = ["titulo", "data_inicio", "data_fim", "status"]
-

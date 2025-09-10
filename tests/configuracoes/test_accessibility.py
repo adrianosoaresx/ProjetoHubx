@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright
 
 pytestmark = pytest.mark.django_db
 
+
 def test_configuracoes_sem_violacoes(client, admin_user):
     client.force_login(admin_user)
     response = client.get(reverse("configuracoes"))

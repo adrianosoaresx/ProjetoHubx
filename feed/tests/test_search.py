@@ -45,4 +45,3 @@ class FeedSearchTest(TestCase):
         res = self.client.get("/api/feed/posts/", {"q": "abacate|laranja"})
         ids = self._ids(res.data)
         self.assertEqual(ids.count(str(post.id)), 1)
-

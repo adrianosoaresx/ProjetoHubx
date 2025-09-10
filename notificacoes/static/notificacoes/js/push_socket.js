@@ -23,7 +23,7 @@
       }
       const container = document.getElementById("messages");
       const div = document.createElement("div");
-      div.className = "px-4 py-2 rounded shadow bg-blue-500 text-white";
+      div.className = "px-4 py-2 rounded card bg-blue-500 text-white";
       div.setAttribute("role", "alert");
       div.setAttribute("aria-live", "assertive");
       div.textContent = (data.titulo ? data.titulo + ": " : "") + data.mensagem;

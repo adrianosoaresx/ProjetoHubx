@@ -52,4 +52,3 @@ class FeedCacheTest(TestCase):
         self.client.get("/api/feed/posts/")
         PostFactory(autor=self.user, conteudo="b")
         self.assertEqual(cache.get("other:key"), "value")
-

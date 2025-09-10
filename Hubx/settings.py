@@ -210,16 +210,11 @@ ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
 ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
 # Permite desativar OneSignal mesmo que as chaves existam.
 # Valores aceitos (case-insensitive): 1/true/yes/on para ativar; 0/false/no/off para desativar.
-ONESIGNAL_ENABLED = (
-    os.getenv(
-        "ONESIGNAL_ENABLED",
-        # padrão: ativa somente se houver chaves definidas
-        "1" if (ONESIGNAL_APP_ID and ONESIGNAL_API_KEY) else "0",
-    )
-    .strip()
-    .lower()
-    in {"1", "true", "yes", "on"}
-)
+ONESIGNAL_ENABLED = os.getenv(
+    "ONESIGNAL_ENABLED",
+    # padrão: ativa somente se houver chaves definidas
+    "1" if (ONESIGNAL_APP_ID and ONESIGNAL_API_KEY) else "0",
+).strip().lower() in {"1", "true", "yes", "on"}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -266,7 +261,7 @@ if os.getenv("AWS_STORAGE_BUCKET_NAME"):
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-FEED_IMAGE_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif",".webp"]
+FEED_IMAGE_ALLOWED_EXTS = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
 FEED_PDF_ALLOWED_EXTS = [".pdf"]
 FEED_VIDEO_ALLOWED_EXTS = [".mp4", ".webm"]
 FEED_IMAGE_MAX_SIZE = 5 * 1024 * 1024
@@ -331,7 +326,9 @@ CELERY_BEAT_SCHEDULE = {
     },
     "rotacionar_tokens_proximos_da_expiracao": {
         "task": "tokens.tasks.rotacionar_tokens_proximos_da_expiracao",
-        "schedule": crontab(minute="*" if TOKENS_ROTATE_INTERVAL_MINUTES == 1 else f"*/{TOKENS_ROTATE_INTERVAL_MINUTES}"),
+        "schedule": crontab(
+            minute="*" if TOKENS_ROTATE_INTERVAL_MINUTES == 1 else f"*/{TOKENS_ROTATE_INTERVAL_MINUTES}"
+        ),
     },
     "enviar_relatorios_diarios": {
         "task": "notificacoes.tasks.enviar_relatorios_diarios",
@@ -380,9 +377,12 @@ CELERY_BEAT_SCHEDULE |= {
 
 # Celery - execução síncrona (modo eager) em desenvolvimento por padrão
 # Evita dependência de broker (RabbitMQ/Redis) quando DEBUG=True
-CELERY_TASK_ALWAYS_EAGER = (
-    os.getenv("CELERY_TASK_ALWAYS_EAGER", "1" if DEBUG else "0").lower() in {"1", "true", "yes", "on"}
-)
+CELERY_TASK_ALWAYS_EAGER = os.getenv("CELERY_TASK_ALWAYS_EAGER", "1" if DEBUG else "0").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 # Propaga exceções ao thread principal quando em modo eager (útil para debug)
 CELERY_TASK_EAGER_PROPAGATES = True
 

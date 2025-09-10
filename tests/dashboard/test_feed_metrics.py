@@ -14,9 +14,7 @@ pytestmark = pytest.mark.django_db
 
 def _grant_perm(user):
     ct = ContentType.objects.get_for_model(DashboardConfig)
-    perm, _ = Permission.objects.get_or_create(
-        codename="view_metrics", name="Can view metrics", content_type=ct
-    )
+    perm, _ = Permission.objects.get_or_create(codename="view_metrics", name="Can view metrics", content_type=ct)
     user.user_permissions.add(perm)
 
 
@@ -54,4 +52,3 @@ def test_feed_metrics_view(admin_user):
     assert resp.status_code == 200
     body = resp.json()
     assert "counts" in body and "top_tags" in body
-

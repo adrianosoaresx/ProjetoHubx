@@ -54,6 +54,7 @@ def evento(organizacao, gerente):
         numero_presentes=0,
     )
 
+
 pytestmark = pytest.mark.django_db
 
 
@@ -70,11 +71,13 @@ def test_lista_espera(client, usuario_comum, gerente, evento):
     InscricaoEvento.objects.filter(user=gerente, evento=evento).delete()
     from eventos.tasks import promover_lista_espera
 
-    with patch("eventos.tasks.enviar_para_usuario", lambda *a, **k: None), \
+    with (
+        patch("eventos.tasks.enviar_para_usuario", lambda *a, **k: None),
         patch(
             "eventos.models.InscricaoEvento.gerar_qrcode",
             lambda self: setattr(self, "qrcode_url", "/fake.png"),
-        ):
+        ),
+    ):
         promover_lista_espera(evento.pk)
     ins2.refresh_from_db()
     assert ins2.status == "confirmada"

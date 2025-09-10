@@ -11,4 +11,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         purge_soft_deleted()
         self.stdout.write(self.style.SUCCESS("Purga concluída"))
-

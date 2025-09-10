@@ -19,15 +19,14 @@ def test_validate_ratelimit_increments_metric():
         get_redis_connection("default").flushall()
     except Exception:
         from django.core.cache import cache
+
         cache.clear()
     m.tokens_rate_limited_total._value.set(0)
 
     user = UserFactory(user_type=UserType.ADMIN.value)
     client = APIClient()
     client.force_authenticate(user=user)
-    token, codigo = create_invite_token(
-        gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO
-    )
+    token, codigo = create_invite_token(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
     url = reverse("tokens_api:token-validate") + f"?codigo={codigo}"
 
     resp1 = client.get(url)

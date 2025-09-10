@@ -98,20 +98,11 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
             if self.evento.participantes_maximo and self.evento.espera_habilitada:
                 confirmados = self.evento.inscricoes.filter(status="confirmada").count()
                 if confirmados >= self.evento.participantes_maximo:
-                    pendentes = (
-                        self.evento.inscricoes.filter(status="pendente")
-                        .select_for_update()
-                    )
-                    ultimo = (
-                        pendentes.aggregate(mx=models.Max("posicao_espera"))
-                        .get("mx")
-                        or 0
-                    )
+                    pendentes = self.evento.inscricoes.filter(status="pendente").select_for_update()
+                    ultimo = pendentes.aggregate(mx=models.Max("posicao_espera")).get("mx") or 0
                     self.status = "pendente"
                     self.posicao_espera = ultimo + 1
-                    self.save(
-                        update_fields=["status", "posicao_espera", "updated_at"]
-                    )
+                    self.save(update_fields=["status", "posicao_espera", "updated_at"])
                     return
             self.status = "confirmada"
             self.data_confirmacao = timezone.now()

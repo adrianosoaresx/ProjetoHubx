@@ -124,10 +124,10 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --card-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --card-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --card-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --card-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
@@ -167,10 +167,10 @@
   --error: var(--color-error-600);
   --error-light: var(--color-error-100);
 
-  --shadow-color: rgb(0 0 0 / 0.1);
-  --shadow-light: 0 1px 3px 0 var(--shadow-color);
-  --shadow-medium: 0 4px 6px -1px var(--shadow-color);
-  --shadow-heavy: 0 10px 15px -3px var(--shadow-color);
+  --card-color: rgb(0 0 0 / 0.1);
+  --card-light: 0 1px 3px 0 var(--card-color);
+  --card-medium: 0 4px 6px -1px var(--card-color);
+  --card-heavy: 0 10px 15px -3px var(--card-color);
 
   /* Legacy Matrix theme variable mappings */
   --primary-dark: var(--color-neutral-900);
@@ -219,10 +219,10 @@
     --error: var(--color-error-500);
     --error-light: var(--color-error-900);
 
-    --shadow-color: rgb(0 0 0 / 0.3);
-    --shadow-light: 0 1px 3px 0 var(--shadow-color);
-    --shadow-medium: 0 4px 6px -1px var(--shadow-color);
-    --shadow-heavy: 0 10px 15px -3px var(--shadow-color);
+    --card-color: rgb(0 0 0 / 0.3);
+    --card-light: 0 1px 3px 0 var(--card-color);
+    --card-medium: 0 4px 6px -1px var(--card-color);
+    --card-heavy: 0 10px 15px -3px var(--card-color);
   }
 }
 
@@ -259,10 +259,10 @@
   --error: var(--color-error-500);
   --error-light: var(--color-error-900);
 
-  --shadow-color: rgb(0 0 0 / 0.3);
-  --shadow-light: 0 1px 3px 0 var(--shadow-color);
-  --shadow-medium: 0 4px 6px -1px var(--shadow-color);
-  --shadow-heavy: 0 10px 15px -3px var(--shadow-color);
+  --card-color: rgb(0 0 0 / 0.3);
+  --card-light: 0 1px 3px 0 var(--card-color);
+  --card-medium: 0 4px 6px -1px var(--card-color);
+  --card-heavy: 0 10px 15px -3px var(--card-color);
 }
 
 @layer base {
@@ -327,10 +327,10 @@
     @apply max-w-[1400px] mx-auto px-4;
   }
   .card {
-    @apply rounded-lg border shadow-sm overflow-hidden transition-shadow bg-[var(--bg-secondary)] border-[var(--border)];
+    @apply rounded-lg border card-sm overflow-hidden transition-card bg-[var(--bg-secondary)] border-[var(--border)];
   }
   .card:hover {
-    @apply shadow-md -translate-y-0.5;
+    @apply card-md -translate-y-0.5;
   }
   .card-header {
     @apply p-4 sm:p-6 border-b bg-[var(--bg-tertiary)] border-[var(--border)];
@@ -356,7 +356,7 @@
     border-color: var(--primary);
   }
   .btn-primary:hover:not(:disabled) {
-    @apply -translate-y-px shadow-md;
+    @apply -translate-y-px card-md;
     background-color: var(--primary-hover);
     border-color: var(--primary-hover);
   }
@@ -365,7 +365,7 @@
     border-color: var(--border);
   }
   .btn-secondary:hover:not(:disabled) {
-    @apply -translate-y-px shadow-sm;
+    @apply -translate-y-px card-sm;
     background-color: var(--bg-tertiary);
     border-color: var(--border);
   }
@@ -375,7 +375,7 @@
     border-color: var(--success);
   }
   .btn-success:hover:not(:disabled) {
-    @apply -translate-y-px shadow-md;
+    @apply -translate-y-px card-md;
     background-color: var(--color-success-700);
     border-color: var(--color-success-700);
   }
@@ -385,7 +385,7 @@
     border-color: var(--error);
   }
   .btn-danger:hover:not(:disabled) {
-    @apply -translate-y-px shadow-md;
+    @apply -translate-y-px card-md;
     background-color: var(--color-error-700);
     border-color: var(--color-error-700);
   }
@@ -467,7 +467,7 @@
     @apply opacity-100 visible;
   }
   .modal-content {
-    @apply bg-[var(--bg-secondary)] rounded-lg shadow-lg max-w-lg w-11/12 max-h-[90vh] overflow-y-auto transform scale-90 transition-transform;
+    @apply bg-[var(--bg-secondary)] rounded-lg card-lg max-w-lg w-11/12 max-h-[90vh] overflow-y-auto transform scale-90 transition-transform;
   }
   .modal.active .modal-content {
     @apply scale-100;
@@ -502,7 +502,7 @@
     @apply bg-[var(--bg-tertiary)] border-[var(--border)];
   }
   .dropdown-menu {
-    @apply absolute top-full left-0 min-w-[200px] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md shadow-md z-50 opacity-0 invisible -translate-y-2 transition-all mt-1;
+    @apply absolute top-full left-0 min-w-[200px] bg-[var(--bg-secondary)] border border-[var(--border)] rounded-md card-md z-50 opacity-0 invisible -translate-y-2 transition-all mt-1;
   }
   .dropdown.active .dropdown-menu {
     @apply opacity-100 visible translate-y-0;
@@ -554,7 +554,7 @@
   /* Grid/Card */
   .card-grid { @apply grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4; }
 
-  .card        { @apply bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl shadow p-6 border border-[var(--border)]; }
+  .card        { @apply bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl card p-6 border border-[var(--border)]; }
   .card-header { @apply mb-3 font-semibold; }
   .card-body   { @apply text-sm leading-6; }
   .card-footer { @apply mt-4 pt-4 border-t border-[var(--border)]; }

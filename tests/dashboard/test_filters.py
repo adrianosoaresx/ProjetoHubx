@@ -51,4 +51,3 @@ def test_filter_form_rejects_invalid_metric(admin_user):
     assert form.is_valid()
     with pytest.raises(ValidationError):
         form.save(admin_user, {"metricas": ["desconhecida"]})
-

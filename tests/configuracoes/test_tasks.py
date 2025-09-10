@@ -61,9 +61,7 @@ def test_tarefa_diaria_envia_resumo_push(mock_enviar, admin_user):
 @patch("configuracoes.tasks.send_whatsapp")
 def test_enviar_notificacao_whatsapp(mock_send, admin_user):
     enviar_notificacao_whatsapp(admin_user, {"feed": 1, "eventos": 0})
-    mock_send.assert_called_once_with(
-        admin_user, "Resumo: feed=1, eventos=0"
-    )
+    mock_send.assert_called_once_with(admin_user, "Resumo: feed=1, eventos=0")
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")

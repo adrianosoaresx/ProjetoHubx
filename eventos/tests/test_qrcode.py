@@ -24,9 +24,7 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
         "gerar_qrcode",
         lambda self: setattr(self, "qrcode_url", "/fake-qrcode.png"),
     )
-    organizacao = Organizacao.objects.create(
-        nome="Org Teste", cnpj="00000000000191"
-    )
+    organizacao = Organizacao.objects.create(nome="Org Teste", cnpj="00000000000191")
     usuario = User.objects.create_user(
         username="usuario",
         email="u@example.com",
@@ -61,4 +59,3 @@ def test_usuario_ve_qrcode_apos_inscricao(client, monkeypatch):
     assert inscricao.status == "confirmada"
     assert inscricao.qrcode_url
     assert inscricao.qrcode_url in response.content.decode()
-

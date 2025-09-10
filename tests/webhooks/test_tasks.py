@@ -19,9 +19,7 @@ def test_remover_eventos_antigos_deletes_only_old_delivered_events():
         delivered=True,
         created_at=timezone.now() - timezone.timedelta(days=40),
     )
-    recent_delivered = WebhookEvent.objects.create(
-        subscription=sub, event="e", payload={}, delivered=True
-    )
+    recent_delivered = WebhookEvent.objects.create(subscription=sub, event="e", payload={}, delivered=True)
     old_pending = WebhookEvent.objects.create(
         subscription=sub,
         event="e",

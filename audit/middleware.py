@@ -20,12 +20,8 @@ class AuditMiddleware:
             if request.path.startswith("/dashboard"):
                 user = request.user if request.user.is_authenticated else None
                 ip = get_client_ip(request)
-                metadata = (
-                    request.GET.dict() if request.method == "GET" else request.POST.dict()
-                )
-                status = (
-                    "SUCCESS" if 200 <= response.status_code < 400 else "FAILURE"
-                )
+                metadata = request.GET.dict() if request.method == "GET" else request.POST.dict()
+                status = "SUCCESS" if 200 <= response.status_code < 400 else "FAILURE"
                 action = f"{request.method}:{request.path}"
                 async_to_sync(log_audit_async)(
                     user=user,

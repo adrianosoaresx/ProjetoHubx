@@ -12,11 +12,11 @@ from .auditoria import log_financeiro
 from .notificacoes import enviar_ajuste
 
 
-def ajustar_lancamento(lancamento_id: str, valor_corrigido: Decimal, descricao_motivo: str, usuario=None) -> LancamentoFinanceiro:
+def ajustar_lancamento(
+    lancamento_id: str, valor_corrigido: Decimal, descricao_motivo: str, usuario=None
+) -> LancamentoFinanceiro:
     """Realiza ajuste em um lançamento pago."""
-    lancamento = LancamentoFinanceiro.objects.select_related("centro_custo", "conta_associado").get(
-        pk=lancamento_id
-    )
+    lancamento = LancamentoFinanceiro.objects.select_related("centro_custo", "conta_associado").get(pk=lancamento_id)
     if lancamento.status != LancamentoFinanceiro.Status.PAGO or lancamento.ajustado:
         raise ValidationError("Lançamento não pode ser ajustado")
 

@@ -11,9 +11,11 @@ from accounts.models import User, UserType
 from eventos.models import Evento, InscricaoEvento
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
+
 # O app 'discussao' foi removido. Tornamos a dependência opcional.
 try:  # pragma: no cover - compat sem app
     from discussao.models import RespostaDiscussao, TopicoDiscussao  # type: ignore
+
     DISCUSSAO_INSTALLED = True
 except Exception:  # ImportError ou qualquer falha ao carregar
     RespostaDiscussao = None  # type: ignore
@@ -569,7 +571,7 @@ class DashboardMetricsService:
             "evento_id": str(evento_id) if evento_id is not None else None,
             **{k: str(v) for k, v in extra_filters.items()},
         }
-        cache_key = f"dashboard-{user.pk}-{user.user_type}-{escopo}-" f"{json.dumps(cache_filters, sort_keys=True)}"
+        cache_key = f"dashboard-{user.pk}-{user.user_type}-{escopo}-{json.dumps(cache_filters, sort_keys=True)}"
         cached = cache.get(cache_key)
         if cached:
             return cached

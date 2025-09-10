@@ -41,4 +41,3 @@ class FeedQueryCountTest(TestCase):
         manual_queries = len(ctx_manual)
 
         self.assertLess(annotated_queries, manual_queries)
-

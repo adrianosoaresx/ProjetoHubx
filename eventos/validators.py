@@ -28,4 +28,3 @@ def validate_uploaded_file(f):
         max_size = 10 * 1024 * 1024
     if f.size > max_size:
         raise ValidationError(_("Arquivo excede o tamanho máximo permitido."))
-

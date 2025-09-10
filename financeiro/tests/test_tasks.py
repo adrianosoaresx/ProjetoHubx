@@ -23,9 +23,7 @@ def test_gerar_cobrancas_mensais(settings):
     ContaAssociado.objects.create(user=user)
     gerar_cobrancas_mensais()
     assert LancamentoFinanceiro.objects.filter(status="pendente").exists()
-    assert FinanceiroTaskLog.objects.filter(
-        nome_tarefa="gerar_cobrancas_mensais", status="sucesso"
-    ).exists()
+    assert FinanceiroTaskLog.objects.filter(nome_tarefa="gerar_cobrancas_mensais", status="sucesso").exists()
 
 
 def test_importar_pagamentos_async_log(monkeypatch, tmp_path):
@@ -47,6 +45,4 @@ def test_importar_pagamentos_async_log(monkeypatch, tmp_path):
     )
 
     importar_pagamentos_async(str(csv_path), str(user.id), str(importacao.id))
-    assert FinanceiroTaskLog.objects.filter(
-        nome_tarefa="importar_pagamentos_async", status="sucesso"
-    ).exists()
+    assert FinanceiroTaskLog.objects.filter(nome_tarefa="importar_pagamentos_async", status="sucesso").exists()

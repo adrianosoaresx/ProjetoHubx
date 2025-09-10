@@ -91,4 +91,3 @@ def notificar_briefing_status(
         enviar_para_usuario(user, "eventos_briefing_status", contexto)
 
     logger.info("Briefing %s mudou para %s", briefing_id, status)
-

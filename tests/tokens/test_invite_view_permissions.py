@@ -53,9 +53,7 @@ def test_get_permissions(client, issuer_type, allowed):
 
 
 def test_root_form_has_all_orgs_and_no_nucleos(client):
-    user = UserFactory(
-        user_type=UserType.ROOT.value, is_staff=True, is_superuser=True
-    )
+    user = UserFactory(user_type=UserType.ROOT.value, is_staff=True, is_superuser=True)
     org1 = OrganizacaoFactory()
     org2 = OrganizacaoFactory()
     _login(client, user)

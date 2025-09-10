@@ -30,9 +30,7 @@ def search_empresas(user, params):
     if mostrar_excluidas == "1" and user.user_type == UserType.ADMIN:
         qs = Empresa.all_objects.select_related("organizacao", "usuario").prefetch_related("tags")
     else:
-        qs = (
-            Empresa.objects.select_related("organizacao", "usuario").prefetch_related("tags")
-        )
+        qs = Empresa.objects.select_related("organizacao", "usuario").prefetch_related("tags")
         qs = qs.filter(deleted=False)
 
     if user.is_superuser:
@@ -69,9 +67,7 @@ def search_empresas(user, params):
             tags = [tags]
         qs = (
             qs.filter(tags__in=tags)
-            .annotate(
-                num_tags=Count("tags", filter=Q(tags__in=tags), distinct=True)
-            )
+            .annotate(num_tags=Count("tags", filter=Q(tags__in=tags), distinct=True))
             .filter(num_tags=len(tags))
             .distinct()
         )

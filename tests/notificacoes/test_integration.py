@@ -25,4 +25,3 @@ def test_chamada_por_modulo_externo(monkeypatch):
 
     assert called.get("count") == 1
     assert NotificationLog.objects.count() == 1
-

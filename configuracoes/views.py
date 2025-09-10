@@ -29,14 +29,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
     def get_user(self) -> AbstractBaseUser:
         if not hasattr(self, "_user_cache"):
             User = get_user_model()
-            self._user_cache = User.objects.select_related("configuracao").get(
-                pk=self.request.user.pk
-            )
+            self._user_cache = User.objects.select_related("configuracao").get(pk=self.request.user.pk)
         return self._user_cache
 
-    def get_form(
-        self, tab: str | None, data: dict[str, Any] | None = None, files: Any | None = None
-    ) -> forms.Form:
+    def get_form(self, tab: str | None, data: dict[str, Any] | None = None, files: Any | None = None) -> forms.Form:
         tab = tab or "seguranca"
         if tab not in self.form_classes:
             raise Http404
@@ -131,5 +127,3 @@ class ConfiguracoesView(LoginRequiredMixin, View):
                 samesite="Lax",
             )
         return response
-
-

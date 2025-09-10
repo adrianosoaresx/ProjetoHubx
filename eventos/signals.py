@@ -25,9 +25,7 @@ def _inscricao_trigger_waitlist(sender, instance, created, **kwargs):
         return
     old_status = getattr(instance, "_old_status", None)
     old_deleted = getattr(instance, "_old_deleted", False)
-    if (instance.status == "cancelada" and old_status != "cancelada") or (
-        instance.deleted and not old_deleted
-    ):
+    if (instance.status == "cancelada" and old_status != "cancelada") or (instance.deleted and not old_deleted):
         promover_lista_espera.delay(str(instance.evento_id))
 
 
@@ -49,4 +47,3 @@ def _evento_trigger_waitlist(sender, instance, created, **kwargs):
     new = instance.participantes_maximo
     if new is not None and (old is None or new > old):
         promover_lista_espera.delay(str(instance.pk))
-

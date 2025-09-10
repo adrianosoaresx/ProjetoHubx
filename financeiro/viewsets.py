@@ -89,9 +89,9 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
                 return datetime(dt.year, dt.month, 1)
             return None
 
-        if (inicio := _parse(params.get("periodo_inicial"))):
+        if inicio := _parse(params.get("periodo_inicial")):
             qs = qs.filter(data_lancamento__gte=inicio)
-        if (fim := _parse(params.get("periodo_final"))):
+        if fim := _parse(params.get("periodo_final")):
             last_day = monthrange(fim.year, fim.month)[1]
             limite = datetime(fim.year, fim.month, last_day) + timezone.timedelta(days=1)
             qs = qs.filter(data_lancamento__lt=limite)
@@ -116,9 +116,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             lancamento.status = novo_status
             lancamento.save(update_fields=["status"])
             if novo_status == LancamentoFinanceiro.Status.PAGO:
-                CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(
-                    saldo=F("saldo") + lancamento.valor
-                )
+                CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
                 if lancamento.conta_associado_id:
                     ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
                         saldo=F("saldo") + lancamento.valor
@@ -147,9 +145,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
         with transaction.atomic():
             lancamento.status = LancamentoFinanceiro.Status.PAGO
             lancamento.save(update_fields=["status"])
-            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(
-                saldo=F("saldo") + lancamento.valor
-            )
+            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
             if lancamento.conta_associado_id:
                 ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
                     saldo=F("saldo") + lancamento.valor
@@ -184,6 +180,7 @@ class ImportacaoPagamentosViewSet(mixins.ListModelMixin, mixins.RetrieveModelMix
 
     serializer_class = ImportacaoPagamentosSerializer
     permission_classes = [IsAuthenticated, IsNotRoot]
+
     class _Pagination(PageNumberPagination):
         page_size = 10
 
@@ -297,18 +294,15 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
         if escopo == "organizacao":
             autorizado = str(user.organizacao_id) == id_ref
         elif escopo == "nucleo":
-            autorizado = Nucleo.objects.filter(
-                id=id_ref, organizacao_id=user.organizacao_id
-            ).exists()
+            autorizado = Nucleo.objects.filter(id=id_ref, organizacao_id=user.organizacao_id).exists()
         elif escopo == "centro":
-            autorizado = CentroCusto.objects.filter(pk=id_ref).filter(
-                Q(organizacao_id=user.organizacao_id)
-                | Q(nucleo__organizacao_id=user.organizacao_id)
-            ).exists()
+            autorizado = (
+                CentroCusto.objects.filter(pk=id_ref)
+                .filter(Q(organizacao_id=user.organizacao_id) | Q(nucleo__organizacao_id=user.organizacao_id))
+                .exists()
+            )
         elif escopo == "evento":
-            autorizado = Evento.objects.filter(
-                id=id_ref, organizacao_id=user.organizacao_id
-            ).exists()
+            autorizado = Evento.objects.filter(id=id_ref, organizacao_id=user.organizacao_id).exists()
         else:
             return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
         if not autorizado:
@@ -318,9 +312,7 @@ class FinanceiroForecastViewSet(viewsets.ViewSet):
         if escopo == "organizacao":
             permitido = str(getattr(user, "organizacao_id", "")) == id_ref
         elif escopo == "nucleo":
-            permitido = Nucleo.objects.filter(
-                id=id_ref, organizacao_id=getattr(user, "organizacao_id", None)
-            ).exists()
+            permitido = Nucleo.objects.filter(id=id_ref, organizacao_id=getattr(user, "organizacao_id", None)).exists()
         elif escopo == "centro":
             permitido = (
                 CentroCusto.objects.filter(id=id_ref)
@@ -417,4 +409,3 @@ __all__ = [
     "FinanceiroTaskLogViewSet",
     "IntegracaoConfigViewSet",
 ]
-

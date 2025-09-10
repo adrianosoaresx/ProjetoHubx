@@ -55,7 +55,6 @@ from ..permissions import (
     IsCoordenador,
     IsFinanceiroOrAdmin,
     IsNotRoot,
-
 )
 from .pages import (
     aportes_form_view,
@@ -582,7 +581,6 @@ def forecast_view(request):
 def aportes_form_view(request):
     centros = CentroCusto.objects.all()
     return render(request, "financeiro/aportes_form.html", {"centros": centros})
-
 
 
 __all__ = [

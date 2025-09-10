@@ -11,10 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def _credentials_configured() -> bool:
-    return all(
-        getattr(settings, attr, None)
-        for attr in ("TWILIO_SID", "TWILIO_TOKEN", "TWILIO_WHATSAPP_FROM")
-    )
+    return all(getattr(settings, attr, None) for attr in ("TWILIO_SID", "TWILIO_TOKEN", "TWILIO_WHATSAPP_FROM"))
 
 
 def send_whatsapp(user, message: str) -> None:

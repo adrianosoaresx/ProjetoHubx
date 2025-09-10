@@ -11,6 +11,7 @@ User = get_user_model()
 @dataclass
 class CustomItem:
     """Representa item customizado injetado por plugin."""
+
     conteudo: str
 
 

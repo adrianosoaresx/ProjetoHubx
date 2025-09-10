@@ -17,15 +17,17 @@ pytestmark = pytest.mark.django_db
 def make_csv(rows):
     buf = StringIO()
     writer = csv.writer(buf)
-    writer.writerow([
-        "centro_custo_id",
-        "conta_associado_id",
-        "tipo",
-        "valor",
-        "data_lancamento",
-        "data_vencimento",
-        "status",
-    ])
+    writer.writerow(
+        [
+            "centro_custo_id",
+            "conta_associado_id",
+            "tipo",
+            "valor",
+            "data_lancamento",
+            "data_vencimento",
+            "status",
+        ]
+    )
     writer.writerows(rows)
     return buf.getvalue().encode()
 

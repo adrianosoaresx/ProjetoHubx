@@ -21,7 +21,9 @@ def test_ajuste_lancamento_pago():
         status=LancamentoFinanceiro.Status.PAGO,
     )
     ajustar_lancamento(lanc.id, Decimal("150"), "correcao", user)
-    centro.refresh_from_db(); conta.refresh_from_db(); lanc.refresh_from_db()
+    centro.refresh_from_db()
+    conta.refresh_from_db()
+    lanc.refresh_from_db()
     assert centro.saldo == Decimal("150")
     assert conta.saldo == Decimal("150")
     assert lanc.ajustado is True

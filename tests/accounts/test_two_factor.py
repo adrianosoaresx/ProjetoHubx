@@ -102,7 +102,6 @@ def test_disable_2fa_flow(client):
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitado").exists()
 
 
-
 @pytest.mark.django_db
 def test_enable_2fa_wrong_password_api():
     user = User.objects.create_user(email="e@e.com", username="e", password="Strong!123")
@@ -137,4 +136,3 @@ def test_disable_2fa_wrong_password_api():
     user.refresh_from_db()
     assert user.two_factor_enabled is True
     assert SecurityEvent.objects.filter(usuario=user, evento="2fa_desabilitacao_falha").exists()
-

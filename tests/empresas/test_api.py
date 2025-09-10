@@ -270,9 +270,7 @@ def test_busca_por_organizacao_superuser(api_client, admin_user):
         municipio="Y",
         estado="PR",
     )
-    root = User.objects.create_superuser(
-        email="root@example.com", username="root", password="pass"
-    )
+    root = User.objects.create_superuser(email="root@example.com", username="root", password="pass")
     api_client.force_authenticate(root)
     url = reverse("empresas_api:empresa-list") + f"?organizacao={org2.id}"
     resp = api_client.get(url)
@@ -304,10 +302,7 @@ def test_busca_combinada(api_client, gerente_user, tag_factory):
         estado="SC",
         palavras_chave="tech",
     )
-    url = (
-        reverse("empresas_api:empresa-list")
-        + f"?municipio=Florianopolis&estado=SC&tags={tag.id}&q=saude"
-    )
+    url = reverse("empresas_api:empresa-list") + f"?municipio=Florianopolis&estado=SC&tags={tag.id}&q=saude"
     resp = api_client.get(url)
     ids = {e["id"] for e in resp.data}
     assert ids == {str(e1.id)}
@@ -362,9 +357,7 @@ def test_atualizar_avaliacao(api_client, gerente_user):
         municipio="X",
         estado="SC",
     )
-    AvaliacaoEmpresa.objects.create(
-        empresa=empresa, usuario=gerente_user, nota=3, comentario="old"
-    )
+    AvaliacaoEmpresa.objects.create(empresa=empresa, usuario=gerente_user, nota=3, comentario="old")
     url = reverse("empresas_api:empresa-avaliacoes", args=[empresa.id])
 
     resp = api_client.patch(url, {"nota": 4})
@@ -380,7 +373,6 @@ def test_atualizar_avaliacao(api_client, gerente_user):
 
 
 def test_historico_restrito(api_client, gerente_user, admin_user):
-
     empresa = Empresa.objects.create(
         usuario=gerente_user,
         organizacao=gerente_user.organizacao,

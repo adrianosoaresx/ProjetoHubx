@@ -69,7 +69,9 @@ def distribuir_receita_evento(
     valor = Decimal(valor)
     with transaction.atomic():
         if evento.nucleo:
-            centro_nucleo = evento.nucleo.centros_custo.filter(tipo=CentroCusto.Tipo.NUCLEO).order_by("created_at").first()
+            centro_nucleo = (
+                evento.nucleo.centros_custo.filter(tipo=CentroCusto.Tipo.NUCLEO).order_by("created_at").first()
+            )
             if not centro_nucleo:
                 raise ValidationError("Núcleo sem centro de custo")
             lanc = LancamentoFinanceiro.objects.create(

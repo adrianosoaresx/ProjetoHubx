@@ -21,15 +21,7 @@ class ToggleLikeRateLimitTest(TestCase):
         url = reverse("feed:toggle_like", args=[self.post.id])
         first = self.client.post(url)
         self.assertEqual(first.status_code, 302)
-        self.assertTrue(
-            Reacao.objects.filter(
-                post=self.post, user=self.user, vote="like", deleted=False
-            ).exists()
-        )
+        self.assertTrue(Reacao.objects.filter(post=self.post, user=self.user, vote="like", deleted=False).exists())
         second = self.client.post(url)
         self.assertEqual(second.status_code, 429)
-        self.assertTrue(
-            Reacao.objects.filter(
-                post=self.post, user=self.user, vote="like", deleted=False
-            ).exists()
-        )
+        self.assertTrue(Reacao.objects.filter(post=self.post, user=self.user, vote="like", deleted=False).exists())

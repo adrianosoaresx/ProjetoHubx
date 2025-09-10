@@ -129,17 +129,13 @@ def test_avaliacao_comentario_hx_request(client, nucleado_user):
 @pytest.mark.django_db
 def test_avaliacao_update_requires_active(client, nucleado_user):
     empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
-    AvaliacaoEmpresa.objects.create(
-        empresa=empresa, usuario=nucleado_user, nota=5, deleted=True
-    )
+    AvaliacaoEmpresa.objects.create(empresa=empresa, usuario=nucleado_user, nota=5, deleted=True)
     client.force_login(nucleado_user)
     url = reverse("empresas:avaliacao_editar", args=[empresa.pk])
     resp = client.get(url)
     assert resp.status_code == 404
     msgs = [m.message for m in get_messages(resp.wsgi_request)]
     assert any("nenhuma avaliação ativa" in m.lower() for m in msgs)
-
-
 
 
 @pytest.mark.django_db
@@ -172,6 +168,8 @@ def test_historico_view_permissions(client, admin_user, nucleado_user, gerente_u
     resp = client.get(url)
     assert resp.status_code == 200
     assert "nome" in resp.content.decode()
+
+
 @pytest.mark.django_db
 def test_historico_link_visibility(client, admin_user, nucleado_user, gerente_user):
     empresa = EmpresaFactory(usuario=nucleado_user, organizacao=nucleado_user.organizacao)
@@ -185,4 +183,3 @@ def test_historico_link_visibility(client, admin_user, nucleado_user, gerente_us
     client.force_login(gerente_user)
     resp = client.get(url)
     assert "Histórico" not in resp.content.decode()
-

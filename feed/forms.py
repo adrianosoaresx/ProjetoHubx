@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from accounts.models import UserType
+
 # Moderação desativada: sem análise por IA
 from organizacoes.models import Organizacao
 
@@ -36,7 +37,7 @@ class PostForm(forms.ModelForm):
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={
-                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
+                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 4,
                     "placeholder": "Compartilhe algo...",
                 }
@@ -161,7 +162,7 @@ class CommentForm(forms.ModelForm):
             "reply_to": forms.HiddenInput(),
             "texto": forms.Textarea(
                 attrs={
-                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
+                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 3,
                     "placeholder": "Escreva um comentário...",
                 }

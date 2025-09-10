@@ -92,7 +92,7 @@
         <textarea
           id="{{ form.conteudo.id_for_label }}"
           name="{{ form.conteudo.name }}"
-          class="mt-1 block w-full rounded-xl border border-[var(--border)] shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
+          class="mt-1 block w-full rounded-xl border border-[var(--border)] card-sm focus:ring-primary-500 focus:border-primary-500 text-sm"
           placeholder="{% trans 'O que você gostaria de compartilhar?' %}"
           rows="6"
         >{{ form.conteudo.value|default_if_none:"" }}</textarea>
@@ -118,7 +118,7 @@
           <input
             type="text"
             id="tags-input"
-            class="flex-1 mt-1 block rounded-xl border border-[var(--border)] shadow-sm focus:ring-primary-500 focus:border-primary-500 text-sm px-3 py-2"
+            class="flex-1 mt-1 block rounded-xl border border-[var(--border)] card-sm focus:ring-primary-500 focus:border-primary-500 text-sm px-3 py-2"
             placeholder="{% trans 'Digite e pressione Enter ou vírgula para adicionar' %}"
             autocomplete="off"
           />

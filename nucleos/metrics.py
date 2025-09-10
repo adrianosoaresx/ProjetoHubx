@@ -14,4 +14,3 @@ membros_suspensos_total = Counter(
     "membros_suspensos_total",
     "Total de suspensões de membros em núcleos",
 )
-

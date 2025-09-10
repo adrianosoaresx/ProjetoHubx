@@ -14,9 +14,7 @@ pytestmark = pytest.mark.django_db
 
 def test_find_token_by_code_single_query(django_assert_num_queries):
     user = UserFactory(user_type=UserType.ADMIN.value)
-    token, codigo = create_invite_token(
-        gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO
-    )
+    token, codigo = create_invite_token(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
     with django_assert_num_queries(1):
         encontrado = find_token_by_code(codigo)
     assert encontrado.id == token.id

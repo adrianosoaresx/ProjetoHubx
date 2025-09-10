@@ -4,6 +4,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
 def send_email(user, subject: str, body: str) -> None:
     """Enviar e-mail usando backend configurado."""
     try:

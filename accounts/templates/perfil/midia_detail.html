@@ -6,13 +6,13 @@
 {% block perfil_content %}
 <section class="space-y-4">
   {% if media.media_type == 'image' %}
-    <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded shadow max-w-full mx-auto" />
+    <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded card max-w-full mx-auto" />
   {% elif media.media_type == 'video' %}
-    <video src="{{ media.file.url }}" class="rounded shadow max-w-full mx-auto" controls aria-label="{{ media.descricao }}">
+    <video src="{{ media.file.url }}" class="rounded card max-w-full mx-auto" controls aria-label="{{ media.descricao }}">
       {% trans "Seu navegador não suporta o elemento de vídeo." %}
     </video>
   {% elif media.media_type == 'pdf' %}
-    <object data="{{ media.file.url }}" type="application/pdf" class="rounded shadow max-w-full mx-auto" aria-label="{{ media.descricao }}" width="100%" height="600">
+    <object data="{{ media.file.url }}" type="application/pdf" class="rounded card max-w-full mx-auto" aria-label="{{ media.descricao }}" width="100%" height="600">
       <embed src="{{ media.file.url }}" type="application/pdf" />
       <p class="text-center text-gray-700">
         {% trans "Este navegador não suporta visualização de PDF." %}

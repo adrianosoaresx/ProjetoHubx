@@ -12,9 +12,7 @@ pytestmark = pytest.mark.urls("Hubx.urls")
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(
-        nome="Org", cnpj="00.000.000/0001-00", slug="org"
-    )
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -46,9 +44,7 @@ def test_criar_tarefa_log(client, admin_user):
     )
     assert resp.status_code == 302
     tarefa = Tarefa.objects.get(titulo="Teste")
-    assert TarefaLog.objects.filter(
-        tarefa=tarefa, acao="tarefa_criada", usuario=admin_user
-    ).exists()
+    assert TarefaLog.objects.filter(tarefa=tarefa, acao="tarefa_criada", usuario=admin_user).exists()
 
 
 @pytest.mark.django_db
@@ -78,6 +74,4 @@ def test_atualizar_tarefa_log(client, admin_user):
     assert resp.status_code == 302
     tarefa.refresh_from_db()
     assert tarefa.titulo == "New"
-    assert TarefaLog.objects.filter(
-        tarefa=tarefa, acao="tarefa_atualizada", usuario=admin_user
-    ).exists()
+    assert TarefaLog.objects.filter(tarefa=tarefa, acao="tarefa_atualizada", usuario=admin_user).exists()

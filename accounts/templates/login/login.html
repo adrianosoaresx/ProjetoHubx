@@ -25,7 +25,7 @@
           <input type="email" id="id_email" name="email"
                  value="{{ form.email.value|default_if_none:'' }}"
                  autocomplete="email"
-                 class="peer form-input w-full p-3 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                  placeholder="{% trans 'Email' %}"
                  required
                  aria-label="{% trans 'Email' %}"
@@ -42,7 +42,7 @@
         <div class="relative">
           <input type="password" id="id_password" name="password"
                  autocomplete="current-password"
-                 class="peer form-input w-full p-3 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                  placeholder="{% trans 'Senha' %}"
                  required
                  aria-label="{% trans 'Senha' %}"
@@ -60,7 +60,7 @@
           <input type="text" id="id_totp" name="totp"
                  value="{{ form.totp.value|default_if_none:'' }}"
                  autocomplete="one-time-code"
-                 class="peer form-input w-full p-3 rounded-lg text-sm shadow-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                 class="peer form-input w-full p-3 rounded-lg text-sm card-sm focus:ring-2 focus:ring-primary focus:border-transparent"
                  placeholder="{% trans 'TOTP' %}"
                  aria-label="{% trans 'TOTP' %}"
                  aria-describedby="totp-error"
@@ -74,7 +74,7 @@
         {% endif %}
       </div>
       <button type="submit"
-              class="w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold text-sm shadow hover:bg-primary/90 transition">
+              class="w-full bg-primary text-white py-3 px-4 rounded-xl font-semibold text-sm card hover:bg-primary/90 transition">
         {% trans "Entrar" %}
       </button>
     </form>

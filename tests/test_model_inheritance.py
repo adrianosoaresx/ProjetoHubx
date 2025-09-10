@@ -19,11 +19,7 @@ def serialized_models() -> set[type[models.Model]]:
             pass
 
     def all_subclasses(cls: type) -> set[type]:
-        return {
-            subclass
-            for subclass in cls.__subclasses__()
-            for subclass in all_subclasses(subclass) | {subclass}
-        }
+        return {subclass for subclass in cls.__subclasses__() for subclass in all_subclasses(subclass) | {subclass}}
 
     models_found: set[type[models.Model]] = set()
     for serializer in all_subclasses(ModelSerializer):
@@ -43,9 +39,9 @@ def test_models_use_timestamp_and_soft_delete(serialized_models: set[type[models
         if model.__name__.startswith("Historical"):
             continue
 
-        assert any(
-            base.__name__ == "TimeStampedModel" for base in model.__mro__
-        ), f"{model.__name__} must inherit TimeStampedModel"
+        assert any(base.__name__ == "TimeStampedModel" for base in model.__mro__), (
+            f"{model.__name__} must inherit TimeStampedModel"
+        )
 
         requires_soft_delete = False
         if model in serialized_models:
@@ -55,6 +51,4 @@ def test_models_use_timestamp_and_soft_delete(serialized_models: set[type[models
                         requires_soft_delete = True
                         break
         if requires_soft_delete:
-            assert issubclass(
-                model, SoftDeleteModel
-            ), f"{model.__name__} must inherit SoftDeleteModel"
+            assert issubclass(model, SoftDeleteModel), f"{model.__name__} must inherit SoftDeleteModel"

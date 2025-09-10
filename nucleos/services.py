@@ -83,5 +83,3 @@ def registrar_uso_convite(convite: ConviteNucleo) -> None:
         raise ValueError("limite diário de uso do convite atingido")
     # Armazena por 24h para reiniciar a contagem a cada dia
     cache.set(cache_key, count + 1, 24 * 60 * 60)
-
-

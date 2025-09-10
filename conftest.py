@@ -25,6 +25,7 @@ test_environment_setup = False
 # Bloqueio para evitar execuções simultâneas
 test_environment_lock = threading.Lock()
 
+
 # Ajuste para evitar chamadas redundantes de setup_test_environment
 @pytest.fixture(scope="session", autouse=True)
 def setup_django():
@@ -53,6 +54,7 @@ def setup_django():
             except RuntimeError as e:
                 logger.error(f"Erro ao desmontar o ambiente de teste: {e}")
 
+
 @pytest.fixture(scope="function", autouse=True)
 def enable_db_access_for_all_tests(db):
     """Habilita o acesso ao banco de dados para todos os testes."""
@@ -67,6 +69,7 @@ def admin_user(django_user_model):
         username="admin",
         password="password",
     )
+
 
 def pytest_configure():
     """Configura o Django para os testes, garantindo inicialização única."""

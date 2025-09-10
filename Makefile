@@ -21,11 +21,11 @@ test:
 
 # Verificação de segurança com Bandit
 security:
-        bandit -r . --exclude $(LINT_EXCLUDE) --severity-level medium -f short
+	bandit -r . --exclude $(LINT_EXCLUDE) --severity-level medium -f short
 
 .PHONY: openapi
 openapi:
-        python manage.py spectacular --file openapi-schema.yml
+	python manage.py spectacular --file openapi-schema.yml
 
 .PHONY: collectstatic
 collectstatic:

@@ -52,9 +52,7 @@ class ConfiguracaoContaViewSet(ViewSet):
         start = time.monotonic()
         serializer = ConfiguracaoContaSerializer(self._get_object())
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="GET").observe(
-            time.monotonic() - start
-        )
+        metrics.config_api_latency_seconds.labels(method="GET").observe(time.monotonic() - start)
         return resp
 
     @extend_schema(
@@ -75,9 +73,7 @@ class ConfiguracaoContaViewSet(ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="PUT").observe(
-            time.monotonic() - start
-        )
+        metrics.config_api_latency_seconds.labels(method="PUT").observe(time.monotonic() - start)
         return resp
 
     @extend_schema(
@@ -94,15 +90,11 @@ class ConfiguracaoContaViewSet(ViewSet):
     def partial_update(self, request) -> Response:
         start = time.monotonic()
         obj = self._get_object()
-        serializer = ConfiguracaoContaSerializer(
-            obj, data=request.data, partial=True
-        )
+        serializer = ConfiguracaoContaSerializer(obj, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         resp = Response(serializer.data)
-        metrics.config_api_latency_seconds.labels(method="PATCH").observe(
-            time.monotonic() - start
-        )
+        metrics.config_api_latency_seconds.labels(method="PATCH").observe(time.monotonic() - start)
         return resp
 
 
@@ -140,4 +132,3 @@ class TestarNotificacaoView(APIView):
             {},
         )
         return Response({"detail": "enviado"})
-

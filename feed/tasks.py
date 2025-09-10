@@ -23,12 +23,8 @@ from .models import FeedPluginConfig, Post
 logger = logging.getLogger(__name__)
 
 POSTS_CREATED = Counter("feed_posts_created_total", "Total de posts criados")
-NOTIFICATIONS_SENT = Counter(
-    "feed_notifications_sent_total", "Total de notificações de novos posts"
-)
-NOTIFICATION_LATENCY = Histogram(
-    "feed_notification_latency_seconds", "Latência do envio de notificações"
-)
+NOTIFICATIONS_SENT = Counter("feed_notifications_sent_total", "Total de notificações de novos posts")
+NOTIFICATION_LATENCY = Histogram("feed_notification_latency_seconds", "Latência do envio de notificações")
 
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
@@ -44,7 +40,6 @@ def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
-
 
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
@@ -75,13 +70,12 @@ def notify_post_moderated(post_id: str, status: str) -> None:
     except Post.DoesNotExist:  # pragma: no cover - simples
         return
     try:
-        enviar_para_usuario(
-            post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status}
-        )
+        enviar_para_usuario(post.autor, "feed_post_moderated", {"post_id": str(post.id), "status": status})
         NOTIFICATIONS_SENT.inc()
     except Exception as exc:  # pragma: no cover - melhor esforço
         capture_exception(exc)
         raise
+
 
 @shared_task(
     autoretry_for=(ClientError,),
@@ -140,7 +134,6 @@ def finalize_upload(result: str | tuple[str, str], pending_id: str) -> None:
     pending.delete()
 
 
-
 @shared_task
 def executar_plugins() -> None:
     """Carrega e executa plugins registrados para organizações.
@@ -175,4 +168,3 @@ def executar_plugins() -> None:
                 continue
             config.last_run = now
             config.save(update_fields=["last_run"])
-

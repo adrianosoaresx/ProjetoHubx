@@ -31,9 +31,9 @@ def test_gerar_convite_form_fields(client):
     resp = client.get(reverse("tokens:gerar_convite"))
     assert resp.status_code == 200
     content = resp.content.decode()
-    assert "name=\"tipo_destino\"" in content
-    assert "name=\"organizacao\"" in content
-    assert "name=\"nucleos\"" in content
+    assert 'name="tipo_destino"' in content
+    assert 'name="organizacao"' in content
+    assert 'name="nucleos"' in content
 
 
 def test_gerar_token_convite_view(client):
@@ -66,6 +66,7 @@ def test_convite_permission_denied(client):
     )
     assert resp.status_code == 403
 
+
 def test_convite_permission_denied_no_side_effects(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
@@ -97,7 +98,6 @@ def test_convite_daily_limit(client):
     assert TokenAcesso.objects.count() == 5
 
 
-
 def test_validar_token_convite_get(client):
     user = UserFactory()
     _login(client, user)
@@ -113,7 +113,6 @@ def test_validar_token_convite_view(client):
     codigo = "a" * 32
     token.set_codigo(codigo)
     token.save()
-
 
     _login(client, user)
     resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
@@ -132,9 +131,7 @@ def test_validar_token_convite_view(client):
 def test_gerar_codigo_autenticacao_view(client, monkeypatch):
     user = UserFactory()
     _login(client, user)
-    monkeypatch.setattr(
-        "notificacoes.services.email_client.send_email", lambda *args, **kwargs: None
-    )
+    monkeypatch.setattr("notificacoes.services.email_client.send_email", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         "notificacoes.services.whatsapp_client.send_whatsapp",
         lambda *args, **kwargs: None,

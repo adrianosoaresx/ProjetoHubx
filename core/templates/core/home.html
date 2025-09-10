@@ -11,12 +11,12 @@
 <div class="py-12 text-center my-8 px-4">
   {% if user.is_authenticated %}
   <div class="flex justify-center gap-4">
-    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-primary shadow">{% trans "Ir para Dashboard" %}</a>
+    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-primary card">{% trans "Ir para Dashboard" %}</a>
     <a href="{% url 'feed:listar' %}" class="btn btn-secondary">{% trans "Ver Feed" %}</a>
   </div>
   {% else %}
   <div class="flex justify-center gap-4">
-    <a href="{% url 'accounts:onboarding' %}" class="btn btn-primary shadow">{% trans "Criar conta" %}</a>
+    <a href="{% url 'accounts:onboarding' %}" class="btn btn-primary card">{% trans "Criar conta" %}</a>
     <a href="{% url 'accounts:login' %}" class="btn btn-secondary">{% trans "Entrar" %}</a>
   </div>
   {% endif %}

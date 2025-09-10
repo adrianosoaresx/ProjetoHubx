@@ -7,9 +7,11 @@ from faker import Faker
 from accounts.factories import UserFactory
 from eventos.factories import EventoFactory
 from eventos.models import FeedbackNota, InscricaoEvento, ParceriaEvento
+
 # O app 'discussao' foi removido; factories opcionais
 try:  # pragma: no cover
     from discussao.factories import CategoriaDiscussaoFactory, TopicoDiscussaoFactory  # type: ignore
+
     DISCUSSAO_INSTALLED = True
 except Exception:
     CategoriaDiscussaoFactory = None  # type: ignore
@@ -111,7 +113,9 @@ class Command(BaseCommand):
 
                 for categoria in categorias:
                     self.stdout.write(f"Criando tópicos para a categoria {categoria.nome}...")
-                    TopicoDiscussaoFactory.create_batch(5, categoria=categoria, autor=random.choice(clientes + gerentes))  # type: ignore[attr-defined]
+                    TopicoDiscussaoFactory.create_batch(
+                        5, categoria=categoria, autor=random.choice(clientes + gerentes)
+                    )  # type: ignore[attr-defined]
 
             self.stdout.write(f"Criando postagens no feed para {organizacao.nome}...")
             for cliente in clientes:

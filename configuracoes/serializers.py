@@ -34,17 +34,13 @@ class ConfiguracaoContaSerializer(serializers.ModelSerializer):
         instance = getattr(self, "instance", None)
 
         if attrs.get("receber_notificacoes_email") is False:
-            attrs["frequencia_notificacoes_email"] = getattr(
-                instance, "frequencia_notificacoes_email", "imediata"
-            )
+            attrs["frequencia_notificacoes_email"] = getattr(instance, "frequencia_notificacoes_email", "imediata")
         if attrs.get("receber_notificacoes_whatsapp") is False:
             attrs["frequencia_notificacoes_whatsapp"] = getattr(
                 instance, "frequencia_notificacoes_whatsapp", "imediata"
             )
         if attrs.get("receber_notificacoes_push") is False:
-            attrs["frequencia_notificacoes_push"] = getattr(
-                instance, "frequencia_notificacoes_push", "imediata"
-            )
+            attrs["frequencia_notificacoes_push"] = getattr(instance, "frequencia_notificacoes_push", "imediata")
 
         freq_fields = [
             attrs.get("frequencia_notificacoes_email"),
@@ -68,5 +64,3 @@ class ConfiguracaoContaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
-
-

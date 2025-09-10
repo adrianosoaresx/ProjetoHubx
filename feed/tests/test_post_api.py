@@ -29,17 +29,13 @@ class PostAPITest(TestCase):
         img_io = io.BytesIO()
         Image.new("RGB", (1, 1)).save(img_io, format="PNG")
         image = SimpleUploadedFile("t.png", img_io.getvalue(), content_type="image/png")
-        res = self.client.post(
-            "/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart"
-        )
+        res = self.client.post("/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart")
         self.assertEqual(res.status_code, 201)
         mock_upload.assert_called_once()
         mock_apply.assert_not_called()
 
     def test_create_text_post(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "ola", "tipo_feed": "global"}
-        )
+        res = self.client.post("/api/feed/posts/", {"conteudo": "ola", "tipo_feed": "global"})
         self.assertEqual(res.status_code, 201)
         self.assertEqual(res.data["conteudo"], "ola")
 
@@ -47,19 +43,13 @@ class PostAPITest(TestCase):
         img_io = io.BytesIO()
         Image.new("RGB", (1, 1)).save(img_io, format="PNG")
         image = SimpleUploadedFile("t.png", img_io.getvalue(), content_type="image/png")
-        res = self.client.post(
-            "/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart"
-        )
+        res = self.client.post("/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart")
         self.assertEqual(res.status_code, 201)
         self.assertTrue(res.data["image"])  # caminho salvo
 
     def test_create_pdf_post(self):
-        pdf = SimpleUploadedFile(
-            "f.pdf", b"%PDF-1.4", content_type="application/pdf"
-        )
-        res = self.client.post(
-            "/api/feed/posts/", {"tipo_feed": "global", "pdf": pdf}, format="multipart"
-        )
+        pdf = SimpleUploadedFile("f.pdf", b"%PDF-1.4", content_type="application/pdf")
+        res = self.client.post("/api/feed/posts/", {"tipo_feed": "global", "pdf": pdf}, format="multipart")
         self.assertEqual(res.status_code, 201)
 
     def test_create_video_post(self):
@@ -82,17 +72,13 @@ class PostAPITest(TestCase):
         )
         tmp.seek(0)
         video = SimpleUploadedFile("v.mp4", tmp.read(), content_type="video/mp4")
-        res = self.client.post(
-            "/api/feed/posts/", {"tipo_feed": "global", "video": video}, format="multipart"
-        )
+        res = self.client.post("/api/feed/posts/", {"tipo_feed": "global", "video": video}, format="multipart")
         self.assertEqual(res.status_code, 201)
         self.assertTrue(res.data["video_preview"])
         self.assertTrue(res.data["video_preview_url"])
 
     def test_conteudo_limit(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "a" * 501, "tipo_feed": "global"}
-        )
+        res = self.client.post("/api/feed/posts/", {"conteudo": "a" * 501, "tipo_feed": "global"})
         self.assertEqual(res.status_code, 400)
 
     @override_settings(FEED_IMAGE_MAX_SIZE=1)
@@ -100,15 +86,11 @@ class PostAPITest(TestCase):
         img_io = io.BytesIO()
         Image.new("RGB", (1, 1)).save(img_io, format="PNG")
         image = SimpleUploadedFile("big.png", img_io.getvalue(), content_type="image/png")
-        res = self.client.post(
-            "/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart"
-        )
+        res = self.client.post("/api/feed/posts/", {"tipo_feed": "global", "image": image}, format="multipart")
         self.assertEqual(res.status_code, 400)
 
     def test_soft_delete(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"}
-        )
+        res = self.client.post("/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"})
         post_id = res.data["id"]
         del_res = self.client.delete(f"/api/feed/posts/{post_id}/")
         self.assertEqual(del_res.status_code, 204)
@@ -118,13 +100,9 @@ class PostAPITest(TestCase):
         self.assertNotIn(post_id, ids)
 
     def test_update_not_author_forbidden(self):
-        res = self.client.post(
-            "/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"}
-        )
+        res = self.client.post("/api/feed/posts/", {"conteudo": "oi", "tipo_feed": "global"})
         post_id = res.data["id"]
         other_user = UserFactory(organizacao=self.user.organizacao)
         self.client.force_authenticate(other_user)
-        res = self.client.patch(
-            f"/api/feed/posts/{post_id}/", {"conteudo": "novo"}
-        )
+        res = self.client.patch(f"/api/feed/posts/{post_id}/", {"conteudo": "novo"})
         self.assertEqual(res.status_code, 403)

@@ -59,4 +59,3 @@ class TagAPITest(TestCase):
         self.client.force_authenticate(self.user)
         res = self.client.delete(f"/api/feed/tags/{tag.id}/")
         self.assertEqual(res.status_code, 403)
-

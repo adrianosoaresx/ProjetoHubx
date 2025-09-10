@@ -11,9 +11,7 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_reset_password_weak_password():
-    user = User.objects.create_user(
-        email="weak@example.com", username="weak", password="StrongPass1!"
-    )
+    user = User.objects.create_user(email="weak@example.com", username="weak", password="StrongPass1!")
     token = AccountToken.objects.create(
         usuario=user,
         tipo=AccountToken.Tipo.PASSWORD_RESET,

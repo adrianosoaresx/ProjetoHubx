@@ -25,6 +25,7 @@ from ..serializers import LancamentoFinanceiroSerializer
 
 class AlreadyProcessedError(Exception):
     """Erro lançado quando uma importação já foi processada."""
+
     pass
 
 
@@ -135,9 +136,7 @@ class ImportadorPagamentos:
         return ImportResult(preview=preview, errors=errors, errors_file=errors_file)
 
     # ────────────────────────────────────────────────────────────
-    def process(
-        self, batch_size: int = 500, *, idempotency_key: str | None = None
-    ) -> tuple[int, list[str]]:
+    def process(self, batch_size: int = 500, *, idempotency_key: str | None = None) -> tuple[int, list[str]]:
         """Processa o arquivo criando lançamentos em lote."""
         errors: list[str] = []
         total = 0
@@ -264,9 +263,7 @@ class ImportadorPagamentos:
             raise
         finally:
             if idempotency_key:
-                IntegracaoIdempotency.objects.filter(idempotency_key=idempotency_key).update(
-                    status=status
-                )
+                IntegracaoIdempotency.objects.filter(idempotency_key=idempotency_key).update(status=status)
         return total, errors
 
     # ────────────────────────────────────────────────────────────

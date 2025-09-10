@@ -25,4 +25,3 @@ def test_list_templates_requires_view_permission(client):
     with patch("notificacoes.views.render", return_value=HttpResponse("OK")):
         response = client.get(url)
     assert response.status_code == 200
-

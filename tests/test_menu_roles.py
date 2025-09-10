@@ -51,4 +51,3 @@ def test_token_menu_hidden_for_other_roles(client, role, settings):
     content = response.content.decode()
     assert API_TOKENS_URL not in content
     assert GERAR_CONVITE_URL not in content
-

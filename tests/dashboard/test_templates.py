@@ -21,9 +21,7 @@ def test_error_message_rendered(client, admin_user, monkeypatch):
     from dashboard.models import DashboardConfig
 
     ct = ContentType.objects.get_for_model(DashboardConfig)
-    perm, _ = Permission.objects.get_or_create(
-        codename="view_metrics", name="Can view metrics", content_type=ct
-    )
+    perm, _ = Permission.objects.get_or_create(codename="view_metrics", name="Can view metrics", content_type=ct)
     admin_user.user_permissions.add(perm)
 
     def boom(user, **kwargs):

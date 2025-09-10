@@ -310,9 +310,7 @@ def disable_2fa(request):
             )
             messages.error(request, _("Senha incorreta."))
 
-    return render(
-        request, "perfil/disable_2fa.html", {"hero_title": _("Perfil"), "form": form}
-    )
+    return render(request, "perfil/disable_2fa.html", {"hero_title": _("Perfil"), "form": form})
 
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)

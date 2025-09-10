@@ -11,6 +11,7 @@ from feed.models import FeedPluginConfig
 
 logger = logging.getLogger(__name__)
 
+
 def load_plugins_for(
     organizacao: models.Model,
     configs: Iterable[FeedPluginConfig] | None = None,

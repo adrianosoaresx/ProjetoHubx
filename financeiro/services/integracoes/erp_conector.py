@@ -1,4 +1,5 @@
 """Serviço de comunicação com ERPs externos."""
+
 from __future__ import annotations
 
 import time
@@ -48,20 +49,14 @@ class ERPConector:
     def enviar_lancamento(self, lancamento: Dict[str, Any]) -> Any:
         """Envia um lançamento financeiro para o ERP."""
         idem = self._registrar_idempotencia("lancamento")
-        response = self._request(
-            "POST", "/lancamentos/", json=lancamento, idempotency_key=idem
-        )
+        response = self._request("POST", "/lancamentos/", json=lancamento, idempotency_key=idem)
         return response.json()
 
-    def conciliar_pagamento(
-        self, lancamento: Dict[str, Any], dados_externos: Dict[str, Any]
-    ) -> Any:
+    def conciliar_pagamento(self, lancamento: Dict[str, Any], dados_externos: Dict[str, Any]) -> Any:
         """Solicita conciliação de um pagamento."""
         idem = self._registrar_idempotencia("conciliacao")
         payload = {"lancamento": lancamento, "dados": dados_externos}
-        response = self._request(
-            "POST", "/conciliacao/", json=payload, idempotency_key=idem
-        )
+        response = self._request("POST", "/conciliacao/", json=payload, idempotency_key=idem)
         return response.json()
 
     # ------------------------------------------------------------------
@@ -93,14 +88,10 @@ class ERPConector:
         for attempt in range(1, self.retries + 1):
             start = time.monotonic()
             try:
-                response = self.session.request(
-                    method, url, headers=headers, timeout=timeout, **kwargs
-                )
+                response = self.session.request(method, url, headers=headers, timeout=timeout, **kwargs)
             except (requests.Timeout, requests.ConnectionError) as exc:
                 duration = int((time.monotonic() - start) * 1000)
-                status = (
-                    "timeout" if isinstance(exc, requests.Timeout) else "connection_error"
-                )
+                status = "timeout" if isinstance(exc, requests.Timeout) else "connection_error"
                 IntegracaoLog.objects.create(
                     provedor=self.config.nome,
                     acao=f"{method} {path} (tentativa {attempt})",

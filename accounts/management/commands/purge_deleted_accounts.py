@@ -11,10 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
         limite = timezone.now() - timezone.timedelta(days=30)
-        qs = (
-            User.objects.filter(deleted=True, deleted_at__lt=limite)
-            .prefetch_related("medias")
-        )
+        qs = User.objects.filter(deleted=True, deleted_at__lt=limite).prefetch_related("medias")
         count = 0
         for user in qs:
             for media in user.medias.all():

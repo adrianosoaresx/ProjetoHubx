@@ -42,9 +42,7 @@ class TarefaSerializer(serializers.ModelSerializer):
         validated_data["organizacao"] = request.user.organizacao
         validated_data["responsavel"] = request.user
         instance = super().create(validated_data)
-        TarefaLog.objects.create(
-            tarefa=instance, usuario=request.user, acao="tarefa_criada"
-        )
+        TarefaLog.objects.create(tarefa=instance, usuario=request.user, acao="tarefa_criada")
         return instance
 
     def update(self, instance, validated_data):
@@ -184,7 +182,6 @@ class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
         except DjangoValidationError as e:
             raise serializers.ValidationError(e.messages)
         return arquivo
-
 
     def create(self, validated_data):
         request = self.context["request"]
