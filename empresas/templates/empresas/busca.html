@@ -16,7 +16,7 @@
 
   <form hx-get="{% url 'empresas:buscar' %}" hx-target="#empresas-grid" hx-push-url="true" class="max-w-xl mx-auto flex items-center gap-2">
     <input type="text" name="q" value="{{ q }}" placeholder="{% translate 'Buscar por nome, CNPJ ou localização...' %}" class="flex-grow p-2 border rounded" />
-    <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded hover:bg-primary-700">🔍</button>
+    <button type="submit" class="btn btn-primary">🔍</button>
   </form>
 
   <div
@@ -29,7 +29,7 @@
   </div>
 
   <div class="mt-10 text-center">
-    <a href="{% url 'empresas:lista' %}" class="text-sm px-4 py-2 border rounded hover:bg-neutral-100">{% translate 'Voltar para Minhas Empresas' %}</a>
+    <a href="{% url 'empresas:lista' %}" class="btn btn-secondary btn-sm">{% translate 'Voltar para Minhas Empresas' %}</a>
   </div>
 </section>
 {% endblock %}

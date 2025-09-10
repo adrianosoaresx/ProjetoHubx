@@ -28,10 +28,10 @@
           <td class="px-3 py-2">{{ i.get_tipo_display }}</td>
           <td class="px-3 py-2">{{ i.base_url }}</td>
           <td class="px-3 py-2 text-right space-x-2">
-            <button class="text-primary underline"
+            <button class="btn btn-secondary btn-sm"
                     hx-get="{% url 'financeiro:integracao_form_edit' i.id %}"
                     hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
-            <button class="text-red-600 underline"
+            <button class="btn btn-danger btn-sm"
                     hx-delete="/api/financeiro/integracoes/{{ i.id }}/"
                     hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}'
                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans "Excluir" %}</button>
@@ -47,12 +47,12 @@
         </div>
     <div class="mt-4 flex justify-between">
       {% if prev %}
-        <button class="px-3 py-1 text-sm bg-gray-200 rounded"
+        <button class="btn btn-secondary btn-sm"
                 hx-get="?offset={{ prev }}" hx-target="#integracoes-list"
                 hx-trigger="click" hx-swap="outerHTML">{% trans "Anterior" %}</button>
       {% endif %}
       {% if next %}
-        <button class="px-3 py-1 text-sm bg-gray-200 rounded ml-auto"
+        <button class="btn btn-secondary btn-sm ml-auto"
                 hx-get="?offset={{ next }}" hx-target="#integracoes-list"
                 hx-trigger="click" hx-swap="outerHTML">{% trans "Próximo" %}</button>
       {% endif %}

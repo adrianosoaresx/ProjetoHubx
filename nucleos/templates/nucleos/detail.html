@@ -18,7 +18,7 @@
       <div class="flex items-center gap-2">
         <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
         {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-        <a href="{% url 'nucleos:update' object.pk %}" class="px-4 py-2 bg-[var(--color-primary-600)] text-[var(--text-inverse)] rounded">{% trans 'Editar' %}</a>
+        <a href="{% url 'nucleos:update' object.pk %}" class="btn btn-primary">{% trans 'Editar' %}</a>
         <a href="{% url 'nucleos:delete' object.pk %}" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</a>
         {% endif %}
       </div>
@@ -66,7 +66,7 @@
               <td>{{ part.user.get_full_name|default:part.user.username }}</td>
               <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
               <td class="space-x-2">
-                <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
+                <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
                 <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
               </td>
             </tr>
@@ -89,7 +89,7 @@
 
         {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
         <div class="mt-4">
-          <button id="solicitar-btn" type="button" class="px-4 py-2 bg-[var(--color-primary-600)] text-[var(--text-inverse)] rounded" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+          <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
         </div>
         {% endif %}
       </div>
@@ -109,7 +109,7 @@
       <div class="tab-panel hidden" data-tab="feed">
         {% if pode_postar %}
         <div class="mb-4">
-          <button type="button" class="px-4 py-2 bg-[var(--color-success-600)] text-[var(--text-inverse)] rounded" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
+          <button type="button" class="btn btn-primary" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
         </div>
         {% endif %}
         {% include 'feed/_grid.html' with posts=nucleo_posts %}
@@ -122,7 +122,7 @@
     {% if perms.nucleos.delete_nucleo %}
     <a
       href="{% url 'nucleos:delete' object.pk %}"
-      class="btn-danger btn-sm"
+      class="btn btn-danger btn-sm"
       hx-confirm="Deseja realmente excluir?"
       >{% trans "Excluir" %}</a
     >

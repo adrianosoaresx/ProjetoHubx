@@ -9,7 +9,7 @@
       {% csrf_token %}
       <input type="email" name="email" required class="w-full p-3 border rounded-lg bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-primary)]" placeholder="{% trans 'Seu e-mail' %}" aria-label="{% trans 'E-mail' %}" aria-invalid="false" aria-describedby="email_info">
       <small id="email_info" class="text-sm text-[var(--text-muted)]">{% trans "Informe o e-mail cadastrado" %}</small>
-      <button type="submit" class="w-full py-2 rounded-lg text-white bg-[var(--primary)] hover:bg-[var(--primary-hover)]">{% trans "Enviar" %}</button>
+      <button type="submit" class="btn btn-primary w-full">{% trans "Enviar" %}</button>
     </form>
   </div>
 </section>
