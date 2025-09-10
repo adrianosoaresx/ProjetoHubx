@@ -18,26 +18,36 @@
   </div>
 
   <div class="mb-6 card-grid gap-4">
-    <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm">
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Total" %}</div>
-      <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.total }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm">
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Não usados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.novos }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm">
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Usados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.usados }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm">
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Expirados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.expirados }}</div>
-    </div>
-    <div class="p-4 rounded-2xl border border-[var(--border)] bg-[var(--bg-secondary)] shadow-sm">
-      <div class="text-sm text-[var(--text-secondary)]">{% trans "Revogados" %}</div>
-      <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.revogados }}</div>
-    </div>
+    <article class="card">
+      <div class="card-body">
+        <div class="text-sm text-[var(--text-secondary)]">{% trans "Total" %}</div>
+        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.total }}</div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <div class="text-sm text-[var(--text-secondary)]">{% trans "Não usados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.novos }}</div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <div class="text-sm text-[var(--text-secondary)]">{% trans "Usados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.usados }}</div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <div class="text-sm text-[var(--text-secondary)]">{% trans "Expirados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.expirados }}</div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <div class="text-sm text-[var(--text-secondary)]">{% trans "Revogados" %}</div>
+        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.revogados }}</div>
+      </div>
+    </article>
   </div>
 
   {% if convites %}
@@ -77,7 +87,7 @@
     <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</p>
   {% endif %}
   <div class="mt-6 text-center">
-    <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+    <a href="{% url 'configuracoes' %}" class="text-sm link hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
   </div>
 </section>
 {% endblock %}

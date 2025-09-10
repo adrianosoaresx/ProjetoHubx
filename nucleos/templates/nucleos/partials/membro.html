@@ -1,54 +1,56 @@
 {% load i18n %}
-<div id="membro-{{ part.id }}" class="p-4 bg-[var(--bg-secondary)] border border-[var(--border)] rounded shadow-sm flex flex-col gap-2">
-  <div class="flex items-center gap-4">
-    {% if part.user.avatar %}
-    <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" />
-    {% else %}
-    <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]"></div>
-    {% endif %}
-    <div>
-  <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-[var(--text-primary)]">
-        {{ part.user.get_full_name|default:part.user.username }}
-      </a>
-      {% if part.papel == 'coordenador' %}
-        <span class="text-sm text-[var(--text-secondary)]"> - {% trans 'Coordenador' %}</span>
+<article id="membro-{{ part.id }}" class="card">
+  <div class="card-body flex flex-col gap-2">
+    <div class="flex items-center gap-4">
+      {% if part.user.avatar %}
+      <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" />
+      {% else %}
+      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]"></div>
       {% endif %}
-      {% if part.status_suspensao %}
+      <div>
+        <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-[var(--text-primary)]">
+          {{ part.user.get_full_name|default:part.user.username }}
+        </a>
+        {% if part.papel == 'coordenador' %}
+        <span class="text-sm text-[var(--text-secondary)]"> - {% trans 'Coordenador' %}</span>
+        {% endif %}
+        {% if part.status_suspensao %}
         <span class="text-sm text-red-600">({% trans 'Suspenso' %})</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+    <div class="mt-2 space-x-2">
+      <button class="text-sm text-blue-600"
+              hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
+              hx-target="#membro-{{ part.id }}"
+              hx-swap="outerHTML"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        {% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}
+      </button>
+      <button class="text-sm text-red-600"
+              hx-post="{% url 'nucleos:membro_remover' object.pk part.pk %}"
+              hx-target="#membro-{{ part.id }}"
+              hx-swap="outerHTML"
+              hx-confirm="{% trans 'Confirmar remoção?' %}"
+              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        {% trans 'Remover' %}
+      </button>
+      {% if part.status_suspensao %}
+        <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}"
+              hx-on="htmx:afterRequest: location.reload()"
+              class="inline">{% csrf_token %}
+          <button class="text-sm text-green-600">{% trans 'Reativar' %}</button>
+        </form>
+      {% else %}
+        <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}"
+              hx-on="htmx:afterRequest: location.reload()"
+              class="inline">{% csrf_token %}
+          <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
+        </form>
       {% endif %}
     </div>
-  </div>
-  {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-  <div class="mt-2 space-x-2">
-    <button class="text-sm text-blue-600"
-            hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
-            hx-target="#membro-{{ part.id }}"
-            hx-swap="outerHTML"
-            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-      {% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}
-    </button>
-    <button class="text-sm text-red-600"
-            hx-post="{% url 'nucleos:membro_remover' object.pk part.pk %}"
-            hx-target="#membro-{{ part.id }}"
-            hx-swap="outerHTML"
-            hx-confirm="{% trans 'Confirmar remoção?' %}"
-            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-      {% trans 'Remover' %}
-    </button>
-    {% if part.status_suspensao %}
-      <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}"
-            hx-on="htmx:afterRequest: location.reload()"
-            class="inline">{% csrf_token %}
-        <button class="text-sm text-green-600">{% trans 'Reativar' %}</button>
-      </form>
-    {% else %}
-      <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}"
-            hx-on="htmx:afterRequest: location.reload()"
-            class="inline">{% csrf_token %}
-        <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
-      </form>
     {% endif %}
   </div>
-  {% endif %}
-</div>
+</article>
 

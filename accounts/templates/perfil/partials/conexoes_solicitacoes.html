@@ -1,7 +1,8 @@
 {% load i18n %}
 <div class="space-y-4">
   {% for solicitante in connection_requests %}
-  <div class="request-card flex items-start justify-between p-4 border rounded-xl bg-[var(--bg-secondary)] shadow-sm">
+  <article class="card request-card">
+    <div class="card-body flex items-start justify-between">
     <div class="flex items-center gap-3">
       {% if solicitante.avatar %}
         <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.username }}" class="w-10 h-10 rounded-full object-cover" />
@@ -33,7 +34,8 @@
         <button class="btn btn-danger btn-sm">{% trans "Recusar" %}</button>
       </form>
     </div>
-  </div>
+    </div>
+  </article>
   {% empty %}
   <div class="text-center text-sm text-[var(--text-secondary)]">
     <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
