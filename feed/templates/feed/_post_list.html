@@ -4,7 +4,8 @@
 {% if request.user.user_type != 'root' %}
 <div class="space-y-6">
   {% for post in posts %}
-    <article class="card rounded-2xl p-6 space-y-4">
+    <article class="card">
+      <div class="card-body space-y-4">
 
       <div class="flex items-center gap-4">
         <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
@@ -26,21 +27,21 @@
 
       {% if post.pdf %}
         <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl shadow-sm max-w-full">
-          <a href="{{ post.pdf.url }}" target="_blank" class="absolute top-2 left-2 bg-[var(--bg-primary)]/90 hover:bg-[var(--bg-primary)] shadow rounded p-1.5 text-sm">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl max-w-full">
+          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
-          <a href="{{ post.pdf.url }}" download class="absolute top-2 right-2 bg-[var(--bg-primary)]/90 hover:bg-[var(--bg-primary)] shadow rounded p-1.5 text-sm">
+          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
             {% lucide 'download' class='w-4 h-4' %}
           </a>
         </div>
       {% elif post.image %}
         <div class="feed-media">
-          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl shadow-sm max-w-full">
+          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl max-w-full">
         </div>
       {% elif post.video %}
         <div class="feed-media">
-          <video src="{{ post.video.url }}" controls class="rounded-xl shadow-sm max-w-full"></video>
+          <video src="{{ post.video.url }}" controls class="rounded-xl max-w-full"></video>
         </div>
       {% endif %}
 
@@ -51,15 +52,18 @@
           {% endfor %}
         </div>
       {% endif %}
+      </div>
     </article>
   {% empty %}
-    <div class="text-center card rounded-2xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] p-10">
-      <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
-      <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
-      <p class="text-sm text-[var(--text-secondary)] mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
-      <a href="{% url 'feed:nova_postagem' %}" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
-        {{ empty_button|default:_("Criar postagem") }}
-      </a>
+    <div class="card text-center text-[var(--text-secondary)]">
+      <div class="card-body p-10">
+        <div class="text-4xl mb-2">{{ empty_icon|default:"📝" }}</div>
+        <h3 class="text-lg font-semibold text-[var(--text-primary)] mb-1">{{ empty_title|default:_("Nenhuma postagem ainda") }}</h3>
+        <p class="text-sm mb-4">{{ empty_message|default:_("Seja o primeiro a compartilhar algo!") }}</p>
+        <a href="{% url 'feed:nova_postagem' %}" class="btn btn-primary text-sm">
+          {{ empty_button|default:_("Criar postagem") }}
+        </a>
+      </div>
     </div>
   {% endfor %}
 </div>

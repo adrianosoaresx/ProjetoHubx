@@ -24,7 +24,8 @@
           hx-swap="outerHTML"
           hx-encoding="multipart/form-data"
           enctype="multipart/form-data"
-          class="post-form bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 space-y-6">
+          class="post-form card">
+      <div class="card-body space-y-6">
       {% csrf_token %}
 
       {% if form.errors %}
@@ -142,24 +143,16 @@
 
       <!-- Ações -->
       <div class="flex justify-end gap-3 mt-6">
-        <button type="submit"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="{% trans 'Salvar' %}">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
-            <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 0 1 0 1.42l-7.5 7.5a1 1 0 0 1-1.42 0l-3.5-3.5a1 1 0 1 1 1.42-1.42l2.79 2.79 6.79-6.79a1 1 0 0 1 1.42 0Z" clip-rule="evenodd" />
-          </svg>
+        <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">
           {% trans "Salvar" %}
         </button>
-        <a href="{% url 'feed:listar' %}"
-           class="inline-flex items-center gap-2 rounded border border-neutral-300 px-5 py-2 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-500"
-           aria-label="{% trans 'Cancelar' %}">
+        <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">
           {% trans "Cancelar" %}
         </a>
-        <a href="{% url 'feed:listar' %}"
-           class="inline-flex items-center gap-2 rounded border border-neutral-300 px-5 py-2 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-500"
-           aria-label="{% trans 'Voltar' %}">
+        <a href="{% url 'feed:listar' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">
           {% trans "Voltar" %}
         </a>
+      </div>
       </div>
     </form>
   </div>
