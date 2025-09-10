@@ -39,6 +39,7 @@ def test_get_variation_function() -> None:
     assert get_variation(100, 150) == 50
     assert get_variation(0, 50) == 5000
 
+
 def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
     try:
         import weasyprint  # noqa: F401
@@ -48,8 +49,7 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
     monkeypatch.setattr("weasyprint.HTML.write_pdf", lambda self: b"pdf")
     with override_settings(ROOT_URLCONF="dashboard.api_urls"):
         url = (
-            reverse("dashboard-export")
-            + f"?formato=pdf&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
+            reverse("dashboard-export") + f"?formato=pdf&organizacao_id={admin_user.organizacao_id}&metricas=num_users"
         )
         with patch.object(
             DashboardMetricsService,
@@ -67,6 +67,7 @@ def test_export_pdf(api_client: APIClient, admin_user, monkeypatch) -> None:
         organizacao_id=str(admin_user.organizacao_id),
         metricas=["num_users"],
     )
+
 
 def test_export_invalid_date_order(api_client: APIClient, admin_user) -> None:
     _auth(api_client, admin_user)

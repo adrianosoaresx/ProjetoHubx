@@ -89,9 +89,7 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
             return queryset
 
         filters = {
-            "search": lambda q, v: q.filter(
-                Q(nome__icontains=v) | Q(slug__icontains=v)
-            ),
+            "search": lambda q, v: q.filter(Q(nome__icontains=v) | Q(slug__icontains=v)),
             "tipo": lambda q, v: q.filter(tipo=v),
             "cidade": lambda q, v: q.filter(cidade=v),
             "estado": lambda q, v: q.filter(estado=v),
@@ -230,15 +228,11 @@ class OrganizacaoViewSet(viewsets.ModelViewSet):
     def history(self, request, pk: str | None = None):
         try:
             organizacao = self.get_object()
-            change_logs = (
-                OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")[:10]
-            )
-            atividade_logs = (
-                OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao)
-                .order_by("-created_at")[:10]
-            )
-         
+            change_logs = OrganizacaoChangeLog.all_objects.filter(organizacao=organizacao).order_by("-created_at")[:10]
+            atividade_logs = OrganizacaoAtividadeLog.all_objects.filter(organizacao=organizacao).order_by(
+                "-created_at"
+            )[:10]
+
             change_ser = OrganizacaoChangeLogSerializer(change_logs, many=True)
             atividade_ser = OrganizacaoAtividadeLogSerializer(atividade_logs, many=True)
             return Response({"changes": change_ser.data, "activities": atividade_ser.data})
@@ -313,7 +307,6 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
         return Response(serializer.data)
 
 
-
 class OrganizacaoEventoViewSet(OrganizacaoRelatedModelViewSet):
     serializer_class = EventoSerializer
 
@@ -351,6 +344,7 @@ class OrganizacaoEventoViewSet(OrganizacaoRelatedModelViewSet):
         evento.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class OrganizacaoRelatedAssociationViewSet(OrganizacaoRelatedModelViewSet):
     model = None  # type: ignore[assignment]
     serializer_class = None  # type: ignore[assignment]
@@ -362,7 +356,6 @@ class OrganizacaoRelatedAssociationViewSet(OrganizacaoRelatedModelViewSet):
         return self.model.objects.filter(organizacao=org, deleted=False)
 
     def list(self, request, *args, **kwargs):  # type: ignore[override]
-
         org = self.get_organizacao()
 
         qs = self.model.objects.filter(deleted=False, organizacao__isnull=True)
@@ -385,7 +378,6 @@ class OrganizacaoRelatedAssociationViewSet(OrganizacaoRelatedModelViewSet):
         obj_id = request.data.get(self._get_id_field())
         obj = get_object_or_404(self.model, pk=obj_id)
         if obj.organizacao_id is not None:
-
             return Response(status=status.HTTP_409_CONFLICT)
         obj.organizacao = org
         obj.save(update_fields=["organizacao"])
@@ -399,19 +391,15 @@ class OrganizacaoRelatedAssociationViewSet(OrganizacaoRelatedModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class OrganizacaoNucleoViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Nucleo
     serializer_class = NucleoSerializer
-
 
 
 class OrganizacaoEventoViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Evento
     serializer_class = EventoSerializer
     search_field = "titulo"
-
-
 
 
 class OrganizacaoEmpresaViewSet(OrganizacaoRelatedAssociationViewSet):

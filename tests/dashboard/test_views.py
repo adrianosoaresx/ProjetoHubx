@@ -183,9 +183,7 @@ def test_invalid_date_order_returns_400(client, admin_user):
     client.force_login(admin_user)
     inicio = (timezone.now() + dt.timedelta(days=1)).isoformat()
     fim = timezone.now().isoformat()
-    resp = client.get(
-        reverse("dashboard:admin"), {"data_inicio": inicio, "data_fim": fim}
-    )
+    resp = client.get(reverse("dashboard:admin"), {"data_inicio": inicio, "data_fim": fim})
     assert resp.status_code == 400
 
 
@@ -252,6 +250,7 @@ def test_metrics_partial_includes_new_metrics(client, admin_user, evento, client
     assert soup.find(id="inscricoes_confirmadas") is not None
     assert soup.find(id="lancamentos_pendentes") is not None
 
+
 def test_export_view_pdf(monkeypatch, client, admin_user):
     if weasyprint is None:
         pytest.skip("weasyprint não instalado")
@@ -267,6 +266,7 @@ def test_export_view_pdf(monkeypatch, client, admin_user):
     resp = client.get(reverse("dashboard:export"), {"formato": "pdf"})
     assert resp.status_code == 200
     assert resp["Content-Type"] == "application/pdf"
+
 
 def test_export_view_png(monkeypatch, client, admin_user, settings):
     client.force_login(admin_user)

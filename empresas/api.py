@@ -38,9 +38,7 @@ class ContatoEmpresaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return ContatoEmpresa.objects.filter(
-            empresa_id=self.kwargs["empresa_pk"], deleted=False
-        )
+        return ContatoEmpresa.objects.filter(empresa_id=self.kwargs["empresa_pk"], deleted=False)
 
     def list(self, request, *args, **kwargs):
         empresa = get_object_or_404(Empresa, pk=self.kwargs["empresa_pk"])
@@ -98,6 +96,7 @@ class TagViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ["nome"]
 
+
 class EmpresaViewSet(viewsets.ModelViewSet):
     queryset = Empresa.objects.select_related("usuario", "organizacao").prefetch_related("tags")
     serializer_class = EmpresaSerializer
@@ -115,7 +114,6 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         if not params.get("q"):
             qs = qs.order_by("nome")
         return qs
-
 
     def perform_destroy(self, instance: Empresa) -> None:
         old_deleted = instance.deleted
@@ -151,10 +149,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         empresa = self.get_object()
-        if not (
-            request.user == empresa.usuario
-            or request.user.user_type in {UserType.ADMIN, UserType.ROOT}
-        ):
+        if not (request.user == empresa.usuario or request.user.user_type in {UserType.ADMIN, UserType.ROOT}):
             return Response(status=403)
         return super().update(request, *args, **kwargs)
 
@@ -178,9 +173,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def favoritos(self, request):
-        empresas = Empresa.objects.filter(
-            favoritos__usuario=request.user, favoritos__deleted=False
-        )
+        empresas = Empresa.objects.filter(favoritos__usuario=request.user, favoritos__deleted=False)
         serializer = self.get_serializer(empresas, many=True)
         return Response(serializer.data)
 
@@ -235,9 +228,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if request.user.organizacao != empresa.organizacao:
             return Response({"detail": "Usuário não pertence à organização."}, status=403)
-        aval = AvaliacaoEmpresa.objects.filter(
-            empresa=empresa, usuario=request.user, deleted=False
-        ).first()
+        aval = AvaliacaoEmpresa.objects.filter(empresa=empresa, usuario=request.user, deleted=False).first()
         if not aval:
             return Response({"detail": "Avaliação não encontrada."}, status=404)
         partial = request.method == "PATCH"
@@ -252,9 +243,7 @@ class EmpresaViewSet(viewsets.ModelViewSet):
         empresa = self.get_object()
         if request.user.organizacao != empresa.organizacao:
             return Response({"detail": "Usuário não pertence à organização."}, status=403)
-        aval = AvaliacaoEmpresa.objects.filter(
-            empresa=empresa, usuario=request.user, deleted=False
-        ).first()
+        aval = AvaliacaoEmpresa.objects.filter(empresa=empresa, usuario=request.user, deleted=False).first()
         if aval:
             aval.soft_delete()
             empresas_avaliacoes_total.dec()

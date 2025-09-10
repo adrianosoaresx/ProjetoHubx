@@ -30,9 +30,10 @@ def test_login_ratelimit_blocks_authenticate():
         MessageMiddleware(lambda r: None).process_request(req)
         return req
 
-    with patch("accounts.views.render", return_value=HttpResponse("")), patch(
-        "accounts.forms.authenticate"
-    ) as mock_auth:
+    with (
+        patch("accounts.views.render", return_value=HttpResponse("")),
+        patch("accounts.forms.authenticate") as mock_auth,
+    ):
         for _ in range(5):
             resp = login_view(build_request())
             assert resp.status_code == 200

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 def _template_name(path: Path) -> str:
     parts = path.parts
     idx = parts.index("templates")
-    return "/".join(parts[idx + 1:])
+    return "/".join(parts[idx + 1 :])
 
 
 ALL_TEMPLATES = []
@@ -44,9 +44,7 @@ def test_no_untranslated_pt_strings(template_name: str, path: Path):
     text = re.sub(r"<script.*?</script>", "", text, flags=re.DOTALL)
     for lineno, line in enumerate(text.splitlines(), 1):
         if PT_CHARS.search(line) and not I18N_TAG.search(line):
-            pytest.fail(
-                f"Untranslated PT string in {template_name}:{lineno}: {line.strip()}"
-            )
+            pytest.fail(f"Untranslated PT string in {template_name}:{lineno}: {line.strip()}")
 
 
 def _build_request(template_name: str):

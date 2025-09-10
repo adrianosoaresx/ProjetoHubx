@@ -7,6 +7,7 @@ from ..models import PushSubscription
 try:  # pragma: no cover - lib externa
     from onesignal_sdk.error import OneSignalHTTPError  # type: ignore
 except Exception:  # pragma: no cover - fallback quando lib não instalada
+
     class OneSignalHTTPError(Exception):  # type: ignore
         status_code = None
         http_response = None

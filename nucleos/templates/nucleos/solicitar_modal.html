@@ -1,5 +1,5 @@
 {% load i18n l10n %}
-<div class="p-4 bg-[var(--bg-secondary)] rounded shadow max-w-md">
+<div class="p-4 bg-[var(--bg-secondary)] rounded card max-w-md">
   <h2 class="text-lg font-semibold mb-4">{% trans 'Confirmar solicitação de participação?' %}</h2>
   <form hx-post="{% url 'nucleos_api:nucleo-solicitar' nucleo.pk %}"
         hx-swap="none"

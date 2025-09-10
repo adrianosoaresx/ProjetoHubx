@@ -115,4 +115,3 @@ def test_rotate_token_triggers_webhook(monkeypatch):
     events = {c["event"] for c in calls}
     assert {"created", "revoked", "rotated"} <= events
     assert any(c.get("event") == "rotated" and c.get("id") == str(token.id) for c in calls)
-

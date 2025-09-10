@@ -111,4 +111,3 @@ def rotate_token(
     tokens_api_tokens_rotated_total.inc()
 
     return raw_token
-

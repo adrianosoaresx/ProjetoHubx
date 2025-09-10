@@ -19,4 +19,3 @@ def test_admin_view_invokes_service_methods(client, admin_user):
         client.force_login(admin_user)
         client.get(reverse("dashboard:admin"))
         assert spy.call_count == 7
-

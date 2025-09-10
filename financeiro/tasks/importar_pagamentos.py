@@ -35,9 +35,7 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
             logger.error("Erros na importação: %s", errors)
         else:
             log_path.write_text("ok", encoding="utf-8")
-        status_model = (
-            ImportacaoPagamentos.Status.ERRO if errors else ImportacaoPagamentos.Status.CONCLUIDO
-        )
+        status_model = ImportacaoPagamentos.Status.ERRO if errors else ImportacaoPagamentos.Status.CONCLUIDO
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
             arquivo=file_path,
             usuario_id=user_id,
@@ -63,9 +61,7 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
             except Exception as exc:  # pragma: no cover - integração externa
                 logger.error("Falha ao notificar importação: %s", exc)
     except AlreadyProcessedError:
-        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
-            status=ImportacaoPagamentos.Status.CONCLUIDO
-        )
+        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(status=ImportacaoPagamentos.Status.CONCLUIDO)
         logger.info("Importação %s já processada", importacao_id)
         return
     except Exception as exc:  # pragma: no cover - exceção inesperada

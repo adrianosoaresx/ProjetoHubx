@@ -56,7 +56,7 @@ As análises consideraram os arquivos **CSS** e **templates HTML** da aplicaçã
 ---
 
 ### Recomendações para Unificação de Estilos
-1. **Centralizar tokens de cor** – substituir cores fixas (`bg-white`, `bg-slate-100`) por variáveis (`--bg-secondary`, `--bg-tertiary`).  
+1. **Centralizar tokens de cor** – substituir cores fixas (`bg-[var(--bg-secondary)]`, `bg-slate-100`) por variáveis (`--bg-secondary`, `--bg-tertiary`).  
 2. **Adotar componentes utilitários** (`.card`, `.btn-primary`, `.container`, `.card-grid`).  
 3. **Parametrizar o Hero** – variáveis `--hero-from`, `--hero-to` no design system.  
 4. **Unificar menu lateral** – criar `.sidebar-item`, `.sidebar-item-active`, com variáveis de cor e `aria-current="page"`.  

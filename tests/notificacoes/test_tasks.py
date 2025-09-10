@@ -60,10 +60,7 @@ def test_enviar_notificacao_async_falha(settings, monkeypatch) -> None:
     log.refresh_from_db()
     assert log.status == NotificationStatus.FALHA
     assert log.erro == "erro"
-    assert (
-        metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
-        == before_fail + 1
-    )
+    assert metrics.notificacoes_falhadas_total.labels(canal="email")._value.get() == before_fail + 1
 
 
 def test_enviar_notificacao_async_tenta_novamente(settings, monkeypatch) -> None:
@@ -107,14 +104,8 @@ def test_enviar_notificacao_async_tenta_novamente(settings, monkeypatch) -> None
     log.refresh_from_db()
     assert log.status == NotificationStatus.ENVIADA
     assert chamadas["count"] == 3
-    assert (
-        metrics.notificacoes_enviadas_total.labels(canal="email")._value.get()
-        == before_success + 1
-    )
-    assert (
-        metrics.notificacoes_falhadas_total.labels(canal="email")._value.get()
-        == before_fail
-    )
+    assert metrics.notificacoes_enviadas_total.labels(canal="email")._value.get() == before_success + 1
+    assert metrics.notificacoes_falhadas_total.labels(canal="email")._value.get() == before_fail
 
 
 def test_task_configuracao():

@@ -273,9 +273,7 @@ class NucleoViewSet(viewsets.ModelViewSet):
                 {"detail": _("Você não tem permissão para acessar este núcleo.")},
                 status=403,
             )
-        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(
-            user=request.user, nucleo=nucleo
-        )
+        participacao, created = ParticipacaoNucleo.all_objects.get_or_create(user=request.user, nucleo=nucleo)
 
         save_fields: list[str] = []
         if participacao.deleted:
@@ -617,7 +615,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
         ]
         return self.get_paginated_response(data)
 
-
     @action(detail=True, methods=["get"], url_path="metrics", permission_classes=[IsAuthenticated])
     def metrics(self, request, pk: str | None = None):
         nucleo = self.get_object()
@@ -639,4 +636,3 @@ class NucleoViewSet(viewsets.ModelViewSet):
         response["X-Cache"] = "HIT" if from_cache else "MISS"
         logger.info("metrics accessed", extra={"nucleo_id": nucleo.id, "user_id": request.user.id})
         return response
-

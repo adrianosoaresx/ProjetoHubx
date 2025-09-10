@@ -9,4 +9,3 @@ class EventosConfig(AppConfig):
 
     def ready(self) -> None:  # pragma: no cover - configuração
         from . import signals  # noqa: F401
-

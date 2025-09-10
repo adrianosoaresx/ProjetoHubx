@@ -41,6 +41,7 @@ def test_notifica_criacao(api_client, root_user, faker_ptbr, monkeypatch):
     auth(api_client, root_user)
     delay = MagicMock()
     from organizacoes import tasks
+
     monkeypatch.setattr(tasks.enviar_email_membros, "delay", delay)
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.post(url, {"nome": "Org", "cnpj": faker_ptbr.cnpj()})
@@ -54,6 +55,7 @@ def test_notifica_atualizacao(api_client, root_user, faker_ptbr, monkeypatch):
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="upd")
     delay = MagicMock()
     from organizacoes import tasks
+
     monkeypatch.setattr(tasks.enviar_email_membros, "delay", delay)
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.patch(url, {"nome": "Nova"}, format="json")
@@ -66,6 +68,7 @@ def test_notifica_inativacao(api_client, root_user, faker_ptbr, monkeypatch):
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="inact")
     delay = MagicMock()
     from organizacoes import tasks
+
     monkeypatch.setattr(tasks.enviar_email_membros, "delay", delay)
     url = reverse("organizacoes_api:organizacao-inativar", args=[org.pk])
     resp = api_client.patch(url)
@@ -78,6 +81,7 @@ def test_notifica_exclusao(api_client, root_user, faker_ptbr, monkeypatch):
     org = Organizacao.objects.create(nome="Org", cnpj=faker_ptbr.cnpj(), slug="del")
     delay = MagicMock()
     from organizacoes import tasks
+
     monkeypatch.setattr(tasks.enviar_email_membros, "delay", delay)
     url = reverse("organizacoes_api:organizacao-detail", args=[org.pk])
     resp = api_client.delete(url)

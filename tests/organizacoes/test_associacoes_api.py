@@ -75,4 +75,3 @@ def test_crud_plugin(api_client, root_user, faker_ptbr):
     resp = api_client.delete(detail)
     assert resp.status_code == status.HTTP_204_NO_CONTENT
     assert not FeedPluginConfig.objects.filter(pk=plugin_id).exists()
-

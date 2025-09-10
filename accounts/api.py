@@ -36,9 +36,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-
         if self.action in {"delete_me", "enable_2fa", "disable_2fa"}:
-
             return [IsAuthenticated()]
         return [AllowAny()]
 

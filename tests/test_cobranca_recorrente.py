@@ -22,20 +22,10 @@ def test_cobrancas_geradas_e_metricas(settings):
     ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="ativo")
     before = metrics.financeiro_cobrancas_total._value.get()
     gerar_cobrancas_mensais()
-    assert (
-        LancamentoFinanceiro.objects.filter(
-            conta_associado=conta, tipo="mensalidade_associacao"
-        ).count()
-        == 1
-    )
+    assert LancamentoFinanceiro.objects.filter(conta_associado=conta, tipo="mensalidade_associacao").count() == 1
     assert LancamentoFinanceiro.objects.filter(
         centro_custo=centro_nucleo, tipo="mensalidade_nucleo", valor=nucleo.mensalidade
     ).exists()
     assert metrics.financeiro_cobrancas_total._value.get() == before + 2
     gerar_cobrancas_mensais()
-    assert (
-        LancamentoFinanceiro.objects.filter(
-            conta_associado=conta, tipo="mensalidade_associacao"
-        ).count()
-        == 1
-    )
+    assert LancamentoFinanceiro.objects.filter(conta_associado=conta, tipo="mensalidade_associacao").count() == 1

@@ -6,7 +6,7 @@
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">{% trans "Editar Evento" %}</h1>
 
-  <form method="post" enctype="multipart/form-data" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 space-y-6">
+  <form method="post" enctype="multipart/form-data" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm p-6 space-y-6">
     {% csrf_token %}
     {% for field in form %}
       {% if field.name != 'inscricoes' and field.name != 'numero_presentes' %}
@@ -30,7 +30,7 @@
   <!-- Orçamento -->
   <div class="mt-10">
     <h2 class="text-lg font-semibold text-[var(--text-primary)] mb-4">{% trans "Orçamento" %}</h2>
-    <form id="orcamento-form" method="post" action="{% url 'eventos:evento_orcamento' object.pk %}" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl shadow-sm p-6 space-y-6">
+    <form id="orcamento-form" method="post" action="{% url 'eventos:evento_orcamento' object.pk %}" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm p-6 space-y-6">
       {% csrf_token %}
       <div>
         {% include '_forms/field.html' with id='id_orcamento_estimado' name='orcamento_estimado' type='number' step='0.01' label=_("Orçamento estimado") value=object.orcamento_estimado|default_if_none:'' %}

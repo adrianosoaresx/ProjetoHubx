@@ -53,7 +53,6 @@ def auth(client, user):
         ),
     ],
 )
-
 def test_associacao_generica(api_client, root_user, model, make_obj, endpoint):
     auth(api_client, root_user)
     org = OrganizacaoFactory()

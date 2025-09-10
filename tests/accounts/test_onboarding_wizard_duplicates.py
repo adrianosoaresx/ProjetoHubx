@@ -33,4 +33,3 @@ def test_usuario_step_rejects_duplicate(client):
     assert resp.status_code == 302
     messages = list(get_messages(resp.wsgi_request))
     assert any("nome de usuário já cadastrado" in m.message.lower() for m in messages)
-

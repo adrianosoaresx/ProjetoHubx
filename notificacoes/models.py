@@ -29,10 +29,10 @@ class NotificationStatus(models.TextChoices):
     LIDA = "lida", _("Lida")
 
 
-
 class Frequencia(models.TextChoices):
     DIARIA = "diaria", _("Diária")
     SEMANAL = "semanal", _("Semanal")
+
 
 class UserNotificationPreference(TimeStampedModel):
     user: models.OneToOneField = models.OneToOneField(
@@ -52,7 +52,6 @@ class UserNotificationPreference(TimeStampedModel):
         return str(self.user)
 
 
-
 class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
     id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     codigo: models.SlugField = models.SlugField(unique=True, verbose_name=_("Código"))
@@ -61,9 +60,7 @@ class NotificationTemplate(TimeStampedModel, SoftDeleteModel):
 
     canal: models.CharField = models.CharField(max_length=20, choices=Canal.choices, verbose_name=_("Canal"))
 
-
     ativo: models.BooleanField = models.BooleanField(default=True, verbose_name=_("Ativo"))
-
 
     class Meta:
         verbose_name = _("Template de Notificação")

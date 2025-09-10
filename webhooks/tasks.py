@@ -28,7 +28,7 @@ def deliver_webhook(self, event_id: str) -> None:
         event.attempts += 1
         event.last_attempt_at = timezone.now()
         event.save(update_fields=["attempts", "last_attempt_at"])
-        countdown = 2 ** self.request.retries
+        countdown = 2**self.request.retries
         raise self.retry(exc=exc, countdown=countdown)
 
     event.delivered = True
@@ -40,9 +40,7 @@ def deliver_webhook(self, event_id: str) -> None:
 @shared_task
 def remover_eventos_antigos() -> int:
     """Remove eventos entregues com idade superior à retenção configurada."""
-    limite = timezone.now() - timezone.timedelta(
-        days=settings.WEBHOOK_EVENT_RETENTION_DAYS
-    )
+    limite = timezone.now() - timezone.timedelta(days=settings.WEBHOOK_EVENT_RETENTION_DAYS)
     qs = WebhookEvent.objects.filter(delivered=True, created_at__lt=limite)
     count, _ = qs.delete()
     return count

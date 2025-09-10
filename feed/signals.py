@@ -33,4 +33,3 @@ def notificar_comment(sender, instance, created, **kwargs):
 def limpar_cache_feed(**_kwargs) -> None:
     """Remove entradas de cache relacionadas ao feed."""
     invalidate_feed_cache()
-

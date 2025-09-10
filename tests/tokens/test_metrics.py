@@ -21,15 +21,15 @@ def reset_metrics():
     m.tokens_webhook_latency_seconds._sum.set(0)
 
 
-
 from django_redis import get_redis_connection
 
+
 def test_metrics_flow():
-    
     try:
         get_redis_connection("default").flushall()
     except Exception:
         from django.core.cache import cache
+
         cache.clear()
     reset_metrics()
     user = UserFactory(user_type=UserType.ADMIN.value)

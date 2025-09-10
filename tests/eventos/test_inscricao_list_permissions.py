@@ -45,4 +45,3 @@ def test_inscricao_list_allows_gerente(client, gerente_user):
     client.force_login(gerente_user)
     resp = client.get(reverse("eventos:inscricao_list"))
     assert resp.status_code == 200
-

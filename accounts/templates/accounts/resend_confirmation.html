@@ -3,7 +3,7 @@
 {% block title %}{% trans "Reenviar confirmação" %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-12 text-center bg-[var(--bg-primary)]">
-  <div class="rounded-2xl border p-8 shadow-sm bg-[var(--bg-secondary)] border-[var(--border)]">
+  <div class="rounded-2xl border p-8 card-sm bg-[var(--bg-secondary)] border-[var(--border)]">
     <h1 class="mb-4 text-2xl font-bold text-[var(--text-primary)]">{% trans "Reenviar confirmação" %}</h1>
     <form method="post" class="space-y-4">
       {% csrf_token %}

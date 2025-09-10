@@ -22,12 +22,8 @@ def test_waitlist_position_unique_concurrent(django_db_blocker):
         user_type=UserType.COORDENADOR,
         organizacao=org,
     )
-    user2 = User.objects.create_user(
-        username="u2", email="u2@example.com", password="123", organizacao=org
-    )
-    user3 = User.objects.create_user(
-        username="u3", email="u3@example.com", password="123", organizacao=org
-    )
+    user2 = User.objects.create_user(username="u2", email="u2@example.com", password="123", organizacao=org)
+    user3 = User.objects.create_user(username="u3", email="u3@example.com", password="123", organizacao=org)
 
     event = Evento.objects.create(
         titulo="E",
@@ -82,4 +78,3 @@ def test_waitlist_position_unique_concurrent(django_db_blocker):
 
     assert {ins2.posicao_espera, ins3.posicao_espera} == {1, 2}
     assert ins2.status == ins3.status == "pendente"
-

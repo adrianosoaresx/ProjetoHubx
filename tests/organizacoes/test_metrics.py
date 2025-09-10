@@ -16,9 +16,7 @@ def api_client():
 
 @pytest.fixture
 def root_user():
-    return User.objects.create_superuser(
-        username="root", email="root@example.com", password="pass"
-    )
+    return User.objects.create_superuser(username="root", email="root@example.com", password="pass")
 
 
 def auth(client, user):

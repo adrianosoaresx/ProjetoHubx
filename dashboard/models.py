@@ -72,6 +72,7 @@ class DashboardCustomMetric(SoftDeleteModel, TimeStampedModel):
     def __str__(self) -> str:  # pragma: no cover - simple representation
         return self.nome
 
+
 class DashboardLayout(SoftDeleteModel, TimeStampedModel):
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -90,4 +91,3 @@ class DashboardLayout(SoftDeleteModel, TimeStampedModel):
 
     def __str__(self) -> str:  # pragma: no cover - simples
         return self.nome
-

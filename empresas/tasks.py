@@ -13,6 +13,7 @@ from .metrics import empresas_avaliacoes_total
 
 nova_avaliacao = Signal()  # args: avaliacao
 
+
 @shared_task
 def validar_cnpj_async(cnpj: str) -> None:
     try:
@@ -107,9 +108,9 @@ def criar_post_avaliacao(self, avaliacao_id: str) -> None:
     from feed.models import Post  # import local para evitar dependências circulares
 
     try:
-        avaliacao = AvaliacaoEmpresa.objects.select_related(
-            "empresa__organizacao", "empresa", "usuario"
-        ).get(pk=avaliacao_id)
+        avaliacao = AvaliacaoEmpresa.objects.select_related("empresa__organizacao", "empresa", "usuario").get(
+            pk=avaliacao_id
+        )
         if avaliacao.nota < 4:
             return
         Post.objects.create(

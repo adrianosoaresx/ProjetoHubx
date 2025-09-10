@@ -18,9 +18,7 @@ def api_client() -> APIClient:
 
 @pytest.fixture
 def organizacao():
-    return Organizacao.objects.create(
-        nome="Org", cnpj="00.000.000/0001-00", slug="org"
-    )
+    return Organizacao.objects.create(nome="Org", cnpj="00.000.000/0001-00", slug="org")
 
 
 @pytest.fixture
@@ -50,9 +48,7 @@ def test_criar_tarefa(api_client: APIClient, admin_user):
     )
     assert resp.status_code == 201
     tarefa = Tarefa.objects.get(id=resp.data["id"])
-    assert TarefaLog.objects.filter(
-        tarefa=tarefa, acao="tarefa_criada", usuario=admin_user
-    ).exists()
+    assert TarefaLog.objects.filter(tarefa=tarefa, acao="tarefa_criada", usuario=admin_user).exists()
 
 
 @pytest.mark.django_db
@@ -72,9 +68,7 @@ def test_concluir_tarefa(api_client: APIClient, admin_user):
     assert resp.status_code == 200
     tarefa.refresh_from_db()
     assert tarefa.status == "concluida"
-    assert TarefaLog.objects.filter(
-        tarefa=tarefa, acao="tarefa_concluida", usuario=admin_user
-    ).exists()
+    assert TarefaLog.objects.filter(tarefa=tarefa, acao="tarefa_concluida", usuario=admin_user).exists()
 
 
 @pytest.mark.django_db
@@ -94,7 +88,4 @@ def test_excluir_tarefa(api_client: APIClient, admin_user):
     assert resp.status_code == 204
     tarefa.refresh_from_db()
     assert tarefa.deleted is True
-    assert TarefaLog.objects.filter(
-        tarefa=tarefa, acao="tarefa_excluida", usuario=admin_user
-    ).exists()
-
+    assert TarefaLog.objects.filter(tarefa=tarefa, acao="tarefa_excluida", usuario=admin_user).exists()

@@ -21,11 +21,6 @@ class NotificacoesConfig(AppConfig):
         ]
         missing = [name for name in required if not getattr(settings, name, "")]
         if missing:
-
-            raise ImproperlyConfigured(
-                f"Missing notification settings: {', '.join(missing)}"
-            )
+            raise ImproperlyConfigured(f"Missing notification settings: {', '.join(missing)}")
 
         from . import signals  # noqa: F401
-
-

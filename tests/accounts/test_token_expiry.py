@@ -77,9 +77,7 @@ def test_resend_confirmation_invalidates_previous(client, monkeypatch):
         tipo=AccountToken.Tipo.EMAIL_CONFIRMATION,
         expires_at=timezone.now() + timezone.timedelta(hours=1),
     )
-    monkeypatch.setattr(
-        "accounts.tasks.send_confirmation_email.delay", lambda *a, **k: None
-    )
+    monkeypatch.setattr("accounts.tasks.send_confirmation_email.delay", lambda *a, **k: None)
     client.post(reverse("accounts:resend_confirmation"), {"email": user.email})
     assert (
         AccountToken.objects.filter(
@@ -99,14 +97,10 @@ def test_password_reset_request_invalidates_previous(client, monkeypatch):
         tipo=AccountToken.Tipo.PASSWORD_RESET,
         expires_at=timezone.now() + timezone.timedelta(hours=1),
     )
-    monkeypatch.setattr(
-        "accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None
-    )
+    monkeypatch.setattr("accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None)
     client.post(reverse("accounts:password_reset"), {"email": user.email})
     assert (
-        AccountToken.objects.filter(
-            usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET, used_at__isnull=True
-        ).count()
+        AccountToken.objects.filter(usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET, used_at__isnull=True).count()
         == 1
     )
     old.refresh_from_db()
@@ -126,39 +120,26 @@ def test_confirmation_token_default_expiry_and_invalidation(client):
         )
         assert form.is_valid(), form.errors
         user = form.save()
-        token = AccountToken.objects.get(
-            usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION
-        )
+        token = AccountToken.objects.get(usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION)
         assert token.expires_at == timezone.now() + timezone.timedelta(hours=24)
 
     with freeze_time("2024-01-02 12:00:01"):
         url = reverse("accounts:confirmar_email", args=[token.codigo])
         client.get(url)
-        assert SecurityEvent.objects.filter(
-            usuario=user, evento="email_confirmacao_falha"
-        ).exists()
+        assert SecurityEvent.objects.filter(usuario=user, evento="email_confirmacao_falha").exists()
 
 
 @pytest.mark.django_db
 def test_password_reset_token_default_expiry_and_invalidation(client, monkeypatch):
     user = User.objects.create_user(email="reset2@example.com", username="reset2")
     with freeze_time("2024-01-01 12:00:00"):
-        monkeypatch.setattr(
-            "accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None
-        )
+        monkeypatch.setattr("accounts.tasks.send_password_reset_email.delay", lambda *a, **k: None)
         client.post(reverse("accounts:password_reset"), {"email": user.email})
-        assert SecurityEvent.objects.filter(
-            usuario=user, evento="senha_reset_solicitada"
-        ).exists()
-        token = AccountToken.objects.get(
-            usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET
-        )
+        assert SecurityEvent.objects.filter(usuario=user, evento="senha_reset_solicitada").exists()
+        token = AccountToken.objects.get(usuario=user, tipo=AccountToken.Tipo.PASSWORD_RESET)
         assert token.expires_at == timezone.now() + timezone.timedelta(hours=1)
 
     with freeze_time("2024-01-01 13:00:01"):
         url = reverse("accounts:password_reset_confirm", args=[token.codigo])
         client.get(url, follow=True)
-        assert SecurityEvent.objects.filter(
-            usuario=user, evento="senha_redefinicao_falha"
-        ).exists()
-
+        assert SecurityEvent.objects.filter(usuario=user, evento="senha_redefinicao_falha").exists()

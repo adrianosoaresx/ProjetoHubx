@@ -204,4 +204,3 @@ class ParceriaEventoForm(forms.ModelForm):
             return arquivo
         validate_uploaded_file(arquivo)
         return arquivo
-

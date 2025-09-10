@@ -2,7 +2,6 @@ import hashlib
 from datetime import timedelta
 
 
-
 import pytest
 from django.test import override_settings
 

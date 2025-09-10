@@ -54,7 +54,6 @@ from ..tasks.importar_pagamentos import (
 )
 
 
-
 def parse_periodo(periodo: str | None) -> datetime | None:
     """Converte ``YYYY-MM`` em :class:`datetime`.
 

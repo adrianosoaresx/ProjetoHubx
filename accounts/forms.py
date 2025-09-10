@@ -136,10 +136,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user.first_name = self.cleaned_data.get("first_name", "")
         user.last_name = self.cleaned_data.get("last_name", "")
         user.cpf = self.cleaned_data.get("cpf")
-        self.email_changed = (
-            self.original_email
-            and self.cleaned_data.get("email") != self.original_email
-        )
+        self.email_changed = self.original_email and self.cleaned_data.get("email") != self.original_email
         if self.email_changed:
             user.is_active = False
             user.email_confirmed = False
@@ -187,6 +184,8 @@ class RedesSociaisForm(forms.ModelForm):
         if commit:
             self.instance.save(update_fields=["redes_sociais"])
         return self.instance
+
+
 class MediaForm(forms.ModelForm):
     tags_field = forms.CharField(
         required=False,
@@ -217,9 +216,7 @@ class MediaForm(forms.ModelForm):
 
         tags = []
         for name in tags_names:
-            tag, _ = MediaTag.objects.get_or_create(
-                nome__iexact=name, defaults={"nome": name}
-            )
+            tag, _ = MediaTag.objects.get_or_create(nome__iexact=name, defaults={"nome": name})
             tags.append(tag)
         if commit:
             instance.tags.set(tags)
@@ -265,9 +262,7 @@ class EmailLoginForm(forms.Form):
                 evento="login_bloqueado",
                 ip=get_client_ip(self.request) if self.request else None,
             )
-            raise forms.ValidationError(
-                f"Conta bloqueada. Tente novamente após {lock_until.strftime('%H:%M')}"
-            )
+            raise forms.ValidationError(f"Conta bloqueada. Tente novamente após {lock_until.strftime('%H:%M')}")
         if not user.is_active:
             raise forms.ValidationError("Conta inativa. Confirme seu e-mail.")
         if not user.check_password(password):

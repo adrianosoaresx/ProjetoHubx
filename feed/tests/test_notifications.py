@@ -20,14 +20,11 @@ class FeedNotificationTest(TestCase):
         from feed.models import Post
         from feed.tasks import notify_new_post
 
-        post = Post.objects.create(
-            autor=self.user, organizacao=self.user.organizacao, conteudo="ola"
-        )
+        post = Post.objects.create(autor=self.user, organizacao=self.user.organizacao, conteudo="ola")
         notify_new_post(str(post.id))
         self.assertEqual(enviar.call_count, 1)
         notify_new_post(str(post.id))
         self.assertEqual(enviar.call_count, 1)  # idempotente
-
 
     @patch("feed.tasks.capture_exception")
     @patch("feed.tasks.enviar_para_usuario", side_effect=Exception("err"))
@@ -65,9 +62,7 @@ class FeedNotificationTest(TestCase):
     def test_notify_like_once(self, enviar) -> None:
         from feed.models import Post, Reacao
 
-        post = Post.objects.create(
-            autor=self.other, organizacao=self.other.organizacao, conteudo="ola"
-        )
+        post = Post.objects.create(autor=self.other, organizacao=self.other.organizacao, conteudo="ola")
         Reacao.objects.create(post=post, user=self.user, vote="like")
         self.assertEqual(enviar.call_count, 1)
 
@@ -75,9 +70,7 @@ class FeedNotificationTest(TestCase):
     def test_notify_comment_once(self, enviar) -> None:
         from feed.models import Comment, Post
 
-        post = Post.objects.create(
-            autor=self.other, organizacao=self.other.organizacao, conteudo="ola"
-        )
+        post = Post.objects.create(autor=self.other, organizacao=self.other.organizacao, conteudo="ola")
         Comment.objects.create(post=post, user=self.user, texto="oi")
         self.assertEqual(enviar.call_count, 1)
 
@@ -116,5 +109,3 @@ def test_notify_new_post_without_push_when_disabled(enviar) -> None:
         assert False, f"notify_new_post raised ValueError: {err}"
 
     enviar.assert_not_called()
-
-

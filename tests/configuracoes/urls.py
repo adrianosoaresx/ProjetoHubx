@@ -7,6 +7,8 @@ from django.db import transaction
 from configuracoes.middleware import get_request_info
 
 from configuracoes.views import ConfiguracoesView
+
+
 @transaction.non_atomic_requests
 async def async_middleware_view(request):
     await asyncio.sleep(0)

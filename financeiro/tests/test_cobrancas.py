@@ -57,6 +57,7 @@ def test_query_efficiency(settings, monkeypatch):
         gerar_cobrancas_mensais()
     assert len(ctx) <= 10
 
+
 def test_cobranca_com_reajuste(settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
     org, centro = _setup_org_centro()
@@ -68,4 +69,3 @@ def test_cobranca_com_reajuste(settings):
     gerar_cobrancas()
     lanc = LancamentoFinanceiro.objects.get(centro_custo=centro)
     assert lanc.valor == Decimal("55.00")
-

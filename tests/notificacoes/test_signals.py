@@ -16,14 +16,12 @@ def test_atualizar_templates_total_atualiza_gauge() -> None:
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
-
     )
     inactive = NotificationTemplate.objects.create(
         codigo="inactive",
         assunto="Oi",
         corpo="{{ nome }}",
         canal="email",
-
     )
     inactive.delete()
 

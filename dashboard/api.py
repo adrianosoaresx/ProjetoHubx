@@ -22,7 +22,6 @@ from .constants import METRICAS_INFO
 from core.permissions import IsModeratorUser
 
 
-
 class IsAdminOrCoordenador(permissions.IsAuthenticated):
     def has_permission(self, request, view):
         if not super().has_permission(request, view):
@@ -61,11 +60,7 @@ class DashboardViewSet(viewsets.ViewSet):
             val = params.get(key)
             if val:
                 filters[key] = val
-        metricas_list = (
-            params.getlist("metricas")
-            if hasattr(params, "getlist")
-            else params.get("metricas")
-        )
+        metricas_list = params.getlist("metricas") if hasattr(params, "getlist") else params.get("metricas")
         if metricas_list:
             if isinstance(metricas_list, str):
                 metricas_list = [metricas_list]
@@ -76,9 +71,7 @@ class DashboardViewSet(viewsets.ViewSet):
             if invalid:
                 if len(invalid) == 1:
                     return Response({"detail": f"Métrica inválida: {invalid[0]}"}, status=400)
-                return Response(
-                    {"detail": f"Métricas inválidas: {', '.join(invalid)}"}, status=400
-                )
+                return Response({"detail": f"Métricas inválidas: {', '.join(invalid)}"}, status=400)
             filters["metricas"] = metricas_list
         try:
             data, _ = DashboardMetricsService.get_metrics(
@@ -166,9 +159,7 @@ class DashboardViewSet(viewsets.ViewSet):
             )
             return Response({"detail": "inicio deve ser menor ou igual a fim"}, status=400)
         try:
-            data, _ = DashboardMetricsService.get_metrics(
-                request.user, periodo, inicio_dt, fim_dt, **filters
-            )
+            data, _ = DashboardMetricsService.get_metrics(request.user, periodo, inicio_dt, fim_dt, **filters)
         except PermissionError:
             log_audit(
                 request.user,
@@ -233,9 +224,7 @@ class DashboardViewSet(viewsets.ViewSet):
             nucleo_id = request.query_params.get("nucleo_id")
             if nucleo_id:
                 filters["nucleo_id"] = nucleo_id
-        atual, _ = DashboardMetricsService.get_metrics(
-            request.user, escopo=escopo, metricas=metricas, **filters
-        )
+        atual, _ = DashboardMetricsService.get_metrics(request.user, escopo=escopo, metricas=metricas, **filters)
         media = DashboardService.medias_globais(metricas, por=escopo)
         return Response({"atual": atual, "media": media})
 

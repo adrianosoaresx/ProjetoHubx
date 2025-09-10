@@ -76,7 +76,6 @@ EXPORT_DIR = Path(settings.MEDIA_ROOT) / "dashboard_exports"
 EXPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-
 class DashboardBaseView(LoginRequiredMixin, TemplateView):
     """Base view para calcular métricas."""
 
@@ -144,10 +143,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 filters["organizacao_id"] = str(user_org_id)
 
             if nucleo_id:
-                allowed_nucleos = {
-                    str(pk)
-                    for pk in user.nucleos.values_list("id", flat=True)
-                }
+                allowed_nucleos = {str(pk) for pk in user.nucleos.values_list("id", flat=True)}
                 if nucleo_id not in allowed_nucleos:
                     raise PermissionError("Núcleo não permitido")
                 filters["nucleo_id"] = nucleo_id
@@ -230,10 +226,9 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
             "num_posts_feed_total",
         ]
         metricas_info = getattr(self, "metricas_info", METRICAS_INFO)
-        metricas_disponiveis = [
-            {"key": key, "label": data["label"]} for key, data in metricas_info.items()
-        ]
+        metricas_disponiveis = [{"key": key, "label": data["label"]} for key, data in metricas_info.items()]
         user = request.user
+
         def limit_with_selected(qs, selected_id, limit=50):
             if selected_id:
                 return qs.filter(pk=selected_id) | qs.exclude(pk=selected_id)[: limit - 1]
@@ -241,13 +236,9 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
 
         if user.user_type in {UserType.ROOT, UserType.ADMIN}:
             orgs_qs = Organizacao.objects.only("id", "nome")
-            nucleos_qs = (
-                Nucleo.objects.only("id", "nome", "organizacao")
-                .select_related("organizacao")
-            )
-            eventos_qs = (
-                Evento.objects.only("id", "titulo", "nucleo", "organizacao")
-                .select_related("nucleo", "organizacao")
+            nucleos_qs = Nucleo.objects.only("id", "nome", "organizacao").select_related("organizacao")
+            eventos_qs = Evento.objects.only("id", "titulo", "nucleo", "organizacao").select_related(
+                "nucleo", "organizacao"
             )
         else:
             org_id = getattr(user.organizacao, "pk", None)
@@ -267,11 +258,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 )
             ).distinct()
 
-            orgs_qs = (
-                Organizacao.objects.filter(pk=org_id).only("id", "nome")
-                if org_id
-                else Organizacao.objects.none()
-            )
+            orgs_qs = Organizacao.objects.filter(pk=org_id).only("id", "nome") if org_id else Organizacao.objects.none()
             nucleos_qs = (
                 Nucleo.objects.filter(
                     participacoes__user=user,
@@ -320,9 +307,7 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
         context.update(self.get_filters_context())
         metricas = context["metricas_selecionadas"]
         context["chart_data"] = [
-            metrics[m]["total"]
-            for m in metricas
-            if m in metrics and isinstance(metrics[m]["total"], (int, float))
+            metrics[m]["total"] for m in metricas if m in metrics and isinstance(metrics[m]["total"], (int, float))
         ]
         context["metricas_iter"] = [
             {
@@ -350,14 +335,11 @@ class RootDashboardView(SuperadminRequiredMixin, DashboardBaseView):
             "disco": round(used / total * 100, 2),
         }
         context["security_metrics"] = {"login_bloqueados": 0}
-        context["organizacoes"] = (
-            Organizacao.objects.annotate(
-                num_users=Count("users", distinct=True),
-                num_nucleos=Count("nucleos", distinct=True),
-                num_eventos=Count("evento", distinct=True),
-            )
-            .all()
-        )
+        context["organizacoes"] = Organizacao.objects.annotate(
+            num_users=Count("users", distinct=True),
+            num_nucleos=Count("nucleos", distinct=True),
+            num_eventos=Count("evento", distinct=True),
+        ).all()
         return context
 
 
@@ -405,9 +387,7 @@ def metrics_partial(request):
         return HttpResponse(status=403)
     try:
         metricas = request.GET.getlist("metricas") or list(METRICAS_INFO.keys())
-        metrics, metricas_info = DashboardMetricsService.get_metrics(
-            request.user, metricas=metricas
-        )
+        metrics, metricas_info = DashboardMetricsService.get_metrics(request.user, metricas=metricas)
         metricas_iter = [
             {
                 "key": m,
@@ -510,18 +490,12 @@ def organizacoes_search(request):
     user = request.user
 
     if user.user_type in {UserType.ROOT, UserType.ADMIN}:
-        qs = (
-            Organizacao.objects.only("id", "nome")
-            .filter(nome__icontains=term)[:50]
-        )
+        qs = Organizacao.objects.only("id", "nome").filter(nome__icontains=term)[:50]
     else:
         org_id = getattr(user, "organizacao_id", None)
         if not org_id:
             return HttpResponse(status=403)
-        qs = (
-            Organizacao.objects.only("id", "nome")
-            .filter(id=org_id, nome__icontains=term)[:50]
-        )
+        qs = Organizacao.objects.only("id", "nome").filter(id=org_id, nome__icontains=term)[:50]
 
     data = {"results": [{"id": o.id, "text": o.nome} for o in qs]}
     return JsonResponse(data)
@@ -555,9 +529,7 @@ def eventos_search(request):
 
     term = request.GET.get("q", "")
     user = request.user
-    qs = Evento.objects.only("id", "titulo", "nucleo", "organizacao").select_related(
-        "nucleo", "organizacao"
-    )
+    qs = Evento.objects.only("id", "titulo", "nucleo", "organizacao").select_related("nucleo", "organizacao")
 
     if user.user_type in {UserType.ROOT, UserType.ADMIN}:
         qs = qs.filter(titulo__icontains=term)[:50]
@@ -1056,9 +1028,7 @@ class DashboardLayoutCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["layout_save_url"] = "#"
         metricas = list(METRICAS_INFO.keys())
-        metrics, metricas_info = DashboardMetricsService.get_metrics(
-            self.request.user, metricas=metricas
-        )
+        metrics, metricas_info = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
         context["metricas_iter"] = [
             {
                 "key": m,
@@ -1110,9 +1080,7 @@ class DashboardLayoutUpdateView(LoginRequiredMixin, UpdateView):
             metricas = layout_data or []
         if not metricas:
             metricas = list(METRICAS_INFO.keys())
-        metrics, metricas_info = DashboardMetricsService.get_metrics(
-            self.request.user, metricas=metricas
-        )
+        metrics, metricas_info = DashboardMetricsService.get_metrics(self.request.user, metricas=metricas)
         context["metricas_iter"] = [
             {
                 "key": m,

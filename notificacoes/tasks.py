@@ -138,9 +138,7 @@ def _enviar_resumo(config: ConfiguracaoConta, canais: list[str], agora, tipo: st
             )
             metrics.notificacoes_falhadas_total.labels(canal=canal).inc()
             duration = time.perf_counter() - start
-            metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(
-                duration
-            )
+            metrics.notificacao_task_duration_seconds.labels(task=f"resumo_{tipo}").observe(duration)
             logger.exception(
                 "falha_envio_resumo",
                 user_id=config.user.id,

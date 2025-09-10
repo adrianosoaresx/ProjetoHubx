@@ -303,10 +303,7 @@ def main() -> None:
                 print(f"Criados {i + 1}/5 convidados para {org.nome}")
 
             # Empresas para os 10 primeiros associados
-            associados = (
-                User.objects.filter(organizacao=org, user_type="associado")
-                .order_by("id")[:10]
-            )
+            associados = User.objects.filter(organizacao=org, user_type="associado").order_by("id")[:10]
             for i, associado in enumerate(associados, start=1):
                 Empresa.objects.get_or_create(
                     usuario=associado,
@@ -352,25 +349,18 @@ def main() -> None:
                         "descricao": f"Despesa operacional referente ao mês {date_ref.strftime('%Y-%m')}",
                     },
                 )
-                print(
-                    f"Registros financeiros criados {3 - month_offset + 1}/3 para {org.nome}"
-                )
+                print(f"Registros financeiros criados {3 - month_offset + 1}/3 para {org.nome}")
             # Calcula o saldo: receitas (aportes externos) menos despesas
-            saldo = (
-                LancamentoFinanceiro.objects.filter(centro_custo=cc)
-                .aggregate(
-                    saldo=Sum(
-                        Case(
-                            When(tipo=LancamentoFinanceiro.Tipo.APORTE_EXTERNO, then=F("valor")),
-                            When(tipo=LancamentoFinanceiro.Tipo.DESPESA, then=F("valor") * -1),
-                            default=Value(0),
-                            output_field=DecimalField(),
-                        )
+            saldo = LancamentoFinanceiro.objects.filter(centro_custo=cc).aggregate(
+                saldo=Sum(
+                    Case(
+                        When(tipo=LancamentoFinanceiro.Tipo.APORTE_EXTERNO, then=F("valor")),
+                        When(tipo=LancamentoFinanceiro.Tipo.DESPESA, then=F("valor") * -1),
+                        default=Value(0),
+                        output_field=DecimalField(),
                     )
                 )
-                .get("saldo")
-                or Decimal("0")
-            )
+            ).get("saldo") or Decimal("0")
             if cc.saldo != saldo:
                 cc.saldo = saldo
                 cc.save(update_fields=["saldo"])

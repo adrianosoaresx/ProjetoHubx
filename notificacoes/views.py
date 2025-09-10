@@ -167,15 +167,11 @@ def metrics_dashboard(request):
         logs = logs.filter(data_envio__date__lte=fim)
     total_por_canal = {
         item["canal"]: item["total"]
-        for item in logs.filter(status=NotificationStatus.ENVIADA)
-        .values("canal")
-        .annotate(total=Count("id"))
+        for item in logs.filter(status=NotificationStatus.ENVIADA).values("canal").annotate(total=Count("id"))
     }
     falhas_por_canal = {
         item["canal"]: item["total"]
-        for item in logs.filter(status=NotificationStatus.FALHA)
-        .values("canal")
-        .annotate(total=Count("id"))
+        for item in logs.filter(status=NotificationStatus.FALHA).values("canal").annotate(total=Count("id"))
     }
     templates_total = NotificationTemplate.objects.filter(ativo=True).count()
     context = {

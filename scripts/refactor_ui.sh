@@ -2,8 +2,8 @@
 set -euo pipefail
 
 # 1) Trocar contêineres "card" ad-hoc por .card
-rg -l 'bg-white\s+dark:bg-slate-800\s+p-6\s+rounded-lg\s+shadow' templates \
-  | xargs -I{} sed -i.bak -E 's/bg-white\s+dark:bg-slate-800\s+p-6\s+rounded-lg\s+shadow/card/g' {}
+rg -l 'bg-[var(--bg-secondary)]\s+dark:bg-slate-800\s+p-6\s+rounded-lg\s+card' templates \
+  | xargs -I{} sed -i.bak -E 's/bg-[var(--bg-secondary)]\s+dark:bg-slate-800\s+p-6\s+rounded-lg\s+card/card/g' {}
 
 # 2) Normalizar grids de lista para .card-grid
 rg -l 'grid-cols-1.*gap-6' templates \

@@ -8,6 +8,7 @@ from feed.api import REACTIONS_TOTAL
 from feed.models import Reacao
 from organizacoes.factories import OrganizacaoFactory
 
+
 @override_settings(ROOT_URLCONF="Hubx.urls")
 class ReactionToggleAPITest(TestCase):
     def setUp(self) -> None:
@@ -24,28 +25,16 @@ class ReactionToggleAPITest(TestCase):
 
         res = self.client.post(url, {"vote": "like"})
         self.assertEqual(res.status_code, 201)
-        self.assertTrue(
-            Reacao.objects.filter(
-                post=self.post, user=self.user, vote="like", deleted=False
-            ).exists()
-        )
-        self.assertEqual(
-            REACTIONS_TOTAL.labels(vote="like")._value.get(), base_count + 1
-        )
+        self.assertTrue(Reacao.objects.filter(post=self.post, user=self.user, vote="like", deleted=False).exists())
+        self.assertEqual(REACTIONS_TOTAL.labels(vote="like")._value.get(), base_count + 1)
         res_get = self.client.get(url)
         self.assertEqual(res_get.data["like"], 1)
         self.assertEqual(res_get.data["user_reaction"], "like")
 
         res = self.client.post(url, {"vote": "like"})
         self.assertEqual(res.status_code, 204)
-        self.assertTrue(
-            Reacao.all_objects.filter(
-                post=self.post, user=self.user, vote="like", deleted=True
-            ).exists()
-        )
-        self.assertEqual(
-            REACTIONS_TOTAL.labels(vote="like")._value.get(), base_count
-        )
+        self.assertTrue(Reacao.all_objects.filter(post=self.post, user=self.user, vote="like", deleted=True).exists())
+        self.assertEqual(REACTIONS_TOTAL.labels(vote="like")._value.get(), base_count)
         res_get = self.client.get(url)
         self.assertEqual(res_get.data["like"], 0)
         self.assertIsNone(res_get.data["user_reaction"])
@@ -56,21 +45,9 @@ class ReactionToggleAPITest(TestCase):
         url = f"/api/feed/posts/{self.post.id}/reacoes/"
         res = self.client.post(url, {"vote": "share"})
         self.assertEqual(res.status_code, 201)
-        self.assertTrue(
-            Reacao.objects.filter(
-                post=self.post, user=self.user, vote="share", deleted=False
-            ).exists()
-        )
-        self.assertEqual(
-            REACTIONS_TOTAL.labels(vote="share")._value.get(), base_count + 1
-        )
+        self.assertTrue(Reacao.objects.filter(post=self.post, user=self.user, vote="share", deleted=False).exists())
+        self.assertEqual(REACTIONS_TOTAL.labels(vote="share")._value.get(), base_count + 1)
         res = self.client.post(url, {"vote": "share"})
         self.assertEqual(res.status_code, 204)
-        self.assertTrue(
-            Reacao.all_objects.filter(
-                post=self.post, user=self.user, vote="share", deleted=True
-            ).exists()
-        )
-        self.assertEqual(
-            REACTIONS_TOTAL.labels(vote="share")._value.get(), base_count
-        )
+        self.assertTrue(Reacao.all_objects.filter(post=self.post, user=self.user, vote="share", deleted=True).exists())
+        self.assertEqual(REACTIONS_TOTAL.labels(vote="share")._value.get(), base_count)

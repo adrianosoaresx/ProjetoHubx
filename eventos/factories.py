@@ -36,4 +36,3 @@ class EventoFactory(DjangoModelFactory):
     contato_nome = factory.Faker("name", locale="pt_BR")
     contato_email = factory.Faker("email", locale="pt_BR")
     contato_whatsapp = factory.Faker("msisdn")
-

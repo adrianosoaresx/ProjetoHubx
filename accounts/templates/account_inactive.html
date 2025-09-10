@@ -9,7 +9,7 @@
 
 {% block content %}
 <div class="max-w-md mx-auto">
-  <div class="p-8 rounded-lg shadow text-center bg-[var(--bg-secondary)] border border-[var(--border)]">
+  <div class="p-8 rounded-lg card text-center bg-[var(--bg-secondary)] border border-[var(--border)]">
     <p class="mb-6 text-[var(--text-secondary)]" aria-live="polite">{% trans "Sua conta ainda não foi ativada. Verifique seu e-mail para continuar." %}</p>
     <a
       href="{% url 'accounts:login' %}"

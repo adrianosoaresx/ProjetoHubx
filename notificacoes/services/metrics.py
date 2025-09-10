@@ -1,4 +1,3 @@
-
 from prometheus_client import Counter, Gauge, Histogram  # type: ignore
 
 notificacoes_enviadas_total = Counter(
@@ -21,7 +20,4 @@ notificacao_task_duration_seconds = Histogram(
 )
 
 
-templates_total = Gauge(
-    "templates_total", "Total de templates de notificação ativos"
-)
-
+templates_total = Gauge("templates_total", "Total de templates de notificação ativos")

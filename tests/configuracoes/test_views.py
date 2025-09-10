@@ -90,6 +90,7 @@ def test_view_post_atualiza_preferencias(admin_user, rf: RequestFactory, monkeyp
 
 try:
     import pytest_benchmark  # noqa:F401
+
     HAS_BENCH = True
 except Exception:  # pragma: no cover - dependencia opcional
     HAS_BENCH = False
@@ -131,9 +132,7 @@ def test_view_post_preferencias_https_secure_cookies(admin_user, rf: RequestFact
         return DummyForm()
 
     monkeypatch.setattr(ConfiguracoesView, "get_form", fake_get_form)
-    request = rf.post(
-        "/configuracoes/?tab=preferencias", {"tab": "preferencias"}, secure=True
-    )
+    request = rf.post("/configuracoes/?tab=preferencias", {"tab": "preferencias"}, secure=True)
     request.user = admin_user
     request.session = {}
     setattr(request, "_messages", FallbackStorage(request))

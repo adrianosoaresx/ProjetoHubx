@@ -26,9 +26,7 @@ def test_cliente_cannot_access_unauthorized_nucleo(client, cliente_user):
 @pytest.mark.django_db
 def test_cliente_cannot_access_unauthorized_evento(client, cliente_user, admin_user):
     other_nucleo = NucleoFactory(organizacao=cliente_user.organizacao)
-    evento = EventoFactory(
-        organizacao=cliente_user.organizacao, nucleo=other_nucleo, coordenador=admin_user
-    )
+    evento = EventoFactory(organizacao=cliente_user.organizacao, nucleo=other_nucleo, coordenador=admin_user)
     client.force_login(cliente_user)
     url = reverse("dashboard:cliente")
     resp = client.get(url, {"evento_id": evento.id})

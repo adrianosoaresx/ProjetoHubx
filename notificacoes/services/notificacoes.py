@@ -39,13 +39,10 @@ def _get_destinatario(user: Any, canal: str) -> str:
     if canal == Canal.WHATSAPP:
         return getattr(user, "whatsapp", "")
     if canal == Canal.PUSH:
-        device_id = (
-            PushSubscription.objects.filter(user=user, ativo=True)
-            .values_list("device_id", flat=True)
-            .first()
-        )
+        device_id = PushSubscription.objects.filter(user=user, ativo=True).values_list("device_id", flat=True).first()
         return device_id or ""
     return ""
+
 
 def enviar_para_usuario(
     user: Any,

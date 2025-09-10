@@ -30,4 +30,3 @@ def test_notificar_briefing_status_envia_notificacoes(monkeypatch):
         assert codigo == "eventos_briefing_status"
         assert ctx["status"] == "aprovado"
         assert ctx["mensagem"] == "msg"
-

@@ -53,6 +53,7 @@ class UserAdmin(BaseUserAdmin):
             return qs
         return qs
 
+
 @admin.register(UserMedia)
 class UserMediaAdmin(admin.ModelAdmin):
     list_display = ["user", "file"]

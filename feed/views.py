@@ -22,6 +22,7 @@ from accounts.models import UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
+
 # Moderação desativada: não é necessário notificar moderação
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -169,24 +170,21 @@ class FeedListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             "bookmarks",
             "flags",
         )
-        qs = (
-            qs.filter(deleted=False)
-            .annotate(
-                like_count=Count(
-                    "reacoes",
-                    filter=Q(reacoes__vote="like", reacoes__deleted=False),
-                    distinct=True,
-                ),
-                share_count=Count(
-                    "reacoes",
-                    filter=Q(reacoes__vote="share", reacoes__deleted=False),
-                    distinct=True,
-                ),
-                is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
-                is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
-                is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)),
-                is_shared=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)),
-            )
+        qs = qs.filter(deleted=False).annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+            is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+            is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=user, deleted=False)),
+            is_liked=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="like", deleted=False)),
+            is_shared=Exists(Reacao.objects.filter(post=OuterRef("pk"), user=user, vote="share", deleted=False)),
         )
         # Moderação desativada: usuários veem seus posts e o feed global da organização
         if not user.is_staff:
@@ -321,17 +319,9 @@ class NovaPostagemView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
         context["nucleos_do_usuario"] = Nucleo.objects.filter(participacoes__user=self.request.user)
         context["tags_disponiveis"] = Tag.objects.all()
         # Seleção segura para o template (evita lookup direto em request.POST)
-        selected_tipo = (
-            self.request.POST.get("tipo_feed")
-            or self.request.GET.get("tipo_feed")
-            or "global"
-        ).strip()
+        selected_tipo = (self.request.POST.get("tipo_feed") or self.request.GET.get("tipo_feed") or "global").strip()
         context["selected_tipo_feed"] = selected_tipo
-        context["selected_nucleo"] = (
-            self.request.POST.get("nucleo")
-            or self.request.GET.get("nucleo")
-            or ""
-        ).strip()
+        context["selected_nucleo"] = (self.request.POST.get("nucleo") or self.request.GET.get("nucleo") or "").strip()
         return context
 
     def form_valid(self, form):
@@ -385,30 +375,25 @@ class PostDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 
     def get_queryset(self):
         qs = Post.objects.select_related("autor", "organizacao", "nucleo", "evento").prefetch_related("tags")
-        qs = (
-            qs.filter(deleted=False)
-            .annotate(
-                like_count=Count(
-                    "reacoes",
-                    filter=Q(reacoes__vote="like", reacoes__deleted=False),
-                    distinct=True,
-                ),
-                share_count=Count(
-                    "reacoes",
-                    filter=Q(reacoes__vote="share", reacoes__deleted=False),
-                    distinct=True,
-                ),
-                is_bookmarked=Exists(
-                    Bookmark.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)
-                ),
-                is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)),
-                is_liked=Exists(
-                    Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="like", deleted=False)
-                ),
-                is_shared=Exists(
-                    Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="share", deleted=False)
-                ),
-            )
+        qs = qs.filter(deleted=False).annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+            is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)),
+            is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=self.request.user, deleted=False)),
+            is_liked=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="like", deleted=False)
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=self.request.user, vote="share", deleted=False)
+            ),
         )
         if not self.request.user.is_staff:
             qs = qs.filter(Q(autor=self.request.user) | Q(tipo_feed="global"))

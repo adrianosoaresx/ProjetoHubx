@@ -19,4 +19,3 @@ def add_class(value: BoundField, css_class: str) -> BoundField:
     existing = value.field.widget.attrs.get("class", "")
     value.field.widget.attrs["class"] = f"{existing} {css_class}".strip()
     return value
-

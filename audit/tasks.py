@@ -14,9 +14,7 @@ from .models import AuditLog
 def cleanup_old_logs() -> int:
     """Soft delete logs older than retention period."""
     try:
-        cutoff = timezone.now() - timedelta(
-            days=365 * settings.AUDIT_LOG_RETENTION_YEARS
-        )
+        cutoff = timezone.now() - timedelta(days=365 * settings.AUDIT_LOG_RETENTION_YEARS)
         qs = AuditLog.objects.filter(created_at__lt=cutoff, deleted=False)
         count = qs.update(deleted=True, deleted_at=timezone.now())
         return count

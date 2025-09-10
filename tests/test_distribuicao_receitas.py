@@ -30,6 +30,7 @@ def test_distribuicao_sem_nucleo():
     centro_evento = CentroCusto.objects.create(nome="E", tipo="evento", evento=evento)
     conta = ContaAssociado.objects.create(user=UserFactory(is_associado=True))
     distribuir_receita_evento(evento.id, Decimal("80"), conta)
-    centro_org.refresh_from_db(); centro_evento.refresh_from_db()
+    centro_org.refresh_from_db()
+    centro_evento.refresh_from_db()
     assert centro_org.saldo == Decimal("40")
     assert centro_evento.saldo == Decimal("40")

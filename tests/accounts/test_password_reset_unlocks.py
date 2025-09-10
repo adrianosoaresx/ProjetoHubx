@@ -13,9 +13,7 @@ User = get_user_model()
 def test_password_reset_clears_lock(client):
     user = User.objects.create_user(email="u@example.com", username="u")
     cache.set(f"failed_login_attempts_user_{user.pk}", 2, 900)
-    cache.set(
-        f"lockout_user_{user.pk}", timezone.now() + timezone.timedelta(minutes=30), 1800
-    )
+    cache.set(f"lockout_user_{user.pk}", timezone.now() + timezone.timedelta(minutes=30), 1800)
     token = AccountToken.objects.create(
         usuario=user,
         tipo=AccountToken.Tipo.PASSWORD_RESET,

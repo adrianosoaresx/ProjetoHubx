@@ -35,6 +35,7 @@ class RequestInfoMiddleware:
         token = _local.set(request)
         response = self.get_response(request)
         if asyncio.iscoroutine(response):
+
             async def _await_response():
                 try:
                     return await response

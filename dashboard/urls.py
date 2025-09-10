@@ -30,16 +30,15 @@ urlpatterns = [
     path("filters/<int:pk>/edit/", views.DashboardFilterUpdateView.as_view(), name="filter-edit"),
     path("filters/<int:pk>/apply/", views.DashboardFilterApplyView.as_view(), name="filter-apply"),
     path("filters/<int:pk>/delete/", views.DashboardFilterDeleteView.as_view(), name="filter-delete"),
-
     path("layouts/", views.DashboardLayoutListView.as_view(), name="layouts"),
     path("layouts/create/", views.DashboardLayoutCreateView.as_view(), name="layout-create"),
     path("layouts/<int:pk>/edit/", views.DashboardLayoutUpdateView.as_view(), name="layout-edit"),
     path("layouts/<int:pk>/delete/", views.DashboardLayoutDeleteView.as_view(), name="layout-delete"),
     path("layouts/<int:pk>/save/", views.DashboardLayoutSaveView.as_view(), name="layout-save"),
-
     path("custom-metrics/", views.DashboardCustomMetricListView.as_view(), name="custom-metrics"),
     path("custom-metrics/create/", views.DashboardCustomMetricCreateView.as_view(), name="custom-metric-create"),
     path("custom-metrics/<int:pk>/edit/", views.DashboardCustomMetricUpdateView.as_view(), name="custom-metric-edit"),
-    path("custom-metrics/<int:pk>/delete/", views.DashboardCustomMetricDeleteView.as_view(), name="custom-metric-delete"),
-
+    path(
+        "custom-metrics/<int:pk>/delete/", views.DashboardCustomMetricDeleteView.as_view(), name="custom-metric-delete"
+    ),
 ]

@@ -25,27 +25,21 @@ class CommentPermissionAPITest(TestCase):
 
     def test_author_can_update_comment(self):
         self.client.force_authenticate(self.author)
-        res = self.client.patch(
-            f"/api/feed/comments/{self.comment.id}/", {"texto": "edit"}, format="json"
-        )
+        res = self.client.patch(f"/api/feed/comments/{self.comment.id}/", {"texto": "edit"}, format="json")
         self.assertEqual(res.status_code, 200)
         self.comment.refresh_from_db()
         self.assertEqual(self.comment.texto, "edit")
 
     def test_moderator_can_update_comment(self):
         self.client.force_authenticate(self.moderator)
-        res = self.client.patch(
-            f"/api/feed/comments/{self.comment.id}/", {"texto": "mod"}, format="json"
-        )
+        res = self.client.patch(f"/api/feed/comments/{self.comment.id}/", {"texto": "mod"}, format="json")
         self.assertEqual(res.status_code, 200)
         self.comment.refresh_from_db()
         self.assertEqual(self.comment.texto, "mod")
 
     def test_other_user_cannot_update_comment(self):
         self.client.force_authenticate(self.other)
-        res = self.client.patch(
-            f"/api/feed/comments/{self.comment.id}/", {"texto": "fail"}, format="json"
-        )
+        res = self.client.patch(f"/api/feed/comments/{self.comment.id}/", {"texto": "fail"}, format="json")
         self.assertEqual(res.status_code, 403)
 
     def test_other_user_cannot_delete_comment(self):

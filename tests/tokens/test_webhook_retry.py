@@ -22,9 +22,7 @@ def reset_metrics() -> None:
 def test_enqueue_webhook_task(monkeypatch):
     reset_metrics()
     queued: list[dict[str, object]] = []
-    monkeypatch.setattr(
-        "tokens.services.send_webhook.delay", lambda payload: queued.append(payload)
-    )
+    monkeypatch.setattr("tokens.services.send_webhook.delay", lambda payload: queued.append(payload))
 
     token = SimpleNamespace(id=uuid.uuid4())
     services.token_created(token, "raw")

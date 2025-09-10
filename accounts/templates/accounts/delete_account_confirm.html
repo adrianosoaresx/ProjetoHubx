@@ -7,7 +7,7 @@
   <p class="text-[var(--error)] bg-[var(--error-light)] rounded-xl px-4 py-2 mb-4 text-sm">
     {% trans "A exclusão da conta é permanente e você perderá acesso aos seus dados." %}
   </p>
-  <form method="post" class="rounded-2xl shadow p-6 space-y-4 bg-[var(--bg-secondary)]">
+  <form method="post" class="rounded-2xl card p-6 space-y-4 bg-[var(--bg-secondary)]">
     {% csrf_token %}
     <div>
       <label for="confirm" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Digite EXCLUIR para confirmar" %}</label>

@@ -26,7 +26,5 @@ def gerar_cobrancas_mensais() -> None:
         detalhes = str(exc)
         raise
     finally:
-        FinanceiroTaskLog.objects.create(
-            nome_tarefa="gerar_cobrancas_mensais", status=status, detalhes=detalhes
-        )
+        FinanceiroTaskLog.objects.create(nome_tarefa="gerar_cobrancas_mensais", status=status, detalhes=detalhes)
         logger.info("Cobranças geradas em %s", timezone.now() - inicio)

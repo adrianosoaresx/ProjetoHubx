@@ -12,6 +12,7 @@ from unittest.mock import Mock
 
 from feed.services import _upload_media, upload_media
 
+
 @pytest.mark.django_db
 def test_upload_media_capture_exception(monkeypatch, settings):
     settings.AWS_STORAGE_BUCKET_NAME = "bucket"
@@ -79,7 +80,6 @@ def test_upload_media_generates_preview():
     assert preview_key
     assert default_storage.exists(video_key)
     assert default_storage.exists(preview_key)
-
 
 
 @pytest.mark.django_db

@@ -11,9 +11,7 @@ class DashboardCustomMetricService:
     }
 
     @classmethod
-    def register_source(
-        cls, key: str, model: Type[Model], allowed_fields: Iterable[str]
-    ) -> None:
+    def register_source(cls, key: str, model: Type[Model], allowed_fields: Iterable[str]) -> None:
         if key in cls.SOURCES:
             raise ValueError("Fonte já registrada")
         if not isinstance(model, type) or not issubclass(model, Model):
@@ -22,9 +20,7 @@ class DashboardCustomMetricService:
         model_fields = {f.name for f in model._meta.get_fields()}
         invalid = fields_set - model_fields
         if invalid:
-            raise ValueError(
-                f"Campos inválidos: {', '.join(sorted(invalid))}"
-            )
+            raise ValueError(f"Campos inválidos: {', '.join(sorted(invalid))}")
         cls.SOURCES[key] = (model, fields_set)
 
     AGGREGATIONS = {"count", "sum", "avg"}
@@ -70,4 +66,3 @@ def get_metrics_info(metrics: Iterable[Any]) -> Dict[str, Dict[str, str]]:
         icon = query.get("icon", DEFAULT_ICON)
         info[metric.code] = {"label": metric.nome, "icon": icon}
     return info
-

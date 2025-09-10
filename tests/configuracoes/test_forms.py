@@ -124,6 +124,7 @@ def test_testar_whatsapp_api(client, admin_user, settings, monkeypatch):
     admin_user.configuracao.receber_notificacoes_whatsapp = True
     admin_user.configuracao.save(update_fields=["receber_notificacoes_whatsapp"])
     import configuracoes.api as api
+
     mock_send = MagicMock()
     monkeypatch.setattr(api, "send_whatsapp", mock_send)
     client.force_login(admin_user)

@@ -4,6 +4,7 @@ from accounts.models import User
 
 pytestmark = pytest.mark.django_db
 
+
 def test_root_metrics_partial(client):
     root_user = User.objects.create_superuser(
         email="root@example.com",

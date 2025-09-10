@@ -109,7 +109,7 @@ Agrupe informações em elementos com a classe utilitária `.card`. Ela define
 bordas suaves, espaçamento e adapta automaticamente para o modo escuro.
 
 ```html
-<div class="card bg-white dark:bg-gray-900">
+<div class="card bg-[var(--bg-secondary)] dark:bg-gray-900">
   <h3 class="font-semibold">Título</h3>
   <p class="text-sm text-[var(--text-secondary)]">Descrição ou conteúdo.</p>
   <button class="btn btn-primary mt-2">Ação</button>
@@ -174,7 +174,7 @@ interativos tenham `aria-label` quando não houver texto visível.
 Os componentes devem apresentar boa aparência em ambos os temas:
 
 ```html
-<div class="p-4 rounded bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100">
+<div class="p-4 rounded bg-[var(--bg-secondary)] text-gray-900 dark:bg-gray-800 dark:text-gray-100">
   <p class="mb-2">Conteúdo do cartão</p>
   <button class="btn btn-primary">Ação</button>
 </div>

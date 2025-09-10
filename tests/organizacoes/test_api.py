@@ -117,9 +117,7 @@ def test_list_excludes_inativa(api_client, root_user, faker_ptbr):
 def test_list_filter_inativa_tokens(api_client, root_user, faker_ptbr):
     auth(api_client, root_user)
     active = Organizacao.objects.create(nome="A", cnpj=faker_ptbr.cnpj(), slug="aa")
-    inactive = Organizacao.objects.create(
-        nome="B", cnpj=faker_ptbr.cnpj(), slug="bb", inativa=True
-    )
+    inactive = Organizacao.objects.create(nome="B", cnpj=faker_ptbr.cnpj(), slug="bb", inativa=True)
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.get(url + "?inativa=yes")
     ids = [o["id"] for o in resp.data]
@@ -251,15 +249,10 @@ def test_combined_filters(api_client, root_user, faker_ptbr):
         estado="RJ",
     )
     url = reverse("organizacoes_api:organizacao-list")
-    resp = api_client.get(
-        url
-        + "?search=org2&tipo=ong&cidade=Cidade1&estado=SP&inativa=yes"
-    )
+    resp = api_client.get(url + "?search=org2&tipo=ong&cidade=Cidade1&estado=SP&inativa=yes")
     ids = [o["id"] for o in resp.data]
     assert ids == [str(o2.id)]
-    resp = api_client.get(
-        url + "?search=org1&tipo=ong&cidade=Cidade1&estado=SP"
-    )
+    resp = api_client.get(url + "?search=org1&tipo=ong&cidade=Cidade1&estado=SP")
     ids = [o["id"] for o in resp.data]
     assert ids == [str(o1.id)]
 
@@ -269,4 +262,3 @@ def test_invalid_cnpj_api(api_client, root_user):
     url = reverse("organizacoes_api:organizacao-list")
     resp = api_client.post(url, {"nome": "Org", "cnpj": "123"})
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
-

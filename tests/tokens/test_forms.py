@@ -1,4 +1,5 @@
 import pytest
+
 pytestmark = pytest.mark.skip(reason="legacy tests")
 import pytest
 from django.utils import timezone

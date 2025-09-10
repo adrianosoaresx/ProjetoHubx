@@ -25,11 +25,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 class IsSuperAdmin(permissions.BasePermission):
     def has_permission(self, request, view) -> bool:
-        return bool(
-            request.user
-            and request.user.is_authenticated
-            and request.user.user_type == UserType.ROOT
-        )
+        return bool(request.user and request.user.is_authenticated and request.user.user_type == UserType.ROOT)
 
 
 class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):

@@ -24,9 +24,7 @@ def test_custom_metric_service(admin_user):
         },
         escopo="organizacao",
     )
-    total = DashboardCustomMetricService.execute(
-        metric.query_spec, organizacao_id=admin_user.organizacao_id
-    )
+    total = DashboardCustomMetricService.execute(metric.query_spec, organizacao_id=admin_user.organizacao_id)
     assert total == 1
 
 
@@ -82,25 +80,20 @@ def test_custom_metric_in_dashboard_metrics_service(admin_user, monkeypatch):
     assert metric.code not in views.METRICAS_INFO
 
 
-
 def test_register_source_and_execute(admin_user, monkeypatch):
     monkeypatch.setattr(
         DashboardCustomMetricService,
         "SOURCES",
         DashboardCustomMetricService.SOURCES.copy(),
     )
-    DashboardCustomMetricService.register_source(
-        "runtime_posts", Post, {"id", "organizacao"}
-    )
+    DashboardCustomMetricService.register_source("runtime_posts", Post, {"id", "organizacao"})
     PostFactory(autor=admin_user, organizacao=admin_user.organizacao)
     query = {
         "source": "runtime_posts",
         "aggregation": "count",
         "filters": {"organizacao": admin_user.organizacao_id},
     }
-    assert (
-        DashboardCustomMetricService.execute(query) == 1
-    )
+    assert DashboardCustomMetricService.execute(query) == 1
 
 
 def test_register_source_invalid_field(monkeypatch):
@@ -111,4 +104,3 @@ def test_register_source_invalid_field(monkeypatch):
     )
     with pytest.raises(ValueError):
         DashboardCustomMetricService.register_source("invalid", Post, {"foo"})
-

@@ -37,9 +37,7 @@ class DashboardFilterForm(forms.ModelForm):
         instance.filtros = {k: v for k, v in filtros_data.items() if k in allowed}
         metricas = instance.filtros.get("metricas")
         if metricas:
-            valid = set(METRICAS_INFO.keys()) | set(
-                DashboardCustomMetric.objects.values_list("code", flat=True)
-            )
+            valid = set(METRICAS_INFO.keys()) | set(DashboardCustomMetric.objects.values_list("code", flat=True))
             invalid = [m for m in metricas if m not in valid]
             if invalid:
                 invalid_str = ", ".join(invalid)

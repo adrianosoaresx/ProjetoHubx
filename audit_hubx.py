@@ -53,12 +53,21 @@ def audit_patterns(patterns: List[str]) -> None:
 def main():
     # Define patterns to search for legacy code
     legacy_patterns = [
-        "UserType.objects", "TipoUsuario", "tipo_id", "data_hora", "duracao",
-        "link_inscricao", "inscritos", "Mensagem(", "Notificacao(",
-        "Topico(", "Resposta(", "Post.PUBLICO"
+        "UserType.objects",
+        "TipoUsuario",
+        "tipo_id",
+        "data_hora",
+        "duracao",
+        "link_inscricao",
+        "inscritos",
+        "Mensagem(",
+        "Notificacao(",
+        "Topico(",
+        "Resposta(",
+        "Post.PUBLICO",
     ]
     audit_patterns(legacy_patterns)
-    
+
     # Example: parse a PDF to view requirements (adjust paths as needed)
     # pdf_text = parse_pdf("/home/oai/share/Requisitos_Accounts_Hubx.pdf")
     # print(pdf_text[:500])

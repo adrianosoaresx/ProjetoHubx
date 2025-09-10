@@ -41,7 +41,6 @@ def revogar_tokens_expirados() -> None:
         )
 
 
-
 @shared_task
 def rotacionar_tokens_proximos_da_expiracao() -> None:
     """Rotaciona tokens próximos da expiração."""

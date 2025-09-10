@@ -22,9 +22,7 @@ def analisar_conteudo(texto: str, images: list[bytes] | None = None) -> Decision
     determinadas pelos limiares definidos em ``settings.FEED_AI_THRESHOLDS``.
     """
 
-    thresholds = getattr(
-        settings, "FEED_AI_THRESHOLDS", {"suspeito": 0.5, "rejeitado": 0.8}
-    )
+    thresholds = getattr(settings, "FEED_AI_THRESHOLDS", {"suspeito": 0.5, "rejeitado": 0.8})
     bad_words = [w.lower() for w in getattr(settings, "FEED_BAD_WORDS", [])]
     texto_lower = (texto or "").lower()
     words = texto_lower.split()

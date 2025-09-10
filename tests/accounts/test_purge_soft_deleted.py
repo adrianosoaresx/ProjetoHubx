@@ -73,4 +73,3 @@ def test_purge_removes_media_files(tmp_path, settings):
 
     assert not file_path.exists()
     assert not UserMedia.all_objects.filter(pk=media.pk).exists()
-

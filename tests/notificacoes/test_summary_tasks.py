@@ -79,19 +79,13 @@ def test_relatorio_diario_atualiza_conteudo(settings):
     config.hora_notificacao_diaria = timezone.localtime().time()
     config.save()
 
-    template1 = NotificationTemplate.objects.create(
-        codigo="tpl1", assunto="a", corpo="msg1", canal=Canal.EMAIL
-    )
+    template1 = NotificationTemplate.objects.create(codigo="tpl1", assunto="a", corpo="msg1", canal=Canal.EMAIL)
     NotificationLog.objects.create(user=user, template=template1, canal=Canal.EMAIL)
     enviar_relatorios_diarios()
-    hist = HistoricoNotificacao.objects.get(
-        user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA
-    )
+    hist = HistoricoNotificacao.objects.get(user=user, canal=Canal.EMAIL, frequencia=Frequencia.DIARIA)
     assert hist.conteudo == ["msg1"]
 
-    template2 = NotificationTemplate.objects.create(
-        codigo="tpl2", assunto="a", corpo="msg2", canal=Canal.EMAIL
-    )
+    template2 = NotificationTemplate.objects.create(codigo="tpl2", assunto="a", corpo="msg2", canal=Canal.EMAIL)
     NotificationLog.objects.create(user=user, template=template2, canal=Canal.EMAIL)
     enviar_relatorios_diarios()
     hist.refresh_from_db()
@@ -194,10 +188,7 @@ def test_relatorio_diario_registra_falha(settings, monkeypatch):
     logs = NotificationLog.objects.filter(user=user, canal=Canal.EMAIL)
     assert all(log.status == NotificationStatus.FALHA for log in logs)
     assert all(log.erro == "falhou" for log in logs)
-    assert (
-        metrics.notificacoes_falhadas_total.labels(canal=Canal.EMAIL)._value.get()
-        == before_fail + 1
-    )
+    assert metrics.notificacoes_falhadas_total.labels(canal=Canal.EMAIL)._value.get() == before_fail + 1
 
 
 @freeze_time("2024-01-01 08:00:00-03:00")

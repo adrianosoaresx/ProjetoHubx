@@ -67,12 +67,13 @@ def generate_token(
     token_created(token, raw_token)
 
     return raw_token
+
+
 def list_tokens(user: User) -> Iterable[ApiToken]:
     qs = ApiToken.objects.all()
     if not user.is_superuser:
         qs = qs.filter(user=user)
     return qs
-
 
 
 def create_invite_token(
@@ -97,6 +98,7 @@ def create_invite_token(
     if nucleos:
         token.nucleos.set(nucleos)
     return token, codigo
+
 
 def find_token_by_code(codigo: str) -> TokenAcesso:
     """Retorna o ``TokenAcesso`` correspondente ao ``codigo``.

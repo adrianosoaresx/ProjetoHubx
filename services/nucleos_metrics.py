@@ -11,27 +11,23 @@ User = get_user_model()
 
 def get_total_membros(nucleo_id: str) -> int:
     """Retorna o número total de membros ativos de um núcleo."""
-    return (
-        ParticipacaoNucleo.objects.filter(
-            nucleo_id=nucleo_id,
-            status="ativo",
-            status_suspensao=False,
-            deleted=False,
-        ).count()
-    )
+    return ParticipacaoNucleo.objects.filter(
+        nucleo_id=nucleo_id,
+        status="ativo",
+        status_suspensao=False,
+        deleted=False,
+    ).count()
 
 
 def get_total_suplentes(nucleo_id: str) -> int:
     """Retorna o número de suplentes ativos do núcleo."""
     now = timezone.now()
-    return (
-        CoordenadorSuplente.objects.filter(
-            nucleo_id=nucleo_id,
-            periodo_inicio__lte=now,
-            periodo_fim__gte=now,
-            deleted=False,
-        ).count()
-    )
+    return CoordenadorSuplente.objects.filter(
+        nucleo_id=nucleo_id,
+        periodo_inicio__lte=now,
+        periodo_fim__gte=now,
+        deleted=False,
+    ).count()
 
 
 def get_membros_por_status(nucleo_id: str) -> dict[str, int]:
@@ -46,9 +42,7 @@ def get_membros_por_status(nucleo_id: str) -> dict[str, int]:
 
 def get_taxa_participacao(organizacao_id: str) -> float:
     """Retorna a taxa de participação de associados da organização em núcleos."""
-    total_associados = User.objects.filter(
-        organizacao_id=organizacao_id, is_associado=True, deleted=False
-    ).count()
+    total_associados = User.objects.filter(organizacao_id=organizacao_id, is_associado=True, deleted=False).count()
     if total_associados == 0:
         return 0.0
     participantes = (

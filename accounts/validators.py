@@ -2,8 +2,10 @@ import re
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
+
 class ComplexPasswordValidator:
     """Validator that requires at least 8 characters, letters, numbers and special chars."""
+
     def validate(self, password, user=None):
         if len(password) < 8:
             raise ValidationError(
@@ -27,9 +29,7 @@ class ComplexPasswordValidator:
             )
 
     def get_help_text(self):
-        return _(
-            "A senha deve conter pelo menos 8 caracteres, incluindo letras, números e caracteres especiais."
-        )
+        return _("A senha deve conter pelo menos 8 caracteres, incluindo letras, números e caracteres especiais.")
 
 
 def cpf_validator(value: str) -> None:

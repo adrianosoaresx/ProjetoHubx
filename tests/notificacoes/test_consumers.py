@@ -39,6 +39,7 @@ def test_consumer_receives_message_with_subscription(admin_user, monkeypatch):
         response = await communicator.receive_json_from()
         assert response["mensagem"] == "B"
         await communicator.disconnect()
+
     asyncio.run(inner())
 
 
@@ -55,6 +56,7 @@ def test_consumer_receives_message_without_subscription(admin_user, monkeypatch)
         response = await communicator.receive_json_from()
         assert response["mensagem"] == "B"
         await communicator.disconnect()
+
     asyncio.run(inner())
 
 
@@ -63,4 +65,5 @@ def test_consumer_rejects_anonymous():
         communicator = WebsocketCommunicator(application, "/ws/notificacoes/")
         connected, _ = await communicator.connect()
         assert not connected
+
     asyncio.run(inner())

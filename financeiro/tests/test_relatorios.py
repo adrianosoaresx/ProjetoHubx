@@ -38,13 +38,12 @@ def test_gera_serie_temporal(django_assert_num_queries):
     assert data["serie"][0]["receitas"] == 50.0
     assert data["serie"][0]["despesas"] == 20.0
 
+
 @override_settings(ROOT_URLCONF="Hubx.urls")
 def test_relatorios_usuario_nao_admin(client):
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
-    centro = CentroCusto.objects.create(
-        nome="C", tipo="nucleo", organizacao=org, nucleo=nucleo
-    )
+    centro = CentroCusto.objects.create(nome="C", tipo="nucleo", organizacao=org, nucleo=nucleo)
     user = UserFactory(user_type=UserType.COORDENADOR, nucleo_obj=nucleo)
     ParticipacaoNucleo.objects.create(user=user, nucleo=nucleo, status="ativo")
     LancamentoFinanceiro.objects.create(

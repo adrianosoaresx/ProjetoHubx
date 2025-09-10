@@ -4,6 +4,7 @@ import lucide as lucide_lib
 
 register = template.Library()
 
+
 @register.simple_tag
 def lucide(name: str, label: str | None = None, **attrs) -> str:
     """Render a Lucide SVG icon inline.

@@ -33,9 +33,7 @@ def test_delete_empresa_soft_delete(api_client):
     empresa.refresh_from_db()
     assert empresa.deleted is True
     assert empresa.deleted_at is not None
-    log = EmpresaChangeLog.objects.filter(
-        empresa=empresa, campo_alterado="deleted"
-    ).first()
+    log = EmpresaChangeLog.objects.filter(empresa=empresa, campo_alterado="deleted").first()
     assert log is not None
     assert log.valor_antigo == "False"
     assert log.valor_novo == "True"

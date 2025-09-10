@@ -43,4 +43,3 @@ class FeedMetricsView(APIView):
         tags = get_top_tags(org, inicio, fim)
         authors = get_top_authors(org, inicio, fim)
         return Response({"counts": counts, "top_tags": tags, "top_authors": authors})
-

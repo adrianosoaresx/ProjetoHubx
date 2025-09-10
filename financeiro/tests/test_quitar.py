@@ -71,7 +71,9 @@ def test_pagar_endpoint(api_client):
     assert resp.status_code == 200
     lanc.refresh_from_db()
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
-    assert FinanceiroLog.objects.filter(acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)).exists()
+    assert FinanceiroLog.objects.filter(
+        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
+    ).exists()
 
 
 def test_distribuicao_ingresso():

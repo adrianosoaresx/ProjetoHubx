@@ -39,14 +39,10 @@ class GerarTokenConviteForm(forms.Form):
                 self.fields.pop("nucleos", None)
             else:
                 self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
-                self.fields["nucleos"].queryset = Nucleo.objects.filter(
-                    organizacao__users=user
-                )
+                self.fields["nucleos"].queryset = Nucleo.objects.filter(organizacao__users=user)
 
             self.fields["tipo_destino"].choices = [
-                choice
-                for choice in TokenAcesso.TipoUsuario.choices
-                if can_issue_invite(user, choice[0])
+                choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(user, choice[0])
             ]
 
 

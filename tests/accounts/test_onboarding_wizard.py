@@ -17,9 +17,7 @@ def test_onboarding_wizard_flow(client, monkeypatch):
         estado="novo",
         data_expiracao=timezone.now() + timezone.timedelta(hours=1),
     )
-    monkeypatch.setattr(
-        "accounts.tasks.send_confirmation_email.delay", lambda *args, **kwargs: None
-    )
+    monkeypatch.setattr("accounts.tasks.send_confirmation_email.delay", lambda *args, **kwargs: None)
     monkeypatch.setattr("accounts.views.login", lambda *args, **kwargs: None)
     original_get = TokenAcesso.objects.get
 
@@ -54,9 +52,7 @@ def test_onboarding_wizard_flow(client, monkeypatch):
 
     user = User.objects.get(username="wizard")
     assert not user.is_active
-    assert AccountToken.objects.filter(
-        usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION
-    ).exists()
+    assert AccountToken.objects.filter(usuario=user, tipo=AccountToken.Tipo.EMAIL_CONFIRMATION).exists()
 
 
 @pytest.mark.django_db
@@ -69,9 +65,7 @@ def test_onboarding_concurrent_username(client, monkeypatch):
         estado="novo",
         data_expiracao=timezone.now() + timezone.timedelta(hours=1),
     )
-    monkeypatch.setattr(
-        "accounts.tasks.send_confirmation_email.delay", lambda *args, **kwargs: None
-    )
+    monkeypatch.setattr("accounts.tasks.send_confirmation_email.delay", lambda *args, **kwargs: None)
     monkeypatch.setattr("accounts.views.login", lambda *args, **kwargs: None)
     original_get = TokenAcesso.objects.get
 
@@ -120,12 +114,9 @@ def test_onboarding_concurrent_username(client, monkeypatch):
     resp1 = client1.post(reverse("accounts:termos"), {"aceitar_termos": "on"})
     assert resp1.status_code == 302
 
-    resp2 = client2.post(
-        reverse("accounts:termos"), {"aceitar_termos": "on"}, follow=True
-    )
+    resp2 = client2.post(reverse("accounts:termos"), {"aceitar_termos": "on"}, follow=True)
     assert resp2.request["PATH_INFO"] == reverse("accounts:usuario")
     messages = [m.message for m in resp2.context["messages"]]
     assert "Nome de usuário já cadastrado." in messages
 
     assert User.objects.filter(username="wizard").count() == 1
-

@@ -30,14 +30,10 @@ def test_cache_key_multiplos_centros():
     view = FinanceiroViewSet.as_view({"get": "relatorios"})
     with patch("financeiro.views.api.gerar_relatorio") as mock_rel:
         mock_rel.return_value = {"saldo_atual": 0, "serie": [], "inadimplencia": [], "total_inadimplentes": 0}
-        req1 = factory.get(
-            "/api/financeiro/relatorios/", {"centro": [str(c1.id), str(c2.id)]}
-        )
+        req1 = factory.get("/api/financeiro/relatorios/", {"centro": [str(c1.id), str(c2.id)]})
         force_authenticate(req1, user=user)
         view(req1)
-        req2 = factory.get(
-            "/api/financeiro/relatorios/", {"centro": [str(c2.id), str(c1.id)]}
-        )
+        req2 = factory.get("/api/financeiro/relatorios/", {"centro": [str(c2.id), str(c1.id)]})
         force_authenticate(req2, user=user)
         view(req2)
     assert mock_rel.call_count == 1
@@ -115,5 +111,3 @@ def test_total_inadimplentes():
     )
     data = gerar_relatorio(centro=str(centro.id))
     assert data["total_inadimplentes"] == 100.0
-
-
