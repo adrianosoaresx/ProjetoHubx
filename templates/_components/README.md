@@ -26,6 +26,15 @@ traduzidos ou envolvidos por `{% trans %}` dentro da partial.
 {% include "_components/hero.html" with title=_("Título") %}
 ```
 
+O gradiente utiliza as variáveis CSS `--hero-from` e `--hero-to`, com valores
+padronizados de `var(--color-primary-500)` e `var(--color-primary-700)`.
+Essas cores podem ser sobrescritas ao incluir o componente passando o atributo
+`style`:
+
+```django
+{% include "_components/hero.html" with title=_("Título") style="--hero-from: var(--color-accent-500); --hero-to: var(--color-accent-700);" %}
+```
+
 ## Convenções de i18n
 
 - Todo texto visível deve estar dentro de `{% trans %}` ou `{% blocktrans %}`.
