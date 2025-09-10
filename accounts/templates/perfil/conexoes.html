@@ -6,7 +6,7 @@
 {% block perfil_content %}
 <section id="conexoes" class="space-y-6">
   <div>
-    <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">{% trans "Minhas Conexões" %}</h2>
+    <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Minhas Conexões" %}</h2>
     <p class="text-sm text-[var(--text-primary)]">{% trans "Gerencie sua rede de contatos" %}</p>
   </div>
 
@@ -27,7 +27,7 @@
           name="q"
           value="{{ q }}"
           placeholder="{% trans 'Buscar conexões...' %}"
-          class="flex-grow border rounded-lg p-2 text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-100"
+          class="flex-grow border rounded-lg p-2 text-sm bg-[var(--bg-secondary)] border-[var(--border)] text-[var(--text-primary)]"
           aria-label="{% trans 'Buscar conexões' %}" aria-invalid="false"
         />
         <button type="submit" class="btn btn-secondary btn-sm" aria-label="{% trans 'Buscar' %}">
@@ -48,7 +48,7 @@
                 </div>
               {% endif %}
               <div>
-                <p class="font-medium text-neutral-900 dark:text-neutral-100">{{ connection.get_full_name }}</p>
+                <p class="font-medium text-[var(--text-primary)]">{{ connection.get_full_name }}</p>
                 <p class="text-sm text-[var(--text-primary)]">@{{ connection.username }}</p>
               </div>
             </div>
@@ -86,7 +86,7 @@
                 </div>
               {% endif %}
               <div>
-                <p class="font-medium text-neutral-900 dark:text-neutral-100">{{ solicitante.get_full_name }}</p>
+                <p class="font-medium text-[var(--text-primary)]">{{ solicitante.get_full_name }}</p>
                 <p class="text-sm text-[var(--text-primary)]">@{{ solicitante.username }}</p>
               </div>
             </div>

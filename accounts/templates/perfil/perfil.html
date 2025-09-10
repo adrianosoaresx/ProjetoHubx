@@ -44,12 +44,12 @@
 
         <nav class="mt-6 border-b flex space-x-4 text-sm font-medium text-[var(--text-secondary)] border-[var(--border)]" role="tablist">
           <a href="{% url 'accounts:informacoes_pessoais' %}"
-             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary dark:text-primary{% else %}border-transparent hover:text-primary dark:hover:text-primary{% endif %}"
+             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
              role="tab"
              aria-selected="{% if request.resolver_match.url_name == 'informacoes_pessoais' %}true{% else %}false{% endif %}">{% trans "Informações Pessoais" %}</a>
 
           <a href="{% url 'accounts:redes_sociais' %}"
-             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary dark:text-primary{% else %}border-transparent hover:text-primary dark:hover:text-primary{% endif %}"
+             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
              role="tab"
              aria-selected="{% if request.resolver_match.url_name == 'redes_sociais' %}true{% else %}false{% endif %}">{% trans "Redes Sociais" %}</a>
         </nav>

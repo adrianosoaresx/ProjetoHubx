@@ -4,13 +4,13 @@
 {% block perfil_content %}
 
 <div class="card-header">
-  <div class="mt-2 border-b border-[var(--border)] dark:border-[var(--border)]">
+  <div class="mt-2 border-b border-[var(--border)]">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="informacoes">{% trans 'Informações' %}</button>
+      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="informacoes">{% trans 'Informações' %}</button>
       {% if user.get_tipo_usuario != 'admin' %}
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="empresas">{% trans 'Empresas' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="nucleos">{% trans 'Núcleos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="empresas">{% trans 'Empresas' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="nucleos">{% trans 'Núcleos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
       {% endif %}
     </nav>
   </div>
@@ -68,7 +68,7 @@
         {% for empresa in empresas %}
           {% include '_components/card_empresa.html' with empresa=empresa %}
         {% empty %}
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhuma empresa encontrada." %}</p>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhuma empresa encontrada." %}</p>
         {% endfor %}
       </div>
     </div>
@@ -79,7 +79,7 @@
         {% for nucleo in nucleos %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum núcleo encontrado." %}</p>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
       </div>
     </div>
@@ -90,7 +90,7 @@
         {% for ins in inscricoes %}
           {% include '_components/card_evento.html' with evento=ins.evento %}
         {% empty %}
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">{% trans "Nenhum evento encontrado." %}</p>
+          <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum evento encontrado." %}</p>
         {% endfor %}
       </div>
     </div>
