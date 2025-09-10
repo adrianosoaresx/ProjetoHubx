@@ -4,7 +4,7 @@
 {% if messages %}
 <div id="filter-errors" class="mb-4" aria-live="polite">
   {% for message in messages %}
-    <div class="bg-red-100 text-red-800 p-2 rounded" role="alert">{{ message }}</div>
+    <div class="bg-[var(--error-light)] text-[var(--error)] p-2 rounded" role="alert">{{ message }}</div>
   {% endfor %}
 </div>
 {% else %}
