@@ -3,14 +3,16 @@
 {% block title %}{% translate 'Remover Item' %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-16">
-  <div class="bg-[var(--error-light)] text-[var(--error)] p-6 rounded-md text-center space-y-4">
-    <h2 class="text-xl font-semibold">{% translate 'Remover Item' %}</h2>
-    <p class="text-sm">{% blocktrans %}Tem certeza que deseja remover <strong>{{ object.nome }}</strong>?{% endblocktrans %}</p>
-    <form method="post" class="flex justify-center gap-3">
-      {% csrf_token %}
-      <a href="{% url 'empresas:tags_list' %}" class="px-4 py-2 border rounded text-sm">{% translate 'Cancelar' %}</a>
-      <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">{% translate 'Remover' %}</button>
-    </form>
+  <div class="card bg-[var(--error-light)] text-[var(--error)]">
+    <div class="card-body text-center space-y-4">
+      <h2 class="text-xl font-semibold">{% translate 'Remover Item' %}</h2>
+      <p class="text-sm">{% blocktrans %}Tem certeza que deseja remover <strong>{{ object.nome }}</strong>?{% endblocktrans %}</p>
+      <form method="post" class="flex justify-center gap-3">
+        {% csrf_token %}
+        <a href="{% url 'empresas:tags_list' %}" class="btn btn-secondary">{% translate 'Cancelar' %}</a>
+        <button type="submit" class="btn btn-danger">{% translate 'Remover' %}</button>
+      </form>
+    </div>
   </div>
 </section>
 {% endblock %}

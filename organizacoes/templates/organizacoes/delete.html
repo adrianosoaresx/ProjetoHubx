@@ -5,21 +5,19 @@
 
 {% block content %}
 <section class="max-w-md mx-auto px-4 py-16">
-    <div class="card text-center border-red-200">
-    <h1 class="text-xl font-semibold text-red-700 mb-4">{% trans 'Confirmar remoção' %}</h1>
-    <p class="text-sm text-neutral-700">
-      {% blocktrans with nome=object.nome %}Tem certeza que deseja remover <strong>{{ nome }}</strong>?{% endblocktrans %}
-    </p>
+  <div class="card bg-[var(--error-light)] text-[var(--error)] text-center">
+    <div class="card-body">
+      <h1 class="text-xl font-semibold mb-4">{% trans 'Confirmar remoção' %}</h1>
+      <p class="text-sm text-neutral-700">
+        {% blocktrans with nome=object.nome %}Tem certeza que deseja remover <strong>{{ nome }}</strong>?{% endblocktrans %}
+      </p>
 
-    <form method="post" class="mt-6 flex justify-center gap-3">
-      {% csrf_token %}
-      <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-        {% trans 'Cancelar' %}
-      </a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700">
-        {% trans 'Remover' %}
-      </button>
-    </form>
+      <form method="post" class="mt-6 flex justify-center gap-3">
+        {% csrf_token %}
+        <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+        <button type="submit" class="btn btn-danger">{% trans 'Remover' %}</button>
+      </form>
+    </div>
   </div>
 </section>
 {% endblock %}
