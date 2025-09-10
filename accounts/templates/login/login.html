@@ -14,9 +14,10 @@
       <p class="text-center text-sm mb-6 text-[var(--text-secondary)]">
         {% trans "Entre para acessar sua conta e conectar-se à sua rede" %}
       </p>
+    {% include '_partials/messages.html' %}
 
     {% if form.non_field_errors %}
-      <div class="text-red-600 text-sm mb-4" role="alert">{{ form.non_field_errors }}</div>
+      <div class="bg-[var(--error-light)] text-[var(--error)] p-2 rounded text-sm mb-4" role="alert">{{ form.non_field_errors }}</div>
     {% endif %}
 
     <form method="post" action="{% url 'accounts:login' %}" class="space-y-5">
@@ -36,7 +37,7 @@
                  class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Email" %}</label>
         </div>
         {% if form.email.errors %}
-          <div id="email-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.email.errors }}</div>
+          <div id="email-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.email.errors }}</div>
         {% endif %}
       </div>
       <div>
@@ -53,7 +54,7 @@
                  class="absolute left-3 -top-2 text-xs text-[var(--text-secondary)] transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:-top-2 peer-focus:text-xs peer-focus:text-primary">{% trans "Senha" %}</label>
         </div>
         {% if form.password.errors %}
-          <div id="password-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.password.errors }}</div>
+          <div id="password-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.password.errors }}</div>
         {% endif %}
       </div>
       <div id="totp-field">
@@ -71,7 +72,7 @@
         </div>
         <p class="text-xs mt-1 text-[var(--text-muted)]">{% trans "Deixe em branco se não tiver 2FA" %}</p>
         {% if form.totp.errors %}
-          <div id="totp-error" class="text-red-600 text-xs mt-1" role="alert">{{ form.totp.errors }}</div>
+          <div id="totp-error" class="text-[var(--error)] text-xs mt-1" role="alert">{{ form.totp.errors }}</div>
         {% endif %}
       </div>
       <button type="submit"
