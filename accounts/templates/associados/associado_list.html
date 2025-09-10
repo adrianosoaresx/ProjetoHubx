@@ -4,7 +4,7 @@
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Associados') action_template='associados/partials/hero_action.html' %}
+  {% include '_components/hero.html' with title=_('Associados') action_template='associados/hero_action.html' %}
 {% endblock %}
 
 {% block content %}
@@ -23,7 +23,7 @@
   <div role="list" class="card-grid">
     {% for user in associados %}
       <div role="listitem">
-        {% include "associados/partials/card.html" with user=user %}
+        {% include '_components/card_usuario.html' with user=user %}
       </div>
     {% empty %}
       <p class="text-neutral-500">{% trans "Nenhum associado encontrado." %}</p>
