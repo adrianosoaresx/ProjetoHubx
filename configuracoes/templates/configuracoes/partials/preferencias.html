@@ -19,7 +19,7 @@
         {% include '_forms/field.html' with field=freq_email_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
-        <button type="button" class="text-xs link link-hover" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "email"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-email').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <button type="button" class="btn btn-secondary btn-sm" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "email"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-email').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar e-mail' %}
         </button>
         <span id="msg-email" class="text-xs text-gray-600" aria-live="polite"></span>
@@ -37,7 +37,7 @@
         {% include '_forms/field.html' with field=freq_whats_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
-        <button type="button" class="text-xs link link-hover" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <button type="button" class="btn btn-secondary btn-sm" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar WhatsApp' %}
         </button>
         <span id="msg-whatsapp" class="text-xs text-gray-600" aria-live="polite"></span>
@@ -55,7 +55,7 @@
         {% include '_forms/field.html' with field=freq_push_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
-        <button type="button" class="text-xs link link-hover" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "push"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-push').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <button type="button" class="btn btn-secondary btn-sm" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "push"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-push').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar push' %}
         </button>
         <span id="msg-push" class="text-xs text-gray-600" aria-live="polite"></span>
@@ -89,7 +89,7 @@
     {% endwith %}
   </div>
   <div class="text-right pt-2">
-    <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar Alterações' %}</button>
+    <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="btn btn-primary">{% trans 'Salvar Alterações' %}</button>
   </div>
   <div id="preferencias-config"
        data-chk-email="{{ preferencias_form.receber_notificacoes_email.auto_id }}"
