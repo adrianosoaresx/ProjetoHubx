@@ -15,7 +15,7 @@
         <h1 class="text-2xl font-bold">{{ object.nome }}</h1>
         {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
         <a href="{% url 'nucleos:update' object.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded">{% trans 'Editar' %}</a>
-        <a href="{% url 'nucleos:delete' object.pk %}" class="px-4 py-2 bg-red-600 text-white rounded">{% trans 'Excluir' %}</a>
+        <a href="{% url 'nucleos:delete' object.pk %}" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</a>
         {% endif %}
       </div>
     </div>
@@ -63,7 +63,7 @@
               <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
               <td class="space-x-2">
                 <button class="text-sm text-green-600" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
-                <button class="text-sm text-red-600" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
+                <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
               </td>
             </tr>
           {% endfor %}

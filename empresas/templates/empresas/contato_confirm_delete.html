@@ -3,13 +3,15 @@
 {% block title %}{% translate 'Remover Contato' %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-10">
-  <div class="bg-[var(--error-light)] text-[var(--error)] p-6 rounded-md text-center space-y-4">
-    <p>{% blocktrans %}Confirma remover contato {{ contato.nome }}?{% endblocktrans %}</p>
-    <form method="post" class="flex justify-center gap-3">
-      {% csrf_token %}
-      <a href="#" onclick="history.back()" class="px-4 py-2 border rounded">{% translate 'Cancelar' %}</a>
-      <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded">{% translate 'Remover' %}</button>
-    </form>
+  <div class="card bg-[var(--error-light)] text-[var(--error)]">
+    <div class="card-body text-center space-y-4">
+      <p>{% blocktrans %}Confirma remover contato {{ contato.nome }}?{% endblocktrans %}</p>
+      <form method="post" class="flex justify-center gap-3">
+        {% csrf_token %}
+        <a href="#" onclick="history.back()" class="btn btn-secondary">{% translate 'Cancelar' %}</a>
+        <button type="submit" class="btn btn-danger">{% translate 'Remover' %}</button>
+      </form>
+    </div>
   </div>
 </section>
 {% endblock %}
