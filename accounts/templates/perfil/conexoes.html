@@ -7,13 +7,13 @@
 <section id="conexoes" class="space-y-6">
   <div>
     <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">{% trans "Minhas Conexões" %}</h2>
-    <p class="text-sm text-gray-500 dark:text-gray-400">{% trans "Gerencie sua rede de contatos" %}</p>
+    <p class="text-sm text-[var(--text-primary)]">{% trans "Gerencie sua rede de contatos" %}</p>
   </div>
 
   <!-- Abas -->
   <div class="flex gap-4 border-b">
     <button class="tab-btn py-2 px-4 text-sm border-b-2 border-primary text-primary font-medium" data-tab="minhas-conexoes">{% trans "Minhas Conexões" %}</button>
-    <button class="tab-btn py-2 px-4 text-sm text-gray-600 dark:text-gray-400 hover:text-primary" data-tab="solicitacoes">{% trans "Solicitações" %}</button>
+    <button class="tab-btn py-2 px-4 text-sm text-[var(--text-primary)] hover:text-primary" data-tab="solicitacoes">{% trans "Solicitações" %}</button>
   </div>
 
   <!-- Conteúdo das abas -->
@@ -43,13 +43,13 @@
               {% if connection.avatar %}
                 <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
               {% else %}
-                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-semibold text-gray-600 dark:text-gray-300" role="img" aria-label="{{ connection.username }}">
+                <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ connection.username }}">
                   {{ connection.username|first|upper }}
                 </div>
               {% endif %}
               <div>
                 <p class="font-medium text-neutral-900 dark:text-neutral-100">{{ connection.get_full_name }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">@{{ connection.username }}</p>
+                <p class="text-sm text-[var(--text-primary)]">@{{ connection.username }}</p>
               </div>
             </div>
             <div class="flex gap-2">
@@ -63,7 +63,7 @@
           </div>
         </div>
         {% empty %}
-        <div class="text-center text-sm text-gray-500 dark:text-gray-400 col-span-full">
+        <div class="text-center text-sm text-[var(--text-primary)] col-span-full">
           <p>{% trans "Você ainda não tem conexões." %}</p>
           <a href="#" class="btn btn-primary mt-2 inline-block">{% trans "Encontrar Pessoas" %}</a>
         </div>
@@ -81,13 +81,13 @@
               {% if solicitante.avatar %}
                 <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.username }}" class="w-10 h-10 rounded-full object-cover" />
               {% else %}
-                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-semibold text-gray-600 dark:text-gray-300" role="img" aria-label="{{ solicitante.username }}">
+                <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ solicitante.username }}">
                   {{ solicitante.username|first|upper }}
                 </div>
               {% endif %}
               <div>
                 <p class="font-medium text-neutral-900 dark:text-neutral-100">{{ solicitante.get_full_name }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">@{{ solicitante.username }}</p>
+                <p class="text-sm text-[var(--text-primary)]">@{{ solicitante.username }}</p>
               </div>
             </div>
             <div class="flex flex-col gap-1">
@@ -103,7 +103,7 @@
           </div>
         </div>
         {% empty %}
-        <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="text-center text-sm text-[var(--text-primary)]">
           <p>{% trans "Você não tem solicitações de conexão pendentes." %}</p>
         </div>
         {% endfor %}

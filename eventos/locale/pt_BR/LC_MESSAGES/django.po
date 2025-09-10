@@ -392,48 +392,36 @@ msgid "Eventos da Organização"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:11
-#: eventos/templates/eventos/eventos_lista.html:14
 msgid "Novo evento"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:16
 #: eventos/templates/eventos/evento_list.html:17
 #: eventos/templates/eventos/evento_list.html:18
-#: eventos/templates/eventos/eventos_lista.html:20
-#: eventos/templates/eventos/eventos_lista.html:21
-#: eventos/templates/eventos/eventos_lista.html:22
 msgid "Buscar"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:23
-#: eventos/templates/eventos/eventos_lista.html:4
-#: eventos/templates/eventos/eventos_lista.html:9
-#: eventos/templates/eventos/eventos_lista.html:28
 msgid "Eventos"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:27
-#: eventos/templates/eventos/eventos_lista.html:32
 msgid "Ativos"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:31
-#: eventos/templates/eventos/eventos_lista.html:36
 msgid "Concluídos"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:35
-#: eventos/templates/eventos/eventos_lista.html:40
 msgid "Inscritos (total)"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:41
-#: eventos/templates/eventos/eventos_lista.html:46
 msgid "Lista de eventos"
 msgstr ""
 
 #: eventos/templates/eventos/evento_list.html:45
-#: eventos/templates/eventos/eventos_lista.html:50
 msgid "Nenhum evento encontrado."
 msgstr ""
 
