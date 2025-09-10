@@ -1,9 +1,17 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Novo Template' %}{% endif %} | HubX{% endblock %}
+
+{% block hero %}
+  {% if form.instance.pk %}
+    {% include '_components/hero.html' with title=_('Editar Template') %}
+  {% else %}
+    {% include '_components/hero.html' with title=_('Cadastrar Template') %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-  <div class="py-12 max-w-xl mx-auto space-y-6 px-4">
-    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
+  <div class="max-w-xl mx-auto card-grid">
     <div class="card">
       <div class="card-body space-y-6">
         <form method="post" class="space-y-4">

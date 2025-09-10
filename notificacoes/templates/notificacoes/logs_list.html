@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans 'Logs de Notificação' %} | HubX{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Logs de Notificação') %}
+{% endblock %}
+
 {% block content %}
-  <div class="py-12 max-w-6xl mx-auto space-y-6 px-4">
-    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans 'Logs de Notificação' %}</h1>
+  <div class="max-w-6xl mx-auto card-grid">
     <div class="card">
       <div class="card-body">
         <form method="get" class="grid gap-4 sm:flex sm:items-end">

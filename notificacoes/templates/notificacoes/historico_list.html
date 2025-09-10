@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% block title %}{% trans 'Histórico de Notificações' %} | HubX{% endblock %}
-{% block content %}
 
-  <div class="py-12 max-w-6xl mx-auto space-y-6 px-4">
-    <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans 'Histórico de Notificações' %}</h1>
+{% block hero %}
+  {% include '_components/hero.html' with title=_('Histórico de Notificações') %}
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-6xl mx-auto card-grid">
     <div class="card">
       <div class="card-body">
         <form method="get" class="grid gap-4 sm:flex sm:items-end">
