@@ -118,7 +118,7 @@
     {% if perms.nucleos.delete_nucleo %}
     <a
       href="{% url 'nucleos:delete' object.pk %}"
-      class="text-sm px-4 py-2 rounded-xl bg-red-100 text-red-700 hover:bg-red-200"
+      class="btn-danger btn-sm"
       hx-confirm="Deseja realmente excluir?"
       >{% trans "Excluir" %}</a
     >

@@ -3,7 +3,7 @@
 {% block title %}{% trans 'Remover Empresa' %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-16">
-  <div class="bg-red-50 text-red-800 p-6 rounded-md text-center space-y-4">
+  <div class="bg-[var(--error-light)] text-[var(--error)] p-6 rounded-md text-center space-y-4">
     <h2 class="text-xl font-semibold">{% trans 'Confirmar remoção' %}</h2>
     <p class="text-sm">{% blocktrans %}Tem certeza que deseja remover <strong>{{ object.nome }}</strong>?{% endblocktrans %}</p>
     <form method="post" class="flex justify-center gap-3">
