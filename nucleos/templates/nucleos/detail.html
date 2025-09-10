@@ -52,11 +52,11 @@
 
         {% if membros_pendentes %}
         <h3 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h3>
-        <table class="w-full text-left" id="pendentes">
-          <thead>
-            <tr><th>{% trans 'Usuário' %}</th><th>{% trans 'Solicitado em' %}</th><th></th></tr>
+        <div class="overflow-x-auto"><table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
+          <thead class="bg-[var(--bg-secondary)]">
+            <tr><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th></tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-[var(--border)]">
           {% for part in membros_pendentes %}
             <tr id="pendente-{{ part.id }}">
               <td>{{ part.user.get_full_name|default:part.user.username }}</td>
@@ -68,7 +68,7 @@
             </tr>
           {% endfor %}
           </tbody>
-        </table>
+        </table></div>
         {% endif %}
 
         {% if suplentes %}

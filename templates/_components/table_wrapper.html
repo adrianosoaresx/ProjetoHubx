@@ -1,7 +1,7 @@
 <section class="space-y-2">
   {% if title %}<h2 class="text-base font-semibold">{{ title }}</h2>{% endif %}
   <div class="overflow-x-auto">
-    <table class="table">
+    <table class="min-w-full divide-y divide-[var(--border)]">
       {% block thead %}{% endblock %}
       {% block tbody %}{% endblock %}
     </table>

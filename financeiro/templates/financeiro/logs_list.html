@@ -47,6 +47,7 @@
     </div>
     <div class="card-body">
       <div id="lista" aria-live="polite">
+        <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-[var(--border)]">
           <thead>
             <tr class="bg-[var(--bg-tertiary)]">
@@ -56,8 +57,9 @@
               <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{{ _('Data') }}</th>
             </tr>
           </thead>
-          <tbody></tbody>
+          <tbody class="divide-y divide-[var(--border)]"></tbody>
         </table>
+        </div>
       </div>
       <script src="{% url 'javascript-catalog' %}"></script>
       <script>
