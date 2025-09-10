@@ -16,8 +16,9 @@
   </div>
   {% endif %}
   {% if templates %}
-  <div class="overflow-x-auto bg-white border border-neutral-200 rounded-2xl shadow-sm">
-    <table class="min-w-full divide-y divide-neutral-200 text-sm">
+  <div class="card overflow-x-auto">
+    <div class="card-body p-0">
+    <table class="min-w-full divide-y divide-[var(--border)] text-sm">
       <caption class="sr-only">{% trans 'Lista de templates de notificação' %}</caption>
       <thead class="bg-neutral-50">
         <tr>
@@ -28,7 +29,7 @@
           <th class="px-4 py-2 text-left font-medium text-neutral-700">{% trans 'Ações' %}</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-neutral-200" id="templates_table">
+      <tbody class="divide-y divide-[var(--border)]" id="templates_table">
         {% for tpl in templates %}
         <tr>
           <td class="px-4 py-2 font-mono">{{ tpl.codigo }}</td>
@@ -41,17 +42,17 @@
               {% if tpl.ativo %}
                 <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
                   {% csrf_token %}
-                  <button type="submit" class="text-sm text-neutral-600 hover:underline">{% trans 'Desativar' %}</button>
+                  <button type="submit" class="btn btn-outline btn-sm">{% trans 'Desativar' %}</button>
                 </form>
               {% else %}
                 <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
                   {% csrf_token %}
-                  <button type="submit" class="text-sm text-neutral-600 hover:underline">{% trans 'Ativar' %}</button>
+                  <button type="submit" class="btn btn-outline btn-sm">{% trans 'Ativar' %}</button>
                 </form>
               {% endif %}
               <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}" class="inline">
                 {% csrf_token %}
-                <button type="submit" class="text-sm text-red-600 hover:underline">{% trans 'Excluir' %}</button>
+                <button type="submit" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</button>
               </form>
             </div>
           </td>
@@ -59,6 +60,7 @@
         {% endfor %}
       </tbody>
     </table>
+    </div>
   </div>
   {% else %}
     <p class="text-center text-neutral-600">{% trans 'Nenhum template cadastrado.' %}</p>

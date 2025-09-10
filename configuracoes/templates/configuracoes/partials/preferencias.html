@@ -8,24 +8,16 @@
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Notificações' %}</legend>
     <div>
-      <label class="flex items-center gap-2">
-        {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
-          {% with email_attr='aria-checked:'|add:email_checked %}
-            {{ preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr }}
+      {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
+        {% with email_attr='aria-checked:'|add:email_checked %}
+          {% with preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr as email_field %}
+            {% include '_forms/field.html' with field=email_field %}
           {% endwith %}
         {% endwith %}
-        <span class="text-sm font-medium">{% trans 'Receber notificações por e-mail' %}</span>
-      </label>
-      {% for error in preferencias_form.receber_notificacoes_email.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {{ preferencias_form.frequencia_notificacoes_email|add_class:'form-select mt-2' }}
-      {% for error in preferencias_form.frequencia_notificacoes_email.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.frequencia_notificacoes_email.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_email.help_text }}</p>
-      {% endif %}
+      {% endwith %}
+      {% with preferencias_form.frequencia_notificacoes_email|add_class:'mt-2' as freq_email_field %}
+        {% include '_forms/field.html' with field=freq_email_field %}
+      {% endwith %}
       <div class="mt-2 flex items-center gap-2">
         <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "email"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-email').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar e-mail' %}
@@ -34,51 +26,34 @@
       </div>
     </div>
     <div>
-      <label class="flex items-center gap-2">
-        {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
-          {% with whats_attr='aria-checked:'|add:whats_checked %}
-            {{ preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr }}
+      {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
+        {% with whats_attr='aria-checked:'|add:whats_checked %}
+          {% with preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr as whats_field %}
+            {% include '_forms/field.html' with field=whats_field %}
           {% endwith %}
         {% endwith %}
-        <span class="text-sm font-medium">{% trans 'Receber notificações por WhatsApp' %}</span>
-      </label>
-      {% for error in preferencias_form.receber_notificacoes_whatsapp.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {{ preferencias_form.frequencia_notificacoes_whatsapp|add_class:'form-select mt-2' }}
-      {% for error in preferencias_form.frequencia_notificacoes_whatsapp.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.frequencia_notificacoes_whatsapp.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_whatsapp.help_text }}</p>
-      {% endif %}
+      {% endwith %}
+      {% with preferencias_form.frequencia_notificacoes_whatsapp|add_class:'mt-2' as freq_whats_field %}
+        {% include '_forms/field.html' with field=freq_whats_field %}
+      {% endwith %}
       <div class="mt-2 flex items-center gap-2">
         <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar WhatsApp' %}
         </button>
         <span id="msg-whatsapp" class="text-xs text-gray-600" aria-live="polite"></span>
       </div>
-
     </div>
     <div>
-      <label class="flex items-center gap-2">
-        {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
-          {% with push_attr='aria-checked:'|add:push_checked %}
-            {{ preferencias_form.receber_notificacoes_push|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr }}
+      {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
+        {% with push_attr='aria-checked:'|add:push_checked %}
+          {% with preferencias_form.receber_notificacoes_push|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr as push_field %}
+            {% include '_forms/field.html' with field=push_field %}
           {% endwith %}
         {% endwith %}
-        <span class="text-sm font-medium">{% trans 'Receber notificações push' %}</span>
-      </label>
-      {% for error in preferencias_form.receber_notificacoes_push.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {{ preferencias_form.frequencia_notificacoes_push|add_class:'form-select mt-2' }}
-      {% for error in preferencias_form.frequencia_notificacoes_push.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.frequencia_notificacoes_push.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.frequencia_notificacoes_push.help_text }}</p>
-      {% endif %}
+      {% endwith %}
+      {% with preferencias_form.frequencia_notificacoes_push|add_class:'mt-2' as freq_push_field %}
+        {% include '_forms/field.html' with field=freq_push_field %}
+      {% endwith %}
       <div class="mt-2 flex items-center gap-2">
         <button type="button" class="text-xs text-blue-600 hover:underline" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "push"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-push').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar push' %}
@@ -87,50 +62,31 @@
       </div>
     </div>
     <div id="campo-hora-diaria" class="hidden">
-      <label for="{{ preferencias_form.hora_notificacao_diaria.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário diário' %}</label>
-      {{ preferencias_form.hora_notificacao_diaria|add_class:'form-input mt-1'|attr:'type:time' }}
-      {% for error in preferencias_form.hora_notificacao_diaria.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.hora_notificacao_diaria.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_diaria.help_text }}</p>
-      {% endif %}
+      {% with preferencias_form.hora_notificacao_diaria|add_class:'mt-1'|attr:'type:time' as hora_diaria_field %}
+        {% include '_forms/field.html' with field=hora_diaria_field %}
+      {% endwith %}
     </div>
     <div id="campo-hora-semanal" class="hidden">
-      <label for="{{ preferencias_form.hora_notificacao_semanal.id_for_label }}" class="block text-sm font-medium">{% trans 'Horário semanal' %}</label>
-      {{ preferencias_form.hora_notificacao_semanal|add_class:'form-input mt-1'|attr:'type:time' }}
-      {% for error in preferencias_form.hora_notificacao_semanal.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.hora_notificacao_semanal.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.hora_notificacao_semanal.help_text }}</p>
-      {% endif %}
+      {% with preferencias_form.hora_notificacao_semanal|add_class:'mt-1'|attr:'type:time' as hora_semanal_field %}
+        {% include '_forms/field.html' with field=hora_semanal_field %}
+      {% endwith %}
     </div>
     <div id="campo-dia-semanal" class="hidden">
-      <label for="{{ preferencias_form.dia_semana_notificacao.id_for_label }}" class="block text-sm font-medium">{% trans 'Dia da semana' %}</label>
-      {{ preferencias_form.dia_semana_notificacao|add_class:'form-select mt-1' }}
-      {% for error in preferencias_form.dia_semana_notificacao.errors %}
-        <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-      {% endfor %}
-      {% if preferencias_form.dia_semana_notificacao.help_text %}
-        <p class="text-xs text-gray-500">{{ preferencias_form.dia_semana_notificacao.help_text }}</p>
-      {% endif %}
+      {% with preferencias_form.dia_semana_notificacao|add_class:'mt-1' as dia_field %}
+        {% include '_forms/field.html' with field=dia_field %}
+      {% endwith %}
     </div>
   </fieldset>
   <div>
-    <label for="{{ preferencias_form.idioma.id_for_label }}" class="block text-sm font-medium">{% trans 'Idioma' %}</label>
-    {{ preferencias_form.idioma|add_class:'form-select mt-1'|attr:'tabindex:0' }}
-    {% for error in preferencias_form.idioma.errors %}
-      <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-    {% endfor %}
+    {% with preferencias_form.idioma|add_class:'mt-1'|attr:'tabindex:0' as idioma_field %}
+      {% include '_forms/field.html' with field=idioma_field %}
+    {% endwith %}
     <p class="text-xs text-gray-500">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
   </div>
   <div>
-    <label for="{{ preferencias_form.tema.id_for_label }}" class="block text-sm font-medium">{% trans 'Tema' %}</label>
-    {{ preferencias_form.tema|add_class:'form-select mt-1'|attr:'tabindex:0' }}
-    {% for error in preferencias_form.tema.errors %}
-      <p role="alert" class="text-red-600 text-sm">{{ error }}</p>
-    {% endfor %}
+    {% with preferencias_form.tema|add_class:'mt-1'|attr:'tabindex:0' as tema_field %}
+      {% include '_forms/field.html' with field=tema_field %}
+    {% endwith %}
   </div>
   <div class="text-right pt-2">
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar Alterações' %}</button>
