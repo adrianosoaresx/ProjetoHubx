@@ -1,5 +1,5 @@
 {% load i18n %}
-<section class="bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white">
+<section class="bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white"{% if style %} style="{{ style }}"{% endif %}>
   <div class="max-w-7xl mx-auto px-4 py-10">
     {% if breadcrumb_template %}
       <div class="mb-4">{% include breadcrumb_template %}</div>
