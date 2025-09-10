@@ -33,7 +33,7 @@
       <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="space-y-4">
         {% csrf_token %}
         {% for field in form %}
-          {% include '_forms/field.html' %}
+          {% include '_forms/field.html' with field=field %}
         {% endfor %}
         <div class="text-right">
           <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>

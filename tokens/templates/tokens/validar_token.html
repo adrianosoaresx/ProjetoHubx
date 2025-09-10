@@ -4,33 +4,36 @@
 {% block title %}{% trans "Validar Token de Convite" %} | HubX{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto">
+
+<section class="max-w-md mx-auto px-4 py-12">
   <div class="card">
     <div class="card-body">
       <header class="text-center mb-6">
         <h1 class="text-2xl font-bold">{% trans "Validar Token de Convite" %}</h1>
-        <p class="mt-2 text-sm text-[var(--text-secondary)]">{% trans "Informe o token recebido para concluir o convite." %}</p>
+        <p class="text-sm text-[var(--text-secondary)] mt-2">{% trans "Informe o token recebido para concluir o convite." %}</p>
       </header>
+
       <form method="post" action="{% url 'tokens:validar_token' %}"
             hx-post="{% url 'tokens:validar_token' %}"
             hx-target="#resultado" hx-swap="innerHTML"
             class="space-y-4">
         {% csrf_token %}
         {% for field in form %}
-          {% include '_forms/field.html' %}
+          {% include '_forms/field.html' with field=field %}
         {% endfor %}
         <div class="text-right">
           <button type="submit" class="btn btn-primary">{% trans "Validar Token" %}</button>
         </div>
       </form>
+
       <div id="resultado" class="mt-6 text-center" aria-live="polite">
         {% include "tokens/_resultado.html" %}
       </div>
 
       <footer class="mt-6 text-center">
-        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+        <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
       </footer>
     </div>
   </div>
-</div>
+</section>
 {% endblock %}
