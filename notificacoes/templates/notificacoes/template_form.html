@@ -1,56 +1,33 @@
 {% extends 'base.html' %}
-{% load widget_tweaks %}
 {% load i18n %}
 {% block title %}{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Novo Template' %}{% endif %} | HubX{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto px-4 py-10">
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-neutral-900">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
-  </div>
-  {% if messages %}
-  <div class="mb-4 space-y-2" aria-live="polite">
-      {% for message in messages %}
+<section class="max-w-xl mx-auto px-4 py-10 space-y-6">
+  <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% if form.instance.pk %}{% trans 'Editar Template' %}{% else %}{% trans 'Cadastrar Template' %}{% endif %}</h1>
+  <div class="card bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border)]">
+    <div class="card-body">
+      {% if messages %}
+      <div class="mb-4 space-y-2" aria-live="polite">
+        {% for message in messages %}
         <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if 'success' in message.tags %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">{{ message }}</p>
-      {% endfor %}
-  </div>
-  {% endif %}
-  <form method="post" class="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6 space-y-6">
-    {% csrf_token %}
-    <div>
-      <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Código' %}</label>
-      {% if form.instance.pk %}
-        {{ form.codigo|add_class:'form-input'|attr:'readonly' }}
-      {% else %}
-        {{ form.codigo|add_class:'form-input' }}
+        {% endfor %}
+      </div>
       {% endif %}
-      {% if form.codigo.errors %}<p class="text-sm text-red-600 mt-1">{{ form.codigo.errors.0 }}</p>{% endif %}
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        {% for field in form %}
+          {% if field.name == 'codigo' and form.instance.pk %}
+            {% include '_forms/field.html' with field=field readonly=True %}
+          {% else %}
+            {% include '_forms/field.html' with field=field %}
+          {% endif %}
+        {% endfor %}
+        <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+          <a href="{% url 'notificacoes:templates_list' %}" class="btn btn-secondary">{% trans 'Cancelar' %}</a>
+          <button type="submit" class="btn btn-primary">{% trans 'Salvar' %}</button>
+        </div>
+      </form>
     </div>
-    <div>
-      <label for="{{ form.assunto.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Assunto' %}</label>
-      {{ form.assunto|add_class:'form-input' }}
-      {% if form.assunto.errors %}<p class="text-sm text-red-600 mt-1">{{ form.assunto.errors.0 }}</p>{% endif %}
-    </div>
-    <div>
-      <label for="{{ form.corpo.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Corpo' %}</label>
-      {{ form.corpo|add_class:'form-textarea' }}
-      {% if form.corpo.errors %}<p class="text-sm text-red-600 mt-1">{{ form.corpo.errors.0 }}</p>{% endif %}
-    </div>
-    <div>
-      <label for="{{ form.canal.id_for_label }}" class="block text-sm font-medium text-neutral-700 mb-1">{% trans 'Canal' %}</label>
-      {{ form.canal|add_class:'form-select' }}
-      {% if form.canal.errors %}<p class="text-sm text-red-600 mt-1">{{ form.canal.errors.0 }}</p>{% endif %}
-    </div>
-    <div>
-      <label class="flex items-center gap-2">
-        {{ form.ativo|add_class:'form-checkbox' }}
-        <span class="text-sm font-medium text-neutral-700">{% trans 'Ativo' %}</span>
-      </label>
-      {% if form.ativo.errors %}<p class="text-sm text-red-600 mt-1">{{ form.ativo.errors.0 }}</p>{% endif %}
-    </div>
-    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'notificacoes:templates_list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">{% trans 'Cancelar' %}</a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">{% trans 'Salvar' %}</button>
-    </div>
-  </form>
-</div>
+  </div>
+</section>
 {% endblock %}
