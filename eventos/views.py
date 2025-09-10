@@ -71,7 +71,7 @@ User = get_user_model()
 
 
 class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
-    template_name = "eventos/eventos_lista.html"
+    template_name = "eventos/evento_list.html"
     context_object_name = "eventos"
     paginate_by = 12
 
@@ -103,7 +103,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
-        ctx["pode_criar_evento"] = user.get_tipo_usuario in {UserType.ADMIN.value}
+        ctx["is_admin_org"] = user.get_tipo_usuario in {UserType.ADMIN.value}
         # Totais baseados no queryset filtrado (sem paginação)
         qs = self.get_queryset()
         ctx["total_eventos"] = qs.count()
