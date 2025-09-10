@@ -27,9 +27,9 @@
   {% endif %}
   {% endif %}
   {% if field.errors %}
-  <ul class="errorlist">
-    {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
-  </ul>
+    {% for error in field.errors %}
+      <p class="text-[var(--error)] text-sm">{{ error }}</p>
+    {% endfor %}
   {% endif %}
   {% if field.help_text %}
   <p class="text-xs text-[var(--text-secondary)]">{{ field.help_text }}</p>
