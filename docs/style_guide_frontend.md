@@ -160,9 +160,9 @@ Botões com o atributo `data-theme-option` alternam o tema global (`claro`,
 
 ```html
 <div class="flex gap-2" role="group" aria-label="Tema">
-  <button type="button" data-theme-option="claro" class="btn-secondary">Claro</button>
-  <button type="button" data-theme-option="escuro" class="btn-secondary">Escuro</button>
-  <button type="button" data-theme-option="automatico" class="btn-secondary">Automático</button>
+  <button type="button" data-theme-option="claro" class="btn btn-secondary">Claro</button>
+  <button type="button" data-theme-option="escuro" class="btn btn-secondary">Escuro</button>
+  <button type="button" data-theme-option="automatico" class="btn btn-secondary">Automático</button>
 </div>
 ```
 

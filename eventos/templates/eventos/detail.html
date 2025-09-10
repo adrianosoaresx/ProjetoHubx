@@ -76,17 +76,17 @@
                 <label for="comentario" class="label-float">{% trans "Comentário" %}</label>
               </div>
               <div class="text-right">
-                <button type="submit" class="btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
+                <button type="submit" class="btn btn-primary" aria-label="{% trans 'Enviar avaliação' %}">{% trans 'Enviar avaliação' %}</button>
               </div>
             </form>
           {% else %}
             <form method="post" action="{% url 'eventos:evento_subscribe' object.pk %}">
               {% csrf_token %}
-              <button type="submit" class="btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
+              <button type="submit" class="btn btn-secondary" aria-label="{% trans 'Cancelar inscrição' %}">{% trans 'Cancelar inscrição' %}</button>
             </form>
           {% endif %}
         {% else %}
-          <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
+          <a href="{% url 'eventos:inscricao_criar' object.pk %}" class="btn btn-primary" aria-label="{% trans 'Inscrever-se' %}">{% trans 'Inscrever-se' %}</a>
         {% endif %}
       </div>
     </article>
@@ -127,7 +127,7 @@
   </div>
 
   <div class="flex justify-end mt-6">
-    <a href="{% url 'eventos:calendario' %}" class="btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
+    <a href="{% url 'eventos:calendario' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
   </div>
 </section>
 {% endblock %}
