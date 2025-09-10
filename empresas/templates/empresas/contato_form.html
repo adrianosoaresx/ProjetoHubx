@@ -3,9 +3,8 @@
 {% block title %}{% translate 'Contato' %}{% endblock %}
 {% block content %}
 <section class="max-w-md mx-auto py-8">
-  {% if message %}
-    <div class="bg-green-100 border border-green-300 text-green-800 p-4 rounded">{{ message }}</div>
-  {% elif contato %}
+  {% include '_partials/messages.html' %}
+  {% if contato %}
     <div class="space-y-1 bg-white border border-neutral-200 p-6 rounded-md">
       <p class="text-sm font-medium text-neutral-700">{{ contato.nome }}</p>
       <p class="text-sm text-neutral-700">{{ contato.email }}</p>
@@ -13,16 +12,18 @@
       <p class="text-sm text-neutral-700">{{ contato.cargo }}</p>
     </div>
   {% else %}
-    <form method="post" class="space-y-4 bg-white border border-neutral-200 p-6 rounded-md" hx-post="" hx-target="closest form" hx-swap="outerHTML">
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-      <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
-      {% endif %}
-      {% for field in form %}
-        {% include '_forms/field.html' with field=field %}
-      {% endfor %}
-      <button class="bg-primary-600 text-white px-4 py-2 rounded" type="submit">{% translate 'Salvar' %}</button>
-    </form>
+    <div class="card">
+      <form method="post" class="space-y-4 p-6 rounded-md" hx-post="" hx-target="closest form" hx-swap="outerHTML">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <ul class="errorlist">{% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% for field in form %}
+          {% include '_forms/field.html' with field=field %}
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">{% translate 'Salvar' %}</button>
+      </form>
+    </div>
   {% endif %}
 </section>
 {% endblock %}
