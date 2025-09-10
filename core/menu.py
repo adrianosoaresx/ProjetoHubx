@@ -202,7 +202,7 @@ def build_menu(request) -> List[MenuItem]:
             "Cadastrar",
             ICON_REGISTER,
             ["anonymous"],
-            classes="flex items-center gap-x-2 bg-primary text-white py-2 px-4 rounded-xl hover:bg-primary/90 transition",
+            classes="gap-x-2 btn btn-primary",
         ),
     ]
 
