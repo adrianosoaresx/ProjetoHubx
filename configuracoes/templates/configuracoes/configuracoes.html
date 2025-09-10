@@ -6,15 +6,9 @@
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-8">
   <h1 class="text-2xl font-bold mb-4">{% trans 'Configurações' %}</h1>
-  {% if messages %}
-    <div class="mb-4 space-y-2" aria-live="polite">
-      {% for message in messages %}
-        <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-600 text-white{% else %}bg-red-600 text-white{% endif %}">{{ message }}</p>
-      {% endfor %}
-    </div>
-  {% endif %}
+  {% include '_partials/messages.html' %}
 
-    <div class="flex flex-wrap gap-4 border-b mb-4 text-sm">
+    <div class="flex flex-wrap gap-4 border-b border-[var(--border)] mb-4 text-sm">
       <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4">
         <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}">{% trans 'Segurança' %}</button>
         <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}">{% trans 'Preferências' %}</button>
