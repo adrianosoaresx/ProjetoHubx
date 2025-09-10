@@ -7,9 +7,9 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-6">
-  <div class="grid grid-cols-1 gap-6">
-    <div class="bg-[var(--bg-secondary)] p-6 rounded-lg shadow">
+  <section class="card-grid">
+    <article class="card">
+      <div class="card-body">
       {% with perfil|default:user as profile %}
       <div class="profile-cover relative h-48 w-full overflow-hidden">
         {% if profile.cover %}
@@ -20,11 +20,11 @@
 
         <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-shadow">
           <div>
-            {% if profile.avatar %}
+        {% if profile.avatar %}
               <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
                    class="w-28 h-28 rounded-full object-cover shadow mb-3">
             {% else %}
-              <div class="w-28 h-28 rounded-full bg-gray-200 dark:bg-slate-600 text-2xl font-semibold text-primary dark:text-primary shadow mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
+              <div class="w-28 h-28 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-2xl font-semibold shadow mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
                 {{ profile.username|first|upper }}
               </div>
             {% endif %}
@@ -60,7 +60,7 @@
         </div>
 
       {% endwith %}
-    </div>
-  </div>
-</div>
+      </div>
+    </article>
+  </section>
 {% endblock %}
