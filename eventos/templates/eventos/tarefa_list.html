@@ -10,7 +10,7 @@
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <header class="mb-6 flex items-center justify-between">
     <h1 class="text-2xl font-bold text-neutral-900">{% trans "Tarefas" %}</h1>
-    <a href="{% url 'eventos:tarefa_criar' %}" class="btn-primary">{% trans "Nova Tarefa" %}</a>
+    <a href="{% url 'eventos:tarefa_criar' %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
   </header>
   <ul class="space-y-2">
     {% for tarefa in tarefas %}

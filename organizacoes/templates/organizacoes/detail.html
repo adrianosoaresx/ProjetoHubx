@@ -117,21 +117,21 @@
 
   <div class="flex justify-end gap-3">
     {% if perms.organizacoes.change_organizacao %}
-      <a href="{% url 'organizacoes:update' object.id %}" class="btn-secondary">{% trans 'Editar' %}</a>
+      <a href="{% url 'organizacoes:update' object.id %}" class="btn btn-secondary">{% trans 'Editar' %}</a>
     {% endif %}
     {% if request.user.user_type == 'root' %}
       {% if perms.organizacoes.delete_organizacao %}
-        <a href="{% url 'organizacoes:delete' object.id %}" class="btn-danger">{% trans 'Excluir' %}</a>
+        <a href="{% url 'organizacoes:delete' object.id %}" class="btn btn-danger">{% trans 'Excluir' %}</a>
       {% endif %}
       <form method="post" action="{% url 'organizacoes:toggle' object.id %}">
         {% csrf_token %}
-        <button type="submit" class="btn-secondary">
+        <button type="submit" class="btn btn-secondary">
           {% if object.inativa %}{% trans 'Reativar' %}{% else %}{% trans 'Inativar' %}{% endif %}
         </button>
       </form>
-      <a href="{% url 'organizacoes:historico' object.id %}" class="btn-secondary">{% trans 'Histórico' %}</a>
+      <a href="{% url 'organizacoes:historico' object.id %}" class="btn btn-secondary">{% trans 'Histórico' %}</a>
     {% endif %}
-    <a href="{% url 'organizacoes:list' %}" class="btn-secondary">{% trans 'Voltar' %}</a>
+    <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
   </div>
   <div id="modal"></div>
 </section>
