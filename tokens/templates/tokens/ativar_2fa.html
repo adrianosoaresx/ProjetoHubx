@@ -8,12 +8,14 @@
 {% endblock %}
 
 {% block content %}
-  <div class="py-12 card px-4">
+
+<div class="max-w-md mx-auto">
+  <div class="card">
     <div class="card-body">
       {% if messages %}
         <div class="mb-4 space-y-2 text-center">
           {% for message in messages %}
-            <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+            <p role="alert" class="rounded-xl px-4 py-2 text-sm {% if message.tags == 'success' %}bg-[var(--success-light)] text-[var(--success)]{% else %}bg-[var(--error-light)] text-[var(--error)]{% endif %}">
               {{ message }}
             </p>
           {% endfor %}
@@ -25,19 +27,20 @@
           <img src="data:image/png;base64,{{ qr_code }}" alt="{% trans 'QR Code' %}" class="w-40 h-40" />
           <p class="mt-2 text-sm font-mono">{{ secret }}</p>
         </div>
-        <p class="text-sm text-neutral-600 mb-4 text-center">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>
+        <p class="text-sm text-[var(--text-secondary)] mb-4 text-center">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>
       {% endif %}
 
       <form method="post" action="{% url 'tokens:ativar_2fa' %}" class="space-y-4">
         {% csrf_token %}
-        {% include '_forms/field.html' with field=form.codigo_totp|attr:'autofocus pattern=\d+ inputmode=numeric' %}
+        {% for field in form %}
+          {% include '_forms/field.html' %}
+        {% endfor %}
         <div class="text-right">
           <button type="submit" class="btn btn-primary">{% trans "Ativar" %}</button>
         </div>
       </form>
-
       <footer class="mt-6 text-center">
-        <a href="{% url 'configuracoes' %}" class="text-sm text-blue-600 hover:underline">{% trans "Voltar ao perfil de segurança" %}</a>
+        <a href="{% url 'configuracoes' %}" class="text-sm text-[var(--primary)] hover:underline">{% trans "Voltar ao perfil de segurança" %}</a>
       </footer>
     </div>
   </div>
