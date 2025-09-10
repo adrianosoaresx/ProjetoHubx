@@ -6,11 +6,11 @@
 <div class="card-header">
   <div class="mt-2 border-b border-[var(--border)] dark:border-[var(--border)]">
     <nav class="-mb-px flex gap-6" aria-label="Tabs">
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="informacoes">{% trans 'Informações' %}</button>
+      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="informacoes">{% trans 'Informações' %}</button>
       {% if user.get_tipo_usuario != 'admin' %}
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="empresas">{% trans 'Empresas' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="nucleos">{% trans 'Núcleos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-blue-600 data-[active=true]:text-blue-600" data-tab="eventos">{% trans 'Eventos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="empresas">{% trans 'Empresas' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="nucleos">{% trans 'Núcleos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-neutral-600 dark:text-neutral-400 data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
       {% endif %}
     </nav>
   </div>
