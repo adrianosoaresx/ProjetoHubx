@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n widget_tweaks %}
 
 {% block title %}{% trans 'Nova Organização' %} | Hubx{% endblock %}
 
@@ -7,14 +7,14 @@
 <section class="max-w-2xl mx-auto px-4 py-10">
 
   <!-- Cabeçalho -->
-  <div class="mb-6 flex items-center gap-4">
-    <a href="{% url 'organizacoes:list' %}" class="inline-flex items-center text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100" aria-label="{% trans 'Voltar' %}">
-      <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="mb-6 flex items-center gap-4">
+      <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">
+        <svg class="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="15,18 9,12 15,6"/>
       </svg>
       {% trans 'Voltar' %}
     </a>
-    <h1 class="text-2xl font-bold text-neutral-900">{% block form_title %}{% trans 'Cadastrar Organização' %}{% endblock %}</h1>
+      <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% block form_title %}{% trans 'Cadastrar Organização' %}{% endblock %}</h1>
   </div>
 
   <!-- Formulário -->
@@ -23,16 +23,16 @@
 
     <div class="grid md:grid-cols-2 gap-6">
       <div>
-        <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.nome.label }}</label>
-        {{ form.nome }}
+        <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.nome.label }}</label>
+        {{ form.nome|add_class:'form-input' }}
         {% if form.nome.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.nome.errors }}</p>
         {% endif %}
       </div>
 
       <div>
-        <label for="{{ form.cnpj.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cnpj.label }}</label>
-        {{ form.cnpj }}
+        <label for="{{ form.cnpj.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cnpj.label }}</label>
+        {{ form.cnpj|add_class:'form-input' }}
         {% if form.cnpj.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.cnpj.errors }}</p>
         {% endif %}
@@ -40,16 +40,16 @@
     </div>
 
     <div>
-      <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.tipo.label }}</label>
-      {{ form.tipo }}
+      <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.tipo.label }}</label>
+      {{ form.tipo|add_class:'form-input' }}
       {% if form.tipo.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.tipo.errors }}</p>
       {% endif %}
     </div>
 
     <div>
-      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.descricao.label }}</label>
-      {{ form.descricao }}
+      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.descricao.label }}</label>
+      {{ form.descricao|add_class:'form-input' }}
       {% if form.descricao.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.descricao.errors }}</p>
       {% endif %}
@@ -57,22 +57,22 @@
 
     <div class="grid md:grid-cols-3 gap-6">
       <div class="md:col-span-3">
-        <label for="{{ form.rua.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rua.label }}</label>
-        {{ form.rua }}
+          <label for="{{ form.rua.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.rua.label }}</label>
+          {{ form.rua|add_class:'form-input' }}
         {% if form.rua.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.rua.errors }}</p>
         {% endif %}
       </div>
       <div class="md:col-span-2">
-        <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cidade.label }}</label>
-        {{ form.cidade }}
+          <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cidade.label }}</label>
+          {{ form.cidade|add_class:'form-input' }}
         {% if form.cidade.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.cidade.errors }}</p>
         {% endif %}
       </div>
       <div>
-        <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.estado.label }}</label>
-        {{ form.estado }}
+          <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.estado.label }}</label>
+          {{ form.estado|add_class:'form-input' }}
         {% if form.estado.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.estado.errors }}</p>
         {% endif %}
@@ -81,22 +81,22 @@
 
     <div class="grid md:grid-cols-3 gap-6">
       <div>
-        <label for="{{ form.contato_nome.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_nome.label }}</label>
-        {{ form.contato_nome }}
+          <label for="{{ form.contato_nome.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_nome.label }}</label>
+          {{ form.contato_nome|add_class:'form-input' }}
         {% if form.contato_nome.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.contato_nome.errors }}</p>
         {% endif %}
       </div>
       <div>
-        <label for="{{ form.contato_email.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_email.label }}</label>
-        {{ form.contato_email }}
+          <label for="{{ form.contato_email.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_email.label }}</label>
+          {{ form.contato_email|add_class:'form-input' }}
         {% if form.contato_email.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.contato_email.errors }}</p>
         {% endif %}
       </div>
       <div>
-        <label for="{{ form.contato_telefone.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.contato_telefone.label }}</label>
-        {{ form.contato_telefone }}
+          <label for="{{ form.contato_telefone.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_telefone.label }}</label>
+          {{ form.contato_telefone|add_class:'form-input' }}
         {% if form.contato_telefone.errors %}
           <p class="text-red-500 text-xs mt-1">{{ form.contato_telefone.errors }}</p>
         {% endif %}
@@ -104,53 +104,53 @@
     </div>
 
     <div>
-      <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.slug.label }}</label>
-      {{ form.slug }}
+        <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.slug.label }}</label>
+        {{ form.slug|add_class:'form-input' }}
       {% if form.slug.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.slug.errors }}</p>
       {% endif %}
     </div>
 
     <div>
-      <label for="{{ form.rate_limit_multiplier.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.rate_limit_multiplier.label }}</label>
-      {{ form.rate_limit_multiplier }}
+        <label for="{{ form.rate_limit_multiplier.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.rate_limit_multiplier.label }}</label>
+        {{ form.rate_limit_multiplier|add_class:'form-input' }}
       {% if form.rate_limit_multiplier.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.rate_limit_multiplier.errors }}</p>
       {% endif %}
     </div>
 
     <div>
-      <label for="{{ form.indice_reajuste.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.indice_reajuste.label }}</label>
-      {{ form.indice_reajuste }}
+        <label for="{{ form.indice_reajuste.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.indice_reajuste.label }}</label>
+        {{ form.indice_reajuste|add_class:'form-input' }}
       {% if form.indice_reajuste.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.indice_reajuste.errors }}</p>
       {% endif %}
     </div>
 
     <div>
-      <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.avatar.label }}</label>
-      {{ form.avatar }}
+        <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.avatar.label }}</label>
+        {{ form.avatar|add_class:'form-input' }}
       {% if form.avatar.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.avatar.errors }}</p>
       {% endif %}
     </div>
 
     <div>
-      <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-neutral-700">{{ form.cover.label }}</label>
-      {{ form.cover }}
+        <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cover.label }}</label>
+        {{ form.cover|add_class:'form-input' }}
       {% if form.cover.errors %}
         <p class="text-red-500 text-xs mt-1">{{ form.cover.errors }}</p>
       {% endif %}
     </div>
 
-    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
-      <a href="{% url 'organizacoes:list' %}" class="text-sm px-4 py-2 rounded-xl border border-neutral-300 text-neutral-700 hover:bg-neutral-100">
-        {% trans 'Cancelar' %}
-      </a>
-      <button type="submit" class="text-sm px-4 py-2 rounded-xl bg-primary-600 text-white hover:bg-primary-700">
-        {% trans 'Salvar' %}
-      </button>
-    </div>
+      <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+        <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary">
+          {% trans 'Cancelar' %}
+        </a>
+        <button type="submit" class="btn">
+          {% trans 'Salvar' %}
+        </button>
+      </div>
   </form>
 </section>
 {% endblock %}
