@@ -33,14 +33,14 @@
               {{ dia.data.day }}
             </span>
             {% if dia.eventos|length > 3 %}
-              <span class="text-xs text-gray-400">+{{ dia.eventos|length|add:"-3" }}</span>
+              <span class="text-xs text-[var(--color-neutral-400)]">+{{ dia.eventos|length|add:"-3" }}</span>
             {% endif %}
           </div>
           <ul class="space-y-1">
             {% for ev in dia.eventos|slice:":3" %}
               <li>
                 <a href="{% url 'eventos:evento_detalhe' ev.id %}"
-                   class="block bg-[var(--success-light)] border border-[var(--success)] text-[var(--success)] rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-emerald-100 transition line-clamp-3"
+                   class="block bg-[var(--success-light)] border border-[var(--success)] text-[var(--success)] rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-[var(--color-success-100)] transition line-clamp-3"
                    hx-get="{% url 'eventos:evento_detalhe' ev.id %}"
                    hx-target="#modal" hx-trigger="click" hx-stop-propagation="click">
                   {{ ev.titulo }}

@@ -81,7 +81,7 @@
     {% with preferencias_form.idioma|add_class:'mt-1'|attr:'tabindex:0' as idioma_field %}
       {% include '_forms/field.html' with field=idioma_field %}
     {% endwith %}
-    <p class="text-xs text-gray-500">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
+    <p class="text-xs text-[var(--color-neutral-500)]">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
   </div>
   <div>
     {% with preferencias_form.tema|add_class:'mt-1'|attr:'tabindex:0' as tema_field %}
