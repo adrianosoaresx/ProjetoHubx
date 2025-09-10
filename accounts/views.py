@@ -45,7 +45,13 @@ from core.permissions import (
 from tokens.models import TokenAcesso, TOTPDevice
 from tokens.utils import get_client_ip
 
-from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, RedesSociaisForm
+from .forms import (
+    EmailLoginForm,
+    InformacoesPessoaisForm,
+    MediaForm,
+    RedesSociaisForm,
+    TwoFactorForm,
+)
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
@@ -220,9 +226,10 @@ def enable_2fa(request):
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-    if request.method == "POST":
-        password = request.POST.get("password")
-        code = request.POST.get("code")
+    form = TwoFactorForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        password = form.cleaned_data["password"]
+        code = form.cleaned_data["code"]
         if request.user.check_password(password):
             if code and totp.verify(code):
                 user = request.user
@@ -260,16 +267,21 @@ def enable_2fa(request):
             )
             messages.error(request, _("Senha incorreta."))
 
-    return render(request, "perfil/enable_2fa.html", {"qr_base64": qr_base64, "hero_title": _("Perfil")})
+    return render(
+        request,
+        "perfil/enable_2fa.html",
+        {"qr_base64": qr_base64, "hero_title": _("Perfil"), "form": form},
+    )
 
 
 @login_required
 def disable_2fa(request):
     if not request.user.two_factor_enabled:
         return redirect("configuracoes")
-    if request.method == "POST":
-        password = request.POST.get("password")
-        code = request.POST.get("code")
+    form = TwoFactorForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        password = form.cleaned_data["password"]
+        code = form.cleaned_data["code"]
         if request.user.check_password(password):
             if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
                 user = request.user
@@ -298,7 +310,9 @@ def disable_2fa(request):
             )
             messages.error(request, _("Senha incorreta."))
 
-    return render(request, "perfil/disable_2fa.html", {"hero_title": _("Perfil")})
+    return render(
+        request, "perfil/disable_2fa.html", {"hero_title": _("Perfil"), "form": form}
+    )
 
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)

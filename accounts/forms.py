@@ -229,6 +229,11 @@ class MediaForm(forms.ModelForm):
         return instance
 
 
+class TwoFactorForm(forms.Form):
+    code = forms.CharField(label=_("Código"))
+    password = forms.CharField(label=_("Senha"), widget=forms.PasswordInput)
+
+
 class EmailLoginForm(forms.Form):
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput, label="Senha")
