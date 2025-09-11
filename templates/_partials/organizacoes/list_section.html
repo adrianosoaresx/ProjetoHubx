@@ -40,15 +40,15 @@
       <article class="card flex flex-col">
       <div class="card-body flex flex-col">
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 bg-neutral-100 rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
+        <div class="w-12 h-12 bg-[var(--color-neutral-100)] rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
           {% if organizacao.avatar %}
             <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" />
           {% else %}
-            <span class="text-sm font-bold text-neutral-500">{{ organizacao.nome|make_list|first|upper }}</span>
+            <span class="text-sm font-bold text-[var(--color-neutral-500)]">{{ organizacao.nome|make_list|first|upper }}</span>
           {% endif %}
         </div>
         <div>
-          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
+          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-[var(--color-neutral-900)] font-medium hover:underline">{{ organizacao.nome }}</a>
           {% if organizacao.inativa %}
             <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
           {% endif %}
@@ -57,16 +57,16 @@
       {% if request.user.user_type != 'root' %}
       <div class="grid grid-cols-3 gap-4 text-center mt-auto">
         <div>
-          <p class="text-xs text-neutral-500">{% trans 'Usuários' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.users_count }}</p>
+          <p class="text-xs text-[var(--color-neutral-500)]">{% trans 'Usuários' %}</p>
+          <p class="text-lg font-semibold text-[var(--color-neutral-900)]">{{ organizacao.users_count }}</p>
         </div>
         <div>
-          <p class="text-xs text-neutral-500">{% trans 'Núcleos' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.nucleos_count }}</p>
+          <p class="text-xs text-[var(--color-neutral-500)]">{% trans 'Núcleos' %}</p>
+          <p class="text-lg font-semibold text-[var(--color-neutral-900)]">{{ organizacao.nucleos_count }}</p>
         </div>
         <div>
-          <p class="text-xs text-neutral-500">{% trans 'Eventos' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.events_count }}</p>
+          <p class="text-xs text-[var(--color-neutral-500)]">{% trans 'Eventos' %}</p>
+          <p class="text-lg font-semibold text-[var(--color-neutral-900)]">{{ organizacao.events_count }}</p>
         </div>
       </div>
       {% endif %}
@@ -92,7 +92,7 @@
 {% else %}
     <article class="card text-center">
       <div class="card-body p-10">
-        <p class="text-neutral-500 mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
+        <p class="text-[var(--color-neutral-500)] mb-4">{% trans 'Nenhuma organização cadastrada.' %}</p>
         <a href="{% url 'organizacoes:create' %}" class="btn">
           {% trans 'Cadastrar' %}
         </a>

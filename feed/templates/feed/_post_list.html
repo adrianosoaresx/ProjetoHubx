@@ -48,7 +48,7 @@
       {% if post.tags.all %}
         <div class="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
           {% for tag in post.tags.all %}
-            <span class="px-2 py-1 bg-neutral-100 rounded">{{ tag.nome }}</span>
+            <span class="px-2 py-1 bg-[var(--color-neutral-100)] rounded">{{ tag.nome }}</span>
           {% endfor %}
         </div>
       {% endif %}

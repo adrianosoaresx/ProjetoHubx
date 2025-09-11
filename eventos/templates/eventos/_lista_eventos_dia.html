@@ -3,7 +3,7 @@
   <h2 class="text-xl font-semibold mb-4">
     {% blocktrans trimmed with date=dia|date:"SHORT_DATE_FORMAT" %}Eventos de {{ date }}{% endblocktrans %}
   </h2>
-  <p class="text-sm text-neutral-500 mb-2">{{ eventos|length }} {% trans 'itens' %}</p>
+  <p class="text-sm text-[var(--color-neutral-500)] mb-2">{{ eventos|length }} {% trans 'itens' %}</p>
   <p class="sr-only">{% trans 'Lista de eventos do dia' %}</p>
 </header>
 
@@ -11,6 +11,6 @@
   {% for ev in eventos %}
     {% include '_components/card_evento.html' with evento=ev %}
   {% empty %}
-    <p class="text-sm text-neutral-400">{% trans "Sem eventos." %}</p>
+    <p class="text-sm text-[var(--color-neutral-400)]">{% trans "Sem eventos." %}</p>
   {% endfor %}
 </div>

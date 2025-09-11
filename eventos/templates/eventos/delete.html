@@ -10,7 +10,7 @@
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <div class="bg-[var(--bg-secondary)] border border-red-200 rounded-2xl card-sm p-6 text-center">
     <h2 class="text-xl font-semibold text-red-700 mb-4">{% trans "Remover Evento" %}</h2>
-    <p class="text-sm text-neutral-700">{% blocktrans with title=object.titulo %}Tem certeza que deseja remover <strong>{{ title }}</strong>?{% endblocktrans %}</p>
+    <p class="text-sm text-[var(--color-neutral-700)]">{% blocktrans with title=object.titulo %}Tem certeza que deseja remover <strong>{{ title }}</strong>?{% endblocktrans %}</p>
 
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}

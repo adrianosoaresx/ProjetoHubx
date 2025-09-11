@@ -8,7 +8,7 @@
 
 {% block content %}
 {% if request.user.user_type == 'root' %}
-  <p class="text-center text-neutral-500">{% trans "Usuário root não tem acesso ao feed." %}</p>
+  <p class="text-center text-[var(--color-neutral-500)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
 <section class="max-w-6xl mx-auto px-4 py-10">
     {% include "feed/_grid.html" with posts=posts %}

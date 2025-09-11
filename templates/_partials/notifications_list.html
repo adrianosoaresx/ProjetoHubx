@@ -9,7 +9,7 @@
         <div class="flex items-center gap-2">
           <time
             datetime="{{ log.data_envio|date:'c' }}"
-            class="text-sm text-neutral-600"
+            class="text-sm text-[var(--color-neutral-600)]"
             >{{ log.data_envio|date:'SHORT_DATETIME_FORMAT' }}</time>
           >
           <button
@@ -26,7 +26,7 @@
     </li>
     {% empty %}
     <li class="card">
-      <div class="card-body text-neutral-500">{% trans "Nenhuma notificação." %}</div>
+      <div class="card-body text-[var(--color-neutral-500)]">{% trans "Nenhuma notificação." %}</div>
     </li>
     {% endfor %}
   </ul>

@@ -3,7 +3,7 @@
   {% for empresa in empresas %}
     {% include '_components/card_empresa.html' with empresa=empresa %}
   {% empty %}
-    <p class="text-sm text-neutral-500">{% trans "Nenhuma empresa encontrada." %}</p>
+    <p class="text-sm text-[var(--color-neutral-500)]">{% trans "Nenhuma empresa encontrada." %}</p>
   {% endfor %}
 </div>
 

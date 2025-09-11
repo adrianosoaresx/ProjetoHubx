@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 <div id="avaliacoes">
-  <h2 class="text-lg font-semibold text-neutral-900">{% trans "Avaliações" %}</h2>
-  <p class="text-sm text-neutral-600">
+  <h2 class="text-lg font-semibold text-[var(--color-neutral-900)]">{% trans "Avaliações" %}</h2>
+  <p class="text-sm text-[var(--color-neutral-600)]">
     {% trans "Média" %}: {{ media_avaliacoes|floatformat:1 }}/5 - {{ avaliacoes|length }} {% trans "avaliações" %}
   </p>
   {% if request.user.is_authenticated %}
@@ -67,6 +67,6 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p class="text-sm text-neutral-500">{% trans "Nenhuma avaliação registrada." %}</p>
+    <p class="text-sm text-[var(--color-neutral-500)]">{% trans "Nenhuma avaliação registrada." %}</p>
   {% endif %}
 </div>

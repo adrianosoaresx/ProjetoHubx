@@ -6,14 +6,14 @@
 {% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8 space-y-6">
   <a href="{% url 'financeiro:task_logs' %}" class="text-sm text-primary hover:underline">&larr; {% trans 'Voltar para tarefas' %}</a>
-  <h1 class="text-2xl font-bold text-neutral-900">{{ log.nome_tarefa }}</h1>
-  <div class="text-sm text-neutral-600 space-y-1">
+  <h1 class="text-2xl font-bold text-[var(--color-neutral-900)]">{{ log.nome_tarefa }}</h1>
+  <div class="text-sm text-[var(--color-neutral-600)] space-y-1">
   <p><span class="font-medium">{{ _('Executada em') }}:</span> {{ log.executada_em|date:"SHORT_DATETIME_FORMAT" }}</p>
     <p><span class="font-medium">{{ _('Status') }}:</span> {{ log.status }}</p>
   </div>
   <div>
     <h2 class="text-xl font-semibold mb-2">{{ _('Detalhes') }}</h2>
-    <pre class="whitespace-pre-wrap bg-neutral-100 border border-neutral-200 rounded-2xl p-4 text-sm">{{ log.detalhes|default:_('Sem detalhes') }}</pre>
+    <pre class="whitespace-pre-wrap bg-[var(--color-neutral-100)] border border-neutral-200 rounded-2xl p-4 text-sm">{{ log.detalhes|default:_('Sem detalhes') }}</pre>
   </div>
 </section>
 {% endblock %}

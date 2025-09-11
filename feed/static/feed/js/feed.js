@@ -156,9 +156,9 @@ function bindFeedEvents(root = document) {
     const exists = Array.from(chipsContainer.querySelectorAll('[data-tag]')).some(n => (n.getAttribute('data-tag')||'').toLowerCase() === value.toLowerCase());
     if (exists) return;
     const chip = document.createElement('span');
-    chip.className = 'inline-flex items-center gap-1 bg-neutral-100 text-neutral-800 rounded-full px-3 py-1 text-xs';
+    chip.className = 'inline-flex items-center gap-1 bg-[var(--color-neutral-100)] text-[var(--color-neutral-800)] rounded-full px-3 py-1 text-xs';
     chip.setAttribute('data-tag', value);
-    chip.innerHTML = `${value} <button type="button" class="ml-1 text-neutral-500 hover:text-neutral-700" aria-label="Remover">&times;</button>`;
+    chip.innerHTML = `${value} <button type="button" class="ml-1 text-[var(--color-neutral-500)] hover:text-[var(--color-neutral-700)]" aria-label="Remover">&times;</button>`;
     chip.querySelector('button').addEventListener('click', () => {
       chip.remove();
       updateHiddenTags();

@@ -58,7 +58,7 @@
         <article class="card">
           <div class="card-body flex items-center justify-between">
             <div>
-              <h3 class="text-sm font-medium text-neutral-800">{{ inscrito.get_full_name|default:inscrito.username }}</h3>
+              <h3 class="text-sm font-medium text-[var(--color-neutral-800)]">{{ inscrito.get_full_name|default:inscrito.username }}</h3>
               <p class="text-xs text-[var(--text-secondary)]">{{ inscrito.email }}</p>
             </div>
             {% if user.user_type in ['admin', 'coordenador'] %}

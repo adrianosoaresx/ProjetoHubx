@@ -25,7 +25,7 @@
         {% include '_components/card_usuario.html' with user=user %}
       </div>
     {% empty %}
-      <p class="text-neutral-500">{% trans "Nenhum associado encontrado." %}</p>
+      <p class="text-[var(--color-neutral-500)]">{% trans "Nenhum associado encontrado." %}</p>
     {% endfor %}
   </div>
 </section>

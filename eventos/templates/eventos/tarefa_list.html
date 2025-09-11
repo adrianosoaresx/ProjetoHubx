@@ -9,7 +9,7 @@
 {% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <header class="mb-6 flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-neutral-900">{% trans "Tarefas" %}</h1>
+    <h1 class="text-2xl font-bold text-[var(--color-neutral-900)]">{% trans "Tarefas" %}</h1>
     <a href="{% url 'eventos:tarefa_criar' %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
   </header>
   <ul class="space-y-2">
@@ -18,7 +18,7 @@
         <article class="card">
           <div class="card-body">
             <a href="{% url 'eventos:tarefa_detalhe' tarefa.pk %}" class="font-semibold">{{ tarefa.titulo }}</a>
-            <div class="text-sm text-neutral-600">{{ tarefa.responsavel }} - {{ tarefa.status }}</div>
+            <div class="text-sm text-[var(--color-neutral-600)]">{{ tarefa.responsavel }} - {{ tarefa.status }}</div>
           </div>
         </article>
       </li>

@@ -3,7 +3,7 @@
   {% for ins in inscricoes %}
     {% include '_components/card_evento.html' with evento=ins.evento %}
   {% empty %}
-    <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum evento encontrado." %}</p>
+    <p class="col-span-full text-center text-[var(--color-neutral-500)]">{% trans "Nenhum evento encontrado." %}</p>
   {% endfor %}
 </div>
 

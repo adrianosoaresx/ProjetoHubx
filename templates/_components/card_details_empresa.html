@@ -1,11 +1,11 @@
 {% load i18n %}
-<dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-neutral-600">
+<dl class="mt-3 grid grid-cols-2 gap-2 text-xs text-[var(--color-neutral-600)]">
   <div>
-    <dt class="text-neutral-500">CNPJ</dt>
+    <dt class="text-[var(--color-neutral-500)]">CNPJ</dt>
     <dd class="font-medium">{{ empresa.cnpj }}</dd>
   </div>
   <div>
-    <dt class="text-neutral-500">{% trans 'Proprietário' %}</dt>
+    <dt class="text-[var(--color-neutral-500)]">{% trans 'Proprietário' %}</dt>
     <dd class="font-medium">
       <span class="text-primary">
         {{ empresa.usuario.get_full_name|default:empresa.usuario.username }}
