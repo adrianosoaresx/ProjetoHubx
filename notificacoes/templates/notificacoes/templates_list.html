@@ -33,17 +33,17 @@
                 {% if tpl.ativo %}
                   <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="text-sm text-[var(--text-secondary)] hover:underline">{% trans 'Desativar' %}</button>
+                    <button type="submit" class="btn btn-secondary btn-sm">{% trans 'Desativar' %}</button>
                   </form>
                 {% else %}
                   <form method="post" action="{% url 'notificacoes:template_toggle' tpl.codigo %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="text-sm text-[var(--text-secondary)] hover:underline">{% trans 'Ativar' %}</button>
+                    <button type="submit" class="btn btn-secondary btn-sm">{% trans 'Ativar' %}</button>
                   </form>
                 {% endif %}
                 <form method="post" action="{% url 'notificacoes:template_delete' tpl.codigo %}" class="inline">
                   {% csrf_token %}
-                  <button type="submit" class="text-sm text-[var(--error)] hover:underline">{% trans 'Excluir' %}</button>
+                  <button type="submit" class="btn btn-danger btn-sm">{% trans 'Excluir' %}</button>
                 </form>
               </div>
             </td>

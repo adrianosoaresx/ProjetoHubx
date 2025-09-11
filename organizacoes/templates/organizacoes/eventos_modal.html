@@ -24,7 +24,7 @@
     {% for evento in eventos %}
       <li class="flex justify-between items-center">
         {{ evento.titulo }}
-        <button hx-delete="{{ api_url }}{{ evento.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#eventos-section');" class="btn btn-secondary text-red-600">{% trans 'Remover' %}</button>
+        <button hx-delete="{{ api_url }}{{ evento.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#eventos-section');" class="btn btn-danger">{% trans 'Remover' %}</button>
       </li>
     {% empty %}
       <li class="text-[var(--text-muted)] text-sm">{% trans 'Nenhum evento associado.' %}</li>
