@@ -1,67 +1,59 @@
 {% extends "base.html" %}
-{% load static i18n widget_tweaks %}
+{% load i18n %}
 
-{# O título da página será definido pela variável `hero_title` fornecida pela view. #}
 {% block hero %}
-  {% include '_components/hero.html' with title=hero_title|default:_('Meu Perfil') subtitle=hero_subtitle %}
+  {% include "_components/hero_profile.html" %}
 {% endblock %}
 
 {% block content %}
+<div class="card-header">
+  <nav>
+    <ul role="tablist" class="-mb-px flex flex-wrap gap-2 border-b border-[var(--border)]">
+      <li>
+        <a href="#tab-mural" data-tab-target="tab-mural" role="tab" aria-selected="true"
+           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">
+          {% trans "Mural" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-midias" data-tab-target="tab-midias" role="tab" aria-selected="false"
+           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Mídias" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-conexoes" data-tab-target="tab-conexoes" role="tab" aria-selected="false"
+           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Conexões" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-infos" data-tab-target="tab-infos" role="tab" aria-selected="false"
+           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Infos" %}
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
 
-  <section class="card-grid">
-    <article class="card">
-      <div class="card-body">
-      {% with perfil|default:user as profile %}
-      <div class="profile-cover relative h-48 w-full overflow-hidden">
-        {% if profile.cover %}
-          <img src="{{ profile.cover.url }}" alt="{% trans "Capa do usuário" %}" class="absolute inset-0 w-full h-full object-cover z-0" aria-hidden="true">
-        {% else %}
-          <div class="absolute inset-0 w-full h-full bg-[var(--bg-tertiary)] z-0" role="img" aria-label="{% trans "Capa padrão" %}"></div>
-        {% endif %}
-
-        <div class="absolute inset-0 z-50 flex items-center justify-center text-center text-white drop-card">
-          <div>
-        {% if profile.avatar %}
-              <img src="{{ profile.avatar.url }}" alt="{{ profile.username }}"
-                   class="w-28 h-28 rounded-full object-cover card mb-3">
-            {% else %}
-              <div class="w-28 h-28 rounded-full bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-2xl font-semibold card mb-3 flex items-center justify-center" role="img" aria-label="{{ profile.username }}">
-                {{ profile.username|first|upper }}
-              </div>
-            {% endif %}
-            <h2 class="mb-0.5 text-lg font-bold text-[var(--text-primary)]">{{ profile.get_full_name }}</h2>
-            <p class="mt-0 text-sm text-[var(--text-secondary)]">@{{ profile.username }}</p>
-            {% if profile == request.user %}
-            <button class="btn btn-secondary btn-sm">{% trans "Alterar foto" %}</button>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Abas de navegação -->
-
-      {% if request.resolver_match.url_name == 'informacoes_pessoais' or request.resolver_match.url_name == 'redes_sociais' %}
-
-        <nav class="mt-6 border-b flex space-x-4 text-sm font-medium text-[var(--text-secondary)] border-[var(--border)]" role="tablist">
-          <a href="{% url 'accounts:informacoes_pessoais' %}"
-             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'informacoes_pessoais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
-             role="tab"
-             aria-selected="{% if request.resolver_match.url_name == 'informacoes_pessoais' %}true{% else %}false{% endif %}">{% trans "Informações Pessoais" %}</a>
-
-          <a href="{% url 'accounts:redes_sociais' %}"
-             class="px-3 py-2 -mb-px border-b-2 {% if request.resolver_match.url_name == 'redes_sociais' %}border-primary text-primary{% else %}border-transparent hover:text-primary{% endif %}"
-             role="tab"
-             aria-selected="{% if request.resolver_match.url_name == 'redes_sociais' %}true{% else %}false{% endif %}">{% trans "Redes Sociais" %}</a>
-        </nav>
-      {% endif %}
-        <!-- Bloco dinâmico para subpáginas -->
-        <div class="mt-8">
-          {% block perfil_content %}
-          {% endblock %}
-        </div>
-      {% endwith %}
-      </div>
-    </article>
+<div class="card-body">
+  <section id="tab-mural">
+    {% include "feed/_post_list.html" %}
   </section>
 
+  <section id="tab-midias" hidden>
+    {% include "perfil/partials/midias.html" %}
+  </section>
+
+  <section id="tab-conexoes" hidden>
+    {% include "perfil/partials/conexoes_minhas.html" %}
+    {% include "perfil/partials/conexoes_solicitacoes.html" %}
+  </section>
+
+  <section id="tab-infos" hidden>
+    {% include "perfil/partials/publico_informacoes.html" %}
+  </section>
+</div>
 {% endblock %}
+

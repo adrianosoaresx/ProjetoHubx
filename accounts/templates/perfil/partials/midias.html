@@ -1,0 +1,35 @@
+{% load i18n %}
+<form method="get" class="mb-4">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Buscar por descrição ou tags...' %}"
+         class="form-input w-full rounded-lg px-4 py-2 text-sm" aria-label="{% trans 'Buscar' %}" aria-invalid="false">
+</form>
+
+<div class="card-grid mt-6">
+  {% for media in medias %}
+  <article class="card relative">
+    <a href="{% url 'accounts:midia_detail' media.pk %}">
+      {% if media.media_type == 'image' %}
+        <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded">
+      {% elif media.media_type == 'video' %}
+        <video src="{{ media.file.url }}" class="w-full h-40 object-cover rounded" controls></video>
+      {% elif media.media_type == 'pdf' %}
+        <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
+      {% else %}
+        <span class="text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
+      {% endif %}
+    </a>
+    <div class="card-body mt-2">
+      <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+      <p class="text-xs text-[var(--text-primary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+      <div class="flex flex-wrap gap-1 mt-1">
+        {% for tag in media.tags.all %}
+          <span class="bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </article>
+  {% empty %}
+  <p class="text-sm text-[var(--text-primary)]">{% trans "Nenhum arquivo enviado." %}</p>
+  {% endfor %}
+</div>
+
