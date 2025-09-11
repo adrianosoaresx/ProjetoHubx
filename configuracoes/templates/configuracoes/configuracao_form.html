@@ -5,21 +5,19 @@
 {% block hero %}{% include '_components/hero.html' with title=_('Configurações da Conta') %}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto card-grid">
-    <div class="card">
-      <div class="card-body">
-        <div class="flex flex-wrap gap-4 border-b border-[var(--border)] mb-4 text-sm">
-          <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4">
-            <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}">{% trans 'Segurança' %}</button>
-            <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}">{% trans 'Preferências' %}</button>
-          </nav>
-        </div>
-        <div id="content" role="tabpanel" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
-          {% include 'configuracoes/_partials/'|add:tab|add:'.html' %}
-        </div>
-      </div>
+<main class="container mx-auto px-4 py-6">
+  <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+    <header class="card-body border-b border-[var(--border)] p-6">
+      <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4 text-sm">
+        <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}">{% trans 'Segurança' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}">{% trans 'Preferências' %}</button>
+      </nav>
+    </header>
+    <div class="card-body p-6" id="content" role="tabpanel" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
+      {% include 'configuracoes/_partials/'|add:tab|add:'.html' %}
     </div>
-</div>
+  </section>
+</main>
 <script>
   function switchTab(btn) {
     document.querySelectorAll('[role=tab]').forEach((tab) => {
