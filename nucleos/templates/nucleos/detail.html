@@ -50,7 +50,7 @@
           {% for part in membros_ativos %}
             {% include 'nucleos/partials/membro_card.html' with part=part %}
           {% empty %}
-            <p class="col-span-full text-center text-[var(--color-neutral-500)]">{% trans 'Sem membros.' %}</p>
+            <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Sem membros.' %}</p>
           {% endfor %}
         </div>
 
@@ -100,7 +100,7 @@
           {% for evento in eventos %}
             {% include '_components/card_evento.html' with evento=evento %}
           {% empty %}
-            <p class="text-sm text-[var(--color-neutral-500)]">{% trans 'Sem eventos.' %}</p>
+            <p class="text-sm text-[var(--text-muted)]">{% trans 'Sem eventos.' %}</p>
           {% endfor %}
         </div>
       </div>

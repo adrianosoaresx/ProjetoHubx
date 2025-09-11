@@ -37,7 +37,7 @@ class PostForm(forms.ModelForm):
         widgets = {
             "conteudo": forms.Textarea(
                 attrs={
-                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
+                    "class": "mt-1 block w-full rounded-xl border border-[var(--border-secondary)] card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 4,
                     "placeholder": "Compartilhe algo...",
                 }
@@ -162,7 +162,7 @@ class CommentForm(forms.ModelForm):
             "reply_to": forms.HiddenInput(),
             "texto": forms.Textarea(
                 attrs={
-                    "class": "mt-1 block w-full rounded-xl border border-neutral-300 card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
+                    "class": "mt-1 block w-full rounded-xl border border-[var(--border-secondary)] card-sm focus:ring-primary-500 focus:border-primary-500 text-sm",
                     "rows": 3,
                     "placeholder": "Escreva um comentário...",
                 }

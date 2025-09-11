@@ -18,7 +18,7 @@
   {% elif media.media_type == 'pdf' %}
     <object data="{{ media.file.url }}" type="application/pdf" class="rounded card max-w-full mx-auto" aria-label="{{ media.descricao }}" width="100%" height="600">
       <embed src="{{ media.file.url }}" type="application/pdf" />
-      <p class="text-center text-gray-700">
+      <p class="text-center text-[var(--text-secondary)]">
         {% trans "Este navegador não suporta visualização de PDF." %}
         <a href="{{ media.file.url }}" class="inline-flex items-center gap-1 text-primary hover:underline" download>
           {% lucide 'download' class='w-4 h-4' aria_hidden='true' %}

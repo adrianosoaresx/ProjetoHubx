@@ -8,6 +8,7 @@
 
     <p class="mb-4">{% trans 'Mensalidade' %}: {{ nucleo.mensalidade|localize }}</p>
 
+
     <p class="mb-4 text-sm text-[var(--text-secondary)]">
       {% blocktrans with mensalidade=nucleo.mensalidade|floatformat:2 %}
         Ao confirmar, você concorda com o pagamento da mensalidade de R$ {{ mensalidade }} e com os efeitos da adesão ao núcleo.
