@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n widget_tweaks %}
 <div class="card max-w-md">
   <div class="card-body">
     <form id="centro-form"
@@ -11,69 +11,89 @@
           hx-on="htmx:afterRequest: htmx.ajax('GET', '/financeiro/centros/', '#centros-list'); document.getElementById('modal').innerHTML='';"
           class="space-y-4" aria-live="assertive">
       {% csrf_token %}
-      {% include '_forms/field.html' with field=form.nome %}
-      {% include '_forms/field.html' with field=form.tipo %}
-      <div>
-        <label for="organizacao-search" class="block text-sm font-medium">{{ _('Organização') }}</label>
-        <input
-          type="text"
-          id="organizacao-search"
-          name="search"
-          class="form-input w-full"
-          form="search-organizacao"
-          hx-get="/api/organizacoes/"
-          hx-trigger="keyup changed delay:500ms"
-          hx-target="#id_organizacao"
-          hx-swap="none"
-          hx-on="htmx:afterRequest: renderOrganizacoes(event)"
-        />
-        <select id="id_organizacao" name="organizacao" class="form-select w-full mt-2">
-          {% if centro and centro.organizacao %}
-          <option value="{{ centro.organizacao.id }}" selected>{{ centro.organizacao.nome }}</option>
+      {% for field in form %}
+        {% if field.name == 'organizacao' %}
+        <div>
+          <label for="organizacao-search" class="block text-sm font-medium">{{ _('Organização') }}</label>
+          <input
+            type="text"
+            id="organizacao-search"
+            name="search"
+            class="form-input w-full"
+            form="search-organizacao"
+            hx-get="/api/organizacoes/"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#id_organizacao"
+            hx-swap="none"
+            hx-on="htmx:afterRequest: renderOrganizacoes(event)"
+          />
+          {% if field.errors %}
+            {% render_field field|attr:"aria-invalid:true" class+="form-select w-full mt-2" %}
+          {% else %}
+            {% render_field field class+="form-select w-full mt-2" %}
           {% endif %}
-        </select>
-      </div>
-      <div>
-        <label for="nucleo-search" class="block text-sm font-medium">{{ _('Núcleo') }}</label>
-        <input
-          type="text"
-          id="nucleo-search"
-          name="search"
-          class="form-input w-full"
-          form="search-nucleo"
-          hx-get="/api/nucleos/"
-          hx-trigger="keyup changed delay:500ms"
-          hx-target="#id_nucleo"
-          hx-swap="none"
-          hx-on="htmx:afterRequest: renderNucleos(event)"
-        />
-        <select id="id_nucleo" name="nucleo" class="form-select w-full mt-2">
-          {% if centro and centro.nucleo %}
-          <option value="{{ centro.nucleo.id }}" selected>{{ centro.nucleo.nome }}</option>
+          {% if field.errors %}
+          <ul class="errorlist">
+            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+          </ul>
           {% endif %}
-        </select>
-      </div>
-      <div>
-        <label for="evento-search" class="block text-sm font-medium">{{ _('Evento') }}</label>
-        <input
-          type="text"
-          id="evento-search"
-          name="search"
-          class="form-input w-full"
-          form="search-evento"
-          hx-get="/api/eventos/"
-          hx-trigger="keyup changed delay:500ms"
-          hx-target="#id_evento"
-          hx-swap="none"
-          hx-on="htmx:afterRequest: renderEventos(event)"
-        />
-        <select id="id_evento" name="evento" class="form-select w-full mt-2">
-          {% if centro and centro.evento %}
-          <option value="{{ centro.evento.id }}" selected>{{ centro.evento.titulo }}</option>
+        </div>
+        {% elif field.name == 'nucleo' %}
+        <div>
+          <label for="nucleo-search" class="block text-sm font-medium">{{ _('Núcleo') }}</label>
+          <input
+            type="text"
+            id="nucleo-search"
+            name="search"
+            class="form-input w-full"
+            form="search-nucleo"
+            hx-get="/api/nucleos/"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#id_nucleo"
+            hx-swap="none"
+            hx-on="htmx:afterRequest: renderNucleos(event)"
+          />
+          {% if field.errors %}
+            {% render_field field|attr:"aria-invalid:true" class+="form-select w-full mt-2" %}
+          {% else %}
+            {% render_field field class+="form-select w-full mt-2" %}
           {% endif %}
-        </select>
-      </div>
-      {% include '_forms/field.html' with field=form.descricao %}
+          {% if field.errors %}
+          <ul class="errorlist">
+            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% elif field.name == 'evento' %}
+        <div>
+          <label for="evento-search" class="block text-sm font-medium">{{ _('Evento') }}</label>
+          <input
+            type="text"
+            id="evento-search"
+            name="search"
+            class="form-input w-full"
+            form="search-evento"
+            hx-get="/api/eventos/"
+            hx-trigger="keyup changed delay:500ms"
+            hx-target="#id_evento"
+            hx-swap="none"
+            hx-on="htmx:afterRequest: renderEventos(event)"
+          />
+          {% if field.errors %}
+            {% render_field field|attr:"aria-invalid:true" class+="form-select w-full mt-2" %}
+          {% else %}
+            {% render_field field class+="form-select w-full mt-2" %}
+          {% endif %}
+          {% if field.errors %}
+          <ul class="errorlist">
+            {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% else %}
+          {% include '_forms/field.html' with field=field %}
+        {% endif %}
+      {% endfor %}
       <button type="submit" class="btn btn-primary">{{ _('Salvar') }}</button>
     </form>
   </div>
