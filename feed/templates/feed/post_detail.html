@@ -21,7 +21,7 @@
       {% if post.autor.avatar %}
         <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
       {% else %}
-        <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
+        <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
           {{ post.autor.username|first|upper }}
         </div>
       {% endif %}
@@ -62,7 +62,7 @@
     {% endif %}
 
 
-    <div class="mt-4 flex items-center gap-4 text-sm text-[var(--text-tertiary)]">
+    <div class="mt-4 flex items-center gap-4 text-sm text-[var(--text-secondary)]">
       <div id="like-btn-{{ post.id }}">
         {% include 'feed/_like_button.html' with post=post %}
       </div>
