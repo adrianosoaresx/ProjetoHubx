@@ -27,9 +27,9 @@
       {# TODO: conteúdo do mural público #}
     </div>
 
-    <div class="tab-panel hidden" data-tab="informacoes">
+    <section id="tab-infos" class="tab-panel hidden" data-tab="informacoes">
       {% include 'perfil/partials/publico_informacoes.html' with profile=perfil publico=True %}
-    </div>
+    </section>
 
     {% if not perfil.is_superuser %}
       <div class="tab-panel hidden" data-tab="empresas">
