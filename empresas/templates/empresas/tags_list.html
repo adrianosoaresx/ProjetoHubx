@@ -26,10 +26,11 @@
         <option value="serv" {% if request.GET.categoria == 'serv' %}selected{% endif %}>{% translate 'Serviços' %}</option>
       </select>
     </div>
-    <div class="flex-1">
-      <label for="id_tag" class="block text-sm font-medium text-[var(--text-secondary)]">{% translate 'Palavra-chave' %}</label>
-      {{ form.tag|add_class:'w-full p-2 border rounded' }}
-    </div>
+      <div class="flex-1">
+        {% for field in form %}
+          {% include '_forms/field.html' with field=field %}
+        {% endfor %}
+      </div>
     <noscript>
       <button type="submit" class="btn btn-secondary btn-sm">{% translate 'Filtrar' %}</button>
     </noscript>
