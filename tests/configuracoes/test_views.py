@@ -21,7 +21,7 @@ def test_view_get_autenticado(admin_client):
     assert resp.status_code == 200
     assert isinstance(resp.context["seguranca_form"], PasswordChangeForm)
     assert "preferencias_form" not in resp.context
-    assert "configuracoes/configuracoes.html" in [t.name for t in resp.templates]
+    assert "configuracoes/configuracao_form.html" in [t.name for t in resp.templates]
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")

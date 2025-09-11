@@ -62,7 +62,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
-            else "configuracoes/configuracoes.html"
+            else "configuracoes/configuracao_form.html"
         )
         return render(request, template, context)
 
@@ -107,7 +107,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         template = (
             f"configuracoes/partials/{tab}.html"
             if request.headers.get("HX-Request")
-            else "configuracoes/configuracoes.html"
+            else "configuracoes/configuracao_form.html"
         )
         response = render(request, template, context)
         if tab == "preferencias" and form.is_valid():

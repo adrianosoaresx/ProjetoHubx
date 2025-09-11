@@ -121,31 +121,31 @@ msgstr "Time to send weekly notifications"
 msgid "Dia da semana para notificações semanais"
 msgstr "Weekday for weekly notifications"
 
-#: templates/configuracoes/configuracoes.html:4
+#: templates/configuracoes/configuracao_form.html:4
 msgid "Configurações da Conta"
 msgstr "Account Settings"
 
-#: templates/configuracoes/configuracoes.html:8
+#: templates/configuracoes/configuracao_form.html:8
 msgid "Configurações"
 msgstr "Settings"
 
-#: templates/configuracoes/configuracoes.html:16
+#: templates/configuracoes/configuracao_form.html:16
 msgid "Seções de Configuração"
 msgstr "Settings Sections"
 
-#: templates/configuracoes/configuracoes.html:17
+#: templates/configuracoes/configuracao_form.html:17
 msgid "Informações Pessoais"
 msgstr "Personal Information"
 
-#: templates/configuracoes/configuracoes.html:18
+#: templates/configuracoes/configuracao_form.html:18
 msgid "Segurança"
 msgstr "Security"
 
-#: templates/configuracoes/configuracoes.html:19
+#: templates/configuracoes/configuracao_form.html:19
 msgid "Conexões Sociais"
 msgstr "Social Connections"
 
-#: templates/configuracoes/configuracoes.html:20
+#: templates/configuracoes/configuracao_form.html:20
 msgid "Preferências"
 msgstr "Preferences"
 
