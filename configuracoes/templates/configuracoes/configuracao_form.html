@@ -14,7 +14,11 @@
       </nav>
     </header>
     <div class="card-body p-6" id="content" role="tabpanel" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
-      {% include 'configuracoes/_partials/'|add:tab|add:'.html' %}
+      {% if tab == 'seguranca' %}
+        {% include 'configuracoes/_partials/seguranca.html' %}
+      {% elif tab == 'preferencias' %}
+        {% include 'configuracoes/_partials/preferencias.html' %}
+      {% endif %}
     </div>
   </section>
 </main>
