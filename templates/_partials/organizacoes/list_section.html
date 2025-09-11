@@ -42,7 +42,7 @@
       <div class="flex items-center gap-3 mb-4">
         <div class="w-12 h-12 bg-[var(--bg-tertiary)] rounded-xl flex items-center justify-center overflow-hidden" {% if not organizacao.avatar %}role="img" aria-label="{{ organizacao.nome }}"{% endif %}>
           {% if organizacao.avatar %}
-            <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" />
+            <img src="{{ organizacao.avatar.url }}" alt="{{ organizacao.nome }}" class="w-full h-full object-cover rounded-xl" loading="lazy" />
           {% else %}
             <span class="text-sm font-bold text-[var(--text-muted)]">{{ organizacao.nome|make_list|first|upper }}</span>
           {% endif %}
@@ -50,7 +50,7 @@
         <div>
           <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-[var(--text-primary)] font-medium hover:underline">{{ organizacao.nome }}</a>
           {% if organizacao.inativa %}
-            <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
+            <span class="ml-2 badge badge-warning">{% trans 'Inativa' %}</span>
           {% endif %}
         </div>
       </div>

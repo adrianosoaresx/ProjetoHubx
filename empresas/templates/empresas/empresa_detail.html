@@ -36,16 +36,18 @@
         <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Contatos" %}</h2>
         <div class="mt-4 card-grid">
           {% for contato in contatos %}
-            <div class="card flex justify-between items-start p-4">
-              <div class="text-sm">
-                <p class="font-medium text-[var(--text-primary)]">{{ contato.nome }}</p>
-                <p class="text-[var(--text-tertiary)]">{{ contato.cargo }}</p>
-                <p class="text-[var(--text-tertiary)]">{{ contato.email }}</p>
-                <p class="text-[var(--text-tertiary)]">{{ contato.telefone }}</p>
-              </div>
-              <div class="flex gap-2">
-                <a href="{% url 'empresas:contato_editar' contato.id %}" class="btn btn-secondary btn-sm">{% trans "Editar" %}</a>
-                <a href="{% url 'empresas:contato_remover' contato.id %}" class="btn btn-danger btn-sm">{% trans "Remover" %}</a>
+            <div class="card">
+              <div class="card-body flex justify-between items-start p-4">
+                <div class="text-sm">
+                  <p class="font-medium text-[var(--text-primary)]">{{ contato.nome }}</p>
+                  <p class="text-[var(--text-tertiary)]">{{ contato.cargo }}</p>
+                  <p class="text-[var(--text-tertiary)]">{{ contato.email }}</p>
+                  <p class="text-[var(--text-tertiary)]">{{ contato.telefone }}</p>
+                </div>
+                <div class="flex gap-2">
+                  <a href="{% url 'empresas:contato_editar' contato.id %}" class="btn btn-secondary btn-sm">{% trans "Editar" %}</a>
+                  <a href="{% url 'empresas:contato_remover' contato.id %}" class="btn btn-danger btn-sm">{% trans "Remover" %}</a>
+                </div>
               </div>
             </div>
           {% empty %}
@@ -62,7 +64,7 @@
       <strong>{% trans "Tags" %}:</strong>
       <div class="flex flex-wrap gap-2 mt-1">
         {% for tag in empresa_tags %}
-          <span class="text-xs bg-primary-100 text-primary-800 rounded-full px-2 py-0.5">{{ tag.nome }}</span>
+          <span class="badge badge-primary">{{ tag.nome }}</span>
         {% endfor %}
       </div>
     </div>
@@ -72,8 +74,10 @@
         <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Produtos" %}</h2>
         <div class="card-grid mt-4">
           {% for tag in prod_tags %}
-            <div class="card p-4">
-              <h3 class="text-base font-medium text-[var(--text-primary)]">{{ tag.nome }}</h3>
+            <div class="card">
+              <div class="card-body p-4">
+                <h3 class="text-base font-medium text-[var(--text-primary)]">{{ tag.nome }}</h3>
+              </div>
             </div>
           {% empty %}
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum produto cadastrado." %}</p>
@@ -85,8 +89,10 @@
         <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Serviços" %}</h2>
         <div class="card-grid mt-4">
           {% for tag in serv_tags %}
-            <div class="card p-4">
-              <h3 class="text-base font-medium text-[var(--text-primary)]">{{ tag.nome }}</h3>
+            <div class="card">
+              <div class="card-body p-4">
+                <h3 class="text-base font-medium text-[var(--text-primary)]">{{ tag.nome }}</h3>
+              </div>
             </div>
           {% empty %}
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum serviço cadastrado." %}</p>
@@ -99,7 +105,7 @@
         <div class="flex items-center gap-4 mt-4">
       {% with dono=empresa.usuario %}
         {% if dono.avatar %}
-          <img src="{{ dono.avatar.url }}" alt="{{ dono.username }}" class="w-12 h-12 rounded-full object-cover" />
+          <img src="{{ dono.avatar.url }}" alt="{{ dono.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
         {% else %}
           <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ dono.username }}">
             {{ dono.username|make_list|first|upper }}
@@ -117,15 +123,17 @@
         <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Núcleos" %}</h2>
         <div class="card-grid mt-4">
           {% for nucleo in nucleos_dono %}
-            <div class="card p-4 text-center">
-              {% if nucleo.avatar %}
-                <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="w-16 h-16 rounded-full object-cover mx-auto mb-2" />
-              {% else %}
-                <div class="w-16 h-16 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-medium text-[var(--text-secondary)] mx-auto mb-2" role="img" aria-label="{{ nucleo.nome }}">
-                  {{ nucleo.nome|make_list|first|upper }}
-                </div>
-              {% endif %}
-              <h3 class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</h3>
+            <div class="card">
+              <div class="card-body p-4 text-center">
+                {% if nucleo.avatar %}
+                  <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="w-16 h-16 rounded-full object-cover mx-auto mb-2" loading="lazy" />
+                {% else %}
+                  <div class="w-16 h-16 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-medium text-[var(--text-secondary)] mx-auto mb-2" role="img" aria-label="{{ nucleo.nome }}">
+                    {{ nucleo.nome|make_list|first|upper }}
+                  </div>
+                {% endif %}
+                <h3 class="text-sm font-medium text-[var(--text-primary)]">{{ nucleo.nome }}</h3>
+              </div>
             </div>
           {% empty %}
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum núcleo." %}</p>
@@ -137,9 +145,11 @@
         <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Eventos" %}</h2>
         <div class="card-grid mt-4">
           {% for evento in eventos_dono %}
-            <div class="card p-4">
-              <h3 class="text-base font-medium text-[var(--text-primary)]">{{ evento.titulo }}</h3>
-              <p class="text-sm text-[var(--text-tertiary)]">{{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}</p>
+            <div class="card">
+              <div class="card-body p-4">
+                <h3 class="text-base font-medium text-[var(--text-primary)]">{{ evento.titulo }}</h3>
+                <p class="text-sm text-[var(--text-tertiary)]">{{ evento.data_inicio|date:"SHORT_DATE_FORMAT" }}</p>
+              </div>
             </div>
           {% empty %}
             <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum evento." %}</p>
