@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n widget_tweaks %}
+{% load i18n %}
 
 {% block title %}
   {% if form.instance.pk %}
@@ -41,127 +41,9 @@
     <form method="post" enctype="multipart/form-data" class="card space-y-6">
     {% csrf_token %}
 
-    <div class="grid md:grid-cols-2 gap-6">
-      <div>
-        <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.nome.label }}</label>
-        {{ form.nome|add_class:'form-input' }}
-        {% if form.nome.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.nome.errors }}</p>
-        {% endif %}
-      </div>
-
-      <div>
-        <label for="{{ form.cnpj.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cnpj.label }}</label>
-        {{ form.cnpj|add_class:'form-input' }}
-        {% if form.cnpj.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.cnpj.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div>
-      <label for="{{ form.tipo.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.tipo.label }}</label>
-      {{ form.tipo|add_class:'form-input' }}
-      {% if form.tipo.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.tipo.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-      <label for="{{ form.descricao.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.descricao.label }}</label>
-      {{ form.descricao|add_class:'form-input' }}
-      {% if form.descricao.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.descricao.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="md:col-span-3">
-          <label for="{{ form.rua.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.rua.label }}</label>
-          {{ form.rua|add_class:'form-input' }}
-        {% if form.rua.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.rua.errors }}</p>
-        {% endif %}
-      </div>
-      <div class="md:col-span-2">
-          <label for="{{ form.cidade.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cidade.label }}</label>
-          {{ form.cidade|add_class:'form-input' }}
-        {% if form.cidade.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.cidade.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-          <label for="{{ form.estado.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.estado.label }}</label>
-          {{ form.estado|add_class:'form-input' }}
-        {% if form.estado.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.estado.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <div>
-          <label for="{{ form.contato_nome.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_nome.label }}</label>
-          {{ form.contato_nome|add_class:'form-input' }}
-        {% if form.contato_nome.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_nome.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-          <label for="{{ form.contato_email.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_email.label }}</label>
-          {{ form.contato_email|add_class:'form-input' }}
-        {% if form.contato_email.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_email.errors }}</p>
-        {% endif %}
-      </div>
-      <div>
-          <label for="{{ form.contato_telefone.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.contato_telefone.label }}</label>
-          {{ form.contato_telefone|add_class:'form-input' }}
-        {% if form.contato_telefone.errors %}
-          <p class="text-red-500 text-xs mt-1">{{ form.contato_telefone.errors }}</p>
-        {% endif %}
-      </div>
-    </div>
-
-    <div>
-        <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.slug.label }}</label>
-        {{ form.slug|add_class:'form-input' }}
-      {% if form.slug.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.slug.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-        <label for="{{ form.rate_limit_multiplier.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.rate_limit_multiplier.label }}</label>
-        {{ form.rate_limit_multiplier|add_class:'form-input' }}
-      {% if form.rate_limit_multiplier.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.rate_limit_multiplier.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-        <label for="{{ form.indice_reajuste.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.indice_reajuste.label }}</label>
-        {{ form.indice_reajuste|add_class:'form-input' }}
-      {% if form.indice_reajuste.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.indice_reajuste.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-        <label for="{{ form.avatar.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.avatar.label }}</label>
-        {{ form.avatar|add_class:'form-input' }}
-      {% if form.avatar.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.avatar.errors }}</p>
-      {% endif %}
-    </div>
-
-    <div>
-        <label for="{{ form.cover.id_for_label }}" class="block text-sm font-medium text-[var(--text-secondary)]">{{ form.cover.label }}</label>
-        {{ form.cover|add_class:'form-input' }}
-      {% if form.cover.errors %}
-        <p class="text-red-500 text-xs mt-1">{{ form.cover.errors }}</p>
-      {% endif %}
-    </div>
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
 
       <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
         <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary" aria-label="{% if form.instance.pk %}{% trans 'Cancelar edição' %}{% else %}{% trans 'Cancelar' %}{% endif %}">
