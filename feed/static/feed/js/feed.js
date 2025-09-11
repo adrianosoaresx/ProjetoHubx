@@ -162,7 +162,7 @@ function bindFeedEvents(root = document) {
     chip.className =
       'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs';
     chip.setAttribute('data-tag', value);
-    chip.innerHTML = `${value} <button type="button" class="ml-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)]" aria-label="Remover">&times;</button>`;
+    chip.innerHTML = `${value} <button type="button" class="ml-1 btn btn-danger btn-sm" aria-label="Remover">&times;</button>`;
     chip.querySelector('button').addEventListener('click', () => {
       chip.remove();
       updateHiddenTags();

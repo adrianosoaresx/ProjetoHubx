@@ -21,7 +21,7 @@
     </div>
     {% if request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
     <div class="mt-2 space-x-2">
-      <button class="text-sm link link-hover"
+      <button class="btn btn-secondary btn-sm"
               hx-post="{% url 'nucleos:membro_promover' object.pk part.pk %}"
               hx-target="#membro-{{ part.id }}"
               hx-swap="outerHTML"

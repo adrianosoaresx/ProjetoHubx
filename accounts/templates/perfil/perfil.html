@@ -32,7 +32,7 @@
             <h2 class="mb-0.5 text-lg font-bold text-[var(--text-primary)]">{{ profile.get_full_name }}</h2>
             <p class="mt-0 text-sm text-[var(--text-secondary)]">@{{ profile.username }}</p>
             {% if profile == request.user %}
-            <button class="text-sm text-[var(--text-secondary)] hover:underline">{% trans "Alterar foto" %}</button>
+            <button class="btn btn-secondary btn-sm">{% trans "Alterar foto" %}</button>
             {% endif %}
           </div>
         </div>
