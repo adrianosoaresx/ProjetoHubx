@@ -62,14 +62,14 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then(() => {
-        feedback.classList.remove("text-red-600");
-        feedback.classList.add("text-green-600");
+        feedback.classList.remove("text-error-600");
+        feedback.classList.add("text-success-600");
         feedback.textContent = successMessage;
         form.reset();
       })
       .catch((err) => {
-        feedback.classList.remove("text-green-600");
-        feedback.classList.add("text-red-600");
+        feedback.classList.remove("text-success-600");
+        feedback.classList.add("text-error-600");
         feedback.textContent = err.message;
       });
   });

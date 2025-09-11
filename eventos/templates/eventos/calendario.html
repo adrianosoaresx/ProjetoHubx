@@ -33,7 +33,7 @@
               {{ dia.data.day }}
             </span>
             {% if dia.eventos|length > 3 %}
-              <span class="text-xs text-[var(--color-neutral-400)]">+{{ dia.eventos|length|add:"-3" }}</span>
+              <span class="text-xs text-[var(--text-muted)]">+{{ dia.eventos|length|add:"-3" }}</span>
             {% endif %}
           </div>
           <ul class="space-y-1">

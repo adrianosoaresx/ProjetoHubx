@@ -9,8 +9,8 @@
   <form id="inad-form" class="mb-4 grid grid-cols-1 md:grid-cols-4 gap-4" hx-get="/api/financeiro/inadimplencias/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, load" hx-on="htmx:afterRequest: renderInadimplencias(event)">
     <legend class="sr-only">{% trans "Filtros" %}</legend>
     <div>
-      <label for="filtro-centro" class="block text-sm font-medium text-gray-700">{% trans "Centro de Custo" %}</label>
-      <select id="filtro-centro" name="centro" class="border p-2 rounded">
+      <label for="filtro-centro" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Centro de Custo" %}</label>
+      <select id="filtro-centro" name="centro" class="border border-[var(--border)] p-2 rounded">
         <option value="">{% trans "Todos Centros" %}</option>
         {% for c in centros %}
           <option value="{{ c.id }}">{{ c.nome }}</option>
@@ -18,8 +18,8 @@
       </select>
     </div>
     <div>
-      <label for="filtro-nucleo" class="block text-sm font-medium text-gray-700">{% trans "Núcleo" %}</label>
-      <select id="filtro-nucleo" name="nucleo" class="border p-2 rounded">
+      <label for="filtro-nucleo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Núcleo" %}</label>
+      <select id="filtro-nucleo" name="nucleo" class="border border-[var(--border)] p-2 rounded">
         <option value="">{% trans "Todos Núcleos" %}</option>
         {% for n in nucleos %}
           <option value="{{ n.id }}">{{ n.nome }}</option>
@@ -27,14 +27,14 @@
       </select>
     </div>
     <div>
-      <label for="filtro-status" class="block text-sm font-medium text-gray-700">{% trans "Status" %}</label>
-      <select id="filtro-status" name="status" class="border p-2 rounded" disabled>
+      <label for="filtro-status" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Status" %}</label>
+      <select id="filtro-status" name="status" class="border border-[var(--border)] p-2 rounded" disabled>
         <option>{% trans "Pendente" %}</option>
       </select>
     </div>
     <div>
-      <label for="filtro-periodo" class="block text-sm font-medium text-gray-700">{% trans "Período" %}</label>
-      <input id="filtro-periodo" type="month" name="periodo" class="border p-2 rounded" />
+      <label for="filtro-periodo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Período" %}</label>
+      <input id="filtro-periodo" type="month" name="periodo" class="border border-[var(--border)] p-2 rounded" />
     </div>
   </form>
   <div id="lista" aria-live="polite">
