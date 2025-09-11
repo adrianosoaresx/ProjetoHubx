@@ -75,7 +75,7 @@
               pag.innerHTML += `<button class="btn btn-secondary btn-sm ml-auto" hx-get="${data.next}" hx-target="#importacoes" hx-swap="none">{{ _('Próximo') }}</button>`;
             }
           } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="4" class="px-3 py-2 text-center text-red-600">{{ _('Erro ao carregar') }}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4" class="px-3 py-2 text-center text-[var(--error)]">{{ _('Erro ao carregar') }}</td></tr>`;
           }
         }
       </script>
