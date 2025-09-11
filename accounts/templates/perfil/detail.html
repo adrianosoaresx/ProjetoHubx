@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 {% block title %}{% trans "Meu Perfil" %} | Hubx{% endblock %}
 
 {% block hero %}
@@ -106,24 +106,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  const tabs = document.querySelectorAll('[role="tab"]');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', ev => {
-      ev.preventDefault();
-      tabs.forEach(t => {
-        const selected = t === tab;
-        t.setAttribute('aria-selected', selected);
-        t.classList.toggle('border-primary', selected);
-        t.classList.toggle('text-[var(--text-primary)]', selected);
-        t.classList.toggle('border-transparent', !selected);
-        t.classList.toggle('text-[var(--text-secondary)]', !selected);
-        const panel = document.getElementById(t.getAttribute('href').substring(1));
-        if (panel) {
-          panel.toggleAttribute('hidden', !selected);
-        }
-      });
-    });
-  });
-</script>
+<script src="{% static 'perfil/js/perfil.js' %}"></script>
 {% endblock %}
