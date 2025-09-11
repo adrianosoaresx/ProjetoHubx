@@ -77,14 +77,7 @@ function initPreferencias() {
     const applyTheme = () => {
       const temaValue = temaSelectEl.value;
       localStorage.setItem('tema', temaValue);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme =
-        temaValue === 'automatico'
-          ? prefersDark
-            ? 'escuro'
-            : 'claro'
-          : temaValue;
-      document.documentElement.classList.toggle('dark', theme === 'escuro');
+      document.documentElement.classList.toggle('dark', temaValue === 'escuro');
     };
     temaSelectEl.addEventListener('change', applyTheme);
   }
@@ -93,14 +86,7 @@ function initPreferencias() {
     const temaValue = tema;
     const idiomaValue = idioma;
     localStorage.setItem('tema', temaValue);
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const theme =
-      temaValue === 'automatico'
-        ? prefersDark
-          ? 'escuro'
-          : 'claro'
-        : temaValue;
-    document.documentElement.classList.toggle('dark', theme === 'escuro');
+    document.documentElement.classList.toggle('dark', temaValue === 'escuro');
     localStorage.setItem('idioma', idiomaValue);
     document.cookie = `django_language=${idiomaValue};path=/`;
     document.documentElement.setAttribute('lang', idiomaValue);

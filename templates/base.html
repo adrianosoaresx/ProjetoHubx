@@ -9,9 +9,9 @@
   <meta name="theme-color" content="">
   <script>
     (function () {
-      const stored = localStorage.getItem('tema') || 'automatico';
+      const stored = localStorage.getItem('tema');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (stored === 'escuro' || (stored === 'automatico' && prefersDark)) {
+      if (stored === 'escuro' || (!stored && prefersDark)) {
         document.documentElement.classList.add('dark');
       }
 
@@ -82,11 +82,7 @@
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       function applyTheme(theme) {
-        if (theme === 'automatico') {
-          document.documentElement.classList.toggle('dark', mediaQuery.matches);
-        } else {
-          document.documentElement.classList.toggle('dark', theme === 'escuro');
-        }
+        document.documentElement.classList.toggle('dark', theme === 'escuro');
       }
 
       function setTheme(theme) {
@@ -96,7 +92,7 @@
       }
 
       function getTheme() {
-        return localStorage.getItem('tema') || 'automatico';
+        return localStorage.getItem('tema') || (mediaQuery.matches ? 'escuro' : 'claro');
       }
 
       function updatePressed(theme) {
@@ -109,12 +105,6 @@
       const current = getTheme();
       applyTheme(current);
       updatePressed(current);
-
-      mediaQuery.addEventListener('change', () => {
-        if (getTheme() === 'automatico') {
-          applyTheme('automatico');
-        }
-      });
 
       document.querySelectorAll('[data-theme-option]').forEach(btn => {
         btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-option')));
