@@ -10,8 +10,7 @@
   <script>
     (function () {
       const stored = localStorage.getItem('tema');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (stored === 'escuro' || (!stored && prefersDark)) {
+      if (stored === 'escuro') {
         document.documentElement.classList.add('dark');
       }
 
@@ -79,7 +78,6 @@
   </script>
   <script>
     (function () {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
       function applyTheme(theme) {
         document.documentElement.classList.toggle('dark', theme === 'escuro');
@@ -92,7 +90,7 @@
       }
 
       function getTheme() {
-        return localStorage.getItem('tema') || (mediaQuery.matches ? 'escuro' : 'claro');
+        return localStorage.getItem('tema') || 'claro';
       }
 
       function updatePressed(theme) {
