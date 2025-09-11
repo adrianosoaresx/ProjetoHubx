@@ -8,7 +8,6 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from django.views.i18n import JavaScriptCatalog
 
-from configuracoes.views import ConfiguracoesView
 from accounts import views
 
 urlpatterns = [
@@ -29,7 +28,10 @@ urlpatterns = [
     # Discussão e Feed (web)
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
-    path("configuracoes/", ConfiguracoesView.as_view(), name="configuracoes"),
+    path(
+        "configuracoes/",
+        include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
+    ),
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
