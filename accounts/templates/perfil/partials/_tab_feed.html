@@ -1,0 +1,4 @@
+{% load i18n %}
+<section hx-get="{% url 'feed:usuario' profile.username %}" hx-trigger="load" aria-busy="true">
+  <p class="text-sm text-[var(--text-muted)]">{% trans "Carregando mural…" %}</p>
+</section>
