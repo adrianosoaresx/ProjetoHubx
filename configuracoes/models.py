@@ -22,7 +22,6 @@ IDIOMA_CHOICES = [
 TEMA_CHOICES = [
     ("claro", _("Claro")),
     ("escuro", _("Escuro")),
-    ("automatico", _("Automático")),
 ]
 
 DIAS_SEMANA_CHOICES = [

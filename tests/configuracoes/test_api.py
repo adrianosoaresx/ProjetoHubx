@@ -21,13 +21,13 @@ def test_update_preferences(api_client: APIClient, admin_user):
     data = {
         "receber_notificacoes_email": False,
         "frequencia_notificacoes_email": "diaria",
-        "tema": "automatico",
+        "tema": "escuro",
     }
     resp = api_client.patch(url, data)
     assert resp.status_code == 200
     admin_user.configuracao.refresh_from_db()
     assert admin_user.configuracao.frequencia_notificacoes_email == "diaria"
-    assert admin_user.configuracao.tema == "automatico"
+    assert admin_user.configuracao.tema == "escuro"
     assert admin_user.configuracao.receber_notificacoes_email is False
 
 

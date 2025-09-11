@@ -155,14 +155,25 @@ temas:
 </main>
 ```
 
-Botões com o atributo `data-theme-option` alternam o tema global (`claro`,
-`escuro` ou `automatico`) atualizando o `aria-pressed` automaticamente:
+Botões com o atributo `data-theme-option` alternam o tema global (`claro` ou
+`escuro`) atualizando o `aria-pressed` automaticamente. Utilize ícones para
+representar cada opção:
 
 ```html
 <div class="flex gap-2" role="group" aria-label="Tema">
-  <button type="button" data-theme-option="claro" class="btn btn-secondary">Claro</button>
-  <button type="button" data-theme-option="escuro" class="btn btn-secondary">Escuro</button>
-  <button type="button" data-theme-option="automatico" class="btn btn-secondary">Automático</button>
+  <button type="button" data-theme-option="claro" class="btn btn-secondary">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.364-7.364l-1.414 1.414M6.05 17.95l-1.414 1.414m12.728 0l-1.414-1.414M6.05 6.05 4.636 4.636" />
+    </svg>
+    <span class="sr-only">Claro</span>
+  </button>
+  <button type="button" data-theme-option="escuro" class="btn btn-secondary">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M17.293 13.293A8 8 0 1 1 6.707 2.707a8.003 8.003 0 0 0 10.586 10.586z" />
+    </svg>
+    <span class="sr-only">Escuro</span>
+  </button>
 </div>
 ```
 

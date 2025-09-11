@@ -47,7 +47,7 @@
       "receber_notificacoes_push": true,
       "frequencia_notificacoes_push": "semanal",
       "idioma": "es-ES",
-      "tema": "automatico",
+      "tema": "claro",
       "hora_notificacao_diaria": "07:00:00",
       "hora_notificacao_semanal": "11:00:00",
       "dia_semana_notificacao": 5
