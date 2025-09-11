@@ -43,7 +43,7 @@
 <body class="preload min-h-screen flex font-sans text-[var(--text-primary)]" data-is-authenticated="{{ request.user.is_authenticated|yesno:'true,false' }}">
   <noscript>
     <style>body.preload { opacity: 1; }</style>
-    <div class="p-4 text-center bg-[var(--error)] text-white">
+    <div class="p-4 text-center bg-[var(--error)] text-[var(--text-inverse)]">
       {% trans "Este site requer JavaScript. Por favor, habilite-o para continuar." %}
     </div>
   </noscript>

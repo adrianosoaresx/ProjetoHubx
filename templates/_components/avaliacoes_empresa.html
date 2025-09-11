@@ -1,7 +1,7 @@
 {% load i18n lucide_icons %}
 <div id="avaliacoes">
   <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Avaliações" %}</h2>
-  <p class="text-sm text-neutral-600">
+  <p class="text-sm text-[var(--text-tertiary)]">
     {% trans "Média" %}: {{ media_avaliacoes|floatformat:1 }}/5 - {{ avaliacoes|length }} {% trans "avaliações" %}
   </p>
   {% if request.user.is_authenticated %}
@@ -18,7 +18,7 @@
         <button
           type="button"
           data-star="{{ forloop.counter }}"
-          class="text-yellow-400"
+          class="text-warning-400"
           aria-label="{% trans 'Avaliar com' %} {{ forloop.counter }} {% trans 'estrelas' %}"
         >
           {% if avaliacao_usuario and forloop.counter <= avaliacao_usuario.nota %}
@@ -34,7 +34,7 @@
       name="comentario"
       value="{{ avaliacao_usuario.comentario|default:'' }}"
       placeholder="{% trans 'Comentário (opcional)' %}"
-      class="border border-neutral-300 rounded px-2 py-1 text-sm"
+      class="border border-[var(--border)] rounded px-2 py-1 text-sm"
     />
     <button type="submit" class="self-start btn btn-primary">{% trans "Enviar" %}</button>
   </form>
@@ -58,7 +58,7 @@
   {% if avaliacoes %}
     <ul class="mt-2 space-y-2">
       {% for avaliacao in avaliacoes %}
-        <li class="border border-neutral-200 rounded p-2">
+        <li class="border border-[var(--border)] rounded p-2">
           <strong>{{ avaliacao.usuario.get_full_name|default:avaliacao.usuario.email }}</strong> - {{ avaliacao.nota }}/5
           {% if avaliacao.comentario %}
             <p class="text-sm">{{ avaliacao.comentario }}</p>
@@ -67,6 +67,6 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p class="text-sm text-neutral-500">{% trans "Nenhuma avaliação registrada." %}</p>
+    <p class="text-sm text-[var(--text-muted)]">{% trans "Nenhuma avaliação registrada." %}</p>
   {% endif %}
 </div>
