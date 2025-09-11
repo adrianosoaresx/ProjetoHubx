@@ -1,0 +1,22 @@
+{% load i18n %}
+<div class="section-header mb-4 flex items-center justify-between">
+  <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Mídias recentes" %}</h2>
+  {% if not publico %}
+    <a href="{% url 'accounts:midias' %}" class="btn-secondary btn-sm">{% trans "Gerenciar" %}</a>
+  {% endif %}
+</div>
+<div class="card-grid">
+  {% with limit=limit|default:6 %}
+    {% with slice_str=":"|add:limit %}
+      {% for media in profile.media_set.all|slice:slice_str %}
+        <article class="card">
+          <a href="{% url 'accounts:midia_detail' media.pk %}">
+            <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="object-cover w-full h-40 rounded" loading="lazy">
+          </a>
+        </article>
+      {% empty %}
+        <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum arquivo enviado." %}</p>
+      {% endfor %}
+    {% endwith %}
+  {% endwith %}
+</div>
