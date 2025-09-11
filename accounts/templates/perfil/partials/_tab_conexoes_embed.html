@@ -9,7 +9,7 @@
       {% for connection in profile.conexoes.all|slice:slice_str %}
         <li class="card flex items-center justify-center p-4">
           {% if connection.avatar %}
-            <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
+            <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
           {% else %}
             <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ connection.username }}">
               {{ connection.username|first|upper }}

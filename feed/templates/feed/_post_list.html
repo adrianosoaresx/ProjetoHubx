@@ -27,7 +27,7 @@
 
       {% if post.pdf %}
         <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl max-w-full">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="rounded-xl max-w-full object-cover" loading="lazy">
           <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
@@ -37,7 +37,7 @@
         </div>
       {% elif post.image %}
         <div class="feed-media">
-          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl max-w-full">
+          <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="rounded-xl max-w-full object-cover" loading="lazy">
         </div>
       {% elif post.video %}
         <div class="feed-media">

@@ -51,7 +51,7 @@
       </div>
         <a href="{% url 'accounts:midia_detail' media.pk %}">
         {% if media.media_type == 'image' %}
-          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded">
+          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded" loading="lazy">
         {% elif media.media_type == 'video' %}
           <video src="{{ media.file.url }}" class="w-full h-40 object-cover rounded" controls></video>
         {% elif media.media_type == 'pdf' %}

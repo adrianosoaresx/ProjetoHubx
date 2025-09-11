@@ -18,7 +18,7 @@
       <div class="flex items-center gap-4">
   <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}">
           {% if post.autor.avatar %}
-            <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
+            <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
           {% else %}
             <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
               {{ post.autor.username|first|upper }}
@@ -35,7 +35,7 @@
       </div>
       {% if post.pdf %}
         <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded object-cover" loading="lazy">
           <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
@@ -45,7 +45,7 @@
         </div>
       {% elif post.image %}
         <div>
-          <img src="{{ post.image.url }}" class="w-full rounded" alt="{% trans 'mídia do post' %}">
+          <img src="{{ post.image.url }}" class="w-full rounded object-cover" alt="{% trans 'mídia do post' %}" loading="lazy">
         </div>
       {% elif post.video %}
         <div>
