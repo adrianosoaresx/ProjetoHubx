@@ -7,6 +7,11 @@
   class="space-y-4"
 >
   {% csrf_token %}
+  {% if seguranca_form.non_field_errors %}
+    <ul class="errorlist bg-[var(--bg-secondary)] text-[var(--danger-text)] border border-[var(--danger-border)] rounded-2xl p-4">
+      {% for err in seguranca_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+    </ul>
+  {% endif %}
   <input type="hidden" name="tab" value="seguranca" />
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Segurança da conta' %}</legend>
