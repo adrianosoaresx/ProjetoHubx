@@ -25,7 +25,7 @@
         {% for evento in eventos %}
           {% include '_components/card_evento.html' %}
         {% empty %}
-          <p class="col-span-full text-center text-neutral-500">{% trans 'Nenhum evento encontrado.' %}</p>
+          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
         {% endfor %}
       </div>
       {% include '_partials/pagination.html' with page_obj=page_obj querystring="q="|add:q %}

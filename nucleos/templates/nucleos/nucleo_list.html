@@ -30,7 +30,7 @@
         {% for nucleo in object_list %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
-          <p class="col-span-full text-center text-neutral-500">{% trans "Nenhum núcleo encontrado." %}</p>
+          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum núcleo encontrado." %}</p>
         {% endfor %}
       </div>
       {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}

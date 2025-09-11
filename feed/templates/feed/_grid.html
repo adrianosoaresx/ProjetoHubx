@@ -4,7 +4,7 @@
   {% for post in posts %}
     <article class="card">
       <div class="card-body space-y-4">
-      <p class="text-xs text-neutral-500">
+      <p class="text-xs text-[var(--text-muted)]">
         {% if post.tipo_feed == 'nucleo' %}
           {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
         {% elif post.tipo_feed == 'evento' %}
@@ -20,17 +20,17 @@
           {% if post.autor.avatar %}
             <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover">
           {% else %}
-            <div class="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 font-bold" role="img" aria-label="{{ post.autor.username }}">
+            <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--text-tertiary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
               {{ post.autor.username|first|upper }}
             </div>
           {% endif %}
         </a>
         <div>
-          <p class="text-sm font-medium text-neutral-800">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-          <p class="text-xs text-neutral-500">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+          <p class="text-sm font-medium text-[var(--text-primary)]">{{ post.autor.get_full_name|default:post.autor.username }}</p>
+          <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
         </div>
       </div>
-      <div class="text-sm text-neutral-800 whitespace-pre-line">
+      <div class="text-sm text-[var(--text-primary)] whitespace-pre-line">
         {{ post.conteudo|linebreaksbr }}
       </div>
       {% if post.pdf %}
@@ -56,7 +56,7 @@
           {% endif %}
         </div>
       {% endif %}
-      <div class="flex items-center justify-between text-sm text-neutral-600">
+      <div class="flex items-center justify-between text-sm text-[var(--text-tertiary)]">
         <div class="flex items-center gap-4">
           <div id="like-btn-{{ post.id }}">
             {% include 'feed/_like_button.html' with post=post %}
@@ -79,7 +79,7 @@
       </div>
       </article>
   {% empty %}
-    <p class="col-span-full text-center text-neutral-500">{% trans "Nenhuma postagem encontrada." %}</p>
+    <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
 </section>
 <script>
