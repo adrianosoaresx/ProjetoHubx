@@ -40,10 +40,10 @@
                 {% endif %}
                 <td class="px-4 py-2 space-x-2">
                   {% if parceria.avaliacao is None %}
-                    <a href="{% url 'eventos:parceria_avaliar' parceria.pk %}" class="text-green-600 hover:underline">{% trans "Avaliar" %}</a>
+                    <a href="{% url 'eventos:parceria_avaliar' parceria.pk %}" class="text-success-600 hover:underline">{% trans "Avaliar" %}</a>
                   {% endif %}
                   <a href="{% url 'eventos:parceria_editar' parceria.pk %}" class="link link-hover">{% trans "Editar" %}</a>
-                  <a href="{% url 'eventos:parceria_excluir' parceria.pk %}" class="text-red-600 hover:underline">{% trans "Excluir" %}</a>
+                  <a href="{% url 'eventos:parceria_excluir' parceria.pk %}" class="text-error-600 hover:underline">{% trans "Excluir" %}</a>
                 </td>
               </tr>
             {% empty %}

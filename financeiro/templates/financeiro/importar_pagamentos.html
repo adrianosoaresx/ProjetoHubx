@@ -16,7 +16,7 @@
       <form id="upload-form" method="post" enctype="multipart/form-data" class="card">
         <div class="card-body space-y-4">
           {% csrf_token %}
-          <label for="file" class="block text-sm font-medium text-gray-700">{% trans "Arquivo" %}</label>
+          <label for="file" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Arquivo" %}</label>
           <input id="file" type="file" name="file" accept=".csv,.xlsx" class="block w-full form-input" required
                  hx-post="/api/financeiro/importar-pagamentos/"
                  hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
