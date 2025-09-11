@@ -483,7 +483,7 @@ function handlePhotoUpload(event) {
     // Create preview
     const reader = new FileReader()
     reader.onload = (e) => {
-        fotoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview da foto">`
+        fotoPreview.innerHTML = `<img src="${e.target.result}" alt="Preview da foto" class="object-cover" loading="lazy">`
         removeButton.disabled = false
         showValidation(null, fotoValidation, "Foto carregada com sucesso", true)
 

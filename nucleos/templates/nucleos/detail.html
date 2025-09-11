@@ -10,10 +10,10 @@
 {% block content %}
 <section class="max-w-5xl mx-auto py-8">
   {% if object.cover %}
-  <img src="{{ object.cover.url }}" class="w-full h-48 object-cover rounded" alt="Capa de {{ object.nome }}" />
+  <img src="{{ object.cover.url }}" class="w-full h-48 object-cover rounded" alt="Capa de {{ object.nome }}" loading="lazy" />
   {% endif %}
   <div class="flex items-center gap-4 mt-4">
-    {% if object.avatar %}<img src="{{ object.avatar.url }}" class="w-16 h-16 rounded-full" alt="{{ object.nome }}" />{% endif %}
+    {% if object.avatar %}<img src="{{ object.avatar.url }}" class="w-16 h-16 rounded-full object-cover" alt="{{ object.nome }}" loading="lazy" />{% endif %}
     <div>
       <div class="flex items-center gap-2">
         <h1 class="text-2xl font-bold">{{ object.nome }}</h1>

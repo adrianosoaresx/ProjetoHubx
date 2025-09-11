@@ -14,7 +14,7 @@
     <div class="card-body">
       {% if qr_code %}
         <div class="flex flex-col items-center mb-4">
-          <img src="data:image/png;base64,{{ qr_code }}" alt="{% trans 'QR Code' %}" class="w-40 h-40" />
+          <img src="data:image/png;base64,{{ qr_code }}" alt="{% trans 'QR Code' %}" class="w-40 h-40 object-cover" loading="lazy" />
           <p class="mt-2 text-sm font-mono">{{ secret }}</p>
         </div>
         <p class="text-sm text-[var(--text-secondary)] mb-4 text-center">{% trans "Escaneie o QR Code no aplicativo autenticador ou digite o código exibido." %}</p>

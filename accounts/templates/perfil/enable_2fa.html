@@ -10,7 +10,7 @@
   <form method="post" class="max-w-md mx-auto card">
     <div class="card-body space-y-6">
       {% csrf_token %}
-      <img src="data:image/png;base64,{{ qr_base64 }}" alt="{% trans 'QR Code' %}" class="mx-auto" />
+      <img src="data:image/png;base64,{{ qr_base64 }}" alt="{% trans 'QR Code' %}" class="mx-auto object-cover" loading="lazy" />
       {% for field in form %}
         {% include '_forms/field.html' with field=field %}
       {% endfor %}

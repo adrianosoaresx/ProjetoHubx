@@ -7,14 +7,14 @@
     <header class="relative">
       {% if part.user.cover %}
         <img src="{{ part.user.cover.url }}" alt="{% trans 'Capa do membro' %}"
-             class="h-24 w-full object-cover" />
+             class="h-24 w-full object-cover" loading="lazy" />
       {% else %}
         <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
       {% endif %}
       <div class="absolute -bottom-8 left-4">
         {% if part.user.avatar %}
           <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}"
-               class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" />
+               class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy" />
         {% else %}
           <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ part.user.username }}">
             {{ part.user.username|first|upper }}

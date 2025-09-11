@@ -73,7 +73,7 @@
       {% endif %}
       {% if post.pdf %}
         <div class="relative mt-2">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl">
+          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="max-w-xs rounded-xl object-cover" loading="lazy">
           <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
             {% lucide 'eye' class='w-4 h-4' %}
           </a>
@@ -82,7 +82,7 @@
           </a>
         </div>
       {% elif post.image %}
-        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl mt-2">
+        <img src="{{ post.image.url }}" alt="{% trans 'mídia do post' %}" class="max-w-xs rounded-xl mt-2 object-cover" loading="lazy">
       {% endif %}
     </div>
 
