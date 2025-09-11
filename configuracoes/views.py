@@ -59,10 +59,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "tab": tab,
             "two_factor_enabled": self.get_two_factor_enabled(),
         }
-        is_htmx = (
-            request.headers.get("HX-Request")
-            and request.headers.get("HX-Target") == "content"
-        )
+        is_htmx = bool(request.headers.get("HX-Request"))
         template = (
             f"configuracoes/_partials/{tab}.html"
             if is_htmx
@@ -108,10 +105,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         }
         if tab == "preferencias" and form.is_valid():
             context["updated_preferences"] = True
-        is_htmx = (
-            request.headers.get("HX-Request")
-            and request.headers.get("HX-Target") == "content"
-        )
+        is_htmx = bool(request.headers.get("HX-Request"))
         template = (
             f"configuracoes/_partials/{tab}.html"
             if is_htmx
