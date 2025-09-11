@@ -111,7 +111,7 @@ msgstr ""
 msgid "Entre para acessar sua conta e conectar-se à sua rede"
 msgstr ""
 
-#: templates/login/login.html:21 templates/perfil/detail.html:16
+#: templates/login/login.html:21 templates/perfil/perfil.html:16
 #: templates/perfil/informacoes_pessoais.html:30
 #: templates/register/email.html:27
 msgid "Email"
@@ -217,34 +217,34 @@ msgstr ""
 msgid "Voltar"
 msgstr ""
 
-#: templates/perfil/detail.html:3
+#: templates/perfil/perfil.html:3
 msgid "Meu Perfil"
 msgstr ""
 
-#: templates/perfil/detail.html:15
+#: templates/perfil/perfil.html:15
 msgid "Contato"
 msgstr ""
 
-#: templates/perfil/detail.html:17
+#: templates/perfil/perfil.html:17
 #: templates/perfil/informacoes_pessoais.html:78
 msgid "Telefone"
 msgstr ""
 
-#: templates/perfil/detail.html:18
+#: templates/perfil/perfil.html:18
 #: templates/perfil/informacoes_pessoais.html:84
 msgid "WhatsApp"
 msgstr ""
 
-#: templates/perfil/detail.html:21
+#: templates/perfil/perfil.html:21
 msgid "Localização"
 msgstr ""
 
-#: templates/perfil/detail.html:27 templates/perfil/redes_sociais.html:4
+#: templates/perfil/perfil.html:27 templates/perfil/redes_sociais.html:4
 #: templates/perfil/redes_sociais.html:8
 msgid "Redes Sociais"
 msgstr ""
 
-#: templates/perfil/detail.html:38
+#: templates/perfil/perfil.html:38
 msgid "Editar perfil"
 msgstr ""
 
