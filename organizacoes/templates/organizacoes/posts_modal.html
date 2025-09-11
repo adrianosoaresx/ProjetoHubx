@@ -24,7 +24,7 @@
     {% for post in posts %}
       <li class="flex justify-between items-center">
         {{ post.conteudo|truncatewords:10 }}
-        <button hx-delete="{{ api_url }}{{ post.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section');" class="btn btn-secondary text-red-600">{% trans 'Remover' %}</button>
+        <button hx-delete="{{ api_url }}{{ post.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#posts-section');" class="btn btn-danger">{% trans 'Remover' %}</button>
       </li>
     {% empty %}
       <li class="text-[var(--text-muted)] text-sm">{% trans 'Nenhum post associado.' %}</li>

@@ -8,7 +8,7 @@
   <div class="flex gap-2">
     <button type="button" class="btn btn-secondary text-xs" hx-on:click="setReplyTo('{{ comment.id }}')">{% trans "Responder" %}</button>
     {% if comment.user == request.user or request.user.is_staff %}
-      <button type="button" class="btn btn-secondary text-[var(--error)] text-xs" hx-delete="/api/feed/comments/{{ comment.id }}/" hx-target="#comment-{{ comment.id }}" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on:error="alert('{% trans "Erro ao excluir comentário" %}')">{% trans "Excluir" %}</button>
+      <button type="button" class="btn btn-danger text-xs" hx-delete="/api/feed/comments/{{ comment.id }}/" hx-target="#comment-{{ comment.id }}" hx-swap="outerHTML" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on:error="alert('{% trans "Erro ao excluir comentário" %}')">{% trans "Excluir" %}</button>
     {% endif %}
   </div>
   <ul class="mt-2 space-y-2 ml-4" id="replies-{{ comment.id }}">

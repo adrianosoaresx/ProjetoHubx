@@ -21,7 +21,7 @@
                   <a href="{% url 'dashboard:filter-edit' f.pk %}" class="btn btn-secondary btn-sm" aria-label="{% trans 'Editar filtro' %}">{% trans 'Editar' %}</a>
                   <form method="post" action="{% url 'dashboard:filter-delete' f.pk %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-secondary btn-sm text-[var(--error)]" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
+                    <button type="submit" class="btn btn-danger btn-sm" aria-label="{% trans 'Excluir filtro' %}">{% trans 'Excluir' %}</button>
                   </form>
                 {% endif %}
               </div>

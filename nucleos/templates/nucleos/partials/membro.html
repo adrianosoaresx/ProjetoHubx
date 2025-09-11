@@ -28,7 +28,7 @@
               hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
         {% if part.papel == 'coordenador' %}{% trans 'Rebaixar' %}{% else %}{% trans 'Promover' %}{% endif %}
       </button>
-      <button class="text-sm text-red-600"
+      <button class="btn btn-danger btn-sm"
               hx-post="{% url 'nucleos:membro_remover' object.pk part.pk %}"
               hx-target="#membro-{{ part.id }}"
               hx-swap="outerHTML"
@@ -40,13 +40,13 @@
         <form hx-post="{% url 'nucleos_api:nucleo-reativar-membro' object.pk part.user.pk %}"
               hx-on="htmx:afterRequest: location.reload()"
               class="inline">{% csrf_token %}
-          <button class="text-sm text-green-600">{% trans 'Reativar' %}</button>
+          <button class="btn btn-secondary btn-sm">{% trans 'Reativar' %}</button>
         </form>
       {% else %}
         <form hx-post="{% url 'nucleos_api:nucleo-suspender-membro' object.pk part.user.pk %}"
               hx-on="htmx:afterRequest: location.reload()"
               class="inline">{% csrf_token %}
-          <button class="text-sm text-yellow-600">{% trans 'Suspender' %}</button>
+          <button class="btn btn-danger btn-sm">{% trans 'Suspender' %}</button>
         </form>
       {% endif %}
     </div>

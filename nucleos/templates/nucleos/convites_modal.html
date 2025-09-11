@@ -22,7 +22,7 @@
             hx-target="#convite-{{ c.id }}" hx-swap="outerHTML"
             hx-confirm="{% trans 'Confirmar revogação?' %}">
         {% csrf_token %}
-        <button type="submit" class="text-red-600">{% trans 'Revogar' %}</button>
+        <button type="submit" class="btn btn-danger">{% trans 'Revogar' %}</button>
       </form>
     </li>
     {% empty %}
@@ -38,7 +38,7 @@
         const li = document.createElement('li');
         li.id = `convite-${data.id}`;
         li.className = 'flex justify-between items-center';
-        li.innerHTML = `\n        <span>${data.email} - ${data.papel}</span>\n        <form hx-delete="${deleteUrl}" hx-target="#convite-${data.id}" hx-swap="outerHTML" hx-confirm="{% trans 'Confirmar revogação?' %}">\n          <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}" />\n          <button type="submit" class="text-red-600">{% trans 'Revogar' %}</button>\n        </form>\n      `;
+        li.innerHTML = `\n        <span>${data.email} - ${data.papel}</span>\n        <form hx-delete="${deleteUrl}" hx-target="#convite-${data.id}" hx-swap="outerHTML" hx-confirm="{% trans 'Confirmar revogação?' %}">\n          <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}" />\n          <button type="submit" class="btn btn-danger">{% trans 'Revogar' %}</button>\n        </form>\n      `;
         document.getElementById('convites-list').prepend(li);
         event.target.reset();
       } else if (event.detail.xhr.status === 429) {

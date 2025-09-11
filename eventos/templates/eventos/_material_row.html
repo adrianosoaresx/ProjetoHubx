@@ -17,7 +17,7 @@
         class="inline"
       >
         {% csrf_token %}
-        <button type="submit" class="text-green-600 hover:underline">{% trans "Aprovar" %}</button>
+        <button type="submit" class="btn btn-secondary btn-sm">{% trans "Aprovar" %}</button>
       </form>
       <form
         hx-post="{% url 'eventos_api:material-devolver' material.pk %}"
@@ -33,7 +33,7 @@
           class="border rounded px-1 py-0.5 text-xs"
           required
         />
-        <button type="submit" class="text-red-600 hover:underline">{% trans "Devolver" %}</button>
+        <button type="submit" class="btn btn-danger btn-sm">{% trans "Devolver" %}</button>
       </form>
       {% endif %}
     </div>

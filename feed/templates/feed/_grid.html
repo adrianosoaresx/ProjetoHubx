@@ -61,15 +61,15 @@
           <div id="like-btn-{{ post.id }}">
             {% include 'feed/_like_button.html' with post=post %}
           </div>
-            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-primary{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %}" aria-label="{% trans 'Compartilhar' %}">
             {% lucide 'share-2' class='w-4 h-4' %}
             <span class="share-count">{{ post.share_count }}</span>
           </button>
 
-          <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-yellow-600{% endif %}" aria-label="{% trans 'Salvar' %}">
+            <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %}" aria-label="{% trans 'Salvar' %}">
             {% lucide 'bookmark' class='w-4 h-4' %}
           </button>
-          <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-red-600 cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
             {% lucide 'flag' class='w-4 h-4' %}
 
           </button>

@@ -14,7 +14,7 @@
       {% csrf_token %}
       <input type="hidden" name="acao" value="rejeitar">
       <input type="text" name="motivo" placeholder="{% trans 'Motivo' %}" class="flex-1 px-2 py-1 border border-neutral-300 rounded text-sm">
-      <button type="submit" class="btn btn-secondary text-[var(--error)]">{% trans "Rejeitar" %}</button>
+      <button type="submit" class="btn btn-danger">{% trans "Rejeitar" %}</button>
     </form>
   </div>
 {% endif %}
