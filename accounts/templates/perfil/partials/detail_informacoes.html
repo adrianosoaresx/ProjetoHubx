@@ -5,30 +5,43 @@
   </div>
 {% endif %}
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm text-[var(--text-primary)]">
+<dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
   <div>
-    <h4 class="font-medium mb-1">{% trans "Contato" %}</h4>
-    <p>{% trans "Email" %}: {{ user.email }}</p>
-    <p>{% trans "Telefone" %}: {{ user.phone_number }}</p>
-    <p>{% trans "WhatsApp" %}: {{ user.whatsapp }}</p>
+    <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
   </div>
   <div>
-    <h4 class="font-medium mb-1">{% trans "Localização" %}</h4>
-    <p>{{ user.endereco }}</p>
-    <p>{{ user.cidade }} - {{ user.estado }}</p>
-    <p>{{ user.cep }}</p>
+    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
   </div>
   <div>
-    <h4 class="font-medium mb-1">{% trans "Redes Sociais" %}</h4>
+    <dt class="text-[var(--text-secondary)]">{% trans "WhatsApp" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.whatsapp }}</dd>
+  </div>
+  <div>
+    <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.endereco }}</dd>
+  </div>
+  <div>
+    <dt class="text-[var(--text-secondary)]">{% trans "Cidade / Estado" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.cidade }} - {{ user.estado }}</dd>
+  </div>
+  <div>
+    <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
+  </div>
+  <div>
+    <dt class="text-[var(--text-secondary)]">{% trans "Redes Sociais" %}</dt>
     {% if user.redes_sociais %}
       {% for nome, link in user.redes_sociais.items %}
-        <p><a href="{{ link }}" class="text-primary hover:underline" target="_blank">{{ nome|title }}</a></p>
+        <dd><a href="{{ link }}" class="text-primary hover:underline" target="_blank">{{ nome|title }}</a></dd>
       {% endfor %}
+    {% else %}
+      <dd class="font-medium text-[var(--text-primary)]">-</dd>
     {% endif %}
   </div>
-</div>
+</dl>
 
 <div class="mt-6 text-right">
   <a href="{% url 'accounts:informacoes_pessoais' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
 </div>
-
