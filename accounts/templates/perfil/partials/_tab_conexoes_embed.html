@@ -1,0 +1,24 @@
+{% load i18n %}
+<div class="section-header mb-4 flex items-center justify-between">
+  <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Conexões" %}</h2>
+  <a href="{% url 'accounts:conexoes' %}" class="btn-secondary btn-sm">{% trans "Ver todas" %}</a>
+</div>
+<ul class="card-grid">
+  {% with limit=limit|default:12 %}
+    {% with slice_str=":"|add:limit %}
+      {% for connection in profile.conexoes.all|slice:slice_str %}
+        <li class="card flex items-center justify-center p-4">
+          {% if connection.avatar %}
+            <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
+          {% else %}
+            <div class="w-10 h-10 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold text-[var(--text-secondary)]" role="img" aria-label="{{ connection.username }}">
+              {{ connection.username|first|upper }}
+            </div>
+          {% endif %}
+        </li>
+      {% empty %}
+        <li class="text-sm text-[var(--text-secondary)] col-span-full">{% trans "Nenhuma conexão." %}</li>
+      {% endfor %}
+    {% endwith %}
+  {% endwith %}
+</ul>
