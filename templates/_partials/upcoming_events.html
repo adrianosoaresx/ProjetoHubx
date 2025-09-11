@@ -6,12 +6,12 @@
     <li class="card">
       <div class="card-body flex justify-between">
         <span>{{ evento.titulo }}</span>
-        <time datetime="{{ evento.data_inicio|date:'c' }}" class="text-sm text-neutral-600">{{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }}</time>
+        <time datetime="{{ evento.data_inicio|date:'c' }}" class="text-sm text-[var(--text-tertiary)]">{{ evento.data_inicio|date:'SHORT_DATE_FORMAT' }}</time>
       </div>
     </li>
     {% empty %}
     <li class="card">
-      <div class="card-body text-neutral-500">{% trans "Nenhum evento futuro." %}</div>
+      <div class="card-body text-[var(--text-muted)]">{% trans "Nenhum evento futuro." %}</div>
     </li>
     {% endfor %}
   </ul>

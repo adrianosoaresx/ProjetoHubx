@@ -44,17 +44,17 @@ class PostForm(forms.ModelForm):
             ),
             "image": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
                 }
             ),
             "pdf": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
                 }
             ),
             "video": forms.ClearableFileInput(
                 attrs={
-                    "class": "mt-2 block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-neutral-700 hover:file:bg-neutral-200",
+                    "class": "mt-2 block w-full text-sm text-[var(--text-tertiary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]",
                 }
             ),
         }

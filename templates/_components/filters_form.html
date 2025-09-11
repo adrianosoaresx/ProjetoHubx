@@ -3,7 +3,7 @@
 <script src="{% static 'js/vendor/select2-4.1.0-rc.0.min.js' %}"></script>
 <form method="get" class="mb-6 flex flex-wrap gap-4 items-end" aria-label="{% trans 'Filtros do dashboard' %}">
   <div>
-    <label for="periodo" class="block text-sm font-medium text-neutral-700">{% trans 'Período' %}</label>
+    <label for="periodo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Período' %}</label>
     <select id="periodo" name="periodo" class="form-select mt-1 block rounded" aria-label="{% trans 'Selecionar período' %}">
       <option value="mensal" {% if periodo == 'mensal' %}selected{% endif %}>{% trans 'Mensal' %}</option>
       <option value="trimestral" {% if periodo == 'trimestral' %}selected{% endif %}>{% trans 'Trimestral' %}</option>
@@ -12,7 +12,7 @@
     </select>
   </div>
   <div>
-    <label for="escopo" class="block text-sm font-medium text-neutral-700">{% trans 'Escopo' %}</label>
+    <label for="escopo" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Escopo' %}</label>
     <select id="escopo" name="escopo" class="form-select mt-1 block rounded" aria-label="{% trans 'Selecionar escopo' %}">
       <option value="auto" {% if escopo == 'auto' %}selected{% endif %}>{% trans 'Automático' %}</option>
       {% if request.user.user_type == 'root' %}
@@ -24,7 +24,7 @@
     </select>
   </div>
   <div>
-    <label for="organizacao_id" class="block text-sm font-medium text-neutral-700">{% trans 'Organização' %}</label>
+    <label for="organizacao_id" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Organização' %}</label>
     <select id="organizacao_id" name="organizacao_id" class="form-select mt-1 block rounded" aria-label="{% trans 'Selecionar organização' %}">
       <option value="" {% if not filtros.organizacao_id|default:'' %}selected{% endif %}>—</option>
       {% for org in organizacoes_permitidas %}
@@ -33,7 +33,7 @@
     </select>
   </div>
   <div>
-    <label for="nucleo_id" class="block text-sm font-medium text-neutral-700">{% trans 'Núcleo' %}</label>
+    <label for="nucleo_id" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Núcleo' %}</label>
     <select id="nucleo_id" name="nucleo_id" class="form-select mt-1 block rounded" aria-label="{% trans 'Selecionar núcleo' %}">
       <option value="" {% if not filtros.nucleo_id|default:'' %}selected{% endif %}>—</option>
       {% for nucleo in nucleos_permitidos %}
@@ -42,7 +42,7 @@
     </select>
   </div>
   <div>
-    <label for="evento_id" class="block text-sm font-medium text-neutral-700">{% trans 'Evento' %}</label>
+    <label for="evento_id" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Evento' %}</label>
     <select id="evento_id" name="evento_id" class="form-select mt-1 block rounded" aria-label="{% trans 'Selecionar evento' %}">
       <option value="" {% if not filtros.evento_id|default:'' %}selected{% endif %}>—</option>
       {% for evento in eventos_permitidos %}
@@ -51,15 +51,15 @@
     </select>
   </div>
   <div>
-    <label for="data_inicio" class="block text-sm font-medium text-neutral-700">{% trans 'Data início' %}</label>
+    <label for="data_inicio" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Data início' %}</label>
     <input type="date" id="data_inicio" name="data_inicio" value="{{ filtros.data_inicio }}" class="form-input mt-1 rounded" />
   </div>
   <div>
-    <label for="data_fim" class="block text-sm font-medium text-neutral-700">{% trans 'Data fim' %}</label>
+    <label for="data_fim" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans 'Data fim' %}</label>
     <input type="date" id="data_fim" name="data_fim" value="{{ filtros.data_fim }}" class="form-input mt-1 rounded" />
   </div>
   <fieldset class="flex flex-col">
-    <legend class="text-sm font-medium text-neutral-700">{% trans 'Métricas' %}</legend>
+    <legend class="text-sm font-medium text-[var(--text-secondary)]">{% trans 'Métricas' %}</legend>
     <div class="flex flex-wrap gap-2 mt-1">
       {% for m in metricas_disponiveis %}
       <label class="flex items-center gap-1 text-sm">

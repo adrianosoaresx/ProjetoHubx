@@ -27,7 +27,7 @@
         <button hx-delete="{{ api_url }}{{ user.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#usuarios-section');" class="btn btn-secondary text-red-600">{% trans 'Remover' %}</button>
       </li>
     {% empty %}
-      <li class="text-neutral-500 text-sm">{% trans 'Nenhum usuário associado.' %}</li>
+      <li class="text-[var(--text-muted)] text-sm">{% trans 'Nenhum usuário associado.' %}</li>
     {% endfor %}
   </ul>
   <script src="{% url 'javascript-catalog' %}"></script>

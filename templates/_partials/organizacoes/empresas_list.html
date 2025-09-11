@@ -1,10 +1,10 @@
 {% load i18n %}
 <h2 class="text-xl font-semibold text-[var(--text-primary)] mb-2">{% trans 'Empresas' %} ({{ empresas|length }})</h2>
-<ul class="list-disc pl-6 text-neutral-700">
+<ul class="list-disc pl-6 text-[var(--text-secondary)]">
   {% for empresa in empresas %}
     <li>{{ empresa.nome }}</li>
   {% empty %}
-    <li class="list-none text-neutral-500">{% trans 'Nenhuma empresa associada.' %}</li>
+    <li class="list-none text-[var(--text-muted)]">{% trans 'Nenhuma empresa associada.' %}</li>
   {% endfor %}
 </ul>
 {% if request.user.user_type == 'root' %}

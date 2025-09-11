@@ -70,7 +70,7 @@
                 <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border)] hover:bg-[var(--bg-tertiary)] cursor-pointer">
                   <input type="radio" name="nucleo" value="{{ n.id }}" class="accent-blue-600"
                          {% if selected_nucleo|stringformat:'s' == n.id|stringformat:'s' %}checked{% endif %} />
-                  <span class="text-sm text-neutral-800">{{ n.nome }}</span>
+                  <span class="text-sm text-[var(--text-primary)]">{{ n.nome }}</span>
                 </label>
               {% endfor %}
             </div>
@@ -129,7 +129,7 @@
       <div>
         <label for="id_file" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Arquivo (imagem, vídeo ou PDF)" %}</label>
         <input type="file" id="id_file" name="arquivo" accept="image/*,video/*,.pdf"
-               class="mt-2 block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-100 file:text-[var(--text-secondary)] hover:file:bg-neutral-200">
+               class="mt-2 block w-full text-sm text-[var(--text-secondary)] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[var(--bg-tertiary)] file:text-[var(--text-secondary)] hover:file:bg-[var(--bg-tertiary)]">
         <span class="file-text">{% trans "Nenhum arquivo selecionado" %}</span>
         {% if form.image.errors or form.pdf.errors or form.video.errors %}
           <p class="text-red-500 text-xs mt-1">
