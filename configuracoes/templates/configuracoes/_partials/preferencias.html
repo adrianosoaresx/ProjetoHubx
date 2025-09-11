@@ -10,6 +10,15 @@
   <input type="hidden" name="tab" value="preferencias">
   <input type="hidden" name="escopo_tipo" id="escopo_tipo">
   <input type="hidden" name="escopo_id" id="escopo_id">
+  <input type="hidden" name="chk_email_id" id="chk_email_id" value="{{ preferencias_form.receber_notificacoes_email.auto_id }}">
+  <input type="hidden" name="chk_whats_id" id="chk_whats_id" value="{{ preferencias_form.receber_notificacoes_whatsapp.auto_id }}">
+  <input type="hidden" name="chk_push_id" id="chk_push_id" value="{{ preferencias_form.receber_notificacoes_push.auto_id }}">
+  <input type="hidden" name="sel_email_id" id="sel_email_id" value="{{ preferencias_form.frequencia_notificacoes_email.auto_id }}">
+  <input type="hidden" name="sel_whats_id" id="sel_whats_id" value="{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}">
+  <input type="hidden" name="sel_push_id" id="sel_push_id" value="{{ preferencias_form.frequencia_notificacoes_push.auto_id }}">
+  <input type="hidden" name="tema_atual" id="tema_atual" value="{{ preferencias_form.instance.tema }}">
+  <input type="hidden" name="idioma_atual" id="idioma_atual" value="{{ preferencias_form.instance.idioma }}">
+  <input type="hidden" name="updated_preferences" id="updated_preferences" value="{{ updated_preferences|yesno:'true,false' }}">
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Notificações' %}</legend>
     <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
@@ -106,16 +115,4 @@
   <div class="text-right pt-2">
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="btn btn-primary">{% trans 'Salvar Alterações' %}</button>
   </div>
-  <div id="preferencias-config"
-       data-chk-email="{{ preferencias_form.receber_notificacoes_email.auto_id }}"
-       data-chk-whats="{{ preferencias_form.receber_notificacoes_whatsapp.auto_id }}"
-       data-chk-push="{{ preferencias_form.receber_notificacoes_push.auto_id }}"
-       data-sel-email="{{ preferencias_form.frequencia_notificacoes_email.auto_id }}"
-       data-sel-whats="{{ preferencias_form.frequencia_notificacoes_whatsapp.auto_id }}"
-       data-sel-push="{{ preferencias_form.frequencia_notificacoes_push.auto_id }}"
-       data-tema="{{ preferencias_form.instance.tema }}"
-       data-idioma="{{ preferencias_form.instance.idioma }}"
-       data-updated-preferences="{{ updated_preferences|yesno:'true,false' }}">
-  </div>
-  <script src="{% static 'configuracoes/preferencias.js' %}"></script>
 </form>

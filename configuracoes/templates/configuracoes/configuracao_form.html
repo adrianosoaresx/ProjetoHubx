@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n static %}
 
 {% block title %}{% trans 'Configurações da Conta' %}{% endblock %}
 {% block hero %}{% include '_components/hero.html' with title=_('Configurações da Conta') %}{% endblock %}
@@ -28,4 +28,9 @@
     btn.classList.add('btn-secondary');
   }
 </script>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'configuracoes/preferencias.js' %}"></script>
 {% endblock %}

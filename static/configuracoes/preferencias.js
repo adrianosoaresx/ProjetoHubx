@@ -1,30 +1,43 @@
 // Logic for preferencias toggle fields and theme/language updates
 
 function initPreferencias() {
-  const configEl = document.getElementById('preferencias-config');
-  if (!configEl) return;
+  const chkEmailId = document.getElementById('chk_email_id');
+  const chkWhatsId = document.getElementById('chk_whats_id');
+  const chkPushId = document.getElementById('chk_push_id');
+  const selEmailId = document.getElementById('sel_email_id');
+  const selWhatsId = document.getElementById('sel_whats_id');
+  const selPushId = document.getElementById('sel_push_id');
+  const temaInput = document.getElementById('tema_atual');
+  const idiomaInput = document.getElementById('idioma_atual');
+  const updatedPreferencesInput = document.getElementById('updated_preferences');
 
-  const {
-    chkEmail,
-    chkWhats,
-    chkPush,
-    selEmail,
-    selWhats,
-    selPush,
-    tema,
-    idioma,
-    updatedPreferences,
-  } = configEl.dataset;
+  if (
+    !chkEmailId ||
+    !chkWhatsId ||
+    !chkPushId ||
+    !selEmailId ||
+    !selWhatsId ||
+    !selPushId
+  ) {
+    return;
+  }
 
-  const chkEmailEl = document.getElementById(chkEmail);
-  const chkWhatsEl = document.getElementById(chkWhats);
-  const chkPushEl = document.getElementById(chkPush);
-  const selEmailEl = document.getElementById(selEmail);
-  const selWhatsEl = document.getElementById(selWhats);
-  const selPushEl = document.getElementById(selPush);
+  const chkEmailEl = document.getElementById(chkEmailId.value);
+  const chkWhatsEl = document.getElementById(chkWhatsId.value);
+  const chkPushEl = document.getElementById(chkPushId.value);
+  const selEmailEl = document.getElementById(selEmailId.value);
+  const selWhatsEl = document.getElementById(selWhatsId.value);
+  const selPushEl = document.getElementById(selPushId.value);
   const temaSelectEl = document.getElementById('id_tema');
 
-  if (!chkEmailEl || !chkWhatsEl || !chkPushEl || !selEmailEl || !selWhatsEl || !selPushEl) {
+  if (
+    !chkEmailEl ||
+    !chkWhatsEl ||
+    !chkPushEl ||
+    !selEmailEl ||
+    !selWhatsEl ||
+    !selPushEl
+  ) {
     return;
   }
 
@@ -82,14 +95,18 @@ function initPreferencias() {
     temaSelectEl.addEventListener('change', applyTheme);
   }
 
-  if (updatedPreferences === 'true') {
-    const temaValue = tema;
-    const idiomaValue = idioma;
-    localStorage.setItem('tema', temaValue);
-    document.documentElement.classList.toggle('dark', temaValue === 'escuro');
-    localStorage.setItem('idioma', idiomaValue);
-    document.cookie = `django_language=${idiomaValue};path=/`;
-    document.documentElement.setAttribute('lang', idiomaValue);
+  if (updatedPreferencesInput?.value === 'true') {
+    const temaValue = temaInput?.value;
+    const idiomaValue = idiomaInput?.value;
+    if (temaValue) {
+      localStorage.setItem('tema', temaValue);
+      document.documentElement.classList.toggle('dark', temaValue === 'escuro');
+    }
+    if (idiomaValue) {
+      localStorage.setItem('idioma', idiomaValue);
+      document.cookie = `django_language=${idiomaValue};path=/`;
+      document.documentElement.setAttribute('lang', idiomaValue);
+    }
   }
 }
 
