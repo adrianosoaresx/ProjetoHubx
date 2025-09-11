@@ -77,12 +77,13 @@ function initPreferencias() {
       .classList.toggle('hidden', !(showWeekly || hasDiaSemanalError));
   }
 
-  selEmailEl.addEventListener('change', toggleFields);
-  selWhatsEl.addEventListener('change', toggleFields);
-  selPushEl.addEventListener('change', toggleFields);
-  chkEmailEl.addEventListener('change', toggleFields);
-  chkWhatsEl.addEventListener('change', toggleFields);
-  chkPushEl.addEventListener('change', toggleFields);
+  // Ensure multiple calls to initPreferencias do not stack listeners
+  selEmailEl.onchange = toggleFields;
+  selWhatsEl.onchange = toggleFields;
+  selPushEl.onchange = toggleFields;
+  chkEmailEl.onchange = toggleFields;
+  chkWhatsEl.onchange = toggleFields;
+  chkPushEl.onchange = toggleFields;
 
   toggleFields();
 
@@ -92,7 +93,7 @@ function initPreferencias() {
       localStorage.setItem('tema', temaValue);
       document.documentElement.classList.toggle('dark', temaValue === 'escuro');
     };
-    temaSelectEl.addEventListener('change', applyTheme);
+    temaSelectEl.onchange = applyTheme;
   }
 
   if (updatedPreferencesInput?.value === 'true') {
@@ -115,4 +116,9 @@ if (document.readyState === 'loading') {
 } else {
   initPreferencias();
 }
+
+// Reinitialize preferences when HTMX swaps in new content
+document.body.addEventListener('htmx:afterSwap', (e) => {
+  if (e.target.id === 'content') initPreferencias();
+});
 

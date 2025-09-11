@@ -30,7 +30,7 @@
             {% endwith %}
           {% endwith %}
         {% endwith %}
-        {% with preferencias_form.frequencia_notificacoes_email as freq_email_field %}
+        {% with preferencias_form.frequencia_notificacoes_email|add_class:'hidden' as freq_email_field %}
         {% include '_forms/field.html' with field=freq_email_field %}
         {% endwith %}
       </div>
@@ -50,7 +50,7 @@
             {% endwith %}
           {% endwith %}
         {% endwith %}
-        {% with preferencias_form.frequencia_notificacoes_whatsapp as freq_whats_field %}
+        {% with preferencias_form.frequencia_notificacoes_whatsapp|add_class:'hidden' as freq_whats_field %}
         {% include '_forms/field.html' with field=freq_whats_field %}
         {% endwith %}
       </div>
@@ -70,7 +70,7 @@
             {% endwith %}
           {% endwith %}
         {% endwith %}
-        {% with preferencias_form.frequencia_notificacoes_push as freq_push_field %}
+        {% with preferencias_form.frequencia_notificacoes_push|add_class:'hidden' as freq_push_field %}
         {% include '_forms/field.html' with field=freq_push_field %}
         {% endwith %}
       </div>
