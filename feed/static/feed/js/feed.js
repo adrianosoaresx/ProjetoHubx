@@ -59,7 +59,10 @@ function bindFeedEvents(root = document) {
     const showMsg = (text, variant = 'error') => {
       if (!msgArea) return;
       const base = 'rounded-xl text-sm p-3 mt-2';
-      const styles = variant === 'error' ? 'border border-red-200 bg-red-50 text-red-700' : 'border border-blue-200 bg-blue-50 text-blue-700';
+      const styles =
+        variant === 'error'
+          ? 'border border-[var(--error-light)] bg-[var(--error-light)] text-[var(--error)]'
+          : 'border border-[var(--primary-light)] bg-[var(--primary-light)] text-[var(--primary)]';
       msgArea.className = `${base} ${styles}`;
       msgArea.textContent = text;
       msgArea.classList.remove('hidden');
@@ -156,9 +159,10 @@ function bindFeedEvents(root = document) {
     const exists = Array.from(chipsContainer.querySelectorAll('[data-tag]')).some(n => (n.getAttribute('data-tag')||'').toLowerCase() === value.toLowerCase());
     if (exists) return;
     const chip = document.createElement('span');
-    chip.className = 'inline-flex items-center gap-1 bg-neutral-100 text-neutral-800 rounded-full px-3 py-1 text-xs';
+    chip.className =
+      'inline-flex items-center gap-1 bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-full px-3 py-1 text-xs';
     chip.setAttribute('data-tag', value);
-    chip.innerHTML = `${value} <button type="button" class="ml-1 text-neutral-500 hover:text-neutral-700" aria-label="Remover">&times;</button>`;
+    chip.innerHTML = `${value} <button type="button" class="ml-1 text-[var(--text-muted)] hover:text-[var(--text-secondary)]" aria-label="Remover">&times;</button>`;
     chip.querySelector('button').addEventListener('click', () => {
       chip.remove();
       updateHiddenTags();
