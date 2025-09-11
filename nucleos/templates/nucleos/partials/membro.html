@@ -3,7 +3,7 @@
   <div class="card-body flex flex-col gap-2">
     <div class="flex items-center gap-4">
       {% if part.user.avatar %}
-      <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" />
+      <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
       {% else %}
       <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]"></div>
       {% endif %}

@@ -8,43 +8,48 @@
 
 {% block content %}
 <div class="card-header">
-  <div class="mt-2 border-b border-[var(--border)]">
-    <nav class="-mb-px flex gap-6" aria-label="{% trans 'Tabs' %}">
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="mural" data-active="true">{% trans 'Mural' %}</button>
-      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="informacoes">{% trans 'Informações' %}</button>
-      {% if not perfil.is_superuser %}
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="empresas">{% trans 'Empresas' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="nucleos">{% trans 'Núcleos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
-      {% endif %}
-    </nav>
-  </div>
+  <nav>
+    <ul role="tablist" class="-mb-px flex flex-wrap gap-2 border-b border-[var(--border)]">
+      <li>
+        <a href="#tab-mural" data-tab-target="tab-mural" role="tab" aria-selected="true" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">
+          {% trans "Mural" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-midias" data-tab-target="tab-midias" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Mídias" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-conexoes" data-tab-target="tab-conexoes" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Conexões" %}
+        </a>
+      </li>
+      <li>
+        <a href="#tab-infos" data-tab-target="tab-infos" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+          {% trans "Informações" %}
+        </a>
+      </li>
+    </ul>
+  </nav>
 </div>
 
 <div class="card-body">
-  <div id="tab-panels" class="mt-6">
-    <div class="tab-panel" data-tab="mural">
-      {# TODO: conteúdo do mural público #}
-    </div>
+  <section id="tab-mural">
+    {% include "perfil/partials/_tab_feed.html" with profile=perfil %}
+  </section>
 
-    <section id="tab-infos" class="tab-panel hidden" data-tab="informacoes">
-      {% include 'perfil/partials/publico_informacoes.html' with profile=perfil publico=True %}
-    </section>
+  <section id="tab-midias" hidden>
+    {% include "perfil/partials/_tab_midias_embed.html" with profile=perfil publico=True %}
+  </section>
 
-    {% if not perfil.is_superuser %}
-      <div class="tab-panel hidden" data-tab="empresas">
-        {% include 'perfil/partials/publico_empresas.html' with empresas=empresas publico=True %}
-      </div>
+  <section id="tab-conexoes" hidden>
+    {% include "perfil/partials/_tab_conexoes_embed.html" with profile=perfil %}
+  </section>
 
-      <div class="tab-panel hidden" data-tab="nucleos">
-        {% include 'perfil/partials/publico_nucleos.html' with nucleos=nucleos publico=True %}
-      </div>
-
-      <div class="tab-panel hidden" data-tab="eventos">
-        {% include 'perfil/partials/publico_eventos.html' with inscricoes=inscricoes publico=True %}
-      </div>
-    {% endif %}
-  </div>
+  <section id="tab-infos" hidden>
+    {% include "perfil/partials/publico_informacoes.html" with profile=perfil publico=True %}
+  </section>
 </div>
 {% endblock %}
 

@@ -10,7 +10,7 @@
 {% block content %}
 <section class="space-y-4">
   {% if media.media_type == 'image' %}
-    <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded card max-w-full mx-auto" />
+    <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded card max-w-full mx-auto object-cover" loading="lazy" />
   {% elif media.media_type == 'video' %}
     <video src="{{ media.file.url }}" class="rounded card max-w-full mx-auto" controls aria-label="{{ media.descricao }}">
       {% trans "Seu navegador não suporta o elemento de vídeo." %}

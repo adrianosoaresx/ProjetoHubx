@@ -45,7 +45,7 @@
           <div class="card-body flex items-center justify-between">
             <div class="flex items-center gap-3">
               {% if connection.avatar %}
-                <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" />
+                <img src="{{ connection.avatar.url }}" alt="{{ connection.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
               {% else %}
                 <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ connection.username }}">
                   {{ connection.username|first|upper }}
@@ -83,7 +83,7 @@
           <div class="card-body flex items-start justify-between">
             <div class="flex items-center gap-3">
               {% if solicitante.avatar %}
-                <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.username }}" class="w-10 h-10 rounded-full object-cover" />
+                <img src="{{ solicitante.avatar.url }}" alt="{{ solicitante.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy" />
               {% else %}
                 <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ solicitante.username }}">
                   {{ solicitante.username|first|upper }}
