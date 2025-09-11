@@ -12,60 +12,66 @@
   <input type="hidden" name="escopo_id" id="escopo_id">
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Notificações' %}</legend>
-    <div>
-      {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
-        {% with email_attr='aria-checked:'|add:email_checked %}
-        {% with preferencias_form.receber_notificacoes_email|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr as email_field %}
-            {% include '_forms/field.html' with field=email_field %}
+    <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+      <div class="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
+          {% with email_attr='aria-checked:'|add:email_checked %}
+          {% with preferencias_form.receber_notificacoes_email|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr as email_field %}
+              {% include '_forms/field.html' with field=email_field %}
+            {% endwith %}
           {% endwith %}
         {% endwith %}
-      {% endwith %}
         {% with preferencias_form.frequencia_notificacoes_email as freq_email_field %}
         {% include '_forms/field.html' with field=freq_email_field %}
-      {% endwith %}
-      <div class="mt-2 flex items-center gap-2">
+        {% endwith %}
+      </div>
+      <footer class="card-footer border-t border-[var(--border)] p-4 flex items-center gap-3">
         <button type="button" class="btn btn-secondary" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "email"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-email').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar e-mail' %}
         </button>
         <span id="msg-email" class="text-xs text-[var(--text-tertiary)]" aria-live="polite"></span>
-      </div>
-    </div>
-    <div>
-      {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
-        {% with whats_attr='aria-checked:'|add:whats_checked %}
-        {% with preferencias_form.receber_notificacoes_whatsapp|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr as whats_field %}
-            {% include '_forms/field.html' with field=whats_field %}
+      </footer>
+    </section>
+    <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+      <div class="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
+          {% with whats_attr='aria-checked:'|add:whats_checked %}
+          {% with preferencias_form.receber_notificacoes_whatsapp|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr as whats_field %}
+              {% include '_forms/field.html' with field=whats_field %}
+            {% endwith %}
           {% endwith %}
         {% endwith %}
-      {% endwith %}
         {% with preferencias_form.frequencia_notificacoes_whatsapp as freq_whats_field %}
         {% include '_forms/field.html' with field=freq_whats_field %}
-      {% endwith %}
-      <div class="mt-2 flex items-center gap-2">
+        {% endwith %}
+      </div>
+      <footer class="card-footer border-t border-[var(--border)] p-4 flex items-center gap-3">
         <button type="button" class="btn btn-secondary" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "whatsapp"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-whatsapp').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar WhatsApp' %}
         </button>
         <span id="msg-whatsapp" class="text-xs text-[var(--text-tertiary)]" aria-live="polite"></span>
-      </div>
-    </div>
-    <div>
-      {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
-        {% with push_attr='aria-checked:'|add:push_checked %}
-        {% with preferencias_form.receber_notificacoes_push|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr as push_field %}
-            {% include '_forms/field.html' with field=push_field %}
+      </footer>
+    </section>
+    <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+      <div class="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
+          {% with push_attr='aria-checked:'|add:push_checked %}
+          {% with preferencias_form.receber_notificacoes_push|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr as push_field %}
+              {% include '_forms/field.html' with field=push_field %}
+            {% endwith %}
           {% endwith %}
         {% endwith %}
-      {% endwith %}
         {% with preferencias_form.frequencia_notificacoes_push as freq_push_field %}
         {% include '_forms/field.html' with field=freq_push_field %}
-      {% endwith %}
-      <div class="mt-2 flex items-center gap-2">
+        {% endwith %}
+      </div>
+      <footer class="card-footer border-t border-[var(--border)] p-4 flex items-center gap-3">
         <button type="button" class="btn btn-secondary" hx-post="{% url 'configuracoes_api:configuracoes-testar' %}" hx-vals='{"canal": "push"}' hx-include="[name=csrfmiddlewaretoken],#escopo_tipo,#escopo_id" hx-swap="none" hx-on:afterRequest="document.getElementById('msg-push').innerText = event.detail.xhr.responseJSON.detail" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
           {% trans 'Testar push' %}
         </button>
         <span id="msg-push" class="text-xs text-[var(--text-tertiary)]" aria-live="polite"></span>
-      </div>
-    </div>
+      </footer>
+    </section>
     <div id="campo-hora-diaria" class="hidden">
         {% with preferencias_form.hora_notificacao_diaria|attr:'type:time' as hora_diaria_field %}
         {% include '_forms/field.html' with field=hora_diaria_field %}
@@ -82,17 +88,21 @@
       {% endwith %}
     </div>
   </fieldset>
-  <div>
-      {% with preferencias_form.idioma|attr:'tabindex:0' as idioma_field %}
-      {% include '_forms/field.html' with field=idioma_field %}
-    {% endwith %}
-    <p class="text-xs text-[var(--text-muted)]">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
-  </div>
-  <div>
-      {% with preferencias_form.tema|attr:'tabindex:0' as tema_field %}
-      {% include '_forms/field.html' with field=tema_field %}
-    {% endwith %}
-  </div>
+  <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
+    <div class="card-body p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        {% with preferencias_form.idioma|attr:'tabindex:0' as idioma_field %}
+        {% include '_forms/field.html' with field=idioma_field %}
+        {% endwith %}
+        <p class="text-xs text-[var(--text-muted)]">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
+      </div>
+      <div>
+        {% with preferencias_form.tema|attr:'tabindex:0' as tema_field %}
+        {% include '_forms/field.html' with field=tema_field %}
+        {% endwith %}
+      </div>
+    </div>
+  </section>
   <div class="text-right pt-2">
     <button type="submit" aria-label="{% trans 'Salvar Alterações' %}" class="btn btn-primary">{% trans 'Salvar Alterações' %}</button>
   </div>
