@@ -20,7 +20,7 @@ def test_preferencias_view_p95_below_100ms(workers: int) -> None:
     base_client = Client()
     base_client.force_login(user)
     session_cookie = base_client.cookies.get("sessionid")
-    url = reverse("configuracoes") + "?tab=preferencias"
+    url = reverse("configuracoes:configuracoes") + "?tab=preferencias"
 
     def request_view(_: int) -> float:
         local_client = Client()

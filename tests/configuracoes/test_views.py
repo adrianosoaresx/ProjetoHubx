@@ -17,7 +17,7 @@ pytestmark = pytest.mark.django_db
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 def test_view_get_autenticado(admin_client):
-    resp = admin_client.get(reverse("configuracoes"))
+    resp = admin_client.get(reverse("configuracoes:configuracoes"))
     assert resp.status_code == 200
     assert isinstance(resp.context["seguranca_form"], PasswordChangeForm)
     assert "preferencias_form" not in resp.context
@@ -26,21 +26,21 @@ def test_view_get_autenticado(admin_client):
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 def test_view_get_redirect_nao_autenticado(client):
-    resp = client.get(reverse("configuracoes"))
+    resp = client.get(reverse("configuracoes:configuracoes"))
     assert resp.status_code == 302
     assert "/accounts/login" in resp.headers["Location"]
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 def test_view_get_redes_redirect(admin_client):
-    resp = admin_client.get(reverse("configuracoes") + "?tab=redes")
+    resp = admin_client.get(reverse("configuracoes:configuracoes") + "?tab=redes")
     assert resp.status_code == 302
     assert resp.headers["Location"] == reverse("accounts:redes_sociais")
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 def test_view_get_informacoes_redirect(admin_client):
-    resp = admin_client.get(reverse("configuracoes") + "?tab=informacoes")
+    resp = admin_client.get(reverse("configuracoes:configuracoes") + "?tab=informacoes")
     assert resp.status_code == 302
     assert resp.headers["Location"] == reverse("accounts:informacoes_pessoais")
 
@@ -99,7 +99,7 @@ except Exception:  # pragma: no cover - dependencia opcional
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 @pytest.mark.skipif(not HAS_BENCH, reason="pytest-benchmark não instalado")
 def test_view_benchmark(admin_client, benchmark):
-    url = reverse("configuracoes")
+    url = reverse("configuracoes:configuracoes")
 
     def fetch():
         return admin_client.get(url)

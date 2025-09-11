@@ -8,7 +8,7 @@ pytestmark = pytest.mark.django_db
 
 def test_configuracoes_sem_violacoes(client, admin_user):
     client.force_login(admin_user)
-    response = client.get(reverse("configuracoes"))
+    response = client.get(reverse("configuracoes:configuracoes"))
     html = response.content.decode("utf-8")
 
     with sync_playwright() as p:
