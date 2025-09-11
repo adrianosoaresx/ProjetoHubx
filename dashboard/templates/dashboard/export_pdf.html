@@ -8,22 +8,26 @@
   <style>
     body { font-family: sans-serif; }
     table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid var(--border-secondary); padding: 4px; text-align: left; }
+    th, td { border: 1px solid var(--border); padding: 4px; text-align: left; }
+    thead { background: var(--bg-tertiary); }
+    th { color: var(--text-secondary); }
   </style>
 </head>
 <body>
   <h1>{% trans "Métricas do Dashboard" %}</h1>
-  <table>
-    <thead>
-      <tr><th>{% trans "Métrica" %}</th><th>{% trans "Total" %}</th><th>{% trans "Variação (%)" %}</th></tr>
-    </thead>
-    <tbody>
-    {% for key, data in metrics.items %}
-      <tr>
-        <td>{{ key }}</td><td>{{ data.total|localize }}</td><td>{{ data.crescimento|floatformat:2|localize }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr><th>{% trans "Métrica" %}</th><th>{% trans "Total" %}</th><th>{% trans "Variação (%)" %}</th></tr>
+      </thead>
+      <tbody>
+      {% for key, data in metrics.items %}
+        <tr>
+          <td>{{ key }}</td><td>{{ data.total|localize }}</td><td>{{ data.crescimento|floatformat:2|localize }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </body>
 </html>
