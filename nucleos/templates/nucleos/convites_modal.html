@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="p-4 bg-[var(--bg-secondary)] rounded card max-w-md" id="convites-modal">
   <h2 class="text-lg font-semibold mb-2">{% trans 'Convites do núcleo' %}</h2>
-  <p class="text-sm text-gray-600">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
+  <p class="text-sm text-[var(--text-secondary)]">{% trans 'Convites restantes hoje:' %} {{ convites_restantes }}</p>
   <form id="convite-form" class="mt-2 flex flex-col gap-2" hx-post="{% url 'nucleos_api:nucleo-convites' nucleo.pk %}" hx-swap="none">
     {% csrf_token %}
     <input type="email" name="email" class="border border-[var(--border)] bg-[var(--bg-secondary)] rounded px-2 py-1" placeholder="{% trans 'email@example.com' %}" required />
@@ -26,7 +26,7 @@
       </form>
     </li>
     {% empty %}
-    <li class="text-sm text-[var(--color-neutral-500)]">{% trans 'Nenhum convite pendente.' %}</li>
+    <li class="text-sm text-[var(--text-secondary)]">{% trans 'Nenhum convite pendente.' %}</li>
     {% endfor %}
   </ul>
   <script>
