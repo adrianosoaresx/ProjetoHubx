@@ -225,7 +225,7 @@ def build_menu(request) -> List[MenuItem]:
         MenuItem("token_convite", reverse("tokens:gerar_convite"), "Token", ICON_TOKEN, ["coordenador"]),
         MenuItem(
             "configuracoes",
-            reverse("configuracoes"),
+            reverse("configuracoes:configuracoes"),
             "Configurações",
             ICON_CONFIG,
             ["authenticated"],

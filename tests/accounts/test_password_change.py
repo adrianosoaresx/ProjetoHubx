@@ -20,7 +20,7 @@ def test_password_change_marks_reset_tokens_used(client):
     )
     client.force_login(user)
     resp = client.post(
-        reverse("configuracoes"),
+        reverse("configuracoes:configuracoes"),
         {
             "old_password": "oldpass",
             "new_password1": "Newpass123!",
