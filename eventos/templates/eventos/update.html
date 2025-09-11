@@ -99,14 +99,15 @@
           document.getElementById('id_orcamento_estimado').value = data.orcamento_estimado;
           document.getElementById('id_valor_gasto').value = data.valor_gasto;
           feedback.textContent = '{% trans "Orçamento atualizado com sucesso." %}';
-          feedback.className = 'text-sm text-success-600';
+          feedback.className = 'text-sm text-[var(--success)]';
         } else {
           feedback.textContent = '{% trans "Erro ao atualizar orçamento." %}';
-          feedback.className = 'text-sm text-error-600';
+          feedback.className = 'text-sm text-[var(--error)]';
         }
       } catch (err) {
         feedback.textContent = '{% trans "Erro ao atualizar orçamento." %}';
-        feedback.className = 'text-sm text-error-600';
+        feedback.className = 'text-sm text-[var(--error)]';
+
       }
     });
   }

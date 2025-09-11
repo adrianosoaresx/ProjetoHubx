@@ -8,13 +8,14 @@
 
     <p class="mb-4">{% trans 'Mensalidade' %}: {{ nucleo.mensalidade|localize }}</p>
 
-    <p class="mb-4 text-sm text-[var(--text-tertiary)]">
+
+    <p class="mb-4 text-sm text-[var(--text-secondary)]">
       {% blocktrans with mensalidade=nucleo.mensalidade|floatformat:2 %}
         Ao confirmar, você concorda com o pagamento da mensalidade de R$ {{ mensalidade }} e com os efeitos da adesão ao núcleo.
       {% endblocktrans %}
     </p>
 
-    <p id="solicitar-error" class="mb-4 text-sm text-error-600 hidden"></p>
+    <p id="solicitar-error" class="mb-4 text-sm text-[var(--error)] hidden"></p>
 
     <div class="flex justify-end gap-2">
       <button type="button" class="btn btn-secondary" hx-on="click: document.getElementById('modal').innerHTML=''">{% trans 'Cancelar' %}</button>
@@ -26,7 +27,7 @@
 <script>
 function handleSolicitar(event) {
   if (event.detail.xhr.status === 201) {
-    document.getElementById('solicitar-btn').outerHTML = '<p class="text-success-600">{% trans "Solicitação enviada" %}</p>';
+    document.getElementById('solicitar-btn').outerHTML = '<p class="text-[var(--success)]">{% trans "Solicitação enviada" %}</p>';
     document.getElementById('modal').innerHTML = '';
   } else {
     const errorEl = document.getElementById('solicitar-error');

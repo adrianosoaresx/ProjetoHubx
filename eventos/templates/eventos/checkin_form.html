@@ -62,14 +62,15 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then(() => {
-        feedback.classList.remove("text-error-600");
-        feedback.classList.add("text-success-600");
+        feedback.classList.remove("text-[var(--error)]");
+        feedback.classList.add("text-[var(--success)]");
+
         feedback.textContent = successMessage;
         form.reset();
       })
       .catch((err) => {
-        feedback.classList.remove("text-success-600");
-        feedback.classList.add("text-error-600");
+        feedback.classList.remove("text-[var(--success)]");
+        feedback.classList.add("text-[var(--error)]");
         feedback.textContent = err.message;
       });
   });
