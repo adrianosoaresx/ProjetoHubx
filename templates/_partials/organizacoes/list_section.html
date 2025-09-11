@@ -48,7 +48,7 @@
           {% endif %}
         </div>
         <div>
-          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-neutral-900 font-medium hover:underline">{{ organizacao.nome }}</a>
+          <a href="{% url 'organizacoes:detail' organizacao.id %}" class="text-[var(--text-primary)] font-medium hover:underline">{{ organizacao.nome }}</a>
           {% if organizacao.inativa %}
             <span class="ml-2 text-xs bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded">{% trans 'Inativa' %}</span>
           {% endif %}
@@ -58,15 +58,15 @@
       <div class="grid grid-cols-3 gap-4 text-center mt-auto">
         <div>
           <p class="text-xs text-neutral-500">{% trans 'Usuários' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.users_count }}</p>
+          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.users_count }}</p>
         </div>
         <div>
           <p class="text-xs text-neutral-500">{% trans 'Núcleos' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.nucleos_count }}</p>
+          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.nucleos_count }}</p>
         </div>
         <div>
           <p class="text-xs text-neutral-500">{% trans 'Eventos' %}</p>
-          <p class="text-lg font-semibold text-neutral-900">{{ organizacao.events_count }}</p>
+          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ organizacao.events_count }}</p>
         </div>
       </div>
       {% endif %}

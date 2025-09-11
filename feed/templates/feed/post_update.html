@@ -19,7 +19,7 @@
       {% trans "Voltar" %}
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-neutral-900">{% trans "Editar Postagem" %}</h1>
+      <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Editar Postagem" %}</h1>
       <p class="text-sm text-neutral-600">{% trans "Atualize sua postagem" %}</p>
     </div>
   </div>
@@ -86,7 +86,7 @@
       {% endif %}
     </div>
 
-    <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+    <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
       <a href="{% url 'feed:post_detail' post.pk %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans "Cancelar" %}</a>
       <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans "Salvar" %}</button>
     </div>

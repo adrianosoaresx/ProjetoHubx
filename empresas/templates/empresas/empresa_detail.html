@@ -33,7 +33,7 @@
       </div>
 
       {% if pode_visualizar_contatos %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Contatos" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Contatos" %}</h2>
         <div class="mt-4 card-grid">
           {% for contato in contatos %}
             <div class="card flex justify-between items-start p-4">
@@ -69,7 +69,7 @@
   {% endif %}
 
       {% if prod_tags %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Produtos" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Produtos" %}</h2>
         <div class="card-grid mt-4">
           {% for tag in prod_tags %}
             <div class="card p-4">
@@ -82,7 +82,7 @@
       {% endif %}
 
       {% if serv_tags %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Serviços" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Serviços" %}</h2>
         <div class="card-grid mt-4">
           {% for tag in serv_tags %}
             <div class="card p-4">
@@ -95,7 +95,7 @@
       {% endif %}
 
       {% if empresa.usuario %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Proprietário" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Proprietário" %}</h2>
         <div class="flex items-center gap-4 mt-4">
       {% with dono=empresa.usuario %}
         {% if dono.avatar %}
@@ -114,7 +114,7 @@
   {% endif %}
 
       {% if nucleos_dono %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Núcleos" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Núcleos" %}</h2>
         <div class="card-grid mt-4">
           {% for nucleo in nucleos_dono %}
             <div class="card p-4 text-center">
@@ -134,7 +134,7 @@
       {% endif %}
 
       {% if eventos_dono %}
-        <h2 class="mt-8 text-lg font-semibold text-neutral-900">{% trans "Eventos" %}</h2>
+        <h2 class="mt-8 text-lg font-semibold text-[var(--text-primary)]">{% trans "Eventos" %}</h2>
         <div class="card-grid mt-4">
           {% for evento in eventos_dono %}
             <div class="card p-4">

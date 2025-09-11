@@ -1,5 +1,5 @@
 {% load i18n %}
-<h2 class="text-xl font-semibold text-neutral-900 mb-2">{% trans 'Empresas' %} ({{ empresas|length }})</h2>
+<h2 class="text-xl font-semibold text-[var(--text-primary)] mb-2">{% trans 'Empresas' %} ({{ empresas|length }})</h2>
 <ul class="list-disc pl-6 text-neutral-700">
   {% for empresa in empresas %}
     <li>{{ empresa.nome }}</li>

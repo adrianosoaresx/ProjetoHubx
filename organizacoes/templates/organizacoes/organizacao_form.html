@@ -163,7 +163,7 @@
       {% endif %}
     </div>
 
-      <div class="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+      <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
         <a href="{% url 'organizacoes:list' %}" class="btn btn-secondary" aria-label="{% if form.instance.pk %}{% trans 'Cancelar edição' %}{% else %}{% trans 'Cancelar' %}{% endif %}">
           {% trans 'Cancelar' %}
         </a>
