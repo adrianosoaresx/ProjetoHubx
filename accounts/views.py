@@ -61,8 +61,8 @@ User = get_user_model()
 
 
 @login_required
-def perfil_home(request):
-    """Exibe a página de detalhes do perfil do usuário."""
+def perfil(request):
+    """Exibe a página de perfil privado do usuário."""
     user = request.user
 
     # Núcleos em que o usuário participa (ativos)
@@ -107,11 +107,7 @@ def perfil_home(request):
         "hero_title": _("Perfil"),
     }
 
-    tab = request.GET.get("tab", "informacoes")
-    if request.headers.get("HX-Request"):
-        return render(request, f"perfil/partials/detail_{tab}.html", context)
-
-    return render(request, "perfil/detail.html", context)
+    return render(request, "perfil/perfil.html", context)
 
 
 def perfil_publico(request, pk=None, public_id=None):

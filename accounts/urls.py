@@ -28,7 +28,7 @@ urlpatterns = [
     path("registro_sucesso/", views.registro_sucesso, name="registro_sucesso"),
     path("conta-inativa/", views.conta_inativa, name="inactive"),
     # Perfil
-    path("perfil/", views.perfil_home, name="perfil"),
+    path("perfil/", views.perfil, name="perfil"),
     path("perfil/<uuid:public_id>/", views.perfil_publico, name="perfil_publico_uuid"),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
     path("perfil/informacoes/", views.perfil_informacoes, name="informacoes_pessoais"),
