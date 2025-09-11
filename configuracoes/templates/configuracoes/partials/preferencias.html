@@ -10,12 +10,12 @@
     <div>
       {% with email_checked=preferencias_form.receber_notificacoes_email.value|yesno:"true,false" %}
         {% with email_attr='aria-checked:'|add:email_checked %}
-          {% with preferencias_form.receber_notificacoes_email|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr as email_field %}
+        {% with preferencias_form.receber_notificacoes_email|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por e-mail'|attr:email_attr as email_field %}
             {% include '_forms/field.html' with field=email_field %}
           {% endwith %}
         {% endwith %}
       {% endwith %}
-      {% with preferencias_form.frequencia_notificacoes_email|add_class:'mt-2' as freq_email_field %}
+        {% with preferencias_form.frequencia_notificacoes_email as freq_email_field %}
         {% include '_forms/field.html' with field=freq_email_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
@@ -28,12 +28,12 @@
     <div>
       {% with whats_checked=preferencias_form.receber_notificacoes_whatsapp.value|yesno:"true,false" %}
         {% with whats_attr='aria-checked:'|add:whats_checked %}
-          {% with preferencias_form.receber_notificacoes_whatsapp|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr as whats_field %}
+        {% with preferencias_form.receber_notificacoes_whatsapp|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações por WhatsApp'|attr:whats_attr as whats_field %}
             {% include '_forms/field.html' with field=whats_field %}
           {% endwith %}
         {% endwith %}
       {% endwith %}
-      {% with preferencias_form.frequencia_notificacoes_whatsapp|add_class:'mt-2' as freq_whats_field %}
+        {% with preferencias_form.frequencia_notificacoes_whatsapp as freq_whats_field %}
         {% include '_forms/field.html' with field=freq_whats_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
@@ -46,12 +46,12 @@
     <div>
       {% with push_checked=preferencias_form.receber_notificacoes_push.value|yesno:"true,false" %}
         {% with push_attr='aria-checked:'|add:push_checked %}
-          {% with preferencias_form.receber_notificacoes_push|add_class:'form-checkbox'|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr as push_field %}
+        {% with preferencias_form.receber_notificacoes_push|attr:'role:switch'|attr:'tabindex:0'|attr:'aria-label:Receber notificações push'|attr:push_attr as push_field %}
             {% include '_forms/field.html' with field=push_field %}
           {% endwith %}
         {% endwith %}
       {% endwith %}
-      {% with preferencias_form.frequencia_notificacoes_push|add_class:'mt-2' as freq_push_field %}
+        {% with preferencias_form.frequencia_notificacoes_push as freq_push_field %}
         {% include '_forms/field.html' with field=freq_push_field %}
       {% endwith %}
       <div class="mt-2 flex items-center gap-2">
@@ -62,29 +62,29 @@
       </div>
     </div>
     <div id="campo-hora-diaria" class="hidden">
-      {% with preferencias_form.hora_notificacao_diaria|add_class:'mt-1'|attr:'type:time' as hora_diaria_field %}
+        {% with preferencias_form.hora_notificacao_diaria|attr:'type:time' as hora_diaria_field %}
         {% include '_forms/field.html' with field=hora_diaria_field %}
       {% endwith %}
     </div>
     <div id="campo-hora-semanal" class="hidden">
-      {% with preferencias_form.hora_notificacao_semanal|add_class:'mt-1'|attr:'type:time' as hora_semanal_field %}
+        {% with preferencias_form.hora_notificacao_semanal|attr:'type:time' as hora_semanal_field %}
         {% include '_forms/field.html' with field=hora_semanal_field %}
       {% endwith %}
     </div>
     <div id="campo-dia-semanal" class="hidden">
-      {% with preferencias_form.dia_semana_notificacao|add_class:'mt-1' as dia_field %}
+        {% with preferencias_form.dia_semana_notificacao as dia_field %}
         {% include '_forms/field.html' with field=dia_field %}
       {% endwith %}
     </div>
   </fieldset>
   <div>
-    {% with preferencias_form.idioma|add_class:'mt-1'|attr:'tabindex:0' as idioma_field %}
+      {% with preferencias_form.idioma|attr:'tabindex:0' as idioma_field %}
       {% include '_forms/field.html' with field=idioma_field %}
     {% endwith %}
     <p class="text-xs text-[var(--text-muted)]">{% blocktrans %}Idioma atual: {{ LANGUAGE_CODE }}{% endblocktrans %}</p>
   </div>
   <div>
-    {% with preferencias_form.tema|add_class:'mt-1'|attr:'tabindex:0' as tema_field %}
+      {% with preferencias_form.tema|attr:'tabindex:0' as tema_field %}
       {% include '_forms/field.html' with field=tema_field %}
     {% endwith %}
   </div>
