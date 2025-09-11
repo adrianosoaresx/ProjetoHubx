@@ -1,0 +1,20 @@
+{% load i18n %}
+{% with profile=profile|default:user %}
+<section class="relative bg-[var(--bg-primary)]">
+  {% if profile.cover %}
+    <img src="{{ profile.cover.url }}" alt="{% trans 'Imagem de capa' %}" class="w-full h-48 object-cover opacity-80 blur-sm" loading="lazy">
+  {% endif %}
+  <div class="absolute inset-x-0 -bottom-12 flex justify-center">
+    <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="w-24 h-24 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy">
+  </div>
+</section>
+<div class="pt-14 pb-6 text-center">
+  <h1 class="text-2xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
+  <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
+  {% if action_template %}
+  <div class="mt-4 flex justify-center gap-2">
+    {% include action_template %}
+  </div>
+  {% endif %}
+</div>
+{% endwith %}
