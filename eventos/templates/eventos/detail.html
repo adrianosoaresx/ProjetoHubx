@@ -104,9 +104,9 @@
                 <article class="card">
                   <div class="card-body flex items-center gap-4">
                     {% if inscrito.avatar %}
-                      <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover">
+                      <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
                     {% else %}
-                      <div class="w-12 h-12 rounded-full bg-base-200 flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
+                      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
                         {{ inscrito.username|make_list|first|upper }}
                       </div>
                     {% endif %}

@@ -16,7 +16,7 @@
       {% if field.name != 'inscricoes' and field.name != 'numero_presentes' %}
         {% if field.name == 'avatar' or field.name == 'cover' %}
           {% if field.value %}
-            <img src="{{ field.value.url }}" alt="{{ field.label }}" class="w-32 h-32 object-cover mb-2">
+            <img src="{{ field.value.url }}" alt="{{ field.label }}" class="w-32 h-32 object-cover mb-2" loading="lazy">
           {% endif %}
           {% include '_forms/field.html' with field=field|attr:'accept:image/*' %}
         {% else %}

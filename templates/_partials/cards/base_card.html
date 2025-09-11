@@ -5,13 +5,13 @@
   <article class="card overflow-hidden" role="article">
     <header class="relative">
       {% if cover %}
-        <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-24 w-full object-cover" />
+        <img src="{{ cover.url|default:cover }}" alt="{% trans 'Capa' %}" class="h-24 w-full object-cover" loading="lazy" />
       {% else %}
         <div class="h-24 w-full bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"{% if style %} style="{{ style }}"{% endif %}></div>
       {% endif %}
       <div class="absolute -bottom-8 left-4">
         {% if avatar %}
-          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" />
+          <img src="{{ avatar.url|default:avatar }}" alt="{{ title }}" class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy" />
         {% else %}
           <div class="h-16 w-16 rounded-full ring-4 ring-[var(--bg-primary)] bg-[var(--bg-tertiary)] flex items-center justify-center text-lg font-semibold text-[var(--text-primary)]" role="img" aria-label="{{ title }}">
             {{ title|first|upper }}
