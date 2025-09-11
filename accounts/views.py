@@ -432,6 +432,11 @@ def perfil_midias(request):
     else:
         form = MediaForm()
 
+    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+    form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
+    form.fields["file"].help_text = _("Selecione um arquivo")
+    form.fields["descricao"].help_text = _("Breve descrição da mídia")
+
     medias_qs = request.user.medias.order_by("-created_at")
     if q:
         medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
@@ -456,7 +461,6 @@ def perfil_midias(request):
             "medias": medias,
             "show_form": show_form,
             "q": q,
-            "allowed_exts": getattr(settings, "USER_MEDIA_ALLOWED_EXTS", []),
             "hero_title": _("Perfil"),
         },
     )
@@ -479,6 +483,11 @@ def perfil_midia_edit(request, pk):
             return redirect("accounts:midias")
     else:
         form = MediaForm(instance=media)
+
+    allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+    form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
+    form.fields["file"].help_text = _("Selecione um arquivo")
+    form.fields["descricao"].help_text = _("Breve descrição da mídia")
 
     return render(request, "perfil/midia_form.html", {"form": form, "hero_title": _("Perfil")})
 

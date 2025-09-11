@@ -18,10 +18,9 @@
         {% csrf_token %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {% include '_forms/field.html' with field=form.facebook %}
-          {% include '_forms/field.html' with field=form.twitter %}
-          {% include '_forms/field.html' with field=form.instagram %}
-          {% include '_forms/field.html' with field=form.linkedin %}
+          {% for field in form %}
+            {% include '_forms/field.html' with field=field %}
+          {% endfor %}
         </div>
 
         <div class="pt-4">
