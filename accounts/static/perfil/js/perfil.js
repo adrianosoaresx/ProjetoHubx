@@ -61,6 +61,23 @@ function initMatrixRain() {
 
 // (demais funções seguem iguais até o fim do arquivo)
 
+function initTabs() {
+    const tabs = document.querySelectorAll('[role="tab"]')
+    tabs.forEach(tab => {
+        tab.addEventListener('click', ev => {
+            if (tab.tagName === 'A') ev.preventDefault()
+            tabs.forEach(t => {
+                const selected = t === tab
+                t.setAttribute('aria-selected', String(selected))
+                const targetId = t.dataset.tabTarget || (t.getAttribute('href') || '').replace(/^#/, '')
+                if (!targetId) return
+                const section = document.getElementById(targetId)
+                if (section) section.hidden = !selected
+            })
+        })
+    })
+}
+
 // Search functionality
 function initSearch() {
     const searchInputs = document.querySelectorAll(".search-input")
