@@ -15,7 +15,7 @@
           </nav>
         </div>
         <div id="content" role="tabpanel" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
-          {% include 'configuracoes/partials/'|add:tab|add:'.html' %}
+          {% include 'configuracoes/_partials/'|add:tab|add:'.html' %}
         </div>
       </div>
     </div>
