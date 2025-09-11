@@ -3,127 +3,47 @@
 {% block title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }} | Hubx{% endwith %}{% endblock %}
 
 {% block hero %}
-  {% with perfil as profile %}
-    {% include '_components/hero.html' with title=profile.get_full_name|default:profile.username subtitle='@'|add:profile.username %}
-  {% endwith %}
+  {% include '_components/hero_profile.html' with profile=perfil %}
 {% endblock %}
 
 {% block content %}
 <div class="card-header">
-  <nav class="border-b border-[var(--border)]">
-    <ul class="-mb-px flex flex-wrap gap-2" role="tablist" aria-label="{% trans 'Navegação de abas do perfil' %}">
-      <li>
-        <a href="#tab-informacoes" data-tab-target="tab-informacoes" role="tab" aria-selected="true"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary data-[active=true]:border-primary data-[active=true]:text-primary">
-          {% trans "Informações" %}
-        </a>
-      </li>
-      {% if not profile.is_superuser %}
-      <li>
-        <a href="#tab-empresas" data-tab-target="tab-empresas" role="tab" aria-selected="false"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
-          {% trans "Empresas" %}
-        </a>
-
-      </li>
-      <li>
-        <a
-          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-tertiary)] hover:text-primary hover:border-primary"
-          hx-get="?tab=nucleos"
-          hx-target="#tab-content"
-          role="tab"
-        >{% trans "Núcleos" %}</a>
-      </li>
-      <li>
-        <a
-          class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-tertiary)] hover:text-primary hover:border-primary"
-          hx-get="?tab=eventos"
-          hx-target="#tab-content"
-          role="tab"
-        >{% trans "Eventos" %}</a>
-      </li>
+  <div class="mt-2 border-b border-[var(--border)]">
+    <nav class="-mb-px flex gap-6" aria-label="{% trans 'Tabs' %}">
+      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="mural" data-active="true">{% trans 'Mural' %}</button>
+      <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="informacoes">{% trans 'Informações' %}</button>
+      {% if not perfil.is_superuser %}
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="empresas">{% trans 'Empresas' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="nucleos">{% trans 'Núcleos' %}</button>
+        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
       {% endif %}
-    </ul>
-  </nav>
+    </nav>
+  </div>
 </div>
 
 <div class="card-body">
-  <div class="mt-4">
-    <div id="tab-informacoes" role="tabpanel" data-tab-panel class="block">
-      <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
-        <div>
-          <dt class="text-[var(--text-secondary)]">{% trans "Nome completo" %}</dt>
-          <dd class="font-medium">{{ profile.get_full_name|default:profile.username }}</dd>
-        </div>
-        <div>
-          <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
-          <dd class="font-medium">@{{ profile.username }}</dd>
-        </div>
-        {% if profile.email %}
-        <div>
-          <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
-          <dd class="font-medium">{{ profile.email }}</dd>
-        </div>
-        {% endif %}
-        {% if profile.date_joined %}
-        <div>
-          <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
-          <dd class="font-medium">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
-        </div>
-        {% endif %}
-        {% if profile.last_login %}
-        <div>
-          <dt class="text-[var(--text-secondary)]">{% trans "Último acesso" %}</dt>
-          <dd class="font-medium">{{ profile.last_login|date:"d/m/Y H:i" }}</dd>
-        </div>
-        {% endif %}
-      </dl>
-      {% if profile.biografia %}
-        <div class="mt-4">
-          <h3 class="text-sm font-semibold mb-1 text-[var(--text-primary)]">{% trans "Biografia" %}</h3>
-          <p class="text-[var(--text-primary)] whitespace-pre-line">{{ profile.biografia }}</p>
-        </div>
-      {% endif %}
+  <div id="tab-panels" class="mt-6">
+    <div class="tab-panel" data-tab="mural">
+      {# TODO: conteúdo do mural público #}
     </div>
 
-    {% if not profile.is_superuser %}
-    <div id="tab-empresas" role="tabpanel" data-tab-panel class="hidden">
-      {% if empresas %}
-        <div class="card-grid" role="list" aria-label="{% translate 'Lista de empresas' %}">
-        {% for empresa in empresas %}
-          <div role="listitem">
-            {% include '_components/card_empresa.html' with empresa=empresa %}
-          </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="grid grid-cols-1">
-        <p class="col-span-full text-center text-[var(--text-secondary)] py-10">{% translate 'Nenhuma empresa encontrada.' %}</p>
-      </div>
-      {% endif %}
+    <div class="tab-panel hidden" data-tab="informacoes">
+      {% include 'perfil/partials/publico_informacoes.html' with profile=perfil publico=True %}
     </div>
 
-    <div id="tab-nucleos" role="tabpanel" data-tab-panel class="hidden">
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid">
-        {% for nucleo in nucleos %}
-          {% include '_components/card_nucleo.html' with nucleo=nucleo %}
-        {% empty %}
-          <p class="col-span-full text-center text-[var(--text-secondary)]">{% trans "Nenhum núcleo encontrado." %}</p>
-        {% endfor %}
+    {% if not perfil.is_superuser %}
+      <div class="tab-panel hidden" data-tab="empresas">
+        {% include 'perfil/partials/publico_empresas.html' with empresas=empresas publico=True %}
       </div>
-    </div>
 
-    <div id="tab-eventos" role="tabpanel" data-tab-panel class="hidden">
-        <div class="card-grid" role="list" aria-label="{% trans 'Lista de eventos' %}">
-        {% for ins in inscricoes %}
-          {% include '_components/card_evento.html' with evento=ins.evento %}
-        {% empty %}
-          <p class="col-span-full text-center text-[var(--text-secondary)]">{% trans "Nenhum evento encontrado." %}</p>
-        {% endfor %}
+      <div class="tab-panel hidden" data-tab="nucleos">
+        {% include 'perfil/partials/publico_nucleos.html' with nucleos=nucleos publico=True %}
       </div>
-    </div>
+
+      <div class="tab-panel hidden" data-tab="eventos">
+        {% include 'perfil/partials/publico_eventos.html' with inscricoes=inscricoes publico=True %}
+      </div>
     {% endif %}
-
   </div>
 </div>
 {% endblock %}
