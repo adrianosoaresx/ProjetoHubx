@@ -2486,11 +2486,6 @@ a:focus {
   color: var(--color-primary-800);
 }
 
-.text-red-600 {
-  --tw-text-opacity: 1;
-  color: rgb(220 38 38 / var(--tw-text-opacity, 1));
-}
-
 .text-warning-400 {
   color: var(--color-warning-400);
 }
@@ -2721,41 +2716,6 @@ a:focus {
   --error-color: var(--color-error-600);
   --warning-color: var(--color-warning-600);
   --success-color: var(--color-success-600);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-tertiary: #334155;
-    --bg-accent: var(--color-primary-800);
-    --text-primary: var(--color-neutral-100);
-    --text-secondary: var(--color-neutral-300);
-    --text-tertiary: var(--color-neutral-400);
-    --text-muted: var(--color-neutral-500);
-    --text-inverse: var(--color-neutral-50);
-    --border: var(--color-neutral-700);
-    --border-primary: var(--color-neutral-700);
-    --border-secondary: var(--color-neutral-600);
-    --border-focus: var(--color-primary-400);
-    --primary: var(--color-primary-500);
-    --primary-hover: var(--color-primary-400);
-    --primary-light: var(--color-primary-700);
-    --accent: var(--color-accent-500);
-    --accent-light: var(--color-accent-100);
-    --accent-dark: var(--color-accent-700);
-    --success: var(--color-success-500);
-    --success-light: var(--color-success-900);
-    --warning: var(--color-warning-500);
-    --warning-light: var(--color-warning-900);
-    --warning-foreground: var(--text-inverse);
-    --error: var(--color-error-500);
-    --error-light: var(--color-error-900);
-    --card-color: rgb(0 0 0 / 0.3);
-    --card-light: 0 1px 3px 0 var(--card-color);
-    --card-medium: 0 4px 6px -1px var(--card-color);
-    --card-heavy: 0 10px 15px -3px var(--card-color);
-  }
 }
 
 .dark {
