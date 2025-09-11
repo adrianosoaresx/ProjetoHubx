@@ -1,14 +1,12 @@
 {% load i18n %}
 {% with profile=profile|default:user %}
-<section class="relative bg-[var(--bg-primary)]">
-  {% if profile.cover %}
-    <img src="{{ profile.cover.url }}" alt="{% trans 'Imagem de capa' %}" class="w-full h-48 object-cover opacity-80 blur-sm" loading="lazy">
+<section class="relative flex items-center justify-center h-48 bg-[var(--bg-primary)]">
+  {% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="absolute inset-0 w-full h-full object-cover opacity-80 blur-sm" loading="lazy">
   {% endif %}
-  <div class="absolute inset-x-0 -bottom-12 flex justify-center">
-    <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="w-24 h-24 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy">
-  </div>
+  <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-40 w-40 rounded-full ring-4 ring-[var(--bg-primary)] object-cover" loading="lazy">
 </section>
-<div class="pt-14 pb-6 text-center">
+<div class="py-6 text-center">
   <h1 class="text-2xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
   <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
   {% if action_template %}
