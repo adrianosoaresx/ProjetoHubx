@@ -9,8 +9,8 @@
   <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
     <header class="card-body border-b border-[var(--border)] p-6">
       <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4 text-sm">
-        <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}">{% trans 'Segurança' %}</button>
-        <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" hx-on:click="switchTab(this)" tabindex="0" class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}">{% trans 'Preferências' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=seguranca" hx-target="#content" tabindex="0" data-active-class="btn-secondary" class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}">{% trans 'Segurança' %}</button>
+        <button role="tab" aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}" aria-controls="content" hx-get="{% url 'configuracoes' %}?tab=preferencias" hx-target="#content" tabindex="0" data-active-class="btn-secondary" class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}">{% trans 'Preferências' %}</button>
       </nav>
     </header>
     <div class="card-body p-6" id="content" role="tabpanel" hx-get="{% url 'configuracoes' %}?tab={{ tab }}" hx-trigger="load">
@@ -18,16 +18,6 @@
     </div>
   </section>
 </main>
-<script>
-  function switchTab(btn) {
-    document.querySelectorAll('[role=tab]').forEach((tab) => {
-      tab.setAttribute('aria-selected', 'false');
-      tab.classList.remove('btn-secondary');
-    });
-    btn.setAttribute('aria-selected', 'true');
-    btn.classList.add('btn-secondary');
-  }
-</script>
 {% endblock %}
 
 {% block scripts %}
