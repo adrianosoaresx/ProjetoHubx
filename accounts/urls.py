@@ -61,6 +61,7 @@ urlpatterns = [
         views.perfil_portifolio_delete,
         name="portifolio_delete",
     ),
+    path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),
     path("excluir/", views.excluir_conta, name="excluir_conta"),
     path(
         "confirmar-email/<str:token>/",

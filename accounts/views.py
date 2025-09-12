@@ -139,11 +139,16 @@ def perfil(request):
     return render(request, "perfil/perfil.html", context)
 
 
-def perfil_publico(request, pk=None, public_id=None):
+def perfil_publico(request, pk=None, public_id=None, username=None):
     if public_id:
         perfil = get_object_or_404(User, public_id=public_id, perfil_publico=True)
-    else:
+    elif pk:
         perfil = get_object_or_404(User, pk=pk, perfil_publico=True)
+    else:
+        perfil = get_object_or_404(User, username=username, perfil_publico=True)
+
+    if request.user == perfil:
+        return redirect("accounts:portifolio")
     from empresas.models import Empresa
     from eventos.models import InscricaoEvento
     from nucleos.models import Nucleo
@@ -192,9 +197,8 @@ def perfil_publico(request, pk=None, public_id=None):
         "portifolio_q": "",
     }
 
-    tab = request.GET.get("tab", "portifolio")
     if request.headers.get("HX-Request"):
-        return render(request, f"perfil/partials/publico_{tab}.html", context)
+        return render(request, "perfil/partials/portifolio.html", context)
 
     return render(request, "perfil/publico.html", context)
 
