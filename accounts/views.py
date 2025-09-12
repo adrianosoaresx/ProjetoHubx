@@ -105,6 +105,7 @@ def perfil(request):
         "inscricoes": inscricoes,
         "empresas": empresas,
         "hero_title": _("Perfil"),
+        "profile": user,
     }
 
     return render(request, "perfil/perfil.html", context)
