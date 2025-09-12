@@ -40,6 +40,13 @@
         </div>
       {% endif %}
     </div>
+    <h1 class="mt-4 text-2xl font-bold text-[var(--text-primary)]">{{ profile.get_full_name|default:profile.username }}</h1>
+    <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
+    <div class="profile-actions mt-4">
+      <a href="{% url 'empresas:lista' %}" class="btn btn-primary">{% trans 'Empresas' %}</a>
+      <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">{% trans 'Mural' %}</a>
+      <a href="{% url 'accounts:conexoes' %}" class="btn btn-outline">{% trans 'Conexões' %}</a>
+    </div>
   </div>
 </section>
 {% endwith %}
