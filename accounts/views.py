@@ -61,7 +61,7 @@ User = get_user_model()
 Midia = UserMedia
 
 
-def _portifolio_for(profile, viewer, limit: int = 6):
+def _portfolio_for(profile, viewer, limit: int = 6):
     """Return up to ``limit`` recent media visible to ``viewer`` for ``profile``.
 
     Falls back to a simple ownership filter if a custom ``visible_to``
@@ -121,7 +121,7 @@ def perfil(request):
     # Empresas do usuário
     empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
 
-    portifolio_recent = _portifolio_for(user, request.user, limit=6)
+    portfolio_recent = _portfolio_for(user, request.user, limit=6)
 
     context = {
         "nucleos": nucleos,
@@ -130,10 +130,10 @@ def perfil(request):
         "hero_title": _("Perfil"),
         "profile": user,
         "is_owner": True,
-        "portifolio_recent": portifolio_recent,
-        "portifolio_form": MediaForm(),
-        "portifolio_show_form": False,
-        "portifolio_q": "",
+        "portfolio_recent": portfolio_recent,
+        "portfolio_form": MediaForm(),
+        "portfolio_show_form": False,
+        "portfolio_q": "",
     }
 
     return render(request, "perfil/perfil.html", context)
@@ -148,7 +148,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         perfil = get_object_or_404(User, username=username, perfil_publico=True)
 
     if request.user == perfil:
-        return redirect("accounts:portifolio")
+        return redirect("accounts:portfolio")
     from empresas.models import Empresa
     from eventos.models import InscricaoEvento
     from nucleos.models import Nucleo
@@ -181,7 +181,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
 
-    portifolio_recent = _portifolio_for(perfil, request.user, limit=6)
+    portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
 
     context = {
         "perfil": perfil,
@@ -191,14 +191,14 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "hero_title": perfil.get_full_name() or perfil.username,
         "hero_subtitle": f"@{perfil.username}",
         "is_owner": request.user == perfil,
-        "portifolio_recent": portifolio_recent,
-        "portifolio_form": None,
-        "portifolio_show_form": False,
-        "portifolio_q": "",
+        "portfolio_recent": portfolio_recent,
+        "portfolio_form": None,
+        "portfolio_show_form": False,
+        "portfolio_q": "",
     }
 
     if request.headers.get("HX-Request"):
-        return render(request, "perfil/partials/portifolio.html", context)
+        return render(request, "perfil/partials/portfolio.html", context)
 
     return render(request, "perfil/publico.html", context)
 
@@ -452,7 +452,7 @@ def recusar_conexao(request, id):
 
 
 @login_required
-def perfil_portifolio(request):
+def perfil_portfolio(request):
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
     q = request.GET.get("q", "").strip()
 
@@ -464,7 +464,7 @@ def perfil_portifolio(request):
             media.save()
             form.save_m2m()
             messages.success(request, "Arquivo enviado com sucesso.")
-            return redirect("accounts:portifolio")
+            return redirect("accounts:portfolio")
     else:
         form = MediaForm()
 
@@ -481,7 +481,7 @@ def perfil_portifolio(request):
 
     return render(
         request,
-        "perfil/portifolio.html",
+        "perfil/portfolio.html",
         {
             "form": form,
             "medias": medias,
@@ -493,20 +493,20 @@ def perfil_portifolio(request):
 
 
 @login_required
-def perfil_portifolio_detail(request, pk):
+def perfil_portfolio_detail(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    return render(request, "perfil/portifolio_detail.html", {"media": media, "hero_title": _("Perfil")})
+    return render(request, "perfil/portfolio_detail.html", {"media": media, "hero_title": _("Perfil")})
 
 
 @login_required
-def perfil_portifolio_edit(request, pk):
+def perfil_portfolio_edit(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES, instance=media)
         if form.is_valid():
             form.save()
             messages.success(request, "Portfólio atualizado com sucesso.")
-            return redirect("accounts:portifolio")
+            return redirect("accounts:portfolio")
     else:
         form = MediaForm(instance=media)
 
@@ -515,17 +515,17 @@ def perfil_portifolio_edit(request, pk):
     form.fields["file"].help_text = _("Selecione um arquivo")
     form.fields["descricao"].help_text = _("Breve descrição do portfólio")
 
-    return render(request, "perfil/portifolio_form.html", {"form": form, "hero_title": _("Perfil")})
+    return render(request, "perfil/portfolio_form.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required
-def perfil_portifolio_delete(request, pk):
+def perfil_portfolio_delete(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         media.delete(soft=False)
         messages.success(request, "Item do portfólio removido.")
-        return redirect("accounts:portifolio")
-    return render(request, "perfil/portifolio_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
+        return redirect("accounts:portfolio")
+    return render(request, "perfil/portfolio_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
 
 
 # ====================== AUTENTICAÇÃO ======================

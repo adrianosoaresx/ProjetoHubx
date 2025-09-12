@@ -12,7 +12,7 @@
   <p class="text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item do portfólio?" %}</p>
   <form method="post" class="flex justify-end gap-2">
     {% csrf_token %}
-    <a href="{% url 'accounts:portifolio' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
+    <a href="{% url 'accounts:portfolio' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
       {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Cancelar" %}
     </a>
