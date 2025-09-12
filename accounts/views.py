@@ -62,7 +62,7 @@ Midia = UserMedia
 
 
 def _midias_for(profile, viewer, limit: int = 6):
-    """Return recent media visible to ``viewer`` for ``profile``.
+    """Return up to ``limit`` recent media visible to ``viewer`` for ``profile``.
 
     Falls back to a simple ownership filter if a custom ``visible_to``
     manager method is not available.
@@ -75,7 +75,11 @@ def _midias_for(profile, viewer, limit: int = 6):
     else:
         qs = Midia.objects.filter(**{owner_field: profile})
 
-    return qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit]
+    return list(
+        qs.select_related(owner_field)
+        .prefetch_related("tags")
+        .order_by("-created_at")[:limit]
+    )
 
 # ====================== PERFIL ======================
 
@@ -120,7 +124,7 @@ def perfil(request):
     # Empresas do usuário
     empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
 
-    midias_recent = _midias_for(user, request.user)
+    midias_recent = _midias_for(user, request.user, limit=6)
 
     context = {
         "nucleos": nucleos,
@@ -171,7 +175,7 @@ def perfil_publico(request, pk=None, public_id=None):
 
     empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
 
-    midias_recent = _midias_for(perfil, request.user)
+    midias_recent = _midias_for(perfil, request.user, limit=6)
 
     context = {
         "perfil": perfil,
