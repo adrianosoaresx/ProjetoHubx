@@ -57,6 +57,26 @@ from .validators import cpf_validator
 
 User = get_user_model()
 
+# Alias for compatibility with newer media query helpers
+Midia = UserMedia
+
+
+def _midias_for(profile, viewer, limit: int = 6):
+    """Return recent media visible to ``viewer`` for ``profile``.
+
+    Falls back to a simple ownership filter if a custom ``visible_to``
+    manager method is not available.
+    """
+
+    owner_field = "owner" if any(f.name == "owner" for f in Midia._meta.get_fields()) else "user"
+    visible = getattr(Midia.objects, "visible_to", None)
+    if callable(visible):
+        qs = visible(viewer, profile)
+    else:
+        qs = Midia.objects.filter(**{owner_field: profile})
+
+    return qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit]
+
 # ====================== PERFIL ======================
 
 
@@ -100,12 +120,15 @@ def perfil(request):
     # Empresas do usuário
     empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
 
+    midias_recent = _midias_for(user, request.user)
+
     context = {
         "nucleos": nucleos,
         "inscricoes": inscricoes,
         "empresas": empresas,
         "hero_title": _("Perfil"),
         "profile": user,
+        "midias_recent": midias_recent,
     }
 
     return render(request, "perfil/perfil.html", context)
@@ -148,6 +171,8 @@ def perfil_publico(request, pk=None, public_id=None):
 
     empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
 
+    midias_recent = _midias_for(perfil, request.user)
+
     context = {
         "perfil": perfil,
         "nucleos": nucleos,
@@ -155,6 +180,7 @@ def perfil_publico(request, pk=None, public_id=None):
         "empresas": empresas,
         "hero_title": perfil.get_full_name() or perfil.username,
         "hero_subtitle": f"@{perfil.username}",
+        "midias_recent": midias_recent,
     }
 
     tab = request.GET.get("tab", "informacoes")
