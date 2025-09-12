@@ -193,7 +193,7 @@ def perfil_publico(request, pk=None, public_id=None):
         "portifolio_q": "",
     }
 
-    tab = request.GET.get("tab", "informacoes")
+    tab = request.GET.get("tab", "portifolio")
     if request.headers.get("HX-Request"):
         return render(request, f"perfil/partials/publico_{tab}.html", context)
 

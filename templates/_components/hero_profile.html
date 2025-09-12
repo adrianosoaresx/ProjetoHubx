@@ -22,15 +22,6 @@
       <a href="#" class="btn btn-secondary">{% trans 'Mural' %}</a>
       <a href="#" class="btn btn-outline">{% trans 'Conexões' %}</a>
     </div>
-    {% if profile == user %}
-      <div class="profile-card card mt-6">
-        <div class="card-body text-sm text-[var(--text-primary)]">
-          {% if profile.email %}
-            <p>{{ profile.email }}</p>
-          {% endif %}
-        </div>
-      </div>
-    {% endif %}
   </div>
 </section>
 {% endwith %}
