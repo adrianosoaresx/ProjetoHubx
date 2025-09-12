@@ -464,17 +464,7 @@ def perfil_midias(request):
     if q:
         medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
 
-    medias = list(medias_qs)
-    for m in medias:
-        ext = Path(m.file.name).suffix.lower()
-        if ext in {".jpg", ".jpeg", ".png", ".gif"}:
-            m.media_type = "image"
-        elif ext in {".mp4", ".webm"}:
-            m.media_type = "video"
-        elif ext == ".pdf":
-            m.media_type = "pdf"
-        else:
-            m.media_type = "other"
+    medias = medias_qs
 
     return render(
         request,

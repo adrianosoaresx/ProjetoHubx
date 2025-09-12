@@ -313,6 +313,17 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
 
     objects = MidiaQuerySet.as_manager()
 
+    @property
+    def media_type(self):
+        ext = Path(self.file.name).suffix.lower()
+        if ext in {".jpg", ".jpeg", ".png", ".gif"}:
+            return "image"
+        if ext in {".mp4", ".webm"}:
+            return "video"
+        if ext == ".pdf":
+            return "pdf"
+        return "other"
+
     class Meta:
         verbose_name = "Mídia do Usuário"
         verbose_name_plural = "Mídias do Usuário"
