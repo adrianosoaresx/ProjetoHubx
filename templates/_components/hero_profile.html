@@ -6,19 +6,17 @@
       <img src="{{ profile.cover.url }}" alt="" class="h-full w-full object-cover opacity-80 blur-sm" loading="lazy">
     {% endif %}
   </div>
-  <div class="absolute left-1/2 -bottom-12 z-10 -translate-x-1/2">
-    <div class="h-40 w-40 rounded-full ring-4 ring-[var(--bg-primary)] overflow-hidden bg-[var(--bg-tertiary)]">
-      {% if profile.avatar %}
-        <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-      {% else %}
-        <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
-          {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
-        </div>
-      {% endif %}
-    </div>
+  <div class="absolute left-1/2 -translate-x-1/2 -bottom-16 w-32 h-32 md:w-40 md:h-40 rounded-full ring-4 ring-white/90 shadow-lg overflow-hidden bg-white">
+    {% if profile.avatar %}
+      <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+    {% else %}
+      <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
+        {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+      </div>
+    {% endif %}
   </div>
 </section>
-<div class="pt-16 pb-6 text-center">
+<div class="pt-24 pb-20 md:pb-24 text-center">
   <h1 class="text-2xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
   <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
   {% if action_template %}

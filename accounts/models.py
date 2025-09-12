@@ -226,6 +226,16 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
 
         super().delete(using=using, keep_parents=keep_parents, soft=soft)
 
+    @property
+    def avatar_url(self) -> str:
+        """Retorna a URL do avatar ou um placeholder."""
+        if self.avatar:
+            try:
+                return self.avatar.url
+            except Exception:  # pragma: no cover - fallback
+                pass
+        return "https://via.placeholder.com/160"
+
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)
     followers = models.ManyToManyField(
