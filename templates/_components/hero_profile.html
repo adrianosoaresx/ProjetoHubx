@@ -1,11 +1,37 @@
 {% load i18n %}
 {% with profile=profile|default:user %}
-<section class="hero-profile">
+<section class="relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);">
   {% if profile.cover %}
-    <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80" loading="lazy">
+    <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" loading="lazy">
   {% endif %}
-  <div class="relative z-10 flex flex-col items-center">
-    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full ring-4 ring-[var(--bg-primary)] shadow-lg overflow-hidden bg-[var(--bg-primary)]">
+  <div class="relative mx-auto max-w-7xl px-4 pb-24 pt-16 text-center text-white">
+    <h1 class="text-3xl md:text-4xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
+    <p class="text-sm md:text-base text-white/80">@{{ profile.username }}</p>
+    {% if is_owner %}
+      <div class="mt-6 flex flex-col items-center gap-4">
+        {% if profile.email %}
+          <a href="mailto:{{ profile.email }}" class="rounded-lg bg-white/10 px-4 py-2 text-sm hover:bg-white/20">{{ profile.email }}</a>
+        {% endif %}
+        {% if profile.redes_sociais %}
+          <div class="flex gap-4 text-xl">
+            {% for nome, link in profile.redes_sociais.items %}
+              <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-white/80">
+                <span class="sr-only">{{ nome|title }}</span>
+                <i class="fa-brands fa-{{ nome }}"></i>
+              </a>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+    <div class="mt-8 flex justify-center gap-2">
+      <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">{% trans 'Empresas' %}</a>
+      <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">{% trans 'Mural' %}</a>
+      <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">{% trans 'Conexões' %}</a>
+    </div>
+  </div>
+  <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2">
+    <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
       {% if profile.avatar %}
         <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
       {% else %}

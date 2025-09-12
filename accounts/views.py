@@ -75,11 +75,8 @@ def _portifolio_for(profile, viewer, limit: int = 6):
     else:
         qs = Midia.objects.filter(**{owner_field: profile})
 
-    return list(
-        qs.select_related(owner_field)
-        .prefetch_related("tags")
-        .order_by("-created_at")[:limit]
-    )
+    return list(qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit])
+
 
 # ====================== PERFIL ======================
 
@@ -132,6 +129,7 @@ def perfil(request):
         "empresas": empresas,
         "hero_title": _("Perfil"),
         "profile": user,
+        "is_owner": True,
         "portifolio_recent": portifolio_recent,
         "portifolio_form": MediaForm(),
         "portifolio_show_form": False,
@@ -187,6 +185,7 @@ def perfil_publico(request, pk=None, public_id=None):
         "empresas": empresas,
         "hero_title": perfil.get_full_name() or perfil.username,
         "hero_subtitle": f"@{perfil.username}",
+        "is_owner": request.user == perfil,
         "portifolio_recent": portifolio_recent,
         "portifolio_form": None,
         "portifolio_show_form": False,
