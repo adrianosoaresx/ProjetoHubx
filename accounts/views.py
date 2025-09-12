@@ -460,7 +460,7 @@ def perfil_midias(request):
     form.fields["file"].help_text = _("Selecione um arquivo")
     form.fields["descricao"].help_text = _("Breve descrição da mídia")
 
-    medias_qs = request.user.medias.order_by("-created_at")
+    medias_qs = request.user.medias.select_related("user").prefetch_related("tags").order_by("-created_at")
     if q:
         medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
 
