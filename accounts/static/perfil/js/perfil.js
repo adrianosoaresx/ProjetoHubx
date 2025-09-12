@@ -61,7 +61,7 @@ function initMatrixRain() {
 
 // (demais funções seguem iguais até o fim do arquivo)
 
-function initTabs() {
+export function initTabs() {
     const tabs = document.querySelectorAll('[role="tab"]')
     tabs.forEach(tab => {
         tab.addEventListener('click', ev => {
@@ -72,7 +72,10 @@ function initTabs() {
                 const targetId = t.getAttribute('aria-controls') || t.dataset.tabTarget || (t.getAttribute('href') || '').replace(/^#/, '')
                 if (!targetId) return
                 const section = document.getElementById(targetId)
-                if (section) section.hidden = !selected
+                if (section) {
+                    section.hidden = !selected
+                    section.setAttribute('aria-hidden', selected ? 'false' : 'true')
+                }
             })
         })
     })
