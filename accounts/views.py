@@ -133,6 +133,9 @@ def perfil(request):
         "hero_title": _("Perfil"),
         "profile": user,
         "midias_recent": midias_recent,
+        "midias_form": MediaForm(),
+        "midias_show_form": False,
+        "midias_q": "",
     }
 
     return render(request, "perfil/perfil.html", context)
@@ -185,6 +188,9 @@ def perfil_publico(request, pk=None, public_id=None):
         "hero_title": perfil.get_full_name() or perfil.username,
         "hero_subtitle": f"@{perfil.username}",
         "midias_recent": midias_recent,
+        "midias_form": None,
+        "midias_show_form": False,
+        "midias_q": "",
     }
 
     tab = request.GET.get("tab", "informacoes")
