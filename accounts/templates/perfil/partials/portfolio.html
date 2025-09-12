@@ -5,7 +5,7 @@
 </div>
 
 {% if show_form %}
-  <form id="formPortifolio" class="space-y-6" method="post" action="{% url 'accounts:portifolio' %}" enctype="multipart/form-data">
+  <form id="formPortfolio" class="space-y-6" method="post" action="{% url 'accounts:portfolio' %}" enctype="multipart/form-data">
     {% csrf_token %}
     {% for field in form %}
       {% include '_forms/field.html' with field=field %}
@@ -18,7 +18,7 @@
   </form>
 {% else %}
   {% if not publico %}
-    <a href="{% url 'accounts:portifolio' %}?adicionar=1" class="btn btn-primary">
+    <a href="{% url 'accounts:portfolio' %}?adicionar=1" class="btn btn-primary">
       {% trans "Portfólio" %}
     </a>
   {% endif %}
@@ -34,15 +34,15 @@
     <article class="card relative p-3">
       {% if not publico %}
       <div class="absolute top-2 right-2 flex gap-2">
-        <a href="{% url 'accounts:portifolio_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
+        <a href="{% url 'accounts:portfolio_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
           {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
         </a>
-        <a href="{% url 'accounts:portifolio_delete' media.pk %}" class="btn-danger btn-sm" aria-label="{% trans 'Excluir' %}">
+        <a href="{% url 'accounts:portfolio_delete' media.pk %}" class="btn-danger btn-sm" aria-label="{% trans 'Excluir' %}">
           {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
         </a>
       </div>
       {% endif %}
-      <a href="{% url 'accounts:portifolio_detail' media.pk %}">
+      <a href="{% url 'accounts:portfolio_detail' media.pk %}">
         {% if media.media_type == 'image' %}
           <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded" loading="lazy">
         {% elif media.media_type == 'video' %}

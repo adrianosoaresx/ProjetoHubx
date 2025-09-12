@@ -74,7 +74,7 @@ msgstr ""
 
 #: templates/accounts/password_reset.html:15
 #: templates/accounts/resend_confirmation.html:11
-#: templates/perfil/partials/portifolio.html:16
+#: templates/perfil/partials/portfolio.html:16
 msgid "Enviar"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 
 #: templates/perfil/conexoes.html:116
 #: templates/perfil/informacoes_pessoais.html:133
-#: templates/perfil/portifolio.html:15 templates/perfil/redes_sociais.html:29
+#: templates/perfil/portfolio.html:15 templates/perfil/redes_sociais.html:29
 #: templates/perfil/seguranca.html:100 templates/register/cpf.html:33
 #: templates/register/email.html:33 templates/register/foto.html:34
 #: templates/register/nome.html:33 templates/register/senha.html:39
@@ -369,83 +369,83 @@ msgstr ""
 msgid "Salvar Alterações"
 msgstr ""
 
-#: templates/perfil/portifolio_confirm_delete.html:3
-#: templates/perfil/portifolio_confirm_delete.html:7
+#: templates/perfil/portfolio_confirm_delete.html:3
+#: templates/perfil/portfolio_confirm_delete.html:7
 msgid "Remover Portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio_confirm_delete.html:8
+#: templates/perfil/portfolio_confirm_delete.html:8
 msgid "Tem certeza que deseja remover este item do portfólio?"
 msgstr ""
 
-#: templates/perfil/portifolio_confirm_delete.html:11
-#: templates/perfil/portifolio_form.html:16
+#: templates/perfil/portfolio_confirm_delete.html:11
+#: templates/perfil/portfolio_form.html:16
 msgid "Cancelar"
 msgstr ""
 
-#: templates/perfil/portifolio_confirm_delete.html:12
+#: templates/perfil/portfolio_confirm_delete.html:12
 msgid "Remover"
 msgstr ""
 
-#: templates/perfil/portifolio_detail.html:11
+#: templates/perfil/portfolio_detail.html:11
 msgid "Voltar para portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio_form.html:4 templates/perfil/portifolio_form.html:9
+#: templates/perfil/portfolio_form.html:4 templates/perfil/portfolio_form.html:9
 msgid "Editar Portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio_form.html:4
+#: templates/perfil/portfolio_form.html:4
 msgid "Novo Portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio_form.html:9
+#: templates/perfil/portfolio_form.html:9
 msgid "Cadastrar Portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio_form.html:17
+#: templates/perfil/portfolio_form.html:17
 msgid "Salvar"
 msgstr ""
 
-#: templates/perfil/portifolio_detail.html:4 templates/perfil/portifolio.html:4 templates/perfil/portifolio.html:9
-#: templates/perfil/partials/portifolio.html:22
+#: templates/perfil/portfolio_detail.html:4 templates/perfil/portfolio.html:4 templates/perfil/portfolio.html:9
+#: templates/perfil/partials/portfolio.html:22
 msgid "Portfólio"
 msgstr ""
 
-#: templates/perfil/portifolio.html:10
+#: templates/perfil/portfolio.html:10
 msgid "Gerencie suas imagens, vídeos e documentos"
 msgstr ""
 
-#: templates/perfil/portifolio.html:17
+#: templates/perfil/portfolio.html:17
 msgid "Enviar arquivo"
 msgstr ""
 
-#: templates/perfil/portifolio.html:21
+#: templates/perfil/portfolio.html:21
 msgid "Descrição"
 msgstr ""
 
-#: templates/perfil/portifolio.html:25
+#: templates/perfil/portfolio.html:25
 msgid "Tags"
 msgstr ""
 
-#: templates/perfil/portifolio.html:26
+#: templates/perfil/portfolio.html:26
 msgid "paisagem, viagem"
 msgstr ""
 
 
-#: templates/perfil/partials/portifolio.html:26
+#: templates/perfil/partials/portfolio.html:26
 msgid "Buscar por descrição ou tags..."
 msgstr ""
 
-#: templates/perfil/partials/portifolio.html:50
+#: templates/perfil/partials/portfolio.html:50
 msgid "Editar"
 msgstr ""
 
-#: templates/perfil/partials/portifolio.html:53
+#: templates/perfil/partials/portfolio.html:53
 msgid "Excluir"
 msgstr ""
 
-#: templates/perfil/partials/portifolio.html:67
+#: templates/perfil/partials/portfolio.html:67
 msgid "Nenhum arquivo enviado."
 msgstr ""
 
