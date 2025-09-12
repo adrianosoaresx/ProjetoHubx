@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block hero %}
-  {% include "_components/hero_profile.html" %}
+  {% include "_components/hero_profile.html" with is_owner=is_owner profile=profile %}
 {% endblock %}
 {% block content %}
 <div class="profile-card mb-6">
