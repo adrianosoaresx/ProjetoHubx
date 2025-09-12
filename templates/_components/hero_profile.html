@@ -1,28 +1,36 @@
 {% load i18n %}
 {% with profile=profile|default:user %}
-<section class="relative">
-  <div class="relative z-0 h-48 w-full overflow-hidden bg-[var(--bg-secondary)]">
-    {% if profile.cover %}
-      <img src="{{ profile.cover.url }}" alt="" class="h-full w-full object-cover opacity-80 blur-sm" loading="lazy">
-    {% endif %}
-  </div>
-  <div class="absolute left-1/2 -translate-x-1/2 -bottom-16 w-32 h-32 md:w-40 md:h-40 rounded-full ring-4 ring-white/90 shadow-lg overflow-hidden bg-white">
-    {% if profile.avatar %}
-      <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-    {% else %}
-      <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
-        {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+<section class="hero-profile relative overflow-hidden" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);">
+  {% if profile.cover %}
+    <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-80" loading="lazy">
+  {% endif %}
+  <div class="absolute inset-0 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"></div>
+  <div class="relative z-10 flex flex-col items-center py-12">
+    <div class="w-32 h-32 md:w-40 md:h-40 rounded-full ring-4 ring-[var(--bg-primary)] shadow-lg overflow-hidden bg-[var(--bg-primary)]">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+      {% else %}
+        <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
+          {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+        </div>
+      {% endif %}
+    </div>
+    <h1 class="mt-4 text-2xl font-bold text-[var(--text-primary)]">{{ profile.get_full_name|default:profile.username }}</h1>
+    <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
+    <div class="profile-actions mt-4 flex justify-center gap-2">
+      <a href="#" class="btn btn-primary">{% trans 'Empresas' %}</a>
+      <a href="#" class="btn btn-secondary">{% trans 'Mural' %}</a>
+      <a href="#" class="btn btn-outline">{% trans 'Conexões' %}</a>
+    </div>
+    {% if profile == user %}
+      <div class="profile-card card mt-6">
+        <div class="card-body text-sm text-[var(--text-primary)]">
+          {% if profile.email %}
+            <p>{{ profile.email }}</p>
+          {% endif %}
+        </div>
       </div>
     {% endif %}
   </div>
 </section>
-<div class="pt-24 pb-20 md:pb-24 text-center">
-  <h1 class="text-2xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
-  <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
-  {% if action_template %}
-  <div class="mt-4 flex justify-center gap-2">
-    {% include action_template %}
-  </div>
-  {% endif %}
-</div>
 {% endwith %}
