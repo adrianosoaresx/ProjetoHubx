@@ -281,6 +281,23 @@ class MediaTag(TimeStampedModel, SoftDeleteModel):
         return self.nome
 
 
+class MidiaQuerySet(models.QuerySet):
+    """QuerySet personalizado para :class:`UserMedia`."""
+
+    def visible_to(self, viewer, owner):
+        """Retorna mídias visíveis ao ``viewer``.
+
+        Se ``viewer`` for o mesmo que ``owner`` (dono das mídias), todas as
+        mídias do ``owner`` são retornadas. Caso contrário, apenas as mídias
+        marcadas como públicas são incluídas.
+        """
+
+        qs = self.filter(user=owner)
+        if viewer == owner:
+            return qs
+        return qs.filter(publico=True)
+
+
 class UserMedia(TimeStampedModel, SoftDeleteModel):
     """Arquivos de mídia (imagens, vídeos, PDFs) enviados pelo usuário."""
 
@@ -292,6 +309,9 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
     file = models.FileField(upload_to="user_media/")
     descricao = models.CharField("Descrição", max_length=255, blank=True)
     tags = models.ManyToManyField(MediaTag, related_name="medias", blank=True)
+    publico = models.BooleanField(default=True)
+
+    objects = MidiaQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Mídia do Usuário"
