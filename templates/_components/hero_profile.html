@@ -6,7 +6,7 @@
       <img src="{{ profile.cover.url }}" alt="" class="h-full w-full object-cover opacity-80 blur-sm" loading="lazy">
     {% endif %}
   </div>
-  <div class="absolute inset-x-0 -bottom-12 z-10 flex justify-center">
+  <div class="absolute left-1/2 -bottom-12 z-10 -translate-x-1/2">
     <div class="h-40 w-40 rounded-full ring-4 ring-[var(--bg-primary)] overflow-hidden bg-[var(--bg-tertiary)]">
       {% if profile.avatar %}
         <img src="{{ profile.avatar.url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
