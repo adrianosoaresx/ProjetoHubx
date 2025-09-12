@@ -326,7 +326,7 @@ class UserMedia(TimeStampedModel, SoftDeleteModel):
 
     class Meta:
         verbose_name = "Mídia do Usuário"
-        verbose_name_plural = "Mídias do Usuário"
+        verbose_name_plural = "Portfólio do Usuário"
 
     def clean(self) -> None:
         """Valida o tamanho e a extensão do arquivo enviado."""

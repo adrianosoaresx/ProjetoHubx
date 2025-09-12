@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static i18n lucide_icons %}
+
+{% block title %}{% trans "Portfólio" %} | Hubx{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero.html' with title=_("Portfólio") %}
+{% endblock %}
+
+{% block content %}
+<section id="portifolio" class="perfil-section active">
+  {% include "perfil/partials/portifolio.html" with medias=medias publico=False form=form show_form=show_form q=q %}
+</section>
+
+<div class="mt-8 text-center">
+  <a href="{% url 'accounts:perfil' %}" class="text-sm text-primary hover:underline">← {% trans "Voltar" %}</a>
+</div>
+{% endblock %}

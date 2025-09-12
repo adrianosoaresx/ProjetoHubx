@@ -74,7 +74,7 @@ msgstr ""
 
 #: templates/accounts/password_reset.html:15
 #: templates/accounts/resend_confirmation.html:11
-#: templates/perfil/midias.html:30
+#: templates/perfil/partials/portifolio.html:16
 msgid "Enviar"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 
 #: templates/perfil/conexoes.html:116
 #: templates/perfil/informacoes_pessoais.html:133
-#: templates/perfil/midias.html:73 templates/perfil/redes_sociais.html:29
+#: templates/perfil/portifolio.html:15 templates/perfil/redes_sociais.html:29
 #: templates/perfil/seguranca.html:100 templates/register/cpf.html:33
 #: templates/register/email.html:33 templates/register/foto.html:34
 #: templates/register/nome.html:33 templates/register/senha.html:39
@@ -369,89 +369,83 @@ msgstr ""
 msgid "Salvar Alterações"
 msgstr ""
 
-#: templates/perfil/midia_confirm_delete.html:3
-#: templates/perfil/midia_confirm_delete.html:7
-msgid "Remover Mídia"
+#: templates/perfil/portifolio_confirm_delete.html:3
+#: templates/perfil/portifolio_confirm_delete.html:7
+msgid "Remover Portfólio"
 msgstr ""
 
-#: templates/perfil/midia_confirm_delete.html:8
-msgid "Tem certeza que deseja remover esta mídia?"
+#: templates/perfil/portifolio_confirm_delete.html:8
+msgid "Tem certeza que deseja remover este item do portfólio?"
 msgstr ""
 
-#: templates/perfil/midia_confirm_delete.html:11
-#: templates/perfil/midia_form.html:16
+#: templates/perfil/portifolio_confirm_delete.html:11
+#: templates/perfil/portifolio_form.html:16
 msgid "Cancelar"
 msgstr ""
 
-#: templates/perfil/midia_confirm_delete.html:12
+#: templates/perfil/portifolio_confirm_delete.html:12
 msgid "Remover"
 msgstr ""
 
-#: templates/perfil/midia_detail.html:4
-msgid "Mídia"
+#: templates/perfil/portifolio_detail.html:11
+msgid "Voltar para portfólio"
 msgstr ""
 
-#: templates/perfil/midia_detail.html:11
-msgid "Voltar para mídias"
+#: templates/perfil/portifolio_form.html:4 templates/perfil/portifolio_form.html:9
+msgid "Editar Portfólio"
 msgstr ""
 
-#: templates/perfil/midia_form.html:4 templates/perfil/midia_form.html:9
-msgid "Editar Mídia"
+#: templates/perfil/portifolio_form.html:4
+msgid "Novo Portfólio"
 msgstr ""
 
-#: templates/perfil/midia_form.html:4
-msgid "Nova Mídia"
+#: templates/perfil/portifolio_form.html:9
+msgid "Cadastrar Portfólio"
 msgstr ""
 
-#: templates/perfil/midia_form.html:9
-msgid "Cadastrar Mídia"
-msgstr ""
-
-#: templates/perfil/midia_form.html:17
+#: templates/perfil/portifolio_form.html:17
 msgid "Salvar"
 msgstr ""
 
-#: templates/perfil/midias.html:4 templates/perfil/midias.html:9
-msgid "Mídias"
+#: templates/perfil/portifolio_detail.html:4 templates/perfil/portifolio.html:4 templates/perfil/portifolio.html:9
+#: templates/perfil/perfil.html:20 templates/perfil/publico.html:20
+#: templates/perfil/partials/portifolio.html:3 templates/perfil/partials/portifolio.html:22
+msgid "Portfólio"
 msgstr ""
 
-#: templates/perfil/midias.html:10
+#: templates/perfil/portifolio.html:10
 msgid "Gerencie suas imagens, vídeos e documentos"
 msgstr ""
 
-#: templates/perfil/midias.html:17
+#: templates/perfil/portifolio.html:17
 msgid "Enviar arquivo"
 msgstr ""
 
-#: templates/perfil/midias.html:21
+#: templates/perfil/portifolio.html:21
 msgid "Descrição"
 msgstr ""
 
-#: templates/perfil/midias.html:25
+#: templates/perfil/portifolio.html:25
 msgid "Tags"
 msgstr ""
 
-#: templates/perfil/midias.html:26
+#: templates/perfil/portifolio.html:26
 msgid "paisagem, viagem"
 msgstr ""
 
-#: templates/perfil/midias.html:37
-msgid "Adicionar Mídias"
-msgstr ""
-
-#: templates/perfil/midias.html:42
+#: templates/perfil/partials/portifolio.html:26
 msgid "Buscar por descrição ou tags..."
 msgstr ""
 
-#: templates/perfil/midias.html:50
+#: templates/perfil/partials/portifolio.html:50
 msgid "Editar"
 msgstr ""
 
-#: templates/perfil/midias.html:51
+#: templates/perfil/partials/portifolio.html:53
 msgid "Excluir"
 msgstr ""
 
-#: templates/perfil/midias.html:67
+#: templates/perfil/partials/portifolio.html:67
 msgid "Nenhum arquivo enviado."
 msgstr ""
 
