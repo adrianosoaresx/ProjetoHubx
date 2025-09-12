@@ -516,8 +516,13 @@
 
 /* Hero gradient parametrizável */
 :root {
-  --hero-from: #3b82f6; /* azul-500 */
-  --hero-to:   #1e40af; /* azul-900 */
+  --hero-from: var(--color-primary-500);
+  --hero-to: var(--color-primary-700);
+}
+
+.dark {
+  --hero-from: var(--color-primary-700);
+  --hero-to: var(--color-primary-900);
 }
 
 @layer components {
@@ -554,4 +559,18 @@
   .errorlist { @apply mt-1 p-0 list-none text-xs text-[var(--error)]; }
   .errorlist li { @apply mt-1; }
   [aria-invalid="true"] { @apply border-[var(--error)] bg-[var(--error-light)]; }
+}
+
+@layer components {
+  .hero-profile {
+    @apply relative overflow-hidden flex flex-col items-center justify-center text-center py-12 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)];
+  }
+
+  .profile-actions {
+    @apply flex justify-center gap-2;
+  }
+
+  .profile-card {
+    @apply card bg-[var(--bg-primary)] text-[var(--text-primary)] border-[var(--border)];
+  }
 }
