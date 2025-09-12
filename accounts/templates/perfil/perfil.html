@@ -5,6 +5,11 @@
   {% include "_components/hero_profile.html" %}
 {% endblock %}
 {% block content %}
+<div class="profile-card card mb-6">
+  <div class="card-body">
+    {% include "perfil/partials/detail_informacoes.html" %}
+  </div>
+</div>
 <div class="card-header">
   <nav>
     <ul role="tablist" class="-mb-px flex flex-wrap gap-2 border-b border-[var(--border)]">
@@ -26,13 +31,7 @@
           {% trans "Conexões" %}
         </a>
       </li>
-      <li>
-        <a href="#tab-infos" data-tab-target="tab-infos" role="tab" aria-controls="tab-infos" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]"
-           class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
-          {% trans "Infos" %}
-        </a>
-      </li>
-    </ul>
+      </ul>
   </nav>
 </div>
 
@@ -45,14 +44,10 @@
       {% include "perfil/partials/portifolio.html" with medias=portifolio_recent publico=False form=portifolio_form show_form=portifolio_show_form q=portifolio_q %}
     </section>
 
-  <section id="tab-conexoes" role="tabpanel" hidden>
-    {% include "perfil/partials/_tab_conexoes_embed.html" with profile=request.user %}
-  </section>
-
-  <section id="tab-infos" role="tabpanel" hidden>
-    {% include "perfil/partials/detail_informacoes.html" %}
-  </section>
-</div>
+    <section id="tab-conexoes" role="tabpanel" hidden>
+      {% include "perfil/partials/_tab_conexoes_embed.html" with profile=request.user %}
+    </section>
+  </div>
 {% endblock %}
 {% block scripts %}
 <script src="{% static 'perfil/js/perfil.js' %}"></script>
