@@ -39,9 +39,9 @@
     {% include "perfil/partials/_tab_feed.html" with profile=perfil %}
   </section>
 
-  <section id="tab-midias" role="tabpanel" hidden>
-    {% include "perfil/partials/_tab_midias_embed.html" with profile=perfil publico=True %}
-  </section>
+    <section id="tab-midias" role="tabpanel" hidden>
+      {% include "perfil/partials/midias.html" with medias=midias_recent publico=True %}
+    </section>
 
   <section id="tab-conexoes" role="tabpanel" hidden>
     {% include "perfil/partials/_tab_conexoes_embed.html" with profile=perfil %}
