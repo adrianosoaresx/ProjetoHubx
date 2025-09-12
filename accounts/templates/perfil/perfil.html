@@ -38,15 +38,15 @@
 
 <div class="card-body">
   <section id="tab-mural">
-    {% include "perfil/partials/_tab_feed.html" %}
+    {% include "perfil/partials/_tab_feed.html" with profile=request.user %}
   </section>
 
   <section id="tab-midias" hidden>
-    {% include "perfil/partials/_tab_midias_embed.html" %}
+    {% include "perfil/partials/_tab_midias_embed.html" with profile=request.user %}
   </section>
 
   <section id="tab-conexoes" hidden>
-    {% include "perfil/partials/_tab_conexoes_embed.html" %}
+    {% include "perfil/partials/_tab_conexoes_embed.html" with profile=request.user %}
   </section>
 
   <section id="tab-infos" hidden>
