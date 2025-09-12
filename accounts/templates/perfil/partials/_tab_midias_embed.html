@@ -6,17 +6,21 @@
   {% endif %}
 </div>
 <div class="card-grid">
-  {% with limit=limit|default:6 %}
-    {% with slice_str=":"|add:limit %}
-      {% for media in profile.media_set.all|slice:slice_str %}
-        <article class="card">
-          <a href="{% url 'accounts:midia_detail' media.pk %}">
+  {% for media in midias_recent %}
+      <article class="card">
+        <a href="{% url 'accounts:midia_detail' media.pk %}">
+          {% if media.media_type == 'image' %}
             <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="object-cover w-full h-40 rounded" loading="lazy">
-          </a>
-        </article>
-      {% empty %}
-        <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum arquivo enviado." %}</p>
-      {% endfor %}
-    {% endwith %}
-  {% endwith %}
+          {% elif media.media_type == 'video' %}
+            <video src="{{ media.file.url }}" class="w-full h-40 rounded" controls></video>
+          {% elif media.media_type == 'pdf' %}
+            <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
+          {% else %}
+            <span class="text-sm">{{ media.file.name }}</span>
+          {% endif %}
+        </a>
+      </article>
+  {% empty %}
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum arquivo enviado." %}</p>
+  {% endfor %}
 </div>
