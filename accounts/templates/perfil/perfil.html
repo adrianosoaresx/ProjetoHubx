@@ -15,9 +15,9 @@
         </a>
       </li>
       <li>
-        <a href="#tab-midias" data-tab-target="tab-midias" role="tab" aria-controls="tab-midias" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]"
+        <a href="#tab-portifolio" data-tab-target="tab-portifolio" role="tab" aria-controls="tab-portifolio" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]"
            class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
-          {% trans "Mídias" %}
+          {% trans "Portfólio" %}
         </a>
       </li>
       <li>
@@ -41,8 +41,8 @@
     {% include "perfil/partials/_tab_feed.html" with profile=request.user %}
   </section>
 
-    <section id="tab-midias" role="tabpanel" hidden>
-      {% include "perfil/partials/midias.html" with medias=midias_recent publico=False form=midias_form show_form=midias_show_form q=midias_q %}
+    <section id="tab-portifolio" role="tabpanel" hidden>
+      {% include "perfil/partials/portifolio.html" with medias=portifolio_recent publico=False form=portifolio_form show_form=portifolio_show_form q=portifolio_q %}
     </section>
 
   <section id="tab-conexoes" role="tabpanel" hidden>

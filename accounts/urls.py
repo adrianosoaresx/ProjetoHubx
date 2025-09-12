@@ -52,14 +52,14 @@ urlpatterns = [
         views.recusar_conexao,
         name="recusar_conexao",
     ),
-    # Mídias
-    path("perfil/midias/", views.perfil_midias, name="midias"),
-    path("perfil/midias/<int:pk>/", views.perfil_midia_detail, name="midia_detail"),
-    path("perfil/midias/<int:pk>/editar/", views.perfil_midia_edit, name="midia_edit"),
+    # Portfólio
+    path("perfil/portifolio/", views.perfil_portifolio, name="portifolio"),
+    path("perfil/portifolio/<int:pk>/", views.perfil_portifolio_detail, name="portifolio_detail"),
+    path("perfil/portifolio/<int:pk>/editar/", views.perfil_portifolio_edit, name="portifolio_edit"),
     path(
-        "perfil/midias/<int:pk>/excluir/",
-        views.perfil_midia_delete,
-        name="midia_delete",
+        "perfil/portifolio/<int:pk>/excluir/",
+        views.perfil_portifolio_delete,
+        name="portifolio_delete",
     ),
     path("excluir/", views.excluir_conta, name="excluir_conta"),
     path(
