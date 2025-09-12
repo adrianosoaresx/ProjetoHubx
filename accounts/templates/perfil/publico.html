@@ -11,22 +11,22 @@
   <nav>
     <ul role="tablist" class="-mb-px flex flex-wrap gap-2 border-b border-[var(--border)]">
       <li>
-        <a href="#tab-mural" data-tab-target="tab-mural" role="tab" aria-selected="true" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">
+        <a href="#tab-mural" data-tab-target="tab-mural" role="tab" aria-controls="tab-mural" aria-selected="true" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-primary text-primary">
           {% trans "Mural" %}
         </a>
       </li>
       <li>
-        <a href="#tab-midias" data-tab-target="tab-midias" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+        <a href="#tab-midias" data-tab-target="tab-midias" role="tab" aria-controls="tab-midias" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
           {% trans "Mídias" %}
         </a>
       </li>
       <li>
-        <a href="#tab-conexoes" data-tab-target="tab-conexoes" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+        <a href="#tab-conexoes" data-tab-target="tab-conexoes" role="tab" aria-controls="tab-conexoes" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
           {% trans "Conexões" %}
         </a>
       </li>
       <li>
-        <a href="#tab-infos" data-tab-target="tab-infos" role="tab" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
+        <a href="#tab-infos" data-tab-target="tab-infos" role="tab" aria-controls="tab-infos" aria-selected="false" data-active-class="border-primary text-primary" data-inactive-class="border-transparent text-[var(--text-secondary)]" class="inline-flex items-center gap-2 rounded-t px-3 py-2 text-sm font-medium border-b-2 border-transparent text-[var(--text-secondary)] hover:text-primary hover:border-primary">
           {% trans "Informações" %}
         </a>
       </li>
@@ -35,19 +35,19 @@
 </div>
 
 <div class="card-body">
-  <section id="tab-mural">
+  <section id="tab-mural" role="tabpanel">
     {% include "perfil/partials/_tab_feed.html" with profile=perfil %}
   </section>
 
-  <section id="tab-midias" hidden>
+  <section id="tab-midias" role="tabpanel" hidden>
     {% include "perfil/partials/_tab_midias_embed.html" with profile=perfil publico=True %}
   </section>
 
-  <section id="tab-conexoes" hidden>
+  <section id="tab-conexoes" role="tabpanel" hidden>
     {% include "perfil/partials/_tab_conexoes_embed.html" with profile=perfil %}
   </section>
 
-  <section id="tab-infos" hidden>
+  <section id="tab-infos" role="tabpanel" hidden>
     {% include "perfil/partials/publico_informacoes.html" with profile=perfil publico=True %}
   </section>
 </div>

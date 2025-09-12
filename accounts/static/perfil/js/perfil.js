@@ -69,7 +69,7 @@ function initTabs() {
             tabs.forEach(t => {
                 const selected = t === tab
                 t.setAttribute('aria-selected', String(selected))
-                const targetId = t.dataset.tabTarget || (t.getAttribute('href') || '').replace(/^#/, '')
+                const targetId = t.getAttribute('aria-controls') || t.dataset.tabTarget || (t.getAttribute('href') || '').replace(/^#/, '')
                 if (!targetId) return
                 const section = document.getElementById(targetId)
                 if (section) section.hidden = !selected
