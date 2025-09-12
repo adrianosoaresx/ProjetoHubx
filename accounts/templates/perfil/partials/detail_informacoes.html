@@ -1,10 +1,4 @@
 {% load i18n %}
-{% if user.biografia %}
-  <div class="mb-6">
-    <p class="text-[var(--text-primary)] italic border-l-4 border-primary pl-4">{{ user.biografia }}</p>
-  </div>
-{% endif %}
-
 <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
@@ -13,10 +7,6 @@
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
-  </div>
-  <div>
-    <dt class="text-[var(--text-secondary)]">{% trans "WhatsApp" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ user.whatsapp }}</dd>
   </div>
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
@@ -29,16 +19,6 @@
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
-  </div>
-  <div>
-    <dt class="text-[var(--text-secondary)]">{% trans "Redes Sociais" %}</dt>
-    {% if user.redes_sociais %}
-      {% for nome, link in user.redes_sociais.items %}
-        <dd><a href="{{ link }}" class="text-primary hover:underline" target="_blank">{{ nome|title }}</a></dd>
-      {% endfor %}
-    {% else %}
-      <dd class="font-medium text-[var(--text-primary)]">-</dd>
-    {% endif %}
   </div>
 </dl>
 
