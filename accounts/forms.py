@@ -195,7 +195,7 @@ class MediaForm(forms.ModelForm):
 
     class Meta:
         model = UserMedia
-        fields = ("file", "descricao", "tags_field")
+        fields = ("file", "descricao", "publico", "tags_field")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

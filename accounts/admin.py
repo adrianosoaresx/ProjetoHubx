@@ -56,7 +56,8 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(UserMedia)
 class UserMediaAdmin(admin.ModelAdmin):
-    list_display = ["user", "file"]
+    list_display = ["user", "file", "publico"]
+    list_filter = ["publico"]
 
 
 @admin.register(MediaTag)
