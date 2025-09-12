@@ -1,24 +1,67 @@
-{% load i18n %}
-<div class="section-header mb-4 flex items-center justify-between">
-  <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Mídias recentes" %}</h2>
-  {% if not publico %}
-    <a href="{% url 'accounts:midias' %}" class="btn-secondary btn-sm">{% trans "Gerenciar" %}</a>
-  {% endif %}
+{% load i18n lucide_icons %}
+<div class="section-header mb-6">
+  <h2 class="text-xl font-semibold text-[var(--text-primary)]">{% trans "Mídias" %}</h2>
+  <p class="text-sm text-[var(--text-primary)]">{% trans "Gerencie suas imagens, vídeos e documentos" %}</p>
 </div>
-<div class="card-grid">
+
+{% if show_form %}
+  <form id="formMidias" class="space-y-6" method="post" action="{% url 'accounts:midias' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
+    <div>
+      <button type="submit" class="btn btn-primary">
+        {% trans "Enviar" %}
+      </button>
+    </div>
+  </form>
+{% else %}
+  {% if not publico %}
+    <a href="{% url 'accounts:midias' %}?adicionar=1" class="btn btn-primary">
+      {% trans "Adicionar Mídias" %}
+    </a>
+  {% endif %}
+{% endif %}
+
+<form method="get" class="mt-6">
+  <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Buscar por descrição ou tags...' %}"
+         class="form-input w-full rounded-lg px-4 py-2 text-sm" aria-label="{% trans 'Buscar' %}" aria-invalid="false">
+</form>
+
+<div class="card-grid mt-6">
   {% for media in medias %}
-    <article class="card">
+    <article class="card relative p-3">
+      {% if not publico %}
+      <div class="absolute top-2 right-2 flex gap-2">
+        <a href="{% url 'accounts:midia_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
+          {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
+        </a>
+        <a href="{% url 'accounts:midia_delete' media.pk %}" class="btn-danger btn-sm" aria-label="{% trans 'Excluir' %}">
+          {% lucide 'trash' class='w-4 h-4' aria_hidden='true' %}
+        </a>
+      </div>
+      {% endif %}
       <a href="{% url 'accounts:midia_detail' media.pk %}">
         {% if media.media_type == 'image' %}
-          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="object-cover w-full h-40 rounded" loading="lazy">
+          <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="w-full h-40 object-cover rounded" loading="lazy">
         {% elif media.media_type == 'video' %}
-          <video src="{{ media.file.url }}" class="w-full h-40 rounded" controls></video>
+          <video src="{{ media.file.url }}" class="w-full h-40 object-cover rounded" controls></video>
         {% elif media.media_type == 'pdf' %}
           <object data="{{ media.file.url }}" type="application/pdf" class="w-full h-40 rounded"></object>
         {% else %}
           <span class="text-sm text-[var(--text-primary)]">{{ media.file.name }}</span>
         {% endif %}
       </a>
+      <div class="card-body mt-2">
+        <p class="text-sm font-medium text-[var(--text-primary)]">{{ media.descricao }}</p>
+        <p class="text-xs text-[var(--text-primary)]">{{ media.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <div class="flex flex-wrap gap-1 mt-1">
+          {% for tag in media.tags.all %}
+            <span class="bg-[var(--bg-secondary)] text-[var(--text-primary)] text-xs px-2 py-0.5 rounded">{{ tag.nome }}</span>
+          {% endfor %}
+        </div>
+      </div>
     </article>
   {% empty %}
     <p class="text-sm text-[var(--text-primary)]">{% trans "Nenhum arquivo enviado." %}</p>
