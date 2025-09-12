@@ -172,3 +172,57 @@ def test_meu_mural(client, nucleado_user, posts):
     assert posts[0].conteudo in contents
     assert posts[2].conteudo in contents
     assert posts[3].conteudo in contents
+
+
+@pytest.mark.urls("Hubx.urls")
+def test_user_feed_public_profile(client, nucleado_user, admin_user):
+    Post.objects.create(autor=nucleado_user, organizacao=nucleado_user.organizacao, tipo_feed="usuario", conteudo="u1")
+    Post.objects.create(autor=nucleado_user, organizacao=nucleado_user.organizacao, tipo_feed="usuario", conteudo="u2")
+    Post.objects.create(autor=admin_user, organizacao=admin_user.organizacao, tipo_feed="usuario", conteudo="other")
+    url = reverse("feed:usuario", args=[nucleado_user.username])
+    resp = client.get(url)
+    contents = [p.conteudo for p in resp.context.get("posts", [])]
+    assert "u1" in contents
+    assert "u2" in contents
+    assert "other" not in contents
+    templates = {t.name for t in resp.templates if t.name}
+    assert "feed/mural.html" in templates
+
+
+@pytest.mark.urls("Hubx.urls")
+def test_user_feed_hx_returns_grid(client, nucleado_user):
+    Post.objects.create(autor=nucleado_user, organizacao=nucleado_user.organizacao, tipo_feed="usuario", conteudo="u1")
+    url = reverse("feed:usuario", args=[nucleado_user.username])
+    resp = client.get(url, HTTP_HX_REQUEST="true")
+    templates = {t.name for t in resp.templates if t.name}
+    assert "feed/_grid.html" in templates
+
+
+@pytest.mark.urls("Hubx.urls")
+def test_user_feed_private_profile(client, organizacao, django_user_model):
+    private_user = django_user_model.objects.create_user(
+        email="priv@example.com",
+        username="priv",
+        password="pass",
+        perfil_publico=False,
+        organizacao=organizacao,
+    )
+    resp = client.get(reverse("feed:usuario", args=[private_user.username]))
+    assert resp.status_code == 404
+
+
+@pytest.mark.urls("Hubx.urls")
+def test_user_feed_private_self_access(client, organizacao, django_user_model):
+    private_user = django_user_model.objects.create_user(
+        email="privself@example.com",
+        username="privself",
+        password="pass",
+        perfil_publico=False,
+        organizacao=organizacao,
+    )
+    Post.objects.create(autor=private_user, organizacao=organizacao, tipo_feed="usuario", conteudo="private")
+    client.force_login(private_user)
+    resp = client.get(reverse("feed:usuario", args=[private_user.username]))
+    assert resp.status_code == 200
+    contents = [p.conteudo for p in resp.context.get("posts", [])]
+    assert "private" in contents

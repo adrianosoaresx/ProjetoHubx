@@ -9,8 +9,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from django.db import connection
-from django.db.models import Count, Exists, OuterRef, Q, Subquery
-from django.http import HttpResponse, HttpResponseForbidden
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Subquery, Value
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -18,7 +18,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView, ListView
 from django_ratelimit.core import is_ratelimited
 
-from accounts.models import UserType
+from accounts.models import User, UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import NoSuperadminMixin, no_superadmin_required
@@ -75,6 +75,56 @@ def meu_mural(request):
         "nucleos_do_usuario": Nucleo.objects.filter(participacoes__user=request.user),
     }
     return render(request, "feed/mural.html", context)
+
+
+def user_feed(request, username):
+    """Exibe o mural público de um usuário."""
+
+    perfil = get_object_or_404(User, username=username)
+    if not perfil.perfil_publico and request.user != perfil:
+        raise Http404
+
+    posts = (
+        Post.objects.select_related("autor", "organizacao", "nucleo", "evento")
+        .prefetch_related("reacoes", "comments")
+        .filter(deleted=False, autor=perfil)
+        .annotate(
+            like_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="like", reacoes__deleted=False),
+                distinct=True,
+            ),
+            share_count=Count(
+                "reacoes",
+                filter=Q(reacoes__vote="share", reacoes__deleted=False),
+                distinct=True,
+            ),
+        )
+    )
+
+    if request.user.is_authenticated:
+        posts = posts.annotate(
+            is_bookmarked=Exists(Bookmark.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_flagged=Exists(Flag.objects.filter(post=OuterRef("pk"), user=request.user, deleted=False)),
+            is_liked=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="like", deleted=False)
+            ),
+            is_shared=Exists(
+                Reacao.objects.filter(post=OuterRef("pk"), user=request.user, vote="share", deleted=False)
+            ),
+        )
+    else:
+        posts = posts.annotate(
+            is_bookmarked=Value(False, output_field=BooleanField()),
+            is_flagged=Value(False, output_field=BooleanField()),
+            is_liked=Value(False, output_field=BooleanField()),
+            is_shared=Value(False, output_field=BooleanField()),
+        )
+
+    posts = posts.order_by("-created_at").distinct()
+    context = {"posts": posts}
+    template = "feed/_grid.html" if request.headers.get("HX-Request") else "feed/mural.html"
+    return render(request, template, context)
 
 
 @login_required
