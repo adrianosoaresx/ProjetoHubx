@@ -2,7 +2,8 @@
   {% if profile.cover %}
     <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" loading="lazy">
   {% endif %}
-  <div class="relative mx-auto max-w-7xl px-4 pt-16 pb-28 text-center text-white">
+
+  <div class="relative mx-auto max-w-7xl px-4 pt-16 pb-32 md:pb-48 text-center text-white">
     <h1 class="text-3xl md:text-4xl font-bold tracking-tight">{{ profile.get_full_name|default:profile.username }}</h1>
     <p class="text-sm md:text-base text-white/80">@{{ profile.username }}</p>
     <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
