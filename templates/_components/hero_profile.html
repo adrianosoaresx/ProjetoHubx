@@ -33,32 +33,15 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
-        <div class="space-y-4">
-          <div>
-            <div class="text-[var(--text-tertiary)] text-sm mb-1">E-mail</div>
-            <a href="mailto:{{ profile.email }}" class="text-[var(--text-primary)] hover:underline break-all">
-              {{ profile.email|default:"-" }}
-            </a>
-          </div>
-          <div>
-            <div class="text-[var(--text-tertiary)] text-sm mb-1">Telefone</div>
-            <div class="text-[var(--text-primary)]">{{ profile.phone_number|default:"-" }}</div>
-          </div>
+        <div>
+          <div class="text-[var(--text-tertiary)] text-sm mb-1">E-mail</div>
+          <a href="mailto:{{ profile.email }}" class="text-[var(--text-primary)] hover:underline break-all">
+            {{ profile.email|default:"-" }}
+          </a>
         </div>
-
-        <div class="space-y-4">
-          <div>
-            <div class="text-[var(--text-tertiary)] text-sm mb-1">Endereço</div>
-            <div class="text-[var(--text-primary)]">{{ profile.endereco|default:"-" }}</div>
-          </div>
-          <div>
-            <div class="text-[var(--text-tertiary)] text-sm mb-1">Cidade / Estado</div>
-            <div class="text-[var(--text-primary)]">
-              {% if profile.cidade or profile.estado %}
-                {{ profile.cidade }}{% if profile.estado %} - {{ profile.estado }}{% endif %}
-              {% else %}-{% endif %}
-            </div>
-          </div>
+        <div>
+          <div class="text-[var(--text-tertiary)] text-sm mb-1">Fone</div>
+          <div class="text-[var(--text-primary)]">{{ profile.phone_number|default:"-" }}</div>
         </div>
       </div>
 
