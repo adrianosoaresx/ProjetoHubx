@@ -17,7 +17,7 @@
     </div>
   </form>
 {% else %}
-  {% if not publico %}
+  {% if is_owner %}
     <a href="{% url 'accounts:portfolio' %}?adicionar=1" class="btn btn-primary">
       {% trans "Portfólio" %}
     </a>
@@ -32,7 +32,7 @@
 <div class="card-grid mt-6">
   {% for media in medias %}
     <article class="card relative p-3">
-      {% if not publico %}
+      {% if is_owner %}
       <div class="absolute top-2 right-2 flex gap-2">
         <a href="{% url 'accounts:portfolio_edit' media.pk %}" class="btn-secondary btn-sm" aria-label="{% trans 'Editar' %}">
           {% lucide 'pencil' class='w-4 h-4' aria_hidden='true' %}
