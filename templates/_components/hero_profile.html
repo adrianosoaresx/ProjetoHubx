@@ -5,26 +5,35 @@
   {% endif %}
   <div class="relative mx-auto max-w-7xl px-4 h-48 md:h-64 text-center text-white"></div>
   <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2 z-50">
-    <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
-      {% if profile.avatar %}
-        <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-      {% else %}
-        <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
-          {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
-        </div>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
-<section class="container mt-16 md:mt-20">
-  <div class="mx-auto w-full max-w-4xl">
-    <div class="profile-card rounded-xl border bg-[var(--bg-primary)]">
-      <div class="pt-24 md:pt-10 text-center md:text-left md:pl-44">
+    <div class="flex items-center gap-4">
+      <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
+        {% if profile.avatar %}
+          <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+        {% else %}
+          <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
+            {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+          </div>
+        {% endif %}
+      </div>
+      <div class="text-center md:text-left">
         <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:mb-1 md:mt-2">
           {{ profile.get_full_name|default:profile.username }}
         </h2>
         <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="container mt-6 md:mt-10">
+  <div class="mx-auto w-full max-w-4xl">
+    <div class="profile-card rounded-xl border bg-[var(--bg-primary)] pt-24 md:pt-10">
+      <div class="mt-6 flex flex-col items-center justify-center space-y-2 md:flex-row md:flex-wrap md:justify-start md:space-y-0 md:space-x-2">
+        <button class="btn btn-primary">Info</button>
+        <button class="btn btn-secondary">Portfólio</button>
+        <button class="btn btn-secondary">Mural</button>
+        <button class="btn btn-outline">Conexões</button>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
         <div>
