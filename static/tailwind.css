@@ -1692,12 +1692,6 @@ a:focus {
   background-color: var(--error-light);
 }
 
-.profile-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
 .profile-card {
   overflow: hidden;
   border-radius: var(--radius);
@@ -2565,10 +2559,6 @@ a:focus {
   font-weight: 600;
 }
 
-.tracking-tight {
-  letter-spacing: -0.025em;
-}
-
 .tracking-widest {
   letter-spacing: 0.1em;
 }
@@ -2624,10 +2614,6 @@ a:focus {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-
-.text-white\/80 {
-  color: rgb(255 255 255 / 0.8);
 }
 
 .opacity-40 {
@@ -3070,10 +3056,6 @@ a:focus {
     margin-top: 6rem;
   }
 
-  .md\:hidden {
-    display: none;
-  }
-
   .md\:h-40 {
     height: 10rem;
   }
@@ -3102,6 +3084,10 @@ a:focus {
     align-items: center;
   }
 
+  .md\:justify-start {
+    justify-content: flex-start;
+  }
+
   .md\:justify-between {
     justify-content: space-between;
   }
@@ -3117,21 +3103,15 @@ a:focus {
   .md\:text-left {
     text-align: left;
   }
-
-  .md\:text-4xl {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
-  }
-
-  .md\:text-base {
-    font-size: 1rem;
-    line-height: 1.5rem;
-  }
 }
 
 @media (min-width: 1024px) {
   .lg\:col-span-3 {
     grid-column: span 3 / span 3;
+  }
+
+  .lg\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lg\:grid-cols-3 {
