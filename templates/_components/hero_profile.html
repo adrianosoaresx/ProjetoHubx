@@ -16,19 +16,19 @@
   </div>
 </section>
 
-<section class="container mt-20 md:mt-24">
+<section class="container mt-16 md:mt-20">
   <div class="mx-auto max-w-3xl">
     <div class="profile-card rounded-xl border bg-[var(--bg-primary)]">
-      <div class="pt-20 md:pt-8 text-center md:text-left md:pl-44">
+      <div class="pt-24 md:pt-10 text-center md:text-left md:pl-44">
         <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:mb-1 md:mt-2">
           {{ profile.get_full_name|default:profile.username }}
         </h2>
         <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-2 md:justify-start">
-          <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">Empresas</a>
-          <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">Mural</a>
-          <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">Conexões</a>
-        </div>
+      </div>
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-2 md:justify-start md:pl-44">
+        <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">Empresas</a>
+        <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">Mural</a>
+        <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">Conexões</a>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
@@ -61,20 +61,17 @@
         </div>
       </div>
 
-      <div class="border-t border-[var(--border)] p-4 sm:p-6">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">Empresas</a>
-          {% if profile.redes_sociais %}
-            <div class="flex items-center gap-4 text-xl text-[var(--text-secondary)] mx-auto md:mx-0">
-              {% for nome, link in profile.redes_sociais.items %}
-                <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-[var(--text-primary)]" aria-label="{{ nome|title }}">
-                  <i class="fa-brands fa-{{ nome }}"></i>
-                </a>
-              {% endfor %}
-            </div>
-          {% endif %}
+      {% if profile.redes_sociais %}
+        <div class="border-t border-[var(--border)] p-4 sm:p-6">
+          <div class="flex items-center justify-center md:justify-start gap-4 text-xl text-[var(--text-secondary)]">
+            {% for nome, link in profile.redes_sociais.items %}
+              <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-[var(--text-primary)]" aria-label="{{ nome|title }}">
+                <i class="fa-brands fa-{{ nome }}"></i>
+              </a>
+            {% endfor %}
+          </div>
         </div>
-      </div>
+      {% endif %}
     </div>
   </div>
 </section>
