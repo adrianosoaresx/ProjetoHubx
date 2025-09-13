@@ -1,8 +1,8 @@
-<section class="relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
+<section class="relative isolate overflow-visible bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
   {% if profile.cover %}
     <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" loading="lazy">
   {% endif %}
-  <div class="relative mx-auto max-w-7xl px-4 pt-16 pb-28 text-center text-white"></div>
+  <div class="relative mx-auto max-w-7xl px-4 h-48 md:h-64 text-center text-white"></div>
   <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2 z-50">
     <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
       {% if profile.avatar %}
