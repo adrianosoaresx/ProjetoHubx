@@ -1698,6 +1698,33 @@ a:focus {
   gap: 0.5rem;
 }
 
+.profile-card {
+  overflow: hidden;
+  border-radius: var(--radius);
+  border-width: 1px;
+  border-color: var(--border);
+  background-color: var(--bg-secondary);
+  box-shadow: var(--card-light);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.profile-card:hover {
+  --tw-translate-y: -0.125rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  box-shadow: var(--card-medium);
+}
+
+.profile-card {
+  border-radius: 0.75rem;
+  border-width: 1px;
+  background-color: var(--bg-secondary);
+  padding: 1.5rem;
+  box-shadow: var(--card-medium);
+  border-color: var(--border);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1850,6 +1877,10 @@ a:focus {
 
 .mt-2 {
   margin-top: 0.5rem;
+}
+
+.mt-20 {
+  margin-top: 5rem;
 }
 
 .mt-3 {
@@ -2225,6 +2256,10 @@ a:focus {
   white-space: pre-line;
 }
 
+.break-all {
+  word-break: break-all;
+}
+
 .rounded {
   border-radius: 0.25rem;
 }
@@ -2324,10 +2359,6 @@ a:focus {
 
 .bg-primary {
   background-color: var(--primary);
-}
-
-.bg-white\/10 {
-  background-color: rgb(255 255 255 / 0.1);
 }
 
 .bg-gradient-to-r {
@@ -2438,8 +2469,8 @@ a:focus {
   padding-bottom: 2rem;
 }
 
-.pb-24 {
-  padding-bottom: 6rem;
+.pb-28 {
+  padding-bottom: 7rem;
 }
 
 .pl-6 {
@@ -2452,6 +2483,10 @@ a:focus {
 
 .pt-16 {
   padding-top: 4rem;
+}
+
+.pt-20 {
+  padding-top: 5rem;
 }
 
 .pt-4 {
@@ -2528,6 +2563,10 @@ a:focus {
 
 .font-semibold {
   font-weight: 600;
+}
+
+.tracking-tight {
+  letter-spacing: -0.025em;
 }
 
 .tracking-widest {
@@ -2917,20 +2956,12 @@ a:focus {
   background-color: var(--primary-hover);
 }
 
-.hover\:bg-white\/20:hover {
-  background-color: rgb(255 255 255 / 0.2);
-}
-
 .hover\:text-\[var\(--text-primary\)\]:hover {
   color: var(--text-primary);
 }
 
 .hover\:text-primary:hover {
   color: var(--primary);
-}
-
-.hover\:text-white\/80:hover {
-  color: rgb(255 255 255 / 0.8);
 }
 
 .hover\:underline:hover {
@@ -3011,11 +3042,36 @@ a:focus {
   .sm\:items-end {
     align-items: flex-end;
   }
+
+  .sm\:p-6 {
+    padding: 1.5rem;
+  }
 }
 
 @media (min-width: 768px) {
   .md\:col-span-5 {
     grid-column: span 5 / span 5;
+  }
+
+  .md\:mx-0 {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
+  .md\:mb-1 {
+    margin-bottom: 0.25rem;
+  }
+
+  .md\:mt-2 {
+    margin-top: 0.5rem;
+  }
+
+  .md\:mt-24 {
+    margin-top: 6rem;
+  }
+
+  .md\:hidden {
+    display: none;
   }
 
   .md\:h-40 {
@@ -3048,6 +3104,18 @@ a:focus {
 
   .md\:justify-between {
     justify-content: space-between;
+  }
+
+  .md\:pl-44 {
+    padding-left: 11rem;
+  }
+
+  .md\:pt-8 {
+    padding-top: 2rem;
+  }
+
+  .md\:text-left {
+    text-align: left;
   }
 
   .md\:text-4xl {
