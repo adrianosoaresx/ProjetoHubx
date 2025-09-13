@@ -13,7 +13,7 @@
 
 <div class="card">
   <div class="card-body">
-    {% include "perfil/partials/portfolio.html" with medias=portfolio_recent publico=False form=portfolio_form show_form=portfolio_show_form q=portfolio_q %}
+    {% include "perfil/partials/portfolio.html" with medias=portfolio_recent is_owner=is_owner form=portfolio_form show_form=portfolio_show_form q=portfolio_q %}
   </div>
 </div>
 {% endblock %}

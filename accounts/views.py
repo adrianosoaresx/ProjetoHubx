@@ -197,9 +197,6 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "portfolio_q": "",
     }
 
-    if request.headers.get("HX-Request"):
-        return render(request, "perfil/partials/portfolio.html", context)
-
     return render(request, "perfil/publico.html", context)
 
 
@@ -380,16 +377,6 @@ def perfil_conexoes(request):
         "q": q,
         "hero_title": _("Perfil"),
     }
-
-    tab = request.GET.get("tab", "minhas-conexoes")
-    if request.headers.get("HX-Request"):
-        template = (
-            "perfil/partials/conexoes_solicitacoes.html"
-            if tab == "solicitacoes"
-            else "perfil/partials/conexoes_minhas.html"
-        )
-        return render(request, template, context)
-
     return render(request, "perfil/conexoes.html", context)
 
 
@@ -403,8 +390,6 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
-    if request.headers.get("HX-Request"):
-        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 
@@ -425,8 +410,6 @@ def aceitar_conexao(request, id):
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
     messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
-    if request.headers.get("HX-Request"):
-        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 
@@ -446,8 +429,6 @@ def recusar_conexao(request, id):
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
-    if request.headers.get("HX-Request"):
-        return HttpResponse("")
     return redirect("accounts:conexoes")
 
 
@@ -488,6 +469,7 @@ def perfil_portfolio(request):
             "show_form": show_form,
             "q": q,
             "hero_title": _("Perfil"),
+            "is_owner": True,
         },
     )
 

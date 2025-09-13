@@ -9,7 +9,7 @@
 
 {% block content %}
 <section id="portfolio" class="perfil-section active">
-  {% include "perfil/partials/portfolio.html" with medias=medias publico=False form=form show_form=show_form q=q %}
+  {% include "perfil/partials/portfolio.html" with medias=medias is_owner=is_owner form=form show_form=show_form q=q %}
 </section>
 
 <div class="mt-8 text-center">
