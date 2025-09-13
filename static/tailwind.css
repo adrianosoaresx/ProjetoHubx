@@ -1869,12 +1869,12 @@ a:focus {
   margin-top: 2.5rem;
 }
 
-.mt-2 {
-  margin-top: 0.5rem;
+.mt-16 {
+  margin-top: 4rem;
 }
 
-.mt-20 {
-  margin-top: 5rem;
+.mt-2 {
+  margin-top: 0.5rem;
 }
 
 .mt-3 {
@@ -2479,8 +2479,8 @@ a:focus {
   padding-top: 2.5rem;
 }
 
-.pt-20 {
-  padding-top: 5rem;
+.pt-24 {
+  padding-top: 6rem;
 }
 
 .pt-4 {
@@ -3039,11 +3039,6 @@ a:focus {
     grid-column: span 5 / span 5;
   }
 
-  .md\:mx-0 {
-    margin-left: 0px;
-    margin-right: 0px;
-  }
-
   .md\:mb-1 {
     margin-bottom: 0.25rem;
   }
@@ -3052,8 +3047,8 @@ a:focus {
     margin-top: 0.5rem;
   }
 
-  .md\:mt-24 {
-    margin-top: 6rem;
+  .md\:mt-20 {
+    margin-top: 5rem;
   }
 
   .md\:h-40 {
@@ -3100,8 +3095,8 @@ a:focus {
     padding-left: 11rem;
   }
 
-  .md\:pt-8 {
-    padding-top: 2rem;
+  .md\:pt-10 {
+    padding-top: 2.5rem;
   }
 
   .md\:text-left {
@@ -3112,10 +3107,6 @@ a:focus {
 @media (min-width: 1024px) {
   .lg\:col-span-3 {
     grid-column: span 3 / span 3;
-  }
-
-  .lg\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lg\:grid-cols-3 {
