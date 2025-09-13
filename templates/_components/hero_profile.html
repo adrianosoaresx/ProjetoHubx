@@ -1,36 +1,17 @@
-{% load i18n %}
-{% with profile=profile|default:user %}
-<section class="relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);">
+<section class="relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
   {% if profile.cover %}
     <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" loading="lazy">
   {% endif %}
-  <div class="relative mx-auto max-w-7xl px-4 pb-24 pt-16 text-center text-white">
-    <h1 class="text-3xl md:text-4xl font-bold">{{ profile.get_full_name|default:profile.username }}</h1>
+  <div class="relative mx-auto max-w-7xl px-4 pt-16 pb-32 md:pb-48 text-center text-white">
+    <h1 class="text-3xl md:text-4xl font-bold tracking-tight">{{ profile.get_full_name|default:profile.username }}</h1>
     <p class="text-sm md:text-base text-white/80">@{{ profile.username }}</p>
-    {% if is_owner %}
-      <div class="mt-6 flex flex-col items-center gap-4">
-        {% if profile.email %}
-          <a href="mailto:{{ profile.email }}" class="rounded-lg bg-white/10 px-4 py-2 text-sm hover:bg-white/20">{{ profile.email }}</a>
-        {% endif %}
-        {% if profile.redes_sociais %}
-          <div class="flex gap-4 text-xl">
-            {% for nome, link in profile.redes_sociais.items %}
-              <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-white/80">
-                <span class="sr-only">{{ nome|title }}</span>
-                <i class="fa-brands fa-{{ nome }}"></i>
-              </a>
-            {% endfor %}
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
-    <div class="mt-8 flex justify-center gap-2">
-      <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">{% trans 'Empresas' %}</a>
-      <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">{% trans 'Mural' %}</a>
-      <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">{% trans 'Conexões' %}</a>
+    <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+      <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">Empresas</a>
+      <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">Mural</a>
+      <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">Conexões</a>
     </div>
   </div>
-  <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2">
+  <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2 z-50">
     <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
       {% if profile.avatar %}
         <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
@@ -40,13 +21,68 @@
         </div>
       {% endif %}
     </div>
-    <h1 class="mt-4 text-2xl font-bold text-[var(--text-primary)]">{{ profile.get_full_name|default:profile.username }}</h1>
-    <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
-    <div class="profile-actions mt-4">
-      <a href="{% url 'empresas:lista' %}" class="btn btn-primary">{% trans 'Empresas' %}</a>
-      <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">{% trans 'Mural' %}</a>
-      <a href="{% url 'accounts:conexoes' %}" class="btn btn-outline">{% trans 'Conexões' %}</a>
+  </div>
+</section>
+
+<section class="container mt-20 md:mt-24">
+  <div class="mx-auto max-w-4xl">
+    <div class="profile-card rounded-xl border bg-[var(--bg-primary)]">
+      <div class="pt-20 md:pt-8 text-center md:text-left md:pl-44">
+        <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:mb-1 md:mt-2 md:hidden">
+          {{ profile.get_full_name|default:profile.username }}
+        </h2>
+        <p class="text-sm text-[var(--text-muted)] md:hidden">@{{ profile.username }}</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+        <div class="space-y-4">
+          <div>
+            <div class="text-[var(--text-tertiary)] text-sm mb-1">E-mail</div>
+            <a href="mailto:{{ profile.email }}" class="text-[var(--text-primary)] hover:underline break-all">
+              {{ profile.email|default:"-" }}
+            </a>
+          </div>
+          <div>
+            <div class="text-[var(--text-tertiary)] text-sm mb-1">Telefone</div>
+            <div class="text-[var(--text-primary)]">{{ profile.phone_number|default:"-" }}</div>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <div class="text-[var(--text-tertiary)] text-sm mb-1">Endereço</div>
+            <div class="text-[var(--text-primary)]">{{ profile.endereco|default:"-" }}</div>
+          </div>
+          <div>
+            <div class="text-[var(--text-tertiary)] text-sm mb-1">Cidade / Estado</div>
+            <div class="text-[var(--text-primary)]">
+              {% if profile.cidade or profile.estado %}
+                {{ profile.cidade }}{% if profile.estado %} - {{ profile.estado }}{% endif %}
+              {% else %}-{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-[var(--border)] p-4 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="profile-actions">
+            <a href="/u/{{ profile.username }}/empresas/" class="btn btn-primary">Empresas</a>
+            <a href="{% url 'feed:usuario' profile.username %}" class="btn btn-secondary">Mural</a>
+            <a href="/u/{{ profile.username }}/conexoes/" class="btn btn-outline">Conexões</a>
+          </div>
+          {% if profile.redes_sociais %}
+            <div class="flex items-center gap-4 text-xl text-[var(--text-secondary)] mx-auto md:mx-0">
+              {% for nome, link in profile.redes_sociais.items %}
+                <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-[var(--text-primary)]" aria-label="{{ nome|title }}">
+                  <i class="fa-brands fa-{{ nome }}"></i>
+                </a>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 </section>
-{% endwith %}
+
