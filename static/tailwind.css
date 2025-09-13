@@ -1692,54 +1692,10 @@ a:focus {
   background-color: var(--error-light);
 }
 
-.hero-profile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-image: linear-gradient(to right, var(--tw-gradient-stops));
-  --tw-gradient-from: var(--hero-from) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
-  --tw-gradient-to: var(--hero-to) var(--tw-gradient-to-position);
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-  text-align: center;
-}
-
 .profile-actions {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-}
-
-.profile-card {
-  overflow: hidden;
-  border-radius: var(--radius);
-  border-width: 1px;
-  border-color: var(--border);
-  background-color: var(--bg-secondary);
-  box-shadow: var(--card-light);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-.profile-card:hover {
-  --tw-translate-y: -0.125rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  box-shadow: var(--card-medium);
-}
-
-.profile-card {
-  border-radius: 0.75rem;
-  border-width: 1px;
-  background-color: var(--bg-secondary);
-  padding: 1.5rem;
-  box-shadow: var(--card-medium);
-  border-color: var(--border);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
 }
 
 .sr-only {
@@ -1787,8 +1743,16 @@ a:focus {
   bottom: -2rem;
 }
 
+.bottom-0 {
+  bottom: 0px;
+}
+
 .left-0 {
   left: 0px;
+}
+
+.left-1\/2 {
+  left: 50%;
 }
 
 .left-4 {
@@ -1811,8 +1775,8 @@ a:focus {
   top: 1rem;
 }
 
-.z-10 {
-  z-index: 10;
+.isolate {
+  isolation: isolate;
 }
 
 .z-20 {
@@ -1830,10 +1794,6 @@ a:focus {
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
-}
-
-.-mb-px {
-  margin-bottom: -1px;
 }
 
 .mb-1 {
@@ -2100,6 +2060,16 @@ a:focus {
   flex-grow: 1;
 }
 
+.-translate-x-1\/2 {
+  --tw-translate-x: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.translate-y-1\/2 {
+  --tw-translate-y: 50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .cursor-move {
   cursor: move;
 }
@@ -2279,11 +2249,6 @@ a:focus {
   border-radius: 0.75rem;
 }
 
-.rounded-t {
-  border-top-left-radius: 0.25rem;
-  border-top-right-radius: 0.25rem;
-}
-
 .border {
   border-width: 1px;
 }
@@ -2294,10 +2259,6 @@ a:focus {
 
 .border-b-2 {
   border-bottom-width: 2px;
-}
-
-.border-l-4 {
-  border-left-width: 4px;
 }
 
 .border-r {
@@ -2323,10 +2284,6 @@ a:focus {
 
 .border-primary {
   border-color: var(--primary);
-}
-
-.border-transparent {
-  border-color: transparent;
 }
 
 .bg-\[var\(--bg-primary\)\] {
@@ -2367,6 +2324,10 @@ a:focus {
 
 .bg-primary {
   background-color: var(--primary);
+}
+
+.bg-white\/10 {
+  background-color: rgb(255 255 255 / 0.1);
 }
 
 .bg-gradient-to-r {
@@ -2477,8 +2438,8 @@ a:focus {
   padding-bottom: 2rem;
 }
 
-.pl-4 {
-  padding-left: 1rem;
+.pb-24 {
+  padding-bottom: 6rem;
 }
 
 .pl-6 {
@@ -2487,6 +2448,10 @@ a:focus {
 
 .pt-10 {
   padding-top: 2.5rem;
+}
+
+.pt-16 {
+  padding-top: 4rem;
 }
 
 .pt-4 {
@@ -2565,10 +2530,6 @@ a:focus {
   font-weight: 600;
 }
 
-.italic {
-  font-style: italic;
-}
-
 .tracking-widest {
   letter-spacing: 0.1em;
 }
@@ -2626,8 +2587,12 @@ a:focus {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
-.opacity-80 {
-  opacity: 0.8;
+.text-white\/80 {
+  color: rgb(255 255 255 / 0.8);
+}
+
+.opacity-40 {
+  opacity: 0.4;
 }
 
 .shadow-lg {
@@ -2644,6 +2609,10 @@ a:focus {
 
 .ring-\[var\(--bg-primary\)\] {
   --tw-ring-color: var(--bg-primary);
+}
+
+.ring-white\/90 {
+  --tw-ring-color: rgb(255 255 255 / 0.9);
 }
 
 .filter {
@@ -2936,10 +2905,6 @@ a:focus {
   color: var(--text-secondary);
 }
 
-.hover\:border-primary:hover {
-  border-color: var(--primary);
-}
-
 .hover\:bg-\[var\(--bg-tertiary\)\]:hover {
   background-color: var(--bg-tertiary);
 }
@@ -2952,12 +2917,20 @@ a:focus {
   background-color: var(--primary-hover);
 }
 
+.hover\:bg-white\/20:hover {
+  background-color: rgb(255 255 255 / 0.2);
+}
+
 .hover\:text-\[var\(--text-primary\)\]:hover {
   color: var(--text-primary);
 }
 
 .hover\:text-primary:hover {
   color: var(--primary);
+}
+
+.hover\:text-white\/80:hover {
+  color: rgb(255 255 255 / 0.8);
 }
 
 .hover\:underline:hover {
@@ -3075,6 +3048,16 @@ a:focus {
 
   .md\:justify-between {
     justify-content: space-between;
+  }
+
+  .md\:text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+
+  .md\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }
 
