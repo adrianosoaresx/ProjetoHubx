@@ -367,7 +367,11 @@ class PostViewSet(viewsets.ModelViewSet):
         ):
             return ratelimit_exceeded(request, None)
         post = self.get_object()
-        bookmark = Bookmark.all_objects.filter(user=request.user, post=post).first()
+        bookmark = (
+            Bookmark.all_objects.filter(user=request.user, post=post)
+            .order_by("deleted")
+            .first()
+        )
         if bookmark:
             if not bookmark.deleted:
                 bookmark.delete()
