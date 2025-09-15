@@ -374,6 +374,14 @@ class PostViewSet(viewsets.ModelViewSet):
         )
         if bookmark:
             if not bookmark.deleted:
+                duplicates = (
+                    Bookmark.all_objects.filter(
+                        user=request.user, post=post, deleted=True
+                    )
+                    .exclude(pk=bookmark.pk)
+                )
+                for duplicated in duplicates:
+                    duplicated.hard_delete()
                 bookmark.delete()
                 return Response({"bookmarked": False}, status=status.HTTP_200_OK)
             bookmark.undelete()

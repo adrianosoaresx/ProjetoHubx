@@ -75,8 +75,16 @@ class BookmarkAPITest(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertFalse(res.data["bookmarked"])
         self.assertEqual(Bookmark.objects.filter(user=self.user, post=post).count(), 0)
+        self.assertEqual(
+            Bookmark.all_objects.filter(user=self.user, post=post).count(),
+            1,
+        )
 
         res = self.client.post(url)
         self.assertEqual(res.status_code, 201)
         self.assertTrue(res.data["bookmarked"])
         self.assertEqual(Bookmark.objects.filter(user=self.user, post=post).count(), 1)
+        self.assertEqual(
+            Bookmark.all_objects.filter(user=self.user, post=post).count(),
+            1,
+        )
