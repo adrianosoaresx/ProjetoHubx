@@ -2,82 +2,83 @@
 {% if request.user.user_type != 'root' %}
 <section id="feed-grid" class="card-grid lg:grid-cols-3">
   {% for post in posts %}
-    <article class="card">
+    <article class="card relative">
+      <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
+        <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
+      </a>
       <div class="card-body space-y-4">
-      <p class="text-xs text-[var(--text-muted)]">
-        {% if post.tipo_feed == 'nucleo' %}
-          {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
-        {% elif post.tipo_feed == 'evento' %}
-          {% blocktrans with titulo=post.evento.titulo %}Feed do Evento: {{ titulo }}{% endblocktrans %}
-        {% elif post.tipo_feed == 'usuario' %}
-          {% trans "Mural do Usuário" %}
-        {% else %}
-          {% trans "Feed Global" %}
-        {% endif %}
-      </p>
-      <div class="flex items-center gap-4">
-  <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}">
-          {% if post.autor.avatar %}
-            <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+        <p class="text-xs text-[var(--text-muted)]">
+          {% if post.tipo_feed == 'nucleo' %}
+            {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
+          {% elif post.tipo_feed == 'evento' %}
+            {% blocktrans with titulo=post.evento.titulo %}Feed do Evento: {{ titulo }}{% endblocktrans %}
+          {% elif post.tipo_feed == 'usuario' %}
+            {% trans "Mural do Usuário" %}
           {% else %}
-            <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
-              {{ post.autor.username|first|upper }}
-            </div>
+            {% trans "Feed Global" %}
           {% endif %}
-        </a>
-        <div>
-          <p class="text-sm font-medium text-[var(--text-primary)]">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-          <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-        </div>
-      </div>
-      <div class="text-sm text-[var(--text-primary)] whitespace-pre-line">
-        {{ post.conteudo|linebreaksbr }}
-      </div>
-      {% if post.pdf %}
-        <div class="relative">
-          <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded object-cover" loading="lazy">
-          <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5">
-            {% lucide 'eye' class='w-4 h-4' %}
-          </a>
-          <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5">
-            {% lucide 'download' class='w-4 h-4' %}
-          </a>
-        </div>
-      {% elif post.image %}
-        <div>
-          <img src="{{ post.image.url }}" class="w-full rounded object-cover" alt="{% trans 'mídia do post' %}" loading="lazy">
-        </div>
-      {% elif post.video %}
-        <div>
-          {% if post.video_preview %}
-            <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full rounded"></video>
-          {% else %}
-            <video src="{{ post.video.url }}" controls class="w-full rounded"></video>
-          {% endif %}
-        </div>
-      {% endif %}
-      <div class="flex items-center justify-between text-sm text-[var(--text-secondary)]">
+        </p>
         <div class="flex items-center gap-4">
-          <div id="like-btn-{{ post.id }}">
-            {% include 'feed/_like_button.html' with post=post %}
+          <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}" class="relative z-20">
+            {% if post.autor.avatar %}
+              <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+            {% else %}
+              <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
+                {{ post.autor.username|first|upper }}
+              </div>
+            {% endif %}
+          </a>
+          <div>
+            <p class="text-sm font-medium text-[var(--text-primary)]">{{ post.autor.get_full_name|default:post.autor.username }}</p>
+            <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
           </div>
-              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %}" aria-label="{% trans 'Compartilhar' %}">
-            {% lucide 'share-2' class='w-4 h-4' %}
-            <span class="share-count">{{ post.share_count }}</span>
-          </button>
-
-            <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %}" aria-label="{% trans 'Salvar' %}">
-            {% lucide 'bookmark' class='w-4 h-4' %}
-          </button>
-            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
-            {% lucide 'flag' class='w-4 h-4' %}
-
-          </button>
         </div>
-        <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
+        <div class="text-sm text-[var(--text-primary)] whitespace-pre-line">
+          {{ post.conteudo|linebreaksbr }}
+        </div>
+        {% if post.pdf %}
+          <div class="relative">
+            <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded object-cover" loading="lazy">
+            <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary absolute top-2 left-2 p-1.5 z-20">
+              {% lucide 'eye' class='w-4 h-4' %}
+            </a>
+            <a href="{{ post.pdf.url }}" download class="btn btn-secondary absolute top-2 right-2 p-1.5 z-20">
+              {% lucide 'download' class='w-4 h-4' %}
+            </a>
+          </div>
+        {% elif post.image %}
+          <div>
+            <img src="{{ post.image.url }}" class="w-full rounded object-cover" alt="{% trans 'mídia do post' %}" loading="lazy">
+          </div>
+        {% elif post.video %}
+          <div class="relative z-20">
+            {% if post.video_preview %}
+              <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full rounded"></video>
+            {% else %}
+              <video src="{{ post.video.url }}" controls class="w-full rounded"></video>
+            {% endif %}
+          </div>
+        {% endif %}
+        <div class="flex items-center justify-between text-sm text-[var(--text-secondary)]">
+          <div class="flex items-center gap-4">
+            <div id="like-btn-{{ post.id }}" class="relative z-20">
+              {% include 'feed/_like_button.html' with post=post %}
+            </div>
+            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20" aria-label="{% trans 'Compartilhar' %}">
+              {% lucide 'share-2' class='w-4 h-4' %}
+              <span class="share-count">{{ post.share_count }}</span>
+            </button>
+            <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20" aria-label="{% trans 'Salvar' %}">
+              {% lucide 'bookmark' class='w-4 h-4' %}
+            </button>
+            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %} relative z-20" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+              {% lucide 'flag' class='w-4 h-4' %}
+            </button>
+          </div>
+          <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
+        </div>
       </div>
-      </div>
-      </article>
+    </article>
   {% empty %}
     <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
