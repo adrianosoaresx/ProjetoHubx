@@ -86,28 +86,6 @@
       <!-- Rodapé: botões de ação e contagem de comentários abaixo -->
       <footer class="relative z-20 mt-auto">
         <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-secondary)] shadow-inner">
-          <div class="flex items-center gap-2">
-            <div id="like-btn-{{ post.id }}" class="relative z-20">
-              {% include 'feed/_like_button.html' with post=post %}
-            </div>
-            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
-              {% lucide 'share-2' class='w-4 h-4' %}
-              <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count }}</span>
-              <span class="sr-only">
-                {% blocktrans trimmed count share_count=post.share_count %}
-                  {{ share_count }} compartilhamento
-                {% plural %}
-                  {{ share_count }} compartilhamentos
-                {% endblocktrans %}
-              </span>
-            </button>
-            <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Salvar' %}" aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}">
-              {% lucide 'bookmark' class='w-4 h-4' %}
-            </button>
-            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
-              {% lucide 'flag' class='w-4 h-4' %}
-            </button>
-          </div>
           <div class="mt-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
             {% lucide 'message-circle' class='h-4 w-4' %}
             <span>
