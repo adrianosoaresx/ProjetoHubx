@@ -1,7 +1,6 @@
 from rest_framework.routers import DefaultRouter
 
 from .api import (
-    OrganizacaoEmpresaViewSet,
     OrganizacaoEventoViewSet,
     OrganizacaoCentroCustoViewSet,
     OrganizacaoNucleoViewSet,
@@ -28,11 +27,6 @@ router.register(
     r"organizacoes/(?P<organizacao_pk>[^/.]+)/eventos",
     OrganizacaoEventoViewSet,
     basename="organizacao-eventos",
-)
-router.register(
-    r"organizacoes/(?P<organizacao_pk>[^/.]+)/empresas",
-    OrganizacaoEmpresaViewSet,
-    basename="organizacao-empresas",
 )
 router.register(
     r"organizacoes/(?P<organizacao_pk>[^/.]+)/posts",

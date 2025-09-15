@@ -8,7 +8,6 @@ Este checklist ajuda a garantir consistência nos templates durante as revisões
 | configuracoes | Bruno | [x] | [x] | [x] | [ ] | [ ] | [x] |
 | core | Carla | [x] | [x] | [x] | [x] | [x] | [x] |
 | dashboard | Diego | [x] | [x] | [x] | [x] | [x] | [x] |
-| empresas | Eduarda | [x] | [x] | [x] | [x] | [x] | [x] |
 | eventos | Fernando | [x] | [x] | [x] | [x] | [x] | [x] |
 | feed | Gabriela | [x] | [x] | [x] | [x] | [x] | [x] |
 | financeiro | Henrique | [x] | [x] | [x] | [x] | [x] | [x] |

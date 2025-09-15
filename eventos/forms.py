@@ -179,7 +179,6 @@ class ParceriaEventoForm(forms.ModelForm):
         fields = [
             "evento",
             "nucleo",
-            "empresa",
             "cnpj",
             "contato",
             "representante_legal",

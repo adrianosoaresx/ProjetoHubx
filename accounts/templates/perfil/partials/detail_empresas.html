@@ -1,9 +1,0 @@
-{% load i18n %}
-<div class="card-grid">
-  {% for empresa in empresas %}
-    {% include '_components/card_empresa.html' with empresa=empresa %}
-  {% empty %}
-    <p class="text-sm text-[var(--text-muted)]">{% trans "Nenhuma empresa encontrada." %}</p>
-  {% endfor %}
-</div>
-

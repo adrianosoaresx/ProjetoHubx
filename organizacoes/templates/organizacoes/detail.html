@@ -84,12 +84,6 @@
           <p class="text-lg font-semibold text-[var(--text-primary)]">{{ eventos|length }}</p>
         </div>
       </div>
-      <div class="card">
-        <div class="card-body text-center">
-          <p class="text-xs text-[var(--text-muted)]">{% trans 'Empresas' %}</p>
-          <p class="text-lg font-semibold text-[var(--text-primary)]">{{ empresas|length }}</p>
-        </div>
-      </div>
     </div>
     {% endif %}
 
@@ -104,10 +98,6 @@
 
     <section id="eventos-section">
       {% include '_partials/organizacoes/eventos_list.html' %}
-    </section>
-
-    <section id="empresas-section">
-      {% include '_partials/organizacoes/empresas_list.html' %}
     </section>
 
     <section id="posts-section">

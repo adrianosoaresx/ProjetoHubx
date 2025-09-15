@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("empresas", "0001_initial"),
         ("nucleos", "0001_initial"),
         ("organizacoes", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -391,12 +390,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("comentario", models.TextField(blank=True)),
-                (
-                    "empresa",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, related_name="parcerias", to="empresas.empresa"
-                    ),
-                ),
                 ("evento", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="eventos.evento")),
                 (
                     "nucleo",

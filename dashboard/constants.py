@@ -4,7 +4,6 @@ METRICAS_INFO = {
     "num_users": {"label": _("Usuários"), "icon": "users"},
     "num_organizacoes": {"label": _("Organizações"), "icon": "building-2"},
     "num_nucleos": {"label": _("Núcleos"), "icon": "users-round"},
-    "num_empresas": {"label": _("Empresas"), "icon": "landmark"},
     "num_eventos": {"label": _("Eventos"), "icon": "calendar"},
     "num_posts_feed_total": {"label": _("Posts (Total)"), "icon": "newspaper"},
     "num_posts_feed_recent": {"label": _("Posts (24h)"), "icon": "clock"},

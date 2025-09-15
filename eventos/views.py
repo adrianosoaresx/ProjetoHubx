@@ -846,7 +846,7 @@ class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPerm
 
     def get_queryset(self):
         user = self.request.user
-        qs = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo")
+        qs = ParceriaEvento.objects.select_related("evento", "nucleo")
         if user.user_type != UserType.ROOT:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
             filtro = Q(evento__organizacao=user.organizacao)
@@ -872,7 +872,6 @@ class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
             form.fields["evento"].queryset = Evento.objects.filter(
                 Q(organizacao=user.organizacao) | Q(nucleo__in=user.nucleos.values_list("id", flat=True))
             )
-            form.fields["empresa"].queryset = form.fields["empresa"].queryset.filter(organizacao=user.organizacao)
             form.fields["nucleo"].queryset = user.nucleos
         return form
 
@@ -946,7 +945,7 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
             evento=self.object.evento,
             usuario=request.user,
             acao="parceria_excluida",
-            detalhes={"empresa": str(self.object.empresa_id)},
+            detalhes={},
         )
         return super().delete(request, *args, **kwargs)
 

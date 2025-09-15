@@ -21,7 +21,6 @@ urlpatterns = [
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
     # CRUD de Empresas, Organizações e Núcleos (front‑end)
-    path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
@@ -44,10 +43,6 @@ urlpatterns = [
     path(
         "api/nucleos/",
         include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
-    ),
-    path(
-        "api/empresas/",
-        include(("empresas.api_urls", "empresas_api"), namespace="empresas_api"),
     ),
     path(
         "api/dashboard/",

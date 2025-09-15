@@ -8,7 +8,6 @@ const config: Config = {
         "*.{js,ts,jsx,tsx,mdx}",
         "./templates/**/*.html",
         "./accounts/templates/**/*.html",
-        "./empresas/templates/**/*.html",
         "./static/src/**/*.{js,ts}",
         "./**/*.py"
     ],

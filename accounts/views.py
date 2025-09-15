@@ -87,7 +87,6 @@ def perfil(request):
     user = request.user
 
     # Núcleos em que o usuário participa (ativos)
-    from empresas.models import Empresa
     from eventos.models import InscricaoEvento
     from nucleos.models import Nucleo
 
@@ -118,15 +117,11 @@ def perfil(request):
         .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
     )
 
-    # Empresas do usuário
-    empresas = Empresa.objects.filter(usuario=user).select_related("usuario")
-
     portfolio_recent = _portfolio_for(user, request.user, limit=6)
 
     context = {
         "nucleos": nucleos,
         "inscricoes": inscricoes,
-        "empresas": empresas,
         "hero_title": _("Perfil"),
         "profile": user,
         "is_owner": True,
@@ -149,7 +144,6 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     if request.user == perfil:
         return redirect("accounts:portfolio")
-    from empresas.models import Empresa
     from eventos.models import InscricaoEvento
     from nucleos.models import Nucleo
 
@@ -179,15 +173,12 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
     )
 
-    empresas = Empresa.objects.filter(usuario=perfil).select_related("usuario")
-
     portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
 
     context = {
         "perfil": perfil,
         "nucleos": nucleos,
         "inscricoes": inscricoes,
-        "empresas": empresas,
         "hero_title": perfil.get_full_name() or perfil.username,
         "hero_subtitle": f"@{perfil.username}",
         "is_owner": request.user == perfil,

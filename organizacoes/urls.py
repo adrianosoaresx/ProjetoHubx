@@ -24,11 +24,6 @@ urlpatterns = [
         name="eventos_modal",
     ),
     path(
-        "<uuid:pk>/empresas/modal/",
-        views.OrganizacaoEmpresasModalView.as_view(),
-        name="empresas_modal",
-    ),
-    path(
         "<uuid:pk>/posts/modal/",
         views.OrganizacaoPostsModalView.as_view(),
         name="posts_modal",

@@ -26,7 +26,6 @@ from accounts.models import UserType
 from eventos.models import Evento
 from core.cache import get_cache_version
 from core.permissions import AdminRequiredMixin, SuperadminRequiredMixin
-from empresas.models import Empresa
 from feed.models import Post
 from nucleos.models import Nucleo
 
@@ -249,7 +248,6 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
             .prefetch_related(
                 "users",
                 Prefetch("nucleos", queryset=Nucleo.objects.filter(deleted=False)),
-                Prefetch("empresas", queryset=Empresa.objects.filter(deleted=False)),
                 Prefetch("posts", queryset=Post.objects.filter(deleted=False)),
                 "evento_set",
             )
@@ -265,14 +263,12 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
         usuarios = org.users.all()
         nucleos = org.nucleos.all()
         eventos = org.evento_set.all()
-        empresas = org.empresas.all()
         posts = org.posts.all()
         context.update(
             {
                 "usuarios": usuarios,
                 "nucleos": nucleos,
                 "eventos": eventos,
-                "empresas": empresas,
                 "posts": posts,
             }
         )
@@ -284,7 +280,6 @@ class OrganizacaoDetailView(AdminRequiredMixin, LoginRequiredMixin, DetailView):
             "usuarios",
             "nucleos",
             "eventos",
-            "empresas",
             "posts",
         }:
             return render(
@@ -405,15 +400,6 @@ class OrganizacaoEventosModalView(OrganizacaoModalBaseView):
     context_object_name = "eventos"
     section = "eventos"
     api_url_name = "organizacoes_api:organizacao-eventos-list"
-
-
-class OrganizacaoEmpresasModalView(OrganizacaoModalBaseView):
-    model = Empresa
-    template_name = "organizacoes/empresas_modal.html"
-    context_object_name = "empresas"
-    section = "empresas"
-    api_url_name = "organizacoes_api:organizacao-empresas-list"
-    filter_kwargs = {"deleted": False}
 
 
 class OrganizacaoPostsModalView(OrganizacaoModalBaseView):
