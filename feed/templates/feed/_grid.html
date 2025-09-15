@@ -83,6 +83,7 @@
     <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
 </section>
+{% endif %}
 <script>
   const csrfToken = '{{ csrf_token }}';
   document.querySelectorAll('.bookmark-btn').forEach(btn => {
@@ -110,4 +111,3 @@
     });
   });
 </script>
-{% endif %}
