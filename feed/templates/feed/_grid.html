@@ -1,6 +1,6 @@
 {% load static i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
-<section id="feed-grid" class="card-grid">
+<section id="feed-grid" class="card-grid lg:grid-cols-3">
   {% for post in posts %}
     <article class="card">
       <div class="card-body space-y-4">
