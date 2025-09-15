@@ -20,12 +20,12 @@ export async function handleShare(event) {
     });
 
     if (res.status === 201) {
-      btn.classList.add('text-[var(--primary)]');
+      btn.classList.add('text-primary');
       if (countSpan) {
         countSpan.textContent = String(parseInt(countSpan.textContent || '0') + 1);
       }
     } else if (res.status === 204) {
-      btn.classList.remove('text-[var(--primary)]');
+      btn.classList.remove('text-primary');
       if (countSpan) {
         const newValue = Math.max(parseInt(countSpan.textContent || '0') - 1, 0);
         countSpan.textContent = String(newValue);

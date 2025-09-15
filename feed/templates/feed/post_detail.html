@@ -73,7 +73,7 @@
       <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %}" aria-label="{% trans 'Salvar' %}">
         {% lucide 'bookmark' class='w-4 h-4' %}
       </button>
-      <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)]{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+      <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
         {% lucide 'flag' class='w-4 h-4' %}
       </button>
 
@@ -130,7 +130,7 @@
       const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
       if (!res.ok) return;
       const data = await res.json();
-      btn.classList.toggle('text-[var(--warning)]', data.bookmarked);
+      btn.classList.toggle('text-yellow-600', data.bookmarked);
     });
   });
   document.querySelectorAll('.flag-btn').forEach(btn => {
@@ -138,7 +138,7 @@
       const postId = btn.dataset.postId;
       const res = await fetch(`/api/feed/posts/${postId}/flag/`, {method: 'POST', headers: {'X-CSRFToken': csrfToken}});
       if (res.ok) {
-        btn.classList.add('text-[var(--error)]');
+        btn.classList.add('text-red-600', 'cursor-not-allowed');
         btn.setAttribute('disabled', 'disabled');
       }
     });
