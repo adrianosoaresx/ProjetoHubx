@@ -117,6 +117,28 @@
                 {{ comment_count }} comentários
               {% endblocktrans %}
             </span>
+            <div class="flex items-center gap-2">
+              <div id="like-btn-{{ post.id }}" class="relative z-20">
+                {% include 'feed/_like_button.html' with post=post %}
+              </div>
+              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
+                {% lucide 'share-2' class='w-4 h-4' %}
+                <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count }}</span>
+                <span class="sr-only">
+                  {% blocktrans trimmed count share_count=post.share_count %}
+                    {{ share_count }} compartilhamento
+                  {% plural %}
+                    {{ share_count }} compartilhamentos
+                  {% endblocktrans %}
+                </span>
+              </button>
+              <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Salvar' %}" aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}">
+                {% lucide 'bookmark' class='w-4 h-4' %}
+              </button>
+              <button type="button" data-post-id="{{ post.id }}" data-flag-error-message="{% trans 'Erro ao denunciar' %}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed disabled{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
+                {% lucide 'flag' class='w-4 h-4' %}
+              </button>
+            </div>
           </div>
         </div>
       </footer>
@@ -126,4 +148,32 @@
     <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
 </section>
+
 {% endif %}
+
+<script>
+  // Usa a mesma paleta de cores das variáveis CSS do tema
+  const csrfToken = '{{ csrf_token }}';
+  document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    btn.addEventListener('click', async event => {
+      event.preventDefault();
+      event.stopPropagation();
+      const postId = btn.dataset.postId;
+      try {
+        const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrfToken},
+        });
+        if (!res.ok) {
+          throw new Error('bookmark failed');
+        }
+        const data = await res.json();
+        btn.classList.toggle('text-[var(--warning)]', data.bookmarked);
+        btn.setAttribute('aria-pressed', data.bookmarked ? 'true' : 'false');
+      } catch (error) {
+        alert('{% trans "Erro ao salvar" %}');
+      }
+    });
+  });
+</script>
+
