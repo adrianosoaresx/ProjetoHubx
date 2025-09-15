@@ -367,10 +367,14 @@ class PostViewSet(viewsets.ModelViewSet):
         ):
             return ratelimit_exceeded(request, None)
         post = self.get_object()
-        bookmark, created = Bookmark.objects.get_or_create(user=request.user, post=post)
-        if not created:
-            bookmark.delete()
-            return Response({"bookmarked": False}, status=status.HTTP_200_OK)
+        bookmark = Bookmark.all_objects.filter(user=request.user, post=post).first()
+        if bookmark:
+            if not bookmark.deleted:
+                bookmark.delete()
+                return Response({"bookmarked": False}, status=status.HTTP_200_OK)
+            bookmark.undelete()
+            return Response({"bookmarked": True}, status=status.HTTP_201_CREATED)
+        Bookmark.objects.create(user=request.user, post=post)
         return Response({"bookmarked": True}, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])

@@ -24,11 +24,27 @@ class BookmarkAPITest(TestCase):
         self.assertEqual(res.status_code, 201)
         self.assertTrue(res.data["bookmarked"])
         self.assertTrue(Bookmark.objects.filter(user=self.user, post=post).exists())
+        self.assertEqual(Bookmark.all_objects.filter(user=self.user, post=post).count(), 1)
 
         res = self.client.post(url)
         self.assertEqual(res.status_code, 200)
         self.assertFalse(res.data["bookmarked"])
         self.assertFalse(Bookmark.objects.filter(user=self.user, post=post).exists())
+        self.assertEqual(Bookmark.all_objects.filter(user=self.user, post=post).count(), 1)
+        bookmark = Bookmark.all_objects.get(user=self.user, post=post)
+        self.assertTrue(bookmark.deleted)
+
+        res = self.client.post(url)
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(res.data["bookmarked"])
+        self.assertTrue(Bookmark.objects.filter(user=self.user, post=post).exists())
+        self.assertEqual(Bookmark.all_objects.filter(user=self.user, post=post).count(), 1)
+
+        res = self.client.post(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.data["bookmarked"])
+        self.assertFalse(Bookmark.objects.filter(user=self.user, post=post).exists())
+        self.assertEqual(Bookmark.all_objects.filter(user=self.user, post=post).count(), 1)
 
     def test_list_bookmarks(self):
         post = PostFactory(autor=self.user, organizacao=self.org)
