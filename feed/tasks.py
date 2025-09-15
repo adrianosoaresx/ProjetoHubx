@@ -26,6 +26,12 @@ POSTS_CREATED = Counter("feed_posts_created_total", "Total de posts criados")
 NOTIFICATIONS_SENT = Counter("feed_notifications_sent_total", "Total de notificações de novos posts")
 NOTIFICATION_LATENCY = Histogram("feed_notification_latency_seconds", "Latência do envio de notificações")
 
+INTERACTION_NOTIFICATION_TEMPLATES = {
+    "like": "feed_like",
+    "comment": "feed_comment",
+    "share": "feed_share",
+}
+
 
 @shared_task(autoretry_for=(Exception,), retry_backoff=True)
 def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
@@ -33,7 +39,9 @@ def notificar_autor_sobre_interacao(post_id: str, tipo: str) -> None:
         post = Post.objects.get(id=post_id)
     except Post.DoesNotExist:  # pragma: no cover - simples
         return
-    event = "feed_like" if tipo == "like" else "feed_comment"
+    event = INTERACTION_NOTIFICATION_TEMPLATES.get(
+        tipo, INTERACTION_NOTIFICATION_TEMPLATES["comment"]
+    )
     try:
         enviar_para_usuario(post.autor, event, {"post_id": str(post.id)})
         NOTIFICATIONS_SENT.inc()

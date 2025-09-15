@@ -67,6 +67,14 @@ class FeedNotificationTest(TestCase):
         self.assertEqual(enviar.call_count, 1)
 
     @patch("feed.tasks.enviar_para_usuario")
+    def test_notify_share_once(self, enviar) -> None:
+        from feed.models import Post, Reacao
+
+        post = Post.objects.create(autor=self.other, organizacao=self.other.organizacao, conteudo="ola")
+        Reacao.objects.create(post=post, user=self.user, vote="share")
+        enviar.assert_called_once_with(self.other, "feed_share", {"post_id": str(post.id)})
+
+    @patch("feed.tasks.enviar_para_usuario")
     def test_notify_comment_once(self, enviar) -> None:
         from feed.models import Comment, Post
 
