@@ -63,3 +63,20 @@ class BookmarkAPITest(TestCase):
         res2 = self.client.post(url)
         self.assertEqual(res2.status_code, 429)
         self.assertTrue(Bookmark.objects.filter(user=self.user, post=post).exists())
+
+    def test_duplicate_bookmarks_do_not_error(self):
+        post = PostFactory(autor=self.user, organizacao=self.org)
+        # create a soft-deleted bookmark first so it has a lower PK
+        Bookmark.objects.create(user=self.user, post=post, deleted=True)
+        Bookmark.objects.create(user=self.user, post=post)
+        url = f"/api/feed/posts/{post.id}/bookmark/"
+
+        res = self.client.post(url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.data["bookmarked"])
+        self.assertEqual(Bookmark.objects.filter(user=self.user, post=post).count(), 0)
+
+        res = self.client.post(url)
+        self.assertEqual(res.status_code, 201)
+        self.assertTrue(res.data["bookmarked"])
+        self.assertEqual(Bookmark.objects.filter(user=self.user, post=post).count(), 1)
