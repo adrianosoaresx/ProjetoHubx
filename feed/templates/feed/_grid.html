@@ -1,14 +1,28 @@
 {% load static i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
-<section id="feed-grid" class="card-grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<section id="feed-grid" class="card-grid auto-rows-[1fr] gap-6 sm:grid-cols-2">
   {% for post in posts %}
-    <article class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl">
-      <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent-light)] to-[var(--accent)] opacity-80 transition-opacity duration-300 group-hover:opacity-100"></span>
-      <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
-        <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
-      </a>
-      <div class="card-body flex h-full flex-col gap-6">
-        <header class="flex items-start justify-between gap-4">
+  <article class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl">
+    <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent-light)] to-[var(--accent)] opacity-80 transition-opacity duration-300 group-hover:opacity-100"></span>
+    <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
+      <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
+    </a>
+    <div class="card-body flex h-full flex-col gap-6">
+      <!-- Cabeçalho com tipo de postagem acima do avatar -->
+      <header class="flex flex-col gap-2">
+        <span class="relative z-20 inline-flex items-center gap-2 self-start rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)] shadow-sm ring-1 ring-[var(--border)]">
+          <span class="h-1.5 w-1.5 rounded-full bg-[var(--accent)]"></span>
+          {% if post.tipo_feed == 'nucleo' %}
+            {% blocktrans with nome=post.nucleo.nome %}Núcleo • {{ nome }}{% endblocktrans %}
+          {% elif post.tipo_feed == 'evento' %}
+            {% blocktrans with titulo=post.evento.titulo %}Evento • {{ titulo }}{% endblocktrans %}
+          {% elif post.tipo_feed == 'usuario' %}
+            {% trans "Mural do Usuário" %}
+          {% else %}
+            {% trans "Feed Global" %}
+          {% endif %}
+        </span>
+        <div class="flex items-start justify-between gap-4">
           <div class="flex items-center gap-3">
             <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}" class="relative z-20 flex-shrink-0">
               {% if post.autor.avatar %}
@@ -27,151 +41,88 @@
               </time>
             </div>
           </div>
-          <span class="relative z-20 inline-flex items-center gap-2 rounded-full bg-[var(--bg-tertiary)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--text-secondary)] shadow-sm ring-1 ring-[var(--border)]">
-            <span class="h-1.5 w-1.5 rounded-full bg-[var(--accent)]"></span>
-            {% if post.tipo_feed == 'nucleo' %}
-              {% blocktrans with nome=post.nucleo.nome %}Núcleo • {{ nome }}{% endblocktrans %}
-            {% elif post.tipo_feed == 'evento' %}
-              {% blocktrans with titulo=post.evento.titulo %}Evento • {{ titulo }}{% endblocktrans %}
-            {% elif post.tipo_feed == 'usuario' %}
-              {% trans "Mural do Usuário" %}
-            {% else %}
-              {% trans "Feed Global" %}
-            {% endif %}
+        </div>
+      </header>
+
+      {% if post.conteudo %}
+      <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-4 text-sm leading-relaxed text-[var(--text-primary)] shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)]">
+        {{ post.conteudo|linebreaksbr }}
+      </div>
+      {% endif %}
+
+      {% if post.pdf %}
+      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm transition duration-300 group-hover:border-[var(--accent)]">
+        <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="h-56 w-full object-cover" loading="lazy">
+        <figcaption class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent px-4 pb-4 pt-10 text-xs font-medium text-[var(--text-primary)] backdrop-blur-sm">
+          <span class="flex items-center gap-2">
+            {% lucide 'file-text' class='h-4 w-4' %}
+            {% trans "Documento em PDF" %}
           </span>
-        </header>
-
-        {% if post.conteudo %}
-          <div class="relative z-20 rounded-2xl bg-[var(--bg-tertiary)] p-4 text-sm leading-relaxed text-[var(--text-primary)] shadow-sm ring-1 ring-transparent transition duration-300 group-hover:ring-[var(--border)]">
-            {{ post.conteudo|linebreaksbr }}
+          <div class="flex items-center gap-2">
+            <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Visualizar PDF' %}">
+              {% lucide 'eye' class='w-4 h-4' %}
+            </a>
+            <a href="{{ post.pdf.url }}" download class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Baixar PDF' %}">
+              {% lucide 'download' class='w-4 h-4' %}
+            </a>
           </div>
+        </figcaption>
+      </figure>
+      {% elif post.image %}
+      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
+        <img src="{{ post.image.url }}" class="h-56 w-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]" alt="{% trans 'mídia do post' %}" loading="lazy">
+      </figure>
+      {% elif post.video %}
+      <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-black shadow-sm">
+        {% if post.video_preview %}
+        <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
+        {% else %}
+        <video src="{{ post.video.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
         {% endif %}
+      </figure>
+      {% endif %}
 
-        {% if post.pdf %}
-          <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm transition duration-300 group-hover:border-[var(--accent)]">
-            <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="h-56 w-full object-cover" loading="lazy">
-            <figcaption class="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-[var(--bg-secondary)] via-[var(--bg-secondary)] to-transparent px-4 pb-4 pt-10 text-xs font-medium text-[var(--text-primary)] backdrop-blur-sm">
-              <span class="flex items-center gap-2">
-                {% lucide 'file-text' class='h-4 w-4' %}
-                {% trans "Documento em PDF" %}
-              </span>
-              <div class="flex items-center gap-2">
-                <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Visualizar PDF' %}">
-                  {% lucide 'eye' class='w-4 h-4' %}
-                </a>
-                <a href="{{ post.pdf.url }}" download class="btn btn-secondary relative z-30 p-2" aria-label="{% trans 'Baixar PDF' %}">
-                  {% lucide 'download' class='w-4 h-4' %}
-                </a>
-              </div>
-            </figcaption>
-          </figure>
-        {% elif post.image %}
-          <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm">
-            <img src="{{ post.image.url }}" class="h-56 w-full object-cover transition duration-500 ease-out group-hover:scale-[1.03]" alt="{% trans 'mídia do post' %}" loading="lazy">
-          </figure>
-        {% elif post.video %}
-          <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-black shadow-sm">
-            {% if post.video_preview %}
-              <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
-            {% else %}
-              <video src="{{ post.video.url }}" controls class="h-56 w-full rounded-none object-cover"></video>
-            {% endif %}
-          </figure>
-        {% endif %}
-
-        <footer class="relative z-20 mt-auto">
-          <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-secondary)] shadow-inner">
-            <span class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              {% lucide 'message-circle' class='h-4 w-4' %}
-              <span>
-                {% blocktrans trimmed count comment_count=post.comments.count %}
-                  {{ comment_count }} comentário
+      <!-- Rodapé: botões de ação e contagem de comentários abaixo -->
+      <footer class="relative z-20 mt-auto">
+        <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] px-3 py-2 text-sm text-[var(--text-secondary)] shadow-inner">
+          <div class="flex items-center gap-2">
+            <div id="like-btn-{{ post.id }}" class="relative z-20">
+              {% include 'feed/_like_button.html' with post=post %}
+            </div>
+            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
+              {% lucide 'share-2' class='w-4 h-4' %}
+              <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count }}</span>
+              <span class="sr-only">
+                {% blocktrans trimmed count share_count=post.share_count %}
+                  {{ share_count }} compartilhamento
                 {% plural %}
-                  {{ comment_count }} comentários
+                  {{ share_count }} compartilhamentos
                 {% endblocktrans %}
               </span>
-            </span>
-            <div class="flex items-center gap-2">
-              <div id="like-btn-{{ post.id }}" class="relative z-20">
-                {% include 'feed/_like_button.html' with post=post %}
-              </div>
-              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
-                {% lucide 'share-2' class='w-4 h-4' %}
-                <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count }}</span>
-                <span class="sr-only">
-                  {% blocktrans trimmed count share_count=post.share_count %}
-                    {{ share_count }} compartilhamento
-                  {% plural %}
-                    {{ share_count }} compartilhamentos
-                  {% endblocktrans %}
-                </span>
-              </button>
-              <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Salvar' %}" aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}">
-                {% lucide 'bookmark' class='w-4 h-4' %}
-              </button>
-              <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
-                {% lucide 'flag' class='w-4 h-4' %}
-              </button>
-            </div>
+            </button>
+            <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Salvar' %}" aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}">
+              {% lucide 'bookmark' class='w-4 h-4' %}
+            </button>
+            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
+              {% lucide 'flag' class='w-4 h-4' %}
+            </button>
           </div>
-        </footer>
-      </div>
-    </article>
+          <div class="mt-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+            {% lucide 'message-circle' class='h-4 w-4' %}
+            <span>
+              {% blocktrans trimmed count comment_count=post.comments.count %}
+                {{ comment_count }} comentário
+              {% plural %}
+                {{ comment_count }} comentários
+              {% endblocktrans %}
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </article>
   {% empty %}
     <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhuma postagem encontrada." %}</p>
   {% endfor %}
 </section>
 {% endif %}
-
-<script>
-  // Usa a mesma paleta de cores das variáveis CSS do tema
-  const csrfToken = '{{ csrf_token }}';
-  document.querySelectorAll('.bookmark-btn').forEach(btn => {
-    btn.addEventListener('click', async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      const postId = btn.dataset.postId;
-      try {
-        const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {
-          method: 'POST',
-          headers: {'X-CSRFToken': csrfToken},
-        });
-        if (!res.ok) {
-          throw new Error('bookmark failed');
-        }
-        const data = await res.json();
-        btn.classList.toggle('text-[var(--warning)]', data.bookmarked);
-        btn.setAttribute('aria-pressed', data.bookmarked ? 'true' : 'false');
-      } catch (error) {
-        alert('{% trans "Erro ao salvar" %}');
-      }
-    });
-  });
-  document.querySelectorAll('.flag-btn').forEach(btn => {
-    btn.addEventListener('click', async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (btn.hasAttribute('disabled')) {
-        return;
-      }
-      const postId = btn.dataset.postId;
-      try {
-        const res = await fetch(`/api/feed/posts/${postId}/flag/`, {
-          method: 'POST',
-          headers: {'X-CSRFToken': csrfToken},
-        });
-        if (!res.ok) {
-          throw new Error('flag failed');
-        }
-        btn.classList.add('text-[var(--error)]', 'cursor-not-allowed');
-        btn.setAttribute('disabled', 'disabled');
-        btn.setAttribute('aria-pressed', 'true');
-      } catch (error) {
-        alert('{% trans "Erro ao denunciar" %}');
-      }
-    });
-  });
-
-  
- 
-</script>
