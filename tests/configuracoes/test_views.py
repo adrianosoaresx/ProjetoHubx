@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+from bs4 import BeautifulSoup
 from django.http import Http404
 from django.test import override_settings
 from django.urls import reverse
@@ -22,6 +23,66 @@ def test_view_get_autenticado(admin_client):
     assert isinstance(resp.context["seguranca_form"], PasswordChangeForm)
     assert "preferencias_form" not in resp.context
     assert "configuracoes/configuracao_form.html" in [t.name for t in resp.templates]
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_configuracoes_non_htmx_renders_full_template(admin_client):
+    response = admin_client.get(reverse("configuracoes:configuracoes"))
+
+    assert response.status_code == 200
+    template_names = [template.name for template in response.templates if template.name]
+    assert template_names[0] == "configuracoes/configuracao_form.html"
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_configuracoes_htmx_seguranca_returns_partial(admin_client):
+    response = admin_client.get(
+        reverse("configuracoes:configuracoes"),
+        {"tab": "seguranca"},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    template_names = [template.name for template in response.templates if template.name]
+    assert template_names[0] == "configuracoes/_partials/seguranca.html"
+    assert "configuracoes/configuracao_form.html" not in template_names
+    assert "base.html" not in template_names
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_configuracoes_htmx_preferencias_returns_partial(admin_client):
+    response = admin_client.get(
+        reverse("configuracoes:configuracoes"),
+        {"tab": "preferencias"},
+        HTTP_HX_REQUEST="true",
+    )
+
+    assert response.status_code == 200
+    template_names = [template.name for template in response.templates if template.name]
+    assert template_names[0] == "configuracoes/_partials/preferencias.html"
+    assert "configuracoes/configuracao_form.html" not in template_names
+    assert "base.html" not in template_names
+
+
+@override_settings(ROOT_URLCONF="tests.configuracoes.urls")
+def test_configuracoes_tab_shell_accessible_markup(admin_client):
+    response = admin_client.get(reverse("configuracoes:configuracoes"))
+
+    assert response.status_code == 200
+    soup = BeautifulSoup(response.content, "html.parser")
+    tablist = soup.find("nav", {"role": "tablist"})
+    assert tablist is not None
+
+    tabs = tablist.find_all("a", {"role": "tab"})
+    assert len(tabs) == 2
+
+    seguranca_tab = next(tab for tab in tabs if "tab=seguranca" in tab.get("href", ""))
+    preferencias_tab = next(tab for tab in tabs if "tab=preferencias" in tab.get("href", ""))
+
+    assert seguranca_tab.get("aria-selected") == "true"
+    assert seguranca_tab.get("tabindex") == "0"
+    assert preferencias_tab.get("aria-selected") == "false"
+    assert preferencias_tab.get("tabindex") == "-1"
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
