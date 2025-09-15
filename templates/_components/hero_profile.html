@@ -36,10 +36,17 @@
               <span class="text-sm md:text-base">{{ profile.email|default:"-" }}</span>
             </a>
 
+            {% if profile.phone_number %}
+            <a href="tel:{{ profile.phone_number }}" class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1 bg-black/60 text-white hover:bg-black/70 transition">
+              <i class="fa-solid fa-phone text-white/90"></i>
+              <span class="text-sm md:text-base">{{ profile.phone_number.as_national }}</span>
+            </a>
+            {% else %}
             <span class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1 bg-black/60 text-white">
               <i class="fa-solid fa-phone text-white/90"></i>
-              <span class="text-sm md:text-base">{{ profile.phone_number|default:"-" }}</span>
+              <span class="text-sm md:text-base">-</span>
             </span>
+            {% endif %}
           </div>
           <!-- Linha 3: Botões -->
           {% if is_owner %}
