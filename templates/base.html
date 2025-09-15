@@ -70,6 +70,7 @@
   <script src="{% static 'js/dashboard.js' %}"></script>
   <script src="{% static 'js/tabs.js' %}"></script>
   <script type="module" src="{% static 'feed/js/share.js' %}"></script>
+  <script type="module" src="{% static 'feed/js/flag.js' %}"></script>
   <script>
     document.body.addEventListener('htmx:responseError', function (evt) {
       if (evt.detail.xhr.status === 403) {

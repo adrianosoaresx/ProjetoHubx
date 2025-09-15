@@ -109,7 +109,7 @@
               <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Salvar' %}" aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}">
                 {% lucide 'bookmark' class='w-4 h-4' %}
               </button>
-              <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
+              <button type="button" data-post-id="{{ post.id }}" data-flag-error-message="{% trans 'Erro ao denunciar' %}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed disabled{% endif %} relative z-20 inline-flex items-center justify-center rounded-full p-2 transition" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled aria-pressed="true"{% else %}aria-pressed="false"{% endif %}>
                 {% lucide 'flag' class='w-4 h-4' %}
               </button>
             </div>
@@ -147,31 +147,4 @@
       }
     });
   });
-  document.querySelectorAll('.flag-btn').forEach(btn => {
-    btn.addEventListener('click', async event => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (btn.hasAttribute('disabled')) {
-        return;
-      }
-      const postId = btn.dataset.postId;
-      try {
-        const res = await fetch(`/api/feed/posts/${postId}/flag/`, {
-          method: 'POST',
-          headers: {'X-CSRFToken': csrfToken},
-        });
-        if (!res.ok) {
-          throw new Error('flag failed');
-        }
-        btn.classList.add('text-[var(--error)]', 'cursor-not-allowed');
-        btn.setAttribute('disabled', 'disabled');
-        btn.setAttribute('aria-pressed', 'true');
-      } catch (error) {
-        alert('{% trans "Erro ao denunciar" %}');
-      }
-    });
-  });
-
-  
- 
 </script>
