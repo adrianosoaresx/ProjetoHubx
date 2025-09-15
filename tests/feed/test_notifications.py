@@ -36,6 +36,12 @@ class NotificationTests(TestCase):
         Comment.objects.create(post=post, user=self.other, texto="oi")
         mock_task.assert_called_once_with(post.id, "comment")
 
+    @patch("feed.signals.notificar_autor_sobre_interacao")
+    def test_share_triggers_task(self, mock_task):
+        post = Post.objects.create(autor=self.author, organizacao=self.org, conteudo="hi")
+        Reacao.objects.create(post=post, user=self.other, vote="share")
+        mock_task.assert_called_once_with(post.id, "share")
+
 
 class NotificationMetricsTests(TestCase):
     def setUp(self):
@@ -66,4 +72,12 @@ class NotificationMetricsTests(TestCase):
         self.assertTrue(NotificationTemplate.objects.filter(codigo="feed_comment").exists())
         notificar_autor_sobre_interacao(str(self.post.id), "comment")
         mock_enviar.assert_called_once_with(self.author, "feed_comment", {"post_id": str(self.post.id)})
+        self.assertEqual(NOTIFICATIONS_SENT._value.get(), 1.0)
+
+    @patch("feed.tasks.enviar_para_usuario")
+    def test_share_uses_share_template(self, mock_enviar):
+        NOTIFICATIONS_SENT._value.set(0)
+        self.assertTrue(NotificationTemplate.objects.filter(codigo="feed_share").exists())
+        notificar_autor_sobre_interacao(str(self.post.id), "share")
+        mock_enviar.assert_called_once_with(self.author, "feed_share", {"post_id": str(self.post.id)})
         self.assertEqual(NOTIFICATIONS_SENT._value.get(), 1.0)
