@@ -303,7 +303,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
 class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    empresa = models.ForeignKey("empresas.Empresa", on_delete=models.PROTECT, related_name="parcerias")
     cnpj = models.CharField(
         max_length=14,
         validators=[RegexValidator(r"^\d{14}$", "CNPJ inválido")],

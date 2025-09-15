@@ -151,20 +151,6 @@ def build_menu(request) -> List[MenuItem]:
         MenuItem("dashboard", "/", "Dashboard", ICON_DASHBOARD, None),
         MenuItem("associados", reverse("associados_lista"), "Associados", ICON_USERS, ["admin", "coordenador"]),
         MenuItem(
-            "empresas",
-            reverse("empresas:lista"),
-            "Empresas",
-            ICON_COMPANIES,
-            [
-                "admin",
-                "financeiro",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
             "nucleos",
             reverse("nucleos:list"),
             "Núcleos",

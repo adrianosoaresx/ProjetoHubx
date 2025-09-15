@@ -13,7 +13,6 @@ urlpatterns = [
     path("financeiro/", include(("financeiro.urls", "financeiro"), namespace="financeiro")),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
-    path("empresas/", include(("empresas.urls", "empresas"), namespace="empresas")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
     path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
@@ -36,10 +35,6 @@ urlpatterns = [
     path(
         "api/organizacoes/",
         include(("organizacoes.api_urls", "organizacoes_api"), namespace="organizacoes_api"),
-    ),
-    path(
-        "api/empresas/",
-        include(("empresas.api_urls", "empresas_api"), namespace="empresas_api"),
     ),
     path(
         "api/tokens/",

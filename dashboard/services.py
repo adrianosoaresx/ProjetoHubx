@@ -21,7 +21,6 @@ except Exception:  # ImportError ou qualquer falha ao carregar
     RespostaDiscussao = None  # type: ignore
     TopicoDiscussao = None  # type: ignore
     DISCUSSAO_INSTALLED = False
-from empresas.models import Empresa
 from feed.models import Post, PostView, Reacao, Tag
 from financeiro.models import LancamentoFinanceiro
 from notificacoes.models import NotificationLog, NotificationStatus
@@ -477,7 +476,6 @@ class DashboardService:
             "num_users": User.objects.all(),
             "num_organizacoes": Organizacao.objects.all(),
             "num_nucleos": Nucleo.objects.all(),
-            "num_empresas": Empresa.objects.select_related("usuario", "usuario__organizacao"),
             "num_eventos": Evento.objects.select_related("nucleo"),
             "num_posts_feed_total": Post.objects.all(),
         }
@@ -582,10 +580,6 @@ class DashboardMetricsService:
             "num_users": (User.objects.all(), "created_at"),
             "num_organizacoes": (Organizacao.objects.all(), "created_at"),
             "num_nucleos": (Nucleo.objects.all(), "created_at"),
-            "num_empresas": (
-                Empresa.objects.select_related("usuario", "usuario__organizacao"),
-                "created_at",
-            ),
             "num_eventos": (Evento.objects.select_related("nucleo"), "created_at"),
             "num_posts_feed_total": (
                 Post.objects.select_related("organizacao", "nucleo", "evento", "autor__organizacao"),
@@ -629,8 +623,6 @@ class DashboardMetricsService:
                     qs = qs.filter(pk=organizacao_id)
                 elif name == "num_nucleos":
                     qs = qs.filter(organizacao_id=organizacao_id)
-                elif name == "num_empresas":
-                    qs = qs.filter(usuario__organizacao_id=organizacao_id)
                 elif name == "lancamentos_pendentes":
                     qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
                 elif name == "num_topicos":
@@ -642,8 +634,6 @@ class DashboardMetricsService:
                     qs = qs.filter(nucleos__id=nucleo_id)
                 if name == "num_nucleos":
                     qs = qs.filter(pk=nucleo_id)
-                if name == "num_empresas":
-                    qs = qs.filter(usuario__nucleos__id=nucleo_id)
                 if name == "num_eventos":
                     qs = qs.filter(nucleo_id=nucleo_id)
                 if name == "num_posts_feed_total":

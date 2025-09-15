@@ -2,7 +2,6 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from organizacoes.models import Organizacao
 from nucleos.models import Nucleo
-from empresas.models import Empresa
 from feed.models import Post
 
 # O app 'discussao' foi removido; tornar import opcional
@@ -65,11 +64,6 @@ class Command(BaseCommand):
             for i in range(2):
                 User.objects.create_user(
                     email=f"convidado{i + 1}@{org.nome.lower()}.com", password="convidado123", organizacao=org
-                )
-
-            for i in range(2):
-                Empresa.objects.create(
-                    nome=f"Empresa {i + 1} - {org.nome}", cnpj=f"00.000.000/000{i + 1}", organizacao=org
                 )
 
             for i in range(3):

@@ -24,7 +24,7 @@ class InscricaoEventoAdmin(admin.ModelAdmin):
 
 @admin.register(ParceriaEvento)
 class ParceriaEventoAdmin(admin.ModelAdmin):
-    list_display = ["empresa", "evento", "tipo_parceria"]
+    list_display = ["evento", "tipo_parceria"]
 
 
 @admin.register(MaterialDivulgacaoEvento)

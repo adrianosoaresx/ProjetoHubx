@@ -170,7 +170,6 @@ class DashboardBaseView(LoginRequiredMixin, TemplateView):
                 "num_users",
                 "num_organizacoes",
                 "num_nucleos",
-                "num_empresas",
                 "num_eventos",
                 "inscricoes_confirmadas",
                 "lancamentos_pendentes",

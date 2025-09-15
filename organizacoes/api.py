@@ -18,8 +18,6 @@ from eventos.models import Evento
 from eventos.serializers import EventoSerializer
 from core.cache import get_cache_version
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot
-from empresas.models import Empresa
-from empresas.serializers import EmpresaSerializer
 from feed.api import PostSerializer
 from feed.models import FeedPluginConfig, Post
 from financeiro.models import CentroCusto
@@ -400,12 +398,6 @@ class OrganizacaoEventoViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Evento
     serializer_class = EventoSerializer
     search_field = "titulo"
-
-
-class OrganizacaoEmpresaViewSet(OrganizacaoRelatedAssociationViewSet):
-    model = Empresa
-    serializer_class = EmpresaSerializer
-
 
 class OrganizacaoPostViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Post

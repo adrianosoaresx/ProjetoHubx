@@ -235,7 +235,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = ParceriaEventoSerializer
     permission_classes = [IsAdminOrCoordenadorOrReadOnly]
     pagination_class = DefaultPagination
-    queryset = ParceriaEvento.objects.select_related("evento", "empresa", "nucleo").all()
+    queryset = ParceriaEvento.objects.select_related("evento", "nucleo").all()
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -248,7 +248,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             evento=instance.evento,
             usuario=self.request.user,
             acao="parceria_criada",
-            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
+            detalhes={"parceria": instance.pk},
         )
 
     def perform_update(self, serializer):
@@ -272,7 +272,7 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
             evento=instance.evento,
             usuario=self.request.user,
             acao="parceria_excluida",
-            detalhes={"parceria": instance.pk, "empresa": instance.empresa_id},
+            detalhes={"parceria": instance.pk},
         )
         instance.soft_delete()
 

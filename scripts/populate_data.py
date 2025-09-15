@@ -49,9 +49,6 @@ def main() -> None:
     from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
     from nucleos.models import Nucleo, ParticipacaoNucleo
     from organizacoes.models import Organizacao
-    from empresas.models import Empresa
-    from empresas.signals import _log_changes
-    from django.db.models.signals import post_save
     from faker import Faker
 
     fake = Faker("pt_BR")
@@ -199,7 +196,6 @@ def main() -> None:
                 print(f"Criados {i + 1}/3 eventos para {org.nome}")
 
         # Criação de usuários associados, nucleados e convidados
-        post_save.disconnect(_log_changes, sender=Empresa)
         for org_idx, org in enumerate(organizacoes, start=1):
             nucleos = nucleos_por_org[org]
             # 50 associados
@@ -301,22 +297,6 @@ def main() -> None:
                     user.organizacao = org
                     user.save(update_fields=["organizacao"])
                 print(f"Criados {i + 1}/5 convidados para {org.nome}")
-
-            # Empresas para os 10 primeiros associados
-            associados = User.objects.filter(organizacao=org, user_type="associado").order_by("id")[:10]
-            for i, associado in enumerate(associados, start=1):
-                Empresa.objects.get_or_create(
-                    usuario=associado,
-                    organizacao=org,
-                    defaults={
-                        "nome": fake.company(),
-                        "cnpj": fake.unique.cnpj(),
-                        "municipio": fake.city(),
-                        "estado": fake.state_abbr(),
-                    },
-                )
-                print(f"Criadas {i}/10 empresas para {org.nome}")
-        post_save.connect(_log_changes, sender=Empresa)
 
         # Registros financeiros (3 meses) e atualização de saldo
         for org_idx, org in enumerate(organizacoes, start=1):
