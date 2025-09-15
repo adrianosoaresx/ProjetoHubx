@@ -7,7 +7,7 @@
   hx-vals='{"vote":"like"}'
   hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
   hx-swap="none"
-  hx-on="htmx:afterRequest: if(event.detail.xhr.status===201){const i=this.querySelector('svg');i.classList.add('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)+1;}else if(event.detail.xhr.status===204){const i=this.querySelector('svg');i.classList.remove('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)-1;}"
+  hx-on="click: event.stopPropagation(); htmx:afterRequest: if(event.detail.xhr.status===201){const i=this.querySelector('svg');i.classList.add('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)+1;}else if(event.detail.xhr.status===204){const i=this.querySelector('svg');i.classList.remove('text-emerald-600');const s=this.querySelector('span');s.textContent=parseInt(s.textContent)-1;}"
   class="btn btn-secondary hover:text-emerald-600"
   aria-label="{% if liked %}{% translate 'Descurtir' %}{% else %}{% translate 'Curtir' %}{% endif %}"
 >
