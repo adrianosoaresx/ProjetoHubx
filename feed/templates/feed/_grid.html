@@ -61,18 +61,18 @@
           <div id="like-btn-{{ post.id }}">
             {% include 'feed/_like_button.html' with post=post %}
           </div>
-              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %}" aria-label="{% trans 'Compartilhar' %}">
-            {% lucide 'share-2' class='w-4 h-4' %}
-            <span class="share-count">{{ post.share_count }}</span>
-          </button>
-
+          <div class="flex items-center gap-2">
+            <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %}" aria-label="{% trans 'Compartilhar' %}">
+              {% lucide 'share-2' class='w-4 h-4' %}
+              <span class="share-count">{{ post.share_count }}</span>
+            </button>
             <button type="button" data-post-id="{{ post.id }}" class="bookmark-btn btn btn-secondary {% if post.is_bookmarked %}text-[var(--warning)]{% endif %}" aria-label="{% trans 'Salvar' %}">
-            {% lucide 'bookmark' class='w-4 h-4' %}
-          </button>
-            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
-            {% lucide 'flag' class='w-4 h-4' %}
-
-          </button>
+              {% lucide 'bookmark' class='w-4 h-4' %}
+            </button>
+            <button type="button" data-post-id="{{ post.id }}" class="flag-btn btn btn-secondary {% if post.is_flagged %}text-[var(--error)]{% endif %}" aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
+              {% lucide 'flag' class='w-4 h-4' %}
+            </button>
+          </div>
         </div>
         <span>{{ post.comments.count }} {% trans 'comentários' %}</span>
       </div>
@@ -93,7 +93,7 @@
         return;
       }
       const data = await res.json();
-      btn.classList.toggle('text-yellow-600', data.bookmarked);
+      btn.classList.toggle('text-[var(--warning)]', data.bookmarked);
     });
   });
   document.querySelectorAll('.flag-btn').forEach(btn => {
@@ -104,7 +104,7 @@
         alert('{% trans "Erro ao denunciar" %}');
         return;
       }
-      btn.classList.add('text-red-600', 'cursor-not-allowed');
+      btn.classList.add('text-[var(--error)]');
       btn.setAttribute('disabled', 'disabled');
     });
   });
