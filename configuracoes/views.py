@@ -19,6 +19,13 @@ from configuracoes.services import atualizar_preferencias_usuario, get_configura
 from tokens.utils import get_client_ip
 
 
+def _is_htmx(request) -> bool:
+    return bool(
+        request.headers.get("HX-Request")
+        or getattr(request, "htmx", False)
+    )
+
+
 @login_required
 def configuracoes(request: HttpRequest) -> HttpResponse:
     tab = request.GET.get("tab") or "seguranca"
@@ -56,6 +63,10 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         "seguranca": PasswordChangeForm,
         "preferencias": ConfiguracaoContaForm,
     }
+    partial_templates = {
+        "seguranca": "configuracoes/_partials/seguranca.html",
+        "preferencias": "configuracoes/_partials/preferencias.html",
+    }
 
     def get_user(self) -> AbstractBaseUser:
         if not hasattr(self, "_user_cache"):
@@ -79,8 +90,35 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """Retorna se o usuário atual possui 2FA habilitado."""
         return bool(self.request.user.two_factor_enabled)
 
+    def resolve_tab(self, request: HttpRequest) -> str:
+        tab = request.GET.get("tab") or request.POST.get("tab") or "seguranca"
+        if tab in {"informacoes", "redes"}:
+            return tab
+        if tab not in {"seguranca", "preferencias"}:
+            tab = "seguranca"
+        return tab
+
+    def render_response(self, request: HttpRequest, tab: str, context: dict[str, Any]) -> HttpResponse:
+        is_htmx = _is_htmx(request)
+        template = (
+            self.partial_templates.get(tab, self.partial_templates["seguranca"])
+            if is_htmx
+            else "configuracoes/configuracao_form.html"
+        )
+        response = render(request, template, context)
+        if is_htmx:
+            current_vary = response.get("Vary")
+            if current_vary:
+                vary_headers = [h.strip() for h in current_vary.split(",") if h.strip()]
+                if "HX-Request" not in vary_headers:
+                    vary_headers.append("HX-Request")
+                response["Vary"] = ", ".join(vary_headers)
+            else:
+                response["Vary"] = "HX-Request"
+        return response
+
     def get(self, request: HttpRequest) -> HttpResponse:
-        tab = request.GET.get("tab", "seguranca")
+        tab = self.resolve_tab(request)
         if tab == "informacoes":
             return redirect("accounts:informacoes_pessoais")
         if tab == "redes":
@@ -90,23 +128,14 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             "tab": tab,
             "two_factor_enabled": self.get_two_factor_enabled(),
         }
-        is_htmx = bool(request.headers.get("HX-Request"))
-        template = (
-            f"configuracoes/_partials/{tab}.html"
-            if is_htmx
-            else "configuracoes/configuracao_form.html"
-        )
-        return render(request, template, context)
+        return self.render_response(request, tab, context)
 
     def post(self, request: HttpRequest) -> HttpResponse:
-        tab = request.GET.get("tab") or request.POST.get("tab")
-        tab = tab or "seguranca"
+        tab = self.resolve_tab(request)
         if tab == "informacoes":
             return redirect("accounts:informacoes_pessoais")
         if tab == "redes":
             return redirect("accounts:redes_sociais")
-        if tab not in self.form_classes:
-            raise Http404
         form = self.get_form(tab, request.POST, request.FILES)
         if form.is_valid():
             if tab == "preferencias":
@@ -136,13 +165,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         }
         if tab == "preferencias" and form.is_valid():
             context["updated_preferences"] = True
-        is_htmx = bool(request.headers.get("HX-Request"))
-        template = (
-            f"configuracoes/_partials/{tab}.html"
-            if is_htmx
-            else "configuracoes/configuracao_form.html"
-        )
-        response = render(request, template, context)
+        response = self.render_response(request, tab, context)
         if tab == "preferencias" and form.is_valid():
             tema = form.instance.tema
             response.set_cookie(
