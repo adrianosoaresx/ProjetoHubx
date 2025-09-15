@@ -1,6 +1,6 @@
 {% load static i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
-<section id="feed-grid" class="card-grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<section id="feed-grid" class="card-grid lg:grid-cols-3">
   {% for post in posts %}
     <article class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl">
       <span aria-hidden="true" class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[var(--primary)] via-[var(--accent-light)] to-[var(--accent)] opacity-80 transition-opacity duration-300 group-hover:opacity-100"></span>
