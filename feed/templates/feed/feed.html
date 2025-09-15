@@ -16,21 +16,7 @@
 
   <!-- Busca simples -->
   {% url 'feed:listar' as feed_list_url %}
-  {% include '_components/search_form.html' with
-    q=request.GET.q
-    form_id='feed-search-form'
-    hx_get=feed_list_url
-    hx_target='#feed-grid'
-    hx_push_url='true'
-    hx_indicator='#feed-loading'
-    input_placeholder=_('Buscar postagens…')
-    input_extra_classes='flex-1'
-    input_hx_get=feed_list_url
-    input_hx_target='#feed-grid'
-    input_hx_trigger='keyup changed delay:500ms'
-    input_hx_include='#feed-search-form'
-  %}
-
+  {% include '_components/search_form.html' with q=q %}
   <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
 
   {% include "feed/_grid.html" %}
