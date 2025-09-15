@@ -18,7 +18,7 @@
 {% block content %}
   <div class="py-12 card px-4">
     <div class="card-header">
-      {% include '_components/search_form.html' with q=request.GET.q %}
+      {% include '_components/search_form.html' with q=q %}
     </div>
     <div class="card-body">
       <div class="card-grid mb-6">
@@ -34,7 +34,7 @@
           <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
         {% endfor %}
       </div>
-      {% include '_partials/pagination.html' with page_obj=page_obj querystring="q="|add:q %}
+      {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
     </div>
   </div>
 {% endblock %}

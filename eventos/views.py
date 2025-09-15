@@ -115,6 +115,7 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
             params.pop("page")
         except KeyError:
             pass
+        ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
 
