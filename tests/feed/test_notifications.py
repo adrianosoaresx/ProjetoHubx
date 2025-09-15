@@ -9,6 +9,7 @@ from feed.tasks import (
     notificar_autor_sobre_interacao,
     notify_post_moderated,
 )
+from notificacoes.models import NotificationTemplate
 from organizacoes.models import Organizacao
 
 
@@ -48,11 +49,21 @@ class NotificationMetricsTests(TestCase):
     @patch("feed.tasks.enviar_para_usuario")
     def test_like_increments_metric(self, mock_enviar):
         NOTIFICATIONS_SENT._value.set(0)
+        self.assertTrue(NotificationTemplate.objects.filter(codigo="feed_like").exists())
         notificar_autor_sobre_interacao(str(self.post.id), "like")
+        mock_enviar.assert_called_once_with(self.author, "feed_like", {"post_id": str(self.post.id)})
         self.assertEqual(NOTIFICATIONS_SENT._value.get(), 1.0)
 
     @patch("feed.tasks.enviar_para_usuario")
     def test_moderation_increments_metric(self, mock_enviar):
         NOTIFICATIONS_SENT._value.set(0)
         notify_post_moderated(str(self.post.id), "aprovado")
+        self.assertEqual(NOTIFICATIONS_SENT._value.get(), 1.0)
+
+    @patch("feed.tasks.enviar_para_usuario")
+    def test_comment_uses_comment_template(self, mock_enviar):
+        NOTIFICATIONS_SENT._value.set(0)
+        self.assertTrue(NotificationTemplate.objects.filter(codigo="feed_comment").exists())
+        notificar_autor_sobre_interacao(str(self.post.id), "comment")
+        mock_enviar.assert_called_once_with(self.author, "feed_comment", {"post_id": str(self.post.id)})
         self.assertEqual(NOTIFICATIONS_SENT._value.get(), 1.0)
