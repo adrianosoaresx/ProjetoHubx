@@ -3,6 +3,7 @@ from typing import Any
 from django import forms
 from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import AbstractBaseUser
@@ -16,6 +17,36 @@ from accounts.models import AccountToken, SecurityEvent
 from configuracoes.forms import ConfiguracaoContaForm
 from configuracoes.services import atualizar_preferencias_usuario, get_configuracao_conta
 from tokens.utils import get_client_ip
+
+
+@login_required
+def configuracoes(request: HttpRequest) -> HttpResponse:
+    tab = request.GET.get("tab") or "seguranca"
+    if tab == "informacoes":
+        return redirect("accounts:informacoes_pessoais")
+    if tab == "redes":
+        return redirect("accounts:redes_sociais")
+    context: dict[str, Any] = {
+        "tab": tab,
+        "two_factor_enabled": bool(getattr(request.user, "two_factor_enabled", False)),
+    }
+    if tab == "seguranca":
+        context["seguranca_form"] = PasswordChangeForm(request.user)
+    elif tab == "preferencias":
+        context["preferencias_form"] = ConfiguracaoContaForm(
+            instance=get_configuracao_conta(request.user)
+        )
+        context["updated_preferences"] = False
+    else:
+        raise Http404
+
+    is_htmx = request.headers.get("HX-Request") == "true"
+    template = (
+        f"configuracoes/_partials/{tab}.html"
+        if is_htmx
+        else "configuracoes/configuracao_form.html"
+    )
+    return render(request, template, context)
 
 
 class ConfiguracoesView(LoginRequiredMixin, View):
