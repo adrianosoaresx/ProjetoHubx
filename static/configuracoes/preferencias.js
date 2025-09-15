@@ -1,5 +1,45 @@
 // Logic for preferencias toggle fields and theme/language updates
 
+const PREFERENCIAS_MESSAGE_TARGETS = {
+  email: 'msg-email',
+  whatsapp: 'msg-whatsapp',
+  push: 'msg-push',
+};
+
+function handlePreferenciasAfterRequest(event) {
+  const detail = event.detail;
+  if (!detail) return;
+
+  const responseDetail = detail.xhr?.responseJSON?.detail;
+  if (!responseDetail) return;
+
+  const parameters =
+    detail.requestConfig?.parameters || detail.parameters || {};
+  const canal = parameters?.canal;
+  if (!canal) return;
+
+  const targetId = PREFERENCIAS_MESSAGE_TARGETS[canal];
+  if (!targetId) return;
+
+  const messageEl = document.getElementById(targetId);
+  if (messageEl) {
+    messageEl.innerText = responseDetail;
+  }
+}
+
+function handlePreferenciasAfterSwap(event) {
+  const target = event.detail?.target ?? event.target;
+  if (target?.id === 'content') {
+    initPreferencias();
+  }
+}
+
+function setupPreferenciasAfterSwapListener() {
+  if (!document.body) return;
+  document.body.removeEventListener('htmx:afterSwap', handlePreferenciasAfterSwap);
+  document.body.addEventListener('htmx:afterSwap', handlePreferenciasAfterSwap);
+}
+
 function initPreferencias() {
   const chkEmailId = document.getElementById('chk_email_id');
   const chkWhatsId = document.getElementById('chk_whats_id');
@@ -109,16 +149,20 @@ function initPreferencias() {
       document.documentElement.setAttribute('lang', idiomaValue);
     }
   }
+
+  if (document.body) {
+    document.body.removeEventListener('htmx:afterRequest', handlePreferenciasAfterRequest);
+    document.body.addEventListener('htmx:afterRequest', handlePreferenciasAfterRequest);
+  }
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initPreferencias);
+  document.addEventListener('DOMContentLoaded', () => {
+    initPreferencias();
+    setupPreferenciasAfterSwapListener();
+  });
 } else {
   initPreferencias();
+  setupPreferenciasAfterSwapListener();
 }
-
-// Reinitialize preferences when HTMX swaps in new content
-document.body.addEventListener('htmx:afterSwap', (e) => {
-  if (e.target.id === 'content') initPreferencias();
-});
 
