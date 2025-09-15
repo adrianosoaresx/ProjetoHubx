@@ -325,7 +325,22 @@
   .btn:disabled {
     @apply opacity-50 cursor-not-allowed;
   }
-  .btn-primary {
+
+/* Botões do Hero */
+.btn-hero {
+  @apply inline-flex items-center justify-center rounded-lg px-3.5 py-2 
+         text-sm font-medium text-[var(--text-inverse)] border transition;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-hero:hover:not(:disabled) {
+  @apply -translate-y-px shadow-card-md;
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.btn-primary {
     @apply text-[var(--text-inverse)] border;
     background-color: var(--primary);
     border-color: var(--primary);

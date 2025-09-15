@@ -1154,6 +1154,39 @@ a:focus {
   opacity: 0.5;
 }
 
+/* Botões do Hero */
+
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  border-width: 1px;
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+  color: var(--text-inverse);
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-hero:hover:not(:disabled) {
+  --tw-translate-y: -1px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  box-shadow: var(--card-medium);
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
 .btn-primary {
   border-width: 1px;
   color: var(--text-inverse);
@@ -1197,21 +1230,6 @@ a:focus {
   box-shadow: var(--card-medium);
   background-color: var(--color-error-700);
   border-color: var(--color-error-700);
-}
-
-.btn-outline {
-  border-width: 1px;
-  background-color: transparent;
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.btn-outline:hover:not(:disabled) {
-  --tw-translate-y: -1px;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  background-color: var(--primary-light);
-  color: var(--primary-hover);
-  border-color: var(--primary-hover);
 }
 
 .btn-sm {
@@ -1543,78 +1561,6 @@ a:focus {
   background-color: var(--bg-accent);
 }
 
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-  border-radius: calc(var(--radius) - 2px);
-  border-width: 1px;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  line-height: 1;
-  text-decoration-line: none;
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-  animation-duration: 150ms;
-}
-
-@media (min-width: 640px) {
-  .btn-outline {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-.btn-outline:focus {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
-  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
-  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-  --tw-ring-color: var(--border-focus);
-  --tw-ring-offset-width: 2px;
-}
-
-.btn-outline:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius);
-  border-width: 1px;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-  border-color: var(--border);
-  background-color: transparent;
-  color: var(--text-primary);
-}
-
-.btn-outline:hover {
-  background-color: var(--bg-tertiary);
-}
-
 /* Sidebar */
 
 .sidebar-item {
@@ -1692,33 +1638,6 @@ a:focus {
   background-color: var(--error-light);
 }
 
-.profile-card {
-  overflow: hidden;
-  border-radius: var(--radius);
-  border-width: 1px;
-  border-color: var(--border);
-  background-color: var(--bg-secondary);
-  box-shadow: var(--card-light);
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
-}
-
-.profile-card:hover {
-  --tw-translate-y: -0.125rem;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  box-shadow: var(--card-medium);
-}
-
-.profile-card {
-  border-radius: 0.75rem;
-  border-width: 1px;
-  background-color: var(--bg-secondary);
-  padding: 1.5rem;
-  box-shadow: var(--card-medium);
-  border-color: var(--border);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
-
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1764,16 +1683,8 @@ a:focus {
   bottom: -2rem;
 }
 
-.bottom-0 {
-  bottom: 0px;
-}
-
 .left-0 {
   left: 0px;
-}
-
-.left-1\/2 {
-  left: 50%;
 }
 
 .left-4 {
@@ -1869,10 +1780,6 @@ a:focus {
   margin-top: 2.5rem;
 }
 
-.mt-16 {
-  margin-top: 4rem;
-}
-
 .mt-2 {
   margin-top: 0.5rem;
 }
@@ -1957,20 +1864,12 @@ a:focus {
   height: 6rem;
 }
 
-.h-32 {
-  height: 8rem;
-}
-
 .h-4 {
   height: 1rem;
 }
 
 .h-40 {
   height: 10rem;
-}
-
-.h-48 {
-  height: 12rem;
 }
 
 .h-5 {
@@ -1987,6 +1886,10 @@ a:focus {
 
 .h-8 {
   height: 2rem;
+}
+
+.h-\[260px\] {
+  height: 260px;
 }
 
 .h-full {
@@ -2015,10 +1918,6 @@ a:focus {
 
 .w-20 {
   width: 5rem;
-}
-
-.w-32 {
-  width: 8rem;
 }
 
 .w-4 {
@@ -2085,18 +1984,12 @@ a:focus {
   flex: 1 1 0%;
 }
 
+.shrink-0 {
+  flex-shrink: 0;
+}
+
 .flex-grow {
   flex-grow: 1;
-}
-
-.-translate-x-1\/2 {
-  --tw-translate-x: -50%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
-.translate-y-1\/2 {
-  --tw-translate-y: 50%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .cursor-move {
@@ -2242,10 +2135,6 @@ a:focus {
   overflow: hidden;
 }
 
-.overflow-visible {
-  overflow: visible;
-}
-
 .overflow-x-auto {
   overflow-x: auto;
 }
@@ -2359,6 +2248,14 @@ a:focus {
   background-color: var(--warning-light);
 }
 
+.bg-black\/40 {
+  background-color: rgb(0 0 0 / 0.4);
+}
+
+.bg-black\/60 {
+  background-color: rgb(0 0 0 / 0.6);
+}
+
 .bg-primary {
   background-color: var(--primary);
 }
@@ -2409,6 +2306,11 @@ a:focus {
 .px-2 {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+}
+
+.px-2\.5 {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
 }
 
 .px-3 {
@@ -2471,16 +2373,16 @@ a:focus {
   padding-bottom: 2rem;
 }
 
+.pb-4 {
+  padding-bottom: 1rem;
+}
+
 .pl-6 {
   padding-left: 1.5rem;
 }
 
 .pt-10 {
   padding-top: 2.5rem;
-}
-
-.pt-24 {
-  padding-top: 6rem;
 }
 
 .pt-4 {
@@ -2616,14 +2518,24 @@ a:focus {
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
 
-.opacity-40 {
-  opacity: 0.4;
+.text-white\/80 {
+  color: rgb(255 255 255 / 0.8);
 }
 
-.shadow-lg {
-  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
+.text-white\/90 {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.shadow-2xl {
+  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.ring-1 {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
 }
 
 .ring-4 {
@@ -2636,12 +2548,27 @@ a:focus {
   --tw-ring-color: var(--bg-primary);
 }
 
+.ring-white\/10 {
+  --tw-ring-color: rgb(255 255 255 / 0.1);
+}
+
 .ring-white\/90 {
   --tw-ring-color: rgb(255 255 255 / 0.9);
 }
 
+.drop-shadow {
+  --tw-drop-shadow: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+.backdrop-blur-md {
+  --tw-backdrop-blur: blur(12px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
 
 .transition {
@@ -2942,6 +2869,10 @@ a:focus {
   background-color: var(--primary-hover);
 }
 
+.hover\:bg-black\/70:hover {
+  background-color: rgb(0 0 0 / 0.7);
+}
+
 .hover\:text-\[var\(--text-primary\)\]:hover {
   color: var(--text-primary);
 }
@@ -3028,10 +2959,6 @@ a:focus {
   .sm\:items-end {
     align-items: flex-end;
   }
-
-  .sm\:p-6 {
-    padding: 1.5rem;
-  }
 }
 
 @media (min-width: 768px) {
@@ -3039,28 +2966,16 @@ a:focus {
     grid-column: span 5 / span 5;
   }
 
-  .md\:mb-1 {
-    margin-bottom: 0.25rem;
+  .md\:h-24 {
+    height: 6rem;
   }
 
-  .md\:mt-2 {
-    margin-top: 0.5rem;
+  .md\:h-\[320px\] {
+    height: 320px;
   }
 
-  .md\:mt-20 {
-    margin-top: 5rem;
-  }
-
-  .md\:h-40 {
-    height: 10rem;
-  }
-
-  .md\:h-64 {
-    height: 16rem;
-  }
-
-  .md\:w-40 {
-    width: 10rem;
+  .md\:w-24 {
+    width: 6rem;
   }
 
   .md\:grid-cols-2 {
@@ -3079,50 +2994,40 @@ a:focus {
     flex-direction: row;
   }
 
-  .md\:flex-wrap {
-    flex-wrap: wrap;
-  }
-
   .md\:items-center {
     align-items: center;
-  }
-
-  .md\:justify-start {
-    justify-content: flex-start;
   }
 
   .md\:justify-between {
     justify-content: space-between;
   }
 
-  .md\:space-x-2 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-x-reverse: 0;
-    margin-right: calc(0.5rem * var(--tw-space-x-reverse));
-    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+  .md\:p-5 {
+    padding: 1.25rem;
   }
 
-  .md\:space-y-0 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(0px * var(--tw-space-y-reverse));
+  .md\:pb-6 {
+    padding-bottom: 1.5rem;
   }
 
-  .md\:pl-44 {
-    padding-left: 11rem;
+  .md\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
   }
 
-  .md\:pt-10 {
-    padding-top: 2.5rem;
-  }
-
-  .md\:text-left {
-    text-align: left;
+  .md\:text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 }
 
 @media (min-width: 1024px) {
   .lg\:col-span-3 {
     grid-column: span 3 / span 3;
+  }
+
+  .lg\:h-\[360px\] {
+    height: 360px;
   }
 
   .lg\:grid-cols-3 {

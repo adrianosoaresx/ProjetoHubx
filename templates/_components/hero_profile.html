@@ -1,78 +1,56 @@
-{% load string_filters %}
-<section class="relative isolate overflow-visible bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
-  {% if profile.cover %}
-    <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" loading="lazy">
-  {% endif %}
-  <div class="relative mx-auto max-w-7xl px-4 h-48 md:h-64 text-center text-white"></div>
-  <div class="absolute bottom-0 left-1/2 translate-y-1/2 -translate-x-1/2 z-50">
-    <div class="flex items-center gap-4">
-      <div class="h-32 w-32 md:h-40 md:w-40 rounded-full ring-4 ring-white/90 overflow-hidden shadow-lg bg-[var(--bg-primary)]">
-        {% if profile.avatar %}
-          <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-        {% else %}
-          <div class="h-full w-full grid place-items-center text-3xl font-semibold text-[var(--text-secondary)]">
-            {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
-          </div>
-        {% endif %}
-      </div>
-      <div class="text-center md:text-left">
-        <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:mb-1 md:mt-2">
-          {{ profile.get_full_name|default:profile.username }}
-        </h2>
-        <p class="text-sm text-[var(--text-muted)]">@{{ profile.username }}</p>
-      </div>
+<section class="relative isolate overflow-hidden">
+  <div class="relative h-[260px] md:h-[320px] lg:h-[360px] bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
+    {% if profile.cover %}
+      <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
+    {% endif %}
 
+    <div class="relative mx-auto max-w-6xl h-full px-4">
+      <div class="h-full flex flex-col justify-end pb-4 md:pb-6">
+        
+        <div class="rounded-2xl p-4 md:p-5  ring-1 ring-white/10 shadow-2xl text-white w-full">
+          <!-- Linha 1: Avatar + Nome -->
+          <div class="flex items-center gap-4">
+            <div class="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white/90 overflow-hidden bg-[var(--bg-primary)] shrink-0">
+              {% if profile.avatar %}
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.get_full_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+              {% else %}
+                <div class="h-full w-full grid place-items-center text-2xl font-semibold text-white/80">
+                  {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+                </div>
+              {% endif %}
+            </div>
+
+            <h2 class="bg-black/40 text-2xl md:text-3xl font-semibold drop-shadow text-white">
+              {{ profile.get_full_name|default:profile.username }}
+            </h2>
+          </div>
+
+          <!-- Linha 2: @usuario, email e fone -->
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <span class="inline-block rounded-lg px-2 py-0.5 bg-black/60 text-white/90 text-sm">
+              @{{ profile.username }}
+            </span>
+
+            <a href="mailto:{{ profile.email }}" class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1 bg-black/60 text-white hover:bg-black/70 transition break-all">
+              <i class="fa-solid fa-envelope text-white/90"></i>
+              <span class="text-sm md:text-base">{{ profile.email|default:"-" }}</span>
+            </a>
+
+            <span class="inline-flex items-center gap-2 rounded-lg px-2.5 py-1 bg-black/60 text-white">
+              <i class="fa-solid fa-phone text-white/90"></i>
+              <span class="text-sm md:text-base">{{ profile.phone_number|default:"-" }}</span>
+            </span>
+          </div>
+          <!-- Linha 3: Botões -->
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <a href="#" class="btn-hero">Info</a>
+            <a href="#" class="btn-hero">Portfólio</a>
+            <a href="#" class="btn-hero">Mural</a>
+            <a href="#" class="btn-hero">Conexões</a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 </section>
-
-<section class="container mt-6 md:mt-10">
-  <div class="mx-auto w-full max-w-4xl">
-    <div class="profile-card rounded-xl border bg-[var(--bg-primary)] pt-24 md:pt-10">
-      <div class="mt-6 flex flex-col items-center justify-center space-y-2 md:flex-row md:flex-wrap md:justify-start md:space-y-0 md:space-x-2">
-        <button class="btn btn-primary">Info</button>
-        <button class="btn btn-secondary">Portfólio</button>
-        <button class="btn btn-secondary">Mural</button>
-        <button class="btn btn-outline">Conexões</button>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
-        <div>
-          <div class="text-[var(--text-tertiary)] text-sm mb-1">E-mail</div>
-          <a href="mailto:{{ profile.email }}" class="text-[var(--text-primary)] hover:underline break-all">
-            {{ profile.email|default:"-" }}
-          </a>
-        </div>
-        <div>
-          <div class="text-[var(--text-tertiary)] text-sm mb-1">Fone</div>
-          <div class="text-[var(--text-primary)]">{{ profile.phone_number|default:"-" }}</div>
-        </div>
-      </div>
-
-      <div class="mt-6 flex flex-col items-center justify-center space-y-2 md:flex-row md:flex-wrap md:justify-start md:space-y-0 md:space-x-2 px-6 pb-6">
-        <button class="btn btn-primary">Info</button>
-        <button class="btn btn-secondary">Portfólio</button>
-        <button class="btn btn-secondary">Mural</button>
-        <button class="btn btn-outline">Conexões</button>
-      </div>
-
-      {% if profile.redes_sociais %}
-        <div class="border-t border-[var(--border)] p-4 sm:p-6">
-          <div class="flex items-center justify-center md:justify-start gap-4 text-xl text-[var(--text-secondary)]">
-            {% with redes='whatsapp instagram linkedin x'|split %}
-              {% for nome in redes %}
-                {% with link=profile.redes_sociais|get_item:nome %}
-                  {% if link %}
-                    <a href="{{ link }}" target="_blank" rel="noopener" class="hover:text-[var(--text-primary)]" aria-label="{{ nome|title }}">
-                      <i class="fa-brands {% if nome == 'x' %}fa-x-twitter{% else %}fa-{{ nome }}{% endif %}"></i>
-                    </a>
-                  {% endif %}
-                {% endwith %}
-              {% endfor %}
-            {% endwith %}
-          </div>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-</section>
-
