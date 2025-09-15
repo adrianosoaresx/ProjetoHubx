@@ -1,68 +1,5 @@
 {% load static i18n lucide_icons %}
 {% if request.user.user_type != 'root' %}
-<<<<<<< HEAD
-<section id="feed-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {% for post in posts %}
-    <article class="card relative overflow-hidden">
-      <!-- Link de overlay para toda a carta (z-10); ações recebem z-20 -->
-      <a href="{% url 'feed:post_detail' post.id %}" class="absolute inset-0 z-10" aria-label="{% trans 'Ver detalhes do post' %}">
-        <span class="sr-only">{% trans "Ver detalhes do post" %}</span>
-      </a>
-
-      <div class="card-body space-y-4 relative z-20 flex flex-col">
-        <p class="text-xs text-[var(--text-muted)]">
-          {% if post.tipo_feed == 'nucleo' %}
-            {% blocktrans with nome=post.nucleo.nome %}Feed do Núcleo: {{ nome }}{% endblocktrans %}
-          {% elif post.tipo_feed == 'evento' %}
-            {% blocktrans with titulo=post.evento.titulo %}Feed do Evento: {{ titulo }}{% endblocktrans %}
-          {% elif post.tipo_feed == 'usuario' %}
-            {% trans "Mural do Usuário" %}
-          {% else %}
-            {% trans "Feed Global" %}
-          {% endif %}
-        </p>
-
-        <div class="flex items-center gap-4">
-          <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}" class="shrink-0">
-            {% if post.autor.avatar %}
-              <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
-            {% else %}
-              <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
-                {{ post.autor.username|first|upper }}
-              </div>
-            {% endif %}
-          </a>
-          <div class="min-w-0">
-            <p class="text-sm font-medium text-[var(--text-primary)] truncate">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-            <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-          </div>
-        </div>
-
-        <div class="text-sm text-[var(--text-primary)] whitespace-pre-line">
-          {{ post.conteudo|linebreaksbr }}
-        </div>
-
-        {% if post.pdf %}
-          <div class="relative">
-            <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="w-full rounded object-cover" loading="lazy">
-            <div class="absolute top-2 left-2 flex gap-2">
-              <a href="{{ post.pdf.url }}" target="_blank" class="btn btn-secondary p-1.5" aria-label="{% trans 'Visualizar PDF' %}">
-                {% lucide 'eye' class='w-4 h-4' %}
-              </a>
-              <a href="{{ post.pdf.url }}" download class="btn btn-secondary p-1.5" aria-label="{% trans 'Baixar PDF' %}">
-                {% lucide 'download' class='w-4 h-4' %}
-              </a>
-            </div>
-          </div>
-        {% elif post.image %}
-          <div class="relative">
-            <img src="{{ post.image.url }}" class="w-full rounded object-cover" alt="{% trans 'mídia do post' %}" loading="lazy">
-          </div>
-        {% elif post.video %}
-          <div class="relative">
-            {% if post.video_preview %}
-              <video src="{{ post.video.url }}" poster="{{ post.video_preview.url }}" controls class="w-full rounded"></video>
-=======
 <section id="feed-grid" class="card-grid auto-rows-[1fr] gap-6 sm:grid-cols-2 lg:grid-cols-3">
   {% for post in posts %}
     <article class="card group relative flex h-full flex-col overflow-hidden border border-transparent bg-[var(--bg-secondary)] shadow-lg transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-2xl">
@@ -98,7 +35,6 @@
               {% blocktrans with titulo=post.evento.titulo %}Evento • {{ titulo }}{% endblocktrans %}
             {% elif post.tipo_feed == 'usuario' %}
               {% trans "Mural do Usuário" %}
->>>>>>> d171e253a711e149af7a69460cd8532b416078b8
             {% else %}
               {% trans "Feed Global" %}
             {% endif %}
@@ -111,40 +47,6 @@
           </div>
         {% endif %}
 
-<<<<<<< HEAD
-        <!-- Ações -->
-        <div class="mt-2 flex items-center justify-between text-sm text-[var(--text-secondary)]">
-          <div class="flex items-center gap-2" role="group" aria-label="{% trans 'Ações do post' %}">
-            <div id="like-btn-{{ post.id }}">
-              {% include 'feed/_like_button.html' with post=post %}
-            </div>
-
-            <button type="button"
-                    data-post-id="{{ post.id }}"
-                    class="share-btn inline-flex items-center gap-1 btn btn-secondary px-2 py-1.5 leading-none {% if post.is_shared %}text-[var(--primary)]{% endif %}"
-                    aria-label="{% trans 'Compartilhar' %}">
-              {% lucide 'share-2' class='w-4 h-4' %}
-              <span class="share-count tabular-nums">{{ post.share_count }}</span>
-            </button>
-
-            <button type="button"
-                    data-post-id="{{ post.id }}"
-                    class="bookmark-btn inline-flex items-center gap-1 btn btn-secondary px-2 py-1.5 leading-none {% if post.is_bookmarked %}text-[var(--warning)]{% endif %}"
-                    aria-label="{% trans 'Salvar' %}">
-              {% lucide 'bookmark' class='w-4 h-4' %}
-            </button>
-
-            <button type="button"
-                    data-post-id="{{ post.id }}"
-                    class="flag-btn inline-flex items-center gap-1 btn btn-secondary px-2 py-1.5 leading-none {% if post.is_flagged %}text-[var(--error)] cursor-not-allowed{% endif %}"
-                    aria-label="{% trans 'Denunciar' %}" {% if post.is_flagged %}disabled{% endif %}>
-              {% lucide 'flag' class='w-4 h-4' %}
-            </button>
-          </div>
-
-          <span class="ml-2 shrink-0 tabular-nums">{{ post.comments.count }} {% trans 'comentários' %}</span>
-        </div>
-=======
         {% if post.pdf %}
           <figure class="relative z-20 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-tertiary)] shadow-sm transition duration-300 group-hover:border-[var(--accent)]">
             <img src="{% static 'img/pdf-placeholder.png' %}" alt="{% trans 'PDF' %}" class="h-56 w-full object-cover" loading="lazy">
@@ -213,7 +115,6 @@
             </div>
           </div>
         </footer>
->>>>>>> d171e253a711e149af7a69460cd8532b416078b8
       </div>
     </article>
   {% empty %}
@@ -225,32 +126,14 @@
 <script>
   // Usa a mesma paleta de cores das variáveis CSS do tema
   const csrfToken = '{{ csrf_token }}';
-<<<<<<< HEAD
-
-  // BOOKMARK
-  document.querySelectorAll('.bookmark-btn').forEach((btn) => {
-    btn.addEventListener('click', async (ev) => {
-      ev.stopPropagation();
-=======
   document.querySelectorAll('.bookmark-btn').forEach(btn => {
     btn.addEventListener('click', async event => {
       event.preventDefault();
       event.stopPropagation();
->>>>>>> d171e253a711e149af7a69460cd8532b416078b8
       const postId = btn.dataset.postId;
       try {
         const res = await fetch(`/api/feed/posts/${postId}/bookmark/`, {
           method: 'POST',
-<<<<<<< HEAD
-          headers: {'X-CSRFToken': csrfToken}
-        });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        btn.classList.toggle('text-[var(--warning)]', !!data.bookmarked);
-      } catch (e) {
-        alert('{% trans "Erro ao salvar" %}');
-      }
-=======
           headers: {'X-CSRFToken': csrfToken},
         });
         if (!res.ok) {
@@ -286,7 +169,6 @@
       } catch (error) {
         alert('{% trans "Erro ao denunciar" %}');
       }
->>>>>>> d171e253a711e149af7a69460cd8532b416078b8
     });
   });
 
