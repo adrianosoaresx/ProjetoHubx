@@ -12,15 +12,18 @@
   <p class="text-center text-[var(--text-muted)]">{% trans "Usuário root não tem acesso ao feed." %}</p>
 {% else %}
 <section class="max-w-7xl mx-auto px-4 py-10">
-
-
   <!-- Busca simples -->
   {% url 'feed:listar' as feed_list_url %}
-  {% include '_components/search_form.html' with q=q %}
-  <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
-
-  {% include "feed/_grid.html" %}
-
+  <div class="py-12 card px-4">
+    <div class="card-header">
+      {% include '_components/search_form.html' with q=q %}
+    </div>
+    
+    <div id="feed-loading" class="htmx-indicator">{% trans "Carregando…" %}</div>
+    <div class="card-body">
+      {% include "feed/_grid.html" %}
+    </div>
+</div> 
 </section>
 <script src="{% static 'feed/js/feed.js' %}"></script>
 {% endif %}
