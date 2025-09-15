@@ -95,10 +95,17 @@
               <div id="like-btn-{{ post.id }}" class="relative z-20">
                 {% include 'feed/_like_button.html' with post=post %}
               </div>
-              <button type="button" data-post-id="{{ post.id }}" class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition" aria-label="{% trans 'Compartilhar' %}">
+              <button
+                type="button"
+                data-post-id="{{ post.id }}"
+                data-share-count="{{ post.share_count|default_if_none:0 }}"
+                class="share-btn btn btn-secondary {% if post.is_shared %}text-[var(--primary)]{% endif %} relative z-20 inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold transition"
+                aria-label="{% trans 'Compartilhar' %}"
+                aria-pressed="{% if post.is_shared %}true{% else %}false{% endif %}"
+              >
                 {% lucide 'share-2' class='w-4 h-4' %}
-                <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count }}</span>
-                <span class="sr-only">
+                <span aria-hidden="true" class="share-count min-w-[1.5rem] text-center">{{ post.share_count|default_if_none:0 }}</span>
+                <span class="sr-only" data-share-label>
                   {% blocktrans trimmed count share_count=post.share_count %}
                     {{ share_count }} compartilhamento
                   {% plural %}
