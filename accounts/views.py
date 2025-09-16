@@ -17,10 +17,16 @@ from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.db.models import Count, Q
 from django.db.models.functions import Lower
-from django.http import HttpResponse, HttpResponseNotAllowed
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_GET
 from django.views.generic import ListView
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
@@ -67,21 +73,12 @@ def _portfolio_for(profile, viewer, limit: int = 6):
     return list(qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit])
 
 
-# ====================== PERFIL ======================
-
-
-@login_required
-def perfil(request):
-    """Exibe a página de perfil privado do usuário."""
-    user = request.user
-
-    # Núcleos em que o usuário participa (ativos)
-    from eventos.models import InscricaoEvento
+def _nucleos_for(profile):
     from nucleos.models import Nucleo
 
-    nucleos = (
+    return (
         Nucleo.objects.filter(
-            participacoes__user=user,
+            participacoes__user=profile,
             participacoes__status="ativo",
             participacoes__status_suspensao=False,
         )
@@ -99,12 +96,57 @@ def perfil(request):
         .prefetch_related("participacoes__user")
     )
 
-    # Inscrições do usuário em eventos (inclui inscrito/participou)
-    inscricoes = (
-        InscricaoEvento.objects.filter(user=user)
+
+def _inscricoes_for(profile):
+    from eventos.models import InscricaoEvento
+
+    return (
+        InscricaoEvento.objects.filter(user=profile)
         .select_related("evento__nucleo", "evento__coordenador")
         .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
     )
+
+
+def _resolve_profile_for_partial(request):
+    """Return the profile for partial requests enforcing visibility rules."""
+
+    username = request.GET.get("username")
+    public_id = request.GET.get("public_id")
+    pk = request.GET.get("pk")
+    viewer = request.user if request.user.is_authenticated else None
+
+    if username or public_id or pk:
+        filters = {}
+        if public_id:
+            filters["public_id"] = public_id
+        elif pk:
+            filters["pk"] = pk
+        else:
+            filters["username"] = username
+        profile = get_object_or_404(User, **filters)
+        is_owner = viewer == profile
+        if not profile.perfil_publico and not is_owner:
+            return None, None, HttpResponseForbidden()
+    else:
+        if not viewer:
+            return None, None, HttpResponseForbidden()
+        profile = viewer
+        is_owner = True
+
+    return profile, is_owner, None
+
+
+# ====================== PERFIL ======================
+
+
+@login_required
+def perfil(request):
+    """Exibe a página de perfil privado do usuário."""
+    user = request.user
+
+    # Núcleos e inscrições
+    nucleos = _nucleos_for(user)
+    inscricoes = _inscricoes_for(user)
 
     portfolio_recent = _portfolio_for(user, request.user, limit=6)
 
@@ -133,34 +175,8 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     if request.user == perfil:
         return redirect("accounts:portfolio")
-    from eventos.models import InscricaoEvento
-    from nucleos.models import Nucleo
-
-    nucleos = (
-        Nucleo.objects.filter(
-            participacoes__user=perfil,
-            participacoes__status="ativo",
-            participacoes__status_suspensao=False,
-        )
-        .annotate(
-            num_membros=Count(
-                "participacoes",
-                filter=Q(
-                    participacoes__status="ativo",
-                    participacoes__status_suspensao=False,
-                ),
-                distinct=True,
-            ),
-            num_eventos=Count("evento", distinct=True),
-        )
-        .prefetch_related("participacoes__user")
-    )
-
-    inscricoes = (
-        InscricaoEvento.objects.filter(user=perfil)
-        .select_related("evento__nucleo", "evento__coordenador")
-        .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
-    )
+    nucleos = _nucleos_for(perfil)
+    inscricoes = _inscricoes_for(perfil)
 
     portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
 
@@ -178,6 +194,98 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
     }
 
     return render(request, "perfil/publico.html", context)
+
+
+@require_GET
+def perfil_section(request, section):
+    profile, is_owner, error = _resolve_profile_for_partial(request)
+    if error:
+        return error
+
+    viewer = request.user if request.user.is_authenticated else None
+    context: dict[str, object] = {
+        "profile": profile,
+        "is_owner": is_owner,
+    }
+
+    if section == "portfolio":
+        q = request.GET.get("q", "").strip()
+        medias_qs = Midia.objects.visible_to(viewer, profile).select_related("user").prefetch_related("tags").order_by(
+            "-created_at"
+        )
+        if q:
+            medias_qs = medias_qs.filter(Q(descricao__icontains=q) | Q(tags__nome__icontains=q)).distinct()
+
+        show_form = is_owner and request.GET.get("adicionar") == "1"
+        form = MediaForm() if is_owner else None
+        if form is not None:
+            allowed_exts = getattr(settings, "USER_MEDIA_ALLOWED_EXTS", [])
+            form.fields["file"].widget.attrs["accept"] = ",".join(allowed_exts)
+            form.fields["file"].help_text = _("Selecione um arquivo")
+            form.fields["descricao"].help_text = _("Breve descrição do portfólio")
+
+        context.update(
+            {
+                "medias": medias_qs,
+                "form": form,
+                "show_form": show_form,
+                "q": q,
+            }
+        )
+        template = "perfil/partials/portfolio.html"
+
+    elif section == "mural":
+        template = "perfil/partials/_tab_feed.html"
+
+    elif section == "info":
+        if is_owner:
+            context["user"] = profile
+            template = "perfil/partials/detail_informacoes.html"
+        else:
+            template = "perfil/partials/publico_informacoes.html"
+
+    elif section == "nucleos":
+        context["nucleos"] = _nucleos_for(profile)
+        template = "perfil/partials/detail_nucleos.html" if is_owner else "perfil/partials/publico_nucleos.html"
+
+    elif section == "eventos":
+        context["inscricoes"] = _inscricoes_for(profile)
+        template = "perfil/partials/detail_eventos.html" if is_owner else "perfil/partials/publico_eventos.html"
+
+    elif section == "conexoes":
+        if is_owner:
+            q = request.GET.get("q", "").strip()
+            connections = (
+                profile.connections.select_related("organizacao", "nucleo")
+                if hasattr(profile, "connections")
+                else User.objects.none()
+            )
+            connection_requests = (
+                profile.followers.select_related("organizacao", "nucleo")
+                if hasattr(profile, "followers")
+                else User.objects.none()
+            )
+            if q:
+                filters = Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
+                connections = connections.filter(filters)
+                connection_requests = connection_requests.filter(filters)
+
+            context.update(
+                {
+                    "connections": connections,
+                    "connection_requests": connection_requests,
+                    "q": q,
+                }
+            )
+            template = "perfil/partials/conexoes_dashboard.html"
+        else:
+            context["limit"] = 12
+            template = "perfil/partials/_tab_conexoes_embed.html"
+
+    else:
+        return HttpResponseBadRequest("Invalid section")
+
+    return render(request, template, context)
 
 
 @login_required

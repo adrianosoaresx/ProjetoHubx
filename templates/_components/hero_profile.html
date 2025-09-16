@@ -1,3 +1,4 @@
+{% load i18n %}
 <section class="relative isolate overflow-hidden">
   <div class="relative h-[260px] md:h-[320px] lg:h-[360px] bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
     {% if profile.cover %}
@@ -49,14 +50,69 @@
             {% endif %}
           </div>
           <!-- Linha 3: Botões -->
-          {% if is_owner %}
-          <div class="mt-3 flex flex-wrap items-center gap-2">
-            <a href="{% url 'accounts:info' %}" class="btn-hero">Info</a>
-            <a href="{% url 'accounts:portfolio' %}" class="btn-hero">Portfólio</a>
-            <a href="{% url 'feed:meu_mural' %}" class="btn-hero">Mural</a>
-            <a href="{% url 'accounts:conexoes' %}" class="btn-hero">Conexões</a>
-          </div>
-          {% endif %}
+          <nav class="mt-4 flex flex-wrap items-center gap-2" aria-label="{% trans 'Seções do perfil' %}">
+            <a
+              href="{% url 'accounts:perfil_portfolio' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="portfolio"
+              data-perfil-url="{% url 'accounts:perfil_portfolio' %}"
+              data-perfil-default="true"
+              aria-controls="perfil-content"
+            >
+              {% trans "Portfólio" %}
+            </a>
+            <a
+              href="{% url 'accounts:perfil_mural' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="mural"
+              data-perfil-url="{% url 'accounts:perfil_mural' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Mural" %}
+            </a>
+            <a
+              href="{% url 'accounts:perfil_info_partial' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="info"
+              data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Informações" %}
+            </a>
+            <a
+              href="{% url 'accounts:perfil_nucleos' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="nucleos"
+              data-perfil-url="{% url 'accounts:perfil_nucleos' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Núcleos" %}
+            </a>
+            <a
+              href="{% url 'accounts:perfil_eventos' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="eventos"
+              data-perfil-url="{% url 'accounts:perfil_eventos' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Eventos" %}
+            </a>
+            <a
+              href="{% url 'accounts:perfil_conexoes_partial' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="conexoes"
+              data-perfil-url="{% url 'accounts:perfil_conexoes_partial' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Conexões" %}
+            </a>
+          </nav>
         </div>
 
       </div>
