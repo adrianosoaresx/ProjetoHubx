@@ -11,8 +11,8 @@
   <section
     id="perfil-content"
     class="space-y-6"
-    data-perfil-default-url="{% url 'accounts:perfil_portfolio' %}"
-    data-perfil-default-section="portfolio"
+    data-perfil-default-url="{{ perfil_default_url }}"
+    data-perfil-default-section="{{ perfil_default_section }}"
     data-perfil-mode="{% if is_owner %}owner{% else %}public{% endif %}"
     data-perfil-username="{{ perfil.username }}"
     data-perfil-public-id="{{ perfil.public_id }}"

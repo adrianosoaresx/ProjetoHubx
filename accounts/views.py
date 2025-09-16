@@ -57,6 +57,78 @@ User = get_user_model()
 Midia = UserMedia
 
 
+PERFIL_DEFAULT_SECTION = "portfolio"
+PERFIL_SECTION_URLS = {
+    "portfolio": "accounts:perfil_portfolio",
+    "mural": "accounts:perfil_mural",
+    "info": "accounts:perfil_info_partial",
+    "nucleos": "accounts:perfil_nucleos",
+    "eventos": "accounts:perfil_eventos",
+    "conexoes": "accounts:perfil_conexoes_partial",
+}
+
+
+def _is_htmx_or_ajax(request) -> bool:
+    """Return whether the request was triggered via HTMX or XMLHttpRequest."""
+
+    if request.headers.get("HX-Request"):
+        return True
+    requested_with = request.headers.get("X-Requested-With", "")
+    return isinstance(requested_with, str) and requested_with.lower() == "xmlhttprequest"
+
+
+def _redirect_to_profile_section(request, section: str, extra_params: dict[str, str | None] | None = None):
+    params = request.GET.copy()
+    params = params.copy()
+    if extra_params:
+        for key, value in extra_params.items():
+            if value is None:
+                params.pop(key, None)
+            else:
+                params[key] = value
+    params["section"] = section
+    query_string = params.urlencode()
+    url = reverse("accounts:perfil")
+    if query_string:
+        url = f"{url}?{query_string}"
+    return redirect(url)
+
+
+def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
+    section = (request.GET.get("section") or "").strip().lower()
+    if section not in PERFIL_SECTION_URLS:
+        section = PERFIL_DEFAULT_SECTION
+
+    params = request.GET.copy()
+    params = params.copy()
+    params.pop("section", None)
+
+    url_name = PERFIL_SECTION_URLS[section]
+    url_args: list[str] = []
+
+    if allow_owner_sections and section == "portfolio":
+        view_mode = params.get("portfolio_view")
+        media_pk = params.get("media")
+        section_views = {
+            "detail": "accounts:perfil_sections_portfolio_detail",
+            "edit": "accounts:perfil_sections_portfolio_edit",
+            "delete": "accounts:perfil_sections_portfolio_delete",
+        }
+        selected_view = section_views.get(view_mode)
+        if selected_view and media_pk:
+            url_name = selected_view
+            url_args = [media_pk]
+            params.pop("portfolio_view", None)
+            params.pop("media", None)
+
+    url = reverse(url_name, args=url_args)
+    query_string = params.urlencode()
+    if query_string:
+        url = f"{url}?{query_string}"
+
+    return section, url
+
+
 def _portfolio_for(profile, viewer, limit: int = 6):
     """Return up to ``limit`` recent media visible to ``viewer`` for ``profile``.
 
@@ -163,6 +235,14 @@ def perfil(request):
         "portfolio_q": "",
     }
 
+    default_section, default_url = _perfil_default_section_url(request, allow_owner_sections=True)
+    context.update(
+        {
+            "perfil_default_section": default_section,
+            "perfil_default_url": default_url,
+        }
+    )
+
     return render(request, "perfil/perfil.html", context)
 
 
@@ -194,6 +274,14 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         "portfolio_show_form": False,
         "portfolio_q": "",
     }
+
+    default_section, default_url = _perfil_default_section_url(request)
+    context.update(
+        {
+            "perfil_default_section": default_section,
+            "perfil_default_url": default_url,
+        }
+    )
 
     return render(request, "perfil/publico.html", context)
 
@@ -298,6 +386,9 @@ def perfil_section(request, section):
 
 @login_required
 def perfil_info(request):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(request, "info")
+
     if request.method == "POST":
         form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -306,7 +397,7 @@ def perfil_info(request):
                 messages.info(request, _("Confirme o novo e-mail enviado."))
             else:
                 messages.success(request, _("Informações do perfil atualizadas."))
-            return redirect("accounts:perfil_sections_info")
+            return _redirect_to_profile_section(request, "info")
     else:
         form = InformacoesPessoaisForm(instance=request.user)
 
@@ -333,6 +424,9 @@ def check_2fa(request):
 
 @login_required
 def perfil_conexoes(request):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(request, "conexoes")
+
     q = request.GET.get("q", "").strip()
     tab = request.GET.get("tab", "minhas").lower()
     connections = (
@@ -423,6 +517,9 @@ def recusar_conexao(request, id):
 
 @login_required
 def perfil_portfolio(request):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(request, "portfolio")
+
     show_form = request.GET.get("adicionar") == "1" or request.method == "POST"
     q = request.GET.get("q", "").strip()
 
@@ -434,7 +531,7 @@ def perfil_portfolio(request):
             media.save()
             form.save_m2m()
             messages.success(request, "Arquivo enviado com sucesso.")
-            return redirect("accounts:perfil_sections_portfolio")
+            return _redirect_to_profile_section(request, "portfolio")
     else:
         form = MediaForm()
 
@@ -464,19 +561,33 @@ def perfil_portfolio(request):
 
 @login_required
 def perfil_portfolio_detail(request, pk):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(
+            request,
+            "portfolio",
+            {"portfolio_view": "detail", "media": str(pk)},
+        )
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     return render(request, "perfil/partials/portfolio_detail.html", {"media": media})
 
 
 @login_required
 def perfil_portfolio_edit(request, pk):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(
+            request,
+            "portfolio",
+            {"portfolio_view": "edit", "media": str(pk)},
+        )
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         form = MediaForm(request.POST, request.FILES, instance=media)
         if form.is_valid():
             form.save()
             messages.success(request, "Portfólio atualizado com sucesso.")
-            return redirect("accounts:perfil_sections_portfolio")
+            return _redirect_to_profile_section(request, "portfolio")
     else:
         form = MediaForm(instance=media)
 
@@ -490,11 +601,18 @@ def perfil_portfolio_edit(request, pk):
 
 @login_required
 def perfil_portfolio_delete(request, pk):
+    if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
+        return _redirect_to_profile_section(
+            request,
+            "portfolio",
+            {"portfolio_view": "delete", "media": str(pk)},
+        )
+
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
     if request.method == "POST":
         media.delete(soft=False)
         messages.success(request, "Item do portfólio removido.")
-        return redirect("accounts:perfil_sections_portfolio")
+        return _redirect_to_profile_section(request, "portfolio")
     return render(request, "perfil/partials/portfolio_confirm_delete.html", {"media": media})
 
 
