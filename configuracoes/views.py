@@ -119,7 +119,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         if tab in {"informacoes", "redes"}:
             return tab
         if tab not in {"seguranca", "preferencias"}:
-            tab = "seguranca"
+            raise Http404
         return tab
 
     def render_response(self, request: HttpRequest, tab: str, context: Dict[str, Any]) -> HttpResponse:
@@ -156,10 +156,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """
         tab = self.resolve_tab(request)
         # Redireciona abas que pertencem a outros apps.
-        if tab == "informacoes":
-            return redirect("accounts:informacoes_pessoais")
-        if tab == "redes":
-            return redirect("accounts:redes_sociais")
+        if tab in {"informacoes", "redes"}:
+            return redirect("accounts:info")
         form = self.get_form(tab)
         context: Dict[str, Any] = {
             f"{tab}_form": form,
@@ -175,10 +173,8 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         requisições HTMX, permitindo atualização assíncrona do conteúdo.
         """
         tab = self.resolve_tab(request)
-        if tab == "informacoes":
-            return redirect("accounts:informacoes_pessoais")
-        if tab == "redes":
-            return redirect("accounts:redes_sociais")
+        if tab in {"informacoes", "redes"}:
+            return redirect("accounts:info")
         # Instancia o formulário apropriado com os dados recebidos.
         form = self.get_form(tab, request.POST, request.FILES)
         if form.is_valid():

@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% load widget_tweaks i18n %}
-{% block title %}{% trans "Informações Pessoais" %} | HubX{% endblock %}
+{% block title %}{% trans "Informações do perfil" %} | HubX{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_("Informações Pessoais") %}
+  {% include '_components/hero.html' with title=_("Informações do perfil") %}
 {% endblock %}
 
 {% block content %}
 <div class="max-w-3xl mx-auto">
-  <h3 class="text-xl font-semibold mb-1">{% trans "Informações Pessoais" %}</h3>
-  <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados básicos e de contato" %}</p>
+  <h3 class="text-xl font-semibold mb-1">{% trans "Informações do perfil" %}</h3>
+  <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
 
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
@@ -18,7 +18,7 @@
     {% endfor %}
     <div class="pt-4">
       <button type="submit" class="btn btn-primary">
-        {% trans "Salvar Alterações" %}
+        {% trans "Salvar alterações" %}
       </button>
       <div class="mt-6 text-center">
         <a href="{% url 'accounts:perfil' %}" class="link">← {% trans "Voltar" %}</a>
