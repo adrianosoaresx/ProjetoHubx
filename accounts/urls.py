@@ -66,6 +66,53 @@ urlpatterns = [
         views.recusar_conexao,
         name="recusar_conexao",
     ),
+
+    path(
+        "perfil/partials/portfolio/",
+        views.perfil_section,
+        {"section": "portfolio"},
+        name="perfil_portfolio",
+    ),
+    path(
+        "perfil/partials/mural/",
+        views.perfil_section,
+        {"section": "mural"},
+        name="perfil_mural",
+    ),
+    path(
+        "perfil/partials/info/",
+        views.perfil_section,
+        {"section": "info"},
+        name="perfil_info_partial",
+    ),
+    path(
+        "perfil/partials/nucleos/",
+        views.perfil_section,
+        {"section": "nucleos"},
+        name="perfil_nucleos",
+    ),
+    path(
+        "perfil/partials/eventos/",
+        views.perfil_section,
+        {"section": "eventos"},
+        name="perfil_eventos",
+    ),
+    path(
+        "perfil/partials/conexoes/",
+        views.perfil_section,
+        {"section": "conexoes"},
+        name="perfil_conexoes_partial",
+    ),
+    # Portfólio
+    path("perfil/portfolio/", views.perfil_portfolio, name="portfolio"),
+    path("perfil/portfolio/<int:pk>/", views.perfil_portfolio_detail, name="portfolio_detail"),
+    path("perfil/portfolio/<int:pk>/editar/", views.perfil_portfolio_edit, name="portfolio_edit"),
+    path(
+        "perfil/portfolio/<int:pk>/excluir/",
+        views.perfil_portfolio_delete,
+        name="portfolio_delete",
+    ),
+
     path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),
     path("excluir/", views.excluir_conta, name="excluir_conta"),
     path(

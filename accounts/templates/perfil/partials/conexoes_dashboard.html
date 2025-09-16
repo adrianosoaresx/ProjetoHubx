@@ -1,0 +1,16 @@
+{% load i18n %}
+<div class="space-y-10">
+  <section aria-labelledby="perfil-conexoes-list">
+    <div class="section-header mb-4 flex items-center justify-between">
+      <h2 id="perfil-conexoes-list" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Minhas conexões" %}</h2>
+    </div>
+    {% include 'perfil/partials/conexoes_minhas.html' %}
+  </section>
+
+  <section aria-labelledby="perfil-conexoes-requests">
+    <div class="section-header mb-4 flex items-center justify-between">
+      <h2 id="perfil-conexoes-requests" class="text-base font-semibold text-[var(--text-primary)]">{% trans "Solicitações de conexão" %}</h2>
+    </div>
+    {% include 'perfil/partials/conexoes_solicitacoes.html' %}
+  </section>
+</div>

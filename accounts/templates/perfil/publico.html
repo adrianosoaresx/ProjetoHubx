@@ -7,6 +7,24 @@
 {% endblock %}
 
 {% block content %}
-  {% include "perfil/partials/portfolio_list.html" with medias=portfolio_recent is_owner=is_owner form=portfolio_form show_form=portfolio_show_form q=portfolio_q %}
+
+  <section
+    id="perfil-content"
+    class="space-y-6"
+    data-perfil-default-url="{% url 'accounts:perfil_portfolio' %}"
+    data-perfil-default-section="portfolio"
+    data-perfil-mode="{% if is_owner %}owner{% else %}public{% endif %}"
+    data-perfil-username="{{ perfil.username }}"
+    data-perfil-public-id="{{ perfil.public_id }}"
+    data-perfil-loading-text="{% trans 'Carregando conteúdo...' %}"
+    data-perfil-error-text="{% trans 'Não foi possível carregar esta seção.' %}"
+    aria-live="polite"
+    aria-busy="true"
+  >
+    <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
+      {% trans "Carregando conteúdo..." %}
+    </div>
+  </section>
+
 {% endblock %}
 
