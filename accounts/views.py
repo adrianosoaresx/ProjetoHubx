@@ -106,20 +106,24 @@ def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
     url_name = PERFIL_SECTION_URLS[section]
     url_args: list[str] = []
 
-    if allow_owner_sections and section == "portfolio":
-        view_mode = params.get("portfolio_view")
-        media_pk = params.get("media")
-        section_views = {
-            "detail": "accounts:perfil_sections_portfolio_detail",
-            "edit": "accounts:perfil_sections_portfolio_edit",
-            "delete": "accounts:perfil_sections_portfolio_delete",
-        }
-        selected_view = section_views.get(view_mode)
-        if selected_view and media_pk:
-            url_name = selected_view
-            url_args = [media_pk]
-            params.pop("portfolio_view", None)
-            params.pop("media", None)
+    if allow_owner_sections:
+        if section == "portfolio":
+            view_mode = params.get("portfolio_view")
+            media_pk = params.get("media")
+            section_views = {
+                "detail": "accounts:perfil_sections_portfolio_detail",
+                "edit": "accounts:perfil_sections_portfolio_edit",
+                "delete": "accounts:perfil_sections_portfolio_delete",
+            }
+            selected_view = section_views.get(view_mode)
+            if selected_view and media_pk:
+                url_name = selected_view
+                url_args = [media_pk]
+                params.pop("portfolio_view", None)
+                params.pop("media", None)
+        elif section == "info" and params.get("info_view") == "edit":
+            url_name = "accounts:perfil_sections_info"
+            params.pop("info_view", None)
 
     url = reverse(url_name, args=url_args)
     query_string = params.urlencode()
@@ -387,7 +391,8 @@ def perfil_section(request, section):
 @login_required
 def perfil_info(request):
     if request.method in {"GET", "HEAD"} and not _is_htmx_or_ajax(request):
-        return _redirect_to_profile_section(request, "info")
+        extra_params = {"info_view": "edit"} if request.method == "GET" else None
+        return _redirect_to_profile_section(request, "info", extra_params)
 
     if request.method == "POST":
         form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)

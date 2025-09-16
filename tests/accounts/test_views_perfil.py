@@ -56,3 +56,35 @@ def test_perfil_info_partial_falls_back_to_legacy_bio(client, django_user_model,
     content = response.content.decode()
     assert "Bio antiga" in content
 
+
+def test_perfil_info_section_edit_renders_form(client, django_user_model):
+    user = django_user_model.objects.create_user(
+        email="owner@example.com",
+        username="owner",
+        password="pass123",
+    )
+
+    client.force_login(user)
+
+    response = client.get(
+        reverse("accounts:perfil"),
+        {"section": "info", "info_view": "edit"},
+    )
+
+    assert response.status_code == 200
+    assert response.context["perfil_default_section"] == "info"
+
+    default_url = response.context["perfil_default_url"]
+    assert default_url == reverse("accounts:perfil_sections_info")
+    assert "info_view" not in default_url
+
+    ajax_response = client.get(default_url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+    assert ajax_response.status_code == 200
+    content = ajax_response.content.decode()
+    assert "Informações do perfil" in content
+    assert any(
+        template.name and template.name.endswith("info_form.html")
+        for template in getattr(ajax_response, "templates", [])
+    )
+
