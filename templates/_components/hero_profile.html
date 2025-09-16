@@ -70,6 +70,16 @@
           <!-- Linha 3: Botões -->
 
           <nav class="mt-4 flex flex-wrap items-center gap-2" aria-label="{% trans 'Seções do perfil' %}">
+             <a
+              href="{% url 'accounts:perfil_info_partial' %}"
+              class="btn-hero"
+              data-perfil-nav
+              data-perfil-section="info"
+              data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
+              aria-controls="perfil-content"
+            >
+              {% trans "Info" %}
+            </a>
             <a
               href="{% url 'accounts:perfil_portfolio' %}"
               class="btn-hero"
@@ -91,36 +101,9 @@
             >
               {% trans "Mural" %}
             </a>
-            <a
-              href="{% url 'accounts:perfil_info_partial' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="info"
-              data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
-              aria-controls="perfil-content"
-            >
-              {% trans "Informações" %}
-            </a>
-            <a
-              href="{% url 'accounts:perfil_nucleos' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="nucleos"
-              data-perfil-url="{% url 'accounts:perfil_nucleos' %}"
-              aria-controls="perfil-content"
-            >
-              {% trans "Núcleos" %}
-            </a>
-            <a
-              href="{% url 'accounts:perfil_eventos' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="eventos"
-              data-perfil-url="{% url 'accounts:perfil_eventos' %}"
-              aria-controls="perfil-content"
-            >
-              {% trans "Eventos" %}
-            </a>
+           
+            
+
             <a
               href="{% url 'accounts:perfil_conexoes_partial' %}"
               class="btn-hero"
