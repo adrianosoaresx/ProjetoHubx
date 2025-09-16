@@ -33,6 +33,24 @@
               @{{ profile.username }}
             </span>
 
+            {% with redes=profile.redes_sociais %}
+              {% if redes %}
+                {% for rede, url in redes.items %}
+                  {% if url %}
+                    <a
+                      href="{{ url }}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="{{ rede|capfirst }}"
+                      class="inline-flex items-center hover:scale-110 transition"
+                    >
+                      {% lucide rede class="h-6 w-6 text-white hover:text-white/90" %}
+                    </a>
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
           {% if profile.whatsapp %}
           <a href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
             class="inline-flex items-center hover:scale-110 transition"
