@@ -33,3 +33,31 @@
     <p class="text-[var(--text-primary)] whitespace-pre-line">{{ profile.biografia }}</p>
   </div>
 {% endif %}
+{% with redes=profile.redes_sociais %}
+  {% if redes %}
+    {% with redes_items=redes.items %}
+      {% if redes_items %}
+        <div class="mt-4">
+          <h3 class="text-sm font-semibold mb-1">{% trans "Redes sociais" %}</h3>
+          <ul class="flex flex-wrap gap-3 text-[var(--text-primary)]">
+            {% for rede, url in redes_items %}
+              {% if url %}
+                <li>
+                  <a
+                    href="{{ url }}"
+                    class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[var(--surface-secondary)] hover:bg-[var(--surface-tertiary)] transition-colors"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    <i class="fa-brands fa-{{ rede|lower }} text-lg" aria-hidden="true"></i>
+                    <span class="font-medium">{{ rede|capfirst }}</span>
+                  </a>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+{% endwith %}
