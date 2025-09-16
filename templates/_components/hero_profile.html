@@ -44,9 +44,9 @@
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="{{ rede|capfirst }}"
-                      class="inline-flex items-center hover:scale-110 transition"
+                      class="group inline-flex items-center transition-transform hover:scale-110"
                     >
-                      {% lucide rede class="h-6 w-6 text-white hover:text-white/90" %}
+                      {% lucide rede class="h-6 w-6 text-white transition-colors group-hover:text-white/80" %}
                     </a>
                   {% endif %}
                 {% endfor %}
@@ -55,9 +55,9 @@
 
           {% if profile.whatsapp %}
           <a href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
-            class="inline-flex items-center hover:scale-110 transition"
+            class="group inline-flex items-center transition-transform hover:scale-110"
             aria-label="WhatsApp">
-            {% lucide 'whatsapp' width='28' height='28'  %}
+            {% lucide "whatsapp" class="h-7 w-7 text-[#25D366] transition-colors group-hover:text-[#1ebe5b]" %}
           </a>
           {% else %}
           <span class="inline-flex items-center" aria-label="WhatsApp indisponível">
