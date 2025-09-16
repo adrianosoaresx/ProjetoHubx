@@ -1,7 +1,7 @@
 {% load widget_tweaks i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
 
-<form method="post" hx-post="{% url 'configuracoes:configuracoes' %}?tab=preferencias" hx-target="#content" class="space-y-4">
+<form method="post" hx-post="{% url 'configuracoes:configuracoes' %}?tab=preferencias" hx-target="#settings-content" class="space-y-4">
   {% csrf_token %}
   {% if preferencias_form.non_field_errors %}
     <ul class="errorlist bg-[var(--bg-secondary)] text-[var(--danger-text)] border border-[var(--danger-border)] rounded-2xl p-4">

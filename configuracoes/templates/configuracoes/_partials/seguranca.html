@@ -3,7 +3,7 @@
 <form
   method="post"
   hx-post="{% url 'configuracoes:configuracoes' %}?tab=seguranca"
-  hx-target="#content"
+  hx-target="#settings-content"
   class="space-y-4"
 >
   {% csrf_token %}

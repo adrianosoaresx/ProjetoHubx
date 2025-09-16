@@ -15,9 +15,8 @@
            aria-controls="content"
            class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}"
            hx-get="{% url 'configuracoes:configuracoes' %}?tab=seguranca"
-           hx-target="#content"
+           hx-target="#settings-content"
            hx-swap="innerHTML"
-           hx-select="#content > *"
            hx-push-url="true"
            tabindex="{% if tab == 'seguranca' %}0{% else %}-1{% endif %}">
           {% trans 'Segurança' %}
@@ -28,16 +27,15 @@
            aria-controls="content"
            class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}"
            hx-get="{% url 'configuracoes:configuracoes' %}?tab=preferencias"
-           hx-target="#content"
+           hx-target="#settings-content"
            hx-swap="innerHTML"
-           hx-select="#content > *"
            hx-push-url="true"
            tabindex="{% if tab == 'preferencias' %}0{% else %}-1{% endif %}">
           {% trans 'Preferências' %}
         </a>
       </nav>
     </header>
-    <div class="card-body p-6" id="content" role="tabpanel">
+    <div class="card-body p-6" id="settings-content" role="tabpanel">
       {#
         Renderiza o conteúdo da aba ativa diretamente na primeira carga.  Para
         requisições subsequentes via HTMX, a view retornará apenas o fragmento
