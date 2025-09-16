@@ -1,18 +1,10 @@
-{% extends 'base.html' %}
 {% load i18n lucide_icons %}
-{% block title %}{% trans "Remover Portfólio" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_("Remover Portfólio") %}
-{% endblock %}
-
-{% block content %}
 <section class="space-y-4">
   <h2 class="text-xl font-semibold text-error">{% trans "Remover Portfólio" %}</h2>
   <p class="text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item do portfólio?" %}</p>
   <form method="post" class="flex justify-end gap-2">
     {% csrf_token %}
-    <a href="{% url 'accounts:portfolio' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
+    <a href="{% url 'accounts:perfil_sections_portfolio' %}" class="btn-secondary btn-sm inline-flex items-center gap-1">
       {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Cancelar" %}
     </a>
@@ -22,4 +14,3 @@
     </button>
   </form>
 </section>
-{% endblock %}

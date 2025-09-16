@@ -24,6 +24,7 @@ from django.http import (
     HttpResponseNotAllowed,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
@@ -174,9 +175,11 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         perfil = get_object_or_404(User, username=username, perfil_publico=True)
 
     if request.user == perfil:
+
         return redirect("accounts:portfolio")
     nucleos = _nucleos_for(perfil)
     inscricoes = _inscricoes_for(perfil)
+
 
     portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
 
@@ -298,17 +301,15 @@ def perfil_info(request):
                 messages.info(request, _("Confirme o novo e-mail enviado."))
             else:
                 messages.success(request, _("Informações do perfil atualizadas."))
-            return redirect("accounts:info")
+            return redirect("accounts:perfil_sections_info")
     else:
         form = InformacoesPessoaisForm(instance=request.user)
 
     return render(
         request,
-        "perfil/info.html",
+        "perfil/partials/info_form.html",
         {
             "form": form,
-            "hero_title": _("Perfil"),
-            "hero_subtitle": f"@{request.user.username}",
         },
     )
 
@@ -328,6 +329,7 @@ def check_2fa(request):
 @login_required
 def perfil_conexoes(request):
     q = request.GET.get("q", "").strip()
+    tab = request.GET.get("tab", "minhas").lower()
     connections = (
         request.user.connections.select_related("organizacao", "nucleo")
         if hasattr(request.user, "connections")
@@ -344,13 +346,18 @@ def perfil_conexoes(request):
         connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
 
+    template_map = {
+        "solicitacoes": "perfil/partials/conexoes_solicitacoes.html",
+        "minhas": "perfil/partials/conexoes_minhas.html",
+    }
+    template_name = template_map.get(tab, template_map["minhas"])
+
     context = {
         "connections": connections,
         "connection_requests": connection_requests,
         "q": q,
-        "hero_title": _("Perfil"),
     }
-    return render(request, "perfil/conexoes.html", context)
+    return render(request, template_name, context)
 
 
 @login_required
@@ -363,7 +370,7 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
-    return redirect("accounts:conexoes")
+    return redirect("accounts:perfil_sections_conexoes")
 
 
 @login_required
@@ -374,16 +381,18 @@ def aceitar_conexao(request, id):
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("accounts:conexoes")
+        return redirect("accounts:perfil_sections_conexoes")
 
     if other_user not in request.user.followers.all():
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("accounts:conexoes")
+        return redirect("accounts:perfil_sections_conexoes")
 
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
     messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
-    return redirect("accounts:conexoes")
+    return redirect(
+        f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes"
+    )
 
 
 @login_required
@@ -394,15 +403,17 @@ def recusar_conexao(request, id):
         other_user = User.objects.get(id=id)
     except User.DoesNotExist:
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("accounts:conexoes")
+        return redirect("accounts:perfil_sections_conexoes")
 
     if other_user not in request.user.followers.all():
         messages.error(request, "Solicitação de conexão não encontrada.")
-        return redirect("accounts:conexoes")
+        return redirect("accounts:perfil_sections_conexoes")
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
-    return redirect("accounts:conexoes")
+    return redirect(
+        f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes"
+    )
 
 
 @login_required
@@ -418,7 +429,7 @@ def perfil_portfolio(request):
             media.save()
             form.save_m2m()
             messages.success(request, "Arquivo enviado com sucesso.")
-            return redirect("accounts:portfolio")
+            return redirect("accounts:perfil_sections_portfolio")
     else:
         form = MediaForm()
 
@@ -435,13 +446,12 @@ def perfil_portfolio(request):
 
     return render(
         request,
-        "perfil/portfolio.html",
+        "perfil/partials/portfolio.html",
         {
             "form": form,
             "medias": medias,
             "show_form": show_form,
             "q": q,
-            "hero_title": _("Perfil"),
             "is_owner": True,
         },
     )
@@ -450,7 +460,7 @@ def perfil_portfolio(request):
 @login_required
 def perfil_portfolio_detail(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    return render(request, "perfil/portfolio_detail.html", {"media": media, "hero_title": _("Perfil")})
+    return render(request, "perfil/partials/portfolio_detail.html", {"media": media})
 
 
 @login_required
@@ -461,7 +471,7 @@ def perfil_portfolio_edit(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Portfólio atualizado com sucesso.")
-            return redirect("accounts:portfolio")
+            return redirect("accounts:perfil_sections_portfolio")
     else:
         form = MediaForm(instance=media)
 
@@ -470,7 +480,7 @@ def perfil_portfolio_edit(request, pk):
     form.fields["file"].help_text = _("Selecione um arquivo")
     form.fields["descricao"].help_text = _("Breve descrição do portfólio")
 
-    return render(request, "perfil/portfolio_form.html", {"form": form, "hero_title": _("Perfil")})
+    return render(request, "perfil/partials/portfolio_form.html", {"form": form})
 
 
 @login_required
@@ -479,8 +489,8 @@ def perfil_portfolio_delete(request, pk):
     if request.method == "POST":
         media.delete(soft=False)
         messages.success(request, "Item do portfólio removido.")
-        return redirect("accounts:portfolio")
-    return render(request, "perfil/portfolio_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
+        return redirect("accounts:perfil_sections_portfolio")
+    return render(request, "perfil/partials/portfolio_confirm_delete.html", {"media": media})
 
 
 # ====================== AUTENTICAÇÃO ======================

@@ -1,13 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n lucide_icons %}
-
-{% block title %}{% trans "Portfólio" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_("Portfólio") %}
-{% endblock %}
-
-{% block content %}
 <section class="space-y-4">
   {% if media.media_type == 'image' %}
     <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded card max-w-full mx-auto object-cover" loading="lazy" />
@@ -36,10 +27,9 @@
   {% endif %}
   <p class="text-center text-[var(--text-primary)]">{{ media.descricao }}</p>
   <div class="text-center">
-    <a href="{% url 'accounts:portfolio' %}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+    <a href="{% url 'accounts:perfil_sections_portfolio' %}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
       {% lucide 'arrow-left' class='w-4 h-4' aria_hidden='true' %}
       {% trans "Voltar para portfólio" %}
     </a>
   </div>
 </section>
-{% endblock %}

@@ -32,9 +32,25 @@ urlpatterns = [
     path("perfil/<uuid:public_id>/", views.perfil_publico, name="perfil_publico_uuid"),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
 
-    path("perfil/info/", views.perfil_info, name="info"),
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
-    path("perfil/conexoes/", views.perfil_conexoes, name="conexoes"),
+    path("perfil/sections/info/", views.perfil_info, name="perfil_sections_info"),
+    path("perfil/sections/conexoes/", views.perfil_conexoes, name="perfil_sections_conexoes"),
+    path("perfil/sections/portfolio/", views.perfil_portfolio, name="perfil_sections_portfolio"),
+    path(
+        "perfil/sections/portfolio/<int:pk>/",
+        views.perfil_portfolio_detail,
+        name="perfil_sections_portfolio_detail",
+    ),
+    path(
+        "perfil/sections/portfolio/<int:pk>/editar/",
+        views.perfil_portfolio_edit,
+        name="perfil_sections_portfolio_edit",
+    ),
+    path(
+        "perfil/sections/portfolio/<int:pk>/excluir/",
+        views.perfil_portfolio_delete,
+        name="perfil_sections_portfolio_delete",
+    ),
     path(
         "perfil/conexoes/<int:id>/remover/",
         views.remover_conexao,
@@ -50,6 +66,7 @@ urlpatterns = [
         views.recusar_conexao,
         name="recusar_conexao",
     ),
+
     path(
         "perfil/partials/portfolio/",
         views.perfil_section,
@@ -95,6 +112,7 @@ urlpatterns = [
         views.perfil_portfolio_delete,
         name="portfolio_delete",
     ),
+
     path("perfil/<str:username>/", views.perfil_publico, name="perfil_publico_username"),
     path("excluir/", views.excluir_conta, name="excluir_conta"),
     path(
