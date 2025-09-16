@@ -62,18 +62,16 @@ feat(users): cria UserCreateSerializer (texto-apenas)
 ---
 
 ## 📄 Fontes de Verdade
-Sempre consulte os documentos em `.requisitos`.  
-**Preserve** nomes de rotas, modelos e casos de uso definidos lá.
+
 
 ---
 
 ## 📜 Checklist rápido
-1. Ler `.requisitos` e confirmar escopo.  
-2. Verificar se envolve binários → se sim, parar e deixar `TODO`.  
-3. Produzir apenas artefatos textuais (código, configs, docs).  
-4. Para assets, usar placeholders (`/static/...`).  
-5. Atualizar docs curtas em `docs/`.  
-6. Comitar em `main` com Conventional Commit, sem binários/base64.
+1. Verificar se envolve binários → se sim, parar e deixar `TODO`.  
+2. Produzir apenas artefatos textuais (código, configs, docs).  
+3. Para assets, usar placeholders (`/static/...`).  
+4. Atualizar docs curtas em `docs/`.  
+5. Comitar em `main` com Conventional Commit, sem binários/base64.
 
 ---
 
