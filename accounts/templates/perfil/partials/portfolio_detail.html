@@ -1,13 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n lucide_icons %}
-
-{% block title %}{% trans "Portfólio" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_("Portfólio") %}
-{% endblock %}
-
-{% block content %}
 <section class="space-y-4">
   {% if media.media_type == 'image' %}
     <img src="{{ media.file.url }}" alt="{{ media.descricao }}" class="rounded card max-w-full mx-auto object-cover" loading="lazy" />
@@ -42,4 +33,3 @@
     </a>
   </div>
 </section>
-{% endblock %}

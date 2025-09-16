@@ -196,7 +196,7 @@ def perfil_info(request):
 
     return render(
         request,
-        "perfil/info.html",
+        "perfil/partials/info_form.html",
         {
             "form": form,
             "hero_title": _("Perfil"),
@@ -242,7 +242,7 @@ def perfil_conexoes(request):
         "q": q,
         "hero_title": _("Perfil"),
     }
-    return render(request, "perfil/conexoes.html", context)
+    return render(request, "perfil/partials/conexoes.html", context)
 
 
 @login_required
@@ -327,7 +327,7 @@ def perfil_portfolio(request):
 
     return render(
         request,
-        "perfil/portfolio.html",
+        "perfil/partials/portfolio.html",
         {
             "form": form,
             "medias": medias,
@@ -342,7 +342,7 @@ def perfil_portfolio(request):
 @login_required
 def perfil_portfolio_detail(request, pk):
     media = get_object_or_404(UserMedia, pk=pk, user=request.user)
-    return render(request, "perfil/portfolio_detail.html", {"media": media, "hero_title": _("Perfil")})
+    return render(request, "perfil/partials/portfolio_detail.html", {"media": media, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -362,7 +362,7 @@ def perfil_portfolio_edit(request, pk):
     form.fields["file"].help_text = _("Selecione um arquivo")
     form.fields["descricao"].help_text = _("Breve descrição do portfólio")
 
-    return render(request, "perfil/portfolio_form.html", {"form": form, "hero_title": _("Perfil")})
+    return render(request, "perfil/partials/portfolio_form.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required
@@ -372,7 +372,7 @@ def perfil_portfolio_delete(request, pk):
         media.delete(soft=False)
         messages.success(request, "Item do portfólio removido.")
         return redirect("accounts:portfolio")
-    return render(request, "perfil/portfolio_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
+    return render(request, "perfil/partials/portfolio_confirm_delete.html", {"media": media, "hero_title": _("Perfil")})
 
 
 # ====================== AUTENTICAÇÃO ======================

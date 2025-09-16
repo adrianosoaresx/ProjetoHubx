@@ -1,17 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n %}
-
-{% block title %}{% if form.instance.pk %}{% trans "Editar Portfólio" %}{% else %}{% trans "Novo Portfólio" %}{% endif %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% if form.instance.pk %}
-    {% include '_components/hero.html' with title=_("Editar Portfólio") %}
-  {% else %}
-    {% include '_components/hero.html' with title=_("Cadastrar Portfólio") %}
-  {% endif %}
-{% endblock %}
-
-{% block content %}
 <section class="space-y-6">
   <h2 class="text-xl font-semibold">
     {% if form.instance.pk %}{% trans "Editar Portfólio" %}{% else %}{% trans "Cadastrar Portfólio" %}{% endif %}
@@ -30,4 +17,3 @@
     </div>
   </form>
 </section>
-{% endblock %}

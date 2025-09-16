@@ -1,12 +1,4 @@
-{% extends 'base.html' %}
 {% load widget_tweaks i18n %}
-{% block title %}{% trans "Informações do perfil" %} | HubX{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_("Informações do perfil") %}
-{% endblock %}
-
-{% block content %}
 <div class="max-w-3xl mx-auto">
   <h3 class="text-xl font-semibold mb-1">{% trans "Informações do perfil" %}</h3>
   <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
@@ -26,8 +18,3 @@
     </div>
   </form>
 </div>
-
-{% endblock %}
-
-
-
