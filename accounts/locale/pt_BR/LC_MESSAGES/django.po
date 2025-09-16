@@ -248,6 +248,7 @@ msgstr ""
 msgid "Editar perfil"
 msgstr ""
 
+
 #: templates/perfil/disable_2fa.html:3 templates/perfil/disable_2fa.html:5
 #: templates/perfil/seguranca.html:58
 msgid "Desativar 2FA"

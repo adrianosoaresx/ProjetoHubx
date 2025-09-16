@@ -31,6 +31,7 @@ urlpatterns = [
     path("perfil/", views.perfil, name="perfil"),
     path("perfil/<uuid:public_id>/", views.perfil_publico, name="perfil_publico_uuid"),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
+
     path("perfil/info/", views.perfil_info, name="info"),
     path("perfil/seguranca/2fa/ativar/", views.enable_2fa, name="enable_2fa"),
     path("perfil/seguranca/2fa/desativar/", views.disable_2fa, name="disable_2fa"),
