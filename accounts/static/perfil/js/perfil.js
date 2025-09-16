@@ -167,6 +167,9 @@ function initPerfilNavigation() {
 
             const html = await response.text()
             container.innerHTML = html
+            if (window.htmx) {
+                window.htmx.process(container)
+            }
         } catch (error) {
             if (error.name !== 'AbortError') {
                 console.error(error)
