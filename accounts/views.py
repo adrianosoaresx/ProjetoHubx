@@ -175,8 +175,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
         perfil = get_object_or_404(User, username=username, perfil_publico=True)
 
     if request.user == perfil:
-
-        return redirect("accounts:portfolio")
+        return redirect("accounts:perfil")
     nucleos = _nucleos_for(perfil)
     inscricoes = _inscricoes_for(perfil)
 
