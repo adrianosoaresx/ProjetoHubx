@@ -5,73 +5,53 @@ import lucide as lucide_lib
 
 register = template.Library()
 
+# WhatsApp "flat" (seu exemplo)
+WHATSAPP_FLAT_SVG = """
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 418.135 418.135"
+     role="img" aria-label="WhatsApp">
+  <g>
+    <path fill="#7AD06D"
+      d="M198.929,0.242C88.5,5.5,1.356,97.466,1.691,208.02c0.102,33.672,8.231,65.454,22.571,93.536
+         L2.245,408.429c-1.191,5.781,4.023,10.843,9.766,9.483l104.723-24.811c26.905,13.402,57.125,21.143,89.108,21.631
+         c112.869,1.724,206.982-87.897,210.5-200.724C420.113,93.065,320.295-5.538,198.929,0.242z
+         M323.886,322.197 c-30.669,30.669-71.446,47.559-114.818,47.559c-25.396,0-49.71-5.698-72.269-16.935l-14.584-7.265
+         l-64.206,15.212l13.515-65.607 l-7.185-14.07c-11.711-22.935-17.649-47.736-17.649-73.713c0-43.373,16.89-84.149,47.559-114.819
+         c30.395-30.395,71.837-47.56,114.822-47.56C252.443,45,293.218,61.89,323.887,92.558c30.669,30.669,47.559,71.445,47.56,114.817
+         C371.446,250.361,354.281,291.803,323.886,322.197z"/>
+    <path fill="#7AD06D"
+      d="M309.712,252.351l-40.169-11.534c-5.281-1.516-10.968-0.018-14.816,3.903l-9.823,10.008
+         c-4.142,4.22-10.427,5.576-15.909,3.358c-19.002-7.69-58.974-43.23-69.182-61.007c-2.945-5.128-2.458-11.539,1.158-16.218
+         l8.576-11.095c3.36-4.347,4.069-10.185,1.847-15.21l-16.9-38.223c-4.048-9.155-15.747-11.82-23.39-5.356
+         c-11.211,9.482-24.513,23.891-26.13,39.854c-2.851,28.144,9.219,63.622,54.862,106.222c52.73,49.215,94.956,55.717,122.449,49.057
+         c15.594-3.777,28.056-18.919,35.921-31.317C323.568,266.34,319.334,255.114,309.712,252.351z"/>
+  </g>
+</svg>
+"""
 
-WHATSAPP_PATH_D = (
-    "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-"
-    ".197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-"
-    "2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-"
-    ".133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-"
-    ".075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-"
-    ".57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065"
-    "2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489"
-    "1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719"
-    "2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421"
-    "7.403h-.004a9.87 9.87 0"
-    "01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0"
-    "01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988"
-    "2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885"
-    "9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0"
-    "2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683"
-    "1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
-)
-
+def _inject_attrs(svg: str, attrs: dict[str, object]) -> str:
+    """Insere atributos adicionais (class, width, height) no <svg>."""
+    attrs_str = "".join(f' {k}="{escape(v)}"' for k, v in attrs.items())
+    return svg.replace("<svg ", f"<svg{attrs_str} ", 1)
 
 def _render_whatsapp_icon(attrs: dict[str, object]) -> str:
-    whatsapp_attrs: dict[str, object] = {
-        "xmlns": "http://www.w3.org/2000/svg",
-        "viewBox": "0 0 24 24",
-    }
-    if "width" not in attrs:
-        whatsapp_attrs["width"] = "24"
-    if "height" not in attrs:
-        whatsapp_attrs["height"] = "24"
-    if "fill" not in attrs:
-        whatsapp_attrs["fill"] = "currentColor"
-    whatsapp_attrs.update(attrs)
-    attrs_str = "".join(
-        f' {name}="{escape(value)}"' for name, value in whatsapp_attrs.items()
-    )
-    svg = f"<svg{attrs_str}>\n  <path d=\"{WHATSAPP_PATH_D}\" />\n</svg>"
-    return svg
-
+    return _inject_attrs(WHATSAPP_FLAT_SVG, attrs)
 
 @register.simple_tag
 def lucide(name: str, label: str | None = None, **attrs) -> str:
-    """Render a Lucide SVG icon inline.
-
-    Parameters
-    ----------
-    name: str
-        Icon name as defined by lucide (e.g. "plus").
-    label: Optional[str]
-        Accessible label. If omitted the icon will be marked as decorative.
-    **attrs: dict
-        Additional HTML attributes to include in the rendered SVG
-        (e.g. class, width, height).
+    """
+    Renderiza ícones Lucide inline.
+    Para 'whatsapp', retorna o SVG flat (verde) fornecido.
     """
     attrs = attrs.copy()
     if label:
         attrs["aria-label"] = label
     else:
-        attrs["aria-hidden"] = "true"
+        attrs.setdefault("aria-hidden", "true")
+
     try:
         svg = lucide_lib._render_icon(name, None, **attrs)
-    except KeyError:
-        if name == "whatsapp":
-            svg = _render_whatsapp_icon(attrs)
-        else:
-            raise
-    except lucide_lib.IconDoesNotExist:
+    except (KeyError, getattr(lucide_lib, "IconDoesNotExist", Exception)):
         if name == "whatsapp":
             svg = _render_whatsapp_icon(attrs)
         else:
