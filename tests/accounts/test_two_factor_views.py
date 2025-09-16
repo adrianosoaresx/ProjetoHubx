@@ -15,6 +15,7 @@ def test_enable_2fa_wrong_code_creates_security_event(client):
     client.force_login(user)
     resp = client.get(reverse("tokens:ativar_2fa"))
     assert resp.status_code == 200
+    assert any(template.name == "tokens/ativar_2fa.html" for template in resp.templates)
 
     resp = client.post(
         reverse("tokens:ativar_2fa"),
@@ -38,6 +39,10 @@ def test_disable_2fa_logs_security_event(client):
     )
     TOTPDevice.objects.create(usuario=user, secret=secret, confirmado=True)
     client.force_login(user)
+
+    resp_page = client.get(reverse("tokens:desativar_2fa"))
+    assert resp_page.status_code == 200
+    assert any(template.name == "tokens/desativar_2fa.html" for template in resp_page.templates)
 
     resp = client.post(
         reverse("tokens:desativar_2fa"),

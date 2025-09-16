@@ -40,7 +40,7 @@ from core.permissions import (
 )
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
-from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, TwoFactorForm
+from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
