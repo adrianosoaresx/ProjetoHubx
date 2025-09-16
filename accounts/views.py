@@ -241,7 +241,13 @@ def perfil_section(request, section):
 
     elif section == "info":
         if is_owner:
-            context["user"] = profile
+            bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
+            context.update(
+                {
+                    "user": profile,
+                    "bio": bio,
+                }
+            )
             template = "perfil/partials/detail_informacoes.html"
         else:
             template = "perfil/partials/publico_informacoes.html"
