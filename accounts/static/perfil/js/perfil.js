@@ -4,32 +4,33 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize Matrix Code Rain Effect
     initMatrixRain()
 
-    // Initialize Forms
-    initForms()
-
     // Initialize Tabs
     initTabs()
 
     // Initialize Perfil navigation
     initPerfilNavigation()
 
-    // Initialize Modals
-    initModals()
+    // Initialize optional helpers when available
+    const optionalInitializers = [
+        "initForms",
+        "initModals",
+        "initAvatarUpload",
+        "initPasswordStrength",
+        "initConnectionActions",
+        "initAccountSettings",
+        "initEmpresaFormToggle",
+    ]
 
-    // Initialize Avatar Upload
-    initAvatarUpload()
-
-    // Initialize Password Strength
-    initPasswordStrength()
-
-    // Initialize Connection Actions
-    initConnectionActions()
-
-    // Initialize Account Settings
-    initAccountSettings()
-
-    // Initialize Company Form toggle
-    initEmpresaFormToggle()
+    optionalInitializers.forEach(name => {
+        const initializer = globalThis[name]
+        if (typeof initializer === "function") {
+            try {
+                initializer()
+            } catch (error) {
+                console.error(`Erro ao executar ${name}:`, error)
+            }
+        }
+    })
 })
 
 // REMOVIDO: initNavigation() para navegação controlada pelo Django
