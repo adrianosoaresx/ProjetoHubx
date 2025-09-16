@@ -1,5 +1,6 @@
 {% load widget_tweaks i18n static %}
 {% get_current_language as LANGUAGE_CODE %}
+
 <form method="post" hx-post="{% url 'configuracoes:configuracoes' %}?tab=preferencias" hx-target="#content" class="space-y-4">
   {% csrf_token %}
   {% if preferencias_form.non_field_errors %}
