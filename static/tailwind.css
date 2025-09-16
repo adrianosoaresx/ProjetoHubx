@@ -1266,11 +1266,6 @@ a:focus {
   letter-spacing: 0.025em;
 }
 
-.badge-primary {
-  background-color: var(--primary-light);
-  color: var(--primary);
-}
-
 .badge-warning {
   background-color: var(--warning-light);
   color: var(--warning);
@@ -1952,10 +1947,6 @@ a:focus {
   max-width: 48rem;
 }
 
-.max-w-4xl {
-  max-width: 56rem;
-}
-
 .max-w-6xl {
   max-width: 72rem;
 }
@@ -1968,16 +1959,8 @@ a:focus {
   max-width: 100%;
 }
 
-.max-w-lg {
-  max-width: 32rem;
-}
-
 .max-w-md {
   max-width: 28rem;
-}
-
-.max-w-xl {
-  max-width: 36rem;
 }
 
 .flex-1 {
@@ -2125,10 +2108,6 @@ a:focus {
 
 .divide-\[var\(--border\)\] > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--border);
-}
-
-.self-start {
-  align-self: flex-start;
 }
 
 .overflow-hidden {
@@ -2368,11 +2347,6 @@ a:focus {
   padding-bottom: 1.5rem;
 }
 
-.py-8 {
-  padding-top: 2rem;
-  padding-bottom: 2rem;
-}
-
 .pb-4 {
   padding-bottom: 1rem;
 }
@@ -2509,10 +2483,6 @@ a:focus {
   color: var(--color-primary-600);
 }
 
-.text-warning-400 {
-  color: var(--color-warning-400);
-}
-
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
@@ -2563,12 +2533,6 @@ a:focus {
 
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.backdrop-blur-md {
-  --tw-backdrop-blur: blur(12px);
-  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
-  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
 
 .transition {
@@ -2954,10 +2918,6 @@ a:focus {
 
   .sm\:flex-row {
     flex-direction: row;
-  }
-
-  .sm\:items-end {
-    align-items: flex-end;
   }
 }
 
