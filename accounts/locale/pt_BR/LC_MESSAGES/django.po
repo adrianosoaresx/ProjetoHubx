@@ -268,7 +268,7 @@ msgid "Usuário"
 msgstr ""
 
 msgid "Bio"
-msgstr ""
+msgstr "Bio"
 
 msgid "Data de Nascimento"
 msgstr ""
@@ -314,6 +314,10 @@ msgstr ""
 
 msgid "Salvar alterações"
 msgstr ""
+
+#: accounts/templates/perfil/partials/detail_informacoes.html:37
+msgid "Redes sociais"
+msgstr "Redes sociais"
 
 #: templates/perfil/partials/portfolio_confirm_delete.html:3
 #: templates/perfil/partials/portfolio_confirm_delete.html:7

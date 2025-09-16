@@ -22,6 +22,66 @@
   </div>
 </dl>
 
+{% with user.biografia|default:user.bio as bio %}
+  {% if bio %}
+    <div class="mt-6">
+      <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
+      <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ bio }}</p>
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% with user.redes_sociais as redes %}
+  {% if redes %}
+    <div class="mt-6">
+      <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Redes sociais" %}</h3>
+      <ul class="mt-2 space-y-2 text-sm">
+        {% for network, url in redes.items %}
+          {% with url|default:'' as network_url %}
+            {% if network_url %}
+              {% if '://' not in network_url %}
+                {% with 'https://'|add:network_url as normalized_url %}
+                  <li>
+                    <a
+                      href="{{ normalized_url }}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+                    >
+                      <span class="font-medium">
+                        {% with network|capfirst as network_label %}
+                          {% trans network_label %}
+                        {% endwith %}
+                      </span>
+                      <span class="text-[var(--text-secondary)] break-all">{{ normalized_url }}</span>
+                    </a>
+                  </li>
+                {% endwith %}
+              {% else %}
+                <li>
+                  <a
+                    href="{{ network_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 text-[var(--text-primary)] transition hover:border-[var(--accent)] hover:text-primary focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
+                  >
+                    <span class="font-medium">
+                      {% with network|capfirst as network_label %}
+                        {% trans network_label %}
+                      {% endwith %}
+                    </span>
+                    <span class="text-[var(--text-secondary)] break-all">{{ network_url }}</span>
+                  </a>
+                </li>
+              {% endif %}
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+{% endwith %}
+
 <div class="mt-6 text-right">
   <a href="{% url 'accounts:perfil_sections_info' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
 </div>
