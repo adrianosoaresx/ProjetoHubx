@@ -171,6 +171,10 @@ msgstr ""
 msgid "Acesse %(link_pagamento)s para efetuar o pagamento."
 msgstr ""
 
+#: accounts/templates/perfil/partials/publico_informacoes.html:41
+msgid "Redes sociais"
+msgstr "Social media"
+
 #: organizacoes/forms.py:?? organizacoes/serializers.py:??
 msgid "Deve ser maior que zero."
 msgstr "Must be greater than zero."
