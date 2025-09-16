@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="section-header mb-4 flex items-center justify-between">
   <h2 class="text-base font-semibold text-[var(--text-primary)]">{% trans "Conexões" %}</h2>
-  <a href="{% url 'accounts:conexoes' %}" class="btn-secondary btn-sm">{% trans "Ver todas" %}</a>
+  <a href="{% url 'accounts:perfil_sections_conexoes' %}" class="btn-secondary btn-sm">{% trans "Ver todas" %}</a>
 </div>
 <ul class="card-grid">
   {% with limit=limit|default:12 %}

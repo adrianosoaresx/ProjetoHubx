@@ -1,12 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n lucide_icons %}
-{% block title %}{% trans "Remover Portfólio" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_("Remover Portfólio") %}
-{% endblock %}
-
-{% block content %}
 <section class="space-y-4">
   <h2 class="text-xl font-semibold text-error">{% trans "Remover Portfólio" %}</h2>
   <p class="text-[var(--text-secondary)]">{% trans "Tem certeza que deseja remover este item do portfólio?" %}</p>
@@ -22,4 +14,3 @@
     </button>
   </form>
 </section>
-{% endblock %}

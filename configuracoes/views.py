@@ -157,7 +157,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         tab = self.resolve_tab(request)
         # Redireciona abas que pertencem a outros apps.
         if tab in {"informacoes", "redes"}:
-            return redirect("accounts:info")
+            return redirect("accounts:perfil_sections_info")
         form = self.get_form(tab)
         context: Dict[str, Any] = {
             f"{tab}_form": form,
@@ -174,7 +174,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """
         tab = self.resolve_tab(request)
         if tab in {"informacoes", "redes"}:
-            return redirect("accounts:info")
+            return redirect("accounts:perfil_sections_info")
         # Instancia o formulário apropriado com os dados recebidos.
         form = self.get_form(tab, request.POST, request.FILES)
         if form.is_valid():
