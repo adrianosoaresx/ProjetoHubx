@@ -1,14 +1,6 @@
 {% load i18n %}
 <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
-  </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
-  </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.endereco }}</dd>
   </div>
@@ -20,10 +12,18 @@
     <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
   </div>
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
+  </div>
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
+  </div>
 </dl>
 
 {% if bio %}
-  <div class="mt-6">
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
     <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ bio }}</p>
   </div>
