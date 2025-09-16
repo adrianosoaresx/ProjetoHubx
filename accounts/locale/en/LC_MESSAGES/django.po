@@ -84,7 +84,6 @@ msgid "Definir Nova Senha"
 msgstr ""
 
 #: templates/accounts/password_reset_confirm.html:32
-#: templates/perfil/seguranca.html:45
 msgid "Alterar Senha"
 msgstr ""
 
@@ -112,7 +111,6 @@ msgid "Entre para acessar sua conta e conectar-se à sua rede"
 msgstr ""
 
 #: templates/login/login.html:21 templates/perfil/perfil.html:16
-#: templates/perfil/info.html:30
 #: templates/register/email.html:27
 msgid "Email"
 msgstr ""
@@ -153,67 +151,57 @@ msgstr ""
 msgid "Cadastre-se gratuitamente"
 msgstr ""
 
-#: templates/perfil/conexoes.html:4 templates/perfil/conexoes.html:9
-#: templates/perfil/conexoes.html:15
-msgid "Minhas Conexões"
+#: templates/perfil/partials/conexoes_dashboard.html:5
+msgid "Minhas conexões"
 msgstr ""
 
-#: templates/perfil/conexoes.html:10
-msgid "Gerencie sua rede de contatos"
+#: templates/perfil/partials/conexoes_dashboard.html:12
+msgid "Solicitações de conexão"
 msgstr ""
 
-#: templates/perfil/conexoes.html:16
-msgid "Solicitações"
-msgstr ""
-
-#: templates/perfil/conexoes.html:25
+#: templates/perfil/partials/conexoes_minhas.html:7
 msgid "Buscar conexões..."
 msgstr ""
 
-#: templates/perfil/conexoes.html:26
+#: templates/perfil/partials/conexoes_minhas.html:10
+#: templates/perfil/partials/portfolio_list.html:29
 msgid "Buscar"
 msgstr ""
 
-#: templates/perfil/conexoes.html:46
-msgid "Chat"
-msgstr ""
-
-#: templates/perfil/conexoes.html:47
+#: templates/perfil/partials/conexoes_minhas.html:37
 msgid "Tem certeza que deseja remover esta conexão?"
 msgstr ""
 
-#: templates/perfil/conexoes.html:49
+#: templates/perfil/partials/conexoes_minhas.html:40
 msgid "Remover conexão"
 msgstr ""
 
-#: templates/perfil/conexoes.html:55
+#: templates/perfil/partials/conexoes_minhas.html:48
 msgid "Você ainda não tem conexões."
 msgstr ""
 
-#: templates/perfil/conexoes.html:56
+#: templates/perfil/partials/conexoes_minhas.html:49
 msgid "Encontrar Pessoas"
 msgstr ""
 
-#: templates/perfil/conexoes.html:84
+#: templates/perfil/partials/conexoes_solicitacoes.html:26
 msgid "Aceitar"
 msgstr ""
 
-#: templates/perfil/conexoes.html:88
+#: templates/perfil/partials/conexoes_solicitacoes.html:34
 msgid "Recusar"
 msgstr ""
 
-#: templates/perfil/conexoes.html:94
+#: templates/perfil/partials/conexoes_solicitacoes.html:41
 msgid "Você não tem solicitações de conexão pendentes."
 msgstr ""
 
-#: templates/perfil/conexoes.html:116
-#: templates/perfil/info.html:133
-#: templates/perfil/portfolio.html:15
-#: templates/perfil/seguranca.html:100 templates/register/cpf.html:33
-#: templates/register/email.html:33 templates/register/foto.html:34
-#: templates/register/nome.html:33 templates/register/senha.html:39
-#: templates/register/termos.html:50 templates/register/token.html:40
-#: templates/register/usuario.html:34
+#: templates/perfil/partials/info_form.html:16
+#: templates/perfil/partials/portfolio.html:7
+#: templates/register/cpf.html:33 templates/register/email.html:33
+#: templates/register/foto.html:34 templates/register/nome.html:33
+#: templates/register/senha.html:39 templates/register/termos.html:50
+#: templates/register/token.html:40 templates/register/usuario.html:34
 msgid "Voltar"
 msgstr ""
 
@@ -226,12 +214,10 @@ msgid "Contato"
 msgstr ""
 
 #: templates/perfil/perfil.html:17
-#: templates/perfil/info.html:78
 msgid "Telefone"
 msgstr ""
 
 #: templates/perfil/perfil.html:18
-#: templates/perfil/info.html:84
 msgid "WhatsApp"
 msgstr ""
 
@@ -248,12 +234,9 @@ msgstr ""
 msgid "Editar perfil"
 msgstr ""
 
-#: templates/perfil/info.html:3
-#: templates/perfil/info.html:6 templates/perfil/perfil.html:31
 msgid "Informações do perfil"
 msgstr "Profile information"
 
-#: templates/perfil/info.html:10
 msgid "Atualize seus dados pessoais, de contato e redes sociais"
 msgstr "Update your personal details, contact information, and social networks"
 
@@ -277,139 +260,120 @@ msgstr "LinkedIn"
 msgid "Informações do perfil atualizadas."
 msgstr "Profile information updated."
 
-#: templates/perfil/info.html:15
 msgid "Nome completo"
 msgstr ""
 
-#: templates/perfil/info.html:23
 msgid "Usuário"
 msgstr ""
 
-#: templates/perfil/info.html:38
 msgid "Bio"
 msgstr ""
 
-#: templates/perfil/info.html:45
 msgid "Data de Nascimento"
 msgstr ""
 
-#: templates/perfil/info.html:52
 msgid "Gênero"
 msgstr ""
 
-#: templates/perfil/info.html:55
-#: templates/perfil/info.html:109
 msgid "Selecione..."
 msgstr ""
 
-#: templates/perfil/info.html:56
 msgid "Masculino"
 msgstr ""
 
-#: templates/perfil/info.html:57
 msgid "Feminino"
 msgstr ""
 
-#: templates/perfil/info.html:58
 msgid "Outro"
 msgstr ""
 
-#: templates/perfil/info.html:64
 msgid "Foto de Perfil"
 msgstr ""
 
-#: templates/perfil/info.html:67
 msgid "Capa"
 msgstr ""
 
-#: templates/perfil/info.html:74
 msgid "Informações de Contato"
 msgstr ""
 
-#: templates/perfil/info.html:92
 msgid "Endereço"
 msgstr ""
 
-#: templates/perfil/info.html:95
 msgid "Rua, número, complemento"
 msgstr ""
 
-#: templates/perfil/info.html:100
 msgid "Cidade"
 msgstr ""
 
-#: templates/perfil/info.html:106
 msgid "Estado"
 msgstr ""
 
-#: templates/perfil/info.html:116
 msgid "CEP"
 msgstr ""
 
-#: templates/perfil/info.html:21
 msgid "Salvar alterações"
 msgstr "Save changes"
 
-#: templates/perfil/portfolio_confirm_delete.html:3
-#: templates/perfil/portfolio_confirm_delete.html:7
+#: templates/perfil/partials/portfolio_confirm_delete.html:3
+#: templates/perfil/partials/portfolio_confirm_delete.html:7
 msgid "Remover Portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio_confirm_delete.html:8
+#: templates/perfil/partials/portfolio_confirm_delete.html:8
 msgid "Tem certeza que deseja remover este item do portfólio?"
 msgstr ""
 
-#: templates/perfil/portfolio_confirm_delete.html:11
-#: templates/perfil/portfolio_form.html:16
+#: templates/perfil/partials/portfolio_confirm_delete.html:11
+#: templates/perfil/partials/portfolio_form.html:16
 msgid "Cancelar"
 msgstr ""
 
-#: templates/perfil/portfolio_confirm_delete.html:12
+#: templates/perfil/partials/portfolio_confirm_delete.html:12
 msgid "Remover"
 msgstr ""
 
-#: templates/perfil/portfolio_detail.html:11
+#: templates/perfil/partials/portfolio_detail.html:11
 msgid "Voltar para portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio_form.html:4 templates/perfil/portfolio_form.html:9
+#: templates/perfil/partials/portfolio_form.html:4 templates/perfil/partials/portfolio_form.html:9
 msgid "Editar Portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio_form.html:4
+#: templates/perfil/partials/portfolio_form.html:4
 msgid "Novo Portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio_form.html:9
+#: templates/perfil/partials/portfolio_form.html:9
 msgid "Cadastrar Portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio_form.html:17
+#: templates/perfil/partials/portfolio_form.html:17
 msgid "Salvar"
 msgstr ""
 
-#: templates/perfil/portfolio_detail.html:4 templates/perfil/portfolio.html:4 templates/perfil/portfolio.html:9
+#: templates/perfil/partials/portfolio_detail.html:4 templates/perfil/partials/portfolio.html:4 templates/perfil/partials/portfolio.html:9
 #: templates/perfil/partials/portfolio.html:22
 msgid "Portfólio"
 msgstr ""
 
-#: templates/perfil/portfolio.html:10
+#: templates/perfil/partials/portfolio.html:10
 msgid "Gerencie suas imagens, vídeos e documentos"
 msgstr ""
 
-#: templates/perfil/portfolio.html:17
+#: templates/perfil/partials/portfolio.html:17
 msgid "Enviar arquivo"
 msgstr ""
 
-#: templates/perfil/portfolio.html:21
+#: templates/perfil/partials/portfolio.html:21
 msgid "Descrição"
 msgstr ""
 
-#: templates/perfil/portfolio.html:25
+#: templates/perfil/partials/portfolio.html:25
 msgid "Tags"
 msgstr ""
 
-#: templates/perfil/portfolio.html:26
+#: templates/perfil/partials/portfolio.html:26
 msgid "paisagem, viagem"
 msgstr ""
 
@@ -438,7 +402,6 @@ msgstr ""
 msgid "Alterar foto"
 msgstr ""
 
-#: templates/perfil/perfil.html:35 templates/perfil/seguranca.html:8
 msgid "Segurança"
 msgstr ""
 
@@ -450,49 +413,38 @@ msgstr ""
 msgid "Conecte suas redes sociais com seu perfil"
 msgstr ""
 
-#: templates/perfil/seguranca.html:4
 msgid "Segurança da Conta"
 msgstr ""
 
-#: templates/perfil/seguranca.html:9
 msgid "Gerencie sua senha e a proteção da conta"
 msgstr ""
 
-#: templates/perfil/seguranca.html:15
 msgid "Senha Atual"
 msgstr ""
 
-#: templates/perfil/seguranca.html:22
 msgid "Nova Senha"
 msgstr ""
 
-#: templates/perfil/seguranca.html:27
 msgid "Confirmar Nova Senha"
 msgstr ""
 
-#: templates/perfil/seguranca.html:35
 msgid "Força da senha:"
 msgstr ""
 
-#: templates/perfil/seguranca.html:39
 msgid "Digite uma senha"
 msgstr ""
 
-#: templates/perfil/seguranca.html:51
 msgid "Verificação em Duas Etapas"
 msgstr ""
 
-#: templates/perfil/seguranca.html:53
 msgid ""
 "A verificação em duas etapas adiciona uma camada extra de segurança à sua "
 "conta, exigindo um código além da sua senha ao fazer login."
 msgstr ""
 
-#: templates/perfil/seguranca.html:56
 msgid "2FA está ativado."
 msgstr ""
 
-#: templates/perfil/seguranca.html:60
 msgid "2FA não está ativado."
 msgstr ""
 
@@ -823,10 +775,8 @@ msgstr ""
 msgid "000.000.000-00"
 msgstr "000.000.000-00"
 
-#: templates/perfil/info.html:81 templates/perfil/info.html:87
 msgid "(00) 00000-0000"
 msgstr "(000) 000-0000"
 
-#: templates/perfil/info.html:119
 msgid "00000-000"
 msgstr "00000"
