@@ -1,11 +1,7 @@
-import base64
 import os
 import uuid
-from io import BytesIO
 from pathlib import Path
 
-import pyotp
-import qrcode
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
@@ -42,16 +38,10 @@ from core.permissions import (
     IsCoordenador,
     NoSuperadminMixin,
 )
-from tokens.models import TokenAcesso, TOTPDevice
+from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 
-from .forms import (
-    EmailLoginForm,
-    InformacoesPessoaisForm,
-    MediaForm,
-    RedesSociaisForm,
-    TwoFactorForm,
-)
+from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, RedesSociaisForm
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
@@ -234,107 +224,6 @@ def perfil_redes_sociais(request):
 def perfil_notificacoes(request):
     """Redireciona para a aba de preferências centralizada em ConfiguracaoConta."""
     return redirect("configuracoes:configuracoes")
-
-
-@login_required
-def enable_2fa(request):
-    if request.user.two_factor_enabled:
-        return redirect("configuracoes:configuracoes")
-    secret = request.session.get("tmp_2fa_secret")
-    if not secret:
-        secret = pyotp.random_base32()
-        request.session["tmp_2fa_secret"] = secret
-    totp = pyotp.TOTP(secret)
-    otp_uri = totp.provisioning_uri(name=request.user.email, issuer_name="HubX")
-    img = qrcode.make(otp_uri)
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
-    form = TwoFactorForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        password = form.cleaned_data["password"]
-        code = form.cleaned_data["code"]
-        if request.user.check_password(password):
-            if code and totp.verify(code):
-                user = request.user
-                user.two_factor_secret = secret
-                user.two_factor_enabled = True
-                user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
-                TOTPDevice.all_objects.update_or_create(
-                    usuario=user,
-                    defaults={
-                        "secret": user.two_factor_secret,
-                        "confirmado": True,
-                        "deleted": False,
-                        "deleted_at": None,
-                    },
-                )
-                SecurityEvent.objects.create(
-                    usuario=user,
-                    evento="2fa_habilitado",
-                    ip=get_client_ip(request),
-                )
-                del request.session["tmp_2fa_secret"]
-                messages.success(request, _("Verificação em duas etapas ativada."))
-                return redirect("configuracoes:configuracoes")
-            SecurityEvent.objects.create(
-                usuario=request.user,
-                evento="2fa_habilitacao_falha",
-                ip=get_client_ip(request),
-            )
-            messages.error(request, _("Código inválido."))
-        else:
-            SecurityEvent.objects.create(
-                usuario=request.user,
-                evento="2fa_habilitacao_falha",
-                ip=get_client_ip(request),
-            )
-            messages.error(request, _("Senha incorreta."))
-
-    return render(
-        request,
-        "perfil/enable_2fa.html",
-        {"qr_base64": qr_base64, "hero_title": _("Perfil"), "form": form},
-    )
-
-
-@login_required
-def disable_2fa(request):
-    if not request.user.two_factor_enabled:
-        return redirect("configuracoes:configuracoes")
-    form = TwoFactorForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        password = form.cleaned_data["password"]
-        code = form.cleaned_data["code"]
-        if request.user.check_password(password):
-            if code and pyotp.TOTP(request.user.two_factor_secret).verify(code):
-                user = request.user
-                user.two_factor_secret = None
-                user.two_factor_enabled = False
-                user.save(update_fields=["two_factor_secret", "two_factor_enabled"])
-                TOTPDevice.objects.filter(usuario=user).delete()
-                SecurityEvent.objects.create(
-                    usuario=user,
-                    evento="2fa_desabilitado",
-                    ip=get_client_ip(request),
-                )
-                messages.success(request, _("Verificação em duas etapas desativada."))
-                return redirect("configuracoes:configuracoes")
-            SecurityEvent.objects.create(
-                usuario=request.user,
-                evento="2fa_desabilitacao_falha",
-                ip=get_client_ip(request),
-            )
-            messages.error(request, _("Código inválido."))
-        else:
-            SecurityEvent.objects.create(
-                usuario=request.user,
-                evento="2fa_desabilitacao_falha",
-                ip=get_client_ip(request),
-            )
-            messages.error(request, _("Senha incorreta."))
-
-    return render(request, "perfil/disable_2fa.html", {"hero_title": _("Perfil"), "form": form})
 
 
 @ratelimit(key="ip", rate="5/m", method="GET", block=True)
