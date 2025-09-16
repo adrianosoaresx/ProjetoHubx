@@ -602,6 +602,11 @@ class Ativar2FAView(LoginRequiredMixin, View):
             )
             messages.success(request, _("2FA ativado"))
             return redirect("configuracoes:configuracoes")
+        SecurityEvent.objects.create(
+            usuario=user,
+            evento="2fa_habilitacao_falha",
+            ip=get_client_ip(request),
+        )
         context = {
             "form": form,
             "qr_code": self._get_qr_code(user),

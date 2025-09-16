@@ -248,44 +248,6 @@ msgstr ""
 msgid "Editar perfil"
 msgstr ""
 
-#: templates/perfil/disable_2fa.html:3 templates/perfil/disable_2fa.html:5
-#: templates/perfil/seguranca.html:58
-msgid "Desativar 2FA"
-msgstr ""
-
-#: templates/perfil/disable_2fa.html:6
-msgid ""
-"Digite o código do seu aplicativo autenticador para desativar a verificação "
-"em duas etapas."
-msgstr ""
-
-#: templates/perfil/disable_2fa.html:10 templates/perfil/enable_2fa.html:11
-msgid "Código"
-msgstr ""
-
-#: templates/perfil/disable_2fa.html:13
-msgid "Desativar"
-msgstr ""
-
-#: templates/perfil/enable_2fa.html:3 templates/perfil/enable_2fa.html:5
-#: templates/perfil/seguranca.html:62
-msgid "Ativar 2FA"
-msgstr ""
-
-#: templates/perfil/enable_2fa.html:6
-msgid ""
-"Escaneie o QR-code abaixo com seu aplicativo autenticador e informe o código "
-"gerado."
-msgstr ""
-
-#: templates/perfil/enable_2fa.html:7
-msgid "QR Code"
-msgstr ""
-
-#: templates/perfil/enable_2fa.html:14
-msgid "Ativar"
-msgstr ""
-
 #: templates/perfil/informacoes_pessoais.html:4
 #: templates/perfil/informacoes_pessoais.html:8 templates/perfil/perfil.html:31
 msgid "Informações Pessoais"
