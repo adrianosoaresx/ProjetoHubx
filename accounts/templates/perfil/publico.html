@@ -28,3 +28,8 @@
 
 {% endblock %}
 
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'perfil/js/perfil.js' %}"></script>
+{% endblock %}
+

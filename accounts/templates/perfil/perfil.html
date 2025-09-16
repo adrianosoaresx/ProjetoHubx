@@ -4,6 +4,7 @@
 {% block hero %}
   {% include "_components/hero_profile.html" with is_owner=is_owner profile=profile %}
 {% endblock %}
+
 {% block content %}
 
 <div class="card">
@@ -27,5 +28,10 @@
     </section>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script type="module" src="{% static 'perfil/js/perfil.js' %}"></script>
 {% endblock %}
 
