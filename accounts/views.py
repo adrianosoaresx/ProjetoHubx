@@ -40,8 +40,7 @@ from core.permissions import (
 )
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
-
-from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, RedesSociaisForm
+from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm, TwoFactorForm
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
@@ -182,7 +181,7 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
 
 @login_required
-def perfil_informacoes(request):
+def perfil_info(request):
     if request.method == "POST":
         form = InformacoesPessoaisForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -190,34 +189,20 @@ def perfil_informacoes(request):
             if getattr(form, "email_changed", False):
                 messages.info(request, _("Confirme o novo e-mail enviado."))
             else:
-                messages.success(request, _("Informações pessoais atualizadas."))
-            return redirect("accounts:informacoes_pessoais")
+                messages.success(request, _("Informações do perfil atualizadas."))
+            return redirect("accounts:info")
     else:
         form = InformacoesPessoaisForm(instance=request.user)
 
     return render(
         request,
-        "perfil/informacoes_pessoais.html",
+        "perfil/info.html",
         {
             "form": form,
             "hero_title": _("Perfil"),
             "hero_subtitle": f"@{request.user.username}",
         },
     )
-
-
-@login_required
-def perfil_redes_sociais(request):
-    if request.method == "POST":
-        form = RedesSociaisForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Redes sociais atualizadas.")
-            return redirect("accounts:redes_sociais")
-    else:
-        form = RedesSociaisForm(instance=request.user)
-
-    return render(request, "perfil/redes_sociais.html", {"form": form, "hero_title": _("Perfil")})
 
 
 @login_required

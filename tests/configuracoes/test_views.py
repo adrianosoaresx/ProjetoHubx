@@ -96,14 +96,14 @@ def test_view_get_redirect_nao_autenticado(client):
 def test_view_get_redes_redirect(admin_client):
     resp = admin_client.get(reverse("configuracoes:configuracoes") + "?tab=redes")
     assert resp.status_code == 302
-    assert resp.headers["Location"] == reverse("accounts:redes_sociais")
+    assert resp.headers["Location"] == reverse("accounts:info")
 
 
 @override_settings(ROOT_URLCONF="tests.configuracoes.urls")
 def test_view_get_informacoes_redirect(admin_client):
     resp = admin_client.get(reverse("configuracoes:configuracoes") + "?tab=informacoes")
     assert resp.status_code == 302
-    assert resp.headers["Location"] == reverse("accounts:informacoes_pessoais")
+    assert resp.headers["Location"] == reverse("accounts:info")
 
 
 def test_view_invalid_tab_returns_404(admin_user, rf: RequestFactory):

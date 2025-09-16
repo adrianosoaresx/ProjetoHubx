@@ -31,8 +31,10 @@ urlpatterns = [
     path("perfil/", views.perfil, name="perfil"),
     path("perfil/<uuid:public_id>/", views.perfil_publico, name="perfil_publico_uuid"),
     path("perfil/<int:pk>/", views.perfil_publico, name="perfil_publico"),
-    path("perfil/informacoes/", views.perfil_informacoes, name="informacoes_pessoais"),
-    path("perfil/redes-sociais/", views.perfil_redes_sociais, name="redes_sociais"),
+
+    path("perfil/info/", views.perfil_info, name="info"),
+    path("perfil/seguranca/2fa/ativar/", views.enable_2fa, name="enable_2fa"),
+    path("perfil/seguranca/2fa/desativar/", views.disable_2fa, name="disable_2fa"),
     path("perfil/notificacoes/", views.perfil_notificacoes, name="notificacoes"),
     path("perfil/conexoes/", views.perfil_conexoes, name="conexoes"),
     path(

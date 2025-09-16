@@ -17,7 +17,7 @@ def test_email_change_generates_confirmation_token(client):
     )
     client.force_login(user)
     resp = client.post(
-        reverse("accounts:informacoes_pessoais"),
+        reverse("accounts:info"),
         {
             "first_name": "Nome",
             "last_name": "Teste",

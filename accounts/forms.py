@@ -95,6 +95,10 @@ class InformacoesPessoaisForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, label="Nome")
     last_name = forms.CharField(max_length=150, label="Sobrenome")
     cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
+    facebook = forms.URLField(required=False, label=_("Facebook"), assume_scheme="https")
+    twitter = forms.URLField(required=False, label=_("Twitter"), assume_scheme="https")
+    instagram = forms.URLField(required=False, label=_("Instagram"), assume_scheme="https")
+    linkedin = forms.URLField(required=False, label=_("LinkedIn"), assume_scheme="https")
 
     class Meta:
         model = User
@@ -115,8 +119,30 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "cep",
         )
 
+    field_order = (
+        "first_name",
+        "last_name",
+        "username",
+        "email",
+        "cpf",
+        "avatar",
+        "cover",
+        "biografia",
+        "phone_number",
+        "whatsapp",
+        "endereco",
+        "cidade",
+        "estado",
+        "cep",
+        "facebook",
+        "twitter",
+        "instagram",
+        "linkedin",
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.order_fields(self.field_order)
         if self.instance.pk:
             self.initial["first_name"] = self.instance.first_name
             self.initial["last_name"] = self.instance.last_name
@@ -124,6 +150,10 @@ class InformacoesPessoaisForm(forms.ModelForm):
             self.original_email = self.instance.email
         else:
             self.original_email = None
+        redes = getattr(self.instance, "redes_sociais", None) or {}
+        for field in ("facebook", "twitter", "instagram", "linkedin"):
+            if redes.get(field):
+                self.fields[field].initial = redes[field]
 
     def clean_cpf(self):
         cpf = self.cleaned_data.get("cpf")
@@ -136,6 +166,12 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user.first_name = self.cleaned_data.get("first_name", "")
         user.last_name = self.cleaned_data.get("last_name", "")
         user.cpf = self.cleaned_data.get("cpf")
+        redes = {}
+        for field in ("facebook", "twitter", "instagram", "linkedin"):
+            value = self.cleaned_data.get(field)
+            if value:
+                redes[field] = value
+        user.redes_sociais = redes
         self.email_changed = self.original_email and self.cleaned_data.get("email") != self.original_email
         if self.email_changed:
             user.is_active = False
@@ -155,35 +191,6 @@ class InformacoesPessoaisForm(forms.ModelForm):
                 )
                 send_confirmation_email.delay(token.id)
         return user
-
-
-class RedesSociaisForm(forms.ModelForm):
-    facebook = forms.URLField(required=False, label="Facebook")
-    twitter = forms.URLField(required=False, label="Twitter")
-    instagram = forms.URLField(required=False, label="Instagram")
-    linkedin = forms.URLField(required=False, label="LinkedIn")
-
-    class Meta:
-        model = User
-        fields = ()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        redes = self.instance.redes_sociais or {}
-        for field in self.fields:
-            if field in redes:
-                self.fields[field].initial = redes.get(field)
-
-    def save(self, commit: bool = True):
-        redes: dict[str, str] = {}
-        for field in self.fields:
-            value = self.cleaned_data.get(field)
-            if value:
-                redes[field] = value
-        self.instance.redes_sociais = redes
-        if commit:
-            self.instance.save(update_fields=["redes_sociais"])
-        return self.instance
 
 
 class MediaForm(forms.ModelForm):
