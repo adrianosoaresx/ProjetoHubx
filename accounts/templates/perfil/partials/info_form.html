@@ -3,7 +3,12 @@
   <h3 class="text-xl font-semibold mb-1">{% trans "Informações do perfil" %}</h3>
   <p class="text-sm text-[var(--text-secondary)] mb-6">{% trans "Atualize seus dados pessoais, de contato e redes sociais" %}</p>
 
-  <form method="post" enctype="multipart/form-data" class="space-y-6">
+  <form
+    method="post"
+    action="{% url 'accounts:perfil_sections_info' %}"
+    enctype="multipart/form-data"
+    class="space-y-6"
+  >
     {% csrf_token %}
     {% for field in form %}
       {% include '_forms/field.html' with field=field %}
