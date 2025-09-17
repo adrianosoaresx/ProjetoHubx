@@ -43,6 +43,12 @@
     <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
   </div>
+  {% if user.contato %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.contato }}</dd>
+  </div>
+  {% endif %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
