@@ -28,7 +28,7 @@
           {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros_org icon_svg=icon_membros %}
         </div>
       </details>
-      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="nucleos-grid">
+      <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
         {% for nucleo in object_list %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
         {% empty %}
