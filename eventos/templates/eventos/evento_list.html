@@ -27,7 +27,7 @@
         </summary>
         {% lucide 'calendar' class='h-5 w-5' as icon_eventos %}
         {% lucide 'activity' class='h-5 w-5' as icon_ativos %}
-        {% lucide 'check-circle' class='h-5 w-5' as icon_realizados %}
+        {% lucide 'check' class='h-5 w-5' as icon_realizados %}
         <div class="mt-4 card-grid">
           {% include "_partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos icon_svg=icon_eventos %}
           {% include "_partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos icon_svg=icon_ativos %}
