@@ -1489,7 +1489,7 @@ a:focus {
   transition-duration: 150ms;
   border-color: transparent;
   background-color: var(--accent);
-  color: var(--on-accent);
+  color: var(--text-inverse);
 }
 
 .btn-primary:hover {
