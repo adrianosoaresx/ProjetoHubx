@@ -56,7 +56,7 @@ class SuplenteForm(forms.ModelForm):
     def __init__(self, *args, nucleo: Nucleo | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         if nucleo is not None:
-            self.fields["usuario"].queryset = nucleo.membros.order_by("first_name", "last_name")
+            self.fields["usuario"].queryset = nucleo.membros.order_by("first_name", "username")
         else:
             self.fields["usuario"].queryset = User.objects.none()
 

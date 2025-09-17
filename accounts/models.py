@@ -116,7 +116,6 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         null=True,
         help_text="Ex.: +55 48 99999-0000",
     )
-    birth_date = models.DateField("Data de nascimento", blank=True, null=True)
     cpf = models.CharField(
         "CPF",
         max_length=14,  # 000.000.000-00
@@ -187,10 +186,24 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         verbose_name=_("Núcleo"),
     )
 
+    # Remove o campo herdado ``last_name`` do AbstractUser
+    last_name = None  # type: ignore[assignment]
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS: list[str] = ["username"]
+
+    def get_full_name(self) -> str:
+        """Retorna apenas o campo de contato (first_name)."""
+
+        contato = (self.first_name or "").strip()
+        if contato:
+            return contato
+        return self.username or self.email
+
+    def get_short_name(self) -> str:
+        return self.get_full_name()
 
     @property
     def organizacao_display(self):

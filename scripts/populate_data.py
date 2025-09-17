@@ -61,8 +61,7 @@ def main() -> None:
             email="root@hubx.com.br",
             defaults={
                 "username": "root",
-                "first_name": "Root",
-                "last_name": "User",
+                "first_name": "Root User",
                 "is_staff": True,
                 "is_superuser": True,
                 "user_type": "root",
@@ -74,17 +73,16 @@ def main() -> None:
 
         # Administradores
         admin_info = [
-            ("admin1@hubx.com.br", "admin1", "Admin", "One"),
-            ("admin2@hubx.com.br", "admin2", "Admin", "Two"),
+            ("admin1@hubx.com.br", "admin1", "Admin One"),
+            ("admin2@hubx.com.br", "admin2", "Admin Two"),
         ]
         admins: list = []
-        for email, username, first_name, last_name in admin_info:
+        for email, username, contato in admin_info:
             admin, _ = User.objects.get_or_create(
                 email=email,
                 defaults={
                     "username": username,
-                    "first_name": first_name,
-                    "last_name": last_name,
+                    "first_name": contato,
                     "is_staff": True,
                     "is_superuser": False,
                     "user_type": "admin",
@@ -206,8 +204,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": "Associado",
-                        "last_name": str(i + 1),
+                        "first_name": f"Associado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "associado",
@@ -236,8 +233,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": "Nucleado",
-                        "last_name": str(i + 1),
+                        "first_name": f"Nucleado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "nucleado",
@@ -278,8 +274,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": "Convidado",
-                        "last_name": str(i + 1),
+                        "first_name": f"Convidado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "convidado",
