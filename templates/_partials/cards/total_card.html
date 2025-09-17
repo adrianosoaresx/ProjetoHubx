@@ -3,8 +3,16 @@
 <article class="card">
   <div class="card-body">
     <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-      {% if icon %}
-        {% lucide icon class="h-4 w-4 text-[var(--text-secondary)]" %}
+
+      {% if icon_svg %}
+        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+          {{ icon_svg|safe }}
+        </span>
+      {% elif icon_class %}
+        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+          <i class="{{ icon_class }}"></i>
+        </span>
+
       {% endif %}
       <span>{{ label }}</span>
     </div>
