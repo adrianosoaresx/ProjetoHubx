@@ -1363,6 +1363,18 @@ a:focus {
   }
 }
 
+.nucleos-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .nucleos-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .card {
   border-radius: 0.75rem;
   border-width: 1px;
