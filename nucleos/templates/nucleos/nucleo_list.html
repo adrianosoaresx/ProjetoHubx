@@ -19,9 +19,7 @@
       <div class="card-grid mb-6">
         {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos %}
         {% include "_partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org %}
-        {% include "_partials/cards/total_card.html" with label=_('Eventos (todos)') valor=total_eventos_org %}
-        {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos_org %}
-        {% include "_partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos_org %}
+
       </div>
       <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid">
         {% for nucleo in object_list %}
