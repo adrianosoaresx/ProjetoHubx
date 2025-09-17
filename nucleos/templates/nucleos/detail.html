@@ -28,9 +28,8 @@
   <!-- Cards de totais -->
   <div class="card-grid mt-6 gap-4">
     {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
-    {% include "_partials/cards/total_card.html" with label=_('Eventos (ativos + concluídos)') valor=total_eventos %}
     {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos %}
-    {% include "_partials/cards/total_card.html" with label=_('Eventos concluídos') valor=total_eventos_concluidos %}
+    {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos %}
   </div>
 
   <!-- Abas -->
