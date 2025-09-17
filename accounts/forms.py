@@ -30,6 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
             "cpf",
             "cnpj",
             "razao_social",
+            "nome_fantasia",
             "avatar",
             "first_name",
             "last_name",
@@ -77,6 +78,7 @@ class CustomUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         user.cnpj = self.cleaned_data.get("cnpj")
         user.razao_social = self.cleaned_data.get("razao_social")
+        user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
         user.is_active = False
         user.email_confirmed = False
         if commit:
@@ -98,6 +100,7 @@ class CustomUserChangeForm(UserChangeForm):
             "cpf",
             "cnpj",
             "razao_social",
+            "nome_fantasia",
             "avatar",
             "first_name",
             "last_name",
@@ -132,6 +135,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
     cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
     cnpj = forms.CharField(max_length=18, required=False, label="CNPJ")
     razao_social = forms.CharField(max_length=255, required=False, label="Razão social")
+    nome_fantasia = forms.CharField(max_length=255, required=False, label="Nome fantasia")
     facebook = forms.URLField(required=False, label=_("Facebook"), assume_scheme="https")
     twitter = forms.URLField(required=False, label=_("Twitter"), assume_scheme="https")
     instagram = forms.URLField(required=False, label=_("Instagram"), assume_scheme="https")
@@ -147,6 +151,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "cpf",
             "cnpj",
             "razao_social",
+            "nome_fantasia",
             "avatar",
             "cover",
             "biografia",
@@ -166,6 +171,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         "cpf",
         "cnpj",
         "razao_social",
+        "nome_fantasia",
         "avatar",
         "cover",
         "biografia",
@@ -190,6 +196,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
             self.initial["cpf"] = self.instance.cpf
             self.initial["cnpj"] = self.instance.cnpj
             self.initial["razao_social"] = self.instance.razao_social
+            self.initial["nome_fantasia"] = self.instance.nome_fantasia
             self.original_email = self.instance.email
         else:
             self.original_email = None
@@ -223,6 +230,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         user.cpf = self.cleaned_data.get("cpf")
         user.cnpj = self.cleaned_data.get("cnpj")
         user.razao_social = self.cleaned_data.get("razao_social")
+        user.nome_fantasia = self.cleaned_data.get("nome_fantasia")
         redes = {}
         for field in ("facebook", "twitter", "instagram", "linkedin"):
             value = self.cleaned_data.get(field)

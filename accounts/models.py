@@ -133,6 +133,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         unique=True,
     )
     razao_social = models.CharField("Razão Social", max_length=255, blank=True, null=True)
+    nome_fantasia = models.CharField("Nome fantasia", max_length=255, blank=True, null=True)
     biografia = models.TextField(blank=True)
     cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
     whatsapp = models.CharField(max_length=20, blank=True)

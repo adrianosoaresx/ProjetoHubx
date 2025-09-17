@@ -14,6 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "cnpj",
             "razao_social",
+            "nome_fantasia",
             "is_associado",
             "is_coordenador",
             "nucleo_id",
