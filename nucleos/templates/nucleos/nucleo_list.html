@@ -4,7 +4,7 @@
 {% block title %}{% trans "Núcleos" %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero.html' with title=_('Núcleos') %}
+  {% include '_components/hero.html' with title=_('Núcleos') action_template='nucleos/hero_actions_nucleo.html' %}
 {% endblock %}
 
 {% block content %}
@@ -13,9 +13,6 @@
       {% include '_components/search_form.html' with q=request.GET.q %}
       {% if request.user.user_type != 'admin' %}
       <a href="{% url 'nucleos:meus' %}" class="btn btn-secondary text-sm" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
-      {% endif %}
-      {% if request.user.user_type == 'admin' %}
-      <a href="{% url 'nucleos:create' %}" class="btn btn-primary" aria-label="{% trans 'Criar novo núcleo' %}">{% trans 'Novo' %}</a>
       {% endif %}
     </div>
     <div class="card-body">
