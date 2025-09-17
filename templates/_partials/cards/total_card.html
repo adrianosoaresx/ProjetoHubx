@@ -1,7 +1,9 @@
+{% load lucide_icons %}
 {# Card de total #}
 <article class="card">
   <div class="card-body">
     <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+
       {% if icon_svg %}
         <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
           {{ icon_svg|safe }}
@@ -10,6 +12,7 @@
         <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
           <i class="{{ icon_class }}"></i>
         </span>
+
       {% endif %}
       <span>{{ label }}</span>
     </div>

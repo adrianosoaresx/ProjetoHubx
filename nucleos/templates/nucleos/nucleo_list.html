@@ -16,11 +16,15 @@
       {% endif %}
     </div>
     <div class="card-body">
-      <div class="card-grid mb-6">
-        {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos %}
-        {% include "_partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org %}
-
-      </div>
+      <details class="card mb-6" open>
+        <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
+          {% trans "Resumo" %}
+        </summary>
+        <div class="mt-4 card-grid">
+          {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos icon='network' %}
+          {% include "_partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org icon='users' %}
+        </div>
+      </details>
       <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="nucleos-grid">
         {% for nucleo in object_list %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
