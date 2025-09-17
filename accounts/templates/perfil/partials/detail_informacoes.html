@@ -16,10 +16,22 @@
     <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
   </div>
-    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
   </div>
+  {% if user.razao_social %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ user.razao_social }}</dd>
+    </div>
+  {% endif %}
+  {% if user.cnpj %}
+    <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+      <dt class="text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
+      <dd class="font-medium text-[var(--text-primary)]">{{ user.cnpj }}</dd>
+    </div>
+  {% endif %}
 </dl>
 
 {% if bio %}
