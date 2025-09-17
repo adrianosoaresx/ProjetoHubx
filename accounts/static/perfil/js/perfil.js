@@ -126,9 +126,13 @@ function initPerfilNavigation() {
 
     const setActive = link => {
         activeLink = link || null
+        const activeTextClass = 'text-[var(--text-inverse)]'
+        const inactiveTextClass = 'text-[var(--text-secondary)]'
         navLinks.forEach(item => {
             const isActive = item === link
             item.classList.toggle('is-active', isActive)
+            item.classList.toggle(activeTextClass, isActive)
+            item.classList.toggle(inactiveTextClass, !isActive)
             if (isActive) {
                 item.setAttribute('aria-current', 'page')
             } else {

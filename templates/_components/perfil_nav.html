@@ -1,11 +1,11 @@
 {% load i18n %}
-{% with default_section=perfil_default_section|default:"portfolio" base_classes="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2" active_classes="is-active border-transparent bg-[var(--primary)] text-[var(--text-inverse)] shadow-sm"%}
+{% with default_section=perfil_default_section|default:"portfolio" base_classes="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2" active_classes="is-active border-transparent bg-[var(--primary)] text-[var(--text-inverse)] shadow-sm" inactive_classes="text-[var(--text-secondary)]"%}
 <nav class="mb-6" aria-label="{% trans 'Seções do perfil' %}">
   <ul class="flex flex-wrap gap-2">
     <li>
       <a
         href="?section=portfolio"
-        class="{{ base_classes }}{% if default_section == 'portfolio' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'portfolio' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="portfolio"
         data-perfil-url="{% url 'accounts:perfil_portfolio' %}"
@@ -18,7 +18,7 @@
     <li>
       <a
         href="?section=mural"
-        class="{{ base_classes }}{% if default_section == 'mural' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'mural' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="mural"
         data-perfil-url="{% url 'accounts:perfil_mural' %}"
@@ -31,7 +31,7 @@
     <li>
       <a
         href="?section=info"
-        class="{{ base_classes }}{% if default_section == 'info' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'info' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="info"
         data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
@@ -44,7 +44,7 @@
     <li>
       <a
         href="?section=nucleos"
-        class="{{ base_classes }}{% if default_section == 'nucleos' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'nucleos' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="nucleos"
         data-perfil-url="{% url 'accounts:perfil_nucleos' %}"
@@ -57,7 +57,7 @@
     <li>
       <a
         href="?section=eventos"
-        class="{{ base_classes }}{% if default_section == 'eventos' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'eventos' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="eventos"
         data-perfil-url="{% url 'accounts:perfil_eventos' %}"
@@ -70,7 +70,7 @@
     <li>
       <a
         href="?section=conexoes"
-        class="{{ base_classes }}{% if default_section == 'conexoes' %} {{ active_classes }}{% endif %}"
+        class="{{ base_classes }}{% if default_section == 'conexoes' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         data-perfil-nav
         data-perfil-section="conexoes"
         data-perfil-url="{% url 'accounts:perfil_conexoes_partial' %}"
