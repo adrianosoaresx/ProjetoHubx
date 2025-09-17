@@ -75,6 +75,8 @@ class CustomUserCreationForm(UserCreationForm):
 
     def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
+        user.cnpj = self.cleaned_data.get("cnpj")
+        user.razao_social = self.cleaned_data.get("razao_social")
         user.is_active = False
         user.email_confirmed = False
         if commit:
