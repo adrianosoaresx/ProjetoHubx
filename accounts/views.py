@@ -376,7 +376,7 @@ def perfil_section(request, section):
                 else User.objects.none()
             )
             if q:
-                filters = Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
+                filters = Q(username__icontains=q) | Q(first_name__icontains=q)
                 connections = connections.filter(filters)
                 connection_requests = connection_requests.filter(filters)
 
@@ -456,7 +456,7 @@ def perfil_conexoes(request):
     )
 
     if q:
-        filters = Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
+        filters = Q(username__icontains=q) | Q(first_name__icontains=q)
         connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
 
@@ -1007,10 +1007,7 @@ def termos(request):
         email_val = request.session.get("email")
         pwd_hash = request.session.get("senha_hash")
         cpf_val = request.session.get("cpf")
-        nome_completo = request.session.get("nome", "")
-        nome_parts = nome_completo.split()
-        first_name = nome_parts[0] if nome_parts else ""
-        last_name = " ".join(nome_parts[1:]) if len(nome_parts) > 1 else ""
+        contato = (request.session.get("nome") or "").strip()
 
         if username and pwd_hash:
             tipo_mapping = {
@@ -1025,8 +1022,7 @@ def termos(request):
                     user = User.objects.create(
                         username=username,
                         email=email_val,
-                        first_name=first_name,
-                        last_name=last_name,
+                        first_name=contato,
                         password=pwd_hash,
                         cpf=cpf_val,
                         user_type=tipo_mapping[token_obj.tipo_destino],
@@ -1096,7 +1092,7 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
         # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
         q = self.request.GET.get("q")
         if q:
-            qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q))
+            qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q))
         # Ordenação alfabética por username (case-insensitive)
         qs = qs.annotate(_user=Lower("username"))
         return qs.order_by("_user")

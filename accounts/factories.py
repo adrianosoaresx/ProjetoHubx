@@ -12,8 +12,7 @@ class UserFactory(DjangoModelFactory):
 
     username = factory.Faker("user_name", locale="pt_BR")
     email = factory.Faker("email", locale="pt_BR")
-    first_name = factory.Faker("first_name", locale="pt_BR")
-    last_name = factory.Faker("last_name", locale="pt_BR")
+    first_name = factory.Faker("name", locale="pt_BR")
     is_active = True
 
     @factory.post_generation

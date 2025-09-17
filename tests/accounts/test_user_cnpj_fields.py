@@ -37,8 +37,7 @@ def test_informacoes_pessoais_form_updates_cnpj_razao_social_and_nome_fantasia()
         email="user@example.com",
         username="user",
         password="StrongPass1!",
-        first_name="Old",
-        last_name="Name",
+        first_name="Contato Antigo",
         cnpj="00.000.000/0001-91",
         razao_social="Empresa Antiga",
         nome_fantasia="Empresa Antiga",
@@ -46,8 +45,7 @@ def test_informacoes_pessoais_form_updates_cnpj_razao_social_and_nome_fantasia()
 
     form = InformacoesPessoaisForm(
         data={
-            "first_name": "Novo",
-            "last_name": "Nome",
+            "first_name": "Contato Novo",
             "username": user.username,
             "email": user.email,
             "cpf": "",
@@ -63,6 +61,7 @@ def test_informacoes_pessoais_form_updates_cnpj_razao_social_and_nome_fantasia()
     form.save()
     user.refresh_from_db()
 
+    assert user.first_name == "Contato Novo"
     assert user.cnpj == "00.000.000/0002-72"
     assert user.razao_social == "Empresa Nova LTDA"
     assert user.nome_fantasia == "Empresa Nova"

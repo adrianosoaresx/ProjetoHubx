@@ -20,7 +20,6 @@ def test_email_change_generates_confirmation_token(client):
         reverse("accounts:perfil_sections_info"),
         {
             "first_name": "Nome",
-            "last_name": "Teste",
             "username": "u",
             "email": "new@example.com",
             "cpf": "529.982.247-25",

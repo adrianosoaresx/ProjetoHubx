@@ -270,9 +270,7 @@ class OrganizacaoUserViewSet(OrganizacaoRelatedModelViewSet):
         qs = get_user_model().objects.filter(organizacao__isnull=True)
         search = request.query_params.get("search")
         if search:
-            qs = qs.filter(
-                Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(username__icontains=search)
-            )
+            qs = qs.filter(Q(first_name__icontains=search) | Q(username__icontains=search))
         page = self.paginate_queryset(qs)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

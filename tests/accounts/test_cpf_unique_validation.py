@@ -13,7 +13,6 @@ def test_cpf_duplicate_validation():
     form = InformacoesPessoaisForm(
         data={
             "first_name": "Teste",
-            "last_name": "Silva",
             "username": "b",
             "email": "b@example.com",
             "cpf": "390.533.447-05",
@@ -31,7 +30,6 @@ def test_cnpj_duplicate_validation():
     form = InformacoesPessoaisForm(
         data={
             "first_name": "Teste",
-            "last_name": "Silva",
             "username": "d",
             "email": "d@example.com",
             "cpf": "",
