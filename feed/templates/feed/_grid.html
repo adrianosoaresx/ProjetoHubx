@@ -18,9 +18,9 @@
           {% elif post.tipo_feed == 'evento' %}
             {% blocktrans with titulo=post.evento.titulo %}Evento • {{ titulo }}{% endblocktrans %}
           {% elif post.tipo_feed == 'usuario' %}
-            {% trans "Mural do Usuário" %}
+            {% trans "Mural" %}
           {% else %}
-            {% trans "Feed Global" %}
+            {% trans "Público" %}
           {% endif %}
         </span>
         <div class="flex items-start justify-between gap-4">
