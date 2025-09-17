@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n l10n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% trans "Núcleos" %}{% endblock %}
 
@@ -20,9 +20,12 @@
         <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
           {% trans "Resumo" %}
         </summary>
+        {% lucide 'network' class='h-5 w-5' as icon_nucleos %}
+        {% lucide 'users' class='h-5 w-5' as icon_membros %}
+        
         <div class="mt-4 card-grid">
-          {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos icon='network' %}
-          {% include "_partials/cards/total_card.html" with label=_('Membros (todos os núcleos)') valor=total_membros_org icon='users' %}
+          {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos icon_svg=icon_nucleos %}
+          {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros_org icon_svg=icon_membros %}
         </div>
       </details>
       <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="nucleos-grid">
