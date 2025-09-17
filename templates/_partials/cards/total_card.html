@@ -1,7 +1,13 @@
+{% load lucide_icons %}
 {# Card de total #}
 <article class="card">
   <div class="card-body">
-    <div class="text-sm text-[var(--text-secondary)]">{{ label }}</div>
+    <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+      {% if icon %}
+        {% lucide icon class="h-4 w-4 text-[var(--text-secondary)]" %}
+      {% endif %}
+      <span>{{ label }}</span>
+    </div>
     <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ valor }}</div>
   </div>
 </article>
