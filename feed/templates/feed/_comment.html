@@ -2,7 +2,7 @@
 {% if request.user.user_type != 'root' %}
 <li class="card" id="comment-{{ comment.id }}">
   <div class="card-body">
-  <p class="text-sm font-medium">{{ comment.user.get_full_name|default:comment.user.username }}</p>
+  <p class="text-sm font-medium">{{ comment.user.display_name }}</p>
   <p class="text-xs text-[var(--text-secondary)]">{{ comment.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
   <p class="text-sm text-[var(--text-primary)]">{{ comment.texto }}</p>
   <div class="flex gap-2">

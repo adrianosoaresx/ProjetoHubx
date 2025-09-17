@@ -2,7 +2,7 @@
 {% for log in logs %}
   <tr>
     <td class="px-4 py-2">{{ log.data_envio|date:"SHORT_DATETIME_FORMAT" }}</td>
-    <td class="px-4 py-2">{{ log.user.get_full_name|default:log.user.username }}</td>
+    <td class="px-4 py-2">{{ log.user.display_name }}</td>
     <td class="px-4 py-2">{{ log.template.codigo }}</td>
     <td class="px-4 py-2">{{ log.get_canal_display }}</td>
     <td class="px-4 py-2">{{ log.get_status_display }}</td>

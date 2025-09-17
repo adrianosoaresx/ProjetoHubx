@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static i18n %}
-{% block title %}{% with perfil as profile %}{{ profile.get_full_name|default:profile.username }} | Hubx{% endwith %}{% endblock %}
+{% block title %}{{ perfil.display_name }} | Hubx{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_profile.html' with profile=perfil is_owner=is_owner %}
+  {% include '_components/hero_profile.html' with profile=perfil is_owner=is_owner hero_title=hero_title hero_subtitle=hero_subtitle %}
 {% endblock %}
 
 {% block content %}

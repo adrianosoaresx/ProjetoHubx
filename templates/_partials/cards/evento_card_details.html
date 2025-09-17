@@ -10,7 +10,7 @@
   </div>
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans 'Coordenador' %}</dt>
-    <dd class="font-medium">{{ evento.coordenador.get_full_name|default:evento.coordenador.username }}</dd>
+    <dd class="font-medium">{{ evento.coordenador.display_name }}</dd>
   </div>
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans 'Status' %}</dt>

@@ -104,14 +104,14 @@
                 <article class="card">
                   <div class="card-body flex items-center gap-4">
                     {% if inscrito.avatar %}
-                      <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                      <img src="{{ inscrito.avatar.url }}" alt="{{ inscrito.display_name|default:inscrito.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy">
                     {% else %}
-                      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.username }}">
+                      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center text-sm font-semibold" role="img" aria-label="{{ inscrito.display_name|default:inscrito.username }}">
                         {{ inscrito.username|make_list|first|upper }}
                       </div>
                     {% endif %}
                     <div>
-                      <h4 class="text-sm font-medium">{{ inscrito.get_full_name|default:inscrito.username }}</h4>
+                      <h4 class="text-sm font-medium">{{ inscrito.display_name }}</h4>
                       <p class="text-xs">@{{ inscrito.username }}</p>
                     </div>
                   </div>
