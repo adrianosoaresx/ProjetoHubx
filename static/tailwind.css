@@ -1156,37 +1156,6 @@ a:focus {
 
 /* Botões do Hero */
 
-.btn-hero {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius);
-  border-width: 1px;
-  padding-left: 0.875rem;
-  padding-right: 0.875rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 500;
-  color: var(--text-inverse);
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.btn-hero:hover:not(:disabled) {
-  --tw-translate-y: -1px;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-  box-shadow: var(--card-medium);
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
 .btn-primary {
   border-width: 1px;
   color: var(--text-inverse);
@@ -1364,18 +1333,6 @@ a:focus {
   }
 }
 
-.nucleos-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .nucleos-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 .card {
   border-radius: 0.75rem;
   border-width: 1px;
@@ -1490,12 +1447,11 @@ a:focus {
   transition-duration: 150ms;
   border-color: transparent;
   background-color: var(--accent);
-  color: var(--text-inverse);
+  color: var(--on-accent);
 }
 
 .btn-primary:hover {
   opacity: 0.9;
-  color: var(--text-inverse);
 }
 
 .btn-secondary {
@@ -1953,6 +1909,10 @@ a:focus {
   width: 100%;
 }
 
+.min-w-0 {
+  min-width: 0px;
+}
+
 .min-w-full {
   min-width: 100%;
 }
@@ -2090,6 +2050,12 @@ a:focus {
   margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
+.space-y-10 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(2.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(2.5rem * var(--tw-space-y-reverse));
+}
+
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
@@ -2140,10 +2106,6 @@ a:focus {
   white-space: pre-line;
 }
 
-.break-all {
-  word-break: break-all;
-}
-
 .rounded {
   border-radius: 0.25rem;
 }
@@ -2176,10 +2138,6 @@ a:focus {
   border-bottom-width: 1px;
 }
 
-.border-b-2 {
-  border-bottom-width: 2px;
-}
-
 .border-r {
   border-right-width: 1px;
 }
@@ -2201,8 +2159,8 @@ a:focus {
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
 }
 
-.border-primary {
-  border-color: var(--primary);
+.border-transparent {
+  border-color: transparent;
 }
 
 .bg-\[var\(--bg-primary\)\] {
@@ -2237,6 +2195,10 @@ a:focus {
   background-color: var(--success-light);
 }
 
+.bg-\[var\(--surface-secondary\)\] {
+  background-color: var(--surface-secondary);
+}
+
 .bg-\[var\(--warning-light\)\] {
   background-color: var(--warning-light);
 }
@@ -2245,12 +2207,12 @@ a:focus {
   background-color: rgb(0 0 0 / 0.4);
 }
 
-.bg-black\/60 {
-  background-color: rgb(0 0 0 / 0.6);
-}
-
 .bg-primary {
   background-color: var(--primary);
+}
+
+.bg-white\/15 {
+  background-color: rgb(255 255 255 / 0.15);
 }
 
 .bg-gradient-to-r {
@@ -2299,11 +2261,6 @@ a:focus {
 .px-2 {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-}
-
-.px-2\.5 {
-  padding-left: 0.625rem;
-  padding-right: 0.625rem;
 }
 
 .px-3 {
@@ -2453,6 +2410,10 @@ a:focus {
   letter-spacing: 0.1em;
 }
 
+.text-\[inherit\] {
+  color: inherit;
+}
+
 .text-\[var\(--error\)\] {
   color: var(--error);
 }
@@ -2489,6 +2450,11 @@ a:focus {
   color: var(--color-error-500);
 }
 
+.text-gray-400 {
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
+}
+
 .text-primary {
   color: var(--primary);
 }
@@ -2513,6 +2479,12 @@ a:focus {
 .shadow-2xl {
   --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
@@ -2559,6 +2531,12 @@ a:focus {
 
 .transition-all {
   transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -2835,6 +2813,12 @@ a:focus {
   color: var(--text-secondary);
 }
 
+.hover\:scale-110:hover {
+  --tw-scale-x: 1.1;
+  --tw-scale-y: 1.1;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
 .hover\:bg-\[var\(--bg-tertiary\)\]:hover {
   background-color: var(--bg-tertiary);
 }
@@ -2847,8 +2831,8 @@ a:focus {
   background-color: var(--primary-hover);
 }
 
-.hover\:bg-black\/70:hover {
-  background-color: rgb(0 0 0 / 0.7);
+.hover\:bg-\[var\(--surface-tertiary\)\]:hover {
+  background-color: var(--surface-tertiary);
 }
 
 .hover\:text-\[var\(--text-primary\)\]:hover {
@@ -2857,6 +2841,10 @@ a:focus {
 
 .hover\:text-primary:hover {
   color: var(--primary);
+}
+
+.hover\:text-white\/90:hover {
+  color: rgb(255 255 255 / 0.9);
 }
 
 .hover\:underline:hover {
@@ -2909,6 +2897,20 @@ a:focus {
   --tw-ring-color: var(--color-primary-500);
 }
 
+.focus-visible\:ring-2:focus-visible {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.focus-visible\:ring-\[var\(--primary\)\]:focus-visible {
+  --tw-ring-color: var(--primary);
+}
+
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-width: 2px;
+}
+
 .group:hover .group-hover\:underline {
   text-decoration-line: underline;
 }
@@ -2952,10 +2954,6 @@ a:focus {
     width: 6rem;
   }
 
-  .md\:grid-cols-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .md\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2988,18 +2986,9 @@ a:focus {
     font-size: 1.875rem;
     line-height: 2.25rem;
   }
-
-  .md\:text-base {
-    font-size: 1rem;
-    line-height: 1.5rem;
-  }
 }
 
 @media (min-width: 1024px) {
-  .lg\:col-span-3 {
-    grid-column: span 3 / span 3;
-  }
-
   .lg\:h-\[360px\] {
     height: 360px;
   }
