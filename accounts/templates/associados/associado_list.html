@@ -11,15 +11,16 @@
 
 
 <section class="max-w-6xl mx-auto py-12 px-4">
+  <div class="card-header space-y-4">
   {% include '_components/search_form.html' with q=request.GET.q %}
-
+</div>
   <!-- Cards de totais -->
   <div class="mb-6 card-grid gap-4">
     {% include "_partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios %}
     {% include "_partials/cards/total_card.html" with label=_('Associados') valor=total_associados %}
     {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados %}
   </div>
-  <div role="list" class="card-grid">
+  <div role="list" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
     {% for user in associados %}
       <div role="listitem">
         {% include '_components/card_usuario.html' with user=user %}
