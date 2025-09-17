@@ -29,7 +29,7 @@
          class="form-input w-full rounded-lg px-4 py-2 text-sm" aria-label="{% trans 'Buscar' %}" aria-invalid="false">
 </form>
 
-<div class="card-grid mt-6">
+<div class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
   {% for media in medias %}
     <article class="card relative p-3">
       {% if is_owner %}
