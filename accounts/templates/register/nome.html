@@ -24,14 +24,14 @@
     </div>
 
     <div class="mb-8 text-center">
-      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Como podemos te chamar?" %}</h1>
-      <p class="text-[var(--text-secondary)]">{% trans "Digite seu nome completo" %}</p>
+      <h1 class="mb-2 text-3xl font-bold text-[var(--text-primary)]">{% trans "Quem será o contato principal?" %}</h1>
+      <p class="text-[var(--text-secondary)]">{% trans "Informe o nome da pessoa responsável pelo contato." %}</p>
     </div>
 
     <form id="nomeForm" method="post" action="{% url 'accounts:nome' %}" class="space-y-6">
       {% csrf_token %}
       <div>
-        {% include "_forms/field.html" with id="nome" name="nome" label=_("Nome Completo") placeholder=_("Nome completo") required=True autofocus=True describedby="nome_validation" %}
+        {% include "_forms/field.html" with id="nome" name="nome" label=_("Contato principal") placeholder=_("Nome do contato principal") required=True autofocus=True describedby="nome_validation" %}
         <div class="text-sm text-[var(--error)]" id="nome_validation"></div>
       </div>
 

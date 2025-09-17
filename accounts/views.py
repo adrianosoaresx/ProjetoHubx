@@ -150,6 +150,13 @@ def _portfolio_for(profile, viewer, limit: int = 6):
     return list(qs.select_related(owner_field).prefetch_related("tags").order_by("-created_at")[:limit])
 
 
+def _profile_hero_names(profile):
+    display_name = profile.display_name
+    contact_name = profile.contact_name
+    subtitle = contact_name if contact_name and contact_name != display_name else ""
+    return display_name, subtitle
+
+
 def _nucleos_for(profile):
     from nucleos.models import Nucleo
 
@@ -226,11 +233,13 @@ def perfil(request):
     inscricoes = _inscricoes_for(user)
 
     portfolio_recent = _portfolio_for(user, request.user, limit=6)
+    hero_title, hero_subtitle = _profile_hero_names(user)
 
     context = {
         "nucleos": nucleos,
         "inscricoes": inscricoes,
-        "hero_title": _("Perfil"),
+        "hero_title": hero_title,
+        "hero_subtitle": hero_subtitle,
         "profile": user,
         "is_owner": True,
         "portfolio_recent": portfolio_recent,
@@ -265,13 +274,14 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
 
     portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
+    hero_title, hero_subtitle = _profile_hero_names(perfil)
 
     context = {
         "perfil": perfil,
         "nucleos": nucleos,
         "inscricoes": inscricoes,
-        "hero_title": perfil.get_full_name() or perfil.username,
-        "hero_subtitle": f"@{perfil.username}",
+        "hero_title": hero_title,
+        "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
         "portfolio_recent": portfolio_recent,
         "portfolio_form": None,

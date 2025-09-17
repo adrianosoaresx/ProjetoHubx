@@ -3,13 +3,13 @@
   <div class="card-body flex flex-col gap-2">
     <div class="flex items-center gap-4">
       {% if part.user.avatar %}
-      <img src="{{ part.user.avatar.url }}" alt="{{ part.user.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
+      <img src="{{ part.user.avatar.url }}" alt="{{ part.user.display_name|default:part.user.username }}" class="w-12 h-12 rounded-full object-cover" loading="lazy" />
       {% else %}
-      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]"></div>
+      <div class="w-12 h-12 rounded-full bg-[var(--bg-tertiary)]" role="img" aria-label="{{ part.user.display_name|default:part.user.username }}"></div>
       {% endif %}
       <div>
         <a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}" class="font-medium text-[var(--text-primary)]">
-          {{ part.user.get_full_name|default:part.user.username }}
+          {{ part.user.display_name }}
         </a>
         {% if part.papel == 'coordenador' %}
         <span class="text-sm text-[var(--text-secondary)]"> - {% trans 'Coordenador' %}</span>

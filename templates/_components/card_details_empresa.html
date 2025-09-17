@@ -8,7 +8,7 @@
     <dt class="text-[var(--text-muted)]">{% trans 'Proprietário' %}</dt>
     <dd class="font-medium">
       <span class="text-primary">
-        {{ empresa.usuario.get_full_name|default:empresa.usuario.username }}
+        {{ empresa.usuario.display_name }}
       </span>
     </dd>
   </div>

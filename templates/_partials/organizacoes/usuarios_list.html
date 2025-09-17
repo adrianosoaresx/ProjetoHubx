@@ -2,7 +2,7 @@
 <h2 class="text-xl font-semibold text-[var(--text-primary)] mb-2">{% trans 'Membros' %} ({{ usuarios|length }})</h2>
 <ul class="list-disc pl-6 text-[var(--text-secondary)]">
   {% for user in usuarios %}
-    <li>{{ user.get_full_name|default:user.username }}</li>
+    <li>{{ user.display_name }}</li>
   {% empty %}
     <li class="list-none text-[var(--text-muted)]">{% trans 'Nenhum usuário associado.' %}</li>
   {% endfor %}

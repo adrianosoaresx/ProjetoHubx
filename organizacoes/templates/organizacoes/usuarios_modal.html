@@ -23,7 +23,7 @@
   <ul class="mt-4 space-y-1">
     {% for user in usuarios %}
       <li class="flex justify-between items-center">
-        {{ user.get_full_name|default:user.username }}
+        {{ user.display_name }}
         <button hx-delete="{{ api_url }}{{ user.id }}/" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-on="htmx:afterRequest: htmx.ajax('GET', '{{ refresh_url }}', '#usuarios-section');" class="btn btn-danger">{% trans 'Remover' %}</button>
       </li>
     {% empty %}

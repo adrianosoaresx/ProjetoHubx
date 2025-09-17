@@ -1,13 +1,31 @@
 {% load i18n %}
 <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
-  <div>
-    <dt class="text-[var(--text-secondary)]">{% trans "Nome completo" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.get_full_name|default:profile.username }}</dd>
-  </div>
-  <div>
-    <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">@{{ profile.username }}</dd>
-  </div>
+  {% with fantasia=profile.nome_fantasia contact=profile.contact_name %}
+    {% if fantasia %}
+      <div>
+        <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
+        <dd class="font-medium text-[var(--text-primary)]">{{ fantasia }}</dd>
+      </div>
+    {% endif %}
+    {% if contact %}
+      <div>
+        <dt class="text-[var(--text-secondary)]">{% trans "Contato principal" %}</dt>
+        <dd class="font-medium text-[var(--text-primary)]">{{ contact }}</dd>
+      </div>
+    {% endif %}
+    {% if not fantasia and not contact %}
+      <div>
+        <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
+        <dd class="font-medium text-[var(--text-primary)]">@{{ profile.username }}</dd>
+      </div>
+    {% endif %}
+    {% if fantasia or contact %}
+      <div>
+        <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
+        <dd class="font-medium text-[var(--text-primary)]">@{{ profile.username }}</dd>
+      </div>
+    {% endif %}
+  {% endwith %}
   {% if profile.email %}
   <div>
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>

@@ -7,7 +7,7 @@ usuário e, opcionalmente, o núcleo de destino.
 ## Etapas
 
 1. **Nome de usuário** – identificação única. Validar caracteres permitidos.
-2. **Nome completo** – texto livre obrigatório.
+2. **Contato principal** – nome da pessoa responsável pelo cadastro.
 3. **CPF** – deve ser válido e único (`RegexValidator`).
 4. **E‑mail** – usado para comunicação e confirmação. Deve ser único.
 5. **Senha** – validação de força com `validate_password`.

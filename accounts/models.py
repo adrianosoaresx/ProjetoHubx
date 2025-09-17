@@ -253,6 +253,46 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
                 pass
         return "https://via.placeholder.com/160"
 
+    def get_contact_name(self) -> str:
+        """Nome utilizado para contato (first_name/last_name)."""
+
+        parts: list[str] = []
+        for part in (self.first_name, self.last_name):
+            if part:
+                cleaned = part.strip()
+                if cleaned:
+                    parts.append(cleaned)
+        return " ".join(parts)
+
+    @property
+    def contact_name(self) -> str:
+        return self.get_contact_name()
+
+    def get_display_name(self) -> str:
+        """Nome preferencial exibido para o usuário."""
+
+        candidates = (
+            self.nome_fantasia,
+            self.get_contact_name(),
+            self.username,
+            self.email,
+        )
+        for value in candidates:
+            if not value:
+                continue
+            if isinstance(value, str):
+                value = value.strip()
+            if value:
+                return str(value)
+        return ""
+
+    @property
+    def display_name(self) -> str:
+        return self.get_display_name()
+
+    def get_full_name(self) -> str:  # type: ignore[override]
+        return self.get_display_name()
+
     # Relacionamentos sociais
     connections = models.ManyToManyField("self", blank=True)
     followers = models.ManyToManyField(

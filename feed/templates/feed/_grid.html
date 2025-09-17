@@ -27,15 +27,15 @@
           <div class="flex items-center gap-3">
             <a href="{% url 'accounts:perfil_publico_uuid' post.autor.public_id %}" class="relative z-20 flex-shrink-0">
               {% if post.autor.avatar %}
-                <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="h-12 w-12 rounded-full border-2 border-[var(--bg-primary)] object-cover shadow-md transition duration-300 group-hover:scale-105" loading="lazy">
+                <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.display_name|default:post.autor.username }}" class="h-12 w-12 rounded-full border-2 border-[var(--bg-primary)] object-cover shadow-md transition duration-300 group-hover:scale-105" loading="lazy">
               {% else %}
-                <div class="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-secondary)] shadow-inner" role="img" aria-label="{{ post.autor.username }}">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--bg-tertiary)] text-lg font-semibold text-[var(--text-secondary)] shadow-inner" role="img" aria-label="{{ post.autor.display_name|default:post.autor.username }}">
                   {{ post.autor.username|first|upper }}
                 </div>
               {% endif %}
             </a>
             <div class="min-w-0">
-              <p class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ post.autor.get_full_name|default:post.autor.username }}</p>
+              <p class="truncate text-sm font-semibold text-[var(--text-primary)]">{{ post.autor.display_name }}</p>
               <time datetime="{{ post.created_at|date:'c' }}" class="mt-0.5 flex items-center gap-1 text-xs text-[var(--text-muted)]">
                 {% lucide 'clock' class='h-3.5 w-3.5' %}
                 {{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}

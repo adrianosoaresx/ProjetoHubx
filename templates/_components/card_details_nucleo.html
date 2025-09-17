@@ -8,7 +8,7 @@
     <dt class="text-[var(--text-secondary)]">{% trans 'Coordenador' %}</dt>
     <dd class="font-medium">
       {% with coord=nucleo.coordenadores.first %}
-        {% if coord %}{{ coord.get_full_name|default:coord.username }}{% else %}-{% endif %}
+        {% if coord %}{{ coord.display_name }}{% else %}-{% endif %}
       {% endwith %}
     </dd>
   </div>

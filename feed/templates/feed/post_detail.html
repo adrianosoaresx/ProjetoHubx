@@ -19,15 +19,15 @@
     <div class="card-body space-y-4">
     <div class="flex items-center gap-4">
       {% if post.autor.avatar %}
-        <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+        <img src="{{ post.autor.avatar.url }}" alt="{{ post.autor.display_name|default:post.autor.username }}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
       {% else %}
-        <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.username }}">
+        <div class="w-10 h-10 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--text-secondary)] font-bold" role="img" aria-label="{{ post.autor.display_name|default:post.autor.username }}">
           {{ post.autor.username|first|upper }}
         </div>
       {% endif %}
       <div>
-        <p class="text-sm font-medium text-[var(--text-primary)]">{{ post.autor.get_full_name|default:post.autor.username }}</p>
-  <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+        <p class="text-sm font-medium text-[var(--text-primary)]">{{ post.autor.display_name }}</p>
+        <p class="text-xs text-[var(--text-muted)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
       </div>
     </div>
 
