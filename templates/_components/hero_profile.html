@@ -33,8 +33,6 @@
 
           <!-- Linha 2: @usuario e WhatsApp -->
           <div class="mt-3 flex flex-wrap items-center gap-2">
-
-
             {% with redes=profile.redes_sociais %}
               {% if redes %}
                 {% for rede, url in redes.items %}
@@ -67,42 +65,7 @@
 
 
           </div>
-          <!-- Linha 3: Botões -->
 
-          <nav class="mt-4 flex flex-wrap items-center gap-2" aria-label="{% trans 'Seções do perfil' %}">
-             <a
-              href="{% url 'accounts:perfil_info_partial' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="info"
-              data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
-              aria-controls="perfil-content"
-            >
-              {% trans "Info" %}
-            </a>
-            <a
-              href="{% url 'accounts:perfil_portfolio' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="portfolio"
-              data-perfil-url="{% url 'accounts:perfil_portfolio' %}"
-              data-perfil-default="true"
-              aria-controls="perfil-content"
-            >
-              {% trans "Portfólio" %}
-            </a>
-            <a
-              href="{% url 'accounts:perfil_mural' %}"
-              class="btn-hero"
-              data-perfil-nav
-              data-perfil-section="mural"
-              data-perfil-url="{% url 'accounts:perfil_mural' %}"
-              aria-controls="perfil-content"
-            >
-              {% trans "Mural" %}
-            </a>
- 
-          </nav>
 
         </div>
 
