@@ -32,7 +32,7 @@ class CustomUserCreationForm(UserCreationForm):
             "razao_social",
             "nome_fantasia",
             "avatar",
-            "first_name",
+            "contato",
             "biografia",
             "cover",
             "phone_number",
@@ -41,7 +41,7 @@ class CustomUserCreationForm(UserCreationForm):
             "organizacao",
             "nucleo",
         )
-        labels = {"first_name": "Contato"}
+        labels = {"contato": "Contato"}
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -102,7 +102,7 @@ class CustomUserChangeForm(UserChangeForm):
             "razao_social",
             "nome_fantasia",
             "avatar",
-            "first_name",
+            "contato",
             "biografia",
             "cover",
             "phone_number",
@@ -111,7 +111,7 @@ class CustomUserChangeForm(UserChangeForm):
             "organizacao",
             "nucleo",
         )
-        labels = {"first_name": "Contato"}
+        labels = {"contato": "Contato"}
 
     def clean_cnpj(self):
         cnpj = self.cleaned_data.get("cnpj")
@@ -130,7 +130,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 
 class InformacoesPessoaisForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=150, label="Contato")
+    contato = forms.CharField(max_length=150, label="Contato")
     cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
     cnpj = forms.CharField(max_length=18, required=False, label="CNPJ")
     razao_social = forms.CharField(max_length=255, required=False, label="Razão social")
@@ -143,7 +143,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
-            "first_name",
+            "contato",
             "username",
             "email",
             "cpf",
@@ -167,7 +167,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         "nome_fantasia",
         "cnpj",
         "biografia",
-        "first_name",
+        "contato",
         "cpf",
         "phone_number",
         "whatsapp",
@@ -188,7 +188,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.order_fields(self.field_order)
         if self.instance.pk:
-            self.initial["first_name"] = self.instance.first_name
+            self.initial["contato"] = self.instance.contato
             self.initial["cpf"] = self.instance.cpf
             self.initial["cnpj"] = self.instance.cnpj
             self.initial["razao_social"] = self.instance.razao_social
@@ -221,7 +221,7 @@ class InformacoesPessoaisForm(forms.ModelForm):
 
     def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
-        user.first_name = self.cleaned_data.get("first_name", "")
+        user.contato = self.cleaned_data.get("contato", "")
         user.cpf = self.cleaned_data.get("cpf")
         user.cnpj = self.cleaned_data.get("cnpj")
         user.razao_social = self.cleaned_data.get("razao_social")

@@ -23,7 +23,7 @@ def send_password_reset_email(token_id: int) -> None:
     enviar_para_usuario(
         token.usuario,
         "password_reset",
-        {"url": url, "nome": token.usuario.first_name},
+        {"url": url, "nome": token.usuario.contato},
     )
 
 
@@ -36,7 +36,7 @@ def send_confirmation_email(token_id: int) -> None:
     enviar_para_usuario(
         token.usuario,
         "email_confirmation",
-        {"url": url, "nome": token.usuario.first_name},
+        {"url": url, "nome": token.usuario.contato},
     )
 
 
@@ -49,7 +49,7 @@ def send_cancel_delete_email(token_id: int) -> None:
     enviar_para_usuario(
         token.usuario,
         "cancel_delete",
-        {"url": url, "nome": token.usuario.first_name},
+        {"url": url, "nome": token.usuario.contato},
     )
 
 

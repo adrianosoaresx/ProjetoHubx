@@ -116,6 +116,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         null=True,
         help_text="Ex.: +55 48 99999-0000",
     )
+    contato = models.CharField("Contato", max_length=150, blank=True)
     cpf = models.CharField(
         "CPF",
         max_length=14,  # 000.000.000-00
@@ -186,7 +187,8 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         verbose_name=_("Núcleo"),
     )
 
-    # Remove o campo herdado ``last_name`` do AbstractUser
+    # Remove os campos herdados ``first_name`` e ``last_name`` do AbstractUser
+    first_name = None  # type: ignore[assignment]
     last_name = None  # type: ignore[assignment]
 
     objects = CustomUserManager()
@@ -195,9 +197,9 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
     REQUIRED_FIELDS: list[str] = ["username"]
 
     def get_full_name(self) -> str:
-        """Retorna apenas o campo de contato (first_name)."""
+        """Retorna apenas o campo de contato (``contato``)."""
 
-        contato = (self.first_name or "").strip()
+        contato = (self.contato or "").strip()
         if contato:
             return contato
         return self.username or self.email
@@ -267,15 +269,10 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         return "https://via.placeholder.com/160"
 
     def get_contact_name(self) -> str:
-        """Nome utilizado para contato (first_name/last_name)."""
+        """Nome utilizado para contato a partir do campo ``contato``."""
 
-        parts: list[str] = []
-        for part in (self.first_name, self.last_name):
-            if part:
-                cleaned = part.strip()
-                if cleaned:
-                    parts.append(cleaned)
-        return " ".join(parts)
+        contato = (self.contato or "").strip()
+        return contato
 
     @property
     def contact_name(self) -> str:

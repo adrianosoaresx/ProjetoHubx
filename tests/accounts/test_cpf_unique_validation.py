@@ -12,7 +12,7 @@ def test_cpf_duplicate_validation():
     user = User.objects.create_user(email="b@example.com", username="b", cpf="529.982.247-25")
     form = InformacoesPessoaisForm(
         data={
-            "first_name": "Teste",
+            "contato": "Teste",
             "username": "b",
             "email": "b@example.com",
             "cpf": "390.533.447-05",
@@ -29,7 +29,7 @@ def test_cnpj_duplicate_validation():
     user = User.objects.create_user(email="d@example.com", username="d", cnpj="00.000.000/0002-72")
     form = InformacoesPessoaisForm(
         data={
-            "first_name": "Teste",
+            "contato": "Teste",
             "username": "d",
             "email": "d@example.com",
             "cpf": "",

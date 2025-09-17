@@ -19,7 +19,7 @@ def test_email_change_generates_confirmation_token(client):
     resp = client.post(
         reverse("accounts:perfil_sections_info"),
         {
-            "first_name": "Nome",
+            "contato": "Nome",
             "username": "u",
             "email": "new@example.com",
             "cpf": "529.982.247-25",
