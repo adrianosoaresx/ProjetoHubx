@@ -40,10 +40,12 @@
   </div>
   {% endif %}
 
+  {% if user.phone_number %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number.as_national }}</dd>
   </div>
+  {% endif %}
 
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
