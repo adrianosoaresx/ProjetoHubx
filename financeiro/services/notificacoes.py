@@ -18,7 +18,7 @@ def enviar_cobranca(user: Any, lancamento: Any) -> None:
     """Envia notificação de nova cobrança a um usuário."""
 
     context = {
-        "nome": getattr(user, "first_name", ""),
+        "nome": getattr(user, "contato", ""),
         "valor": lancamento.valor,
         "vencimento": lancamento.data_vencimento,
         "link_pagamento": "#",
@@ -68,7 +68,7 @@ def enviar_aviso_vencimento(user: Any, lancamento: Any) -> None:
 
 def enviar_distribuicao(user: Any, evento: Any, valor: Any) -> None:
     """Notifica sobre distribuição de receita de evento."""
-    context = {"nome": getattr(user, "first_name", ""), "evento": evento.titulo, "valor": valor}
+    context = {"nome": getattr(user, "contato", ""), "evento": evento.titulo, "valor": valor}
     try:
         enviar_para_usuario(user, "financeiro_distribuicao_receita", context)
     except Exception as exc:  # pragma: no cover
@@ -77,7 +77,7 @@ def enviar_distribuicao(user: Any, evento: Any, valor: Any) -> None:
 
 def enviar_ajuste(user: Any, lancamento: Any, delta: Any) -> None:
     """Notifica ajuste de lançamento."""
-    context = {"nome": getattr(user, "first_name", ""), "valor": delta, "lancamento": lancamento.id}
+    context = {"nome": getattr(user, "contato", ""), "valor": delta, "lancamento": lancamento.id}
     try:
         enviar_para_usuario(user, "financeiro_ajuste_lancamento", context)
     except Exception as exc:  # pragma: no cover
@@ -87,7 +87,7 @@ def enviar_ajuste(user: Any, lancamento: Any, delta: Any) -> None:
 def enviar_aporte(user: Any, lancamento: Any) -> None:
     """Notifica recebimento de aporte."""
     context = {
-        "nome": getattr(user, "first_name", ""),
+        "nome": getattr(user, "contato", ""),
         "valor": lancamento.valor,
         "descricao": getattr(lancamento, "descricao", ""),
     }
@@ -100,7 +100,7 @@ def enviar_aporte(user: Any, lancamento: Any) -> None:
 def enviar_estorno_aporte(user: Any, lancamento: Any) -> None:
     """Notifica estorno de aporte."""
     context = {
-        "nome": getattr(user, "first_name", ""),
+        "nome": getattr(user, "contato", ""),
         "valor": lancamento.valor,
         "descricao": getattr(lancamento, "descricao", ""),
     }

@@ -153,7 +153,7 @@ def test_relatorio_diario_renderiza_placeholders(settings):
         corpo="Olá {{ nome }}",
         canal=Canal.EMAIL,
     )
-    body = Template(template.corpo).render(Context({"nome": user.first_name}))
+    body = Template(template.corpo).render(Context({"nome": user.contato}))
     NotificationLog.objects.create(
         user=user,
         template=template,

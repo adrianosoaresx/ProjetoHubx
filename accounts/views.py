@@ -376,7 +376,7 @@ def perfil_section(request, section):
                 else User.objects.none()
             )
             if q:
-                filters = Q(username__icontains=q) | Q(first_name__icontains=q)
+                filters = Q(username__icontains=q) | Q(contato__icontains=q)
                 connections = connections.filter(filters)
                 connection_requests = connection_requests.filter(filters)
 
@@ -456,7 +456,7 @@ def perfil_conexoes(request):
     )
 
     if q:
-        filters = Q(username__icontains=q) | Q(first_name__icontains=q)
+        filters = Q(username__icontains=q) | Q(contato__icontains=q)
         connections = connections.filter(filters)
         connection_requests = connection_requests.filter(filters)
 
@@ -1022,7 +1022,7 @@ def termos(request):
                     user = User.objects.create(
                         username=username,
                         email=email_val,
-                        first_name=contato,
+                        contato=contato,
                         password=pwd_hash,
                         cpf=cpf_val,
                         user_type=tipo_mapping[token_obj.tipo_destino],
@@ -1092,7 +1092,7 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
         # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
         q = self.request.GET.get("q")
         if q:
-            qs = qs.filter(Q(username__icontains=q) | Q(first_name__icontains=q))
+            qs = qs.filter(Q(username__icontains=q) | Q(contato__icontains=q))
         # Ordenação alfabética por username (case-insensitive)
         qs = qs.annotate(_user=Lower("username"))
         return qs.order_by("_user")

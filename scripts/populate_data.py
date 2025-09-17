@@ -61,7 +61,7 @@ def main() -> None:
             email="root@hubx.com.br",
             defaults={
                 "username": "root",
-                "first_name": "Root User",
+                "contato": "Root User",
                 "is_staff": True,
                 "is_superuser": True,
                 "user_type": "root",
@@ -82,7 +82,7 @@ def main() -> None:
                 email=email,
                 defaults={
                     "username": username,
-                    "first_name": contato,
+                    "contato": contato,
                     "is_staff": True,
                     "is_superuser": False,
                     "user_type": "admin",
@@ -204,7 +204,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": f"Associado {i + 1}",
+                        "contato": f"Associado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "associado",
@@ -233,7 +233,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": f"Nucleado {i + 1}",
+                        "contato": f"Nucleado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "nucleado",
@@ -274,7 +274,7 @@ def main() -> None:
                     email=email,
                     defaults={
                         "username": username,
-                        "first_name": f"Convidado {i + 1}",
+                        "contato": f"Convidado {i + 1}",
                         "is_staff": False,
                         "is_superuser": False,
                         "user_type": "convidado",
