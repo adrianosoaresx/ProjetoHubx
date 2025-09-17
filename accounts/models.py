@@ -17,6 +17,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 from core.fields import EncryptedCharField
 from core.models import SoftDeleteModel, TimeStampedModel
+from organizacoes.utils import validate_cnpj
 
 from .validators import cpf_validator
 
@@ -124,6 +125,14 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         unique=True,
         validators=[cpf_validator],
     )
+    cnpj = models.CharField(
+        "CNPJ",
+        max_length=18,
+        blank=True,
+        null=True,
+        unique=True,
+    )
+    razao_social = models.CharField("Razão Social", max_length=255, blank=True, null=True)
     biografia = models.TextField(blank=True)
     cover = models.ImageField(upload_to="users/capas/", null=True, blank=True)
     whatsapp = models.CharField(max_length=20, blank=True)
@@ -205,9 +214,16 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
         return UserType.CONVIDADO.value
 
     def save(self, *args, **kwargs):
+        if self.cnpj:
+            self.cnpj = validate_cnpj(self.cnpj)
         if self.user_type == UserType.ROOT.value:
             self.nucleo = None  # Garantir que usuários root não interajam com núcleos
         super().save(*args, **kwargs)
+
+    def clean(self):  # type: ignore[override]
+        super().clean()
+        if self.cnpj:
+            self.cnpj = validate_cnpj(self.cnpj)
 
     def delete(
         self,

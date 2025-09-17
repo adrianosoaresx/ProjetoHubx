@@ -5,6 +5,7 @@ from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.core.cache import cache
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -14,6 +15,7 @@ from tokens.utils import get_client_ip
 from .models import AccountToken, SecurityEvent, UserMedia
 from .tasks import send_confirmation_email
 from .validators import cpf_validator
+from organizacoes.utils import validate_cnpj
 
 User = get_user_model()
 
@@ -26,6 +28,8 @@ class CustomUserCreationForm(UserCreationForm):
         fields = (
             "email",
             "cpf",
+            "cnpj",
+            "razao_social",
             "avatar",
             "first_name",
             "last_name",
@@ -50,6 +54,18 @@ class CustomUserCreationForm(UserCreationForm):
             return cpf
         cpf_validator(cpf)
         return cpf
+
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get("cnpj")
+        if not cnpj:
+            return cnpj
+        try:
+            cnpj = validate_cnpj(cnpj)
+        except DjangoValidationError as exc:
+            raise forms.ValidationError(exc.messages)
+        if User.objects.filter(cnpj=cnpj).exists():
+            raise forms.ValidationError(_("CNPJ já cadastrado."))
+        return cnpj
 
     def clean_whatsapp(self):
         whatsapp = self.cleaned_data.get("whatsapp")
@@ -78,6 +94,8 @@ class CustomUserChangeForm(UserChangeForm):
         fields = (
             "email",
             "cpf",
+            "cnpj",
+            "razao_social",
             "avatar",
             "first_name",
             "last_name",
@@ -90,11 +108,28 @@ class CustomUserChangeForm(UserChangeForm):
             "nucleo",
         )
 
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get("cnpj")
+        if not cnpj:
+            return cnpj
+        try:
+            cnpj = validate_cnpj(cnpj)
+        except DjangoValidationError as exc:
+            raise forms.ValidationError(exc.messages)
+        qs = User.objects.all()
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.filter(cnpj=cnpj).exists():
+            raise forms.ValidationError(_("CNPJ já cadastrado."))
+        return cnpj
+
 
 class InformacoesPessoaisForm(forms.ModelForm):
     first_name = forms.CharField(max_length=150, label="Nome")
     last_name = forms.CharField(max_length=150, label="Sobrenome")
     cpf = forms.CharField(max_length=14, required=False, label="CPF", validators=[cpf_validator])
+    cnpj = forms.CharField(max_length=18, required=False, label="CNPJ")
+    razao_social = forms.CharField(max_length=255, required=False, label="Razão social")
     facebook = forms.URLField(required=False, label=_("Facebook"), assume_scheme="https")
     twitter = forms.URLField(required=False, label=_("Twitter"), assume_scheme="https")
     instagram = forms.URLField(required=False, label=_("Instagram"), assume_scheme="https")
@@ -108,6 +143,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
             "username",
             "email",
             "cpf",
+            "cnpj",
+            "razao_social",
             "avatar",
             "cover",
             "biografia",
@@ -125,6 +162,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
         "username",
         "email",
         "cpf",
+        "cnpj",
+        "razao_social",
         "avatar",
         "cover",
         "biografia",
@@ -147,6 +186,8 @@ class InformacoesPessoaisForm(forms.ModelForm):
             self.initial["first_name"] = self.instance.first_name
             self.initial["last_name"] = self.instance.last_name
             self.initial["cpf"] = self.instance.cpf
+            self.initial["cnpj"] = self.instance.cnpj
+            self.initial["razao_social"] = self.instance.razao_social
             self.original_email = self.instance.email
         else:
             self.original_email = None
@@ -161,11 +202,25 @@ class InformacoesPessoaisForm(forms.ModelForm):
             raise forms.ValidationError(_("CPF já cadastrado."))
         return cpf
 
+    def clean_cnpj(self):
+        cnpj = self.cleaned_data.get("cnpj")
+        if not cnpj:
+            return cnpj
+        try:
+            cnpj = validate_cnpj(cnpj)
+        except DjangoValidationError as exc:
+            raise forms.ValidationError(exc.messages)
+        if User.objects.exclude(pk=self.instance.pk).filter(cnpj=cnpj).exists():
+            raise forms.ValidationError(_("CNPJ já cadastrado."))
+        return cnpj
+
     def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
         user.first_name = self.cleaned_data.get("first_name", "")
         user.last_name = self.cleaned_data.get("last_name", "")
         user.cpf = self.cleaned_data.get("cpf")
+        user.cnpj = self.cleaned_data.get("cnpj")
+        user.razao_social = self.cleaned_data.get("razao_social")
         redes = {}
         for field in ("facebook", "twitter", "instagram", "linkedin"):
             value = self.cleaned_data.get(field)
