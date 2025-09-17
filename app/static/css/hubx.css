@@ -341,15 +341,18 @@
 }
 
 .btn-primary {
-    @apply text-[var(--text-inverse)] border;
-    background-color: var(--primary);
-    border-color: var(--primary);
-  }
-  .btn-primary:hover:not(:disabled) {
-    @apply -translate-y-px shadow-card-md;
-    background-color: var(--primary-hover);
-    border-color: var(--primary-hover);
-  }
+  @apply text-[var(--text-inverse)] border;
+  color: var(--text-inverse);
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  @apply -translate-y-px shadow-card-md text-[var(--text-inverse)];
+  color: var(--text-inverse);
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
   .btn-secondary {
     @apply border bg-[var(--bg-secondary)] text-[var(--text-primary)];
     border-color: var(--border);

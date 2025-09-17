@@ -1,4 +1,7 @@
 {% load i18n %}
 {% if is_admin_org %}
-<a href="{% url 'eventos:evento_novo' %}" class="btn btn-primary">{% trans 'Novo evento' %}</a>
+<a href="{% url 'eventos:evento_novo' %}"
+   class="btn btn-primary text-[var(--text-inverse)] hover:text-[var(--text-inverse)] focus-visible:text-[var(--text-inverse)] active:text-[var(--text-inverse)]">
+  {% trans 'Novo evento' %}
+</a>
 {% endif %}
