@@ -22,3 +22,22 @@ def test_cpf_duplicate_validation():
     )
     assert not form.is_valid()
     assert "cpf" in form.errors
+
+
+@pytest.mark.django_db
+def test_cnpj_duplicate_validation():
+    User.objects.create_user(email="c@example.com", username="c", cnpj="00.000.000/0001-91")
+    user = User.objects.create_user(email="d@example.com", username="d", cnpj="00.000.000/0002-72")
+    form = InformacoesPessoaisForm(
+        data={
+            "first_name": "Teste",
+            "last_name": "Silva",
+            "username": "d",
+            "email": "d@example.com",
+            "cpf": "",
+            "cnpj": "00.000.000/0001-91",
+        },
+        instance=user,
+    )
+    assert not form.is_valid()
+    assert "cnpj" in form.errors
