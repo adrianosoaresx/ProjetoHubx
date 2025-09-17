@@ -7,6 +7,12 @@
     <dd class="font-medium text-[var(--text-primary)]">{{ user.razao_social }}</dd>
   </div>
   {% endif %}
+  {% if user.nome_fantasia %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.nome_fantasia }}</dd>
+  </div>
+  {% endif %}
   {% if user.cnpj %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
