@@ -20,13 +20,6 @@
   </div>
   {% endif %}
 
-  {% if profile.date_joined %}
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
-  </div>
-  {% endif %}
-
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.endereco }}</dd>
@@ -39,29 +32,39 @@
     <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.cep }}</dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
-    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
-  </div>
+
   {% if user.contato %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.contato }}</dd>
   </div>
   {% endif %}
+
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ user.phone_number }}</dd>
+  </div>
+
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ user.email }}</dd>
   </div>
 
 </dl>
-
+{% if profile.date_joined %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
+  </div>
+{% endif %}
 {% if bio %}
 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
   <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
   <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ bio }}</p>
 </div>
 {% endif %}
+
+
 
 <div class="mt-6 text-right">
   <a href="{% url 'accounts:perfil_sections_info' %}" class="text-primary font-medium hover:underline">{% trans "Editar perfil" %}</a>
