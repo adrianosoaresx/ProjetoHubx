@@ -36,7 +36,7 @@
           {% include "_partials/cards/total_card.html" with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_realizados %}
         </div>
       </details>
-        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2" role="list" aria-label="{% trans 'Lista de eventos' %}">
+        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{% trans 'Lista de eventos' %}">
           {% for evento in eventos %}
             {% include '_components/card_evento.html' %}
           {% empty %}

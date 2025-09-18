@@ -1,5 +1,5 @@
 {% load i18n %}
-<div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
+<div class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
   {% if page_obj.object_list %}
     {% for part in page_obj.object_list %}
       {% include 'nucleos/partials/membro_card.html' with part=part %}
