@@ -294,6 +294,10 @@ def test_nucleo_detail_view_queries(admin_user, organizacao, django_assert_num_q
         obj = qs.get()
         view.object = obj
         ctx = view.get_context_data()
+        page_obj = ctx["page_obj"]
+        assert page_obj.paginator.count == len(members)
+        for p in page_obj.object_list:
+            _ = p.user
         for p in ctx["membros_ativos"]:
             _ = p.user
         for p in ctx["coordenadores"]:

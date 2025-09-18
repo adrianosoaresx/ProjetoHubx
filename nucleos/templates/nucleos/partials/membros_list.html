@@ -1,0 +1,12 @@
+{% load i18n %}
+<div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
+  {% if page_obj.object_list %}
+    {% for part in page_obj.object_list %}
+      {% include 'nucleos/partials/membro_card.html' with part=part %}
+    {% endfor %}
+  {% else %}
+    <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Sem membros.' %}</p>
+  {% endif %}
+</div>
+{% url 'nucleos:membros_list' object.pk as membros_list_url %}
+{% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring hx_get=membros_list_url hx_target='#membros-list' hx_push_url='false' %}

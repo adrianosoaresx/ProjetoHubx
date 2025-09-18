@@ -24,34 +24,19 @@
     </div>
   </details>
 
-  {% include '_components/nucleo_detail_nav.html' with nucleo=object current_section=current_section %}
+    <div id="tab-panels" class="mt-6">
+      <!-- Painel: Membros -->
+      <div class="tab-panel" data-tab="membros">
+        {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+        <div
+          id="membros-list"
+          hx-get="{{ membros_list_url }}?page={{ page_obj.number }}{% if querystring %}&{{ querystring }}{% endif %}"
+          hx-trigger="load"
+          hx-target="#membros-list"
+          hx-swap="innerHTML"
+        >
+          {% include 'nucleos/partials/membros_list.html' %}
 
-  <div id="nucleo-detail-content" class="mt-6">
-    {% if current_section == 'eventos' %}
-      <div class="card-grid mt-2 gap-4">
-        {% for evento in eventos %}
-          {% include '_components/card_evento.html' with evento=evento %}
-        {% empty %}
-          <p class="text-sm text-[var(--text-muted)]">{% trans 'Sem eventos.' %}</p>
-        {% endfor %}
-      </div>
-    {% elif current_section == 'feed' %}
-      <div class="space-y-4">
-        {% if pode_postar %}
-          <div>
-            <button type="button" class="btn btn-primary" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
-          </div>
-        {% endif %}
-        {% include 'feed/_grid.html' with posts=nucleo_posts %}
-      </div>
-    {% else %}
-      <div class="space-y-6">
-        <div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
-          {% for part in membros_ativos %}
-            {% include 'nucleos/partials/membro_card.html' with part=part %}
-          {% empty %}
-            <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Sem membros.' %}</p>
-          {% endfor %}
         </div>
 
         {% if membros_pendentes %}
