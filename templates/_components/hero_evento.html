@@ -1,0 +1,39 @@
+{% load i18n %}
+<section class="relative isolate overflow-hidden text-white">
+  {% if evento.cover %}
+    <div class="absolute inset-0">
+      <img src="{{ evento.cover.url }}" alt="" class="h-full w-full object-cover" loading="lazy">
+      <div class="absolute inset-0 bg-black/60"></div>
+    </div>
+  {% else %}
+    <div class="absolute inset-0 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
+         style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
+  {% endif %}
+  <div class="relative max-w-7xl mx-auto px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+    <div class="flex items-center gap-4">
+      <div class="shrink-0">
+        {% if evento.avatar %}
+          <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
+        {% else %}
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
+               role="img" aria-label="{{ evento.titulo }}">
+            {{ evento.titulo|slice:':1'|upper }}
+          </div>
+        {% endif %}
+      </div>
+      <h1 class="text-3xl font-bold md:text-4xl">{{ evento.titulo }}</h1>
+    </div>
+    {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
+      <div class="flex flex-wrap gap-3 md:justify-end">
+        {% if perms.eventos.change_evento %}
+          <a href="{% url 'eventos:evento_editar' evento.pk %}" class="btn btn-secondary"
+             aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
+        {% endif %}
+        {% if perms.eventos.delete_evento %}
+          <a href="{% url 'eventos:evento_excluir' evento.pk %}" class="btn btn-danger"
+             aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
