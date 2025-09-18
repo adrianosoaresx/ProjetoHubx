@@ -1,8 +1,9 @@
 <!-- Neural Network Background Templates for Django -->
 <!-- Each background represents a different module with unique neural patterns -->
 
+{% if not bg_type or bg_type == 'nucleos' %}
 <!-- Núcleos Background -->
-<div class="neural-bg-nucleos absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-nucleos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="nucleos-gradient" cx="50%" cy="50%" r="50%">
@@ -39,9 +40,11 @@
           stroke="#3b82f6" stroke-width="1.5" opacity="0.4" fill="none"/>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'eventos' %}
 <!-- Eventos Associados Background -->
-<div class="neural-bg-eventos absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-eventos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="eventos-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -77,9 +80,11 @@
     </circle>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'feed' %}
 <!-- Feed Background -->
-<div class="neural-bg-feed absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-feed absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Vertical data streams -->
     <g opacity="0.8">
@@ -112,9 +117,11 @@
     <path d="M150,350 L300,330 L450,370 L600,350" stroke="#1e40af" stroke-width="1" opacity="0.3" fill="none"/>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'dashboard' %}
 <!-- Dashboard Background -->
-<div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-dashboard absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Grid pattern -->
     <defs>
@@ -151,9 +158,11 @@
     </g>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'financeiro' %}
 <!-- Financeiro Background -->
-<div class="neural-bg-financeiro absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-financeiro absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Growth curve -->
     <path d="M50,550 Q200,500 350,400 Q500,300 650,200 Q700,150 750,100" 
@@ -184,9 +193,11 @@
           stroke="#3b82f6" stroke-width="1.5" opacity="0.5" fill="none"/>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'tokens' %}
 <!-- Tokens Background -->
-<div class="neural-bg-tokens absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-tokens absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Blockchain-like structure -->
     <g opacity="0.8">
@@ -219,9 +230,11 @@
     </g>
   </svg>
 </div>
+{% endif %}
 
+{% if not bg_type or bg_type == 'configuracao' %}
 <!-- Configuração Background -->
-<div class="neural-bg-configuracao absolute inset-0 overflow-hidden">
+<div class="neural-bg-base neural-bg-configuracao absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Gear system -->
     <g opacity="0.8">
@@ -265,3 +278,4 @@
     <animateTransform attributeName="transform" type="rotate" values="0 400 300;360 400 300" dur="20s" repeatCount="indefinite"/>
   </svg>
 </div>
+{% endif %}
