@@ -1,6 +1,12 @@
 {% load i18n %}
-<section class="bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if style %} {{ style }}{% endif %}">
-  <div class="max-w-7xl mx-auto px-4 py-10">
+<section class="{% if neural_background %}hero-with-neural {% endif %}bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white" style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if style %} {{ style }}{% endif %}">
+  {% if neural_background %}
+    <div class="neural-bg-base" aria-hidden="true">
+      {% include 'backgrounds/neural_backgrounds.html' with bg_type=neural_background only %}
+    </div>
+    <div class="hero-overlay" aria-hidden="true"></div>
+  {% endif %}
+  <div class="{% if neural_background %}hero-content relative z-10 w-full {% endif %}max-w-7xl mx-auto px-4 py-10">
     {% if breadcrumb_template %}
       <div class="mb-4">{% include breadcrumb_template %}</div>
     {% endif %}

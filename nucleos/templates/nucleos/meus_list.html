@@ -4,7 +4,9 @@
 {% block title %}{% trans "Meus Núcleos" %}{% endblock %}
 
 {% block hero %}
-  {% include '_components/hero_nucleo.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' %}
+
+  {% include '_components/hero.html' with title=_('Meus Núcleos') action_template='nucleos/hero_meus_list_action.html' neural_background='nucleos' %}
+
 {% endblock %}
 
 {% block content %}
