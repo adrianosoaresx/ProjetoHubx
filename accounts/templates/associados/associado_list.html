@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+
 <section class="max-w-6xl mx-auto py-12 px-4">
   <div class="card-header space-y-4">
     {% include '_components/search_form.html' with q=request.GET.q %}
@@ -31,10 +32,9 @@
     {% for user in associados %}
       <div role="listitem">
         {% include '_components/card_usuario.html' with user=user %}
+
       </div>
-    {% empty %}
-      <p class="text-[var(--text-muted)]">{% trans "Nenhum associado encontrado." %}</p>
-    {% endfor %}
+      {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
+    </div>
   </div>
-</section>
 {% endblock %}
