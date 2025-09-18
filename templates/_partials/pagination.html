@@ -3,14 +3,22 @@
 <nav class="mt-6 flex justify-center items-center gap-2 text-sm" aria-label="{% trans 'Paginação' %}">
   {% if page_obj.has_previous %}
     <a href="?page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-       class="px-3 py-1 border border-[var(--border)] hover:bg-[var(--bg-tertiary)] rounded">
+       class="px-3 py-1 border border-[var(--border)] hover:bg-[var(--bg-tertiary)] rounded"
+       {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+       {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
+       {% if hx_push_url is not None and hx_push_url != '' %}hx-push-url="{{ hx_push_url|stringformat:'s'|lower }}"{% endif %}
+       {% if hx_get %}hx-get="{{ hx_get }}{% if '?' in hx_get %}&{% else %}?{% endif %}page={{ page_obj.previous_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"{% endif %}>
       {% trans 'Anterior' %}
     </a>
   {% endif %}
   <span class="text-[var(--text-secondary)]">{% blocktrans %}Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}{% endblocktrans %}</span>
   {% if page_obj.has_next %}
     <a href="?page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"
-       class="px-3 py-1 border border-[var(--border)] hover:bg-[var(--bg-tertiary)] rounded">
+       class="px-3 py-1 border border-[var(--border)] hover:bg-[var(--bg-tertiary)] rounded"
+       {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+       {% if hx_indicator %}hx-indicator="{{ hx_indicator }}"{% endif %}
+       {% if hx_push_url is not None and hx_push_url != '' %}hx-push-url="{{ hx_push_url|stringformat:'s'|lower }}"{% endif %}
+       {% if hx_get %}hx-get="{{ hx_get }}{% if '?' in hx_get %}&{% else %}?{% endif %}page={{ page_obj.next_page_number }}{% if querystring %}&{{ querystring }}{% endif %}"{% endif %}>
       {% trans 'Próxima' %}
     </a>
   {% endif %}

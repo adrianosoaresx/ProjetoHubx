@@ -11,7 +11,10 @@
 
 <div class="py-12 card px-4">
   <div class="card-header space-y-4">
-    {% include '_components/search_form.html' with q=request.GET.q %}
+    {% include '_components/search_form.html' with q=request.GET.q hx_get=request.path hx_target='#associados-grid' hx_push_url='true' hx_indicator='#associados-loading' %}
+    <div id="associados-loading" class="htmx-indicator text-sm text-[var(--text-secondary)]">
+      {% trans "Carregando..." %}
+    </div>
   </div>
   <!-- Cards de totais -->
   <details class="card mb-6" open>
@@ -28,15 +31,9 @@
       {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados icon_svg=icon_nucleados %}
     </div>
   </details>
-  <div role="list" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
-    {% for user in associados %}
-      <div role="listitem">
-        {% include '_components/card_usuario.html' with user=user %}
-      </div>
-    {% endfor %}
+  <div id="associados-grid">
+    {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
   </div>
-  
-  {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
   
 </div>
 

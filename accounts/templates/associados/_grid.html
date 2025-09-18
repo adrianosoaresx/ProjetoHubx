@@ -1,0 +1,9 @@
+<div role="list" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
+  {% for user in associados %}
+    <div role="listitem">
+      {% include '_components/card_usuario.html' with user=user %}
+    </div>
+  {% endfor %}
+</div>
+
+{% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode hx_target='#associados-grid' hx_get=request.path hx_push_url='true' hx_indicator='#associados-loading' %}
