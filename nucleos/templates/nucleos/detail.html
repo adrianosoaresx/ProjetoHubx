@@ -11,11 +11,18 @@
 <section class="max-w-5xl mx-auto py-8">
   
   <!-- Cards de totais -->
-  <div class="card-grid mt-6 gap-4">
-    {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
-    {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos %}
-    {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos %}
-  </div>
+  <details class="card mt-6" open>
+    <summary class="card-header flex cursor-pointer items-center justify-between gap-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">
+      {% trans 'Resumo' %}
+    </summary>
+    <div class="card-body">
+      <div class="card-grid gap-4">
+        {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' %}
+        {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' %}
+        {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos icon_name='check' %}
+      </div>
+    </div>
+  </details>
 
   <!-- Abas -->
   <div class="mt-8">
