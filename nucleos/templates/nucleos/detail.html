@@ -8,100 +8,100 @@
 {% endblock %}
 
 {% block content %}
-<section class="max-w-5xl mx-auto py-8">
+  <section class="max-w-5xl mx-auto py-8">
+    <div class="card px-4">
+      <div class="card-body space-y-6">
 
-  <!-- Cards de totais -->
-  <details class="card mt-6" open>
-    <summary class="card-header flex cursor-pointer items-center justify-between gap-2 text-sm font-semibold text-[var(--text-primary)] sm:text-base">
-      {% trans 'Resumo' %}
-    </summary>
-    <div class="card-body">
-      <div class="card-grid gap-4">
-        {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' %}
-        {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' %}
-        {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos icon_name='check' %}
-      </div>
-    </div>
-  </details>
+        <!-- Cards de totais -->
+        <details class="card" open>
+          <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
+            {% trans 'Resumo' %}
+          </summary>
+          <div class="mt-4 card-grid gap-4">
+            {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' %}
+            {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' %}
+            {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos icon_name='check' %}
+          </div>
+        </details>
 
-    <div id="tab-panels" class="mt-6">
-      <!-- Painel: Membros -->
-      <div class="tab-panel" data-tab="membros">
-        {% url 'nucleos:membros_list' object.pk as membros_list_url %}
-        <div
-          id="membros-list"
-          hx-get="{{ membros_list_url }}?page={{ page_obj.number }}{% if querystring %}&{{ querystring }}{% endif %}"
-          hx-trigger="load"
-          hx-target="#membros-list"
-          hx-swap="innerHTML"
-        >
-          {% include 'nucleos/partials/membros_list.html' %}
+        <div id="tab-panels" class="space-y-6">
+          <!-- Painel: Membros -->
+          <div class="tab-panel" data-tab="membros">
+            {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+            <div
+              id="membros-list"
+              hx-get="{{ membros_list_url }}?page={{ page_obj.number }}{% if querystring %}&{{ querystring }}{% endif %}"
+              hx-trigger="load"
+              hx-target="#membros-list"
+              hx-swap="innerHTML"
+            >
+              {% include 'nucleos/partials/membros_list.html' %}
 
+            </div>
+
+            {% if membros_pendentes %}
+              <div class="space-y-3">
+                <h3 class="font-semibold">{% trans 'Pendentes' %}</h3>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
+                    <thead class="bg-[var(--bg-secondary)]">
+                      <tr>
+                        <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
+                        <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th>
+                        <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[var(--border)]">
+                      {% for part in membros_pendentes %}
+                        <tr id="pendente-{{ part.id }}">
+                          <td>{{ part.user.display_name }}</td>
+                          <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
+                          <td class="space-x-2">
+                            <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
+                            <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            {% endif %}
+
+            {% if suplentes %}
+              <div class="space-y-3">
+                <h3 class="font-semibold">{% trans 'Suplentes' %}</h3>
+                <ul class="list-disc pl-5 text-sm text-[var(--text-secondary)]">
+                  {% for s in suplentes %}
+                    <li>
+                      {{ s.usuario.display_name }} —
+                      {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+
+            {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
+              <div>
+                <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+              </div>
+            {% endif %}
+          </div>
         </div>
 
-        {% if membros_pendentes %}
-          <div class="space-y-3">
-            <h3 class="font-semibold">{% trans 'Pendentes' %}</h3>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
-                <thead class="bg-[var(--bg-secondary)]">
-                  <tr>
-                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
-                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th>
-                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-[var(--border)]">
-                  {% for part in membros_pendentes %}
-                    <tr id="pendente-{{ part.id }}">
-                      <td>{{ part.user.display_name }}</td>
-                      <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
-                      <td class="space-x-2">
-                        <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
-                        <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        {% endif %}
-
-        {% if suplentes %}
-          <div class="space-y-3">
-            <h3 class="font-semibold">{% trans 'Suplentes' %}</h3>
-            <ul class="list-disc pl-5 text-sm text-[var(--text-secondary)]">
-              {% for s in suplentes %}
-                <li>
-                  {{ s.usuario.display_name }} —
-                  {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        {% endif %}
-
-        {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-          <div>
-            <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
-          </div>
-        {% endif %}
+        <div class="flex justify-end">
+          {% if perms.nucleos.delete_nucleo %}
+            <a
+              href="{% url 'nucleos:delete' object.pk %}"
+              class="btn btn-danger btn-sm"
+              hx-confirm="Deseja realmente excluir?"
+            >{% trans "Excluir" %}</a>
+          {% endif %}
+        </div>
       </div>
-  </div>
+    </div>
+  </section>
 
   <div id="modal"></div>
-
-  <div class="flex justify-end mt-4">
-    {% if perms.nucleos.delete_nucleo %}
-    <a
-      href="{% url 'nucleos:delete' object.pk %}"
-      class="btn btn-danger btn-sm"
-      hx-confirm="Deseja realmente excluir?"
-      >{% trans "Excluir" %}</a
-    >
-    {% endif %}
-  </div>
-
-</section>
 {% endblock %}
