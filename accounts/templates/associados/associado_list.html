@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n lucide_icons %}
 
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
@@ -8,25 +8,31 @@
 {% endblock %}
 
 {% block content %}
-  <div class="py-12 card px-4">
-    <div class="card-header space-y-4">
-      {% include '_components/search_form.html' with q=request.GET.q %}
+
+<section class="max-w-6xl mx-auto py-12 px-4">
+  <div class="card-header space-y-4">
+    {% include '_components/search_form.html' with q=request.GET.q %}
+  </div>
+  <!-- Cards de totais -->
+  <details class="card mb-6" open>
+    <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
+      {% trans "Resumo" %}
+    </summary>
+    {% lucide 'users' class='h-5 w-5' as icon_usuarios %}
+    {% lucide 'badge-check' class='h-5 w-5' as icon_associados %}
+    {% lucide 'network' class='h-5 w-5' as icon_nucleados %}
+
+    <div class="mt-4 card-grid">
+      {% include "_partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios icon_svg=icon_usuarios %}
+      {% include "_partials/cards/total_card.html" with label=_('Associados') valor=total_associados icon_svg=icon_associados %}
+      {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados icon_svg=icon_nucleados %}
     </div>
-    <div class="card-body">
-      <!-- Cards de totais -->
-      <div class="mb-6 card-grid gap-4">
-        {% include "_partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios %}
-        {% include "_partials/cards/total_card.html" with label=_('Associados') valor=total_associados %}
-        {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados %}
-      </div>
-      <div role="list" aria-label="{% trans 'Lista de associados' %}" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
-        {% for user in associados %}
-          <div role="listitem">
-            {% include '_components/card_usuario.html' with user=user %}
-          </div>
-        {% empty %}
-          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans "Nenhum associado encontrado." %}</p>
-        {% endfor %}
+  </details>
+  <div role="list" class="card-grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
+    {% for user in associados %}
+      <div role="listitem">
+        {% include '_components/card_usuario.html' with user=user %}
+
       </div>
       {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
     </div>
