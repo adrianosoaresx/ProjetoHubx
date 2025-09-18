@@ -30,12 +30,15 @@
     <div id="tab-panels" class="mt-6">
       <!-- Painel: Membros -->
       <div class="tab-panel" data-tab="membros">
-        <div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
-          {% for part in membros_ativos %}
-            {% include 'nucleos/partials/membro_card.html' with part=part %}
-          {% empty %}
-            <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Sem membros.' %}</p>
-          {% endfor %}
+        {% url 'nucleos:membros_list' object.pk as membros_list_url %}
+        <div
+          id="membros-list"
+          hx-get="{{ membros_list_url }}?page={{ page_obj.number }}{% if querystring %}&{{ querystring }}{% endif %}"
+          hx-trigger="load"
+          hx-target="#membros-list"
+          hx-swap="innerHTML"
+        >
+          {% include 'nucleos/partials/membros_list.html' %}
         </div>
 
         {% if membros_pendentes %}

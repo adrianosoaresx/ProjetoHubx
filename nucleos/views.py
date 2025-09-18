@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
+from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -244,6 +245,17 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     model = Nucleo
     template_name = "nucleos/detail.html"
 
+    def get_membros_paginate_by(self) -> int:
+        return getattr(settings, "NUCLEOS_MEMBROS_PAGINATE_BY", 12)
+
+    def get_membros_queryset(self):
+        nucleo = self.object
+        return nucleo.participacoes.filter(
+            status="ativo",
+            status_suspensao=False,
+            user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
+        ).select_related("user").order_by("-created_at")
+
     def get_queryset(self):
         qs = Nucleo.objects.filter(deleted=False).prefetch_related("participacoes__user", "coordenadores_suplentes")
         user = self.request.user
@@ -263,12 +275,13 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         nucleo = self.object
-        # Lista de membros ativos (nucleados): status ativo e não suspensos
-        ctx["membros_ativos"] = nucleo.participacoes.filter(
-            status="ativo",
-            status_suspensao=False,
-            user__user_type__in=[UserType.NUCLEADO.value, UserType.COORDENADOR.value],
-        )
+        # Lista de membros ativos (nucleados) com paginação
+        membros_qs = self.get_membros_queryset()
+        paginator = Paginator(membros_qs, self.get_membros_paginate_by())
+        page_number = self.request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        ctx["page_obj"] = page_obj
+        ctx["membros_ativos"] = page_obj.object_list
         ctx["coordenadores"] = nucleo.participacoes.filter(status="ativo", papel="coordenador")
         # Pendentes e suplentes (somente leitura)
         ctx["membros_pendentes"] = nucleo.participacoes.filter(status="pendente")
@@ -281,7 +294,7 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         eventos_qs = Evento.objects.filter(nucleo=nucleo)
         ctx["eventos"] = eventos_qs.annotate(num_inscritos=Count("inscricoes", distinct=True))
         # Totais para cards
-        ctx["total_membros"] = ctx["membros_ativos"].count()
+        ctx["total_membros"] = paginator.count
         # Total de eventos considerando apenas ativos (0) e concluídos (1)
         ctx["total_eventos"] = eventos_qs.filter(status__in=[0, 1]).count()
         ctx["total_eventos_ativos"] = eventos_qs.filter(status=0).count()
@@ -337,7 +350,17 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
                 )
             except Exception:
                 ctx["nucleo_posts"] = []
+        params = self.request.GET.copy()
+        try:
+            params.pop("page")
+        except KeyError:
+            pass
+        ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
+
+
+class NucleoMembrosPartialView(NucleoDetailView):
+    template_name = "nucleos/partials/membros_list.html"
 
 
 class NucleoMetricsView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
