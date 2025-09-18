@@ -15,26 +15,20 @@
 {% endblock %}
 
 {% block content %}
-<section class="max-w-3xl mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  <div class="card">
-    <div class="card-header">
-      <h2 class="text-xl font-semibold">
-        {% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %}
-      </h2>
+<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
+  <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">
+    {% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %}
+  </h1>
+  <form method="post" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm p-6 space-y-6">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      {% include '_forms/field.html' with field=field %}
+    {% endfor %}
+    <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
+      <a href="{% url 'eventos:briefing_list' %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</a>
+      <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans 'Salvar' %}</button>
     </div>
-    <div class="card-body">
-        <form method="post" class="space-y-6">
-          {% csrf_token %}
-          {{ form.non_field_errors }}
-          {% for field in form %}
-            {% include '_forms/field.html' with field=field %}
-          {% endfor %}
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--border)]">
-            <a href="{% url 'eventos:briefing_list' %}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</a>
-            <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar' %}">{% trans 'Salvar' %}</button>
-          </div>
-        </form>
-    </div>
-  </div>
+  </form>
 </section>
 {% endblock %}
