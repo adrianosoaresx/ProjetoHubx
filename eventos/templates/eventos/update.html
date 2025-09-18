@@ -61,7 +61,7 @@
               <h3 class="text-sm font-medium text-[var(--text-primary)]">{{ inscrito.display_name }}</h3>
               <p class="text-xs text-[var(--text-secondary)]">{{ inscrito.email }}</p>
             </div>
-            {% if user.user_type in ['admin', 'coordenador'] %}
+            {% if user.user_type == 'admin' or user.user_type == 'coordenador' %}
             <form method="post" action="{% url 'eventos:evento_remover_inscrito' object.pk inscrito.pk %}">
               {% csrf_token %}
               <button type="submit" class="btn btn-secondary text-sm" aria-label="{% trans 'Remover' %}">{% trans "Remover" %}</button>
