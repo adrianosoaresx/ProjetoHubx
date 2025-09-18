@@ -3,9 +3,15 @@
 {% block title %}{% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %} | Hubx{% endblock %}
 
 {% block hero %}
-  {% if object %}{% with title=_('Editar Briefing') %}{% else %}{% with title=_('Novo Briefing') %}{% endif %}
-    {% include '_components/hero.html' with title=title %}
-  {% endwith %}
+  {% if object %}
+    {% with title=_('Editar Briefing') %}
+      {% include '_components/hero.html' with title=title %}
+    {% endwith %}
+  {% else %}
+    {% with title=_('Novo Briefing') %}
+      {% include '_components/hero.html' with title=title %}
+    {% endwith %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
