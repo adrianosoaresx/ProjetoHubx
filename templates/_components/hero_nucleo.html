@@ -6,10 +6,15 @@
       <div class="absolute inset-0 bg-black/60"></div>
     </div>
   {% else %}
-    <div class="absolute inset-0 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
-         style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
+    {% with background_type='nucleos' %}
+      <div class="neural-bg-base pointer-events-none" aria-hidden="true"></div>
+      <div class="neural-bg-collection absolute inset-0 pointer-events-none" data-bg="{{ background_type }}" aria-hidden="true">
+        {% include 'backgrounds/neural_backgrounds.html' with bg_type=background_type %}
+      </div>
+      <div class="hero-overlay" aria-hidden="true"></div>
+    {% endwith %}
   {% endif %}
-  <div class="relative max-w-7xl mx-auto px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+  <div class="relative z-10 max-w-7xl mx-auto px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
     <div class="flex items-center gap-4">
       <div class="shrink-0">
         {% if nucleo.avatar %}
