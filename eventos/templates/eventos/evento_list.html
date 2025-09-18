@@ -16,11 +16,13 @@
 {% endblock %}
 
 {% block content %}
-  <div class="py-12 card px-4">
-    <div class="card-header">
-      {% include '_components/search_form.html' with q=q %}
-    </div>
-    <div class="card-body">
+  <div class="py-12 px-4 space-y-6">
+    {% include "eventos/partials/_nav.html" with current_section='eventos' %}
+    <div class="card px-4">
+      <div class="card-header">
+        {% include '_components/search_form.html' with q=q %}
+      </div>
+      <div class="card-body">
       <details class="mb-6" open>
         <summary class="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
           {% trans 'Resumo' %}
@@ -34,14 +36,15 @@
           {% include "_partials/cards/total_card.html" with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_realizados %}
         </div>
       </details>
-      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2" role="list" aria-label="{% trans 'Lista de eventos' %}">
-        {% for evento in eventos %}
-          {% include '_components/card_evento.html' %}
-        {% empty %}
-          <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
-        {% endfor %}
+        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2" role="list" aria-label="{% trans 'Lista de eventos' %}">
+          {% for evento in eventos %}
+            {% include '_components/card_evento.html' %}
+          {% empty %}
+            <p class="col-span-full text-center text-[var(--text-muted)]">{% trans 'Nenhum evento encontrado.' %}</p>
+          {% endfor %}
+        </div>
+        {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
       </div>
-      {% include '_partials/pagination.html' with page_obj=page_obj querystring=querystring %}
     </div>
   </div>
 {% endblock %}
