@@ -566,6 +566,14 @@
   /* Sidebar */
   .sidebar-item { @apply flex items-center gap-3 rounded-lg px-3 py-2 text-[var(--text-secondary)] hover:bg-[var(--bg-accent)] transition; }
   .sidebar-item-active { @apply bg-[var(--bg-accent)] text-[var(--text-primary)] font-medium; }
+  #sidebar .sidebar-header,
+  #sidebar .sidebar-nav { @apply transition-all duration-150 ease-in-out; }
+  #sidebar.sidebar-collapsed .sidebar-header,
+  #sidebar.sidebar-collapsed .sidebar-nav { @apply px-2; }
+  #sidebar.sidebar-collapsed .sidebar-nav { @apply py-3; }
+  #sidebar.sidebar-collapsed .sidebar-item { @apply justify-center px-2; }
+  #sidebar.sidebar-collapsed .sidebar-item svg,
+  #sidebar.sidebar-collapsed .sidebar-item img { @apply w-6 h-6 flex-shrink-0; }
 
   /* Tabelas */
   .table           { @apply w-full text-sm; }

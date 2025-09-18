@@ -120,30 +120,28 @@
       const content = document.getElementById('content');
       if (sidebarToggle && sidebar && content) {
         const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
-        const saved = localStorage.getItem('sidebar') || 'expanded';
-        if (saved === 'collapsed') {
-          sidebar.classList.remove('w-64');
-          sidebar.classList.add('w-16');
-          content.classList.remove(baseMargin);
-          content.classList.add('ml-16');
-          sidebarToggle.setAttribute('aria-expanded', 'false');
-          document.querySelectorAll('#sidebar .sidebar-label').forEach(el => {
-            el.classList.add('hidden');
+        const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label'));
+
+        const setSidebarState = (collapsed) => {
+          sidebar.classList.toggle('w-64', !collapsed);
+          sidebar.classList.toggle('w-16', collapsed);
+          sidebar.classList.toggle('sidebar-collapsed', collapsed);
+          content.classList.toggle(baseMargin, !collapsed);
+          content.classList.toggle('ml-16', collapsed);
+          sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+          sidebarLabels.forEach((el) => {
+            el.classList.toggle('hidden', collapsed);
           });
-        } else {
-          sidebarToggle.setAttribute('aria-expanded', 'true');
-        }
+        };
+
+        const savedCollapsed = localStorage.getItem('sidebar') === 'collapsed';
+        setSidebarState(savedCollapsed);
+
         sidebarToggle.addEventListener('click', () => {
-          const expanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
-          sidebarToggle.setAttribute('aria-expanded', String(!expanded));
-          sidebar.classList.toggle('w-64');
-          sidebar.classList.toggle('w-16');
-          content.classList.toggle(baseMargin);
-          content.classList.toggle('ml-16');
-          document.querySelectorAll('#sidebar .sidebar-label').forEach(el => {
-            el.classList.toggle('hidden');
-          });
-          localStorage.setItem('sidebar', expanded ? 'collapsed' : 'expanded');
+          const currentlyExpanded = sidebarToggle.getAttribute('aria-expanded') === 'true';
+          const nextCollapsed = currentlyExpanded;
+          setSidebarState(nextCollapsed);
+          localStorage.setItem('sidebar', nextCollapsed ? 'collapsed' : 'expanded');
         });
       }
       document.body.classList.remove('preload');

@@ -1555,6 +1555,37 @@ a:focus {
   color: var(--text-primary);
 }
 
+#sidebar .sidebar-header,
+#sidebar .sidebar-nav {
+  transition-property: padding;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+#sidebar.sidebar-collapsed .sidebar-header,
+#sidebar.sidebar-collapsed .sidebar-nav {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+#sidebar.sidebar-collapsed .sidebar-nav {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+#sidebar.sidebar-collapsed .sidebar-item {
+  justify-content: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+#sidebar.sidebar-collapsed .sidebar-item svg,
+#sidebar.sidebar-collapsed .sidebar-item img {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
 /* Tabelas */
 
 .table {

@@ -1,6 +1,6 @@
 {% load i18n %}
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col transition-all">
-  <div class="flex items-center justify-between p-4 border-b border-[var(--border)]">
+  <div class="sidebar-header flex items-center justify-between p-4 border-b border-[var(--border)]">
     <a href="/" class="text-2xl font-bold text-[var(--text-primary)]" aria-label="{% trans 'Página inicial' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>
       {% trans 'Hubx' %}
     </a>
@@ -10,7 +10,7 @@
       </svg>
     </button>
   </div>
-  <nav class="flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
+  <nav class="sidebar-nav flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
     {% for item in NAV_MENU %}
       <a href="{{ item.path }}" class="sidebar-item{% if request.path == item.path %} sidebar-item-active{% endif %}" {% if request.path == item.path %}aria-current="page"{% endif %}>
         {% if item.id == 'perfil' and user.avatar %}
