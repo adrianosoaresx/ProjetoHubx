@@ -8,7 +8,7 @@
 
 {% block content %}
 <section class="py-12 px-4">
-  <div class="card-grid gap-6">
+  <div class="flex flex-col gap-6">
     <article class="card">
       <div class="card-header">
         <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
@@ -92,13 +92,13 @@
     </article>
     {% endif %}
 
-    <article class="card md:col-span-2">
+    <article class="card">
       <div class="card-header">
         <h2 class="text-lg font-semibold">{% trans "Inscritos" %}</h2>
       </div>
       <div class="card-body">
         {% if object.inscricoes.all %}
-          <div class="card-grid gap-4">
+          <div class="flex flex-col gap-4">
             {% for ins in object.inscricoes.all %}
               {% with inscrito=ins.user %}
                 <article class="card">
