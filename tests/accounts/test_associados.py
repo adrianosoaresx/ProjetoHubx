@@ -63,3 +63,30 @@ def test_coordenador_list_associados(client):
     resp = client.get(reverse("accounts:associados_lista"))
     assert resp.status_code == 200
     assert assoc.username in resp.content.decode()
+
+
+def test_associados_htmx_returns_partial_grid(client):
+    admin = create_user("htmx-admin@example.com", "htmx-admin", UserType.ADMIN)
+    for idx in range(11):
+        create_user(
+            f"assoc-htmx-{idx}@example.com",
+            f"assoc-htmx-{idx}",
+            UserType.ASSOCIADO,
+            is_associado=True,
+        )
+
+    client.force_login(admin)
+    url = reverse("accounts:associados_lista")
+    resp = client.get(url, HTTP_HX_REQUEST="true")
+
+    assert resp.status_code == 200
+    template_names = [template.name for template in resp.templates if getattr(template, "name", None)]
+    assert "associados/_grid.html" in template_names
+    assert "associados/associado_list.html" not in template_names
+
+    content = resp.content.decode()
+    assert "card-grid" in content
+    assert "assoc-htmx-0" in content
+    assert 'hx-target="#associados-grid"' in content
+    assert f'hx-get="{url}?page=2' in content
+    assert 'hx-indicator="#associados-loading"' in content

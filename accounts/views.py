@@ -1117,6 +1117,18 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
             context["total_nucleados"] = 0
         return context
 
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("HX-Request"):
+            response_kwargs.setdefault("content_type", self.content_type)
+            return self.response_class(
+                request=self.request,
+                template="associados/_grid.html",
+                context=context,
+                using=self.template_engine,
+                **response_kwargs,
+            )
+        return super().render_to_response(context, **response_kwargs)
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
