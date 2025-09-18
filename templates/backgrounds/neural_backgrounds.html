@@ -1,6 +1,7 @@
 <!-- Neural Network Background Templates for Django -->
 <!-- Each background represents a different module with unique neural patterns -->
 
+{% if bg_type == 'nucleos' or not bg_type %}
 <!-- Núcleos Background -->
 <div class="neural-bg-nucleos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -39,7 +40,7 @@
           stroke="#3b82f6" stroke-width="1.5" opacity="0.4" fill="none"/>
   </svg>
 </div>
-
+{% elif bg_type == 'eventos' %}
 <!-- Eventos Associados Background -->
 <div class="neural-bg-eventos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -77,7 +78,7 @@
     </circle>
   </svg>
 </div>
-
+{% elif bg_type == 'feed' %}
 <!-- Feed Background -->
 <div class="neural-bg-feed absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -112,7 +113,7 @@
     <path d="M150,350 L300,330 L450,370 L600,350" stroke="#1e40af" stroke-width="1" opacity="0.3" fill="none"/>
   </svg>
 </div>
-
+{% elif bg_type == 'dashboard' %}
 <!-- Dashboard Background -->
 <div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -151,7 +152,7 @@
     </g>
   </svg>
 </div>
-
+{% elif bg_type == 'financeiro' %}
 <!-- Financeiro Background -->
 <div class="neural-bg-financeiro absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -184,7 +185,7 @@
           stroke="#3b82f6" stroke-width="1.5" opacity="0.5" fill="none"/>
   </svg>
 </div>
-
+{% elif bg_type == 'tokens' %}
 <!-- Tokens Background -->
 <div class="neural-bg-tokens absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -219,7 +220,7 @@
     </g>
   </svg>
 </div>
-
+{% elif bg_type == 'configuracao' %}
 <!-- Configuração Background -->
 <div class="neural-bg-configuracao absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -265,3 +266,5 @@
     <animateTransform attributeName="transform" type="rotate" values="0 400 300;360 400 300" dur="20s" repeatCount="indefinite"/>
   </svg>
 </div>
+{% endif %}
+
