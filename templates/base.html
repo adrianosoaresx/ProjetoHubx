@@ -121,10 +121,6 @@
       if (sidebarToggle && sidebar && content) {
         const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label'));
-        const sidebarBrandLabel = document.querySelector('#sidebar .sidebar-brand-label');
-        if (sidebarBrandLabel) {
-          sidebarLabels.push(sidebarBrandLabel);
-        }
 
         const setSidebarState = (collapsed) => {
           sidebar.classList.toggle('w-64', !collapsed);
