@@ -975,6 +975,7 @@ class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView
     model = BriefingEvento
     form_class = BriefingEventoCreateForm
     template_name = "eventos/briefing_form.html"
+    success_url = reverse_lazy("eventos:briefing_list")
 
     def form_valid(self, form):
         evento = form.cleaned_data.get("evento")
@@ -995,6 +996,7 @@ class BriefingEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView
     model = BriefingEvento
     form_class = BriefingEventoForm
     template_name = "eventos/briefing_form.html"
+    success_url = reverse_lazy("eventos:briefing_list")
 
     def get_queryset(self):
         qs = BriefingEvento.objects.all()
