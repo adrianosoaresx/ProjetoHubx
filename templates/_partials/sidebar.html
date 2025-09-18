@@ -1,7 +1,8 @@
-{% load i18n %}
+{% load i18n static %}
 <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-64 bg-[var(--bg-secondary)] border-r border-[var(--border)] flex flex-col transition-all">
   <div class="sidebar-header flex items-center justify-between p-4 border-b border-[var(--border)]">
-    <a href="/" class="text-2xl font-bold text-[var(--text-primary)]" aria-label="{% trans 'Página inicial' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>
+    <a href="/" class="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-2" aria-label="{% trans 'Página inicial' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>
+      <img src="{% static 'img/hubx_logo.png' %}" alt="{% trans 'Logo Hubx.Space' %}" class="h-8 w-auto" loading="lazy" />
       <span class="sidebar-brand-label">{% trans 'Hubx.Space' %}</span>
     </a>
     <button id="sidebar-toggle" class="btn btn-secondary btn-sm" aria-label="{% trans 'Alternar menu' %}" aria-controls="sidebar" aria-expanded="true">
