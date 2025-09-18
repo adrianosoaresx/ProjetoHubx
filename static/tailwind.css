@@ -1556,14 +1556,16 @@ a:focus {
 }
 
 #sidebar .sidebar-header,
-#sidebar .sidebar-nav {
-  transition-property: padding;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  #sidebar .sidebar-nav {
+  transition-property: all;
   transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #sidebar.sidebar-collapsed .sidebar-header,
-#sidebar.sidebar-collapsed .sidebar-nav {
+  #sidebar.sidebar-collapsed .sidebar-nav {
   padding-left: 0.5rem;
   padding-right: 0.5rem;
 }
@@ -1580,9 +1582,9 @@ a:focus {
 }
 
 #sidebar.sidebar-collapsed .sidebar-item svg,
-#sidebar.sidebar-collapsed .sidebar-item img {
-  width: 1.5rem;
+  #sidebar.sidebar-collapsed .sidebar-item img {
   height: 1.5rem;
+  width: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -1984,6 +1986,10 @@ a:focus {
   cursor: move;
 }
 
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .list-disc {
   list-style-type: disc;
 }
@@ -2238,12 +2244,20 @@ a:focus {
   background-color: rgb(0 0 0 / 0.4);
 }
 
+.bg-black\/60 {
+  background-color: rgb(0 0 0 / 0.6);
+}
+
 .bg-primary {
   background-color: var(--primary);
 }
 
 .bg-white\/15 {
   background-color: rgb(255 255 255 / 0.15);
+}
+
+.bg-white\/20 {
+  background-color: rgb(255 255 255 / 0.2);
 }
 
 .bg-gradient-to-r {
@@ -2437,6 +2451,10 @@ a:focus {
   font-weight: 600;
 }
 
+.uppercase {
+  text-transform: uppercase;
+}
+
 .tracking-widest {
   letter-spacing: 0.1em;
 }
@@ -2537,6 +2555,14 @@ a:focus {
 
 .ring-white\/10 {
   --tw-ring-color: rgb(255 255 255 / 0.1);
+}
+
+.ring-white\/30 {
+  --tw-ring-color: rgb(255 255 255 / 0.3);
+}
+
+.ring-white\/50 {
+  --tw-ring-color: rgb(255 255 255 / 0.5);
 }
 
 .ring-white\/90 {
@@ -3005,6 +3031,10 @@ a:focus {
     align-items: center;
   }
 
+  .md\:justify-end {
+    justify-content: flex-end;
+  }
+
   .md\:justify-between {
     justify-content: space-between;
   }
@@ -3020,6 +3050,11 @@ a:focus {
   .md\:text-3xl {
     font-size: 1.875rem;
     line-height: 2.25rem;
+  }
+
+  .md\:text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
   }
 }
 
