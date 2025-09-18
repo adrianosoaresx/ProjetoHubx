@@ -1,0 +1,39 @@
+{% load i18n %}
+{% with section=current_section|default:"membros" base_classes="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2" active_classes="is-active border-transparent bg-[var(--primary)] text-[var(--text-inverse)] shadow-sm" inactive_classes="text-[var(--text-secondary)]" %}
+  {% if nucleo.public_id %}
+    {% url 'nucleos:detail_uuid' nucleo.public_id as base_detail_url %}
+  {% else %}
+    {% url 'nucleos:detail' nucleo.pk as base_detail_url %}
+  {% endif %}
+  <nav class="mt-8" aria-label="{% trans 'Seções do núcleo' %}">
+    <ul class="flex flex-wrap gap-2">
+      <li>
+        <a
+          href="{{ base_detail_url }}?section=membros"
+          class="{{ base_classes }}{% if section == 'membros' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+          {% if section == 'membros' %}aria-current="page"{% endif %}
+        >
+          {% trans 'Membros' %}
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ base_detail_url }}?section=eventos"
+          class="{{ base_classes }}{% if section == 'eventos' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+          {% if section == 'eventos' %}aria-current="page"{% endif %}
+        >
+          {% trans 'Eventos' %}
+        </a>
+      </li>
+      <li>
+        <a
+          href="{{ base_detail_url }}?section=feed"
+          class="{{ base_classes }}{% if section == 'feed' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+          {% if section == 'feed' %}aria-current="page"{% endif %}
+        >
+          {% trans 'Feed' %}
+        </a>
+      </li>
+    </ul>
+  </nav>
+{% endwith %}

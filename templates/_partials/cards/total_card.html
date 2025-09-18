@@ -4,7 +4,11 @@
   <div class="card-body">
     <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
 
-      {% if icon_svg %}
+      {% if icon_name %}
+        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+          {% lucide icon_name class="h-5 w-5" %}
+        </span>
+      {% elif icon_svg %}
         <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
           {{ icon_svg|safe }}
         </span>

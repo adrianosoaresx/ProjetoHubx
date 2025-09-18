@@ -350,12 +350,14 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
                 )
             except Exception:
                 ctx["nucleo_posts"] = []
+
         params = self.request.GET.copy()
         try:
             params.pop("page")
         except KeyError:
             pass
         ctx["querystring"] = urlencode(params, doseq=True)
+
         return ctx
 
 
