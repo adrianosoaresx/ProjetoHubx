@@ -300,6 +300,11 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
         ctx["total_eventos_ativos"] = eventos_qs.filter(status=0).count()
         ctx["total_eventos_concluidos"] = eventos_qs.filter(status=1).count()
 
+        section = self.request.GET.get("section", "membros")
+        if section not in {"membros", "eventos", "feed"}:
+            section = "membros"
+        ctx["current_section"] = section
+
         # Posts do feed do núcleo para a aba "Feed"
         try:
             from django.db.models import OuterRef, Subquery, Exists
