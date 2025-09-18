@@ -337,6 +337,12 @@ class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
                 )
             except Exception:
                 ctx["nucleo_posts"] = []
+
+        section = self.request.GET.get("section") or "membros"
+        if section not in {"membros", "eventos", "feed"}:
+            section = "membros"
+        ctx["current_section"] = section
+
         return ctx
 
 

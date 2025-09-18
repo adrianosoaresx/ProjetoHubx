@@ -9,7 +9,7 @@
 
 {% block content %}
 <section class="max-w-5xl mx-auto py-8">
-  
+
   <!-- Cards de totais -->
   <div class="card-grid mt-6 gap-4">
     {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros %}
@@ -17,19 +17,28 @@
     {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos %}
   </div>
 
-  <!-- Abas -->
-  <div class="mt-8">
-    <div class="border-b border-[var(--border)]">
-      <nav class="-mb-px flex gap-6" aria-label="Tabs">
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-tertiary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="membros">{% trans 'Membros' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-tertiary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="eventos">{% trans 'Eventos' %}</button>
-        <button type="button" class="tab-btn py-3 text-sm font-medium border-b-2 border-transparent text-[var(--text-tertiary)] data-[active=true]:border-primary data-[active=true]:text-primary" data-tab="feed">{% trans 'Feed do Núcleo' %}</button>
-      </nav>
-    </div>
+  {% include '_components/nucleo_detail_nav.html' with nucleo=object current_section=current_section %}
 
-    <div id="tab-panels" class="mt-6">
-      <!-- Painel: Membros -->
-      <div class="tab-panel" data-tab="membros">
+  <div id="nucleo-detail-content" class="mt-6">
+    {% if current_section == 'eventos' %}
+      <div class="card-grid mt-2 gap-4">
+        {% for evento in eventos %}
+          {% include '_components/card_evento.html' with evento=evento %}
+        {% empty %}
+          <p class="text-sm text-[var(--text-muted)]">{% trans 'Sem eventos.' %}</p>
+        {% endfor %}
+      </div>
+    {% elif current_section == 'feed' %}
+      <div class="space-y-4">
+        {% if pode_postar %}
+          <div>
+            <button type="button" class="btn btn-primary" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
+          </div>
+        {% endif %}
+        {% include 'feed/_grid.html' with posts=nucleo_posts %}
+      </div>
+    {% else %}
+      <div class="space-y-6">
         <div class="card-grid gap-4" role="list" aria-label="{% trans 'Lista de membros do núcleo' %}">
           {% for part in membros_ativos %}
             {% include 'nucleos/partials/membro_card.html' with part=part %}
@@ -39,68 +48,58 @@
         </div>
 
         {% if membros_pendentes %}
-        <h3 class="mt-6 font-semibold">{% trans 'Pendentes' %}</h3>
-        <div class="overflow-x-auto"><table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
-          <thead class="bg-[var(--bg-secondary)]">
-            <tr><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th><th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th></tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--border)]">
-          {% for part in membros_pendentes %}
-            <tr id="pendente-{{ part.id }}">
-              <td>{{ part.user.display_name }}</td>
-              <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
-              <td class="space-x-2">
-                <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
-                <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
-              </td>
-            </tr>
-          {% endfor %}
-          </tbody>
-        </table></div>
+          <div class="space-y-3">
+            <h3 class="font-semibold">{% trans 'Pendentes' %}</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
+                <thead class="bg-[var(--bg-secondary)]">
+                  <tr>
+                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
+                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th>
+                    <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-[var(--border)]">
+                  {% for part in membros_pendentes %}
+                    <tr id="pendente-{{ part.id }}">
+                      <td>{{ part.user.display_name }}</td>
+                      <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
+                      <td class="space-x-2">
+                        <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
+                        <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
         {% endif %}
 
         {% if suplentes %}
-        <h3 class="mt-6 font-semibold">{% trans 'Suplentes' %}</h3>
-        <ul class="list-disc pl-5 text-sm text-[var(--text-secondary)]">
-          {% for s in suplentes %}
-            <li>
-              {{ s.usuario.display_name }} —
-              {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
-            </li>
-          {% endfor %}
-        </ul>
+          <div class="space-y-3">
+            <h3 class="font-semibold">{% trans 'Suplentes' %}</h3>
+            <ul class="list-disc pl-5 text-sm text-[var(--text-secondary)]">
+              {% for s in suplentes %}
+                <li>
+                  {{ s.usuario.display_name }} —
+                  {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
         {% endif %}
 
         {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-        <div class="mt-4">
-          <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
-        </div>
+          <div>
+            <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
+          </div>
         {% endif %}
       </div>
-
-      <!-- Painel: Eventos -->
-      <div class="tab-panel hidden" data-tab="eventos">
-        <div class="card-grid mt-2 gap-4">
-          {% for evento in eventos %}
-            {% include '_components/card_evento.html' with evento=evento %}
-          {% empty %}
-            <p class="text-sm text-[var(--text-muted)]">{% trans 'Sem eventos.' %}</p>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Painel: Feed -->
-      <div class="tab-panel hidden" data-tab="feed">
-        {% if pode_postar %}
-        <div class="mb-4">
-          <button type="button" class="btn btn-primary" hx-get="{% url 'nucleos:postar_modal' object.pk %}" hx-target="#modal">{% trans 'Postar no feed' %}</button>
-        </div>
-        {% endif %}
-        {% include 'feed/_grid.html' with posts=nucleo_posts %}
-      </div>
-    </div>
-    <div id="modal"></div>
+    {% endif %}
   </div>
+
+  <div id="modal"></div>
 
   <div class="flex justify-end mt-4">
     {% if perms.nucleos.delete_nucleo %}
@@ -113,18 +112,5 @@
     {% endif %}
   </div>
 
-  <script>
-    // Tabs simples em JS vanilla
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const panels = document.querySelectorAll('.tab-panel');
-    function activate(tab) {
-      tabButtons.forEach(btn => btn.dataset.active = (btn.dataset.tab === tab));
-      panels.forEach(panel => panel.classList.toggle('hidden', panel.dataset.tab !== tab));
-    }
-    // Ativa 'membros' por padrão
-    activate('membros');
-    tabButtons.forEach(btn => btn.addEventListener('click', () => activate(btn.dataset.tab)));
-  </script>
-  </section>
-  {% endblock %}
-
+</section>
+{% endblock %}
