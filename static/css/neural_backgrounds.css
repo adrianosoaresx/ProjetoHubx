@@ -1,0 +1,127 @@
+/* Neural Network Backgrounds CSS for Django */
+/* Base styles for all neural backgrounds */
+
+.neural-bg-base {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.dark .neural-bg-base {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Individual module backgrounds */
+.neural-bg-nucleos {
+  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%);
+}
+
+.neural-bg-eventos {
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(30, 64, 175, 0.03) 100%);
+}
+
+.neural-bg-feed {
+  background: linear-gradient(180deg, rgba(14, 165, 233, 0.08) 0%, rgba(59, 130, 246, 0.04) 50%, rgba(30, 64, 175, 0.02) 100%);
+}
+
+.neural-bg-dashboard {
+  background: 
+    linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.1) 50%, transparent 51%),
+    linear-gradient(-45deg, transparent 49%, rgba(30, 64, 175, 0.05) 50%, transparent 51%);
+  background-size: 20px 20px;
+}
+
+.neural-bg-financeiro {
+  background: linear-gradient(45deg, rgba(14, 165, 233, 0.05) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(30, 64, 175, 0.1) 100%);
+}
+
+.neural-bg-tokens {
+  background: 
+    repeating-linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0px, rgba(14, 165, 233, 0.1) 2px, transparent 2px, transparent 20px),
+    repeating-linear-gradient(0deg, rgba(59, 130, 246, 0.05) 0px, rgba(59, 130, 246, 0.05) 2px, transparent 2px, transparent 20px);
+}
+
+.neural-bg-configuracao {
+  background: radial-gradient(circle at 30% 30%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+              radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.05) 0%, transparent 50%);
+}
+
+/* Animation classes */
+.neural-pulse {
+  animation: neural-pulse 2s ease-in-out infinite;
+}
+
+.neural-flow {
+  animation: neural-flow 4s linear infinite;
+}
+
+.neural-rotate {
+  animation: neural-rotate 20s linear infinite;
+}
+
+@keyframes neural-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+@keyframes neural-flow {
+  0% { transform: translateY(-100px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes neural-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .neural-bg-base svg {
+    transform: scale(0.8);
+  }
+}
+
+@media (max-width: 480px) {
+  .neural-bg-base svg {
+    transform: scale(0.6);
+  }
+}
+
+/* Hero component integration */
+.hero-with-neural {
+  position: relative;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+  z-index: 5;
+}
+
+/* Dark mode adjustments */
+.dark .hero-overlay {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 100%);
+}
