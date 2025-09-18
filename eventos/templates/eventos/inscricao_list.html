@@ -8,7 +8,8 @@
 {% endblock %}
 
 {% block content %}
-<div id="inscricao-container"  class="py-12 px-4">
+<div id="inscricao-container" class="py-12 px-4 space-y-6">
+  {% include "eventos/partials/_nav.html" with current_section='inscricoes' %}
   <div class="card">
     <div class="card-body">
       {% url 'eventos:inscricao_list' as inscricao_list_url %}

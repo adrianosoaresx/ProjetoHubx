@@ -1,0 +1,61 @@
+{% load i18n %}
+{% with current_section=current_section|default:'eventos' base_classes="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2" active_classes="is-active border-transparent bg-[var(--primary)] text-[var(--text-inverse)] shadow-sm" inactive_classes="text-[var(--text-secondary)]" %}
+<nav class="{{ nav_class|default:'mb-6' }}" aria-label="{% trans 'Seções de eventos' %}">
+  <ul class="flex flex-wrap gap-2">
+    <li>
+      <a
+        href="{% url 'eventos:lista' %}"
+        class="{{ base_classes }}{% if current_section == 'eventos' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'eventos' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Eventos' %}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{% url 'eventos:inscricao_list' %}"
+        class="{{ base_classes }}{% if current_section == 'inscricoes' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'inscricoes' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Inscrições' %}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{% url 'eventos:material_list' %}"
+        class="{{ base_classes }}{% if current_section == 'materiais' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'materiais' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Materiais' %}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{% url 'eventos:parceria_list' %}"
+        class="{{ base_classes }}{% if current_section == 'parcerias' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'parcerias' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Parcerias' %}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{% url 'eventos:briefing_list' %}"
+        class="{{ base_classes }}{% if current_section == 'briefings' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'briefings' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Briefings' %}
+      </a>
+    </li>
+    <li>
+      <a
+        href="{% url 'eventos:tarefa_list' %}"
+        class="{{ base_classes }}{% if current_section == 'tarefas' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+        {% if current_section == 'tarefas' %}aria-current="page"{% endif %}
+      >
+        {% trans 'Tarefas' %}
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endwith %}
