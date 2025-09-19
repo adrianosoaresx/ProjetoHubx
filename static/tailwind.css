@@ -3203,6 +3203,10 @@ a:focus {
     margin-right: 0px;
   }
 
+  .sm\:ml-auto {
+    margin-left: auto;
+  }
+
   .sm\:min-h-\[280px\] {
     min-height: 280px;
   }
@@ -3221,6 +3225,10 @@ a:focus {
 
   .sm\:items-start {
     align-items: flex-start;
+  }
+
+  .sm\:justify-between {
+    justify-content: space-between;
   }
 
   .sm\:gap-6 {
