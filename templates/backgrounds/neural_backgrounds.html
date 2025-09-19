@@ -180,6 +180,109 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'associados' %}
+<!-- Associados Background -->
+<div class="neural-bg-associados absolute inset-0 overflow-hidden">
+  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="associados-core" cx="50%" cy="45%" r="40%">
+        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:0.8"/>
+        <stop offset="60%" style="stop-color:#3b82f6;stop-opacity:0.4"/>
+        <stop offset="100%" style="stop-color:#1e40af;stop-opacity:0.2"/>
+      </radialGradient>
+      <radialGradient id="associados-node" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:1"/>
+        <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:0.7"/>
+      </radialGradient>
+      <linearGradient id="associados-connection" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#38bdf8;stop-opacity:0.7"/>
+        <stop offset="100%" style="stop-color:#2563eb;stop-opacity:0.5"/>
+      </linearGradient>
+      <filter id="associados-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="glow"/>
+        <feMerge>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+
+    <!-- Background rings representing collaboration -->
+    <g opacity="0.25" stroke="url(#associados-connection)" stroke-width="2" fill="none">
+      <circle cx="400" cy="280" r="220"/>
+      <circle cx="400" cy="280" r="300" stroke-dasharray="12 16"/>
+    </g>
+
+    <!-- Central hub for the community -->
+    <circle cx="400" cy="280" r="90" fill="url(#associados-core)" filter="url(#associados-glow)"/>
+    <circle cx="400" cy="280" r="46" fill="#0ea5e9" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Primary connections -->
+    <g stroke="url(#associados-connection)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.75">
+      <path d="M400,280 Q300,180 200,220"/>
+      <path d="M400,280 Q500,180 600,220"/>
+      <path d="M400,280 Q300,380 220,420"/>
+      <path d="M400,280 Q500,380 580,420"/>
+    </g>
+
+    <!-- Connection pulses -->
+    <g stroke="#38bdf8" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.4">
+      <path d="M220,220 Q260,260 300,240">
+        <animate attributeName="stroke-opacity" values="0.4;0.8;0.4" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <path d="M600,220 Q560,260 520,240">
+        <animate attributeName="stroke-opacity" values="0.4;0.8;0.4" dur="3.2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M220,420 Q260,360 300,380">
+        <animate attributeName="stroke-opacity" values="0.4;0.8;0.4" dur="3.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M580,420 Q540,360 500,380">
+        <animate attributeName="stroke-opacity" values="0.4;0.8;0.4" dur="3.6s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- Community nodes -->
+    <g filter="url(#associados-glow)">
+      <circle cx="200" cy="220" r="22" fill="url(#associados-node)">
+        <animate attributeName="r" values="22;26;22" dur="5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="600" cy="220" r="22" fill="url(#associados-node)">
+        <animate attributeName="r" values="22;26;22" dur="4.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="220" cy="420" r="20" fill="url(#associados-node)">
+        <animate attributeName="r" values="20;24;20" dur="5.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="580" cy="420" r="20" fill="url(#associados-node)">
+        <animate attributeName="r" values="20;24;20" dur="4.6s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Secondary members -->
+    <g fill="#bae6fd" opacity="0.8">
+      <circle cx="160" cy="300" r="10">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="260" cy="140" r="12">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="540" cy="140" r="12">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4.4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="660" cy="320" r="11">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="340" cy="470" r="9">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4.1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="460" cy="470" r="9">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="4.3s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </svg>
+</div>
+
   {% elif selected_bg == 'feed' %}
 <!-- Feed Background -->
 <div class="neural-bg-feed absolute inset-0 overflow-hidden">
