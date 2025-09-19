@@ -366,6 +366,20 @@ def _get_menu_items() -> List[MenuItem]:
     ]
 
     eventos_children = [
+    MenuItem(
+      id="eventos_calendario",
+      path=reverse("eventos:calendario"),
+      label="Calendário",
+      icon=ICON_EVENTOS,
+      permissions=[
+        "admin",
+        "financeiro",
+        "coordenador",
+        "nucleado",
+        "associado",
+        "convidado",
+      ],
+    ),
         MenuItem(
             id="eventos_novo",
             path=reverse("eventos:evento_novo"),
