@@ -123,6 +123,6 @@ msgstr ""
 msgid "Validar Token"
 msgstr ""
 
-#: templates/tokens/api_tokens.html:27 templates/tokens/listar_convites.html:25
+#: templates/tokens/api_tokens.html:27 templates/tokens/token_list.html:25
 msgid "Confirmar revogação?"
 msgstr "Confirmar revogação?"
