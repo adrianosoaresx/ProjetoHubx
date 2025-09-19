@@ -2,7 +2,9 @@
 {% load i18n static %}
 
 {% block title %}{% trans 'Configurações da Conta' %}{% endblock %}
-{% block hero %}{% include '_components/hero.html' with title=_('Configurações da Conta') %}{% endblock %}
+{% block hero %}
+  {% include '_components/hero_configuracoes.html' with title=_('Configurações da Conta') %}
+{% endblock %}
 
 {% block content %}
 <main class="container mx-auto px-4 py-6">
