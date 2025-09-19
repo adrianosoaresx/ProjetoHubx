@@ -22,11 +22,16 @@
               {% endif %}
             </div>
 
-            <div class="min-w-0 space-y-1 text-center sm:text-left">
+            <div class="min-w-0 space-y-1.5 text-center sm:text-left">
               <h2 class="bg-black/40 inline-block rounded-lg px-3 py-1 text-2xl md:text-3xl font-semibold drop-shadow text-white">
                 {{ display_name|default:profile.username }}
               </h2>
-             
+
+              {% if subtitle %}
+                <p class="text-sm sm:text-base text-white/80">
+                  {{ subtitle }}
+                </p>
+              {% endif %}
 
             </div>
 
