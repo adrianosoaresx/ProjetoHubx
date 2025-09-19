@@ -212,15 +212,6 @@ if DEBUG:
         }
     }
 
-TOKENS_RATE_LIMITS = {"burst": (10, 60), "sustained": (100, 3600)}
-TOKENS_RATE_LIMIT_ENABLED = True
-
-# Configuração de webhooks para tokens
-# ``TOKENS_WEBHOOK_URL`` define o endpoint que receberá eventos de criação e
-# revogação de tokens. Caso não definido, nenhum webhook será enviado.
-TOKENS_WEBHOOK_URL = os.getenv("TOKENS_WEBHOOK_URL")
-TOKEN_WEBHOOK_SECRET = os.getenv("TOKEN_WEBHOOK_SECRET", "")
-
 ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
 ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
 # Permite desativar OneSignal mesmo que as chaves existam.
