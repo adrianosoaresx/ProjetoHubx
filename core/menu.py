@@ -330,13 +330,6 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["authenticated"],
         ),
         MenuItem(
-            id="perfil_mural",
-            path=f"{perfil_url}?section=mural",
-            label="Mural",
-            icon=ICON_CHAT,
-            permissions=["authenticated"],
-        ),
-        MenuItem(
             id="perfil_conexoes",
             path=f"{perfil_url}?section=conexoes",
             label="Conexões",
