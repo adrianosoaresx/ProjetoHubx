@@ -159,6 +159,12 @@ ICON_CHAT = """
 </svg>
 """
 
+ICON_STAR = """
+<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
+  <polygon points=\"12 17.27 18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21 12 17.27\" />
+</svg>
+"""
+
 ICON_LOCK = """
 <svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
   <rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" />
@@ -376,6 +382,51 @@ def _get_menu_items() -> List[MenuItem]:
         )
     ]
 
+    feed_children = [
+        MenuItem(
+            id="feed_nova_postagem",
+            path=reverse("feed:nova_postagem"),
+            label="Nova postagem",
+            icon=ICON_PLUS,
+            permissions=[
+                "admin",
+                "financeiro",
+                "coordenador",
+                "nucleado",
+                "associado",
+                "convidado",
+            ],
+        ),
+        MenuItem(
+            id="feed_favoritos",
+            path=reverse("feed:bookmarks"),
+            label="Favoritos",
+            icon=ICON_STAR,
+            permissions=[
+                "admin",
+                "financeiro",
+                "coordenador",
+                "nucleado",
+                "associado",
+                "convidado",
+            ],
+        ),
+        MenuItem(
+            id="feed_mural",
+            path=reverse("feed:meu_mural"),
+            label="Mural",
+            icon=ICON_CHAT,
+            permissions=[
+                "admin",
+                "financeiro",
+                "coordenador",
+                "nucleado",
+                "associado",
+                "convidado",
+            ],
+        ),
+    ]
+
     financeiro_children = [
         MenuItem(
             id="financeiro_repasses",
@@ -552,6 +603,7 @@ def _get_menu_items() -> List[MenuItem]:
                 "associado",
                 "convidado",
             ],
+            children=feed_children,
         ),
         MenuItem(
             "financeiro",
