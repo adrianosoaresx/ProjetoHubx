@@ -28,6 +28,10 @@
                   {{ display_name|default:profile.username }}
                 </h2>
 
+                <span class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-sm sm:text-base font-medium text-white/80">
+                  <span aria-hidden="true">@</span>{{ profile.username }}
+                </span>
+
                 {% if subtitle %}
                   <p class="text-sm sm:text-base text-white/80">
                     {{ subtitle }}
@@ -75,9 +79,6 @@
                     </span>
                   {% endif %}
 
-                  <span class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-medium text-white/90">
-                    <span aria-hidden="true">@</span>{{ profile.username }}
-                  </span>
               </div>
 
             {% endwith %}
