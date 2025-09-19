@@ -1,83 +1,53 @@
-# Tokens de API
+# Tokens
 
-Este módulo fornece autenticação via **tokens de API** para integrações externas.
+Este aplicativo gerencia convites de acesso, códigos de autenticação e o envio de webhooks
+relacionados.
 
-## Uso
+## Convites via API
 
-### Geração
+As integrações podem gerar e administrar convites utilizando o endpoint `/api/tokens/`.
+Algumas operações disponíveis:
 
-```http
-POST /api/api-tokens/
-{
-  "scope": "read",  // read, write ou admin
-  "expires_in": 30    // dias
-}
-```
+- **POST `/api/tokens/`**: cria um convite e retorna os dados do `TokenAcesso` junto com o
+  código secreto (apenas na resposta de criação).
+- **GET `/api/tokens/validate?codigo=<codigo>`**: valida um código sem consumi-lo.
+- **POST `/api/tokens/<id>/use/`**: marca o convite como utilizado.
+- **POST `/api/tokens/<codigo>/revogar/`**: revoga o convite informado.
 
-O valor do token é retornado apenas uma vez na criação. Guarde-o com segurança.
-
-### Autenticação
-
-Envie o cabeçalho:
-
-```
-Authorization: Bearer <token>
-```
-
-### Revogação
-
-```http
-DELETE /api/api-tokens/<id>/
-```
-
-Revogações feitas via API registram o IP e o *user agent* do cliente.
-Revogações automáticas, executadas pela tarefa periódica
-`revogar_tokens_expirados`, registram o IP `0.0.0.0` e o *user agent*
-`task:revogar_tokens_expirados`.
-
-### Rotação
-
-```http
-POST /api/api-tokens/<id>/rotate/
-```
-
-Revoga o token antigo e retorna um novo valor.
-
-### Segurança
-
-- Utilize sempre HTTPS.
-- Revogue tokens comprometidos imediatamente.
-- A validade máxima recomendada é de 1 ano.
+Cada operação registra entradas em `TokenUsoLog`, preservando IP e *user agent* do cliente.
 
 ## Webhooks
 
-Quando `TOKENS_WEBHOOK_URL` está configurado, a aplicação envia notificações HTTP:
+Quando `TOKENS_WEBHOOK_URL` é configurado, os seguintes eventos são enviados de forma assíncrona:
 
-- `created`: `{ "event": "created", "id": "<token-id>", "token": "<token-hash>" }`
-- `revoked`: `{ "event": "revoked", "id": "<token-id>" }`
-- `rotated`: `{ "event": "rotated", "id": "<old-token-id>", "new_id": "<new-token-id>" }`
+- `invite.created`: convite gerado com sucesso (inclui o código).
+- `invite.used`: convite utilizado.
+- `invite.revoked`: convite revogado.
 
-O campo `token` contém o hash SHA-256 do valor do token, nunca o valor bruto.
+Os envios utilizam o segredo `TOKEN_WEBHOOK_SECRET`, quando presente, para assinar as mensagens
+via `X-Hubx-Signature` (SHA-256).
 
 ## Tarefas periódicas
 
-O Celery Beat executa diariamente duas tarefas de manutenção:
+O módulo fornece tarefas Celery para manutenção:
 
-- `revogar_tokens_expirados`: revoga automaticamente tokens cuja data de expiração já passou.
-- `remover_logs_antigos`: limpa logs de uso com mais de um ano.
-
-Ambas são agendadas para rodar todos os dias à meia-noite.
+- `remover_logs_antigos`: remove registros de uso (`TokenUsoLog`) com mais de um ano.
+- `reenviar_webhooks_pendentes`: reenvia eventos armazenados em `TokenWebhookEvent` após falhas.
 
 ## Métricas Prometheus
 
-O módulo expõe métricas para monitorar o envio de webhooks:
+As seguintes métricas estão disponíveis em `tokens/metrics.py`:
 
-- `tokens_webhooks_sent_total`: total de webhooks enviados com sucesso.
-- `tokens_webhooks_failed_total`: total de webhooks que falharam após todas as tentativas.
-- `tokens_webhook_latency_seconds`: histograma da latência do envio de webhooks.
-- `tokens_api_tokens_created_total`: total de tokens de API gerados.
-- `tokens_api_tokens_revoked_total`: total de tokens de API revogados.
-- `tokens_api_tokens_rotated_total`: total de tokens de API rotacionados.
+- `tokens_invites_created_total`
+- `tokens_invites_used_total`
+- `tokens_invites_revoked_total`
+- `tokens_validation_fail_total`
+- `tokens_rate_limited_total`
+- `tokens_api_latency_seconds`
+- `tokens_validation_latency_seconds`
+- `tokens_webhooks_sent_total`
+- `tokens_webhooks_failed_total`
+- `tokens_webhook_latency_seconds`
 
-Exemplos de regras de alerta podem ser importados a partir de `prometheus/tokens_alerts.yml`.
-
+Essas métricas permitem acompanhar o fluxo de convites, a efetividade dos webhooks e a saúde das
+operações do módulo.

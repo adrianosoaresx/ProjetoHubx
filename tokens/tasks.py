@@ -10,8 +10,7 @@ from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
 
-from .models import ApiToken, ApiTokenLog, TokenUsoLog, TokenWebhookEvent
-from .utils import revoke_token, rotate_token
+from .models import TokenUsoLog, TokenWebhookEvent
 from .metrics import (
     tokens_webhook_latency_seconds,
     tokens_webhooks_failed_total,
@@ -23,53 +22,6 @@ from .metrics import (
 def remover_logs_antigos() -> None:
     limite = timezone.now() - timezone.timedelta(days=365)
     TokenUsoLog.all_objects.filter(created_at__lt=limite).delete()
-    ApiTokenLog.all_objects.filter(created_at__lt=limite).delete()
-
-
-@shared_task
-def revogar_tokens_expirados() -> None:
-    now = timezone.now()
-
-    tokens = ApiToken.objects.filter(expires_at__lt=now, revoked_at__isnull=True)
-    for token in tokens:
-        revoke_token(
-            token.id,
-            token.user,
-            ip="0.0.0.0",
-            user_agent="task:revogar_tokens_expirados",
-            usuario_log=None,
-        )
-
-
-@shared_task
-def rotacionar_tokens_proximos_da_expiracao() -> None:
-    """Rotaciona tokens próximos da expiração."""
-
-    margem_dias = getattr(settings, "TOKENS_ROTATE_BEFORE_DAYS", 7)
-    now = timezone.now()
-    limite = now + timezone.timedelta(days=margem_dias)
-    tokens = ApiToken.objects.filter(
-        revoked_at__isnull=True,
-        anterior__isnull=True,
-        expires_at__isnull=False,
-        expires_at__gt=now,
-        expires_at__lt=limite,
-    )
-    for token in tokens:
-        raw = rotate_token(
-            token.id,
-            ip="0.0.0.0",
-            user_agent="task:rotacionar_tokens_proximos_da_expiracao",
-        )
-        new_hash = hashlib.sha256(raw.encode()).hexdigest()
-        novo_token = ApiToken.objects.get(token_hash=new_hash)
-        ApiTokenLog.objects.create(
-            token=novo_token,
-            usuario=None,
-            acao=ApiTokenLog.Acao.GERACAO,
-            ip="0.0.0.0",
-            user_agent="task:rotacionar_tokens_proximos_da_expiracao",
-        )
 
 
 @shared_task
