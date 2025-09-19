@@ -73,7 +73,7 @@ def listar_convites(request):
     }
 
     context = {"convites": convites, "totais": totais}
-    return render(request, "tokens/listar_convites.html", context)
+    return render(request, "tokens/token_list.html", context)
 
 
 @login_required
