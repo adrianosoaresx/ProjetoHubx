@@ -3,6 +3,10 @@
 
 {% block title %}{% trans "Nova Postagem" %} - Hubx{% endblock %}
 
+{% block hero %}
+  {% include '_components/hero_feed.html' with title=_('Nova Postagem') %}
+{% endblock %}
+
 {% block content %}
 <section class="max-w-2xl mx-auto px-4 py-10">
   {% if request.user.user_type == 'root' %}
