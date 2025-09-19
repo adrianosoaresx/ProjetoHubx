@@ -1,83 +1,45 @@
-# Tokens de API
+# Tokens
 
-Este módulo fornece autenticação via **tokens de API** para integrações externas.
-
-## Uso
-
-### Geração
-
-```http
-POST /api/api-tokens/
-{
-  "scope": "read",  // read, write ou admin
-  "expires_in": 30    // dias
-}
-```
-
-O valor do token é retornado apenas uma vez na criação. Guarde-o com segurança.
-
-### Autenticação
-
-Envie o cabeçalho:
-
-```
-Authorization: Bearer <token>
-```
-
-### Revogação
-
-```http
-DELETE /api/api-tokens/<id>/
-```
-
-Revogações feitas via API registram o IP e o *user agent* do cliente.
-Revogações automáticas, executadas pela tarefa periódica
-`revogar_tokens_expirados`, registram o IP `0.0.0.0` e o *user agent*
-`task:revogar_tokens_expirados`.
-
-### Rotação
-
-```http
-POST /api/api-tokens/<id>/rotate/
-```
-
-Revoga o token antigo e retorna um novo valor.
-
-### Segurança
-
-- Utilize sempre HTTPS.
-- Revogue tokens comprometidos imediatamente.
-- A validade máxima recomendada é de 1 ano.
+O app `tokens` concentra fluxos de convites, códigos de autenticação e automações de 2FA. A emissão de tokens de API para integrações externas foi descontinuada; as páginas do painel e os endpoints REST associados foram removidos. Os serviços internos `generate_token`, `revoke_token` e `rotate_token` permanecem disponíveis apenas para rotinas automatizadas, preservando as integrações legadas (webhooks, métricas e tarefas agendadas).
 
 ## Webhooks
 
-Quando `TOKENS_WEBHOOK_URL` está configurado, a aplicação envia notificações HTTP:
+Quando `TOKENS_WEBHOOK_URL` está configurado, a aplicação envia notificações HTTP para os principais eventos:
 
-- `created`: `{ "event": "created", "id": "<token-id>", "token": "<token-hash>" }`
+- `invite.created`: `{ "event": "invite.created", "id": "<token-id>", "code": "<token-code>" }`
+- `invite.used`: `{ "event": "invite.used", "id": "<token-id>" }`
+- `invite.revoked`: `{ "event": "invite.revoked", "id": "<token-id>" }`
+- `created`: `{ "event": "created", "id": "<token-id>", "token": "<token-hash>" }` (legado para tokens de API)
 - `revoked`: `{ "event": "revoked", "id": "<token-id>" }`
 - `rotated`: `{ "event": "rotated", "id": "<old-token-id>", "new_id": "<new-token-id>" }`
 
-O campo `token` contém o hash SHA-256 do valor do token, nunca o valor bruto.
+O campo `token` contém o hash SHA-256 do valor bruto, nunca o token original.
 
 ## Tarefas periódicas
 
-O Celery Beat executa diariamente duas tarefas de manutenção:
+O Celery Beat executa tarefas de manutenção relacionadas aos tokens:
 
-- `revogar_tokens_expirados`: revoga automaticamente tokens cuja data de expiração já passou.
-- `remover_logs_antigos`: limpa logs de uso com mais de um ano.
-
-Ambas são agendadas para rodar todos os dias à meia-noite.
+- `revogar_tokens_expirados`: revoga tokens de API expirados e registra o evento.
+- `remover_logs_antigos`: remove logs com mais de um ano.
+- `rotacionar_tokens_proximos_da_expiracao`: substitui tokens de API próximos da expiração.
+- `reenviar_webhooks_pendentes`: tenta reenviar notificações que falharam anteriormente.
 
 ## Métricas Prometheus
 
-O módulo expõe métricas para monitorar o envio de webhooks:
+O módulo expõe métricas para monitorar convites, webhooks e tokens de API legados:
 
-- `tokens_webhooks_sent_total`: total de webhooks enviados com sucesso.
-- `tokens_webhooks_failed_total`: total de webhooks que falharam após todas as tentativas.
-- `tokens_webhook_latency_seconds`: histograma da latência do envio de webhooks.
-- `tokens_api_tokens_created_total`: total de tokens de API gerados.
-- `tokens_api_tokens_revoked_total`: total de tokens de API revogados.
-- `tokens_api_tokens_rotated_total`: total de tokens de API rotacionados.
+- `tokens_invites_created_total`: convites gerados.
+- `tokens_invites_used_total`: convites utilizados.
+- `tokens_invites_revoked_total`: convites revogados.
+- `tokens_validation_fail_total`: falhas na validação de convites.
+- `tokens_rate_limited_total`: requisições bloqueadas por rate limit.
+- `tokens_webhooks_sent_total`: webhooks enviados com sucesso.
+- `tokens_webhooks_failed_total`: falhas no envio de webhooks.
+- `tokens_webhook_latency_seconds`: histograma de latência dos webhooks.
+- `tokens_api_tokens_created_total`: tokens de API gerados (legado).
+- `tokens_api_tokens_revoked_total`: tokens de API revogados (legado).
+- `tokens_api_tokens_rotated_total`: tokens de API rotacionados (legado).
+- `tokens_api_latency_seconds`: latência de operações na API de convites.
+- `tokens_validation_latency_seconds`: latência na validação de convites.
 
 Exemplos de regras de alerta podem ser importados a partir de `prometheus/tokens_alerts.yml`.
-

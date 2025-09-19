@@ -607,7 +607,6 @@ def _get_menu_items() -> List[MenuItem]:
             children=financeiro_children,
         ),
         MenuItem("organizacoes", reverse("organizacoes:list"), "Organizações", ICON_ORGS, ["root"]),
-        MenuItem("token_admin", reverse("tokens:listar_api_tokens"), "Token", ICON_TOKEN, ["root", "admin"]),
         MenuItem("token_convite", reverse("tokens:gerar_convite"), "Token", ICON_TOKEN, ["coordenador"]),
         MenuItem(
             "configuracoes",

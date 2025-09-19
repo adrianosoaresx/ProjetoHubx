@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import base64
-import hashlib
 from io import BytesIO
 
 import pyotp
@@ -10,7 +9,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -24,7 +22,6 @@ from notificacoes.services.whatsapp_client import send_whatsapp
 
 from .forms import (
     Ativar2FAForm,
-    GerarApiTokenForm,
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
@@ -37,8 +34,6 @@ from .metrics import (
     tokens_rate_limited_total,
 )
 from .models import (
-    ApiToken,
-    ApiTokenLog,
     CodigoAutenticacaoLog,
     TokenAcesso,
     TokenUsoLog,
@@ -48,13 +43,11 @@ from .perms import can_issue_invite
 from .ratelimit import check_rate_limit
 from .services import (
     create_invite_token,
-    generate_token,
     invite_created,
     invite_revoked,
     invite_used,
-    list_tokens,
 )
-from .utils import get_client_ip, revoke_token
+from .utils import get_client_ip
 
 User = get_user_model()
 
@@ -63,7 +56,7 @@ def token(request):
     if request.user.is_authenticated and (
         request.user.is_superuser or request.user.user_type in [UserType.ROOT, UserType.ADMIN]
     ):
-        return redirect("tokens:listar_api_tokens")
+        return redirect("tokens:gerar_convite")
 
     if request.method == "POST":
         tkn = request.POST.get("token")
@@ -117,101 +110,6 @@ def revogar_convite(request, token_id: int):
     else:
         messages.info(request, _("Convite já estava revogado."))
     return redirect("tokens:listar_convites")
-
-
-@login_required
-def listar_api_tokens(request):
-    tokens = list_tokens(request.user)
-    form = GerarApiTokenForm()
-    return render(request, "tokens/api_tokens.html", {"tokens": tokens, "form": form})
-
-
-@login_required
-def revogar_api_token(request, token_id: str):
-    token = get_object_or_404(ApiToken, id=token_id, user=request.user)
-    if token.revoked_at:
-        messages.info(request, _("Token já revogado."))
-    else:
-        ip = get_client_ip(request)
-        ua = request.META.get("HTTP_USER_AGENT", "")
-        revoke_token(token.id, revogado_por=request.user, ip=ip, user_agent=ua)
-        messages.success(request, _("Token revogado."))
-    return redirect("tokens:listar_api_tokens")
-
-
-@login_required
-def gerar_api_token(request):
-    if request.method != "POST":
-        tokens = list_tokens(request.user)
-        form = GerarApiTokenForm()
-        messages.error(request, _("Método não permitido"))
-        return render(
-            request,
-            "tokens/api_tokens.html",
-            {"tokens": tokens, "form": form},
-            status=405,
-        )
-
-    form = GerarApiTokenForm(request.POST)
-    if form.is_valid():
-        scope = form.cleaned_data["scope"]
-        if scope == "admin" and not (request.user.is_superuser or request.user.user_type == UserType.ROOT):
-            if request.headers.get("HX-Request") == "true":
-                return render(
-                    request,
-                    "tokens/_resultado.html",
-                    {"error": _("Não autorizado")},
-                    status=403,
-                )
-            messages.error(request, _("Não autorizado"))
-            tokens = list_tokens(request.user)
-            return render(
-                request,
-                "tokens/api_tokens.html",
-                {"tokens": tokens, "form": form, "error": _("Não autorizado")},
-                status=403,
-            )
-
-        client_name = form.cleaned_data["client_name"]
-        expires_in = form.cleaned_data.get("expires_in")
-        expires_delta = timezone.timedelta(days=expires_in) if expires_in else None
-
-        raw_token = generate_token(request.user, client_name, scope, expires_delta)
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        token = ApiToken.objects.get(token_hash=token_hash)
-        ApiTokenLog.objects.create(
-            token=token,
-            usuario=request.user,
-            acao=ApiTokenLog.Acao.GERACAO,
-            ip=get_client_ip(request),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
-        if request.headers.get("HX-Request") == "true":
-            return render(request, "tokens/_resultado.html", {"token": raw_token})
-        messages.success(request, _("Token gerado"))
-        tokens = list_tokens(request.user)
-        form = GerarApiTokenForm()
-        return render(
-            request,
-            "tokens/api_tokens.html",
-            {"tokens": tokens, "form": form, "token": raw_token},
-        )
-
-    if request.headers.get("HX-Request") == "true":
-        return render(
-            request,
-            "tokens/_resultado.html",
-            {"error": _("Dados inválidos")},
-            status=400,
-        )
-    messages.error(request, _("Dados inválidos"))
-    tokens = list_tokens(request.user)
-    return render(
-        request,
-        "tokens/api_tokens.html",
-        {"tokens": tokens, "form": form, "error": _("Dados inválidos")},
-        status=400,
-    )
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
