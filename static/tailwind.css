@@ -2106,11 +2106,6 @@ a:focus {
   flex-grow: 1;
 }
 
-.translate-y-\[55\%\] {
-  --tw-translate-y: 55%;
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
-}
-
 .transform {
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
@@ -2389,10 +2384,6 @@ a:focus {
   background-color: var(--warning-light);
 }
 
-.bg-black\/40 {
-  background-color: rgb(0 0 0 / 0.4);
-}
-
 .bg-black\/60 {
   background-color: rgb(0 0 0 / 0.6);
 }
@@ -2401,8 +2392,8 @@ a:focus {
   background-color: var(--primary);
 }
 
-.bg-white\/15 {
-  background-color: rgb(255 255 255 / 0.15);
+.bg-transparent {
+  background-color: transparent;
 }
 
 .bg-white\/20 {
@@ -2417,9 +2408,19 @@ a:focus {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
 
+.bg-gradient-to-t {
+  background-image: linear-gradient(to top, var(--tw-gradient-stops));
+}
+
 .from-\[var\(--hero-from\)\] {
   --tw-gradient-from: var(--hero-from) var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-black\/70 {
+  --tw-gradient-from: rgb(0 0 0 / 0.7) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(0 0 0 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -2433,6 +2434,11 @@ a:focus {
   --tw-gradient-from: #f0f9ff var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(240 249 255 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.via-black\/30 {
+  --tw-gradient-to: rgb(0 0 0 / 0)  var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), rgb(0 0 0 / 0.3) var(--tw-gradient-via-position), var(--tw-gradient-to);
 }
 
 .via-blue-100 {
@@ -2454,6 +2460,10 @@ a:focus {
 
 .to-indigo-200 {
   --tw-gradient-to: #c7d2fe var(--tw-gradient-to-position);
+}
+
+.to-transparent {
+  --tw-gradient-to: transparent var(--tw-gradient-to-position);
 }
 
 .object-cover {
@@ -2550,8 +2560,8 @@ a:focus {
   padding-bottom: 1.5rem;
 }
 
-.pb-24 {
-  padding-bottom: 6rem;
+.pb-10 {
+  padding-bottom: 2.5rem;
 }
 
 .pl-6 {
@@ -2686,11 +2696,6 @@ a:focus {
   color: var(--color-error-500);
 }
 
-.text-gray-400 {
-  --tw-text-opacity: 1;
-  color: rgb(156 163 175 / var(--tw-text-opacity, 1));
-}
-
 .text-primary {
   color: var(--primary);
 }
@@ -2712,9 +2717,9 @@ a:focus {
   color: rgb(255 255 255 / 0.9);
 }
 
-.shadow-2xl {
-  --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+.shadow-lg {
+  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
@@ -2758,17 +2763,14 @@ a:focus {
   --tw-ring-color: rgb(255 255 255 / 0.5);
 }
 
-.ring-white\/90 {
-  --tw-ring-color: rgb(255 255 255 / 0.9);
-}
-
-.drop-shadow {
-  --tw-drop-shadow: drop-shadow(0 1px 2px rgb(0 0 0 / 0.1)) drop-shadow(0 1px 1px rgb(0 0 0 / 0.06));
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+.backdrop-blur-sm {
+  --tw-backdrop-blur: blur(4px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
 
 .transition {
@@ -3093,10 +3095,6 @@ a:focus {
   color: var(--primary);
 }
 
-.hover\:text-white\/90:hover {
-  color: rgb(255 255 255 / 0.9);
-}
-
 .hover\:underline:hover {
   text-decoration-line: underline;
 }
@@ -3208,13 +3206,12 @@ a:focus {
     margin-right: 0px;
   }
 
-  .sm\:min-h-\[440px\] {
-    min-height: 440px;
+  .sm\:-mt-12 {
+    margin-top: -3rem;
   }
 
-  .sm\:translate-y-\[60\%\] {
-    --tw-translate-y: 60%;
-    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  .sm\:min-h-\[440px\] {
+    min-height: 440px;
   }
 
   .sm\:grid-cols-1 {
@@ -3241,15 +3238,6 @@ a:focus {
     gap: 1.5rem;
   }
 
-  .sm\:px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-
-  .sm\:pb-28 {
-    padding-bottom: 7rem;
-  }
-
   .sm\:text-left {
     text-align: left;
   }
@@ -3263,6 +3251,10 @@ a:focus {
 @media (min-width: 768px) {
   .md\:col-span-5 {
     grid-column: span 5 / span 5;
+  }
+
+  .md\:-mt-16 {
+    margin-top: -4rem;
   }
 
   .md\:h-24 {
@@ -3309,8 +3301,8 @@ a:focus {
     align-self: flex-start;
   }
 
-  .md\:p-5 {
-    padding: 1.25rem;
+  .md\:p-6 {
+    padding: 1.5rem;
   }
 
   .md\:py-16 {
@@ -3344,13 +3336,12 @@ a:focus {
 }
 
 @media (min-width: 1024px) {
-  .lg\:min-h-\[480px\] {
-    min-height: 480px;
+  .lg\:-mt-24 {
+    margin-top: -6rem;
   }
 
-  .lg\:translate-y-\[65\%\] {
-    --tw-translate-y: 65%;
-    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  .lg\:min-h-\[480px\] {
+    min-height: 480px;
   }
 
   .lg\:grid-cols-2 {
@@ -3365,17 +3356,13 @@ a:focus {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .lg\:px-8 {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  .lg\:py-14 {
-    padding-top: 3.5rem;
+  .lg\:pb-14 {
     padding-bottom: 3.5rem;
   }
+}
 
-  .lg\:pb-32 {
-    padding-bottom: 8rem;
+@media (min-width: 1280px) {
+  .xl\:-mt-28 {
+    margin-top: -7rem;
   }
 }

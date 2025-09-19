@@ -10,6 +10,10 @@
         data-perfil-section="info"
         data-perfil-url="{% url 'accounts:perfil_info_partial' %}"
         data-perfil-default="{% if default_section == 'info' %}true{% else %}false{% endif %}"
+  hx-get="{% url 'accounts:perfil_info_partial' %}"
+  hx-target="#perfil-content"
+  hx-push-url="?section=info"
+  {% if not is_owner %}hx-vals='{"public_id":"{{ profile.public_id|default:perfil.public_id|escapejs }}","username":"{{ profile.username|default:perfil.username|escapejs }}"}'{% endif %}
         {% if default_section == 'info' %}aria-current="page"{% endif %}
       >
         {% trans "Info" %}
@@ -23,6 +27,10 @@
         data-perfil-section="portfolio"
         data-perfil-url="{% url 'accounts:perfil_portfolio' %}"
         data-perfil-default="{% if default_section == 'portfolio' %}true{% else %}false{% endif %}"
+  hx-get="{% url 'accounts:perfil_portfolio' %}"
+  hx-target="#perfil-content"
+  hx-push-url="?section=portfolio"
+  {% if not is_owner %}hx-vals='{"public_id":"{{ profile.public_id|default:perfil.public_id|escapejs }}","username":"{{ profile.username|default:perfil.username|escapejs }}"}'{% endif %}
         {% if default_section == 'portfolio' %}aria-current="page"{% endif %}
       >
         {% trans "Portfólio" %}
@@ -37,6 +45,9 @@
         data-perfil-section="conexoes"
         data-perfil-url="{% url 'accounts:perfil_conexoes_partial' %}"
         data-perfil-default="{% if default_section == 'conexoes' %}true{% else %}false{% endif %}"
+  hx-get="{% url 'accounts:perfil_conexoes_partial' %}"
+  hx-target="#perfil-content"
+  hx-push-url="?section=conexoes"
         {% if default_section == 'conexoes' %}aria-current="page"{% endif %}
       >
         {% trans "Conexões" %}

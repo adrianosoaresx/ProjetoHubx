@@ -429,6 +429,8 @@ def remover_conexao(request, id):
         messages.success(request, f"Conexão com {other_user.get_full_name()} removida.")
     except User.DoesNotExist:
         messages.error(request, "Usuário não encontrado.")
+    if _is_htmx_or_ajax(request):
+        return HttpResponse(status=204)
     return redirect("accounts:perfil_sections_conexoes")
 
 
@@ -449,9 +451,9 @@ def aceitar_conexao(request, id):
     request.user.connections.add(other_user)
     request.user.followers.remove(other_user)
     messages.success(request, f"Conexão com {other_user.get_full_name()} aceita.")
-    return redirect(
-        f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes"
-    )
+    if _is_htmx_or_ajax(request):
+        return HttpResponse(status=204)
+    return redirect(f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes")
 
 
 @login_required
@@ -470,9 +472,9 @@ def recusar_conexao(request, id):
 
     request.user.followers.remove(other_user)
     messages.success(request, f"Solicitação de conexão de {other_user.get_full_name()} recusada.")
-    return redirect(
-        f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes"
-    )
+    if _is_htmx_or_ajax(request):
+        return HttpResponse(status=204)
+    return redirect(f"{reverse('accounts:perfil_sections_conexoes')}?tab=solicitacoes")
 
 
 @login_required

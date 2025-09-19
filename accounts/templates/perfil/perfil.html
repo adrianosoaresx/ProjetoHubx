@@ -22,6 +22,11 @@
       data-perfil-error-text="{% trans 'Não foi possível carregar esta seção.' %}"
       aria-live="polite"
       aria-busy="true"
+      hx-trigger="load"
+      hx-get="{{ perfil_default_url }}"
+      hx-target="#perfil-content"
+  hx-push-url="?section={{ perfil_default_section }}"
+      hx-vals='{"section":"{{ perfil_default_section }}"}'
     >
       <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
         {% trans "Carregando conteúdo..." %}

@@ -1,15 +1,15 @@
 {% load i18n lucide_icons %}
           
 <section class="relative isolate overflow-visible">
-  <div class="relative overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] min-h-[400px] sm:min-h-[440px] lg:min-h-[480px]">
+  <div class="relative overflow-hidden min-h-[400px] sm:min-h-[440px] lg:min-h-[480px] {% if not profile.cover %}bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]{% endif %}">
     {% if profile.cover %}
-      <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
+      <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="eager" fetchpriority="high">
       <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
     {% endif %}
   </div>
 
 
-  <div class="container relative mx-auto px-6 pb-10 lg:pb-14">
+  <div class="container relative mx-auto px-6 pb-10 lg:pb-14 z-10 sm:-mt-12 md:-mt-16 lg:-mt-24 xl:-mt-28">
     <div class="rounded-2xl border border-[var(--border)] bg-transparent p-4 md:p-6 shadow-lg transition-colors">
       {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
         <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
@@ -25,7 +25,9 @@
 
           <div class="min-w-0 space-y-1.5 text-center sm:text-left">
             <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:text-3xl">
-              {{ display_name|default:profile.username }}
+              <span class="inline-block rounded-lg bg-black/60 px-2 py-1 text-white shadow-sm ring-1 ring-white/10 backdrop-blur-sm">
+                {{ display_name|default:profile.username }}
+              </span>
             </h2>
 
             <span class="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-0.5 text-sm font-medium text-[var(--text-secondary)] sm:text-base">

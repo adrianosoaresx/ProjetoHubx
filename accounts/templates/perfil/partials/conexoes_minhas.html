@@ -1,5 +1,5 @@
 {% load i18n lucide_icons %}
-<form method="get" class="flex gap-2 mb-4">
+<form method="get" class="flex gap-2 mb-4" hx-get="{% url 'accounts:perfil_conexoes_partial' %}" hx-target="#perfil-content" hx-push-url="?section=conexoes">
   <input
     type="text"
     name="q"
