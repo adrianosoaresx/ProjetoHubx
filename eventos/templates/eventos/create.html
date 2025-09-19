@@ -1,12 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n widget_tweaks %}
-{% block title %}{% trans "Novo Evento" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero_eventos.html' with title=_('Novo Evento') %}
-{% endblock %}
-
-{% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">{% trans "Cadastrar Evento" %}</h1>
 
@@ -28,4 +20,4 @@
     </div>
   </form>
 </section>
-{% endblock %}
+ 

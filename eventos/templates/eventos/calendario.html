@@ -1,61 +1,81 @@
-{% extends "base.html" %}
 {% load i18n static %}
-{% block extra_css %}{% endblock %}
-{% block content %}
+<section class="mx-auto max-w-6xl px-4 lg:px-6 py-6">
+  <header class="mb-4">
+    <h2 class="text-2xl font-semibold">{% trans "Últimos 30 dias com eventos" %}</h2>
+  </header>
 
-<section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <h2 class="font-semibold text-2xl mb-4 flex items-center justify-between">
-      <a href="{% url 'eventos:calendario_mes' prev_ano prev_mes %}" class="btn btn-secondary btn-sm">&laquo;</a>
-      <span>{{ data_atual|date:'YEAR_MONTH_FORMAT' }}</span>
-      <a href="{% url 'eventos:calendario_mes' next_ano next_mes %}" class="btn btn-secondary btn-sm">&raquo;</a>
-    </h2>
-    {% if perms.eventos.add_evento %}
-    <a href="{% url 'eventos:evento_novo' %}"
-       class="btn btn-primary inline-flex items-center gap-2 sm:ml-auto sm:order-last mt-4 sm:mt-0"
-       aria-label="{% trans 'Novo Evento' %}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        {% trans "Novo Evento" %}
-    </a>
-    {% endif %}
-  </div>
-
-  <section class="mt-6">
-    <div class="grid grid-cols-7 gap-px bg-[var(--bg-tertiary)] rounded-lg overflow-hidden text-sm leading-tight select-none">
-      {% for dia in dias_mes %}
-        <div class="relative bg-[var(--bg-primary)] p-4 h-28 align-top {% if not dia.mes_atual %}text-[var(--text-secondary)]{% else %}text-[var(--text-primary)]{% endif %}"
-             hx-get="{% url 'eventos:lista_eventos' dia.data|date:'Y-m-d' %}"
-             hx-target="#eventos-dia" hx-trigger="click">
-          <div class="flex items-center justify-between mb-2">
-            <span class="{% if dia.hoje %}ring-2 ring-primary-600 rounded-full{% endif %} inline-block w-6 h-6 leading-6 text-center">
-              {{ dia.data.day }}
+  {% if dias_com_eventos %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% for bloco in dias_com_eventos %}
+        <article class="rounded-2xl border border-[var(--border)] bg-[var(--bg-elevated)] shadow-sm hover:shadow-md transition overflow-hidden">
+          <!-- Cabeçalho do dia -->
+          <header class="flex items-center justify-between px-4 py-3 bg-[var(--surface-secondary)]">
+            <div class="flex items-baseline gap-3">
+              <span class="text-3xl font-bold leading-none text-[var(--text-primary)]">
+                {{ bloco.data|date:"d" }}
+              </span>
+              <div class="leading-tight">
+                <div class="text-sm font-medium text-[var(--text-primary)]">
+                  {{ bloco.data|date:"l" }}
+                </div>
+                <div class="text-xs text-[var(--text-muted)]">
+                  {{ bloco.data|date:"d \\d\\e F, Y" }}
+                </div>
+              </div>
+            </div>
+            <span class="text-xs rounded-full px-2 py-1 bg-[var(--surface-tertiary)] text-[var(--text-secondary)]">
+              {{ bloco.eventos|length }} {% trans "evento(s)" %}
             </span>
-            {% if dia.eventos|length > 3 %}
-              <span class="text-xs text-[var(--text-muted)]">+{{ dia.eventos|length|add:"-3" }}</span>
-            {% endif %}
-          </div>
-          <ul class="space-y-1">
-            {% for ev in dia.eventos|slice:":3" %}
-              <li>
-                <a href="{% url 'eventos:evento_detalhe' ev.id %}"
-                   class="block bg-[var(--success-light)] border border-[var(--success)] text-[var(--success)] rounded px-1.5 py-0.5 text-xs leading-tight hover:bg-[var(--color-success-100)] transition line-clamp-3"
-                   hx-get="{% url 'eventos:evento_detalhe' ev.id %}"
-                   hx-target="#modal" hx-trigger="click" hx-stop-propagation="click">
-                  {{ ev.titulo }}
-                </a>
+          </header>
+
+          <!-- Timeline do dia -->
+          <ul class="divide-y divide-[var(--border)]">
+            {% for ev in bloco.eventos %}
+              <li class="px-4 py-3">
+                <div class="flex items-start justify-between gap-3">
+                  <!-- Hora -->
+                  <time class="min-w-20 text-sm font-semibold text-[var(--text-primary)]" datetime="{{ ev.data_inicio|date:'c' }}">
+                    {{ ev.data_inicio|date:"H:i" }}
+                  </time>
+
+                  <!-- Conteúdo -->
+                  <div class="flex-1 min-w-0">
+                    <a href="{% url 'eventos:evento_detalhe' ev.id %}" class="group inline-flex items-baseline gap-2">
+                      <span class="truncate text-sm font-medium text-[var(--text-primary)] group-hover:underline">
+                        {{ ev.titulo }}
+                      </span>
+                      {% if ev.tipo %}
+                        <span class="text-[10px] px-1.5 py-0.5 rounded-full
+                          {% if ev.tipo == 'reuniao' %} bg-green-100 text-green-700
+                          {% elif ev.tipo == 'palestra' %} bg-red-100 text-red-700
+                          {% elif ev.tipo == 'workshop' %} bg-blue-100 text-blue-700
+                          {% else %} bg-gray-100 text-gray-700 {% endif %}">
+                          {{ ev.get_tipo_display|default:ev.tipo }}
+                        </span>
+                      {% endif %}
+                      {% if ev.local %}
+                        <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                          {{ ev.local }}
+                        </span>
+                      {% endif %}
+                    </a>
+                  </div>
+
+                  <!-- Ação rápida opcional -->
+                  <div class="shrink-0">
+                    <a href="{% url 'eventos:evento_detalhe' ev.id %}"
+                       class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-sm underline">
+                       {% trans "Detalhes" %}
+                    </a>
+                  </div>
+                </div>
               </li>
             {% endfor %}
           </ul>
-        </div>
+        </article>
       {% endfor %}
     </div>
-  </section>
-
-  <div id="eventos-dia" class="mt-8"></div>
+  {% else %}
+    <p class="text-[var(--text-secondary)]">{% trans "Nenhum evento nos últimos 30 dias." %}</p>
+  {% endif %}
 </section>
-
-<div id="modal"></div>
-
-{% endblock %}

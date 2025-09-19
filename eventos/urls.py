@@ -32,7 +32,8 @@ app_name = "eventos"
 
 urlpatterns = [
     path("lista/", views.EventoListView.as_view(), name="lista"),
-    path("", views.calendario, name="calendario"),
+    path("", views.painel_eventos, name="painel"),
+    path("ultimos-30/", views.calendario_cards_ultimos_30, name="calendario"),
     path("<int:ano>/<int:mes>/", views.calendario, name="calendario_mes"),
     path("dia/<slug:dia_iso>/", views.lista_eventos, name="lista_eventos"),
     # CRUD

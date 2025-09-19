@@ -1,5 +1,5 @@
 import calendar
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, time
 from decimal import Decimal
 from typing import Any
 
@@ -119,6 +119,13 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
 
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("Hx-Request") == "true":
+            return super().render_to_response(context, **response_kwargs)
+        # não HTMX: renderiza o painel com o parcial de lista
+        context["partial_template"] = "eventos/evento_list.html"
+        return TemplateResponse(self.request, "eventos/painel.html", context)
+
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
@@ -135,72 +142,75 @@ def _queryset_por_organizacao(request):
 
 
 def calendario(request, ano: int | None = None, mes: int | None = None):
+    return redirect("eventos:painel")
+
+
+def calendario_cards_ultimos_30(request):
     if getattr(request.user, "user_type", None) == UserType.ROOT:
         return HttpResponseForbidden()
-    today = timezone.localdate()
-    ano = int(ano or today.year)
-    mes = int(mes or today.month)
 
-    try:
-        data_atual = date(ano, mes, 1)
-    except ValueError as exc:  # pragma: no cover - parametros invalidos
-        raise Http404("Data inválida") from exc
+    hoje = timezone.localdate()
+    inicio = hoje - timedelta(days=30)
 
-    cal = calendar.Calendar(calendar.SUNDAY)
-    dias = []
-
-    for dia in cal.itermonthdates(ano, mes):
-        evs_dia = (
-            _queryset_por_organizacao(request)
-            .filter(data_inicio__date=dia)
-            .select_related("organizacao")
-            .prefetch_related("inscricoes")
-        )
-        dias.append(
-            {
-                "data": dia,
-                "hoje": dia == today,
-                "mes_atual": dia.month == mes,
-                "eventos": evs_dia,
-            }
-        )
-
-    prev_month = (data_atual - timedelta(days=1)).replace(day=1)
-    next_month = (data_atual.replace(day=28) + timedelta(days=4)).replace(day=1)
-
-    context = {
-        "dias_mes": dias,
-        "data_atual": data_atual,
-        "prev_ano": prev_month.year,
-        "prev_mes": prev_month.month,
-        "next_ano": next_month.year,
-        "next_mes": next_month.month,
-    }
-    return TemplateResponse(request, "eventos/calendario.html", context)
-
-
-def lista_eventos(request, dia_iso):
-    if getattr(request.user, "user_type", None) == UserType.ROOT:
-        return HttpResponseForbidden()
-    try:
-        dia = date.fromisoformat(dia_iso)
-    except ValueError as exc:  # pragma: no cover - parametros invalidos
-        raise Http404("Data inválida") from exc
-
-    eventos = (
+    qs = (
         _queryset_por_organizacao(request)
-        .filter(data_inicio__date=dia)
-        .annotate(fim=F("data_fim"))
+        .filter(data_inicio__date__range=(inicio, hoje))
         .select_related("organizacao")
         .prefetch_related("inscricoes")
         .order_by("data_inicio")
     )
 
-    return render(
-        request,
-        "eventos/_lista_eventos_dia.html",
-        {"eventos": eventos, "dia": dia, "dia_iso": dia_iso},
+    agrupado: dict[date, list[Evento]] = {}
+    for ev in qs:
+        d = timezone.localtime(ev.data_inicio).date()
+        agrupado.setdefault(d, []).append(ev)
+
+    dias_com_eventos = [
+        {"data": d, "eventos": evs}
+        for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
+    ]
+
+    context = {
+        "dias_com_eventos": dias_com_eventos,
+        "data_atual": hoje,
+    }
+    if request.headers.get("Hx-Request") == "true":
+        return TemplateResponse(request, "eventos/calendario.html", context)
+    # Não HTMX: renderiza o painel com o parcial calendário já incluído
+    context["partial_template"] = "eventos/calendario.html"
+    return TemplateResponse(request, "eventos/painel.html", context)
+
+
+def lista_eventos(request, dia_iso):
+    return HttpResponseBadRequest("Endpoint não suportado.")
+def painel_eventos(request):
+    if getattr(request.user, "user_type", None) == UserType.ROOT:
+        return HttpResponseForbidden()
+
+    hoje = timezone.localdate()
+    inicio = hoje - timedelta(days=30)
+    qs = (
+        _queryset_por_organizacao(request)
+        .filter(data_inicio__date__range=(inicio, hoje))
+        .select_related("organizacao")
+        .prefetch_related("inscricoes")
+        .order_by("data_inicio")
     )
+    agrupado: dict[date, list[Evento]] = {}
+    for ev in qs:
+        d = timezone.localtime(ev.data_inicio).date()
+        agrupado.setdefault(d, []).append(ev)
+    dias_com_eventos = [
+        {"data": d, "eventos": evs}
+        for d, evs in sorted(agrupado.items(), key=lambda x: x[0], reverse=True)
+    ]
+
+    context = {
+        "dias_com_eventos": dias_com_eventos,
+        "data_atual": hoje,
+        "partial_template": "eventos/calendario.html",
+    }
+    return TemplateResponse(request, "eventos/painel.html", context)
 
 
 class EventoCreateView(
@@ -221,6 +231,15 @@ class EventoCreateView(
         if request.user.user_type == UserType.ROOT:
             raise PermissionDenied("Usuário root não pode criar eventos.")
         return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if request.headers.get("Hx-Request") == "true":
+            return response
+        # não HTMX: renderiza o painel com o parcial embutido
+        context = self.get_context_data()
+        context["partial_template"] = "eventos/create.html"
+        return TemplateResponse(request, "eventos/painel.html", context)
 
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento

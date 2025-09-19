@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block hero %}
+  {% with title=_('Eventos') %}
+    {% include '_components/hero_evento.html' with title=title %}
+  {% endwith %}
+{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl px-4 lg:px-6 py-6">
+  <div id="eventos-conteudo">
+    {% if partial_template %}
+      {% include partial_template %}
+    {% elif dias_com_eventos is not None %}
+      {% include 'eventos/calendario.html' %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
