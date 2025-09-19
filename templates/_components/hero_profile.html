@@ -8,77 +8,77 @@
     {% endif %}
   </div>
 
-  <div class="container relative mx-auto px-4 sm:px-6 lg:px-8 pb-10 lg:pb-14">
-    <div class="mx-auto w-full max-w-5xl">
-      <div class="rounded-2xl bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] p-4 md:p-5 text-white shadow-2xl ring-1 ring-white/10">
-        {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
-          <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
-            <div class="mx-auto h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[var(--bg-primary)] ring-4 ring-white/90 sm:mx-0 md:h-24 md:w-24">
-              {% if profile.avatar %}
-                <img src="{{ profile.avatar_url }}" alt="{{ display_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-              {% else %}
-                <div class="grid h-full w-full place-items-center text-2xl font-semibold text-white/80">
-                  {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
-                </div>
-              {% endif %}
-            </div>
 
-            <div class="min-w-0 space-y-1.5 text-center sm:text-left">
-              <h2 class="inline-block rounded-lg bg-black/40 px-3 py-1 text-2xl font-semibold text-white drop-shadow md:text-3xl">
-                {{ display_name|default:profile.username }}
-              </h2>
-
-              <span class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-sm font-medium text-white/80 sm:text-base">
-                <span aria-hidden="true">@</span>{{ profile.username }}
-              </span>
-
-              {% if subtitle %}
-                <p class="text-sm text-white/80 sm:text-base">
-                  {{ subtitle }}
-                </p>
-              {% endif %}
-
-            </div>
-
-          </div>
-        {% endwith %}
-
-        {% with redes=profile.redes_sociais %}
-          <div class="mt-6 flex flex-wrap items-center justify-center gap-3{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
-            {% if redes %}
-              <div class="flex flex-wrap justify-center gap-3">
-                {% for rede, url in redes.items %}
-                  {% if url %}
-                    <a
-                      href="{{ url }}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="{{ rede|capfirst }}"
-                      class="inline-flex items-center transition hover:scale-110"
-                    >
-                      {% lucide rede class="h-6 w-6 text-white hover:text-white/90" %}
-                    </a>
-                  {% endif %}
-                {% endfor %}
+  <div class="container relative mx-auto px-6 pb-10 lg:pb-14">
+    <div class="rounded-2xl border border-[var(--border)] bg-transparent p-4 md:p-6 shadow-lg transition-colors">
+      {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
+        <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
+          <div class="mx-auto h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[var(--bg-secondary)] ring-4 ring-[var(--bg-primary)] sm:mx-0 md:h-24 md:w-24">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar_url }}" alt="{{ display_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+            {% else %}
+              <div class="grid h-full w-full place-items-center text-2xl font-semibold text-[var(--text-secondary)]">
+                {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
               </div>
             {% endif %}
-
-            {% if profile.whatsapp %}
-              <a
-                href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
-                class="inline-flex items-center transition hover:scale-110"
-                aria-label="WhatsApp"
-              >
-                {% lucide "whatsapp" width="28" height="28" %}
-              </a>
-            {% else %}
-              <span class="inline-flex items-center" aria-label="WhatsApp indisponível">
-                {% lucide "whatsapp" class="h-8 w-8 text-gray-400" %}
-              </span>
-            {% endif %}
           </div>
-        {% endwith %}
-      </div>
+
+          <div class="min-w-0 space-y-1.5 text-center sm:text-left">
+            <h2 class="text-2xl font-semibold text-[var(--text-primary)] md:text-3xl">
+              {{ display_name|default:profile.username }}
+            </h2>
+
+            <span class="inline-flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--bg-secondary)] px-2 py-0.5 text-sm font-medium text-[var(--text-secondary)] sm:text-base">
+              <span aria-hidden="true">@</span>{{ profile.username }}
+            </span>
+
+            {% if subtitle %}
+              <p class="text-sm text-[var(--text-secondary)] sm:text-base">
+                {{ subtitle }}
+              </p>
+            {% endif %}
+
+          </div>
+
+        </div>
+      {% endwith %}
+
+      {% with redes=profile.redes_sociais %}
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
+          {% if redes %}
+            <div class="flex flex-wrap justify-center gap-3">
+              {% for rede, url in redes.items %}
+                {% if url %}
+                  <a
+                    href="{{ url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="{{ rede|capfirst }}"
+                    class="inline-flex items-center text-[var(--text-secondary)] transition hover:scale-110 hover:text-[var(--text-primary)]"
+                  >
+                    {% lucide rede class="h-6 w-6" %}
+                  </a>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if profile.whatsapp %}
+            <a
+              href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
+              class="inline-flex items-center text-[var(--text-secondary)] transition hover:scale-110 hover:text-[var(--text-primary)]"
+              aria-label="WhatsApp"
+            >
+              {% lucide "whatsapp" width="28" height="28" %}
+            </a>
+          {% else %}
+            <span class="inline-flex items-center text-[var(--text-muted)]" aria-label="WhatsApp indisponível">
+              {% lucide "whatsapp" class="h-8 w-8" %}
+            </span>
+          {% endif %}
+        </div>
+      {% endwith %}
+
     </div>
   </div>
 </section>
