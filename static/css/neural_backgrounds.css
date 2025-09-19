@@ -5,14 +5,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  pointer-events: none;
-  z-index: 0;
 }
 
 .dark .neural-bg-base {
@@ -21,38 +17,70 @@
 
 /* Individual module backgrounds */
 .neural-bg-nucleos {
-  background: radial-gradient(circle at center, rgba(14, 165, 233, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(14, 165, 233, 0.15) 0%,
+    rgba(59, 130, 246, 0.12) 30%,
+    rgba(30, 64, 175, 0.08) 60%,
+    rgba(30, 58, 138, 0.04) 80%,
+    transparent 100%
+  );
 }
 
 .neural-bg-eventos {
-  background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(30, 64, 175, 0.03) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(14, 165, 233, 0.1) 0%,
+    rgba(59, 130, 246, 0.05) 50%,
+    rgba(30, 64, 175, 0.03) 100%
+  );
 }
 
 .neural-bg-feed {
-  background: linear-gradient(180deg, rgba(14, 165, 233, 0.08) 0%, rgba(59, 130, 246, 0.04) 50%, rgba(30, 64, 175, 0.02) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(14, 165, 233, 0.08) 0%,
+    rgba(59, 130, 246, 0.04) 50%,
+    rgba(30, 64, 175, 0.02) 100%
+  );
 }
 
 .neural-bg-dashboard {
-  background: 
-    linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.1) 50%, transparent 51%),
+  background: linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.1) 50%, transparent 51%),
     linear-gradient(-45deg, transparent 49%, rgba(30, 64, 175, 0.05) 50%, transparent 51%);
   background-size: 20px 20px;
 }
 
 .neural-bg-financeiro {
-  background: linear-gradient(45deg, rgba(14, 165, 233, 0.05) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(30, 64, 175, 0.1) 100%);
+  background: linear-gradient(
+    45deg,
+    rgba(14, 165, 233, 0.05) 0%,
+    rgba(59, 130, 246, 0.08) 50%,
+    rgba(30, 64, 175, 0.1) 100%
+  );
 }
 
 .neural-bg-tokens {
-  background: 
-    repeating-linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0px, rgba(14, 165, 233, 0.1) 2px, transparent 2px, transparent 20px),
-    repeating-linear-gradient(0deg, rgba(59, 130, 246, 0.05) 0px, rgba(59, 130, 246, 0.05) 2px, transparent 2px, transparent 20px);
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(14, 165, 233, 0.1) 0px,
+      rgba(14, 165, 233, 0.1) 2px,
+      transparent 2px,
+      transparent 20px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(59, 130, 246, 0.05) 0px,
+      rgba(59, 130, 246, 0.05) 2px,
+      transparent 2px,
+      transparent 20px
+    );
 }
 
 .neural-bg-configuracao {
   background: radial-gradient(circle at 30% 30%, rgba(14, 165, 233, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-              radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.05) 0%, transparent 50%);
 }
 
 /* Animation classes */
@@ -69,20 +97,41 @@
 }
 
 @keyframes neural-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.1); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
 }
 
 @keyframes neural-flow {
-  0% { transform: translateY(-100px); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
 }
 
 @keyframes neural-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive adjustments */
@@ -101,22 +150,21 @@
 /* Hero component integration */
 .hero-with-neural {
   position: relative;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  min-height: 320px;
 }
 
-@media (min-width: 768px) {
-  .hero-with-neural {
-    min-height: 400px;
-  }
-}
-
-.hero-with-neural .hero-content {
+.hero-content {
   position: relative;
   z-index: 10;
+  text-align: center;
+  padding: 2rem;
 }
 
-.hero-with-neural .hero-overlay {
+.hero-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -124,10 +172,9 @@
   bottom: 0;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
   z-index: 5;
-  pointer-events: none;
 }
 
 /* Dark mode adjustments */
-.dark .hero-with-neural .hero-overlay {
+.dark .hero-overlay {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 100%);
 }

@@ -1,20 +1,22 @@
 <!-- Neural Network Background Templates for Django -->
 <!-- Each background represents a different module with unique neural patterns -->
 
-
-{% if bg_type == 'nucleos' or not bg_type %}
-
 <!-- Núcleos Background -->
-<div class="neural-bg-base neural-bg-nucleos absolute inset-0 overflow-hidden">
+<div class="neural-bg-nucleos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <radialGradient id="nucleos-gradient" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:0.8"/>
-        <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:0.6"/>
-        <stop offset="100%" style="stop-color:#1e40af;stop-opacity:0.3"/>
+        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1"/>
+        <stop offset="30%" style="stop-color:#3b82f6;stop-opacity:0.9"/>
+        <stop offset="70%" style="stop-color:#1e40af;stop-opacity:0.7"/>
+        <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:0.5"/>
       </radialGradient>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <radialGradient id="node-gradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" style="stop-color:#0ea5e9;stop-opacity:1"/>
+        <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.8"/>
+      </radialGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
         <feMerge>
           <feMergeNode in="coloredBlur"/>
           <feMergeNode in="SourceGraphic"/>
@@ -22,31 +24,123 @@
       </filter>
     </defs>
     
-    <!-- Central hub -->
-    <circle cx="400" cy="300" r="25" fill="url(#nucleos-gradient)" filter="url(#glow)"/>
+    <!-- Background neural mesh -->
+    <g opacity="0.3">
+      <path d="M0,150 Q200,100 400,150 T800,150" stroke="#1e40af" stroke-width="1" fill="none"/>
+      <path d="M0,450 Q200,500 400,450 T800,450" stroke="#1e40af" stroke-width="1" fill="none"/>
+      <path d="M150,0 Q100,200 150,400 T150,600" stroke="#3b82f6" stroke-width="1" fill="none"/>
+      <path d="M650,0 Q700,200 650,400 T650,600" stroke="#3b82f6" stroke-width="1" fill="none"/>
+    </g>
     
-    <!-- Primary nodes -->
-    <circle cx="300" cy="200" r="15" fill="#0ea5e9" opacity="0.8"/>
-    <circle cx="500" cy="200" r="15" fill="#0ea5e9" opacity="0.8"/>
-    <circle cx="550" cy="350" r="15" fill="#3b82f6" opacity="0.7"/>
-    <circle cx="250" cy="400" r="15" fill="#3b82f6" opacity="0.7"/>
-    <circle cx="200" cy="250" r="12" fill="#1e40af" opacity="0.6"/>
-    <circle cx="600" cy="280" r="12" fill="#1e40af" opacity="0.6"/>
+    <!-- Central hub with enhanced presence -->
+    <circle cx="400" cy="300" r="35" fill="url(#nucleos-gradient)" filter="url(#glow)">
+      <animate attributeName="r" values="35;40;35" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;1;0.9" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="400" cy="300" r="20" fill="#0ea5e9" opacity="0.8"/>
     
-    <!-- Connections -->
-    <path d="M400,300 L300,200 M400,300 L500,200 M400,300 L550,350 M400,300 L250,400 M400,300 L200,250 M400,300 L600,280" 
-          stroke="#0ea5e9" stroke-width="2" opacity="0.6" fill="none"/>
+    <!-- Primary ring of nodes -->
+    <circle cx="280" cy="180" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    <circle cx="520" cy="180" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    <circle cx="580" cy="300" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    <circle cx="520" cy="420" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    <circle cx="280" cy="420" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    <circle cx="220" cy="300" r="18" fill="url(#node-gradient)" filter="url(#glow)"/>
+    
+    <!-- Secondary ring of nodes -->
+    <circle cx="200" cy="120" r="12" fill="#3b82f6" opacity="0.8"/>
+    <circle cx="600" cy="120" r="12" fill="#3b82f6" opacity="0.8"/>
+    <circle cx="680" cy="300" r="12" fill="#1e40af" opacity="0.7"/>
+    <circle cx="600" cy="480" r="12" fill="#1e40af" opacity="0.7"/>
+    <circle cx="200" cy="480" r="12" fill="#3b82f6" opacity="0.8"/>
+    <circle cx="120" cy="300" r="12" fill="#3b82f6" opacity="0.8"/>
+    
+    <!-- Tertiary nodes -->
+    <circle cx="150" cy="200" r="8" fill="#1e40af" opacity="0.6"/>
+    <circle cx="650" cy="200" r="8" fill="#1e40af" opacity="0.6"/>
+    <circle cx="650" cy="400" r="8" fill="#0ea5e9" opacity="0.6"/>
+    <circle cx="150" cy="400" r="8" fill="#0ea5e9" opacity="0.6"/>
+    <circle cx="320" cy="100" r="8" fill="#3b82f6" opacity="0.6"/>
+    <circle cx="480" cy="100" r="8" fill="#3b82f6" opacity="0.6"/>
+    <circle cx="480" cy="500" r="8" fill="#1e40af" opacity="0.6"/>
+    <circle cx="320" cy="500" r="8" fill="#1e40af" opacity="0.6"/>
+    
+    <!-- Primary connections from central hub -->
+    <g stroke="#0ea5e9" stroke-width="3" opacity="0.8" fill="none">
+      <path d="M400,300 L280,180">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,300 L520,180">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2.2s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,300 L580,300">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,300 L520,420">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2.6s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,300 L280,420">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2.8s" repeatCount="indefinite"/>
+      </path>
+      <path d="M400,300 L220,300">
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+      </path>
+    </g>
     
     <!-- Secondary connections -->
-    <path d="M300,200 L200,250 M500,200 L600,280 M550,350 L600,280 M250,400 L200,250" 
-          stroke="#3b82f6" stroke-width="1.5" opacity="0.4" fill="none"/>
+    <g stroke="#3b82f6" stroke-width="2" opacity="0.6" fill="none">
+      <path d="M280,180 L200,120"/>
+      <path d="M520,180 L600,120"/>
+      <path d="M580,300 L680,300"/>
+      <path d="M520,420 L600,480"/>
+      <path d="M280,420 L200,480"/>
+      <path d="M220,300 L120,300"/>
+    </g>
+    
+    <!-- Tertiary connections -->
+    <g stroke="#1e40af" stroke-width="1.5" opacity="0.4" fill="none">
+      <path d="M200,120 L150,200"/>
+      <path d="M600,120 L650,200"/>
+      <path d="M680,300 L650,400"/>
+      <path d="M600,480 L650,400"/>
+      <path d="M200,480 L150,400"/>
+      <path d="M120,300 L150,200"/>
+      <path d="M280,180 L320,100"/>
+      <path d="M520,180 L480,100"/>
+      <path d="M520,420 L480,500"/>
+      <path d="M280,420 L320,500"/>
+    </g>
+    
+    <!-- Inter-node connections -->
+    <g stroke="#0ea5e9" stroke-width="1" opacity="0.3" fill="none">
+      <path d="M280,180 L520,180"/>
+      <path d="M520,180 L580,300"/>
+      <path d="M580,300 L520,420"/>
+      <path d="M520,420 L280,420"/>
+      <path d="M280,420 L220,300"/>
+      <path d="M220,300 L280,180"/>
+    </g>
+    
+    <!-- Pulsing data flow -->
+    <g>
+      <circle cx="340" cy="240" r="3" fill="#0ea5e9" opacity="0.9">
+        <animateMotion dur="4s" repeatCount="indefinite">
+          <path d="M0,0 L60,60 L120,0 L180,60 L240,0 L300,60"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.9;0.3;0.9" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="460" cy="240" r="3" fill="#3b82f6" opacity="0.8">
+        <animateMotion dur="5s" repeatCount="indefinite">
+          <path d="M0,0 L-60,60 L-120,0 L-180,60 L-240,0 L-300,60"/>
+        </animateMotion>
+        <animate attributeName="opacity" values="0.8;0.2;0.8" dur="5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
   </svg>
 </div>
 
-{% elif bg_type == 'eventos' %}
-
 <!-- Eventos Associados Background -->
-<div class="neural-bg-base neural-bg-eventos absolute inset-0 overflow-hidden">
+<div class="neural-bg-eventos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="eventos-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -83,10 +177,8 @@
   </svg>
 </div>
 
-{% elif bg_type == 'feed' %}
-
 <!-- Feed Background -->
-<div class="neural-bg-base neural-bg-feed absolute inset-0 overflow-hidden">
+<div class="neural-bg-feed absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Vertical data streams -->
     <g opacity="0.8">
@@ -120,10 +212,8 @@
   </svg>
 </div>
 
-{% elif bg_type == 'dashboard' %}
-
 <!-- Dashboard Background -->
-<div class="neural-bg-base neural-bg-dashboard absolute inset-0 overflow-hidden">
+<div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Grid pattern -->
     <defs>
@@ -161,10 +251,8 @@
   </svg>
 </div>
 
-{% elif bg_type == 'financeiro' %}
-
 <!-- Financeiro Background -->
-<div class="neural-bg-base neural-bg-financeiro absolute inset-0 overflow-hidden">
+<div class="neural-bg-financeiro absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Growth curve -->
     <path d="M50,550 Q200,500 350,400 Q500,300 650,200 Q700,150 750,100" 
@@ -196,10 +284,8 @@
   </svg>
 </div>
 
-{% elif bg_type == 'tokens' %}
-
 <!-- Tokens Background -->
-<div class="neural-bg-base neural-bg-tokens absolute inset-0 overflow-hidden">
+<div class="neural-bg-tokens absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Blockchain-like structure -->
     <g opacity="0.8">
@@ -233,10 +319,8 @@
   </svg>
 </div>
 
-{% elif bg_type == 'configuracao' %}
-
 <!-- Configuração Background -->
-<div class="neural-bg-base neural-bg-configuracao absolute inset-0 overflow-hidden">
+<div class="neural-bg-configuracao absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
     <!-- Gear system -->
     <g opacity="0.8">
@@ -280,5 +364,3 @@
     <animateTransform attributeName="transform" type="rotate" values="0 400 300;360 400 300" dur="20s" repeatCount="indefinite"/>
   </svg>
 </div>
-{% endif %}
-
