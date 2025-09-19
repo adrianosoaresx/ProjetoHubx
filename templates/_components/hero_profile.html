@@ -1,6 +1,6 @@
 {% load i18n lucide_icons %}
           
-<section class="relative isolate overflow-hidden">
+<section class="relative isolate overflow-visible">
   <div class="relative flex flex-col justify-end bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] min-h-[400px] sm:min-h-[440px] lg:min-h-[480px] py-10 lg:py-14">
     {% if profile.cover %}
       <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
@@ -8,8 +8,8 @@
 
     <div class="container relative mx-auto px-4 sm:px-6 lg:px-8">
       <div class="relative mx-auto w-full max-w-5xl">
-        <div class="flex flex-col justify-end pb-12 sm:pb-16 lg:pb-20">
-          <div class="transform translate-y-8 sm:translate-y-12 lg:translate-y-16 w-full">
+        <div class="flex flex-col justify-end pb-24 sm:pb-28 lg:pb-32">
+          <div class="transform translate-y-[55%] sm:translate-y-[60%] lg:translate-y-[65%] w-full">
             <div class="rounded-2xl p-4 md:p-5 ring-1 ring-white/10 shadow-2xl text-white w-full">
               {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
                 <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
