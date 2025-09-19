@@ -17,7 +17,6 @@ from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
 
 from .metrics import (
-    tokens_api_latency_seconds,
     tokens_invites_created_total,
     tokens_invites_revoked_total,
     tokens_invites_used_total,
@@ -50,7 +49,6 @@ class TokenViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request):
-        start_time = time.perf_counter()
         ip = get_client_ip(request)
         target_role = request.data.get("tipo_destino")
         if not can_issue_invite(request.user, target_role):
@@ -78,7 +76,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             ).count()
             >= 5
         ):
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response(
                 {"detail": _("Limite diário atingido.")},
                 status=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -118,7 +115,6 @@ class TokenViewSet(viewsets.GenericViewSet):
         token.codigo = codigo
         out = self.get_serializer(token)
         tokens_invites_created_total.inc()
-        tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
         return Response(out.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["get"], url_path="validate", url_name="validate")
@@ -204,7 +200,6 @@ class TokenViewSet(viewsets.GenericViewSet):
 
     @action(detail=True, methods=["post"])
     def use(self, request, pk: str | None = None):
-        start_time = time.perf_counter()
         token = self.get_object()
         ip = get_client_ip(request)
         rl1 = check_rate_limit(f"token:{token.id}:{ip}")
@@ -215,7 +210,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             resp = Response({"detail": "rate limit exceeded"}, status=429)
             if retry:
                 resp["Retry-After"] = str(retry)
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return resp
         if token.estado in {
             TokenAcesso.Estado.USADO,
@@ -223,7 +217,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             TokenAcesso.Estado.REVOGADO,
         }:
             tokens_validation_fail_total.inc()
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response({"detail": _("Token inválido.")}, status=status.HTTP_409_CONFLICT)
         with transaction.atomic():
             token.estado = TokenAcesso.Estado.USADO
@@ -239,7 +232,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             )
         tokens_invites_used_total.inc()
         invite_used(token)
-        tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
         out = self.get_serializer(token)
         return Response(out.data)
 
@@ -250,18 +242,14 @@ class TokenViewSet(viewsets.GenericViewSet):
         url_name="revogar",
     )
     def revogar(self, request, codigo: str | None = None):
-        start_time = time.perf_counter()
         if request.user.get_tipo_usuario not in {UserType.ADMIN.value, UserType.ROOT.value}:
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response(status=403)
         try:
             token = find_token_by_code(codigo)
         except TokenAcesso.DoesNotExist:
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response(status=404)
         if token.estado == TokenAcesso.Estado.REVOGADO:
             tokens_validation_fail_total.inc()
-            tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
             return Response({"detail": _("Token já revogado.")}, status=status.HTTP_409_CONFLICT)
         now = timezone.now()
         ip = get_client_ip(request)
@@ -279,7 +267,6 @@ class TokenViewSet(viewsets.GenericViewSet):
             )
         tokens_invites_revoked_total.inc()
         invite_revoked(token)
-        tokens_api_latency_seconds.observe(time.perf_counter() - start_time)
         token.codigo = codigo
         out = self.get_serializer(token)
         return Response(out.data)

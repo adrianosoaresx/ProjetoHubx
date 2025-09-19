@@ -51,4 +51,3 @@ def test_metrics_flow():
     assert m.tokens_invites_revoked_total._value.get() == 1
     assert m.tokens_validation_fail_total._value.get() >= 1
     assert m.tokens_validation_latency_seconds._sum.get() > 0
-    assert m.tokens_api_latency_seconds._sum.get() > 0
