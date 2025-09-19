@@ -39,42 +39,45 @@
           {% endwith %}
 
           <!-- Linha 2: @usuario e WhatsApp -->
-          <div class="mt-3 flex flex-wrap items-center gap-2">
-            {% with redes=profile.redes_sociais %}
-              {% if redes %}
-                {% for rede, url in redes.items %}
-                  {% if url %}
-                    <a
-                      href="{{ url }}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="{{ rede|capfirst }}"
-                      class="inline-flex items-center hover:scale-110 transition"
-                    >
-                      {% lucide rede class="h-6 w-6 text-white hover:text-white/90" %}
-                    </a>
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
+          {% with redes=profile.redes_sociais %}
+            {% with has_social=redes or profile.whatsapp %}
+              <div class="mt-3 flex flex-wrap items-center justify-center gap-2{% if has_social %} sm:justify-between{% endif %}">
+                {% if redes %}
+                  {% for rede, url in redes.items %}
+                    {% if url %}
+                      <a
+                        href="{{ url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="{{ rede|capfirst }}"
+                        class="inline-flex items-center transition hover:scale-110"
+                      >
+                        {% lucide rede class="h-6 w-6 text-white hover:text-white/90" %}
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
 
-          {% if profile.whatsapp %}
-          <a href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
-            class="inline-flex items-center hover:scale-110 transition"
-            aria-label="WhatsApp">
-            {% lucide 'whatsapp' width='28' height='28'  %}
-          </a>
-          {% else %}
-          <span class="inline-flex items-center" aria-label="WhatsApp indisponível">
-            {% lucide "whatsapp" class="h-8 w-8 text-gray-400" %}
-          </span>
-          {% endif %}
+                {% if profile.whatsapp %}
+                  <a
+                    href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
+                    class="inline-flex items-center transition hover:scale-110"
+                    aria-label="WhatsApp"
+                  >
+                    {% lucide "whatsapp" width="28" height="28" %}
+                  </a>
+                {% else %}
+                  <span class="inline-flex items-center" aria-label="WhatsApp indisponível">
+                    {% lucide "whatsapp" class="h-8 w-8 text-gray-400" %}
+                  </span>
+                {% endif %}
 
-
-          </div>
-              <div class=" items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-medium text-white/90">
-                <span aria-hidden="true">@</span>{{ profile.username }}
+                <div class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-medium text-white/90{% if has_social %} sm:ml-auto{% endif %}">
+                  <span aria-hidden="true">@</span>{{ profile.username }}
+                </div>
               </div>
+            {% endwith %}
+          {% endwith %}
 
         </div>
 
