@@ -6,11 +6,11 @@
 {% block hero %}
   {% if is_admin_org %}
     {% with title=_('Eventos') %}
-      {% include '_components/hero.html' with title=title action_template='eventos/hero_evento_list_action.html' %}
+      {% include '_components/hero_evento.html' with title=title action_template='eventos/hero_evento_list_action.html' %}
     {% endwith %}
   {% else %}
     {% with title=_('Meus Eventos') %}
-      {% include '_components/hero.html' with title=title action_template='eventos/hero_evento_list_action.html' %}
+      {% include '_components/hero_evento.html' with title=title action_template='eventos/hero_evento_list_action.html' %}
     {% endwith %}
   {% endif %}
 {% endblock %}
