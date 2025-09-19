@@ -1,8 +1,14 @@
-from django.urls import include, path
 from django.contrib import admin
+from django.urls import include, path
 from django.views.i18n import JavaScriptCatalog
 
+from rest_framework.routers import DefaultRouter
+
 from accounts import views as accounts_views
+from tokens.api import TokenViewSet
+
+tokens_api_router = DefaultRouter()
+tokens_api_router.register(r"tokens", TokenViewSet, basename="token")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -38,7 +44,7 @@ urlpatterns = [
     ),
     path(
         "api/tokens/",
-        include(("tokens.api_urls", "tokens_api"), namespace="tokens_api"),
+        include((tokens_api_router.urls, "tokens_api"), namespace="tokens_api"),
     ),
     path(
         "api/accounts/",

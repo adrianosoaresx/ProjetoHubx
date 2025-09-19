@@ -8,7 +8,7 @@ from rest_framework.exceptions import AuthenticationFailed, Throttled
 
 from audit.models import AuditLog
 from audit.services import hash_ip, log_audit
-from .metrics import tokens_api_tokens_used_total, tokens_rate_limited_total
+from .metrics import tokens_rate_limited_total
 from .models import ApiToken, ApiTokenIp, ApiTokenLog
 from .ratelimit import check_rate_limit
 from .utils import get_client_ip
@@ -73,5 +73,4 @@ class ApiTokenAuthentication(BaseAuthentication):
             ip=ip,
             user_agent=request.META.get("HTTP_USER_AGENT", ""),
         )
-        tokens_api_tokens_used_total.inc()
         return (api_token.user, api_token)

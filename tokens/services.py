@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
-from .metrics import tokens_api_tokens_created_total
 from .models import ApiToken, ApiTokenLog, TokenAcesso
 from .utils import _send_webhook, revoke_token, rotate_token
 
@@ -61,8 +60,6 @@ def generate_token(
         scope=scope,
         expires_at=expires_at,
     )
-
-    tokens_api_tokens_created_total.inc()
 
     token_created(token, raw_token)
 

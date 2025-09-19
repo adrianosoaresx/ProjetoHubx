@@ -13,7 +13,6 @@ from rest_framework.response import Response
 from .models import ApiToken, ApiTokenIp, ApiTokenLog
 from .serializers import ApiTokenIpSerializer, ApiTokenSerializer
 from .services import generate_token, list_tokens
-from .metrics import tokens_api_latency_seconds
 from .utils import get_client_ip, revoke_token, rotate_token
 
 
@@ -21,10 +20,9 @@ class ApiTokenViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        with tokens_api_latency_seconds.time():
-            tokens = list_tokens(request.user)
-            serializer = ApiTokenSerializer(tokens, many=True)
-            return Response(serializer.data)
+        tokens = list_tokens(request.user)
+        serializer = ApiTokenSerializer(tokens, many=True)
+        return Response(serializer.data)
 
     def create(self, request):
         scope = request.data.get("scope")
@@ -35,37 +33,35 @@ class ApiTokenViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
         expires_delta = timedelta(days=int(expires_in)) if expires_in else None
 
-        with tokens_api_latency_seconds.time():
-            raw_token = generate_token(
-                request.user,
-                client_name,
-                scope,
-                expires_delta,
-                device_fingerprint,
-            )
-            token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-            api_token = ApiToken.objects.get(token_hash=token_hash)
-            ApiTokenLog.objects.create(
-                token=api_token,
-                usuario=request.user,
-                acao=ApiTokenLog.Acao.GERACAO,
-                ip=get_client_ip(request),
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
-            data = ApiTokenSerializer(api_token).data
-            data["token"] = raw_token
-            return Response(data, status=status.HTTP_201_CREATED)
+        raw_token = generate_token(
+            request.user,
+            client_name,
+            scope,
+            expires_delta,
+            device_fingerprint,
+        )
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        api_token = ApiToken.objects.get(token_hash=token_hash)
+        ApiTokenLog.objects.create(
+            token=api_token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.GERACAO,
+            ip=get_client_ip(request),
+            user_agent=request.META.get("HTTP_USER_AGENT", ""),
+        )
+        data = ApiTokenSerializer(api_token).data
+        data["token"] = raw_token
+        return Response(data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk: str | None = None):
         token = get_object_or_404(ApiToken, pk=pk)
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        with tokens_api_latency_seconds.time():
-            ip = get_client_ip(request)
-            ua = request.META.get("HTTP_USER_AGENT", "")
-            revoke_token(token.id, request.user, ip=ip, user_agent=ua)
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        ip = get_client_ip(request)
+        ua = request.META.get("HTTP_USER_AGENT", "")
+        revoke_token(token.id, request.user, ip=ip, user_agent=ua)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"])
     def rotate(self, request, pk: str | None = None):
@@ -73,22 +69,21 @@ class ApiTokenViewSet(viewsets.ViewSet):
         if not request.user.is_superuser and token.user != request.user:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        with tokens_api_latency_seconds.time():
-            ip = get_client_ip(request)
-            ua = request.META.get("HTTP_USER_AGENT", "")
-            raw_token = rotate_token(token.id, request.user, ip=ip, user_agent=ua)
-            new_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-            novo_token = ApiToken.objects.get(token_hash=new_hash)
-            ApiTokenLog.objects.create(
-                token=novo_token,
-                usuario=request.user,
-                acao=ApiTokenLog.Acao.GERACAO,
-                ip=ip,
-                user_agent=ua,
-            )
-            data = ApiTokenSerializer(novo_token).data
-            data["token"] = raw_token
-            return Response(data, status=status.HTTP_201_CREATED)
+        ip = get_client_ip(request)
+        ua = request.META.get("HTTP_USER_AGENT", "")
+        raw_token = rotate_token(token.id, request.user, ip=ip, user_agent=ua)
+        new_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+        novo_token = ApiToken.objects.get(token_hash=new_hash)
+        ApiTokenLog.objects.create(
+            token=novo_token,
+            usuario=request.user,
+            acao=ApiTokenLog.Acao.GERACAO,
+            ip=ip,
+            user_agent=ua,
+        )
+        data = ApiTokenSerializer(novo_token).data
+        data["token"] = raw_token
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class ApiTokenIpViewSet(viewsets.ModelViewSet):

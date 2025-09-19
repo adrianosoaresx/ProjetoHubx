@@ -9,10 +9,6 @@ from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.utils import timezone
 
-from .metrics import (
-    tokens_api_tokens_revoked_total,
-    tokens_api_tokens_rotated_total,
-)
 from .models import ApiToken, ApiTokenLog
 
 User = get_user_model()
@@ -73,7 +69,6 @@ def revoke_token(
         user_agent=user_agent,
     )
 
-    tokens_api_tokens_revoked_total.inc()
     _send_webhook({"event": "revoked", "id": str(token.id)})
     return True
 
@@ -108,6 +103,4 @@ def rotate_token(
 
     revoke_token(token.id, revogado_por, ip=ip, user_agent=user_agent)
     _send_webhook({"event": "rotated", "id": str(token.id), "new_id": str(novo_token.id)})
-    tokens_api_tokens_rotated_total.inc()
-
     return raw_token
