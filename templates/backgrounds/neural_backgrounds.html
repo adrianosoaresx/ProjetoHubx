@@ -1,3 +1,5 @@
+{% with selected_bg=bg_type|default:'nucleos' %}
+  {% if selected_bg == 'nucleos' %}
 <!-- Neural Network Background Templates for Django -->
 <!-- Each background represents a different module with unique neural patterns -->
 
@@ -139,6 +141,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'eventos' %}
 <!-- Eventos Associados Background -->
 <div class="neural-bg-eventos absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -177,6 +180,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'feed' %}
 <!-- Feed Background -->
 <div class="neural-bg-feed absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -212,6 +216,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'dashboard' %}
 <!-- Dashboard Background -->
 <div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -251,6 +256,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'financeiro' %}
 <!-- Financeiro Background -->
 <div class="neural-bg-financeiro absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -284,6 +290,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'tokens' %}
 <!-- Tokens Background -->
 <div class="neural-bg-tokens absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -319,6 +326,7 @@
   </svg>
 </div>
 
+  {% elif selected_bg == 'configuracao' %}
 <!-- Configuração Background -->
 <div class="neural-bg-configuracao absolute inset-0 overflow-hidden">
   <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
@@ -364,3 +372,6 @@
     <animateTransform attributeName="transform" type="rotate" values="0 400 300;360 400 300" dur="20s" repeatCount="indefinite"/>
   </svg>
 </div>
+
+  {% endif %}
+{% endwith %}
