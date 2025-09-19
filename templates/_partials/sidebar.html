@@ -12,17 +12,50 @@
     </button>
   </div>
   <nav class="sidebar-nav flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
-    {% for item in NAV_MENU %}
-      <a href="{{ item.path }}" class="sidebar-item{% if request.path == item.path %} sidebar-item-active{% endif %}" {% if request.path == item.path %}aria-current="page"{% endif %}>
-        {% if item.id == 'perfil' and user.avatar %}
-          <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
-        {% else %}
-          {{ item.icon|safe }}
-        {% endif %}
-        <span class="sidebar-label">{{ item.label }}</span>
-      </a>
-      {% if item.id == 'perfil' %}<span id="notif-count" class="hidden"></span>{% endif %}
-    {% endfor %}
+    <ul class="sidebar-menu flex flex-col gap-1">
+      {% for item in NAV_MENU %}
+        <li class="sidebar-entry">
+          {% if item.children %}
+            <div class="sidebar-parent">
+              <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}>
+                {% if item.id == 'perfil' and user.avatar %}
+                  <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
+                {% else %}
+                  {{ item.icon|safe }}
+                {% endif %}
+                <span class="sidebar-label">{{ item.label }}</span>
+              </a>
+              <button type="button" class="sidebar-toggle" aria-expanded="{{ item.is_active|yesno:'true,false' }}" aria-controls="submenu-{{ item.id }}" data-sidebar-submenu-toggle>
+                <span class="sr-only">{% blocktrans with label=item.label %}Alternar {{ label }}{% endblocktrans %}</span>
+                <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="sidebar-toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+            <ul id="submenu-{{ item.id }}" class="sidebar-submenu{% if not item.is_active %} hidden{% endif %}" data-sidebar-submenu>
+              {% for child in item.children %}
+                <li>
+                  <a href="{{ child.path }}" class="sidebar-subitem{% if child.is_active %} sidebar-item-active{% endif %}" {% if child.is_current %}aria-current="page"{% endif %}>
+                    {{ child.icon|safe }}
+                    <span class="sidebar-label">{{ child.label }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}>
+              {% if item.id == 'perfil' and user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
+              {% else %}
+                {{ item.icon|safe }}
+              {% endif %}
+              <span class="sidebar-label">{{ item.label }}</span>
+            </a>
+          {% endif %}
+          {% if item.id == 'perfil' %}<span id="notif-count" class="hidden"></span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
   </nav>
 </aside>
 

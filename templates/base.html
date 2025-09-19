@@ -122,6 +122,48 @@
       if (sidebarToggle && sidebar && content) {
         const baseMargin = '{% if hide_nav %}ml-0{% else %}ml-64{% endif %}';
         const sidebarLabels = Array.from(document.querySelectorAll('#sidebar .sidebar-label'));
+        const submenuToggles = Array.from(document.querySelectorAll('#sidebar [data-sidebar-submenu-toggle]'));
+
+        const getSubmenu = (toggle) => {
+          const controls = toggle.getAttribute('aria-controls');
+          return controls ? document.getElementById(controls) : null;
+        };
+
+        submenuToggles.forEach((toggle) => {
+          const expanded = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.dataset.sidebarExpanded = expanded ? 'true' : 'false';
+          const submenu = getSubmenu(toggle);
+          if (submenu && !expanded) {
+            submenu.classList.add('hidden');
+          }
+          toggle.addEventListener('click', (event) => {
+            event.preventDefault();
+            const nextExpanded = toggle.dataset.sidebarExpanded !== 'true';
+            toggle.dataset.sidebarExpanded = nextExpanded ? 'true' : 'false';
+            const submenuEl = getSubmenu(toggle);
+            if (!sidebar.classList.contains('sidebar-collapsed') && submenuEl) {
+              toggle.setAttribute('aria-expanded', String(nextExpanded));
+              submenuEl.classList.toggle('hidden', !nextExpanded);
+            }
+          });
+        });
+
+        const syncSubmenus = (collapsed) => {
+          submenuToggles.forEach((toggle) => {
+            const submenu = getSubmenu(toggle);
+            if (!submenu) {
+              return;
+            }
+            const storedExpanded = toggle.dataset.sidebarExpanded === 'true';
+            if (collapsed) {
+              submenu.classList.add('hidden');
+              toggle.setAttribute('aria-expanded', 'false');
+            } else {
+              toggle.setAttribute('aria-expanded', String(storedExpanded));
+              submenu.classList.toggle('hidden', !storedExpanded);
+            }
+          });
+        };
 
         const setSidebarState = (collapsed) => {
           sidebar.classList.toggle('w-64', !collapsed);
@@ -133,6 +175,7 @@
           sidebarLabels.forEach((el) => {
             el.classList.toggle('hidden', collapsed);
           });
+          syncSubmenus(collapsed);
         };
 
         const savedCollapsed = localStorage.getItem('sidebar') === 'collapsed';
