@@ -46,7 +46,7 @@
             <!-- Linha 2: @usuario e WhatsApp -->
             {% with redes=profile.redes_sociais %}
 
-              <div class="mt-3 flex flex-wrap items-center justify-center gap-2{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
+              <div class="mt-6 flex flex-wrap items-center justify-center gap-2{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
 
                   {% if redes %}
                     {% for rede, url in redes.items %}
