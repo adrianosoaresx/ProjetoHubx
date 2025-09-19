@@ -7,30 +7,51 @@
 {% endblock %}
 
 {% block content %}
-
-  {% include '_components/perfil_nav.html' %}
-  <section
-    id="perfil-content"
-    class="space-y-6"
-    data-perfil-default-url="{{ perfil_default_url }}"
-    data-perfil-default-section="{{ perfil_default_section }}"
-    data-perfil-mode="{% if is_owner %}owner{% else %}public{% endif %}"
-    data-perfil-username="{{ perfil.username }}"
-    data-perfil-public-id="{{ perfil.public_id }}"
-    data-perfil-loading-text="{% trans 'Carregando conteúdo...' %}"
-    data-perfil-error-text="{% trans 'Não foi possível carregar esta seção.' %}"
-    aria-live="polite"
-    aria-busy="true"
-    hx-trigger="load"
-    hx-get="{{ perfil_default_url }}"
-    hx-target="#perfil-content"
-  hx-push-url="?section={{ perfil_default_section }}"
-  hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
-  >
-    <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
-      {% trans "Carregando conteúdo..." %}
+<div class="space-y-6">
+  <div class="card">
+    <div class="card-body">
+      <section
+        id="perfil-info"
+        class="space-y-6"
+        data-perfil-mode="public"
+        data-perfil-username="{{ perfil.username }}"
+        data-perfil-public-id="{{ perfil.public_id }}"
+        aria-live="polite"
+        aria-busy="true"
+        hx-trigger="load"
+        hx-get="{% url 'accounts:perfil_info_partial' %}"
+        hx-target="#perfil-info"
+        hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
+      >
+        <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
+          {% trans "Carregando conteúdo..." %}
+        </div>
+      </section>
     </div>
-  </section>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <section
+        id="perfil-portfolio"
+        class="space-y-6"
+        data-perfil-mode="public"
+        data-perfil-username="{{ perfil.username }}"
+        data-perfil-public-id="{{ perfil.public_id }}"
+        aria-live="polite"
+        aria-busy="true"
+        hx-trigger="load"
+        hx-get="{% url 'accounts:perfil_portfolio' %}"
+        hx-target="#perfil-portfolio"
+        hx-vals='{"public_id":"{{ perfil.public_id|escapejs }}","username":"{{ perfil.username|escapejs }}"}'
+      >
+        <div class="py-6 text-center text-sm text-[var(--text-secondary)]" data-perfil-placeholder>
+          {% trans "Carregando conteúdo..." %}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 

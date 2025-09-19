@@ -53,11 +53,19 @@
   </div>
 
 </dl>
-{% if profile.date_joined %}
+{% if profile.date_joined or profile.last_login %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm mt-4">
+  {% if profile.date_joined %}
   <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
   </div>
+  {% endif %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Último acesso" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{% if profile.last_login %}{{ profile.last_login|date:"d/m/Y H:i" }}{% else %}-{% endif %}</dd>
+  </div>
+</div>
 {% endif %}
 {% if bio %}
 <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">

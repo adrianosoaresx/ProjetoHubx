@@ -1,81 +1,78 @@
 {% load i18n %}
-<dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-sm">
-  {% with fantasia=profile.nome_fantasia contact=profile.contact_name %}
-    {% if fantasia %}
-      <div>
-        <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ fantasia }}</dd>
-      </div>
-    {% endif %}
-    {% if contact %}
-      <div>
-        <dt class="text-[var(--text-secondary)]">{% trans "Contato principal" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">{{ contact }}</dd>
-      </div>
-    {% endif %}
-    {% if not fantasia and not contact %}
-      <div>
-        <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">@{{ profile.username }}</dd>
-      </div>
-    {% endif %}
-    {% if fantasia or contact %}
-      <div>
-        <dt class="text-[var(--text-secondary)]">{% trans "Usuário" %}</dt>
-        <dd class="font-medium text-[var(--text-primary)]">@{{ profile.username }}</dd>
-      </div>
-    {% endif %}
-  {% endwith %}
-  {% if profile.email %}
-  <div>
+
+<dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm">
+  {% if profile.razao_social %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Razão social" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.razao_social }}</dd>
+  </div>
+  {% endif %}
+  {% if profile.nome_fantasia %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Nome fantasia" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.nome_fantasia }}</dd>
+  </div>
+  {% endif %}
+  {% if profile.cnpj %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "CNPJ" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.cnpj }}</dd>
+  </div>
+  {% endif %}
+
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Endereço" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.endereco }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Cidade / Estado" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.cidade }} - {{ profile.estado }}</dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.cep }}</dd>
+  </div>
+
+  {% if profile.contato %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.contato }}</dd>
+  </div>
+  {% endif %}
+
+  {% if profile.phone_number %}
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+    <dt class="text-[var(--text-secondary)]">{% trans "Telefone" %}</dt>
+    <dd class="font-medium text-[var(--text-primary)]">{{ profile.phone_number.as_national }}</dd>
+  </div>
+  {% endif %}
+
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "E-mail" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ profile.email }}</dd>
   </div>
-  {% endif %}
+</dl>
+
+{% if profile.date_joined or profile.last_login %}
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 text-sm mt-4">
   {% if profile.date_joined %}
-  <div>
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Membro desde" %}</dt>
     <dd class="font-medium text-[var(--text-primary)]">{{ profile.date_joined|date:"d/m/Y H:i" }}</dd>
   </div>
   {% endif %}
-  {% if profile.last_login %}
-  <div>
+  <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
     <dt class="text-[var(--text-secondary)]">{% trans "Último acesso" %}</dt>
-    <dd class="font-medium text-[var(--text-primary)]">{{ profile.last_login|date:"d/m/Y H:i" }}</dd>
+    <dd class="font-medium text-[var(--text-primary)]">{% if profile.last_login %}{{ profile.last_login|date:"d/m/Y H:i" }}{% else %}-{% endif %}</dd>
   </div>
-  {% endif %}
-</dl>
+</div>
+{% endif %}
+
 {% if profile.biografia %}
-  <div class="mt-4">
-    <h3 class="text-sm font-semibold mb-1">{% trans "Biografia" %}</h3>
-    <p class="text-[var(--text-primary)] whitespace-pre-line">{{ profile.biografia }}</p>
+<div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 mt-4">
+  <h3 class="text-sm font-semibold text-[var(--text-primary)]">{% trans "Bio" %}</h3>
+  <p class="mt-2 text-sm text-[var(--text-primary)] whitespace-pre-line">{{ profile.biografia }}</p>
   </div>
 {% endif %}
-{% with redes=profile.redes_sociais %}
-  {% if redes %}
-    {% with redes_items=redes.items %}
-      {% if redes_items %}
-        <div class="mt-4">
-          <h3 class="text-sm font-semibold mb-1">{% trans "Redes sociais" %}</h3>
-          <ul class="flex flex-wrap gap-3 text-[var(--text-primary)]">
-            {% for rede, url in redes_items %}
-              {% if url %}
-                <li>
-                  <a
-                    href="{{ url }}"
-                    class="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-[var(--surface-secondary)] hover:bg-[var(--surface-tertiary)] transition-colors"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    <i class="fa-brands fa-{{ rede|lower }} text-lg" aria-hidden="true"></i>
-                    <span class="font-medium">{{ rede|capfirst }}</span>
-                  </a>
-                </li>
-              {% endif %}
-            {% endfor %}
-          </ul>
-        </div>
-      {% endif %}
-    {% endwith %}
-  {% endif %}
-{% endwith %}
+
+{# Redes sociais removidas do final conforme solicitado #}
