@@ -2082,10 +2082,6 @@ a:focus {
   max-width: 64rem;
 }
 
-.max-w-6xl {
-  max-width: 72rem;
-}
-
 .max-w-7xl {
   max-width: 80rem;
 }
@@ -3235,6 +3231,11 @@ a:focus {
     gap: 1.5rem;
   }
 
+  .sm\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
   .sm\:pb-6 {
     padding-bottom: 1.5rem;
   }
@@ -3347,6 +3348,11 @@ a:focus {
 
   .lg\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .lg\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
   .lg\:py-14 {
