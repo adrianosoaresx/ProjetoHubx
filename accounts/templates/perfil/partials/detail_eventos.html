@@ -1,9 +1,0 @@
-{% load i18n %}
-<div class="card-grid">
-  {% for ins in inscricoes %}
-    {% include '_components/card_evento.html' with evento=ins.evento %}
-  {% empty %}
-    <p class="text-sm text-[var(--text-muted)]">{% trans "Nenhum evento encontrado." %}</p>
-  {% endfor %}
-</div>
-
