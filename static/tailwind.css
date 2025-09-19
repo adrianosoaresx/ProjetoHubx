@@ -2010,8 +2010,8 @@ a:focus {
   max-height: 16rem;
 }
 
-.min-h-\[240px\] {
-  min-height: 240px;
+.min-h-\[400px\] {
+  min-height: 400px;
 }
 
 .min-h-screen {
@@ -2104,6 +2104,11 @@ a:focus {
 
 .flex-grow {
   flex-grow: 1;
+}
+
+.translate-y-\[55\%\] {
+  --tw-translate-y: 55%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 .transform {
@@ -2269,6 +2274,10 @@ a:focus {
 
 .overflow-hidden {
   overflow: hidden;
+}
+
+.overflow-visible {
+  overflow: visible;
 }
 
 .overflow-x-auto {
@@ -2541,8 +2550,8 @@ a:focus {
   padding-bottom: 1.5rem;
 }
 
-.pb-4 {
-  padding-bottom: 1rem;
+.pb-24 {
+  padding-bottom: 6rem;
 }
 
 .pl-6 {
@@ -3199,12 +3208,13 @@ a:focus {
     margin-right: 0px;
   }
 
-  .sm\:ml-auto {
-    margin-left: auto;
+  .sm\:min-h-\[440px\] {
+    min-height: 440px;
   }
 
-  .sm\:min-h-\[280px\] {
-    min-height: 280px;
+  .sm\:translate-y-\[60\%\] {
+    --tw-translate-y: 60%;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
 
   .sm\:grid-cols-1 {
@@ -3236,8 +3246,8 @@ a:focus {
     padding-right: 1.5rem;
   }
 
-  .sm\:pb-6 {
-    padding-bottom: 1.5rem;
+  .sm\:pb-28 {
+    padding-bottom: 7rem;
   }
 
   .sm\:text-left {
@@ -3334,8 +3344,13 @@ a:focus {
 }
 
 @media (min-width: 1024px) {
-  .lg\:min-h-\[320px\] {
-    min-height: 320px;
+  .lg\:min-h-\[480px\] {
+    min-height: 480px;
+  }
+
+  .lg\:translate-y-\[65\%\] {
+    --tw-translate-y: 65%;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
 
   .lg\:grid-cols-2 {
@@ -3358,5 +3373,9 @@ a:focus {
   .lg\:py-14 {
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
+  }
+
+  .lg\:pb-32 {
+    padding-bottom: 8rem;
   }
 }
