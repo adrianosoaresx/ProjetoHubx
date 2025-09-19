@@ -8,45 +8,45 @@
 
     <div class="container relative mx-auto px-4 sm:px-6 lg:px-8">
       <div class="relative mx-auto w-full max-w-5xl">
-        <div class="flex flex-col justify-end pb-4 sm:pb-6">
-
-          <div class="rounded-2xl p-4 md:p-5  ring-1 ring-white/10 shadow-2xl text-white w-full">
-            {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
-            <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
-              <div class="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white/90 overflow-hidden bg-[var(--bg-primary)] shrink-0 mx-auto sm:mx-0">
-                {% if profile.avatar %}
-                  <img src="{{ profile.avatar_url }}" alt="{{ display_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
-                {% else %}
-                  <div class="h-full w-full grid place-items-center text-2xl font-semibold text-white/80">
-                    {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+        <div class="flex flex-col justify-end pb-12 sm:pb-16 lg:pb-20">
+          <div class="transform translate-y-8 sm:translate-y-12 lg:translate-y-16 w-full">
+            <div class="rounded-2xl p-4 md:p-5 ring-1 ring-white/10 shadow-2xl text-white w-full">
+              {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
+                <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
+                  <div class="h-20 w-20 md:h-24 md:w-24 rounded-full ring-4 ring-white/90 overflow-hidden bg-[var(--bg-primary)] shrink-0 mx-auto sm:mx-0">
+                    {% if profile.avatar %}
+                      <img src="{{ profile.avatar_url }}" alt="{{ display_name|default:profile.username }}" class="h-full w-full object-cover" loading="lazy">
+                    {% else %}
+                      <div class="h-full w-full grid place-items-center text-2xl font-semibold text-white/80">
+                        {{ profile.get_initials|default:profile.username|slice:":2"|upper }}
+                      </div>
+                    {% endif %}
                   </div>
-                {% endif %}
-              </div>
 
-              <div class="min-w-0 space-y-1.5 text-center sm:text-left">
-                <h2 class="bg-black/40 inline-block rounded-lg px-3 py-1 text-2xl md:text-3xl font-semibold drop-shadow text-white">
-                  {{ display_name|default:profile.username }}
-                </h2>
+                  <div class="min-w-0 space-y-1.5 text-center sm:text-left">
+                    <h2 class="bg-black/40 inline-block rounded-lg px-3 py-1 text-2xl md:text-3xl font-semibold drop-shadow text-white">
+                      {{ display_name|default:profile.username }}
+                    </h2>
 
-                <span class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-sm sm:text-base font-medium text-white/80">
-                  <span aria-hidden="true">@</span>{{ profile.username }}
-                </span>
+                    <span class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-sm sm:text-base font-medium text-white/80">
+                      <span aria-hidden="true">@</span>{{ profile.username }}
+                    </span>
 
-                {% if subtitle %}
-                  <p class="text-sm sm:text-base text-white/80">
-                    {{ subtitle }}
-                  </p>
-                {% endif %}
+                    {% if subtitle %}
+                      <p class="text-sm sm:text-base text-white/80">
+                        {{ subtitle }}
+                      </p>
+                    {% endif %}
 
-              </div>
+                  </div>
 
-            </div>
-            {% endwith %}
+                </div>
+              {% endwith %}
 
-            <!-- Linha 2: @usuario e WhatsApp -->
-            {% with redes=profile.redes_sociais %}
+              <!-- Linha 2: @usuario e WhatsApp -->
+              {% with redes=profile.redes_sociais %}
 
-              <div class="mt-6 flex flex-wrap items-center justify-center gap-2{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
+                <div class="mt-6 flex flex-wrap items-center justify-center gap-2{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
 
                   {% if redes %}
                     {% for rede, url in redes.items %}
@@ -79,12 +79,12 @@
                     </span>
                   {% endif %}
 
-              </div>
+                </div>
 
-            {% endwith %}
+              {% endwith %}
 
+            </div>
           </div>
-
         </div>
 
       </div>
