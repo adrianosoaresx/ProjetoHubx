@@ -6,8 +6,8 @@ from .views import ConfiguracoesView
 app_name = "configuracoes"
 
 urlpatterns = [
-# Endpoint principal para a página de configurações.  Usa a classe
-    # ConfiguracoesView para servir a página completa ou os fragmentos
-    # correspondentes às abas quando a requisição é feita via HTMX.
+    # Endpoint principal e rotas por seção (sem query string)
     path("", ConfiguracoesView.as_view(), name="configuracoes"),
+    path("seguranca/", ConfiguracoesView.as_view(), {"section": "seguranca"}, name="configuracoes_seguranca"),
+    path("preferencias/", ConfiguracoesView.as_view(), {"section": "preferencias"}, name="configuracoes_preferencias"),
 ]

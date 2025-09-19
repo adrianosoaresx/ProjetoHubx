@@ -1,53 +1,19 @@
 {% extends 'base.html' %}
 {% load i18n static %}
 
-{% block title %}{% trans 'Configurações da Conta' %}{% endblock %}
+{% block title %}{% trans 'Configurações' %}{% endblock %}
 {% block hero %}
-  {% include '_components/hero_configuracoes.html' with title=_('Configurações da Conta') %}
+  {% include '_components/hero_configuracoes.html' with title=hero_title %}
 {% endblock %}
 
 {% block content %}
 <main class="container mx-auto px-4 py-6">
   <section class="card bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl shadow-sm">
-    <header class="card-body border-b border-[var(--border)] p-6">
-      <nav aria-label="{% trans 'Seções de Configuração' %}" role="tablist" class="flex flex-wrap gap-4 text-sm">
-        <a href="{% url 'configuracoes:configuracoes' %}?tab=seguranca"
-           role="tab"
-           aria-selected="{% if tab == 'seguranca' %}true{% else %}false{% endif %}"
-           aria-controls="content"
-           class="btn {% if tab == 'seguranca' %}btn-secondary{% endif %}"
-           hx-get="{% url 'configuracoes:configuracoes' %}?tab=seguranca"
-           hx-target="#settings-content"
-           hx-swap="innerHTML"
-           hx-push-url="true"
-           tabindex="{% if tab == 'seguranca' %}0{% else %}-1{% endif %}">
-          {% trans 'Segurança' %}
-        </a>
-        <a href="{% url 'configuracoes:configuracoes' %}?tab=preferencias"
-           role="tab"
-           aria-selected="{% if tab == 'preferencias' %}true{% else %}false{% endif %}"
-           aria-controls="content"
-           class="btn {% if tab == 'preferencias' %}btn-secondary{% endif %}"
-           hx-get="{% url 'configuracoes:configuracoes' %}?tab=preferencias"
-           hx-target="#settings-content"
-           hx-swap="innerHTML"
-           hx-push-url="true"
-           tabindex="{% if tab == 'preferencias' %}0{% else %}-1{% endif %}">
-          {% trans 'Preferências' %}
-        </a>
-      </nav>
-    </header>
-    <div class="card-body p-6" id="settings-content" role="tabpanel">
-      {#
-        Renderiza o conteúdo da aba ativa diretamente na primeira carga.  Para
-        requisições subsequentes via HTMX, a view retornará apenas o fragmento
-        correspondente e o conteúdo será injetado aqui sem recarregar a página
-        completa.
-      #}
-      {% if tab == 'seguranca' %}
-        {% include 'configuracoes/_partials/seguranca.html' %}
-      {% elif tab == 'preferencias' %}
+  <div class="card-body p-6" id="settings-content">
+      {% if tab == 'preferencias' %}
         {% include 'configuracoes/_partials/preferencias.html' %}
+      {% else %}
+        {% include 'configuracoes/_partials/seguranca.html' %}
       {% endif %}
     </div>
   </section>

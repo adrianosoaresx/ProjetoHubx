@@ -2,7 +2,7 @@
 
 <form
   method="post"
-  hx-post="{% url 'configuracoes:configuracoes' %}?tab=seguranca"
+  hx-post="{{ request.path }}"
   hx-target="#settings-content"
   class="space-y-4"
 >
@@ -12,7 +12,7 @@
       {% for err in seguranca_form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
     </ul>
   {% endif %}
-  <input type="hidden" name="tab" value="seguranca" />
+  <input type="hidden" name="section" value="seguranca" />
   <fieldset class="space-y-4">
     <legend class="sr-only">{% trans 'Segurança da conta' %}</legend>
     {% for field in seguranca_form %}

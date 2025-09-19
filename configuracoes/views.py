@@ -58,13 +58,13 @@ class ConfiguracoesView(LoginRequiredMixin, View):
     componentes) seja renderizada novamente.
     """
 
-    # Mapeamento das abas para suas classes de formulário.
+    # Mapeamento das seções para suas classes de formulário.
     form_classes: Dict[str, type[forms.Form]] = {
         "seguranca": PasswordChangeForm,
         "preferencias": ConfiguracaoContaForm,  # type: ignore
     }
 
-    # Mapeamento das abas para seus templates de fragmento.
+    # Mapeamento das seções para seus templates de fragmento.
     partial_templates: Dict[str, str] = {
         "seguranca": "configuracoes/_partials/seguranca.html",
         "preferencias": "configuracoes/_partials/preferencias.html",
@@ -81,17 +81,17 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             self._user_cache = User.objects.select_related("configuracao").get(pk=self.request.user.pk)
         return self._user_cache
 
-    def get_form(self, tab: str | None, data: Dict[str, Any] | None = None, files: Any | None = None) -> forms.Form:
+    def get_form(self, section: str | None, data: Dict[str, Any] | None = None, files: Any | None = None) -> forms.Form:
         """
         Instancia o formulário correto para a aba atual.  Para a aba de segurança,
         o formulário recebe o usuário como primeiro parâmetro.  Para a aba de
         preferências, o formulário é construído a partir de uma instância de
         configuração da conta.
         """
-        tab = tab or "seguranca"
-        if tab not in self.form_classes:
+        section = section or "seguranca"
+        if section not in self.form_classes:
             raise Http404
-        form_class = self.form_classes[tab]
+        form_class = self.form_classes[section]
         if form_class is None:
             raise Http404("O formulário para esta aba não está disponível.")
         user = self.get_user()
@@ -109,20 +109,21 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         """
         return bool(getattr(self.request.user, "two_factor_enabled", False))
 
-    def resolve_tab(self, request: HttpRequest) -> str:
+    def resolve_section(self, request: HttpRequest) -> str:
         """
         Resolve o valor da aba a partir dos parâmetros GET ou POST.  Valores
         inválidos são normalizados para ``seguranca``.
         """
-        tab = request.GET.get("tab") or request.POST.get("tab") or "seguranca"
-        # Redireciona abas externas para seus respectivos módulos.
-        if tab in {"informacoes", "redes"}:
-            return tab
-        if tab not in {"seguranca", "preferencias"}:
+        # Prioriza a seção vinda da rota (kwargs) e, em seguida, POST; ignora query string
+        section = self.kwargs.get("section") or request.POST.get("section") or "seguranca"
+        # Redireciona seções externas para seus respectivos módulos.
+        if section in {"informacoes", "redes"}:
+            return section
+        if section not in {"seguranca", "preferencias"}:
             raise Http404
-        return tab
+        return section
 
-    def render_response(self, request: HttpRequest, tab: str, context: Dict[str, Any]) -> HttpResponse:
+    def render_response(self, request: HttpRequest, section: str, context: Dict[str, Any]) -> HttpResponse:
         """
         Renderiza a resposta apropriada para a aba, retornando um fragmento HTMX
         quando a requisição for feita via HTMX.  Adiciona o cabeçalho Vary para
@@ -131,7 +132,7 @@ class ConfiguracoesView(LoginRequiredMixin, View):
         # Identifica requisição HTMX de forma robusta.
         is_htmx = _is_htmx(request)
         template = (
-            self.partial_templates.get(tab, self.partial_templates["seguranca"])
+            self.partial_templates.get(section, self.partial_templates["seguranca"])
             if is_htmx
             else "configuracoes/configuracao_form.html"
         )
@@ -148,38 +149,41 @@ class ConfiguracoesView(LoginRequiredMixin, View):
                 response["Vary"] = "HX-Request"
         return response
 
-    def get(self, request: HttpRequest) -> HttpResponse:
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
         Manipula requisições GET.  Para abas externas, redireciona de imediato.
         Em seguida, prepara o contexto necessário (formulário correto, aba ativa,
         status do 2FA) e delega a renderização a ``render_response``.
         """
-        tab = self.resolve_tab(request)
-        # Redireciona abas que pertencem a outros apps.
-        if tab in {"informacoes", "redes"}:
+        section = self.resolve_section(request)
+        # Redireciona seções que pertencem a outros apps.
+        if section in {"informacoes", "redes"}:
             return redirect("accounts:perfil_sections_info")
-        form = self.get_form(tab)
+        form = self.get_form(section)
+        hero_title = _(["Segurança", "Preferências"][section == "preferencias"]) if section in {"seguranca", "preferencias"} else _("Configurações")
         context: Dict[str, Any] = {
-            f"{tab}_form": form,
-            "tab": tab,
+            f"{section}_form": form,
+            "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
+            "hero_title": hero_title,
+            "hero_subtitle": "",
         }
-        return self.render_response(request, tab, context)
+        return self.render_response(request, section, context)
 
-    def post(self, request: HttpRequest) -> HttpResponse:
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         """
         Manipula requisições POST.  Valida o formulário correspondente e
         persiste alterações quando possível.  Retorna sempre o fragmento HTMX em
         requisições HTMX, permitindo atualização assíncrona do conteúdo.
         """
-        tab = self.resolve_tab(request)
-        if tab in {"informacoes", "redes"}:
+        section = self.resolve_section(request)
+        if section in {"informacoes", "redes"}:
             return redirect("accounts:perfil_sections_info")
         # Instancia o formulário apropriado com os dados recebidos.
-        form = self.get_form(tab, request.POST, request.FILES)
+        form = self.get_form(section, request.POST, request.FILES)
         if form.is_valid():
             # Persistir alterações conforme o tipo de formulário.
-            if tab == "preferencias" and atualizar_preferencias_usuario is not None:
+            if section == "preferencias" and atualizar_preferencias_usuario is not None:
                 form.instance = atualizar_preferencias_usuario(request.user, form.cleaned_data)  # type: ignore
             else:
                 saved = form.save()
@@ -199,16 +203,19 @@ class ConfiguracoesView(LoginRequiredMixin, View):
             # Erros de validação são exibidos no formulário parcial.
             messages.error(request, _("Corrija os erros abaixo."))
         # Reconstrói contexto com o formulário (válido ou com erros).
+        hero_title = _(["Segurança", "Preferências"][section == "preferencias"]) if section in {"seguranca", "preferencias"} else _("Configurações")
         context: Dict[str, Any] = {
-            f"{tab}_form": form,
-            "tab": tab,
+            f"{section}_form": form,
+            "tab": section,  # manter compat com templates existentes
             "two_factor_enabled": self.get_two_factor_enabled(),
+            "hero_title": hero_title,
+            "hero_subtitle": "",
         }
-        if tab == "preferencias" and form.is_valid():
+        if section == "preferencias" and form.is_valid():
             context["updated_preferences"] = True
-        response = self.render_response(request, tab, context)
+        response = self.render_response(request, section, context)
         # Atualiza cookies de tema e idioma após salvar preferências com sucesso.
-        if tab == "preferencias" and form.is_valid():
+        if section == "preferencias" and form.is_valid():
             if hasattr(form, "instance"):
                 tema = getattr(form.instance, "tema", None)
                 idioma = getattr(form.instance, "idioma", None)

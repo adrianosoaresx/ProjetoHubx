@@ -341,14 +341,14 @@ def _get_menu_items() -> List[MenuItem]:
     configuracoes_children = [
         MenuItem(
             id="configuracoes_seguranca",
-            path=f"{configuracoes_url}?tab=seguranca",
+            path=reverse("configuracoes:configuracoes_seguranca"),
             label="Segurança",
             icon=ICON_LOCK,
             permissions=["authenticated"],
         ),
         MenuItem(
             id="configuracoes_preferencias",
-            path=f"{configuracoes_url}?tab=preferencias",
+            path=reverse("configuracoes:configuracoes_preferencias"),
             label="Preferências",
             icon=ICON_SETTINGS,
             permissions=["authenticated"],
@@ -609,15 +609,15 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem("organizacoes", reverse("organizacoes:list"), "Organizações", ICON_ORGS, ["root"]),
         MenuItem("token_admin", reverse("tokens:listar_api_tokens"), "Token", ICON_TOKEN, ["root", "admin"]),
         MenuItem("token_convite", reverse("tokens:gerar_convite"), "Token", ICON_TOKEN, ["coordenador"]),
-        MenuItem(
-            "configuracoes",
-            configuracoes_url,
-            "Configurações",
-            ICON_CONFIG,
-            ["authenticated"],
-            "hover:text-primary transition",
-            configuracoes_children,
-        ),
+    MenuItem(
+      "configuracoes",
+      reverse("configuracoes:configuracoes_seguranca"),
+      "Configurações",
+      ICON_CONFIG,
+      ["authenticated"],
+      "hover:text-primary transition",
+      configuracoes_children,
+    ),
         MenuItem("logout", reverse("accounts:logout"), "Sair", ICON_LOGOUT, ["authenticated"]),
         MenuItem("login", reverse("accounts:login"), "Entrar", ICON_LOGIN, ["anonymous"]),
         MenuItem(
