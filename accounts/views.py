@@ -60,10 +60,13 @@ Midia = UserMedia
 PERFIL_DEFAULT_SECTION = "portfolio"
 PERFIL_SECTION_URLS = {
     "portfolio": "accounts:perfil_portfolio",
-    "mural": "accounts:perfil_mural",
     "info": "accounts:perfil_info_partial",
     "nucleos": "accounts:perfil_nucleos",
     "eventos": "accounts:perfil_eventos",
+}
+
+PERFIL_OWNER_SECTION_URLS = {
+    **PERFIL_SECTION_URLS,
     "conexoes": "accounts:perfil_conexoes_partial",
 }
 
@@ -95,15 +98,17 @@ def _redirect_to_profile_section(request, section: str, extra_params: dict[str, 
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
+    allowed_sections = PERFIL_OWNER_SECTION_URLS if allow_owner_sections else PERFIL_SECTION_URLS
+
     section = (request.GET.get("section") or "").strip().lower()
-    if section not in PERFIL_SECTION_URLS:
+    if section not in allowed_sections:
         section = PERFIL_DEFAULT_SECTION
 
     params = request.GET.copy()
     params = params.copy()
     params.pop("section", None)
 
-    url_name = PERFIL_SECTION_URLS[section]
+    url_name = allowed_sections[section]
     url_args: list[str] = []
 
     if allow_owner_sections:
@@ -338,9 +343,6 @@ def perfil_section(request, section):
         )
         template = "perfil/partials/portfolio.html"
 
-    elif section == "mural":
-        template = "perfil/partials/_tab_feed.html"
-
     elif section == "info":
         if is_owner:
             bio = getattr(profile, "biografia", "") or getattr(profile, "bio", "")
@@ -363,34 +365,33 @@ def perfil_section(request, section):
         template = "perfil/partials/detail_eventos.html" if is_owner else "perfil/partials/publico_eventos.html"
 
     elif section == "conexoes":
-        if is_owner:
-            q = request.GET.get("q", "").strip()
-            connections = (
-                profile.connections.select_related("organizacao", "nucleo")
-                if hasattr(profile, "connections")
-                else User.objects.none()
-            )
-            connection_requests = (
-                profile.followers.select_related("organizacao", "nucleo")
-                if hasattr(profile, "followers")
-                else User.objects.none()
-            )
-            if q:
-                filters = Q(username__icontains=q) | Q(contato__icontains=q)
-                connections = connections.filter(filters)
-                connection_requests = connection_requests.filter(filters)
+        if not is_owner:
+            return HttpResponseForbidden(_("Esta seção está disponível apenas para o proprietário do perfil."))
 
-            context.update(
-                {
-                    "connections": connections,
-                    "connection_requests": connection_requests,
-                    "q": q,
-                }
-            )
-            template = "perfil/partials/conexoes_dashboard.html"
-        else:
-            context["limit"] = 12
-            template = "perfil/partials/_tab_conexoes_embed.html"
+        q = request.GET.get("q", "").strip()
+        connections = (
+            profile.connections.select_related("organizacao", "nucleo")
+            if hasattr(profile, "connections")
+            else User.objects.none()
+        )
+        connection_requests = (
+            profile.followers.select_related("organizacao", "nucleo")
+            if hasattr(profile, "followers")
+            else User.objects.none()
+        )
+        if q:
+            filters = Q(username__icontains=q) | Q(contato__icontains=q)
+            connections = connections.filter(filters)
+            connection_requests = connection_requests.filter(filters)
+
+        context.update(
+            {
+                "connections": connections,
+                "connection_requests": connection_requests,
+                "q": q,
+            }
+        )
+        template = "perfil/partials/conexoes_dashboard.html"
 
     else:
         return HttpResponseBadRequest("Invalid section")
