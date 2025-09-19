@@ -80,18 +80,6 @@ urlpatterns = [
         name="perfil_info_partial",
     ),
     path(
-        "perfil/partials/nucleos/",
-        views.perfil_section,
-        {"section": "nucleos"},
-        name="perfil_nucleos",
-    ),
-    path(
-        "perfil/partials/eventos/",
-        views.perfil_section,
-        {"section": "eventos"},
-        name="perfil_eventos",
-    ),
-    path(
         "perfil/partials/conexoes/",
         views.perfil_section,
         {"section": "conexoes"},

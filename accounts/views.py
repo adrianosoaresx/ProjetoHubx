@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.db.models.functions import Lower
 from django.http import (
     HttpResponse,
@@ -61,8 +61,6 @@ PERFIL_DEFAULT_SECTION = "portfolio"
 PERFIL_SECTION_URLS = {
     "portfolio": "accounts:perfil_portfolio",
     "info": "accounts:perfil_info_partial",
-    "nucleos": "accounts:perfil_nucleos",
-    "eventos": "accounts:perfil_eventos",
 }
 
 PERFIL_OWNER_SECTION_URLS = {
@@ -162,40 +160,6 @@ def _profile_hero_names(profile):
     return display_name, subtitle
 
 
-def _nucleos_for(profile):
-    from nucleos.models import Nucleo
-
-    return (
-        Nucleo.objects.filter(
-            participacoes__user=profile,
-            participacoes__status="ativo",
-            participacoes__status_suspensao=False,
-        )
-        .annotate(
-            num_membros=Count(
-                "participacoes",
-                filter=Q(
-                    participacoes__status="ativo",
-                    participacoes__status_suspensao=False,
-                ),
-                distinct=True,
-            ),
-            num_eventos=Count("evento", distinct=True),
-        )
-        .prefetch_related("participacoes__user")
-    )
-
-
-def _inscricoes_for(profile):
-    from eventos.models import InscricaoEvento
-
-    return (
-        InscricaoEvento.objects.filter(user=profile)
-        .select_related("evento__nucleo", "evento__coordenador")
-        .annotate(num_inscritos=Count("evento__inscricoes", distinct=True))
-    )
-
-
 def _resolve_profile_for_partial(request):
     """Return the profile for partial requests enforcing visibility rules."""
 
@@ -233,16 +197,10 @@ def perfil(request):
     """Exibe a página de perfil privado do usuário."""
     user = request.user
 
-    # Núcleos e inscrições
-    nucleos = _nucleos_for(user)
-    inscricoes = _inscricoes_for(user)
-
     portfolio_recent = _portfolio_for(user, request.user, limit=6)
     hero_title, hero_subtitle = _profile_hero_names(user)
 
     context = {
-        "nucleos": nucleos,
-        "inscricoes": inscricoes,
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "profile": user,
@@ -274,17 +232,11 @@ def perfil_publico(request, pk=None, public_id=None, username=None):
 
     if request.user == perfil:
         return redirect("accounts:perfil")
-    nucleos = _nucleos_for(perfil)
-    inscricoes = _inscricoes_for(perfil)
-
-
     portfolio_recent = _portfolio_for(perfil, request.user, limit=6)
     hero_title, hero_subtitle = _profile_hero_names(perfil)
 
     context = {
         "perfil": perfil,
-        "nucleos": nucleos,
-        "inscricoes": inscricoes,
         "hero_title": hero_title,
         "hero_subtitle": hero_subtitle,
         "is_owner": request.user == perfil,
@@ -355,14 +307,6 @@ def perfil_section(request, section):
             template = "perfil/partials/detail_informacoes.html"
         else:
             template = "perfil/partials/publico_informacoes.html"
-
-    elif section == "nucleos":
-        context["nucleos"] = _nucleos_for(profile)
-        template = "perfil/partials/detail_nucleos.html" if is_owner else "perfil/partials/publico_nucleos.html"
-
-    elif section == "eventos":
-        context["inscricoes"] = _inscricoes_for(profile)
-        template = "perfil/partials/detail_eventos.html" if is_owner else "perfil/partials/publico_eventos.html"
 
     elif section == "conexoes":
         if not is_owner:
