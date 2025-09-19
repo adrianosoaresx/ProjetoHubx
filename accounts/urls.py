@@ -74,12 +74,6 @@ urlpatterns = [
         name="perfil_portfolio",
     ),
     path(
-        "perfil/partials/mural/",
-        views.perfil_section,
-        {"section": "mural"},
-        name="perfil_mural",
-    ),
-    path(
         "perfil/partials/info/",
         views.perfil_section,
         {"section": "info"},
