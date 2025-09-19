@@ -7,7 +7,7 @@ from accounts.models import UserType
 User = get_user_model()
 
 PERFIL_URL = "/accounts/perfil/"
-API_TOKENS_URL = "/tokens/api-tokens/"
+CONVITES_LIST_URL = "/tokens/convites/"
 GERAR_CONVITE_URL = "/tokens/convites/gerar"
 
 
@@ -15,8 +15,8 @@ GERAR_CONVITE_URL = "/tokens/convites/gerar"
 @pytest.mark.parametrize(
     "role,expected",
     [
-        (UserType.ROOT, API_TOKENS_URL),
-        (UserType.ADMIN, API_TOKENS_URL),
+        (UserType.ROOT, CONVITES_LIST_URL),
+        (UserType.ADMIN, CONVITES_LIST_URL),
     ],
 )
 def test_token_menu_visible_for_roles(client, role, expected, settings):
@@ -49,5 +49,5 @@ def test_token_menu_hidden_for_other_roles(client, role, settings):
 
     response = client.get(PERFIL_URL)
     content = response.content.decode()
-    assert API_TOKENS_URL not in content
+    assert CONVITES_LIST_URL not in content
     assert GERAR_CONVITE_URL not in content

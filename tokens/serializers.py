@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from .models import ApiToken, ApiTokenIp, TokenAcesso, TokenUsoLog
+from .models import TokenAcesso, TokenUsoLog
 
 
 class TokenAcessoSerializer(serializers.ModelSerializer):
@@ -58,31 +58,3 @@ class TokenUsoLogSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "token", "usuario_email", "created_at"]
-
-
-class ApiTokenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ApiToken
-        fields = [
-            "id",
-            "user",
-            "client_name",
-            "device_fingerprint",
-            "scope",
-            "expires_at",
-            "revoked_at",
-            "last_used_at",
-            "created_at",
-        ]
-        read_only_fields = ["id", "revoked_at", "last_used_at", "created_at"]
-        extra_kwargs = {
-            "expires_at": {"allow_null": True, "required": False},
-            "device_fingerprint": {"allow_null": True, "required": False},
-        }
-
-
-class ApiTokenIpSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ApiTokenIp
-        fields = ["id", "token", "ip", "tipo", "created_at"]
-        read_only_fields = ["id", "created_at"]

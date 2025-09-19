@@ -1,15 +1,13 @@
 import pyotp
 from django import forms
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
 
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
 
 from accounts.models import UserType
-from .models import ApiToken, ApiTokenIp, CodigoAutenticacao, TokenAcesso
+from .models import CodigoAutenticacao, TokenAcesso
 from .perms import can_issue_invite
 from .services import find_token_by_code
 
@@ -44,16 +42,6 @@ class GerarTokenConviteForm(forms.Form):
             self.fields["tipo_destino"].choices = [
                 choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(user, choice[0])
             ]
-
-
-class GerarApiTokenForm(forms.Form):
-    client_name = forms.CharField(max_length=100, required=False, label=_("Nome do cliente"))
-    scope = forms.ChoiceField(choices=ApiToken._meta.get_field("scope").choices, label=_("Escopo"))
-    expires_in = forms.IntegerField(
-        required=False,
-        min_value=1,
-        label=_("Validade (dias)"),
-    )
 
 
 class ValidarTokenConviteForm(forms.Form):
@@ -146,36 +134,3 @@ class Ativar2FAForm(forms.Form):
         return codigo
 
 
-class ApiTokenIpForm(forms.ModelForm):
-    class Meta:
-        model = ApiTokenIp
-        fields = ["token", "ip", "tipo"]
-
-    def __init__(self, *args, user: User | None = None, **kwargs):
-        self.user = user
-        super().__init__(*args, **kwargs)
-        if user and not user.is_superuser:
-            self.fields["token"].queryset = ApiToken.objects.filter(user=user)
-
-    def clean_token(self):
-        token = self.cleaned_data["token"]
-        if not self.user:
-            raise forms.ValidationError("Usuário inválido")
-        if not self.user.is_superuser and token.user != self.user:
-            raise forms.ValidationError("Token inválido")
-        return token
-
-
-class RemoverApiTokenIpForm(forms.Form):
-    ip_id = forms.UUIDField()
-
-    def __init__(self, *args, user: User | None = None, **kwargs):
-        self.user = user
-        super().__init__(*args, **kwargs)
-
-    def save(self):
-        ip_obj = get_object_or_404(ApiTokenIp, id=self.cleaned_data["ip_id"])
-        if not self.user.is_superuser and ip_obj.token.user != self.user:
-            raise forms.ValidationError("IP inválido")
-        ip_obj.delete()
-        return ip_obj

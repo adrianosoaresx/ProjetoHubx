@@ -221,9 +221,6 @@ TOKENS_RATE_LIMIT_ENABLED = True
 TOKENS_WEBHOOK_URL = os.getenv("TOKENS_WEBHOOK_URL")
 TOKEN_WEBHOOK_SECRET = os.getenv("TOKEN_WEBHOOK_SECRET", "")
 
-# Número de dias antes da expiração para rotacionar tokens automaticamente
-TOKENS_ROTATE_BEFORE_DAYS = int(os.getenv("TOKENS_ROTATE_BEFORE_DAYS", "7"))
-
 ONESIGNAL_APP_ID = os.getenv("ONESIGNAL_APP_ID")
 ONESIGNAL_API_KEY = os.getenv("ONESIGNAL_API_KEY")
 # Permite desativar OneSignal mesmo que as chaves existam.
@@ -312,7 +309,6 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "tokens.auth.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_THROTTLE_RATES": {
@@ -329,27 +325,15 @@ MENSALIDADE_VENCIMENTO_DIA = 10
 
 # Intervalo (em minutos) para execução dos plugins do feed pelo celery beat
 FEED_PLUGINS_INTERVAL_MINUTES = int(os.getenv("FEED_PLUGINS_INTERVAL_MINUTES", "1"))
-# Intervalo (em minutos) para rotação automática de tokens de API
-TOKENS_ROTATE_INTERVAL_MINUTES = int(os.getenv("TOKENS_ROTATE_INTERVAL_MINUTES", "60"))
 
 CELERY_BEAT_SCHEDULE = {
     "notificar_inadimplencia": {
         "task": "financeiro.tasks.inadimplencia.notificar_inadimplencia",
         "schedule": crontab(minute=0, hour=7),
     },
-    "revogar_tokens_expirados": {
-        "task": "tokens.tasks.revogar_tokens_expirados",
-        "schedule": crontab(minute=0, hour=0),
-    },
     "remover_logs_antigos": {
         "task": "tokens.tasks.remover_logs_antigos",
         "schedule": crontab(minute=0, hour=0),
-    },
-    "rotacionar_tokens_proximos_da_expiracao": {
-        "task": "tokens.tasks.rotacionar_tokens_proximos_da_expiracao",
-        "schedule": crontab(
-            minute="*" if TOKENS_ROTATE_INTERVAL_MINUTES == 1 else f"*/{TOKENS_ROTATE_INTERVAL_MINUTES}"
-        ),
     },
     "enviar_relatorios_diarios": {
         "task": "notificacoes.tasks.enviar_relatorios_diarios",
