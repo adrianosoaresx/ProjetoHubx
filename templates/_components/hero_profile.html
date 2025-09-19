@@ -40,8 +40,9 @@
 
           <!-- Linha 2: @usuario e WhatsApp -->
           {% with redes=profile.redes_sociais %}
-            {% with has_social=redes or profile.whatsapp %}
-              <div class="mt-3 flex flex-wrap items-center justify-center gap-2{% if has_social %} sm:justify-between{% endif %}">
+
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2{% if redes or profile.whatsapp %} sm:justify-between{% endif %}">
+
                 {% if redes %}
                   {% for rede, url in redes.items %}
                     {% if url %}
@@ -58,6 +59,7 @@
                   {% endfor %}
                 {% endif %}
 
+
                 {% if profile.whatsapp %}
                   <a
                     href="https://wa.me/{{ profile.whatsapp|cut:"+" }}"
@@ -72,11 +74,11 @@
                   </span>
                 {% endif %}
 
-                <div class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-medium text-white/90{% if has_social %} sm:ml-auto{% endif %}">
+                <div class="inline-flex items-center gap-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-medium text-white/90{% if redes or profile.whatsapp %} sm:ml-auto{% endif %}">
                   <span aria-hidden="true">@</span>{{ profile.username }}
                 </div>
-              </div>
-            {% endwith %}
+            </div>
+
           {% endwith %}
 
         </div>
