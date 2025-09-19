@@ -1,13 +1,13 @@
 {% load i18n lucide_icons %}
           
 <section class="relative isolate overflow-hidden">
-  <div class="relative h-[260px] md:h-[320px] lg:h-[360px] bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]">
+  <div class="relative flex flex-col justify-end bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] min-h-[240px] sm:min-h-[280px] lg:min-h-[320px] px-4 py-10 lg:py-14">
     {% if profile.cover %}
       <img src="{{ profile.cover.url }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
     {% endif %}
 
-    <div class="relative mx-auto max-w-6xl h-full px-4">
-      <div class="h-full flex flex-col justify-end pb-4 md:pb-6">
+    <div class="relative mx-auto w-full max-w-6xl">
+      <div class="flex flex-col justify-end pb-4 sm:pb-6">
         
         <div class="rounded-2xl p-4 md:p-5  ring-1 ring-white/10 shadow-2xl text-white w-full">
           {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
