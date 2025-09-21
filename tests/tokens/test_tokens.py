@@ -1,4 +1,5 @@
 import pytest
+import pyotp
 
 pytestmark = pytest.mark.skip(reason="legacy tests")
 import pytest
@@ -7,7 +8,7 @@ from django.urls import reverse
 
 from accounts.factories import UserFactory
 from tokens.factories import TokenAcessoFactory
-from tokens.forms import ValidarCodigoAutenticacaoForm, ValidarTokenConviteForm
+from tokens.forms import ValidarCodigoAutenticacaoForm
 from tokens.models import CodigoAutenticacao, TokenAcesso
 
 User = get_user_model()
@@ -26,18 +27,7 @@ def test_token_acesso_states():
 
 
 @pytest.mark.django_db
-def test_validar_token_convite_uso_unico():
-    gerador = UserFactory(is_staff=True)
-    usuario = UserFactory()
-    token = TokenAcessoFactory(gerado_por=gerador, estado=TokenAcesso.Estado.NOVO)
-    form = ValidarTokenConviteForm({"codigo": token.codigo})
-    assert form.is_valid()
-    form.token.usuario = usuario
-    form.token.estado = TokenAcesso.Estado.USADO
-    form.token.save()
-    # tentativa de reutilizar
-    form2 = ValidarTokenConviteForm({"codigo": token.codigo})
-    assert not form2.is_valid()
+ 
 
 
 @pytest.mark.django_db

@@ -93,35 +93,6 @@ def test_convite_daily_limit(client):
     assert TokenAcesso.objects.count() == 5
 
 
-def test_validar_token_convite_get(client):
-    user = UserFactory()
-    _login(client, user)
-    resp = client.get(reverse("tokens:validar_token"))
-    assert resp.status_code == 200
-
-
-def test_validar_token_convite_view(client):
-    user = UserFactory()
-    gerador = UserFactory(is_staff=True)
-
-    token = TokenAcesso(gerado_por=gerador, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
-    codigo = "a" * 32
-    token.set_codigo(codigo)
-    token.save()
-
-    _login(client, user)
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
-    assert resp.status_code == 200
-    token.refresh_from_db()
-    assert token.estado == TokenAcesso.Estado.USADO
-    assert token.usuario == user
-    log = TokenUsoLog.objects.get(token=token)
-    assert log.acao == TokenUsoLog.Acao.USO
-    assert log.usuario == user
-
-    resp = client.post(reverse("tokens:validar_token"), {"codigo": codigo})
-    assert resp.status_code == 400
-
 
 def test_gerar_codigo_autenticacao_view(client, monkeypatch):
     user = UserFactory()

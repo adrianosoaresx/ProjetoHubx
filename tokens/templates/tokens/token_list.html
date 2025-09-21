@@ -1,54 +1,12 @@
-{% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Convites Emitidos" %} | HubX{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero_tokens.html' with title=_('Convites Emitidos') action_template='tokens/hero_action.html' %}
-{% endblock %}
-
-{% block content %}
 
 
 <section class="py-12 max-w-6xl mx-auto mt-8 px-4">
-  <div class="flex items-center justify-between gap-4 mb-6">
+  <div class="mb-6">
     <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
-    <a href="{% url 'tokens:gerar_convite' %}" class="btn btn-primary">
-      {% trans "Gerar Token" %}
-    </a>
   </div>
 
-  <div class="mb-6 card-grid gap-4">
-    <article class="card">
-      <div class="card-body">
-        <div class="text-sm text-[var(--text-secondary)]">{% trans "Total" %}</div>
-        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.total }}</div>
-      </div>
-    </article>
-    <article class="card">
-      <div class="card-body">
-        <div class="text-sm text-[var(--text-secondary)]">{% trans "Não usados" %}</div>
-        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.novos }}</div>
-      </div>
-    </article>
-    <article class="card">
-      <div class="card-body">
-        <div class="text-sm text-[var(--text-secondary)]">{% trans "Usados" %}</div>
-        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.usados }}</div>
-      </div>
-    </article>
-    <article class="card">
-      <div class="card-body">
-        <div class="text-sm text-[var(--text-secondary)]">{% trans "Expirados" %}</div>
-        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.expirados }}</div>
-      </div>
-    </article>
-    <article class="card">
-      <div class="card-body">
-        <div class="text-sm text-[var(--text-secondary)]">{% trans "Revogados" %}</div>
-        <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ totais.revogados }}</div>
-      </div>
-    </article>
-  </div>
+  
 
   {% if convites %}
 
@@ -58,7 +16,6 @@
         <tr>
           <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Tipo" %}</th>
           <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Estado" %}</th>
-          <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Ações" %}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-[var(--border)]">
@@ -66,28 +23,15 @@
         <tr>
           <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_tipo_destino_display }}</td>
           <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_estado_display }}</td>
-          <td class="px-4 py-2 text-sm">
-            {% if token.estado != 'revogado' %}
-            <form method="post" action="{% url 'tokens:revogar_convite' token.id %}"
-                  hx-confirm="{% trans 'Confirmar revogação?' %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-secondary">{% trans "Revogar" %}</button>
-            </form>
-            {% else %}
-            <span class="text-[var(--text-secondary)]">{% trans "Revogado" %}</span>
-            {% endif %}
-          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    </div>
   </div>
   {% else %}
     <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</p>
   {% endif %}
-  <div class="mt-6 text-center">
-    <a href="{% url 'configuracoes:configuracoes' %}" class="text-sm link hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+  <div class="mt-6">
+    <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
   </div>
 </section>
-{% endblock %}

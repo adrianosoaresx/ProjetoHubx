@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block hero %}
+  {% include '_components/hero_tokens.html' with title=_('Tokens') action_template='tokens/hero_action.html' %}
+{% endblock %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl px-4 lg:px-6 py-6">
+  <div id="tokens-conteudo">
+    {% if partial_template %}
+      {% include partial_template %}
+    {% else %}
+      {% include 'tokens/token_list.html' %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

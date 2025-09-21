@@ -1,12 +1,4 @@
-{% extends "base.html" %}
 {% load widget_tweaks i18n %}
-{% block title %}{% trans "Gerar Token de Acesso" %} | HubX{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero_tokens.html' with title=_('Gerar Token de Acesso') %}
-{% endblock %}
-
-{% block content %}
 
 <section class="max-w-xl mx-auto px-4 py-10">
   <div class="card">
@@ -39,10 +31,9 @@
         {% include "tokens/_resultado.html" %}
       </div>
 
-      <footer class="mt-6 text-center">
-        <a href="{% url 'configuracoes:configuracoes' %}" class="text-sm link hover:underline">{% trans "Voltar ao painel de segurança" %}</a>
+      <footer class="mt-6">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
       </footer>
     </div>
   </div>
 </section>
-{% endblock %}

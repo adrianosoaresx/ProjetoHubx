@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -26,18 +26,15 @@ from .forms import (
     GerarCodigoAutenticacaoForm,
     GerarTokenConviteForm,
     ValidarCodigoAutenticacaoForm,
-    ValidarTokenConviteForm,
 )
 from .metrics import (
     tokens_invites_created_total,
-    tokens_invites_revoked_total,
-    tokens_invites_used_total,
     tokens_rate_limited_total,
 )
 from .models import CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog, TOTPDevice
 from .perms import can_issue_invite
 from .ratelimit import check_rate_limit
-from .services import create_invite_token, invite_created, invite_revoked, invite_used
+from .services import create_invite_token, invite_created
 from .utils import get_client_ip
 
 User = get_user_model()
@@ -73,34 +70,13 @@ def listar_convites(request):
     }
 
     context = {"convites": convites, "totais": totais}
-    return render(request, "tokens/token_list.html", context)
+    if request.headers.get("Hx-Request") == "true":
+        return render(request, "tokens/token_list.html", context)
+    context["partial_template"] = "tokens/token_list.html"
+    return render(request, "tokens/tokens.html", context)
 
 
-@login_required
-def revogar_convite(request, token_id: int):
-    if not request.user.is_staff:
-        messages.error(request, _("Você não tem permissão para revogar convites."))
-        return redirect("tokens:listar_convites")
-    token = get_object_or_404(TokenAcesso, id=token_id, gerado_por=request.user)
-    if token.estado != TokenAcesso.Estado.REVOGADO:
-        now = timezone.now()
-        token.estado = TokenAcesso.Estado.REVOGADO
-        token.revogado_em = now
-        token.revogado_por = request.user
-        token.save(update_fields=["estado", "revogado_em", "revogado_por"])
-        TokenUsoLog.objects.create(
-            token=token,
-            usuario=request.user,
-            acao=TokenUsoLog.Acao.REVOGACAO,
-            ip=get_client_ip(request),
-            user_agent=request.META.get("HTTP_USER_AGENT", ""),
-        )
-        tokens_invites_revoked_total.inc()
-        invite_revoked(token)
-        messages.success(request, _("Convite revogado."))
-    else:
-        messages.info(request, _("Convite já estava revogado."))
-    return redirect("tokens:listar_convites")
+
 
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
@@ -114,7 +90,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return redirect("accounts:perfil")
         form = GerarTokenConviteForm(user=request.user)
         form.fields["tipo_destino"].choices = choices
-        return render(request, "tokens/gerar_token.html", {"form": form})
+        if request.headers.get("Hx-Request") == "true":
+            return render(request, "tokens/gerar_token.html", {"form": form})
+        return render(request, "tokens/tokens.html", {"partial_template": "tokens/gerar_token.html", "form": form})
 
     def post(self, request, *args, **kwargs):
         ip = get_client_ip(request)
@@ -139,8 +117,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 messages.error(request, _("Muitas requisições, tente novamente mais tarde."))
                 resp = render(
                     request,
-                    "tokens/gerar_token.html",
-                    {"form": GerarTokenConviteForm(user=request.user)},
+                    "tokens/tokens.html",
+                    {"partial_template": "tokens/gerar_token.html", "form": GerarTokenConviteForm(user=request.user)},
                     status=429,
                 )
             if rl.retry_after:
@@ -165,8 +143,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 )
                 return render(
                     request,
-                    "tokens/gerar_token.html",
-                    {"form": form, "error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
+                    "tokens/tokens.html",
+                    {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
                     status=403,
                 )
 
@@ -190,8 +168,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 messages.error(request, _("Limite diário atingido."))
                 return render(
                     request,
-                    "tokens/gerar_token.html",
-                    {"form": form, "error": _("Limite diário atingido.")},
+                    "tokens/tokens.html",
+                    {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Limite diário atingido.")},
                     status=429,
                 )
 
@@ -224,8 +202,8 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             form.fields["tipo_destino"].choices = choices
             return render(
                 request,
-                "tokens/gerar_token.html",
-                {"form": form, "token": codigo},
+                "tokens/tokens.html",
+                {"partial_template": "tokens/gerar_token.html", "form": form, "token": codigo},
             )
         if request.headers.get("HX-Request") == "true":
             return render(
@@ -237,86 +215,13 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         messages.error(request, _("Dados inválidos"))
         return render(
             request,
-            "tokens/gerar_token.html",
-            {"form": form, "error": _("Dados inválidos")},
+            "tokens/tokens.html",
+            {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Dados inválidos")},
             status=400,
         )
 
 
-class ValidarTokenConviteView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        form = ValidarTokenConviteForm()
-        return render(request, "tokens/validar_token.html", {"form": form})
 
-    def post(self, request, *args, **kwargs):
-        ip = get_client_ip(request)
-        rl = check_rate_limit(f"user:{request.user.id}:{ip}")
-        if not rl.allowed:
-            tokens_rate_limited_total.inc()
-            log_audit(
-                request.user,
-                "token_validate_rate_limited",
-                object_type="TokenAcesso",
-                ip_hash=hash_ip(ip),
-                status=AuditLog.Status.FAILURE,
-            )
-            if request.headers.get("HX-Request") == "true":
-                resp = render(
-                    request,
-                    "tokens/_resultado.html",
-                    {"error": _("Muitas requisições, tente novamente mais tarde.")},
-                    status=429,
-                )
-            else:
-                messages.error(request, _("Muitas requisições, tente novamente mais tarde."))
-                resp = render(
-                    request,
-                    "tokens/validar_token.html",
-                    {"form": ValidarTokenConviteForm()},
-                    status=429,
-                )
-            if rl.retry_after:
-                resp["Retry-After"] = str(rl.retry_after)
-            return resp
-        form = ValidarTokenConviteForm(request.POST)
-        if form.is_valid():
-            token = form.token
-            token.usuario = request.user
-            token.estado = TokenAcesso.Estado.USADO
-            token.ip_utilizado = ip
-            token.save(update_fields=["usuario", "estado", "ip_utilizado"])
-            TokenUsoLog.objects.create(
-                token=token,
-                usuario=request.user,
-                acao=TokenUsoLog.Acao.USO,
-                ip=ip,
-                user_agent=request.META.get("HTTP_USER_AGENT", ""),
-            )
-            invite_used(token)
-            tokens_invites_used_total.inc()
-            if request.headers.get("HX-Request") == "true":
-                return render(request, "tokens/_resultado.html", {"success": _("Token validado")})
-            messages.success(request, _("Token validado"))
-            form = ValidarTokenConviteForm()
-            return render(
-                request,
-                "tokens/validar_token.html",
-                {"form": form, "success": _("Token validado")},
-            )
-        if request.headers.get("HX-Request") == "true":
-            return render(
-                request,
-                "tokens/_resultado.html",
-                {"error": form.errors.as_text()},
-                status=400,
-            )
-        messages.error(request, form.errors.as_text())
-        return render(
-            request,
-            "tokens/validar_token.html",
-            {"form": form, "error": form.errors.as_text()},
-            status=400,
-        )
 
 
 class GerarCodigoAutenticacaoView(LoginRequiredMixin, View):

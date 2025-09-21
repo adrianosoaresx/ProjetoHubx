@@ -1,4 +1,5 @@
 import pytest
+import pyotp
 
 pytestmark = pytest.mark.skip(reason="legacy tests")
 import pytest
@@ -16,7 +17,6 @@ from tokens.forms import (
     GerarTokenConviteForm,
     TokenAcessoForm,
     ValidarCodigoAutenticacaoForm,
-    ValidarTokenConviteForm,
 )
 from tokens.models import CodigoAutenticacao, TokenAcesso
 
@@ -40,28 +40,7 @@ def test_gerar_token_convite_form_querysets():
     assert list(form.fields["nucleos"].queryset) == [nucleo1]
 
 
-def test_validar_token_convite_form_errors():
-    form = ValidarTokenConviteForm({"codigo": "naoexiste"})
-    assert not form.is_valid()
-    assert "Token inválido" in form.errors["codigo"][0]
-
-    user = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(
-        gerado_por=user,
-        tipo_destino=TokenAcesso.TipoUsuario.ADMIN,
-        data_expiracao=timezone.now() - timezone.timedelta(days=1),
-    )
-    form = ValidarTokenConviteForm({"codigo": token.codigo})
-    assert not form.is_valid()
-    assert "Token expirado" in form.errors["codigo"][0]
-
-
-def test_validar_token_convite_form_success():
-    user = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ADMIN)
-    form = ValidarTokenConviteForm({"codigo": token.codigo})
-    assert form.is_valid()
-    assert form.token == token
+ 
 
 
 def test_gerar_codigo_autenticacao_form_save():

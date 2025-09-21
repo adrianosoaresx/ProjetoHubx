@@ -94,34 +94,4 @@ def test_use_convite_triggers_webhook(monkeypatch):
     assert calls["headers"]["X-Hubx-Signature"] == expected_sig
 
 
-@override_settings(
-    TOKENS_WEBHOOK_URL="https://example.com/hook",
-    TOKEN_WEBHOOK_SECRET="segredo",
-)
-def test_revogar_convite_triggers_webhook(monkeypatch, client):
-    calls: dict[str, object] = {}
-
-    def fake_post(url, data, headers, timeout):
-        calls["url"] = url
-        calls["data"] = data
-        calls["headers"] = headers
-
-        class Resp:
-            status_code = 200
-
-        return Resp()
-
-    monkeypatch.setattr("tokens.services.requests.post", fake_post)
-
-    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
-    org = OrganizacaoFactory()
-    org.users.add(user)
-    client.force_login(user)
-    token, _ = create_invite_token(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
-
-    client.get(reverse("tokens:revogar_convite", args=[token.id]))
-
-    payload = json.loads(calls["data"].decode())
-    assert payload == {"event": "invite.revoked", "id": str(token.id)}
-    expected_sig = hmac.new(b"segredo", calls["data"], hashlib.sha256).hexdigest()
-    assert calls["headers"]["X-Hubx-Signature"] == expected_sig
+ 
