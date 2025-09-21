@@ -70,8 +70,73 @@ from .tasks import notificar_briefing_status, upload_material_divulgacao
 User = get_user_model()
 
 
-class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
-    template_name = "eventos/evento_list.html"
+class PainelRenderMixin:
+    painel_template_name = "eventos/painel.html"
+    painel_title = _("Eventos")
+    painel_hero_template = "_components/hero_evento.html"
+    painel_action_template = None
+    painel_subtitle = None
+    painel_breadcrumb_template = None
+    painel_neural_background = None
+    painel_hero_style = None
+
+    def get_partial_template_name(self) -> str:
+        return self.template_name
+
+    def get_painel_title(self) -> str:
+        return getattr(self, "painel_title", _("Eventos"))
+
+    def get_painel_hero_template(self) -> str | None:
+        return getattr(self, "painel_hero_template", "_components/hero_evento.html")
+
+    def get_painel_action_template(self) -> str | None:
+        return getattr(self, "painel_action_template", None)
+
+    def get_painel_subtitle(self) -> str | None:
+        return getattr(self, "painel_subtitle", None)
+
+    def get_painel_breadcrumb_template(self) -> str | None:
+        return getattr(self, "painel_breadcrumb_template", None)
+
+    def get_painel_neural_background(self) -> str | None:
+        return getattr(self, "painel_neural_background", None)
+
+    def get_painel_hero_style(self) -> str | None:
+        return getattr(self, "painel_hero_style", None)
+
+    def get_painel_context(self, context: dict) -> dict:
+        context.setdefault("painel_title", self.get_painel_title())
+        hero_template = self.get_painel_hero_template()
+        if hero_template:
+            context.setdefault("painel_hero_template", hero_template)
+        action_template = self.get_painel_action_template()
+        if action_template:
+            context.setdefault("painel_action_template", action_template)
+        subtitle = self.get_painel_subtitle()
+        if subtitle:
+            context.setdefault("painel_subtitle", subtitle)
+        breadcrumb = self.get_painel_breadcrumb_template()
+        if breadcrumb:
+            context.setdefault("painel_breadcrumb_template", breadcrumb)
+        neural_background = self.get_painel_neural_background()
+        if neural_background:
+            context.setdefault("painel_neural_background", neural_background)
+        hero_style = self.get_painel_hero_style()
+        if hero_style:
+            context.setdefault("painel_hero_style", hero_style)
+        return context
+
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.headers.get("Hx-Request") == "true":
+            return super().render_to_response(context, **response_kwargs)
+        context = self.get_painel_context(context)
+        context["partial_template"] = self.get_partial_template_name()
+        return TemplateResponse(self.request, self.painel_template_name, context)
+
+
+class EventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
+    template_name = "eventos/partials/eventos/evento_list.html"
+    painel_action_template = "eventos/partials/eventos/hero_evento_list_action.html"
     context_object_name = "eventos"
     paginate_by = 12
 
@@ -118,14 +183,6 @@ class EventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         ctx["q"] = self.request.GET.get("q", "").strip()
         ctx["querystring"] = urlencode(params, doseq=True)
         return ctx
-
-    def render_to_response(self, context, **response_kwargs):
-        if self.request.headers.get("Hx-Request") == "true":
-            return super().render_to_response(context, **response_kwargs)
-        # não HTMX: renderiza o painel com o parcial de lista
-        context["partial_template"] = "eventos/evento_list.html"
-        return TemplateResponse(self.request, "eventos/painel.html", context)
-
 
 def _queryset_por_organizacao(request):
     qs = Evento.objects.prefetch_related("inscricoes").all()
@@ -175,9 +232,10 @@ def calendario_cards_ultimos_30(request):
         "data_atual": hoje,
     }
     if request.headers.get("Hx-Request") == "true":
-        return TemplateResponse(request, "eventos/calendario.html", context)
+        return TemplateResponse(request, "eventos/partials/calendario/calendario.html", context)
     # Não HTMX: renderiza o painel com o parcial calendário já incluído
-    context["partial_template"] = "eventos/calendario.html"
+    context["partial_template"] = "eventos/partials/calendario/calendario.html"
+    context.setdefault("painel_action_template", "eventos/partials/eventos/hero_evento_list_action.html")
     return TemplateResponse(request, "eventos/painel.html", context)
 
 
@@ -208,12 +266,14 @@ def painel_eventos(request):
     context = {
         "dias_com_eventos": dias_com_eventos,
         "data_atual": hoje,
-        "partial_template": "eventos/calendario.html",
+        "partial_template": "eventos/partials/calendario/calendario.html",
+        "painel_action_template": "eventos/partials/eventos/hero_evento_list_action.html",
     }
     return TemplateResponse(request, "eventos/painel.html", context)
 
 
 class EventoCreateView(
+    PainelRenderMixin,
     LoginRequiredMixin,
     NoSuperadminMixin,
     AdminRequiredMixin,
@@ -222,8 +282,10 @@ class EventoCreateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/create.html"
+    template_name = "eventos/partials/eventos/create.html"
     success_url = reverse_lazy("eventos:calendario")
+    painel_title = _("Cadastrar Evento")
+    painel_hero_template = "_components/hero.html"
 
     permission_required = "eventos.add_evento"
 
@@ -231,15 +293,6 @@ class EventoCreateView(
         if request.user.user_type == UserType.ROOT:
             raise PermissionDenied("Usuário root não pode criar eventos.")
         return super().dispatch(request, *args, **kwargs)
-
-    def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        if request.headers.get("Hx-Request") == "true":
-            return response
-        # não HTMX: renderiza o painel com o parcial embutido
-        context = self.get_context_data()
-        context["partial_template"] = "eventos/create.html"
-        return TemplateResponse(request, "eventos/painel.html", context)
 
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao  # Corrigido para usar 'organizacao' ao criar evento
@@ -254,6 +307,7 @@ class EventoCreateView(
 
 
 class EventoUpdateView(
+    PainelRenderMixin,
     LoginRequiredMixin,
     NoSuperadminMixin,
     AdminRequiredMixin,
@@ -262,8 +316,10 @@ class EventoUpdateView(
 ):
     model = Evento
     form_class = EventoForm
-    template_name = "eventos/update.html"
+    template_name = "eventos/partials/eventos/update.html"
     success_url = reverse_lazy("eventos:calendario")
+    painel_title = _("Editar Evento")
+    painel_hero_template = "_components/hero.html"
 
     permission_required = "eventos.change_evento"
 
@@ -293,6 +349,7 @@ class EventoUpdateView(
 
 
 class EventoDeleteView(
+    PainelRenderMixin,
     LoginRequiredMixin,
     NoSuperadminMixin,
     AdminRequiredMixin,
@@ -300,8 +357,10 @@ class EventoDeleteView(
     DeleteView,
 ):
     model = Evento
-    template_name = "eventos/delete.html"
+    template_name = "eventos/partials/eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
+    painel_title = _("Remover Evento")
+    painel_hero_template = "_components/hero.html"
 
     permission_required = "eventos.delete_evento"
 
@@ -320,9 +379,10 @@ class EventoDeleteView(
         return super().delete(request, *args, **kwargs)  # pragma: no cover
 
 
-class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
+class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, DetailView):
     model = Evento
-    template_name = "eventos/detail.html"
+    template_name = "eventos/partials/eventos/detail.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -339,6 +399,7 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
 
         user = self.request.user
         evento: Evento = self.object
+        context["evento"] = evento
         minha_inscricao = evento.inscricoes.filter(user=user, status="confirmada").select_related("user").first()
         confirmada = bool(minha_inscricao)
         context["inscricao_confirmada"] = confirmada
@@ -362,13 +423,15 @@ class EventoDetailView(LoginRequiredMixin, NoSuperadminMixin, DetailView):
                 "inscricao_confirmada": confirmada,
             }
         )
+        context.setdefault("painel_title", evento.titulo)
 
         return context
 
 
-class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
+class TarefaDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Tarefa
-    template_name = "eventos/tarefa_detail.html"
+    template_name = "eventos/partials/eventos/tarefa_detail.html"
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = Tarefa.objects.select_related("organizacao")
@@ -384,13 +447,16 @@ class TarefaDetailView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["logs"] = self.object.logs.select_related("usuario").all()
+        context.setdefault("painel_title", self.object.titulo)
         return context
 
 
-class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
+class TarefaListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = Tarefa
-    template_name = "eventos/tarefa_list.html"
+    template_name = "eventos/partials/eventos/tarefa_list.html"
     context_object_name = "tarefas"
+    painel_title = _("Tarefas")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = Tarefa.objects.select_related("organizacao", "responsavel")
@@ -404,11 +470,13 @@ class TarefaListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin
         return qs.filter(filtro)
 
 
-class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
+class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "eventos/tarefa_form.html"
+    template_name = "eventos/partials/eventos/tarefa_form.html"
     success_url = reverse_lazy("eventos:tarefa_list")
+    painel_title = _("Nova Tarefa")
+    painel_hero_template = "_components/hero.html"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -423,11 +491,13 @@ class TarefaCreateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMix
         return response
 
 
-class TarefaUpdateView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
+class TarefaUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "eventos/tarefa_form.html"
+    template_name = "eventos/partials/eventos/tarefa_form.html"
     success_url = reverse_lazy("eventos:tarefa_list")
+    painel_title = _("Editar Tarefa")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = Tarefa.objects.select_related("organizacao")
@@ -526,7 +596,19 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
         if timezone.now() < evento.data_fim:
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
 
-        return render(request, "eventos/avaliacao_form.html", {"evento": evento})
+        context = {"evento": evento}
+        if request.headers.get("Hx-Request") == "true":
+            return TemplateResponse(
+                request, "eventos/partials/eventos/avaliacao_form.html", context
+            )
+        context.update(
+            {
+                "partial_template": "eventos/partials/eventos/avaliacao_form.html",
+                "painel_title": _("Avaliar evento"),
+                "painel_hero_template": "_components/hero.html",
+            }
+        )
+        return TemplateResponse(request, "eventos/painel.html", context)
 
     def post(self, request, pk):
         evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
@@ -660,14 +742,38 @@ def avaliar_parceria(request, pk: int):
             }
         )
 
-    return render(request, "eventos/parceria_avaliar.html", {"parceria": parceria})
+    context = {"parceria": parceria}
+    if request.headers.get("Hx-Request") == "true":
+        return TemplateResponse(
+            request, "eventos/partials/parceria/parceria_avaliar.html", context
+        )
+    context.update(
+        {
+            "partial_template": "eventos/partials/parceria/parceria_avaliar.html",
+            "painel_title": _("Avaliar parceria"),
+            "painel_hero_template": "_components/hero.html",
+        }
+    )
+    return TemplateResponse(request, "eventos/painel.html", context)
 
 
 @login_required
 @no_superadmin_required
 def checkin_form(request, pk: int):
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
-    return render(request, "eventos/checkin_form.html", {"inscricao": inscricao})
+    context = {"inscricao": inscricao}
+    if request.headers.get("Hx-Request") == "true":
+        return TemplateResponse(
+            request, "eventos/partials/inscricao/checkin_form.html", context
+        )
+    context.update(
+        {
+            "partial_template": "eventos/partials/inscricao/checkin_form.html",
+            "painel_title": _("Check-in do evento"),
+            "painel_hero_template": "_components/hero.html",
+        }
+    )
+    return TemplateResponse(request, "eventos/painel.html", context)
 
 
 def checkin_inscricao(request, pk: int):
@@ -685,10 +791,12 @@ def checkin_inscricao(request, pk: int):
     return JsonResponse({"check_in": inscricao.check_in_realizado_em})
 
 
-class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
+class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = InscricaoEvento
-    template_name = "eventos/inscricao_list.html"
+    template_name = "eventos/partials/inscricao/inscricao_list.html"
     context_object_name = "inscricoes"
+    painel_title = _("Lista de Inscrições")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = InscricaoEvento.objects.select_related("user", "evento")
@@ -705,10 +813,12 @@ class InscricaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, GerenteRequ
         return qs
 
 
-class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
+class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
-    template_name = "eventos/inscricao_form.html"
+    template_name = "eventos/partials/inscricao/inscricao_form.html"
+    painel_title = _("Inscrição")
+    painel_hero_template = "_components/hero.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
@@ -734,11 +844,13 @@ class InscricaoEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateVie
         return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
 
 
-class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
+class MaterialDivulgacaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = MaterialDivulgacaoEvento
-    template_name = "eventos/material_list.html"
+    template_name = "eventos/partials/eventos/material_list.html"
     context_object_name = "materiais"
     paginate_by = 10
+    painel_title = _("Materiais de Divulgação")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -768,12 +880,19 @@ class MaterialDivulgacaoEventoListView(LoginRequiredMixin, NoSuperadminMixin, Li
 
 
 class MaterialDivulgacaoEventoCreateView(
-    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, CreateView
+    PainelRenderMixin,
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    GerenteRequiredMixin,
+    PermissionRequiredMixin,
+    CreateView,
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
-    template_name = "eventos/material_form.html"
+    template_name = "eventos/partials/eventos/material_form.html"
     success_url = reverse_lazy("eventos:material_list")
+    painel_title = _("Novo Material")
+    painel_hero_template = "_components/hero.html"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -807,12 +926,19 @@ class MaterialDivulgacaoEventoCreateView(
 
 
 class MaterialDivulgacaoEventoUpdateView(
-    LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, PermissionRequiredMixin, UpdateView
+    PainelRenderMixin,
+    LoginRequiredMixin,
+    NoSuperadminMixin,
+    GerenteRequiredMixin,
+    PermissionRequiredMixin,
+    UpdateView,
 ):
     model = MaterialDivulgacaoEvento
     form_class = MaterialDivulgacaoEventoForm
-    template_name = "eventos/material_form.html"
+    template_name = "eventos/partials/eventos/material_form.html"
     success_url = reverse_lazy("eventos:material_list")
+    painel_title = _("Editar Material")
+    painel_hero_template = "_components/hero.html"
 
     permission_required = "eventos.change_materialdivulgacaoevento"
 
@@ -859,10 +985,12 @@ class ParceriaPermissionMixin(UserPassesTestMixin):
         }
 
 
-class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, ListView):
+class ParceriaEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, ListView):
     model = ParceriaEvento
-    template_name = "eventos/parceria_list.html"
+    template_name = "eventos/partials/parceria/parceria_list.html"
     context_object_name = "parcerias"
+    painel_title = _("Parcerias")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -879,11 +1007,13 @@ class ParceriaEventoListView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPerm
         return qs.order_by("-data_inicio")
 
 
-class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
+class ParceriaEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
-    template_name = "eventos/parceria_form.html"
+    template_name = "eventos/partials/parceria/parceria_form.html"
     success_url = reverse_lazy("eventos:parceria_list")
+    painel_title = _("Nova Parceria")
+    painel_hero_template = "_components/hero.html"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -904,11 +1034,13 @@ class ParceriaEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
         return super().form_valid(form)
 
 
-class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
+class ParceriaEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
     model = ParceriaEvento
     form_class = ParceriaEventoForm
-    template_name = "eventos/parceria_form.html"
+    template_name = "eventos/partials/parceria/parceria_form.html"
     success_url = reverse_lazy("eventos:parceria_list")
+    painel_title = _("Editar Parceria")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -943,10 +1075,12 @@ class ParceriaEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
         return response
 
 
-class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
+class ParceriaEventoDeleteView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
-    template_name = "eventos/parceria_confirm_delete.html"
+    template_name = "eventos/partials/parceria/parceria_confirm_delete.html"
     success_url = reverse_lazy("eventos:parceria_list")
+    painel_title = _("Remover Parceria")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -970,10 +1104,12 @@ class ParceriaEventoDeleteView(LoginRequiredMixin, NoSuperadminMixin, ParceriaPe
         return super().delete(request, *args, **kwargs)
 
 
-class BriefingEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
+class BriefingEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
     model = BriefingEvento
-    template_name = "eventos/briefing_list.html"
+    template_name = "eventos/partials/briefing/briefing_list.html"
     context_object_name = "briefings"
+    painel_title = _("Briefings de Eventos")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         user = self.request.user
@@ -990,11 +1126,13 @@ class BriefingEventoListView(LoginRequiredMixin, NoSuperadminMixin, ListView):
         return qs
 
 
-class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView):
+class BriefingEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = BriefingEvento
     form_class = BriefingEventoCreateForm
-    template_name = "eventos/briefing_form.html"
+    template_name = "eventos/partials/briefing/briefing_form.html"
     success_url = reverse_lazy("eventos:briefing_list")
+    painel_title = _("Novo Briefing")
+    painel_hero_template = "_components/hero.html"
 
     def form_valid(self, form):
         evento = form.cleaned_data.get("evento")
@@ -1011,11 +1149,13 @@ class BriefingEventoCreateView(LoginRequiredMixin, NoSuperadminMixin, CreateView
         return super().form_valid(form)
 
 
-class BriefingEventoUpdateView(LoginRequiredMixin, NoSuperadminMixin, UpdateView):
+class BriefingEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = BriefingEvento
     form_class = BriefingEventoForm
-    template_name = "eventos/briefing_form.html"
+    template_name = "eventos/partials/briefing/briefing_form.html"
     success_url = reverse_lazy("eventos:briefing_list")
+    painel_title = _("Editar Briefing")
+    painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
         qs = BriefingEvento.objects.all()

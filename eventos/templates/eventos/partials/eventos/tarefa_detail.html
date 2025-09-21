@@ -1,12 +1,4 @@
-{% extends "base.html" %}
 {% load i18n %}
-{% block title %}{{ object.titulo }} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=object.titulo %}
-{% endblock %}
-
-{% block content %}
 <section class="py-12 px-4">
   <div class="card-grid gap-6">
     <article class="card">
@@ -63,5 +55,4 @@
     <a href="{% url 'eventos:tarefa_list' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
   </div>
 </section>
-{% endblock %}
 

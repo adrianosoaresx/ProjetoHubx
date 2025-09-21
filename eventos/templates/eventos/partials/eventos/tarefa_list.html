@@ -1,14 +1,6 @@
-{% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans "Tarefas" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Tarefas') %}
-{% endblock %}
-
-{% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8 space-y-6">
-  {% include "eventos/partials/_nav.html" with current_section='tarefas' %}
+  {% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' %}
   <header class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Tarefas" %}</h1>
     <a href="{% url 'eventos:tarefa_criar' %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
@@ -28,4 +20,3 @@
     {% endfor %}
   </ul>
 </section>
-{% endblock %}

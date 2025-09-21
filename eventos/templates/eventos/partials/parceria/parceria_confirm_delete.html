@@ -1,13 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n %}
-
-{% block title %}{% trans 'Remover Parceria' %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Remover Parceria') %}
-{% endblock %}
-
-{% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <div class="bg-[var(--bg-secondary)] border border-[var(--error-light)] rounded-2xl card-sm p-6 text-center">
     <h2 class="text-xl font-semibold text-[var(--error)] mb-4">{% trans 'Remover Parceria' %}</h2>
@@ -19,4 +10,3 @@
     </form>
   </div>
 </section>
-{% endblock %}

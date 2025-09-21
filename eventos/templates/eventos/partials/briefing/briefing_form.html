@@ -1,20 +1,4 @@
-{% extends "base.html" %}
 {% load i18n widget_tweaks %}
-{% block title %}{% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% if object %}
-    {% with title=_('Editar Briefing') %}
-      {% include '_components/hero.html' with title=title %}
-    {% endwith %}
-  {% else %}
-    {% with title=_('Novo Briefing') %}
-      {% include '_components/hero.html' with title=title %}
-    {% endwith %}
-  {% endif %}
-{% endblock %}
-
-{% block content %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">
     {% if object %}{% trans "Editar Briefing" %}{% else %}{% trans "Novo Briefing" %}{% endif %}
@@ -31,4 +15,3 @@
     </div>
   </form>
 </section>
-{% endblock %}
