@@ -1,15 +1,6 @@
-{% extends "base.html" %}
 {% load i18n %}
-
-{% block title %}{% trans "Briefings" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Briefings de Eventos') %}
-{% endblock %}
-
-{% block content %}
 <div id="briefing-container" class="py-12 px-4 space-y-6">
-  {% include "eventos/partials/_nav.html" with current_section='briefings' %}
+  {% include "eventos/partials/eventos/_nav.html" with current_section='briefings' %}
   <div class="card">
     <div class="card-header flex items-center justify-between">
       <a href="{% url 'eventos:briefing_criar' %}" class="btn btn-primary">{% trans "Novo Briefing" %}</a>
@@ -77,4 +68,3 @@
     </div>
   </div>
 </div>
-{% endblock %}

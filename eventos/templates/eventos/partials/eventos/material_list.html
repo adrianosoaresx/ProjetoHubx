@@ -1,15 +1,6 @@
-{% extends "base.html" %}
 {% load i18n %}
-
-{% block title %}{% trans "Materiais de Divulgação" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Materiais de Divulgação') %}
-{% endblock %}
-
-{% block content %}
 <div id="material-container" class="py-12 px-4 space-y-6">
-  {% include "eventos/partials/_nav.html" with current_section='materiais' %}
+  {% include "eventos/partials/eventos/_nav.html" with current_section='materiais' %}
   <div class="card">
     <div class="card-header flex items-center justify-between">
       <a href="{% url 'eventos:material_criar' %}" class="btn btn-primary">{% trans "Novo Material" %}</a>
@@ -33,7 +24,7 @@
           </thead>
           <tbody class="divide-y divide-[var(--border)]">
             {% for material in materiais %}
-              {% include "eventos/_material_row.html" with material=material %}
+              {% include "eventos/partials/eventos/_material_row.html" with material=material %}
             {% empty %}
               <tr>
                 <td colspan="5" class="px-4 py-4 text-center text-[var(--text-secondary)]">{% trans "Nenhum material disponível." %}</td>
@@ -51,4 +42,3 @@
     </div>
   </div>
 </div>
-{% endblock %}

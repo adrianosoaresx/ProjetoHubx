@@ -1,15 +1,6 @@
-{% extends "base.html" %}
 {% load i18n %}
-
-{% block title %}{% trans "Inscrições" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Lista de Inscrições') %}
-{% endblock %}
-
-{% block content %}
 <div id="inscricao-container" class="py-12 px-4 space-y-6">
-  {% include "eventos/partials/_nav.html" with current_section='inscricoes' %}
+  {% include "eventos/partials/eventos/_nav.html" with current_section='inscricoes' %}
   <div class="card">
     <div class="card-body">
       {% url 'eventos:inscricao_list' as inscricao_list_url %}
@@ -75,4 +66,3 @@
     </div>
   </div>
 </div>
-{% endblock %}

@@ -1,15 +1,6 @@
-{% extends "base.html" %}
 {% load i18n %}
-
-{% block title %}{% trans "Parcerias" %} | Hubx{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Parcerias') %}
-{% endblock %}
-
-{% block content %}
   <div class="py-12 px-4 space-y-6">
-    {% include "eventos/partials/_nav.html" with current_section='parcerias' %}
+    {% include "eventos/partials/eventos/_nav.html" with current_section='parcerias' %}
     <div class="card px-4">
       <div class="card-header flex items-center justify-between">
         <a href="{% url 'eventos:parceria_criar' %}" class="btn btn-primary">{% trans "Nova Parceria" %}</a>
@@ -59,4 +50,3 @@
       </div>
     </div>
   </div>
-{% endblock %}

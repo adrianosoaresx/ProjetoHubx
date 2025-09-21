@@ -1,12 +1,4 @@
-{% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans "Avaliar evento" %}{% endblock %}
-
-{% block hero %}
-  {% include '_components/hero.html' with title=_('Avaliar evento') %}
-{% endblock %}
-
-{% block content %}
   <div class="py-12 card px-4">
     <div class="card-body">
       <form method="post" class="space-y-4">
@@ -29,4 +21,3 @@
       </form>
     </div>
   </div>
-{% endblock %}
