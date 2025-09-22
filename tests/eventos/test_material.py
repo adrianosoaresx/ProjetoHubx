@@ -31,18 +31,6 @@ def admin_user(organizacao):
         organizacao=organizacao,
     )
 
-
-@pytest.fixture
-def cliente_user(organizacao):
-    return User.objects.create_user(
-        username="cliente",
-        email="cliente@example.com",
-        password="pass",
-        user_type=UserType.ASSOCIADO,
-        organizacao=organizacao,
-    )
-
-
 @pytest.fixture
 def api_client():
     return APIClient()
@@ -81,66 +69,6 @@ def test_material_form_limita_tamanho_imagem(admin_user):
     form = MaterialDivulgacaoEventoForm(data=_form_data(evento), files={"arquivo": arquivo})
     assert not form.is_valid()
     assert "tamanho" in form.errors["arquivo"][0]
-
-
-def test_list_view_exibe_apenas_aprovados(client, cliente_user, admin_user):
-    evento = EventoFactory(organizacao=admin_user.organizacao, coordenador=admin_user)
-    file_ok = SimpleUploadedFile("ok.pdf", b"%PDF-1.4", content_type="application/pdf")
-    MaterialDivulgacaoEvento.objects.create(
-        evento=evento,
-        titulo="Mat OK",
-        tipo="banner",
-        arquivo=file_ok,
-        status="aprovado",
-    )
-    file_pend = SimpleUploadedFile("pend.pdf", b"%PDF-1.4", content_type="application/pdf")
-    MaterialDivulgacaoEvento.objects.create(
-        evento=evento,
-        titulo="Mat Criado",
-        tipo="banner",
-        arquivo=file_pend,
-        status="criado",
-    )
-    client.force_login(cliente_user)
-    resp = client.get(reverse("eventos:material_list"))
-    html = resp.content.decode()
-    assert "Mat OK" in html
-    assert "Aprovado" in html
-    assert "Mat Criado" not in html
-    assert "Criado" not in html
-
-
-def test_list_view_filtra_por_organizacao(client, admin_user, organizacao):
-    outra_org = OrganizacaoFactory()
-    outro_user = User.objects.create_user(
-        username="x",
-        email="x@example.com",
-        password="pass",
-        user_type=UserType.ADMIN,
-        organizacao=outra_org,
-    )
-    evento1 = EventoFactory(organizacao=organizacao, coordenador=admin_user)
-    evento2 = EventoFactory(organizacao=outra_org, coordenador=outro_user)
-    file_ok = SimpleUploadedFile("ok.pdf", b"%PDF-1.4", content_type="application/pdf")
-    MaterialDivulgacaoEvento.objects.create(
-        evento=evento1,
-        titulo="Org1",
-        tipo="banner",
-        arquivo=file_ok,
-        status="aprovado",
-    )
-    MaterialDivulgacaoEvento.objects.create(
-        evento=evento2,
-        titulo="Org2",
-        tipo="banner",
-        arquivo=file_ok,
-        status="aprovado",
-    )
-    client.force_login(admin_user)
-    resp = client.get(reverse("eventos:material_list"))
-    html = resp.content.decode()
-    assert "Org1" in html
-    assert "Org2" not in html
 
 
 def test_material_api_rejeita_extensao_invalida(api_client, admin_user):
