@@ -1,7 +1,7 @@
 {% load lucide_icons %}
 {# Card de total #}
-<article class="card">
-  <div class="card-body">
+<article class="card{% if card_class %} {{ card_class }}{% endif %}">
+  <div class="card-body{% if body_class %} {{ body_class }}{% endif %}">
     <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
 
       {% if icon_name %}
