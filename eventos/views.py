@@ -50,7 +50,6 @@ from .forms import (
     BriefingEventoForm,
     EventoForm,
     InscricaoEventoForm,
-    MaterialDivulgacaoEventoForm,
     ParceriaEventoForm,
     TarefaForm,
 )
@@ -62,10 +61,9 @@ from .models import (
     Tarefa,
     TarefaLog,
     InscricaoEvento,
-    MaterialDivulgacaoEvento,
     ParceriaEvento,
 )
-from .tasks import notificar_briefing_status, upload_material_divulgacao
+from .tasks import notificar_briefing_status
 
 User = get_user_model()
 
@@ -842,138 +840,6 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
 
     def get_success_url(self):
         return reverse_lazy("eventos:evento_detalhe", kwargs={"pk": self.evento.pk})
-
-
-class MaterialDivulgacaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
-    model = MaterialDivulgacaoEvento
-    template_name = "eventos/partials/eventos/material_list.html"
-    context_object_name = "materiais"
-    paginate_by = 10
-    painel_title = _("Materiais de Divulgação")
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = MaterialDivulgacaoEvento.objects.only("id", "titulo", "descricao", "arquivo", "status")
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        if user.user_type not in {UserType.ADMIN, UserType.COORDENADOR, UserType.ROOT}:
-            qs = qs.filter(status="aprovado")
-        q = self.request.GET.get("q")
-        if q:
-            qs = qs.filter(titulo__icontains=q)
-        return qs.order_by("id")
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        params = self.request.GET.copy()
-        try:
-            params.pop("page")
-        except KeyError:
-            pass
-        ctx["querystring"] = urlencode(params, doseq=True)
-        return ctx
-
-
-class MaterialDivulgacaoEventoCreateView(
-    PainelRenderMixin,
-    LoginRequiredMixin,
-    NoSuperadminMixin,
-    GerenteRequiredMixin,
-    PermissionRequiredMixin,
-    CreateView,
-):
-    model = MaterialDivulgacaoEvento
-    form_class = MaterialDivulgacaoEventoForm
-    template_name = "eventos/partials/eventos/material_form.html"
-    success_url = reverse_lazy("eventos:material_list")
-    painel_title = _("Novo Material")
-    painel_hero_template = "_components/hero.html"
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            form.fields["evento"].queryset = Evento.objects.filter(
-                Q(organizacao=user.organizacao) | Q(nucleo__in=user.nucleos.values_list("id", flat=True))
-            )
-        return form
-
-    permission_required = "eventos.add_materialdivulgacaoevento"
-
-    def form_valid(self, form):
-        evento = form.cleaned_data["evento"]
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            if evento.organizacao != user.organizacao:
-                form.add_error("evento", _("Evento de outra organização"))
-                return self.form_invalid(form)
-            if not user.nucleos.filter(id=evento.nucleo_id).exists():
-                form.add_error("evento", _("Evento de outro núcleo"))
-                return self.form_invalid(form)
-        response = super().form_valid(form)
-        upload_material_divulgacao.delay(self.object.pk)
-        EventoLog.objects.create(
-            evento=self.object.evento,
-            usuario=self.request.user,
-            acao="material_criado",
-        )
-        return response
-
-
-class MaterialDivulgacaoEventoUpdateView(
-    PainelRenderMixin,
-    LoginRequiredMixin,
-    NoSuperadminMixin,
-    GerenteRequiredMixin,
-    PermissionRequiredMixin,
-    UpdateView,
-):
-    model = MaterialDivulgacaoEvento
-    form_class = MaterialDivulgacaoEventoForm
-    template_name = "eventos/partials/eventos/material_form.html"
-    success_url = reverse_lazy("eventos:material_list")
-    painel_title = _("Editar Material")
-    painel_hero_template = "_components/hero.html"
-
-    permission_required = "eventos.change_materialdivulgacaoevento"
-
-    def get_queryset(self):  # pragma: no cover - simples
-        qs = MaterialDivulgacaoEvento.objects.all()
-        user = self.request.user
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        return qs
-
-    def form_valid(self, form):
-        old_obj = self.get_object()
-        detalhes: dict[str, dict[str, Any]] = {}
-        arquivo_alterado = False
-        for field in form.changed_data:
-            before = getattr(old_obj, field)
-            after = form.cleaned_data.get(field)
-            if before != after:
-                detalhes[field] = {"antes": before, "depois": after}
-                if field == "arquivo":
-                    arquivo_alterado = True
-        response = super().form_valid(form)
-        if arquivo_alterado:
-            upload_material_divulgacao.delay(self.object.pk)
-        EventoLog.objects.create(
-            evento=self.object.evento,
-            usuario=self.request.user,
-            acao="material_atualizado",
-            detalhes=detalhes,
-        )
-        return response
 
 
 class ParceriaPermissionMixin(UserPassesTestMixin):

@@ -22,15 +22,6 @@
     </li>
     <li>
       <a
-        href="{% url 'eventos:material_list' %}"
-        class="{{ base_classes }}{% if current_section == 'materiais' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
-        {% if current_section == 'materiais' %}aria-current="page"{% endif %}
-      >
-        {% trans 'Materiais' %}
-      </a>
-    </li>
-    <li>
-      <a
         href="{% url 'eventos:parceria_list' %}"
         class="{{ base_classes }}{% if current_section == 'parcerias' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         {% if current_section == 'parcerias' %}aria-current="page"{% endif %}
