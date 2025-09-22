@@ -2,7 +2,6 @@ import logging
 
 from celery import shared_task
 from django.contrib.auth import get_user_model
-from django.core.files.storage import default_storage
 from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
@@ -11,7 +10,6 @@ from .models import (
     BriefingEvento,
     Evento,
     EventoLog,
-    MaterialDivulgacaoEvento,
 )
 
 
@@ -47,23 +45,6 @@ def promover_lista_espera(evento_id: int) -> None:
             acao="inscricao_promovida",
             detalhes={"notificacao": True},
         )
-
-
-@shared_task(bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
-def upload_material_divulgacao(self, material_id: int) -> None:
-    """Realiza upload assíncrono do material para o storage padrão."""
-
-    material = MaterialDivulgacaoEvento.objects.filter(pk=material_id).first()
-    if not material or not material.arquivo:
-        return
-    try:
-        default_storage.save(material.arquivo.name, material.arquivo.file)
-    except Exception as exc:  # pragma: no cover - rede/storage
-        logger.exception("Falha no upload do material %s", material_id)
-        raise exc
-    logger.info("Upload do material %s concluído", material_id)
-
-
 @shared_task
 def notificar_briefing_status(
     briefing_id: int,

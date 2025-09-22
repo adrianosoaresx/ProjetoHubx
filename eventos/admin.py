@@ -5,7 +5,6 @@ from .models import (
     BriefingEvento,
     Evento,
     InscricaoEvento,
-    MaterialDivulgacaoEvento,
     ParceriaEvento,
     Tarefa,
 )
@@ -25,11 +24,6 @@ class InscricaoEventoAdmin(admin.ModelAdmin):
 @admin.register(ParceriaEvento)
 class ParceriaEventoAdmin(admin.ModelAdmin):
     list_display = ["evento", "tipo_parceria"]
-
-
-@admin.register(MaterialDivulgacaoEvento)
-class MaterialDivulgacaoEventoAdmin(admin.ModelAdmin):
-    list_display = ["evento", "descricao", "tags"]
 
 
 @admin.register(BriefingEvento)
