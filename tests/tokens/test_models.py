@@ -15,7 +15,7 @@ pytestmark = pytest.mark.django_db
 
 def test_token_acesso_creation_defaults():
     user = UserFactory(is_staff=True)
-    token = TokenAcesso.objects.create(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ADMIN)
+    token = TokenAcesso.objects.create(gerado_por=user, tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO)
     assert len(token.codigo) == 32
     assert token.estado == TokenAcesso.Estado.NOVO
     assert token.created_at is not None
@@ -26,7 +26,7 @@ def test_token_acesso_states():
     for estado in TokenAcesso.Estado.values:
         token = TokenAcesso.objects.create(
             gerado_por=user,
-            tipo_destino=TokenAcesso.TipoUsuario.ADMIN,
+            tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO,
             estado=estado,
         )
         token.refresh_from_db()

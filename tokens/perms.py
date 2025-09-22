@@ -11,11 +11,9 @@ def can_issue_invite(issuer, target_role: str) -> bool:
 
     issuer_type = getattr(issuer, "user_type", None)
     if issuer_type == UserType.ROOT:
-        return target_role == TokenAcesso.TipoUsuario.ADMIN
+        return target_role == TokenAcesso.TipoUsuario.ASSOCIADO
     if issuer_type == UserType.ADMIN:
         return target_role in {
-            TokenAcesso.TipoUsuario.COORDENADOR,
-            TokenAcesso.TipoUsuario.NUCLEADO,
             TokenAcesso.TipoUsuario.ASSOCIADO,
             TokenAcesso.TipoUsuario.CONVIDADO,
         }

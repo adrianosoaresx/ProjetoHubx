@@ -25,10 +25,7 @@ def generate_hex_uuid() -> str:
 
 class TokenAcesso(TimeStampedModel, SoftDeleteModel):
     class TipoUsuario(models.TextChoices):
-        ADMIN = "admin", "Admin"
         ASSOCIADO = "associado", "Associado"
-        NUCLEADO = "nucleado", "Nucleado"
-        COORDENADOR = "coordenador", "Coordenador"
         CONVIDADO = "convidado", "Convidado"
 
     class Estado(models.TextChoices):

@@ -958,12 +958,13 @@ def termos(request):
 
         if username and pwd_hash:
             tipo_mapping = {
-                TokenAcesso.TipoUsuario.ADMIN: UserType.ADMIN,
-                TokenAcesso.TipoUsuario.COORDENADOR: UserType.COORDENADOR,
-                TokenAcesso.TipoUsuario.NUCLEADO: UserType.NUCLEADO,
                 TokenAcesso.TipoUsuario.ASSOCIADO: UserType.ASSOCIADO,
                 TokenAcesso.TipoUsuario.CONVIDADO: UserType.CONVIDADO,
             }
+            mapped_user_type = tipo_mapping.get(token_obj.tipo_destino)
+            if not mapped_user_type:
+                messages.error(request, _("Convite inválido."))
+                return redirect("tokens:token")
             try:
                 with transaction.atomic():
                     user = User.objects.create(
@@ -972,7 +973,7 @@ def termos(request):
                         contato=contato,
                         password=pwd_hash,
                         cpf=cpf_val,
-                        user_type=tipo_mapping[token_obj.tipo_destino],
+                        user_type=mapped_user_type,
                         is_active=False,
                         email_confirmed=False,
                     )

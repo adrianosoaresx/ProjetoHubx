@@ -41,9 +41,7 @@ def gerar_convite_nucleo(user: User, nucleo: Nucleo, email: str, papel: str) -> 
 
     token = TokenAcesso.objects.create(
         gerado_por=user,
-        tipo_destino=(
-            TokenAcesso.TipoUsuario.COORDENADOR if papel == "coordenador" else TokenAcesso.TipoUsuario.NUCLEADO
-        ),
+        tipo_destino=TokenAcesso.TipoUsuario.ASSOCIADO,
         organizacao=nucleo.organizacao,
         data_expiracao=timezone.now() + timedelta(days=7),
     )

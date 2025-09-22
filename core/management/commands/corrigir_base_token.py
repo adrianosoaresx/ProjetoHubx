@@ -43,10 +43,10 @@ class Command(BaseCommand):
 
         # Criar tokens de exemplo para testes
         exemplo_user = User.objects.filter(is_superuser=True).first() or User.objects.first()
-        for desc in ["admin", "coordenador", "associado"]:
+        for tipo in TokenAcesso.TipoUsuario.values:
             TokenAcesso.objects.get_or_create(
                 gerado_por=exemplo_user,
-                tipo_destino=desc,
+                tipo_destino=tipo,
                 defaults={"data_expiracao": timezone.now() + timedelta(days=30)},
             )
-        self.stdout.write("Tokens de exemplo criados para admin, gerente e cliente")
+        self.stdout.write("Tokens de exemplo criados para os novos tipos suportados")
