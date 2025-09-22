@@ -297,7 +297,7 @@ class EventoCreateView(
     template_name = "eventos/partials/eventos/create.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Cadastrar Evento")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_evento.html"
 
     permission_required = "eventos.add_evento"
 
