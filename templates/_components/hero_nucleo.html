@@ -22,14 +22,7 @@
       </div>
       {% if total_nucleos is not None or total_membros is not None or total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
         <div class="mt-10 space-y-4 text-left">
-          <div class="flex items-center justify-center gap-3 text-white/80 md:justify-start">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
-              {% lucide 'network' class='h-5 w-5' %}
-            </span>
-            <span class="text-sm font-semibold uppercase tracking-wide">
-              {% trans "Resumo" %}
-            </span>
-          </div>
+
           <div class="card-grid">
             {% if total_nucleos is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Núcleos') valor=total_nucleos icon_name='network' card_class='card-compact' body_class='card-body-compact' %}
@@ -37,15 +30,7 @@
             {% if total_membros is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
-            {% if total_eventos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Eventos') valor=total_eventos icon_name='calendar' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_eventos_ativos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_eventos_concluidos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Eventos concluídos') valor=total_eventos_concluidos icon_name='circle-check' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
+
           </div>
         </div>
       {% endif %}

@@ -23,16 +23,7 @@
       </div>
       {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None %}
         <div class="mt-10 space-y-4">
-          <div class="flex items-center gap-3 text-white/80">
-            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
-
-              {% lucide 'chart-pie' class='h-5 w-5' %}
-
-            </span>
-            <span class="text-sm font-semibold uppercase tracking-wide">
-              {% trans "Resumo" %}
-            </span>
-          </div>
+ 
           <div class="card-grid">
             {% include '_partials/cards/total_card.html' with label=_('Usuários') valor=total_usuarios icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
             {% include '_partials/cards/total_card.html' with label=_('Associados') valor=total_associados icon_name='badge-check' card_class='card-compact' body_class='card-body-compact' %}
