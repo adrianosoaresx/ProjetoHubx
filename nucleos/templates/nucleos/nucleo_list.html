@@ -10,10 +10,7 @@
 {% block content %}
   <div class="py-12 card px-4">
     <div class="card-header space-y-4">
-      {% include '_components/search_form.html' with q=request.GET.q %}
-      {% if request.user.user_type != 'admin' %}
-      <a href="{% url 'nucleos:meus' %}" class="btn btn-secondary text-sm" aria-label="{% trans 'Ver meus núcleos' %}">{% trans 'Meus Núcleos' %}</a>
-      {% endif %}
+
     </div>
     <div class="card-body">
       <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
