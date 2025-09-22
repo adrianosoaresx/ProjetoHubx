@@ -39,11 +39,13 @@ def create_invite_token(
     """Cria um ``TokenAcesso`` com código secreto e retorna (token, codigo)."""
 
     codigo = TokenAcesso.generate_code()
+    codigo_preview = TokenAcesso.build_codigo_preview(codigo)
     token = TokenAcesso(
         gerado_por=gerado_por,
         tipo_destino=tipo_destino,
         data_expiracao=data_expiracao,
         organizacao=organizacao,
+        codigo_preview=codigo_preview,
     )
     token.set_codigo(codigo)
     token.save()
