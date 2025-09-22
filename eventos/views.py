@@ -428,7 +428,7 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
 
 class TarefaDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
     model = Tarefa
-    template_name = "eventos/partials/eventos/tarefa_detail.html"
+    template_name = "eventos/partials/tarefas/tarefa_detail.html"
     painel_hero_template = "_components/hero.html"
 
     def get_queryset(self):
@@ -451,7 +451,7 @@ class TarefaDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
 
 class TarefaListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
     model = Tarefa
-    template_name = "eventos/partials/eventos/tarefa_list.html"
+    template_name = "eventos/partials/tarefas/tarefa_list.html"
     context_object_name = "tarefas"
     painel_title = _("Tarefas")
     painel_hero_template = "_components/hero.html"
@@ -471,7 +471,7 @@ class TarefaListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, G
 class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "eventos/partials/eventos/tarefa_form.html"
+    template_name = "eventos/partials/tarefas/tarefa_form.html"
     success_url = reverse_lazy("eventos:tarefa_list")
     painel_title = _("Nova Tarefa")
     painel_hero_template = "_components/hero.html"
@@ -492,7 +492,7 @@ class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
 class TarefaUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
     model = Tarefa
     form_class = TarefaForm
-    template_name = "eventos/partials/eventos/tarefa_form.html"
+    template_name = "eventos/partials/tarefas/tarefa_form.html"
     success_url = reverse_lazy("eventos:tarefa_list")
     painel_title = _("Editar Tarefa")
     painel_hero_template = "_components/hero.html"
