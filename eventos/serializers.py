@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
@@ -16,12 +14,10 @@ from .models import (
     Evento,
     EventoLog,
     InscricaoEvento,
-    MaterialDivulgacaoEvento,
     ParceriaEvento,
     Tarefa,
     TarefaLog,
 )
-from .tasks import upload_material_divulgacao
 
 
 class TarefaSerializer(serializers.ModelSerializer):
@@ -157,63 +153,6 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
         validated_data["user"] = request.user
         instance = super().create(validated_data)
         instance.confirmar_inscricao()
-        return instance
-
-
-class MaterialDivulgacaoEventoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MaterialDivulgacaoEvento
-        exclude = ("deleted", "deleted_at")
-        read_only_fields = (
-            "id",
-            "status",
-            "avaliado_por",
-            "avaliado_em",
-            "imagem_thumb",
-            "created_at",
-            "updated_at",
-        )
-
-    def validate_arquivo(self, arquivo):
-        if not arquivo:
-            return arquivo
-        try:
-            validate_uploaded_file(arquivo)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(e.messages)
-        return arquivo
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        evento = validated_data["evento"]
-        user = request.user
-        if user.user_type != UserType.ROOT:
-            if evento.organizacao != user.organizacao:
-                raise PermissionDenied("Evento de outra organização")
-            if not user.nucleos.filter(id=evento.nucleo_id).exists():
-                raise PermissionDenied("Evento de outro núcleo")
-        instance = super().create(validated_data)
-        upload_material_divulgacao.delay(instance.pk)
-        return instance
-
-    def update(self, instance, validated_data):
-        request = self.context["request"]
-        old_instance = MaterialDivulgacaoEvento.objects.get(pk=instance.pk)
-        instance = super().update(instance, validated_data)
-        if "arquivo" in validated_data:
-            upload_material_divulgacao.delay(instance.pk)
-        changes: Dict[str, Dict[str, Any]] = {}
-        for field in validated_data:
-            before = getattr(old_instance, field)
-            after = getattr(instance, field)
-            if before != after:
-                changes[field] = {"antes": before, "depois": after}
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=request.user,
-            acao="material_atualizado",
-            detalhes=changes,
-        )
         return instance
 
 

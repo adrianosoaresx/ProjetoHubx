@@ -339,49 +339,6 @@ class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
         verbose_name_plural = "Parcerias de Eventos"
 
 
-class MaterialDivulgacaoEvento(TimeStampedModel, SoftDeleteModel):
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    titulo = models.CharField(max_length=255)
-    descricao = models.TextField(blank=True)
-    tipo = models.CharField(
-        max_length=20,
-        choices=[
-            ("banner", "Banner"),
-            ("flyer", "Flyer"),
-            ("video", "Vídeo"),
-            ("outro", "Outro"),
-        ],
-    )
-    arquivo = models.FileField(upload_to="eventos/divulgacao/")
-    imagem_thumb = models.ImageField(upload_to="eventos/divulgacao/thumbs/", null=True, blank=True)
-    data_publicacao = models.DateField(auto_now_add=True)
-    tags = models.CharField(max_length=255, blank=True)
-    status = models.CharField(
-        max_length=10,
-        choices=[("criado", "Criado"), ("aprovado", "Aprovado"), ("devolvido", "Devolvido")],
-        default="criado",
-    )
-    avaliado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="materiais_avaliados",
-    )
-    avaliado_em = models.DateTimeField(null=True, blank=True)
-    motivo_devolucao = models.TextField(blank=True)
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        verbose_name = "Material de Divulgação de Evento"
-        verbose_name_plural = "Materiais de Divulgação de Eventos"
-
-    def url_publicacao(self):
-        return self.arquivo.url
-
-
 class BriefingEvento(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     objetivos = models.TextField()
