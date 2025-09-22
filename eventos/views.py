@@ -125,7 +125,8 @@ class PainelRenderMixin:
         return context
 
     def render_to_response(self, context, **response_kwargs):
-        if self.request.headers.get("Hx-Request") == "true":
+        # Responder apenas com o parcial quando for requisição HTMX
+        if self.request.headers.get("HX-Request") == "true":
             return super().render_to_response(context, **response_kwargs)
         context = self.get_painel_context(context)
         context["partial_template"] = self.get_partial_template_name()
@@ -229,11 +230,13 @@ def calendario_cards_ultimos_30(request):
         "dias_com_eventos": dias_com_eventos,
         "data_atual": hoje,
     }
-    if request.headers.get("Hx-Request") == "true":
+    if request.headers.get("HX-Request") == "true":
         return TemplateResponse(request, "eventos/partials/calendario/calendario.html", context)
     # Não HTMX: renderiza o painel com o parcial calendário já incluído
     context["partial_template"] = "eventos/partials/calendario/calendario.html"
     context.setdefault("painel_action_template", "eventos/partials/eventos/hero_evento_list_action.html")
+    # Garantir que o hero tenha um título explícito ao renderizar o painel
+    context.setdefault("painel_title", _("Eventos"))
     return TemplateResponse(request, "eventos/painel.html", context)
 
 
@@ -266,6 +269,8 @@ def painel_eventos(request):
         "data_atual": hoje,
         "partial_template": "eventos/partials/calendario/calendario.html",
         "painel_action_template": "eventos/partials/eventos/hero_evento_list_action.html",
+        # Garantir título do hero neste painel funcional
+        "painel_title": _("Eventos"),
     }
     return TemplateResponse(request, "eventos/painel.html", context)
 
@@ -595,7 +600,7 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
             return HttpResponseForbidden("Feedback só pode ser enviado após o evento.")
 
         context = {"evento": evento}
-        if request.headers.get("Hx-Request") == "true":
+        if request.headers.get("HX-Request") == "true":
             return TemplateResponse(
                 request, "eventos/partials/eventos/avaliacao_form.html", context
             )
@@ -741,7 +746,7 @@ def avaliar_parceria(request, pk: int):
         )
 
     context = {"parceria": parceria}
-    if request.headers.get("Hx-Request") == "true":
+    if request.headers.get("HX-Request") == "true":
         return TemplateResponse(
             request, "eventos/partials/parceria/parceria_avaliar.html", context
         )
@@ -760,7 +765,7 @@ def avaliar_parceria(request, pk: int):
 def checkin_form(request, pk: int):
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
     context = {"inscricao": inscricao}
-    if request.headers.get("Hx-Request") == "true":
+    if request.headers.get("HX-Request") == "true":
         return TemplateResponse(
             request, "eventos/partials/inscricao/checkin_form.html", context
         )
