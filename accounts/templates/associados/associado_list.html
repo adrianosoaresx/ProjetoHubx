@@ -10,12 +10,6 @@
 {% block content %}
 
 <div class="py-12 card px-4">
-  <div class="card-header space-y-4">
-    {% include '_components/search_form.html' with q=request.GET.q hx_get=request.path hx_target='#associados-grid' hx_push_url='true' hx_indicator='#associados-loading' %}
-    <div id="associados-loading" class="htmx-indicator text-sm text-[var(--text-secondary)]">
-      {% trans "Carregando..." %}
-    </div>
-  </div>
   <div id="associados-grid">
     {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
   </div>
