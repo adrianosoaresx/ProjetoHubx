@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n lucide_icons %}
+{% load i18n %}
 
 {% block title %}{% trans 'Associados' %}{% endblock %}
 
@@ -16,21 +16,6 @@
       {% trans "Carregando..." %}
     </div>
   </div>
-  <!-- Cards de totais -->
-  <details class="card mb-6" open>
-    <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
-      {% trans "Resumo" %}
-    </summary>
-    {% lucide 'users' class='h-5 w-5' as icon_usuarios %}
-    {% lucide 'badge-check' class='h-5 w-5' as icon_associados %}
-    {% lucide 'network' class='h-5 w-5' as icon_nucleados %}
-
-    <div class="mt-4 card-grid">
-      {% include "_partials/cards/total_card.html" with label=_('Usuários') valor=total_usuarios icon_svg=icon_usuarios %}
-      {% include "_partials/cards/total_card.html" with label=_('Associados') valor=total_associados icon_svg=icon_associados %}
-      {% include "_partials/cards/total_card.html" with label=_('Nucleados') valor=total_nucleados icon_svg=icon_nucleados %}
-    </div>
-  </details>
   <div id="associados-grid">
     {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
   </div>
