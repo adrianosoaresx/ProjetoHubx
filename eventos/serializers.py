@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from validate_docbr import CNPJ
 from typing import Any, Dict
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError, transaction
 from .validators import validate_uploaded_file
 
 from .models import (
@@ -217,7 +218,15 @@ class BriefingEventoSerializer(serializers.ModelSerializer):
         evento = validated_data["evento"]
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
-        return super().create(validated_data)
+        message = "Já existe briefing ativo para este evento."
+        if BriefingEvento.objects.filter(evento_id=evento.pk, deleted=False).exists():
+            raise serializers.ValidationError({"evento": [message]})
+        try:
+            with transaction.atomic():
+                instance = super().create(validated_data)
+        except IntegrityError as exc:
+            raise serializers.ValidationError({"evento": [message]}) from exc
+        return instance
 
     def update(self, instance, validated_data):
         request = self.context["request"]

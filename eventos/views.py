@@ -14,6 +14,7 @@ from django.contrib.auth.mixins import (
 )
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError
 from django.db.models import F, Q, Count
 from django.http import (
     Http404,
@@ -1044,17 +1045,19 @@ class BriefingEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
 
     def form_valid(self, form):
         evento = form.cleaned_data.get("evento")
-        if BriefingEvento.objects.filter(evento=evento, deleted=False).exists():
-            form.add_error("evento", _("Já existe briefing para este evento."))
-            return self.form_invalid(form)
         user = self.request.user
         if user.user_type != UserType.ROOT:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
             if not (evento.organizacao == user.organizacao or (evento.nucleo_id and evento.nucleo_id in nucleo_ids)):
                 form.add_error("evento", _("Evento de outra organização ou núcleo"))
                 return self.form_invalid(form)
+        try:
+            response = super().form_valid(form)
+        except IntegrityError:
+            form.add_error("evento", _("Já existe briefing para este evento."))
+            return self.form_invalid(form)
         messages.success(self.request, _("Briefing criado com sucesso."))
-        return super().form_valid(form)
+        return response
 
 
 class BriefingEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, UpdateView):
