@@ -2,14 +2,10 @@
 {% load i18n static %}
 
 {% block hero %}
-  {% with hero_template=painel_hero_template|default:'_components/hero_evento.html' %}
-    {% include hero_template with
-      title=painel_title|default:_('Eventos')
-      subtitle=painel_subtitle
-      action_template=painel_action_template
-      breadcrumb_template=painel_breadcrumb_template
-      neural_background=painel_neural_background
-      style=painel_hero_style %}
+  {% with painel_title_default=_('Eventos') %}
+    {% with hero_template=painel_hero_template|default:'_components/hero_evento.html' %}
+      {% include hero_template with title=painel_title|default:painel_title_default subtitle=painel_subtitle action_template=painel_action_template breadcrumb_template=painel_breadcrumb_template neural_background=painel_neural_background style=painel_hero_style only %}
+    {% endwith %}
   {% endwith %}
 {% endblock %}
 

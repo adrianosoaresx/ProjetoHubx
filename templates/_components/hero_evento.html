@@ -1,10 +1,11 @@
 {% load i18n %}
-<section class="hero-with-neural bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white"
-         style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if style %} {{ style }}{% endif %}">
-  <div class="neural-bg-base" aria-hidden="true">
-    {% include 'backgrounds/neural_backgrounds.html' with bg_type='eventos' only %}
+{% trans 'Eventos' as hero_default_title %}
+<section class="hero-with-neural relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white"
+         {% if style %}style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700); {{ style }}"{% else %}style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700)"{% endif %}>
+  <div class="neural-bg-base pointer-events-none" aria-hidden="true">
+    {% include 'backgrounds/neural_backgrounds.html' with bg_type=neural_background|default:'eventos' only %}
   </div>
-  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="hero-overlay pointer-events-none" aria-hidden="true"></div>
   <div class="hero-content relative z-10 w-full">
     <div class="max-w-7xl mx-auto w-full px-4 py-10">
       {% if breadcrumb_template %}
@@ -12,7 +13,7 @@
       {% endif %}
       <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div class="space-y-3 md:max-w-3xl">
-          <h1 class="text-4xl md:text-5xl font-bold text-white">{{ title }}</h1>
+          <h1 class="text-4xl md:text-5xl font-bold text-white">{{ title|default:hero_default_title }}</h1>
           {% if subtitle %}
             <p class="text-lg text-white/90">{{ subtitle }}</p>
           {% endif %}
