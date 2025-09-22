@@ -12,12 +12,19 @@
     </button>
   </div>
   <nav class="sidebar-nav flex-1 overflow-y-auto px-4 py-4" role="navigation" aria-label="{% trans 'Menu' %}">
+    {% with request.resolver_match as resolver_match %}
     <ul class="sidebar-menu flex flex-col gap-1">
       {% for item in NAV_MENU %}
         <li class="sidebar-entry">
           {% if item.children %}
             <div class="sidebar-parent">
-              <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}>
+              {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
+                {% url 'eventos:calendario' as eventos_calendario_partial_url %}
+              {% endif %}
+              <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}
+                 {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
+                   hx-get="{{ eventos_calendario_partial_url }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
+                 {% endif %}>
                 {% if item.id == 'perfil' and user.avatar %}
                   <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
                 {% else %}
@@ -35,7 +42,10 @@
             <ul id="submenu-{{ item.id }}" class="sidebar-submenu{% if not item.is_active %} hidden{% endif %}" data-sidebar-submenu>
               {% for child in item.children %}
                 <li>
-                  <a href="{{ child.path }}" class="sidebar-subitem{% if child.is_active %} sidebar-item-active{% endif %}" {% if child.is_current %}aria-current="page"{% endif %}>
+                  <a href="{{ child.path }}" class="sidebar-subitem{% if child.is_active %} sidebar-item-active{% endif %}" {% if child.is_current %}aria-current="page"{% endif %}
+                     {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
+                       hx-get="{{ child.path }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
+                     {% endif %}>
                     {{ child.icon|safe }}
                     <span class="sidebar-label">{{ child.label }}</span>
                   </a>
@@ -56,6 +66,7 @@
         </li>
       {% endfor %}
     </ul>
+    {% endwith %}
   </nav>
 </aside>
 
