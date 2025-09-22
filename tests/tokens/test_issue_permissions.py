@@ -13,10 +13,10 @@ pytestmark = pytest.mark.django_db
 @pytest.mark.parametrize(
     "issuer_type,target,expected",
     [
-        (UserType.ROOT, TokenAcesso.TipoUsuario.ADMIN, status.HTTP_201_CREATED),
-        (UserType.ROOT, TokenAcesso.TipoUsuario.ASSOCIADO, status.HTTP_403_FORBIDDEN),
+        (UserType.ROOT, TokenAcesso.TipoUsuario.ASSOCIADO, status.HTTP_201_CREATED),
+        (UserType.ROOT, TokenAcesso.TipoUsuario.CONVIDADO, status.HTTP_403_FORBIDDEN),
+        (UserType.ADMIN, TokenAcesso.TipoUsuario.ASSOCIADO, status.HTTP_201_CREATED),
         (UserType.ADMIN, TokenAcesso.TipoUsuario.CONVIDADO, status.HTTP_201_CREATED),
-        (UserType.ADMIN, TokenAcesso.TipoUsuario.ADMIN, status.HTTP_403_FORBIDDEN),
         (UserType.COORDENADOR, TokenAcesso.TipoUsuario.CONVIDADO, status.HTTP_201_CREATED),
         (UserType.COORDENADOR, TokenAcesso.TipoUsuario.ASSOCIADO, status.HTTP_403_FORBIDDEN),
     ],

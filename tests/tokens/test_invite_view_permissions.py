@@ -16,16 +16,8 @@ def _login(client, user):
 @pytest.mark.parametrize(
     "issuer_type,allowed",
     [
-        (UserType.ROOT, [TokenAcesso.TipoUsuario.ADMIN]),
-        (
-            UserType.ADMIN,
-            [
-                TokenAcesso.TipoUsuario.COORDENADOR,
-                TokenAcesso.TipoUsuario.NUCLEADO,
-                TokenAcesso.TipoUsuario.ASSOCIADO,
-                TokenAcesso.TipoUsuario.CONVIDADO,
-            ],
-        ),
+        (UserType.ROOT, [TokenAcesso.TipoUsuario.ASSOCIADO]),
+        (UserType.ADMIN, [TokenAcesso.TipoUsuario.ASSOCIADO, TokenAcesso.TipoUsuario.CONVIDADO]),
         (UserType.COORDENADOR, [TokenAcesso.TipoUsuario.CONVIDADO]),
         (UserType.FINANCEIRO, []),
         (UserType.NUCLEADO, []),
@@ -68,10 +60,10 @@ def test_root_form_has_all_orgs_and_no_nucleos(client):
 @pytest.mark.parametrize(
     "issuer_type,target,expected",
     [
-        (UserType.ROOT, TokenAcesso.TipoUsuario.ADMIN, 200),
+        (UserType.ROOT, TokenAcesso.TipoUsuario.ASSOCIADO, 200),
         (UserType.ROOT, TokenAcesso.TipoUsuario.CONVIDADO, 400),
+        (UserType.ADMIN, TokenAcesso.TipoUsuario.ASSOCIADO, 200),
         (UserType.ADMIN, TokenAcesso.TipoUsuario.CONVIDADO, 200),
-        (UserType.ADMIN, TokenAcesso.TipoUsuario.ADMIN, 400),
         (UserType.COORDENADOR, TokenAcesso.TipoUsuario.CONVIDADO, 200),
         (UserType.COORDENADOR, TokenAcesso.TipoUsuario.ASSOCIADO, 400),
         (UserType.FINANCEIRO, TokenAcesso.TipoUsuario.CONVIDADO, 400),

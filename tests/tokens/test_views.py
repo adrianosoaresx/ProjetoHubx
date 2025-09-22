@@ -51,19 +51,19 @@ def test_gerar_token_convite_view(client):
 
 
 def test_convite_permission_denied(client):
-    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    user = UserFactory(is_staff=True, user_type=UserType.COORDENADOR.value)
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN, "organizacao": org.pk},
+        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO, "organizacao": org.pk},
     )
     assert resp.status_code == 403
 
 
 def test_convite_permission_denied_no_side_effects(client):
-    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    user = UserFactory(is_staff=True, user_type=UserType.COORDENADOR.value)
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
@@ -71,7 +71,7 @@ def test_convite_permission_denied_no_side_effects(client):
     assert TokenUsoLog.objects.count() == 0
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ADMIN, "organizacao": org.pk},
+        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO, "organizacao": org.pk},
     )
     assert resp.status_code == 403
     assert TokenAcesso.objects.count() == 0
