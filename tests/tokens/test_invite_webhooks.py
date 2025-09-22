@@ -42,6 +42,9 @@ def test_gerar_convite_triggers_webhook(monkeypatch, client):
     client.force_login(user)
     data = {
         "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
+
+        "organizacao": org.pk,
+
     }
     client.post(reverse("tokens:gerar_convite"), data)
 

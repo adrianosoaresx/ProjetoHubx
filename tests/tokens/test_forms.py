@@ -8,7 +8,9 @@ from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 
 from accounts.factories import UserFactory
-from accounts.models import UserType
+
+from organizacoes.factories import OrganizacaoFactory
+
 from tokens.forms import (
     Ativar2FAForm,
     GerarCodigoAutenticacaoAdminForm,
@@ -29,23 +31,15 @@ def test_token_acesso_form_choices():
         assert choice in choices
 
 
-def test_gerar_token_convite_form_choices_for_user():
-    admin = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
-    form = GerarTokenConviteForm(user=admin)
-    assert form.user == admin
-    assert {choice[0] for choice in form.fields["tipo_destino"].choices} == {
-        TokenAcesso.TipoUsuario.ASSOCIADO,
-        TokenAcesso.TipoUsuario.CONVIDADO,
-    }
 
+def test_gerar_token_convite_form_querysets():
+    user = UserFactory(is_staff=True)
+    org1 = OrganizacaoFactory()
+    org1.users.add(user)
+    form = GerarTokenConviteForm(user=user)
+    assert list(form.fields["organizacao"].queryset) == [org1]
+    assert "nucleos" not in form.fields
 
-def test_gerar_token_convite_form_choices_for_root():
-    root = UserFactory(is_staff=True, is_superuser=True, user_type=UserType.ROOT.value)
-    form = GerarTokenConviteForm(user=root)
-    assert form.user == root
-    assert [choice[0] for choice in form.fields["tipo_destino"].choices] == [
-        TokenAcesso.TipoUsuario.ASSOCIADO
-    ]
 
 
  

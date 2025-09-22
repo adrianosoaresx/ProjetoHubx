@@ -45,7 +45,6 @@ def gerar_convite_nucleo(user: User, nucleo: Nucleo, email: str, papel: str) -> 
         organizacao=nucleo.organizacao,
         data_expiracao=timezone.now() + timedelta(days=7),
     )
-    token.nucleos.add(nucleo)
     convite = ConviteNucleo.objects.create(
         token=token.codigo,
         token_obj=token,

@@ -3,7 +3,6 @@ from django.utils import timezone
 from factory.django import DjangoModelFactory
 
 from accounts.factories import UserFactory
-from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
 from .models import TokenAcesso
@@ -34,13 +33,3 @@ class TokenAcessoFactory(DjangoModelFactory):
         if create:
             self.save()
 
-    @factory.post_generation
-    def nucleos(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for nucleo in extracted:
-                self.nucleos.add(nucleo)
-        else:
-            self.nucleos.add(NucleoFactory())

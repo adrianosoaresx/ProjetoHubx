@@ -35,7 +35,6 @@ def create_invite_token(
     tipo_destino: str,
     data_expiracao: datetime | None = None,
     organizacao=None,
-    nucleos=None,
 ) -> Tuple[TokenAcesso, str]:
     """Cria um ``TokenAcesso`` com código secreto e retorna (token, codigo)."""
 
@@ -48,8 +47,6 @@ def create_invite_token(
     )
     token.set_codigo(codigo)
     token.save()
-    if nucleos:
-        token.nucleos.set(nucleos)
     return token, codigo
 
 

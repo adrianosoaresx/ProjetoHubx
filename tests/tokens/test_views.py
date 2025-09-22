@@ -25,7 +25,9 @@ def test_gerar_convite_form_fields(client):
     assert resp.status_code == 200
     content = resp.content.decode()
     assert 'name="tipo_destino"' in content
-    assert 'name="organizacao"' not in content
+
+    assert 'name="organizacao"' in content
+
     assert 'name="nucleos"' not in content
 
 
@@ -36,11 +38,13 @@ def test_gerar_token_convite_view(client):
     _login(client, user)
     data = {
         "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
+        "organizacao": org.pk,
+
     }
-    resp = client.post(reverse("tokens:gerar_convite"), data)
+    resp = client.post(reverse("tokens:gerar_convite"), data, HTTP_HX_REQUEST="true")
     assert resp.status_code == 200
-    json = resp.json()
-    assert json["codigo"]
+    content = resp.content.decode()
+    assert "Token:" in content
     token = TokenAcesso.objects.get(gerado_por=user)
     assert token.data_expiracao.date() == (timezone.now() + timezone.timedelta(days=30)).date()
     assert token.organizacao == org
