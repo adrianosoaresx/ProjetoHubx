@@ -44,16 +44,15 @@ def test_get_permissions(client, issuer_type, allowed):
         assert resp.url == reverse("accounts:perfil")
 
 
-def test_root_form_has_all_orgs_and_no_nucleos(client):
+def test_form_nao_mostra_campo_organizacao(client):
     user = UserFactory(user_type=UserType.ROOT.value, is_staff=True, is_superuser=True)
-    org1 = OrganizacaoFactory()
-    org2 = OrganizacaoFactory()
+    org = OrganizacaoFactory()
+    org.users.add(user)
     _login(client, user)
     resp = client.get(reverse("tokens:gerar_convite"))
     assert resp.status_code == 200
     content = resp.content.decode()
-    assert f'value="{org1.pk}"' in content
-    assert f'value="{org2.pk}"' in content
+    assert 'name="organizacao"' not in content
     assert 'name="nucleos"' not in content
 
 
@@ -77,10 +76,18 @@ def test_post_permissions(client, issuer_type, target, expected):
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
-    data = {"tipo_destino": target, "organizacao": org.pk}
+    data = {"tipo_destino": target}
     resp = client.post(reverse("tokens:gerar_convite"), data)
     assert resp.status_code == expected
     if expected == 200:
         assert TokenAcesso.objects.filter(gerado_por=user, tipo_destino=target).exists()
     else:
         assert not TokenAcesso.objects.filter(gerado_por=user).exists()
+
+
+def test_gerar_convite_sem_organizacao_retorna_erro(client):
+    user = UserFactory(user_type=UserType.ADMIN.value, is_staff=True)
+    _login(client, user)
+    resp = client.get(reverse("tokens:gerar_convite"))
+    assert resp.status_code == 302
+    assert resp.url == reverse("accounts:perfil")

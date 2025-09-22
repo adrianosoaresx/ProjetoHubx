@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
 from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
@@ -21,26 +20,22 @@ def test_gerar_convite_form_fields(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
-    NucleoFactory(organizacao=org)
     _login(client, user)
     resp = client.get(reverse("tokens:gerar_convite"))
     assert resp.status_code == 200
     content = resp.content.decode()
     assert 'name="tipo_destino"' in content
-    assert 'name="organizacao"' in content
-    assert 'name="nucleos"' in content
+    assert 'name="organizacao"' not in content
+    assert 'name="nucleos"' not in content
 
 
 def test_gerar_token_convite_view(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
-    nucleo = NucleoFactory(organizacao=org)
     _login(client, user)
     data = {
         "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
-        "organizacao": org.pk,
-        "nucleos": [nucleo.pk],
     }
     resp = client.post(reverse("tokens:gerar_convite"), data)
     assert resp.status_code == 200
@@ -48,6 +43,25 @@ def test_gerar_token_convite_view(client):
     assert json["codigo"]
     token = TokenAcesso.objects.get(gerado_por=user)
     assert token.data_expiracao.date() == (timezone.now() + timezone.timedelta(days=30)).date()
+    assert token.organizacao == org
+
+
+def test_convite_respeita_organizacao_do_usuario(client):
+    user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
+    org = OrganizacaoFactory()
+    outra_org = OrganizacaoFactory()
+    org.users.add(user)
+    _login(client, user)
+    resp = client.post(
+        reverse("tokens:gerar_convite"),
+        {
+            "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
+            "organizacao": outra_org.pk,
+        },
+    )
+    assert resp.status_code == 200
+    token = TokenAcesso.objects.get(gerado_por=user)
+    assert token.organizacao == org
 
 
 def test_convite_permission_denied(client):
@@ -57,7 +71,7 @@ def test_convite_permission_denied(client):
     _login(client, user)
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO, "organizacao": org.pk},
+        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO},
     )
     assert resp.status_code == 403
 
@@ -71,7 +85,7 @@ def test_convite_permission_denied_no_side_effects(client):
     assert TokenUsoLog.objects.count() == 0
     resp = client.post(
         reverse("tokens:gerar_convite"),
-        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO, "organizacao": org.pk},
+        {"tipo_destino": TokenAcesso.TipoUsuario.ASSOCIADO},
     )
     assert resp.status_code == 403
     assert TokenAcesso.objects.count() == 0
@@ -83,7 +97,7 @@ def test_convite_daily_limit(client):
     org = OrganizacaoFactory()
     org.users.add(user)
     _login(client, user)
-    data = {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO, "organizacao": org.pk}
+    data = {"tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO}
     for _ in range(5):
         resp = client.post(reverse("tokens:gerar_convite"), data)
         assert resp.status_code == 200

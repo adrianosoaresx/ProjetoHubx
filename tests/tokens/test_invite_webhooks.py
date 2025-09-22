@@ -9,7 +9,6 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from tokens.models import TokenAcesso
 from tokens.services import create_invite_token
@@ -40,12 +39,9 @@ def test_gerar_convite_triggers_webhook(monkeypatch, client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
-    nucleo = NucleoFactory(organizacao=org)
     client.force_login(user)
     data = {
         "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
-        "organizacao": org.pk,
-        "nucleos": [nucleo.pk],
     }
     client.post(reverse("tokens:gerar_convite"), data)
 
