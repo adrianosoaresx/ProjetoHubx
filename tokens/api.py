@@ -44,7 +44,7 @@ class TokenViewSet(viewsets.GenericViewSet):
         "usuario",
         "revogado_por",
         "organizacao",
-    ).prefetch_related("nucleos")
+    )
     serializer_class = TokenAcessoSerializer
     permission_classes = [IsAuthenticated]
 

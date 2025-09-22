@@ -9,7 +9,6 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -178,7 +177,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 tipo_destino=target_role,
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
                 organizacao=form.cleaned_data.get("organizacao"),
-                nucleos=form.cleaned_data.get("nucleos"),
             )
 
             ip = get_client_ip(request)

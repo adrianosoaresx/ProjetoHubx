@@ -73,11 +73,6 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         null=True,
         blank=True,
     )
-    nucleos = models.ManyToManyField(
-        "nucleos.Nucleo",
-        blank=True,
-        related_name="tokens",
-    )
 
     class Meta:
         ordering = ["-created_at"]

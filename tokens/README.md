@@ -17,7 +17,6 @@ POST /api/tokens/tokens/
 {
   "tipo_destino": "associado",
   "organizacao": 123,
-  "nucleos": [456],
   "data_expiracao": "2024-12-31"
 }
 ```

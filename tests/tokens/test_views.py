@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
 from tokens.models import CodigoAutenticacao, CodigoAutenticacaoLog, TokenAcesso, TokenUsoLog
@@ -21,31 +20,28 @@ def test_gerar_convite_form_fields(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
-    NucleoFactory(organizacao=org)
     _login(client, user)
     resp = client.get(reverse("tokens:gerar_convite"))
     assert resp.status_code == 200
     content = resp.content.decode()
     assert 'name="tipo_destino"' in content
     assert 'name="organizacao"' in content
-    assert 'name="nucleos"' in content
+    assert 'name="nucleos"' not in content
 
 
 def test_gerar_token_convite_view(client):
     user = UserFactory(is_staff=True, user_type=UserType.ADMIN.value)
     org = OrganizacaoFactory()
     org.users.add(user)
-    nucleo = NucleoFactory(organizacao=org)
     _login(client, user)
     data = {
         "tipo_destino": TokenAcesso.TipoUsuario.CONVIDADO,
         "organizacao": org.pk,
-        "nucleos": [nucleo.pk],
     }
-    resp = client.post(reverse("tokens:gerar_convite"), data)
+    resp = client.post(reverse("tokens:gerar_convite"), data, HTTP_HX_REQUEST="true")
     assert resp.status_code == 200
-    json = resp.json()
-    assert json["codigo"]
+    content = resp.content.decode()
+    assert "Token:" in content
     token = TokenAcesso.objects.get(gerado_por=user)
     assert token.data_expiracao.date() == (timezone.now() + timezone.timedelta(days=30)).date()
 

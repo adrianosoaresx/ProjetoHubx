@@ -45,6 +45,7 @@ from core.permissions import (
     IsCoordenador,
     NoSuperadminMixin,
 )
+from nucleos.models import ConviteNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
 from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm
@@ -985,9 +986,13 @@ def termos(request):
                 request.session.pop("usuario", None)
                 return redirect("accounts:usuario")
 
-            primeiro_nucleo = token_obj.nucleos.first()
-            if primeiro_nucleo:
-                user.nucleo = primeiro_nucleo
+            convite_nucleo = (
+                ConviteNucleo.objects.select_related("nucleo")
+                .filter(token_obj=token_obj)
+                .first()
+            )
+            if convite_nucleo and convite_nucleo.nucleo_id:
+                user.nucleo = convite_nucleo.nucleo
                 user.save(update_fields=["nucleo"])
             foto_path = request.session.get("foto")
             if foto_path:

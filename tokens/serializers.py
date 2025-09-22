@@ -22,7 +22,6 @@ class TokenAcessoSerializer(serializers.ModelSerializer):
             "gerado_por",
             "usuario",
             "organizacao",
-            "nucleos",
             "ip_gerado",
             "ip_utilizado",
             "revogado_em",

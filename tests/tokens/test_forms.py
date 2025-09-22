@@ -8,7 +8,6 @@ from django.utils import timezone
 from django.core.exceptions import PermissionDenied
 
 from accounts.factories import UserFactory
-from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 from tokens.forms import (
     Ativar2FAForm,
@@ -34,10 +33,9 @@ def test_gerar_token_convite_form_querysets():
     user = UserFactory(is_staff=True)
     org1 = OrganizacaoFactory()
     org1.users.add(user)
-    nucleo1 = NucleoFactory(organizacao=org1)
     form = GerarTokenConviteForm(user=user)
     assert list(form.fields["organizacao"].queryset) == [org1]
-    assert list(form.fields["nucleos"].queryset) == [nucleo1]
+    assert "nucleos" not in form.fields
 
 
  
