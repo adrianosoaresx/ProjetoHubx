@@ -83,12 +83,18 @@ class TokenViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        organizacao = getattr(request.user, "organizacao", None)
+        if not organizacao:
+            return Response(
+                {"detail": _("Seu usuário não está associado a nenhuma organização.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         with transaction.atomic():
             token, codigo = create_invite_token(
                 gerado_por=request.user,
                 tipo_destino=serializer.validated_data["tipo_destino"],
                 data_expiracao=serializer.validated_data.get("data_expiracao"),
-                organizacao=serializer.validated_data.get("organizacao"),
+                organizacao=organizacao,
             )
             token.ip_gerado = ip
             token.save(update_fields=["ip_gerado"])

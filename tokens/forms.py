@@ -3,9 +3,11 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+
 from organizacoes.models import Organizacao
 
 from accounts.models import UserType
+
 from .models import CodigoAutenticacao, TokenAcesso
 from .perms import can_issue_invite
 from .services import find_token_by_code
@@ -25,11 +27,15 @@ class TokenAcessoForm(forms.ModelForm):
 
 class GerarTokenConviteForm(forms.Form):
     tipo_destino = forms.ChoiceField(choices=TokenAcesso.TipoUsuario.choices)
+
     organizacao = forms.ModelChoiceField(queryset=None)
 
+
     def __init__(self, *args, user=None, **kwargs):
+        self.user = user
         super().__init__(*args, **kwargs)
         if user:
+
             if user.user_type == UserType.ROOT:
                 self.fields["organizacao"].queryset = Organizacao.objects.all()
             else:

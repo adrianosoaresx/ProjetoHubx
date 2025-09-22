@@ -80,15 +80,19 @@ def listar_convites(request):
 
 class GerarTokenConviteView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        choices = [choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(request.user, choice[0])]
-        if not choices:
+        form = GerarTokenConviteForm(user=request.user)
+        if not form.fields["tipo_destino"].choices:
             messages.error(
                 request,
                 _("Seu perfil não permite gerar convites."),
             )
             return redirect("accounts:perfil")
-        form = GerarTokenConviteForm(user=request.user)
-        form.fields["tipo_destino"].choices = choices
+        if not getattr(request.user, "organizacao", None):
+            messages.error(
+                request,
+                _("Seu usuário não está associado a nenhuma organização."),
+            )
+            return redirect("accounts:perfil")
         if request.headers.get("Hx-Request") == "true":
             return render(request, "tokens/gerar_token.html", {"form": form})
         return render(request, "tokens/tokens.html", {"partial_template": "tokens/gerar_token.html", "form": form})
@@ -114,38 +118,61 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 )
             else:
                 messages.error(request, _("Muitas requisições, tente novamente mais tarde."))
+                form = GerarTokenConviteForm(user=request.user)
                 resp = render(
                     request,
                     "tokens/tokens.html",
-                    {"partial_template": "tokens/gerar_token.html", "form": GerarTokenConviteForm(user=request.user)},
+                    {"partial_template": "tokens/gerar_token.html", "form": form},
                     status=429,
                 )
             if rl.retry_after:
                 resp["Retry-After"] = str(rl.retry_after)
             return resp
         form = GerarTokenConviteForm(request.POST, user=request.user)
-        choices = [choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(request.user, choice[0])]
-        form.fields["tipo_destino"].choices = choices
-        if form.is_valid():
-            target_role = form.cleaned_data["tipo_destino"]
-            if not can_issue_invite(request.user, target_role):
-                if request.headers.get("HX-Request") == "true":
-                    return render(
-                        request,
-                        "tokens/_resultado.html",
-                        {"error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
-                        status=403,
-                    )
-                messages.error(
-                    request,
-                    _("Seu perfil não permite gerar convites para este tipo de usuário."),
-                )
+        organizacao = getattr(request.user, "organizacao", None)
+        if not organizacao:
+            message = _("Seu usuário não está associado a nenhuma organização.")
+            if request.headers.get("HX-Request") == "true":
                 return render(
                     request,
-                    "tokens/tokens.html",
-                    {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Seu perfil não permite gerar convites para este tipo de usuário.")},
+                    "tokens/_resultado.html",
+                    {"error": message},
+                    status=400,
+                )
+            messages.error(request, message)
+            return render(
+                request,
+                "tokens/tokens.html",
+                {
+                    "partial_template": "tokens/gerar_token.html",
+                    "form": form,
+                    "error": message,
+                },
+                status=400,
+            )
+        requested_role = request.POST.get("tipo_destino")
+        if requested_role and not can_issue_invite(request.user, requested_role):
+            message = _("Seu perfil não permite gerar convites para este tipo de usuário.")
+            if request.headers.get("HX-Request") == "true":
+                return render(
+                    request,
+                    "tokens/_resultado.html",
+                    {"error": message},
                     status=403,
                 )
+            messages.error(request, message)
+            return render(
+                request,
+                "tokens/tokens.html",
+                {
+                    "partial_template": "tokens/gerar_token.html",
+                    "form": form,
+                    "error": message,
+                },
+                status=403,
+            )
+        if form.is_valid():
+            target_role = form.cleaned_data["tipo_destino"]
 
             start_day = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
             end_day = start_day + timezone.timedelta(days=1)
@@ -176,7 +203,9 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 gerado_por=request.user,
                 tipo_destino=target_role,
                 data_expiracao=timezone.now() + timezone.timedelta(days=30),
+
                 organizacao=form.cleaned_data.get("organizacao"),
+
             )
 
             ip = get_client_ip(request)
@@ -197,7 +226,6 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 return render(request, "tokens/_resultado.html", {"token": codigo})
             messages.success(request, _("Token gerado"))
             form = GerarTokenConviteForm(user=request.user)
-            form.fields["tipo_destino"].choices = choices
             return render(
                 request,
                 "tokens/tokens.html",
