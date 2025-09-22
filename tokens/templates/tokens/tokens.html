@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block hero %}
-  {% include '_components/hero_tokens.html' with title=_('Tokens') action_template='tokens/hero_action.html' %}
+  {% include '_components/hero_tokens.html' with title=hero_title|default:_('Tokens') action_template='tokens/hero_action.html' %}
 {% endblock %}
 
 {% block content %}

@@ -77,8 +77,12 @@ def listar_convites(request):
     context = {"convites": convites, "totais": totais}
     if request.headers.get("Hx-Request") == "true":
         return render(request, "tokens/token_list.html", context)
-    context["partial_template"] = "tokens/token_list.html"
-    return render(request, "tokens/tokens.html", context)
+    full_context = {
+        **context,
+        "partial_template": "tokens/token_list.html",
+        "hero_title": _("Tokens"),
+    }
+    return render(request, "tokens/tokens.html", full_context)
 
 
 
@@ -101,7 +105,15 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return redirect("accounts:perfil")
         if request.headers.get("Hx-Request") == "true":
             return render(request, "tokens/gerar_token.html", {"form": form})
-        return render(request, "tokens/tokens.html", {"partial_template": "tokens/gerar_token.html", "form": form})
+        return render(
+            request,
+            "tokens/tokens.html",
+            {
+                "partial_template": "tokens/gerar_token.html",
+                "form": form,
+                "hero_title": _("Gerar Token"),
+            },
+        )
 
     def post(self, request, *args, **kwargs):
         ip = get_client_ip(request)
@@ -128,7 +140,11 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 resp = render(
                     request,
                     "tokens/tokens.html",
-                    {"partial_template": "tokens/gerar_token.html", "form": form},
+                    {
+                        "partial_template": "tokens/gerar_token.html",
+                        "form": form,
+                        "hero_title": _("Gerar Token"),
+                    },
                     status=429,
                 )
             if rl.retry_after:
@@ -153,6 +169,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "error": message,
+                    "hero_title": _("Gerar Token"),
                 },
                 status=400,
             )
@@ -174,6 +191,7 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                     "partial_template": "tokens/gerar_token.html",
                     "form": form,
                     "error": message,
+                    "hero_title": _("Gerar Token"),
                 },
                 status=403,
             )
@@ -201,7 +219,12 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
                 return render(
                     request,
                     "tokens/tokens.html",
-                    {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Limite diário atingido.")},
+                    {
+                        "partial_template": "tokens/gerar_token.html",
+                        "form": form,
+                        "error": _("Limite diário atingido."),
+                        "hero_title": _("Gerar Token"),
+                    },
                     status=429,
                 )
 
@@ -233,7 +256,12 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
             return render(
                 request,
                 "tokens/tokens.html",
-                {"partial_template": "tokens/gerar_token.html", "form": form, "token": codigo},
+                {
+                    "partial_template": "tokens/gerar_token.html",
+                    "form": form,
+                    "token": codigo,
+                    "hero_title": _("Gerar Token"),
+                },
             )
         if request.headers.get("HX-Request") == "true":
             return render(
@@ -246,7 +274,12 @@ class GerarTokenConviteView(LoginRequiredMixin, View):
         return render(
             request,
             "tokens/tokens.html",
-            {"partial_template": "tokens/gerar_token.html", "form": form, "error": _("Dados inválidos")},
+            {
+                "partial_template": "tokens/gerar_token.html",
+                "form": form,
+                "error": _("Dados inválidos"),
+                "hero_title": _("Gerar Token"),
+            },
             status=400,
         )
 
