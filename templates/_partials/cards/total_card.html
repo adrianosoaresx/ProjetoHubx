@@ -2,24 +2,24 @@
 {# Card de total #}
 <article class="card{% if card_class %} {{ card_class }}{% endif %}">
   <div class="card-body{% if body_class %} {{ body_class }}{% endif %}">
-    <div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-
-      {% if icon_name %}
-        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
-          {% lucide icon_name class="h-5 w-5" %}
-        </span>
-      {% elif icon_svg %}
-        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
-          {{ icon_svg|safe }}
-        </span>
-      {% elif icon_class %}
-        <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
-          <i class="{{ icon_class }}"></i>
-        </span>
-
-      {% endif %}
-      <span>{{ label }}</span>
+    <div class="total-card-row">
+      <div class="total-card-label">
+        {% if icon_name %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {% lucide icon_name class="h-5 w-5" %}
+          </span>
+        {% elif icon_svg %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            {{ icon_svg|safe }}
+          </span>
+        {% elif icon_class %}
+          <span class="inline-flex items-center justify-center text-[inherit]" aria-hidden="true">
+            <i class="{{ icon_class }}"></i>
+          </span>
+        {% endif %}
+        <span class="total-card-label-text">{{ label }}</span>
+      </div>
+      <span class="total-card-value">{{ valor }}</span>
     </div>
-    <div class="mt-1 text-2xl font-bold text-[var(--text-primary)]">{{ valor }}</div>
   </div>
 </article>

@@ -1360,6 +1360,52 @@ a:focus {
   padding-top: 1rem;
 }
 
+.total-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .total-card-row {
+    flex-wrap: nowrap;
+    gap: 1rem;
+  }
+}
+
+.total-card-label {
+  display: flex;
+  min-width: 0px;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.total-card-label-text {
+  line-height: 1.25rem;
+}
+
+.total-card-value {
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+@media (min-width: 640px) {
+  .total-card-value {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}
+
 .card-compact {
   padding: 1rem;
 }
@@ -1384,17 +1430,41 @@ a:focus {
   }
 }
 
-.card-compact .card-body > :first-child,
-  .card-body-compact > :first-child {
+.card-compact .total-card-row,
+  .card-body-compact .total-card-row {
+  gap: 0.5rem;
+}
+
+.card-compact .total-card-label,
+  .card-body-compact .total-card-label {
   gap: 0.25rem;
   font-size: 0.75rem;
   line-height: 1rem;
 }
 
-.card-compact .card-body > :first-child svg,
-  .card-body-compact > :first-child svg {
+.card-compact .total-card-label-text,
+  .card-body-compact .total-card-label-text {
+  line-height: 1rem;
+}
+
+.card-compact .total-card-label svg,
+  .card-body-compact .total-card-label svg {
   height: 1rem;
   width: 1rem;
+}
+
+.card-compact .total-card-value,
+  .card-body-compact .total-card-value {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  .card-compact .total-card-value,
+  .card-body-compact .total-card-value {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
 }
 
 .card-compact .card-body > :not(:first-child),
