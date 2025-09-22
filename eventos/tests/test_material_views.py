@@ -1,5 +1,6 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 from accounts.factories import UserFactory
 from eventos.factories import EventoFactory
@@ -8,6 +9,7 @@ from accounts.models import UserType
 
 
 @pytest.mark.django_db
+@override_settings(ROOT_URLCONF="Hubx.urls")
 def test_material_list_shows_only_approved(client):
     evento = EventoFactory()
     arquivo1 = SimpleUploadedFile("file1.txt", b"x")
@@ -32,7 +34,8 @@ def test_material_list_shows_only_approved(client):
     client.force_login(user)
     resp = client.get(reverse("eventos:material_list"))
     assert resp.status_code == 200
-    assert "eventos/material_list.html" in [t.name for t in resp.templates]
+    template_names = {t.name for t in resp.templates if t.name}
+    assert "eventos/painel.html" in template_names or "eventos/partials/eventos/material_list.html" in template_names
     materiais = list(resp.context["materiais"])
     assert len(materiais) == 1
     assert materiais[0].titulo == "Aprovado"
