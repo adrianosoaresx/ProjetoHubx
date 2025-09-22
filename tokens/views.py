@@ -58,15 +58,21 @@ def listar_convites(request):
     if not request.user.is_staff:
         messages.error(request, _("Você não tem permissão para visualizar convites."))
         return redirect("accounts:perfil")
-    convites = TokenAcesso.objects.filter(gerado_por=request.user)
+    convites_qs = TokenAcesso.objects.filter(gerado_por=request.user)
 
     totais = {
-        "total": convites.count(),
-        "novos": convites.filter(estado=TokenAcesso.Estado.NOVO).count(),
-        "usados": convites.filter(estado=TokenAcesso.Estado.USADO).count(),
-        "expirados": convites.filter(estado=TokenAcesso.Estado.EXPIRADO).count(),
-        "revogados": convites.filter(estado=TokenAcesso.Estado.REVOGADO).count(),
+        "total": convites_qs.count(),
+        "novos": convites_qs.filter(estado=TokenAcesso.Estado.NOVO).count(),
+        "usados": convites_qs.filter(estado=TokenAcesso.Estado.USADO).count(),
+        "expirados": convites_qs.filter(estado=TokenAcesso.Estado.EXPIRADO).count(),
+        "revogados": convites_qs.filter(estado=TokenAcesso.Estado.REVOGADO).count(),
     }
+
+    convites = []
+    for convite in convites_qs:
+        preview = convite.codigo_preview or convite.codigo_hash[:8]
+        convite.preview_display = preview
+        convites.append(convite)
 
     context = {"convites": convites, "totais": totais}
     if request.headers.get("Hx-Request") == "true":

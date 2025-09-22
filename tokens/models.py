@@ -36,6 +36,7 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
 
     codigo_hash = models.CharField(max_length=64, unique=True)
     codigo_salt = models.CharField(max_length=32)
+    codigo_preview = models.CharField(max_length=32, blank=True)
     tipo_destino = models.CharField(max_length=20, choices=TipoUsuario.choices)
     estado = models.CharField(
         max_length=10,
@@ -101,6 +102,7 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
         # ``codigo_salt`` permanece para compatibilidade com tokens antigos
         # que ainda utilizam PBKDF2 com salt.
         self.codigo_salt = ""
+        self.codigo_preview = self.build_codigo_preview(codigo)
 
     def check_codigo(self, codigo: str) -> bool:
         """Verifica o ``codigo`` considerando tokens legados."""
@@ -113,6 +115,16 @@ class TokenAcesso(TimeStampedModel, SoftDeleteModel):
             return hmac.compare_digest(expected, digest)
         # Tokens novos armazenam apenas o SHA256 do código.
         return self.codigo_hash == hashlib.sha256(codigo.encode()).hexdigest()
+
+    @staticmethod
+    def build_codigo_preview(codigo: str, length: int = 8) -> str:
+        """Retorna um trecho seguro exibível do ``codigo`` fornecido."""
+
+        if length <= 0:
+            return ""
+        if len(codigo) <= length:
+            return codigo
+        return codigo[:length]
 
 
 class TokenUsoLog(TimeStampedModel, SoftDeleteModel):
