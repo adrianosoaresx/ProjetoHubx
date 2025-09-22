@@ -310,7 +310,7 @@ def _get_menu_items() -> List[MenuItem]:
     perfil_url = reverse("accounts:perfil")
     configuracoes_url = reverse("configuracoes:configuracoes")
     nucleos_url = reverse("nucleos:list")
-    eventos_url = reverse("eventos:painel")
+    eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
     financeiro_repasses = reverse("financeiro:repasses")
 
@@ -371,20 +371,6 @@ def _get_menu_items() -> List[MenuItem]:
             path=reverse("eventos:calendario"),
             label="Calendário",
             icon=ICON_EVENTOS,
-            permissions=[
-                "admin",
-                "financeiro",
-                "coordenador",
-                "nucleado",
-                "associado",
-                "convidado",
-            ],
-        ),
-        MenuItem(
-            id="eventos_listar",
-            path=reverse("eventos:lista"),
-            label="Listar",
-            icon=ICON_TABLE,
             permissions=[
                 "admin",
                 "financeiro",
