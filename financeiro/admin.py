@@ -5,8 +5,6 @@ from .models import (
     ContaAssociado,
     FinanceiroLog,
     ImportacaoPagamentos,
-    IntegracaoConfig,
-    IntegracaoLog,
     LancamentoFinanceiro,
 )
 
@@ -41,14 +39,3 @@ class FinanceiroLogAdmin(admin.ModelAdmin):
     list_filter = ["acao"]
 
 
-@admin.register(IntegracaoConfig)
-class IntegracaoConfigAdmin(admin.ModelAdmin):
-    list_display = ["nome", "tipo"]
-    list_filter = ["tipo"]
-    search_fields = ["nome"]
-
-
-@admin.register(IntegracaoLog)
-class IntegracaoLogAdmin(admin.ModelAdmin):
-    list_display = ["provedor", "acao", "status", "created_at"]
-    list_filter = ["provedor", "status"]

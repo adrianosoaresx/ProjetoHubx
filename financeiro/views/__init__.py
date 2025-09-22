@@ -42,14 +42,7 @@ from accounts.models import UserType
 from eventos.models import Evento
 from notificacoes.services.email_client import send_email
 
-from ..models import (
-    CentroCusto,
-    FinanceiroLog,
-    FinanceiroTaskLog,
-    ImportacaoPagamentos,
-    IntegracaoConfig,
-    LancamentoFinanceiro,
-)
+from ..models import CentroCusto, FinanceiroLog, FinanceiroTaskLog, ImportacaoPagamentos, LancamentoFinanceiro
 from ..permissions import (
     IsAssociadoReadOnly,
     IsCoordenador,
@@ -61,12 +54,9 @@ from .pages import (
     centro_form_view,
     centros_list_view,
     extrato_view,
-    forecast_view,
     importacoes_list_view,
     importar_pagamentos_view,
     inadimplencias_view,
-    integracao_form_view,
-    integracoes_list_view,
     lancamento_ajuste_modal_view,
     lancamentos_list_view,
     logs_list_view,
@@ -478,29 +468,6 @@ def centro_form_view(request, pk: uuid.UUID | None = None):
     return render(request, "financeiro/centro_form.html", {"centro": centro})
 
 
-def integracoes_list_view(request):
-    limit = 20
-    offset = int(request.GET.get("offset", 0))
-    qs = IntegracaoConfig.objects.all()
-    total = qs.count()
-    integracoes = qs[offset : offset + limit]
-    next_offset = offset + limit if total > offset + limit else None
-    prev_offset = offset - limit if offset - limit >= 0 else None
-    context = {
-        "integracoes": integracoes,
-        "next": next_offset,
-        "prev": prev_offset,
-    }
-    return render(request, "financeiro/integracoes_list.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def integracao_form_view(request, pk: uuid.UUID | None = None):
-    integracao = get_object_or_404(IntegracaoConfig, pk=pk) if pk is not None else None
-    return render(request, "financeiro/integracao_form.html", {"integracao": integracao})
-
-
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
 def importacoes_list_view(request):
@@ -570,13 +537,6 @@ def task_log_detail_view(request, pk):
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
-def forecast_view(request):
-    """Tela com previsão financeira."""
-    return render(request, "financeiro/forecast.html")
-
-
-@login_required
 @user_passes_test(_is_associado)
 def aportes_form_view(request):
     centros = CentroCusto.objects.all()
@@ -594,12 +554,9 @@ __all__ = [
     "centro_form_view",
     "centros_list_view",
     "extrato_view",
-    "forecast_view",
     "importacoes_list_view",
     "importar_pagamentos_view",
     "inadimplencias_view",
-    "integracao_form_view",
-    "integracoes_list_view",
     "lancamento_ajuste_modal_view",
     "lancamentos_list_view",
     "logs_list_view",

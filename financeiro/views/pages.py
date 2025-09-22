@@ -9,13 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from accounts.models import UserType
 from eventos.models import Evento
 
-from ..models import (
-    CentroCusto,
-    FinanceiroLog,
-    FinanceiroTaskLog,
-    IntegracaoConfig,
-    LancamentoFinanceiro,
-)
+from ..models import CentroCusto, FinanceiroLog, FinanceiroTaskLog, LancamentoFinanceiro
 
 
 def _is_financeiro_or_admin(user) -> bool:
@@ -68,29 +62,6 @@ def centros_list_view(request):
 def centro_form_view(request, pk: uuid.UUID | None = None):
     centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
     return render(request, "financeiro/centro_form.html", {"centro": centro})
-
-
-def integracoes_list_view(request):
-    limit = 20
-    offset = int(request.GET.get("offset", 0))
-    qs = IntegracaoConfig.objects.all()
-    total = qs.count()
-    integracoes = qs[offset : offset + limit]
-    next_offset = offset + limit if total > offset + limit else None
-    prev_offset = offset - limit if offset - limit >= 0 else None
-    context = {
-        "integracoes": integracoes,
-        "next": next_offset,
-        "prev": prev_offset,
-    }
-    return render(request, "financeiro/integracoes_list.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def integracao_form_view(request, pk: uuid.UUID | None = None):
-    integracao = get_object_or_404(IntegracaoConfig, pk=pk) if pk is not None else None
-    return render(request, "financeiro/integracao_form.html", {"integracao": integracao})
 
 
 @login_required
@@ -159,13 +130,6 @@ def task_logs_view(request):
 def task_log_detail_view(request, pk):
     log = get_object_or_404(FinanceiroTaskLog, pk=pk)
     return render(request, "financeiro/task_log_detail.html", {"log": log})
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def forecast_view(request):
-    """Tela com previsão financeira."""
-    return render(request, "financeiro/forecast.html")
 
 
 @login_required

@@ -4,7 +4,6 @@ from calendar import monthrange
 from datetime import datetime
 from decimal import Decimal
 
-from django.core.cache import cache
 from django.db import transaction
 from django.db.models import F, Q
 from django.utils import timezone
@@ -18,10 +17,6 @@ from rest_framework.response import Response
 
 from accounts.models import UserType
 
-from eventos.models import Evento
-
-from nucleos.models import Nucleo
-
 from .models import (
     CentroCusto,
     ContaAssociado,
@@ -29,7 +24,6 @@ from .models import (
     FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
-    IntegracaoConfig,
 )
 from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin, IsNotRoot
 from .serializers import (
@@ -37,12 +31,10 @@ from .serializers import (
     FinanceiroTaskLogSerializer,
     ImportacaoPagamentosSerializer,
     LancamentoFinanceiroSerializer,
-    IntegracaoConfigSerializer,
 )
 from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
-from .services.forecast import calcular_previsao
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -269,100 +261,6 @@ class RepasseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return Response(serializer.data)
 
 
-class FinanceiroForecastViewSet(viewsets.ViewSet):
-    """Fornece previsões financeiras agregadas."""
-
-    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
-
-    def list(self, request):  # type: ignore[override]
-        params = request.query_params
-        escopo = params.get("escopo")
-        id_ref = params.get("id")
-        if not escopo or not id_ref:
-            return Response({"detail": _("Parâmetros obrigatórios")}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            periodos = int(params.get("periodos", 6))
-        except ValueError:
-            return Response({"detail": _("periodos inválido")}, status=status.HTTP_400_BAD_REQUEST)
-        if periodos < 1 or periodos > 12:
-            return Response({"detail": _("periodos inválido")}, status=status.HTTP_400_BAD_REQUEST)
-        crescimento = float(params.get("crescimento_receita", 0))
-        reducao = float(params.get("reducao_despesa", 0))
-        user = request.user
-
-        autorizado = False
-        if escopo == "organizacao":
-            autorizado = str(user.organizacao_id) == id_ref
-        elif escopo == "nucleo":
-            autorizado = Nucleo.objects.filter(id=id_ref, organizacao_id=user.organizacao_id).exists()
-        elif escopo == "centro":
-            autorizado = (
-                CentroCusto.objects.filter(pk=id_ref)
-                .filter(Q(organizacao_id=user.organizacao_id) | Q(nucleo__organizacao_id=user.organizacao_id))
-                .exists()
-            )
-        elif escopo == "evento":
-            autorizado = Evento.objects.filter(id=id_ref, organizacao_id=user.organizacao_id).exists()
-        else:
-            return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
-        if not autorizado:
-            return Response({"detail": _("Acesso negado")}, status=status.HTTP_403_FORBIDDEN)
-
-        permitido = False
-        if escopo == "organizacao":
-            permitido = str(getattr(user, "organizacao_id", "")) == id_ref
-        elif escopo == "nucleo":
-            permitido = Nucleo.objects.filter(id=id_ref, organizacao_id=getattr(user, "organizacao_id", None)).exists()
-        elif escopo == "centro":
-            permitido = (
-                CentroCusto.objects.filter(id=id_ref)
-                .filter(
-                    Q(organizacao_id=getattr(user, "organizacao_id", None))
-                    | Q(nucleo__organizacao_id=getattr(user, "organizacao_id", None))
-                    | Q(evento__organizacao_id=getattr(user, "organizacao_id", None))
-                    | Q(evento__nucleo__organizacao_id=getattr(user, "organizacao_id", None))
-                )
-                .exists()
-            )
-        if not permitido:
-            return Response(
-                {"detail": _("Você não tem permissão para acessar este recurso.")},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        cache_key = f"fin:forecast:{escopo}:{id_ref}:{periodos}:{crescimento}:{reducao}"
-        data = cache.get(cache_key)
-        if not data:
-            try:
-                data = calcular_previsao(
-                    escopo,
-                    id_ref,
-                    periodos,
-                    crescimento,
-                    reducao,
-                )
-            except ValueError:
-                return Response({"detail": _("escopo inválido")}, status=status.HTTP_400_BAD_REQUEST)
-            cache.set(cache_key, data, 6 * 3600)
-
-        fmt = params.get("format")
-        if fmt in {"csv", "xlsx"}:
-            return Response({"detail": _("formato indisponível")}, status=status.HTTP_400_BAD_REQUEST)
-
-        payload = {
-            "historico": data["historico"],
-            "previsao": data["previsao"],
-            "parametros": {
-                "escopo": escopo,
-                "id": id_ref,
-                "periodos": periodos,
-                "crescimento_receita": crescimento,
-                "reducao_despesa": reducao,
-            },
-        }
-        return Response(payload)
-
-
 class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """Consulta dos logs de tarefas assíncronas."""
 
@@ -390,14 +288,6 @@ class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         return qs
 
 
-class IntegracaoConfigViewSet(viewsets.ModelViewSet):
-    """CRUD das configurações de integrações externas."""
-
-    queryset = IntegracaoConfig.objects.all()
-    serializer_class = IntegracaoConfigSerializer
-    permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
-
-
 __all__ = [
     "CentroCustoViewSet",
     "FinanceiroViewSet",
@@ -405,7 +295,5 @@ __all__ = [
     "ImportacaoPagamentosViewSet",
     "FinanceiroLogViewSet",
     "RepasseViewSet",
-    "FinanceiroForecastViewSet",
     "FinanceiroTaskLogViewSet",
-    "IntegracaoConfigViewSet",
 ]

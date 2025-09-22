@@ -14,19 +14,8 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from ..models import (
-    CentroCusto,
-    ContaAssociado,
-    IntegracaoIdempotency,
-    LancamentoFinanceiro,
-)
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from ..serializers import LancamentoFinanceiroSerializer
-
-
-class AlreadyProcessedError(Exception):
-    """Erro lançado quando uma importação já foi processada."""
-
-    pass
 
 
 @dataclass
@@ -136,24 +125,12 @@ class ImportadorPagamentos:
         return ImportResult(preview=preview, errors=errors, errors_file=errors_file)
 
     # ────────────────────────────────────────────────────────────
-    def process(self, batch_size: int = 500, *, idempotency_key: str | None = None) -> tuple[int, list[str]]:
+    def process(self, batch_size: int = 500) -> tuple[int, list[str]]:
         """Processa o arquivo criando lançamentos em lote."""
         errors: list[str] = []
         total = 0
         batch: list[dict[str, Any]] = []
         processed: set[tuple[str | None, str, str, Decimal, Any]] = set()
-
-        if idempotency_key:
-            idem, created = IntegracaoIdempotency.objects.get_or_create(
-                idempotency_key=idempotency_key,
-                defaults={
-                    "provedor": "financeiro",
-                    "recurso": "importacao_pagamentos",
-                    "status": "processing",
-                },
-            )
-            if not created:
-                raise AlreadyProcessedError(idempotency_key)
 
         def flush(chunk: list[dict[str, Any]]):
             to_create = []
@@ -241,7 +218,6 @@ class ImportadorPagamentos:
             for aid, inc in saldo_conta.items():
                 ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
 
-        status = "completed"
         try:
             for idx, row in enumerate(self._iter_rows(), start=2):
                 try:
@@ -256,14 +232,8 @@ class ImportadorPagamentos:
             if batch:
                 with transaction.atomic():
                     flush(batch)
-            if errors:
-                status = "error"
         except Exception:
-            status = "error"
             raise
-        finally:
-            if idempotency_key:
-                IntegracaoIdempotency.objects.filter(idempotency_key=idempotency_key).update(status=status)
         return total, errors
 
     # ────────────────────────────────────────────────────────────
