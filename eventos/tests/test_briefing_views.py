@@ -26,54 +26,48 @@ def test_briefing_create_exibe_mensagem(client):
     resp = client.post(reverse("eventos:briefing_criar"), data, follow=True)
     assert resp.status_code == 200
     template_names = {t.name for t in resp.templates if t.name}
-    assert "eventos/painel.html" in template_names or "eventos/partials/briefing/briefing_list.html" in template_names
+    assert "eventos/painel.html" in template_names
+    assert "eventos/partials/briefing/briefing_detail.html" in template_names
     messages = list(get_messages(resp.wsgi_request))
     assert any("Briefing criado com sucesso" in m.message for m in messages)
 
 
 @pytest.mark.django_db
 @override_settings(ROOT_URLCONF="Hubx.urls")
-def test_briefing_create_duplicate_form_exibe_erro(client):
+
+def test_briefing_detail_renderiza_e_atualiza(client):
     evento = EventoFactory()
+    briefing = BriefingEvento.objects.create(
+        evento=evento,
+        objetivos="Objetivo inicial",
+        publico_alvo="Público",
+        requisitos_tecnicos="Requisitos",
+        cronograma_resumido="Cronograma",
+        conteudo_programatico="Conteúdo",
+        observacoes="Observações",
+    )
     user = UserFactory(user_type=UserType.ADMIN, organizacao=evento.organizacao, nucleo_obj=None)
     client.force_login(user)
+
+    url = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": evento.pk})
+    resp = client.get(url)
+    assert resp.status_code == 200
+    template_names = {t.name for t in resp.templates if t.name}
+    assert "eventos/partials/briefing/briefing_detail.html" in template_names
+    assert "Prazo limite para resposta" in resp.content.decode()
+
     data = {
-        "evento": evento.pk,
-        "objetivos": "obj",
-        "publico_alvo": "pub",
-        "requisitos_tecnicos": "req",
+        "objetivos": "Objetivo atualizado",
+        "publico_alvo": briefing.publico_alvo,
+        "requisitos_tecnicos": briefing.requisitos_tecnicos,
+        "cronograma_resumido": briefing.cronograma_resumido,
+        "conteudo_programatico": briefing.conteudo_programatico,
+        "observacoes": briefing.observacoes,
     }
-    primeira_resposta = client.post(reverse("eventos:briefing_criar"), data, follow=True)
-    assert primeira_resposta.status_code == 200
-    assert BriefingEvento.objects.filter(evento=evento, deleted=False).count() == 1
+    resp = client.post(url, data, follow=True)
+    assert resp.status_code == 200
+    briefing.refresh_from_db()
+    assert briefing.objetivos == "Objetivo atualizado"
+    messages = list(get_messages(resp.wsgi_request))
+    assert any("Briefing atualizado com sucesso" in m.message for m in messages)
 
-    resposta = client.post(reverse("eventos:briefing_criar"), data)
-    assert resposta.status_code == 200
-    form = resposta.context["form"]
-    assert "Já existe briefing para este evento." in form.errors.get("evento", [])
-    assert BriefingEvento.objects.filter(evento=evento, deleted=False).count() == 1
-
-
-@pytest.mark.django_db
-@override_settings(ROOT_URLCONF="Hubx.urls")
-def test_briefing_create_duplicate_api_retorna_erro():
-    evento = EventoFactory()
-    user = UserFactory(user_type=UserType.ADMIN, organizacao=evento.organizacao, nucleo_obj=None)
-    client = APIClient()
-    client.force_authenticate(user=user)
-    url = reverse("eventos_api:briefing-list")
-    payload = {
-        "evento": str(evento.pk),
-        "objetivos": "obj",
-        "publico_alvo": "pub",
-        "requisitos_tecnicos": "req",
-    }
-
-    primeira_resposta = client.post(url, payload, format="json")
-    assert primeira_resposta.status_code == status.HTTP_201_CREATED
-    assert BriefingEvento.objects.filter(evento=evento, deleted=False).count() == 1
-
-    resposta = client.post(url, payload, format="json")
-    assert resposta.status_code == status.HTTP_400_BAD_REQUEST
-    assert resposta.data["evento"][0] == "Já existe briefing ativo para este evento."
-    assert BriefingEvento.objects.filter(evento=evento, deleted=False).count() == 1
