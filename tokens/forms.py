@@ -4,8 +4,6 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 
 
-from organizacoes.models import Organizacao
-
 from accounts.models import UserType
 
 from .models import CodigoAutenticacao, TokenAcesso
@@ -28,19 +26,10 @@ class TokenAcessoForm(forms.ModelForm):
 class GerarTokenConviteForm(forms.Form):
     tipo_destino = forms.ChoiceField(choices=TokenAcesso.TipoUsuario.choices)
 
-    organizacao = forms.ModelChoiceField(queryset=None)
-
-
     def __init__(self, *args, user=None, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
         if user:
-
-            if user.user_type == UserType.ROOT:
-                self.fields["organizacao"].queryset = Organizacao.objects.all()
-            else:
-                self.fields["organizacao"].queryset = Organizacao.objects.filter(users=user)
-
             self.fields["tipo_destino"].choices = [
                 choice for choice in TokenAcesso.TipoUsuario.choices if can_issue_invite(user, choice[0])
             ]
