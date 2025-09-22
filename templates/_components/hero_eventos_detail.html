@@ -1,5 +1,5 @@
 {% load i18n %}
-<section class="relative isolate overflow-hidden text-white">
+<section class="hero-with-neural relative isolate overflow-hidden text-white">
   {% if evento.cover %}
     <div class="absolute inset-0">
       <img src="{{ evento.cover.url }}" alt="" class="h-full w-full object-cover" loading="lazy">
@@ -9,7 +9,7 @@
     <div class="absolute inset-0 bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)]"
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
   {% endif %}
-  <div class="relative z-10 w-full">
+  <div class="hero-content relative z-10 w-full">
     <div class="max-w-7xl mx-auto w-full px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
       <div class="flex items-center gap-4">
         <div class="shrink-0">
