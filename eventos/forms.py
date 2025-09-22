@@ -1,5 +1,3 @@
-import os
-
 from django import forms
 from django.forms import ClearableFileInput
 from django.utils.translation import gettext_lazy as _
@@ -12,7 +10,6 @@ from .models import (
     Evento,
     FeedbackNota,
     InscricaoEvento,
-    MaterialDivulgacaoEvento,
     ParceriaEvento,
     Tarefa,
 )
@@ -119,40 +116,6 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = FeedbackNota
         fields = ["nota", "comentario"]
-
-
-class MaterialDivulgacaoEventoForm(forms.ModelForm):
-    class Meta:
-        model = MaterialDivulgacaoEvento
-        fields = [
-            "evento",
-            "titulo",
-            "descricao",
-            "tipo",
-            "arquivo",
-            "imagem_thumb",
-            "tags",
-        ]
-
-    def clean_arquivo(self):
-        arquivo = self.cleaned_data.get("arquivo")
-        if not arquivo:
-            return arquivo
-        validate_uploaded_file(arquivo)
-        return arquivo
-
-    def clean_imagem_thumb(self):
-        img = self.cleaned_data.get("imagem_thumb")
-        if not img:
-            return img
-        ext = os.path.splitext(img.name)[1].lower()
-        if ext not in {".jpg", ".jpeg", ".png"}:
-            raise forms.ValidationError(_("Formato de imagem não permitido."))
-        if img.size > 10 * 1024 * 1024:
-            raise forms.ValidationError(_("Imagem excede o tamanho máximo de 10MB."))
-        return img
-
-
 class BriefingEventoForm(forms.ModelForm):
     class Meta:
         model = BriefingEvento
