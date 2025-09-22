@@ -19,11 +19,11 @@
           {% if item.children %}
             <div class="sidebar-parent">
               {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
-                {% url 'eventos:calendario' as eventos_calendario_partial_url %}
+                {% url 'eventos:lista' as eventos_lista_partial_url %}
               {% endif %}
               <a href="{{ item.path }}" class="sidebar-item{% if item.is_active %} sidebar-item-active{% endif %}{% if item.classes %} {{ item.classes }}{% endif %}" {% if item.is_current %}aria-current="page"{% endif %}
                  {% if item.id == 'eventos' and resolver_match and resolver_match.app_name == 'eventos' %}
-                   hx-get="{{ eventos_calendario_partial_url }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
+                   hx-get="{{ eventos_lista_partial_url }}" hx-target="#eventos-conteudo" hx-swap="innerHTML" hx-push-url="true"
                  {% endif %}>
                 {% if item.id == 'perfil' and user.avatar %}
                   <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="w-6 h-6 rounded-full object-cover" loading="lazy" />
