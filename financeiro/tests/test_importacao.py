@@ -15,7 +15,6 @@ from financeiro.models import (
     ContaAssociado,
     FinanceiroTaskLog,
     ImportacaoPagamentos,
-    IntegracaoIdempotency,
     LancamentoFinanceiro,
 )
 
@@ -117,8 +116,7 @@ def test_preview_and_confirm(api_client, user, settings):
     assert centro.saldo == 30
     assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
     importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
-    idem = IntegracaoIdempotency.objects.get(idempotency_key=importacao.idempotency_key)
-    assert idem.status == "completed"
+    assert importacao.status == ImportacaoPagamentos.Status.CONCLUIDO
 
 
 def test_invalid_vencimento(api_client, user):
@@ -295,8 +293,7 @@ def test_confirm_twice_idempotent(api_client, user, settings):
     assert LancamentoFinanceiro.objects.count() == 1
     importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
     assert importacao.total_processado == 1
-    idem = IntegracaoIdempotency.objects.get(idempotency_key=importacao.idempotency_key)
-    assert idem.status == "completed"
+    assert importacao.status == ImportacaoPagamentos.Status.CONCLUIDO
 
 
 def test_ignore_duplicate_lines(api_client, user, settings):

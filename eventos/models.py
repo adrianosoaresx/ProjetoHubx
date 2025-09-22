@@ -396,6 +396,13 @@ class BriefingEvento(TimeStampedModel, SoftDeleteModel):
     class Meta:
         verbose_name = "Briefing de Evento"
         ordering = ["evento"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["evento"],
+                condition=Q(deleted=False),
+                name="unique_active_briefing_per_event",
+            )
+        ]
 
 
 class FeedbackNota(TimeStampedModel, SoftDeleteModel):

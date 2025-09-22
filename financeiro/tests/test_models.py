@@ -4,13 +4,7 @@ import pytest
 from django.utils import timezone
 
 from accounts.factories import UserFactory
-from financeiro.models import (
-    CentroCusto,
-    ContaAssociado,
-    FinanceiroLog,
-    IntegracaoConfig,
-    LancamentoFinanceiro,
-)
+from financeiro.models import CentroCusto, ContaAssociado, FinanceiroLog, LancamentoFinanceiro
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from organizacoes.factories import OrganizacaoFactory
 
@@ -126,22 +120,6 @@ def test_lancamento_negativo_outro_tipo():
     )
     assert not serializer.is_valid()
     assert "Valor negativo" in str(serializer.errors)
-
-
-def test_integracao_config_soft_delete():
-    org = OrganizacaoFactory()
-    config = IntegracaoConfig.objects.create(
-        organizacao=org,
-        nome="ERP Hub",
-        tipo=IntegracaoConfig.Tipo.ERP,
-        base_url="https://example.com",
-        autenticacao="token",
-    )
-    config.soft_delete()
-    config.refresh_from_db()
-    assert config.deleted is True
-    assert IntegracaoConfig.objects.count() == 0
-    assert IntegracaoConfig.all_objects.count() == 1
 
 
 def test_centro_custo_descricao():

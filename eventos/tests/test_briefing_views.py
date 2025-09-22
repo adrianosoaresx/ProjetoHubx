@@ -2,6 +2,9 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 from django.contrib.messages import get_messages
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from accounts.factories import UserFactory
 from eventos.factories import EventoFactory
 from eventos.models import BriefingEvento
@@ -31,6 +34,7 @@ def test_briefing_create_exibe_mensagem(client):
 
 @pytest.mark.django_db
 @override_settings(ROOT_URLCONF="Hubx.urls")
+
 def test_briefing_detail_renderiza_e_atualiza(client):
     evento = EventoFactory()
     briefing = BriefingEvento.objects.create(
@@ -66,3 +70,4 @@ def test_briefing_detail_renderiza_e_atualiza(client):
     assert briefing.objetivos == "Objetivo atualizado"
     messages = list(get_messages(resp.wsgi_request))
     assert any("Briefing atualizado com sucesso" in m.message for m in messages)
+
