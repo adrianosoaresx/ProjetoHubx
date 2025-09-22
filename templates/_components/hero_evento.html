@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 {% trans 'Eventos' as hero_default_title %}
 <section class="hero-with-neural relative isolate overflow-hidden bg-gradient-to-r from-[var(--hero-from)] to-[var(--hero-to)] text-white"
          {% if style %}style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700); {{ style }}"{% else %}style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700)"{% endif %}>
@@ -22,6 +22,24 @@
           <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
+      {% if total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
+        {% lucide 'calendar' class='h-5 w-5' as icon_total_eventos %}
+        {% lucide 'activity' class='h-5 w-5' as icon_total_ativos %}
+        {% lucide 'check' class='h-5 w-5' as icon_total_concluidos %}
+        <div class="mt-10 space-y-4 text-left">
+          <div class="card-grid">
+            {% if total_eventos is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Eventos') valor=total_eventos icon_svg=icon_total_eventos card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_eventos_ativos is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Ativos') valor=total_eventos_ativos icon_svg=icon_total_ativos card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_eventos_concluidos is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_total_concluidos card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
 </section>

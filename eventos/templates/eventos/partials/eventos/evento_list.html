@@ -1,23 +1,10 @@
 {% load i18n lucide_icons %}
 {% include "eventos/partials/_painel_hero_oob.html" %}
   <div class="py-12 px-4 space-y-6">
-    
+
     <div class="card px-4">
 
       <div class="card-body">
-      <details class="mb-6" open>
-        <summary class="cursor-pointer text-sm font-semibold text-[var(--text-primary)]">
-          {% trans 'Resumo' %}
-        </summary>
-        {% lucide 'calendar' class='h-5 w-5' as icon_eventos %}
-        {% lucide 'activity' class='h-5 w-5' as icon_ativos %}
-        {% lucide 'check' class='h-5 w-5' as icon_realizados %}
-        <div class="mt-4 card-grid">
-          {% include "_partials/cards/total_card.html" with label=_('Eventos') valor=total_eventos icon_svg=icon_eventos %}
-          {% include "_partials/cards/total_card.html" with label=_('Ativos') valor=total_eventos_ativos icon_svg=icon_ativos %}
-          {% include "_partials/cards/total_card.html" with label=_('Realizados') valor=total_eventos_concluidos icon_svg=icon_realizados %}
-        </div>
-      </details>
         <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" role="list" aria-label="{% trans 'Lista de eventos' %}">
           {% for evento in eventos %}
             {% include '_components/card_evento.html' %}
