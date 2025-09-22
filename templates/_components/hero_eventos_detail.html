@@ -10,32 +10,62 @@
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
   {% endif %}
   <div class="hero-content relative z-10 w-full">
-    <div class="max-w-7xl mx-auto w-full px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-      <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div class="shrink-0">
-          {% if evento.avatar %}
-            <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
-          {% else %}
-            <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
-                 role="img" aria-label="{{ evento.titulo }}">
-              {{ evento.titulo|slice:':1'|upper }}
-            </div>
-          {% endif %}
+    <div class="max-w-7xl mx-auto w-full px-4 py-10 space-y-8">
+      <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div class="shrink-0">
+            {% if evento.avatar %}
+              <img src="{{ evento.avatar.url }}" alt="{{ evento.titulo }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
+            {% else %}
+              <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
+                   role="img" aria-label="{{ evento.titulo }}">
+                {{ evento.titulo|slice:':1'|upper }}
+              </div>
+            {% endif %}
+          </div>
+          <div class="inline-flex min-w-0 max-w-full items-center bg-white/80 px-4 py-2 rounded shadow-md backdrop-blur-sm text-gray-900">
+            <h1 class="text-3xl font-bold md:text-4xl">{{ evento.titulo }}</h1>
+          </div>
         </div>
-        <div class="inline-flex min-w-0 max-w-full items-center bg-white/80 px-4 py-2 rounded shadow-md backdrop-blur-sm text-gray-900">
-          <h1 class="text-3xl font-bold md:text-4xl">{{ evento.titulo }}</h1>
-        </div>
+        {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
+          <div class="flex flex-wrap gap-3 md:justify-end">
+            {% if perms.eventos.change_evento %}
+              <a href="{% url 'eventos:evento_editar' evento.pk %}" class="btn btn-secondary"
+                 aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
+            {% endif %}
+            {% if perms.eventos.delete_evento %}
+              <a href="{% url 'eventos:evento_excluir' evento.pk %}" class="btn btn-danger"
+                 aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
-      {% if perms.eventos.change_evento or perms.eventos.delete_evento %}
-        <div class="flex flex-wrap gap-3 md:justify-end">
-          {% if perms.eventos.change_evento %}
-            <a href="{% url 'eventos:evento_editar' evento.pk %}" class="btn btn-secondary"
-               aria-label="{% trans 'Editar evento' %}">{% trans 'Editar' %}</a>
-          {% endif %}
-          {% if perms.eventos.delete_evento %}
-            <a href="{% url 'eventos:evento_excluir' evento.pk %}" class="btn btn-danger"
-               aria-label="{% trans 'Excluir evento' %}">{% trans 'Excluir' %}</a>
-          {% endif %}
+
+      {% if total_inscricoes is not None or total_inscricoes_confirmadas is not None or total_inscricoes_pendentes is not None or total_inscricoes_canceladas is not None or total_presentes is not None or vagas_disponiveis is not None or media_feedback is not None %}
+        <div class="mt-4 space-y-4 text-left">
+          <div class="card-grid">
+            {% if total_inscricoes is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_inscricoes_confirmadas is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Confirmadas') valor=total_inscricoes_confirmadas icon_name='check' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_inscricoes_pendentes is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Pendentes') valor=total_inscricoes_pendentes icon_name='clock' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_inscricoes_canceladas is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Canceladas') valor=total_inscricoes_canceladas icon_name='x' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_presentes is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Presentes') valor=total_presentes icon_name='user' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if vagas_disponiveis is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if media_feedback is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+          </div>
         </div>
       {% endif %}
     </div>

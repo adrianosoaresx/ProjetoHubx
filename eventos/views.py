@@ -1,4 +1,5 @@
 import calendar
+from collections import Counter
 from datetime import date, timedelta, datetime, time
 from decimal import Decimal
 from typing import Any
@@ -419,6 +420,20 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context["inscricao"] = minha_inscricao
 
         evento = context["object"]
+        inscricoes = list(evento.inscricoes.all())
+        status_counts = Counter(inscricao.status for inscricao in inscricoes)
+        total_confirmadas = status_counts.get("confirmada", 0)
+        total_pendentes = status_counts.get("pendente", 0)
+        total_canceladas = status_counts.get("cancelada", 0)
+        vagas_disponiveis = None
+        if evento.participantes_maximo is not None:
+            vagas_disponiveis = max(evento.participantes_maximo - total_confirmadas, 0)
+
+        feedbacks = list(evento.feedbacks.all())
+        total_feedbacks = len(feedbacks)
+        media_feedback = None
+        if total_feedbacks:
+            media_feedback = sum(feedback.nota for feedback in feedbacks) / total_feedbacks
         context.update(
             {
                 "local": evento.local,
@@ -433,6 +448,14 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
                 "orcamento_estimado": evento.orcamento_estimado,
                 "valor_gasto": evento.valor_gasto,
                 "inscricao_confirmada": confirmada,
+                "total_inscricoes": len(inscricoes),
+                "total_inscricoes_confirmadas": total_confirmadas,
+                "total_inscricoes_pendentes": total_pendentes,
+                "total_inscricoes_canceladas": total_canceladas,
+                "total_presentes": evento.numero_presentes,
+                "vagas_disponiveis": vagas_disponiveis,
+                "media_feedback": media_feedback,
+                "total_feedbacks": total_feedbacks,
             }
         )
         context["painel_title"] = evento.titulo
