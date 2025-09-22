@@ -29,15 +29,20 @@
         {% trans 'Parcerias' %}
       </a>
     </li>
-    <li>
-      <a
-        href="{% url 'eventos:briefing_list' %}"
-        class="{{ base_classes }}{% if current_section == 'briefings' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
-        {% if current_section == 'briefings' %}aria-current="page"{% endif %}
-      >
-        {% trans 'Briefings' %}
-      </a>
-    </li>
+    {% if briefing_evento %}
+      {% url 'eventos:briefing_detalhe' briefing_evento.pk as resolved_briefing_url %}
+    {% endif %}
+    {% if resolved_briefing_url or briefing_url %}
+      <li>
+        <a
+          href="{% if resolved_briefing_url %}{{ resolved_briefing_url }}{% else %}{{ briefing_url }}{% endif %}"
+          class="{{ base_classes }}{% if current_section == 'briefings' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
+          {% if current_section == 'briefings' %}aria-current="page"{% endif %}
+        >
+          {% trans 'Briefings' %}
+        </a>
+      </li>
+    {% endif %}
     <li>
       <a
         href="{% url 'eventos:tarefa_list' %}"

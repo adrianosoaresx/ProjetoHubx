@@ -24,7 +24,7 @@ from django.http import (
 )
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.http import urlencode
@@ -1012,33 +1012,10 @@ class ParceriaEventoDeleteView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
         return super().delete(request, *args, **kwargs)
 
 
-class BriefingEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ListView):
-    model = BriefingEvento
-    template_name = "eventos/partials/briefing/briefing_list.html"
-    context_object_name = "briefings"
-    painel_title = _("Briefings de Eventos")
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        user = self.request.user
-        qs = BriefingEvento.objects.select_related("evento")
-        if user.user_type != UserType.ROOT:
-            nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-            filtro = Q(evento__organizacao=user.organizacao)
-            if nucleo_ids:
-                filtro |= Q(evento__nucleo__in=nucleo_ids)
-            qs = qs.filter(filtro)
-        q = self.request.GET.get("q")
-        if q:
-            qs = qs.filter(evento__titulo__icontains=q)
-        return qs
-
-
 class BriefingEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = BriefingEvento
     form_class = BriefingEventoCreateForm
     template_name = "eventos/partials/briefing/briefing_form.html"
-    success_url = reverse_lazy("eventos:briefing_list")
     painel_title = _("Novo Briefing")
     painel_hero_template = "_components/hero.html"
 
@@ -1056,17 +1033,21 @@ class BriefingEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
         messages.success(self.request, _("Briefing criado com sucesso."))
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse("eventos:briefing_detalhe", kwargs={"evento_pk": self.object.evento_id})
 
-class BriefingEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, UpdateView):
+
+class BriefingEventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, UpdateView):
     model = BriefingEvento
     form_class = BriefingEventoForm
-    template_name = "eventos/partials/briefing/briefing_form.html"
-    success_url = reverse_lazy("eventos:briefing_list")
-    painel_title = _("Editar Briefing")
+    template_name = "eventos/partials/briefing/briefing_detail.html"
+    context_object_name = "briefing"
+    painel_title = _("Briefing do Evento")
     painel_hero_template = "_components/hero.html"
+    pk_url_kwarg = "evento_pk"
 
     def get_queryset(self):
-        qs = BriefingEvento.objects.all()
+        qs = BriefingEvento.objects.select_related("evento")
         user = self.request.user
         if user.user_type != UserType.ROOT:
             nucleo_ids = list(user.nucleos.values_list("id", flat=True))
@@ -1075,6 +1056,25 @@ class BriefingEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
                 filtro |= Q(evento__nucleo__in=nucleo_ids)
             qs = qs.filter(filtro)
         return qs
+
+    def get_object(self, queryset=None):
+        queryset = queryset or self.get_queryset()
+        evento_pk = self.kwargs.get(self.pk_url_kwarg)
+        if not evento_pk:
+            raise Http404
+        return get_object_or_404(queryset, evento_id=evento_pk)
+
+    def get_success_url(self):
+        return reverse("eventos:briefing_detalhe", kwargs={"evento_pk": self.object.evento_id})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        briefing = context.get("briefing") or self.object
+        context["evento"] = briefing.evento
+        context["briefing_evento"] = briefing.evento
+        context["available_transitions"] = briefing.STATUS_TRANSITIONS.get(briefing.status, set())
+        context["painel_title"] = _("Briefing de %(evento)s") % {"evento": briefing.evento.titulo}
+        return context
 
     def form_valid(self, form):
         old_obj = self.get_object()
@@ -1091,6 +1091,7 @@ class BriefingEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
             acao="briefing_atualizado",
             detalhes=detalhes,
         )
+        messages.success(self.request, _("Briefing atualizado com sucesso."))
         return response
 
 
@@ -1107,9 +1108,10 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
             ),
             pk=pk,
         )
+        detail_url = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": briefing.evento_id})
         if not briefing.can_transition_to(status):
             messages.error(request, _("Transição de status inválida."))
-            return redirect("eventos:briefing_list")
+            return redirect(detail_url)
         now = timezone.now()
         update_fields = ["status", "avaliado_por", "avaliado_em", "updated_at"]
         briefing.avaliado_por = request.user
@@ -1119,11 +1121,11 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
             prazo_str = request.POST.get("prazo_limite_resposta")
             if not prazo_str:
                 messages.error(request, _("Informe o prazo limite de resposta."))
-                return redirect("eventos:briefing_list")
+                return redirect(detail_url)
             prazo = parse_datetime(prazo_str)
             if prazo is None:
                 messages.error(request, _("Prazo limite inválido."))
-                return redirect("eventos:briefing_list")
+                return redirect(detail_url)
             if timezone.is_naive(prazo):
                 prazo = timezone.make_aware(prazo)
             briefing.status = "orcamentado"
@@ -1139,7 +1141,7 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
             motivo = request.POST.get("motivo_recusa", "").strip()
             if not motivo:
                 messages.error(request, _("Informe o motivo da recusa."))
-                return redirect("eventos:briefing_list")
+                return redirect(detail_url)
             briefing.status = "recusado"
             briefing.recusado_em = now
             briefing.recusado_por = request.user
@@ -1157,4 +1159,4 @@ class BriefingEventoStatusView(LoginRequiredMixin, NoSuperadminMixin, View):
         )
         notificar_briefing_status.delay(briefing.pk, briefing.status)
         messages.success(request, _("Status do briefing atualizado."))
-        return redirect("eventos:briefing_list")
+        return redirect(detail_url)
