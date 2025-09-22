@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n lucide_icons %}
 <section class="hero-with-neural bg-gradient-to-br from-[var(--hero-from)] to-[var(--hero-to)] text-white"
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);{% if style %} {{ style }}{% endif %}">
   <div class="neural-bg-base" aria-hidden="true">
@@ -21,6 +21,23 @@
           <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
         {% endif %}
       </div>
+      {% if total_usuarios is not None or total_associados is not None or total_nucleados is not None %}
+        <div class="mt-10 space-y-4">
+          <div class="flex items-center gap-3 text-white/80">
+            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/10 backdrop-blur">
+              {% lucide 'chart-pie' class='h-5 w-5' %}
+            </span>
+            <span class="text-sm font-semibold uppercase tracking-wide">
+              {% trans "Resumo" %}
+            </span>
+          </div>
+          <div class="card-grid">
+            {% include '_partials/cards/total_card.html' with label=_('Usuários') valor=total_usuarios icon_name='users' %}
+            {% include '_partials/cards/total_card.html' with label=_('Associados') valor=total_associados icon_name='badge-check' %}
+            {% include '_partials/cards/total_card.html' with label=_('Nucleados') valor=total_nucleados icon_name='network' %}
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
 </section>
