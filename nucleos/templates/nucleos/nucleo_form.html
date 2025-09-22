@@ -5,9 +5,9 @@
 
 {% block hero %}
   {% if object %}
-    {% include '_components/hero.html' with title=object.nome %}
+    {% include '_components/hero.html' with title=object.nome subtitle=_('Editar Núcleo') %}
   {% else %}
-    {% include '_components/hero.html' with title=_('Novo Núcleo') %}
+    {% include '_components/hero_nucleo.html' with title=_('Novo Núcleo') %}
   {% endif %}
 {% endblock %}
 
