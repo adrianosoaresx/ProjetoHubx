@@ -47,18 +47,6 @@
             {% if total_inscricoes is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
-            {% if total_inscricoes_confirmadas is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Confirmadas') valor=total_inscricoes_confirmadas icon_name='check' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_inscricoes_pendentes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Pendentes') valor=total_inscricoes_pendentes icon_name='clock' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_inscricoes_canceladas is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Canceladas') valor=total_inscricoes_canceladas icon_name='x' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_presentes is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Presentes') valor=total_presentes icon_name='user' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
             {% if vagas_disponiveis is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
