@@ -1,37 +1,36 @@
 {% load i18n %}
 
+<div class="py-12 px-4 space-y-6">
+  <div class="card px-4 max-w-6xl mx-auto">
+    <div class="card-body space-y-6">
+      <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
 
-<section class="py-12 max-w-6xl mx-auto mt-8 px-4">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold">{% trans "Convites Emitidos" %}</h1>
+      {% if convites %}
+      <div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
+        <table class="min-w-full divide-y divide-[var(--border)]">
+          <thead class="bg-[var(--bg-secondary)]">
+            <tr>
+              <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Tipo" %}</th>
+              <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Estado" %}</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]">
+            {% for token in convites %}
+            <tr>
+              <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_tipo_destino_display }}</td>
+              <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_estado_display }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</p>
+      {% endif %}
+
+      <div>
+        <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
+      </div>
+    </div>
   </div>
-
-  
-
-  {% if convites %}
-
-  <div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
-    <table class="min-w-full divide-y divide-[var(--border)]">
-      <thead class="bg-[var(--bg-secondary)]">
-        <tr>
-          <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Tipo" %}</th>
-          <th class="px-4 py-2 text-left text-sm font-medium text-[var(--text-primary)]">{% trans "Estado" %}</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-[var(--border)]">
-        {% for token in convites %}
-        <tr>
-          <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_tipo_destino_display }}</td>
-          <td class="px-4 py-2 text-sm text-[var(--text-primary)]">{{ token.get_estado_display }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-    <p class="text-sm text-[var(--text-secondary)]">{% trans "Nenhum convite encontrado." %}</p>
-  {% endif %}
-  <div class="mt-6">
-    <button type="button" class="btn btn-secondary" onclick="history.back()">{% trans "Voltar" %}</button>
-  </div>
-</section>
+</div>
