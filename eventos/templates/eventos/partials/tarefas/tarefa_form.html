@@ -1,4 +1,5 @@
 {% load i18n %}
+{% include "eventos/partials/_painel_hero_oob.html" %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">
     {% if object %}{% trans "Editar Tarefa" %}{% else %}{% trans "Cadastrar Tarefa" %}{% endif %}
