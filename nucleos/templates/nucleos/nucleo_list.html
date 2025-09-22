@@ -1,12 +1,10 @@
 {% extends 'base.html' %}
-{% load i18n lucide_icons %}
+{% load i18n %}
 
 {% block title %}{% trans "Núcleos" %}{% endblock %}
 
 {% block hero %}
-
-  {% include '_components/hero.html' with title=_('Núcleos') action_template='nucleos/hero_actions_nucleo.html' neural_background='nucleos' %}
-
+  {% include '_components/hero_nucleo.html' with title=_('Núcleos') action_template='nucleos/hero_actions_nucleo.html' total_nucleos=total_nucleos total_membros=total_membros_org total_eventos=total_eventos_org total_eventos_ativos=total_eventos_ativos_org total_eventos_concluidos=total_eventos_concluidos_org %}
 {% endblock %}
 
 {% block content %}
@@ -18,18 +16,6 @@
       {% endif %}
     </div>
     <div class="card-body">
-      <details class="card mb-6" open>
-        <summary class="cursor-pointer text-base font-semibold text-[var(--text-primary)]">
-          {% trans "Resumo" %}
-        </summary>
-        {% lucide 'network' class='h-5 w-5' as icon_nucleos %}
-        {% lucide 'users' class='h-5 w-5' as icon_membros %}
-        
-        <div class="mt-4 card-grid">
-          {% include "_partials/cards/total_card.html" with label=_('Núcleos') valor=total_nucleos icon_svg=icon_nucleos %}
-          {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros_org icon_svg=icon_membros %}
-        </div>
-      </details>
       <div role="list" aria-label="{% trans 'Lista de núcleos' %}" class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {% for nucleo in object_list %}
           {% include '_components/card_nucleo.html' with nucleo=nucleo %}
