@@ -50,15 +50,15 @@
                           </span>
                           {% if ev.tipo %}
                             <span class="text-[10px] px-1.5 py-0.5 rounded-full
-                              {% if ev.tipo == 'reuniao' %} bg-green-100 text-green-700
-                              {% elif ev.tipo == 'palestra' %} bg-red-100 text-red-700
-                              {% elif ev.tipo == 'workshop' %} bg-blue-100 text-blue-700
-                              {% else %} bg-gray-100 text-gray-700 {% endif %}">
+                              {% if ev.tipo == 'reuniao' %} bg-[var(--success-light)] text-[var(--success)]
+                              {% elif ev.tipo == 'palestra' %} bg-[var(--error-light)] text-[var(--error)]
+                              {% elif ev.tipo == 'workshop' %} bg-[var(--primary-light)] text-[var(--primary)]
+                              {% else %} bg-[var(--surface-secondary)] text-[var(--text-secondary)] {% endif %}">
                               {{ ev.get_tipo_display|default:ev.tipo }}
                             </span>
                           {% endif %}
                           {% if ev.local %}
-                            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--surface-secondary)] text-[var(--text-secondary)]">
                               {{ ev.local }}
                             </span>
                           {% endif %}
