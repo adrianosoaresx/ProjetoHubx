@@ -557,6 +557,28 @@
   .card-body   { @apply text-sm leading-6; }
   .card-footer { @apply mt-4 pt-4 border-t border-[var(--border)]; }
 
+  .card-compact { @apply p-4 sm:p-5; }
+
+  .card-compact .card-body,
+  .card-body-compact {
+    @apply p-3 sm:p-4 text-xs leading-5;
+  }
+
+  .card-compact .card-body > :first-child,
+  .card-body-compact > :first-child {
+    @apply gap-1 text-xs;
+  }
+
+  .card-compact .card-body > :first-child svg,
+  .card-body-compact > :first-child svg {
+    @apply h-4 w-4;
+  }
+
+  .card-compact .card-body > :not(:first-child),
+  .card-body-compact > :not(:first-child) {
+    margin-top: var(--space-1);
+  }
+
   /* Botões */
   .btn            { @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border transition; }
   .btn-primary    { @apply btn bg-[var(--accent)] text-[var(--on-accent)] border-transparent hover:opacity-90; }
