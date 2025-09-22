@@ -2006,6 +2006,10 @@ a:focus {
   height: 2rem;
 }
 
+.h-9 {
+  height: 2.25rem;
+}
+
 .h-full {
   height: 100%;
 }
@@ -2056,6 +2060,10 @@ a:focus {
 
 .w-8 {
   width: 2rem;
+}
+
+.w-9 {
+  width: 2.25rem;
 }
 
 .w-auto {
@@ -2116,10 +2124,6 @@ a:focus {
 
 .cursor-move {
   cursor: move;
-}
-
-.cursor-pointer {
-  cursor: pointer;
 }
 
 .list-disc {
@@ -2400,6 +2404,10 @@ a:focus {
   background-color: transparent;
 }
 
+.bg-white\/10 {
+  background-color: rgb(255 255 255 / 0.1);
+}
+
 .bg-white\/20 {
   background-color: rgb(255 255 255 / 0.2);
 }
@@ -2656,6 +2664,10 @@ a:focus {
   text-transform: uppercase;
 }
 
+.tracking-wide {
+  letter-spacing: 0.025em;
+}
+
 .tracking-widest {
   letter-spacing: 0.1em;
 }
@@ -2769,6 +2781,12 @@ a:focus {
 
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+
+.backdrop-blur {
+  --tw-backdrop-blur: blur(8px);
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+  backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
 }
 
 .backdrop-blur-sm {
