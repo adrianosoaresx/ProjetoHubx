@@ -44,7 +44,7 @@
               {% include '_partials/cards/total_card.html' with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
             {% if total_eventos_concluidos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Eventos concluídos') valor=total_eventos_concluidos icon_name='check-circle' card_class='card-compact' body_class='card-body-compact' %}
+              {% include '_partials/cards/total_card.html' with label=_('Eventos concluídos') valor=total_eventos_concluidos icon_name='circle-check' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
           </div>
         </div>
