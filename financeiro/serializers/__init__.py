@@ -18,6 +18,7 @@ from ..models import (
 )
 from ..services.distribuicao import repassar_receita_ingresso
 from ..services.notificacoes import enviar_aporte
+from ..services.saldos import aplicar_ajustes, atribuir_carteiras_padrao, vincular_carteiras_lancamento
 
 
 class CarteiraSerializer(serializers.ModelSerializer):
@@ -124,15 +125,18 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
         """Cria o lançamento e atualiza saldos se estiver pago."""
         if "data_vencimento" not in validated_data:
             validated_data["data_vencimento"] = validated_data.get("data_lancamento", timezone.now())
+        atribuir_carteiras_padrao(validated_data)
         lancamento = super().create(validated_data)
         if lancamento.status == LancamentoFinanceiro.Status.PAGO:
-            centro = lancamento.centro_custo
-            centro.saldo += lancamento.valor
-            centro.save(update_fields=["saldo"])
-            if lancamento.conta_associado:
-                conta = lancamento.conta_associado
-                conta.saldo += lancamento.valor
-                conta.save(update_fields=["saldo"])
+            vincular_carteiras_lancamento(lancamento)
+            aplicar_ajustes(
+                centro_custo=lancamento.centro_custo,
+                carteira=lancamento.carteira,
+                centro_delta=lancamento.valor,
+                conta_associado=lancamento.conta_associado,
+                carteira_contraparte=lancamento.carteira_contraparte,
+                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+            )
             if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
                 repassar_receita_ingresso(lancamento)
         return lancamento
@@ -200,19 +204,22 @@ class AporteSerializer(serializers.ModelSerializer):
             validated_data["data_lancamento"] = timezone.now()
         if "data_vencimento" not in validated_data:
             validated_data["data_vencimento"] = validated_data["data_lancamento"]
+        atribuir_carteiras_padrao(validated_data)
         with transaction.atomic():
             originador = None
             if tipo == LancamentoFinanceiro.Tipo.APORTE_INTERNO and request:
                 originador = request.user
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
-            centro = CentroCusto.objects.select_related(None).get(pk=lancamento.centro_custo_id)
-            centro.saldo += lancamento.valor
-            centro.save(update_fields=["saldo"])
-            if lancamento.conta_associado_id:
-                conta = ContaAssociado.objects.select_related(None).get(pk=lancamento.conta_associado_id)
-                conta.saldo += lancamento.valor
-                conta.save(update_fields=["saldo"])
+            vincular_carteiras_lancamento(lancamento)
+            aplicar_ajustes(
+                centro_custo=lancamento.centro_custo,
+                carteira=lancamento.carteira,
+                centro_delta=lancamento.valor,
+                conta_associado=lancamento.conta_associado,
+                carteira_contraparte=lancamento.carteira_contraparte,
+                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+            )
         if lancamento.conta_associado:
             try:
                 enviar_aporte(lancamento.conta_associado.user, lancamento)

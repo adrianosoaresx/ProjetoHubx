@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroLog
+from ..models import FinanceiroLog, LancamentoFinanceiro
 from .auditoria import log_financeiro
 from .notificacoes import enviar_estorno_aporte
+from .saldos import aplicar_ajustes, debitar, vincular_carteiras_lancamento
 
 
 def estornar_aporte(aporte_id: str, usuario=None) -> LancamentoFinanceiro:
@@ -22,10 +22,16 @@ def estornar_aporte(aporte_id: str, usuario=None) -> LancamentoFinanceiro:
         raise ValidationError("Apenas aportes pagos podem ser estornados")
 
     with transaction.atomic():
+        vincular_carteiras_lancamento(lancamento)
         LancamentoFinanceiro.objects.filter(pk=lancamento.pk).update(status=LancamentoFinanceiro.Status.CANCELADO)
-        CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") - lancamento.valor)
-        if lancamento.conta_associado_id:
-            ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(saldo=F("saldo") - lancamento.valor)
+        aplicar_ajustes(
+            centro_custo=lancamento.centro_custo,
+            carteira=lancamento.carteira,
+            centro_delta=debitar(lancamento.valor),
+            conta_associado=lancamento.conta_associado,
+            carteira_contraparte=lancamento.carteira_contraparte,
+            contraparte_delta=debitar(lancamento.valor) if lancamento.conta_associado_id else None,
+        )
         lancamento.status = LancamentoFinanceiro.Status.CANCELADO
 
     log_financeiro(

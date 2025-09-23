@@ -14,6 +14,27 @@ from ..services import metrics
 from ..services.auditoria import log_financeiro
 from ..services.importacao import ImportadorPagamentos
 
+
+def executar_importacao(file_path: str, user_id: str, importacao_id: str) -> tuple[int, list[str], str]:
+    """Processa o arquivo de importação atualizando o registro de controle."""
+
+    service = ImportadorPagamentos(file_path)
+    total, errors = service.process()
+    log_path = Path(file_path).with_suffix(".log")
+    if errors:
+        log_path.write_text("\n".join(errors), encoding="utf-8")
+    else:
+        log_path.write_text("ok", encoding="utf-8")
+    status_model = ImportacaoPagamentos.Status.ERRO if errors else ImportacaoPagamentos.Status.CONCLUIDO
+    ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
+        arquivo=file_path,
+        usuario_id=user_id,
+        total_processado=total,
+        erros=errors,
+        status=status_model,
+    )
+    return total, errors, status_model
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,28 +47,13 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
     status = "sucesso"
     detalhes = ""
     try:
-        service = ImportadorPagamentos(file_path)
-        importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
-        total, errors = service.process()
-        log_path = Path(file_path).with_suffix(".log")
-        if errors:
-            log_path.write_text("\n".join(errors), encoding="utf-8")
-            logger.error("Erros na importação: %s", errors)
-        else:
-            log_path.write_text("ok", encoding="utf-8")
-        status_model = ImportacaoPagamentos.Status.ERRO if errors else ImportacaoPagamentos.Status.CONCLUIDO
-        ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
-            arquivo=file_path,
-            usuario_id=user_id,
-            total_processado=total,
-            erros=errors,
-            status=status_model,
-        )
+        total, errors, status_model = executar_importacao(file_path, user_id, importacao_id)
         elapsed = (timezone.now() - inicio).total_seconds()
         logger.info("Importação concluída: %s registros em %.2fs", total, elapsed)
         metrics.importacao_pagamentos_total.inc(total)
         if errors:
             metrics.financeiro_importacoes_erros_total.inc()
+            logger.error("Erros na importação: %s", errors)
         user = get_user_model().objects.filter(pk=user_id).first()
         log_financeiro(
             FinanceiroLog.Acao.IMPORTAR,

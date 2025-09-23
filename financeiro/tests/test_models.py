@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from decimal import Decimal
 from django.utils import timezone
 
 from accounts.factories import UserFactory
@@ -11,11 +12,23 @@ from organizacoes.factories import OrganizacaoFactory
 pytestmark = pytest.mark.django_db
 
 
-def test_lancamento_atualiza_saldos():
+@pytest.mark.parametrize("somente_carteira", [True, False])
+def test_lancamento_atualiza_saldos(settings, somente_carteira):
+    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
     user = UserFactory()
     conta = ContaAssociado.objects.create(user=user)
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
     serializer = LancamentoFinanceiroSerializer(
         data={
             "centro_custo": str(centro.id),
@@ -31,8 +44,16 @@ def test_lancamento_atualiza_saldos():
     lanc = serializer.save()
     centro.refresh_from_db()
     conta.refresh_from_db()
-    assert centro.saldo == lanc.valor
-    assert conta.saldo == lanc.valor
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
+    assert carteira_centro.saldo == Decimal("100")
+    assert carteira_conta.saldo == Decimal("100")
+    if somente_carteira:
+        assert centro.saldo == Decimal("0")
+        assert conta.saldo == Decimal("0")
+    else:
+        assert centro.saldo == lanc.valor
+        assert conta.saldo == lanc.valor
 
 
 def test_contaassociado_str():

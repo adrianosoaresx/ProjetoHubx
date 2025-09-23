@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from dateutil.parser import parse
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -14,8 +15,9 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
+from ..models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
 from ..serializers import LancamentoFinanceiroSerializer
+from .saldos import atribuir_carteiras_padrao
 
 
 @dataclass
@@ -136,6 +138,9 @@ class ImportadorPagamentos:
             to_create = []
             saldo_centro: dict[str, Decimal] = {}
             saldo_conta: dict[str, Decimal] = {}
+            saldo_carteiras: dict[str, Decimal] = {}
+            saldo_carteiras_contra: dict[str, Decimal] = {}
+            carteiras_cache: dict[str, dict[Any, Carteira | None]] = {"centro": {}, "conta": {}}
             seen: set[tuple[str | None, str, str, Decimal, Any]] = set()
             validated: list[tuple[dict[str, Any], tuple[str | None, str, str, Decimal, Any]]] = []
             for item in chunk:
@@ -155,6 +160,7 @@ class ImportadorPagamentos:
                     errors.append(f"Dados inválidos na linha: {serializer.errors}")
                     continue
                 data = serializer.validated_data
+                atribuir_carteiras_padrao(data, cache=carteiras_cache)
                 conta = data.get("conta_associado")
                 key = (
                     str(data["centro_custo"].id),
@@ -202,21 +208,36 @@ class ImportadorPagamentos:
                 seen.add(key)
                 processed.add(key)
                 if data["status"] == LancamentoFinanceiro.Status.PAGO:
-                    cid = str(data["centro_custo"].id)
-                    saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + data["valor"]
+                    valor_lanc = data["valor"]
+                    carteira = data.get("carteira")
+                    if carteira:
+                        cid = str(carteira.id)
+                        saldo_carteiras[cid] = saldo_carteiras.get(cid, Decimal("0")) + valor_lanc
                     conta = data.get("conta_associado")
-                    if conta:
-                        aid = str(conta.id)
-                        saldo_conta[aid] = saldo_conta.get(aid, Decimal("0")) + data["valor"]
+                    carteira_contra = data.get("carteira_contraparte")
+                    if conta and carteira_contra:
+                        aid = str(carteira_contra.id)
+                        saldo_carteiras_contra[aid] = saldo_carteiras_contra.get(aid, Decimal("0")) + valor_lanc
+                    if not settings.FINANCEIRO_SOMENTE_CARTEIRA:
+                        cid = str(data["centro_custo"].id)
+                        saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + valor_lanc
+                        if conta:
+                            aid_conta = str(conta.id)
+                            saldo_conta[aid_conta] = saldo_conta.get(aid_conta, Decimal("0")) + valor_lanc
                 to_create.append(LancamentoFinanceiro(**data))
             if to_create:
                 LancamentoFinanceiro.objects.bulk_create(to_create)
                 nonlocal total
                 total += len(to_create)
-            for cid, inc in saldo_centro.items():
-                CentroCusto.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
-            for aid, inc in saldo_conta.items():
-                ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
+            for cid, inc in saldo_carteiras.items():
+                Carteira.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
+            for aid, inc in saldo_carteiras_contra.items():
+                Carteira.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
+            if not settings.FINANCEIRO_SOMENTE_CARTEIRA:
+                for cid, inc in saldo_centro.items():
+                    CentroCusto.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
+                for aid, inc in saldo_conta.items():
+                    ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
 
         try:
             for idx, row in enumerate(self._iter_rows(), start=2):
