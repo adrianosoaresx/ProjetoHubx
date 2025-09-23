@@ -172,6 +172,7 @@ def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monke
     )
     assert resp.status_code == 201, resp.data
     assert "recibo_url" in resp.data
+    assert "legacy_warning" in resp.data
     file_path = tmp_path / "recibos" / f"aporte_{resp.data['id']}.html"
     assert file_path.exists()
     assert sent["user"] == admin_user

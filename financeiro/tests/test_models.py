@@ -47,6 +47,7 @@ def test_lancamento_atualiza_saldos():
     assert carteira_conta.saldo == Decimal("100")
     assert centro.saldo == Decimal("0")
     assert conta.saldo == Decimal("0")
+    assert lanc.carteira_contraparte_id == carteira_conta.id
 
 
 def test_contaassociado_str():
@@ -192,3 +193,43 @@ def test_lancamento_financeiro_carteiras_serializer_read_only():
     assert serializer.fields["carteira"].read_only is True
     assert "carteira_contraparte" in serializer.fields
     assert serializer.fields["carteira_contraparte"].read_only is True
+    assert "carteira_id" in serializer.fields
+    assert serializer.fields["carteira_id"].read_only is False
+    assert "carteira_contraparte_id" in serializer.fields
+    assert serializer.fields["carteira_contraparte_id"].read_only is False
+    assert serializer.fields["conta_associado"].write_only is True
+    assert serializer.fields["legacy_warning"].read_only is True
+
+
+def test_lancamento_serializer_aceita_carteira_ids():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
+    user = UserFactory()
+    conta = ContaAssociado.objects.create(user=user)
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    serializer = LancamentoFinanceiroSerializer(
+        data={
+            "centro_custo": str(centro.id),
+            "carteira_id": str(carteira_centro.id),
+            "carteira_contraparte_id": str(carteira_conta.id),
+            "tipo": LancamentoFinanceiro.Tipo.APORTE_INTERNO,
+            "valor": "42",
+            "data_lancamento": timezone.now(),
+            "status": LancamentoFinanceiro.Status.PAGO,
+            "descricao": "via carteiras",
+        }
+    )
+    assert serializer.is_valid(), serializer.errors
+    lanc = serializer.save()
+    assert lanc.carteira_id == carteira_centro.id
+    assert lanc.carteira_contraparte_id == carteira_conta.id
+    assert lanc.conta_associado_id == conta.id

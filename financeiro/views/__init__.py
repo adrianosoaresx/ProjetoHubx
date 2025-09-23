@@ -27,6 +27,7 @@ from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -43,7 +44,14 @@ from accounts.models import UserType
 from eventos.models import Evento
 from notificacoes.services.email_client import send_email
 
-from ..models import CentroCusto, FinanceiroLog, FinanceiroTaskLog, ImportacaoPagamentos, LancamentoFinanceiro
+from ..models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    FinanceiroTaskLog,
+    ImportacaoPagamentos,
+    LancamentoFinanceiro,
+)
 from ..permissions import (
     IsAssociadoReadOnly,
     IsCoordenador,
@@ -185,13 +193,21 @@ class FinanceiroViewSet(viewsets.ViewSet):
         qs = LancamentoFinanceiro.objects.select_related(
             "centro_custo__nucleo",
             "centro_custo__organizacao",
+            "carteira",
+            "carteira__centro_custo",
             "conta_associado__user",
+            "carteira_contraparte",
+            "carteira_contraparte__conta_associado__user",
         )
         user = self.request.user
         if user.user_type == UserType.COORDENADOR and user.nucleo_id:
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
-            qs = qs.filter(conta_associado__user=user)
+            qs = qs.filter(
+                Q(carteira_contraparte__conta_associado__user=user)
+                | Q(conta_associado__user=user)
+                | Q(carteira__conta_associado__user=user)
+            )
         return qs
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos")
@@ -397,16 +413,23 @@ class FinanceiroViewSet(viewsets.ViewSet):
         data = []
         now = timezone.now().date()
         for lanc in qs:
+            conta_destino = lanc.conta_associado_resolvida
+            conta_email = conta_destino.user.email if conta_destino else None
             dias_atraso = (now - lanc.data_vencimento.date()).days if lanc.data_vencimento else 0
             data.append(
                 {
                     "id": str(lanc.id),
                     "centro": lanc.centro_custo.nome,
-                    "conta": lanc.conta_associado.user.email if lanc.conta_associado else None,
+                    "carteira_id": str(lanc.carteira_id) if lanc.carteira_id else None,
+                    "carteira_contraparte_id": str(lanc.carteira_contraparte_id)
+                    if lanc.carteira_contraparte_id
+                    else None,
+                    "conta": conta_email,
                     "status": lanc.status,
                     "valor": float(lanc.valor),
                     "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
                     "dias_atraso": dias_atraso,
+                    "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
                 }
             )
         fmt = params.get("format")
