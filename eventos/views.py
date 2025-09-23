@@ -14,8 +14,10 @@ from django.contrib.auth.mixins import (
 )
 from django import forms
 from django.core.exceptions import PermissionDenied
+from django.core.files.uploadedfile import UploadedFile
 from django.db import IntegrityError
-from django.db.models import F, Q, Count
+from django.db.models import F, Q, Count, Model
+from django.db.models.fields.files import FieldFile
 from django.http import (
     Http404,
     HttpResponse,
@@ -28,6 +30,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
+from django.utils.functional import Promise
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -361,11 +364,30 @@ class EventoUpdateView(
 
         old_obj = self.get_object()
         detalhes: dict[str, dict[str, Any]] = {}
+
+        def _serialize_value(value: Any) -> Any:
+            if isinstance(value, Promise):
+                return str(value)
+            if isinstance(value, FieldFile):
+                return value.name if value else None
+            if isinstance(value, UploadedFile):
+                return value.name
+            if isinstance(value, Model):
+                return {"id": value.pk, "repr": str(value)}
+            if isinstance(value, dict):
+                return {key: _serialize_value(val) for key, val in value.items()}
+            if isinstance(value, (list, tuple, set)):
+                return [_serialize_value(val) for val in value]
+            return value
+
         for field in form.changed_data:
             before = getattr(old_obj, field)
             after = form.cleaned_data.get(field)
             if before != after:
-                detalhes[field] = {"antes": before, "depois": after}
+                detalhes[field] = {
+                    "antes": _serialize_value(before),
+                    "depois": _serialize_value(after),
+                }
 
         messages.success(self.request, _("Evento atualizado com sucesso."))  # pragma: no cover
         response = super().form_valid(form)  # pragma: no cover
