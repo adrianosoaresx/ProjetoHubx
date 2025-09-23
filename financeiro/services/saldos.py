@@ -5,7 +5,6 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any, Dict, Optional
 
-from django.conf import settings
 from django.db.models import F
 
 from ..models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
@@ -141,17 +140,11 @@ def aplicar_ajustes(
         carteira_ref = carteira or carteira_operacional_centro(centro_custo)
         if carteira_ref:
             Carteira.objects.filter(pk=carteira_ref.pk).update(saldo=F("saldo") + centro_delta_dec)
-        if centro_custo and not settings.FINANCEIRO_SOMENTE_CARTEIRA:
-            CentroCusto.objects.filter(pk=centro_custo.pk).update(saldo=F("saldo") + centro_delta_dec)
 
     if contraparte_delta_dec and contraparte_delta_dec != 0:
         carteira_ref = carteira_contraparte or carteira_operacional_conta(conta_associado)
         if carteira_ref:
             Carteira.objects.filter(pk=carteira_ref.pk).update(saldo=F("saldo") + contraparte_delta_dec)
-        if conta_associado and not settings.FINANCEIRO_SOMENTE_CARTEIRA:
-            ContaAssociado.objects.filter(pk=conta_associado.pk).update(
-                saldo=F("saldo") + contraparte_delta_dec
-            )
 
 
 def vincular_carteiras_lancamento(lancamento: LancamentoFinanceiro) -> None:

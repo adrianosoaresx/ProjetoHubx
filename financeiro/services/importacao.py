@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from dateutil.parser import parse
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -136,8 +135,6 @@ class ImportadorPagamentos:
 
         def flush(chunk: list[dict[str, Any]]):
             to_create = []
-            saldo_centro: dict[str, Decimal] = {}
-            saldo_conta: dict[str, Decimal] = {}
             saldo_carteiras: dict[str, Decimal] = {}
             saldo_carteiras_contra: dict[str, Decimal] = {}
             carteiras_cache: dict[str, dict[Any, Carteira | None]] = {"centro": {}, "conta": {}}
@@ -218,12 +215,6 @@ class ImportadorPagamentos:
                     if conta and carteira_contra:
                         aid = str(carteira_contra.id)
                         saldo_carteiras_contra[aid] = saldo_carteiras_contra.get(aid, Decimal("0")) + valor_lanc
-                    if not settings.FINANCEIRO_SOMENTE_CARTEIRA:
-                        cid = str(data["centro_custo"].id)
-                        saldo_centro[cid] = saldo_centro.get(cid, Decimal("0")) + valor_lanc
-                        if conta:
-                            aid_conta = str(conta.id)
-                            saldo_conta[aid_conta] = saldo_conta.get(aid_conta, Decimal("0")) + valor_lanc
                 to_create.append(LancamentoFinanceiro(**data))
             if to_create:
                 LancamentoFinanceiro.objects.bulk_create(to_create)
@@ -233,11 +224,6 @@ class ImportadorPagamentos:
                 Carteira.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
             for aid, inc in saldo_carteiras_contra.items():
                 Carteira.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
-            if not settings.FINANCEIRO_SOMENTE_CARTEIRA:
-                for cid, inc in saldo_centro.items():
-                    CentroCusto.objects.filter(pk=cid).update(saldo=F("saldo") + inc)
-                for aid, inc in saldo_conta.items():
-                    ContaAssociado.objects.filter(pk=aid).update(saldo=F("saldo") + inc)
 
         try:
             for idx, row in enumerate(self._iter_rows(), start=2):

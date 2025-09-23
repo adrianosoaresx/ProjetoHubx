@@ -33,9 +33,7 @@ def test_root_sem_acesso(api_client):
     assert resp.status_code == 403
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_quitar_lancamento(api_client, settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_quitar_lancamento(api_client):
     admin = UserFactory(user_type=UserType.ADMIN)
     api_client.force_authenticate(user=admin)
     org = OrganizacaoFactory()
@@ -72,12 +70,8 @@ def test_quitar_lancamento(api_client, settings, somente_carteira):
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
     assert carteira_centro.saldo == Decimal("50")
     assert carteira_conta.saldo == Decimal("50")
-    if somente_carteira:
-        assert centro.saldo == 0
-        assert conta.saldo == 0
-    else:
-        assert centro.saldo == 50
-        assert conta.saldo == 50
+    assert centro.saldo == 0
+    assert conta.saldo == 0
     log = FinanceiroLog.objects.get(
         acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
     )
@@ -215,9 +209,7 @@ def test_pagar_cancelado_bloqueado(api_client):
     assert log.dados_novos["resultado"] == "pagamento_bloqueado"
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_distribuicao_ingresso(settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_distribuicao_ingresso():
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
     centro_nucleo = CentroCusto.objects.create(nome="CN", tipo="nucleo", nucleo=nucleo)
@@ -245,8 +237,5 @@ def test_distribuicao_ingresso(settings, somente_carteira):
     serializer.save()
     carteira_nucleo.refresh_from_db()
     assert carteira_nucleo.saldo == Decimal("25")
-    if somente_carteira:
-        assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 0
-    else:
-        assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 25
+    assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 0
     assert LancamentoFinanceiro.objects.filter(descricao="Repasse de ingresso", centro_custo=centro_nucleo).exists()

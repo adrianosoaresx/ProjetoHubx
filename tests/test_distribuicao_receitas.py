@@ -10,9 +10,7 @@ from nucleos.factories import NucleoFactory
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_distribuicao_para_nucleo(settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_distribuicao_para_nucleo():
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
     centro_nucleo = CentroCusto.objects.create(nome="N", tipo="nucleo", nucleo=nucleo)
@@ -27,17 +25,12 @@ def test_distribuicao_para_nucleo(settings, somente_carteira):
     centro_nucleo.refresh_from_db()
     carteira_nucleo.refresh_from_db()
     assert carteira_nucleo.saldo == Decimal("100")
-    if somente_carteira:
-        assert centro_nucleo.saldo == Decimal("0")
-    else:
-        assert centro_nucleo.saldo == Decimal("100")
+    assert centro_nucleo.saldo == Decimal("0")
     assert LancamentoFinanceiro.objects.filter(centro_custo=centro_nucleo, valor=100).exists()
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_distribuicao_sem_nucleo(settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_distribuicao_sem_nucleo():
     org = OrganizacaoFactory()
     centro_org = CentroCusto.objects.create(nome="Org", tipo="organizacao", organizacao=org)
     carteira_org = Carteira.objects.create(
@@ -60,9 +53,5 @@ def test_distribuicao_sem_nucleo(settings, somente_carteira):
     carteira_evento.refresh_from_db()
     assert carteira_org.saldo == Decimal("40")
     assert carteira_evento.saldo == Decimal("40")
-    if somente_carteira:
-        assert centro_org.saldo == Decimal("0")
-        assert centro_evento.saldo == Decimal("0")
-    else:
-        assert centro_org.saldo == Decimal("40")
-        assert centro_evento.saldo == Decimal("40")
+    assert centro_org.saldo == Decimal("0")
+    assert centro_evento.saldo == Decimal("0")

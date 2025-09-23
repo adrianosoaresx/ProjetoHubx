@@ -95,17 +95,3 @@ def test_relatorio_fallback_sem_carteira(django_assert_num_queries):
     assert data["saldo_atual"] == pytest.approx(75.0)
     assert data["saldos_por_centro"][str(centro.id)] == pytest.approx(75.0)
     assert any(item["saldo"] == pytest.approx(75.0) for item in data["classificacao_centros"])
-
-
-@override_settings(FINANCEIRO_SOMENTE_CARTEIRA=False)
-def test_relatorio_legacy_emite_aviso():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(
-        nome="Legado",
-        tipo="organizacao",
-        organizacao=org,
-        saldo=Decimal("42.00"),
-    )
-    with pytest.warns(DeprecationWarning):
-        data = gerar_relatorio(centro=str(centro.id))
-    assert data["saldo_atual"] == pytest.approx(42.0)
