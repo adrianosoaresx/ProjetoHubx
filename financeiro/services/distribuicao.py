@@ -4,14 +4,14 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import F
 from django.utils import timezone
 
 from eventos.models import Evento
 
-from ..models import CentroCusto, LancamentoFinanceiro, FinanceiroLog, ContaAssociado
+from ..models import CentroCusto, ContaAssociado, FinanceiroLog, LancamentoFinanceiro
 from .auditoria import log_financeiro
 from .notificacoes import enviar_distribuicao
+from .saldos import aplicar_ajustes, atribuir_carteiras_padrao
 
 
 def repassar_receita_ingresso(lancamento: LancamentoFinanceiro) -> None:
@@ -30,30 +30,42 @@ def repassar_receita_ingresso(lancamento: LancamentoFinanceiro) -> None:
         if not centro_nucleo:
             return
         with transaction.atomic():
-            LancamentoFinanceiro.objects.create(
+            dados = {
+                "centro_custo": centro_nucleo,
+                "tipo": LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
+                "valor": lancamento.valor,
+                "data_lancamento": lancamento.data_lancamento,
+                "data_vencimento": lancamento.data_lancamento,
+                "status": LancamentoFinanceiro.Status.PAGO,
+                "descricao": "Repasse de ingresso",
+            }
+            atribuir_carteiras_padrao(dados)
+            LancamentoFinanceiro.objects.create(**dados)
+            aplicar_ajustes(
                 centro_custo=centro_nucleo,
-                tipo=LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
-                valor=lancamento.valor,
-                data_lancamento=lancamento.data_lancamento,
-                data_vencimento=lancamento.data_lancamento,
-                status=LancamentoFinanceiro.Status.PAGO,
-                descricao="Repasse de ingresso",
+                carteira=dados.get("carteira"),
+                centro_delta=lancamento.valor,
             )
-            CentroCusto.objects.filter(pk=centro_nucleo.id).update(saldo=F("saldo") + lancamento.valor)
     else:
         centro_org = CentroCusto.objects.filter(tipo=CentroCusto.Tipo.ORGANIZACAO).order_by("created_at").first()
         if centro_org:
             with transaction.atomic():
-                LancamentoFinanceiro.objects.create(
+                dados = {
+                    "centro_custo": centro_org,
+                    "tipo": LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
+                    "valor": lancamento.valor,
+                    "data_lancamento": lancamento.data_lancamento,
+                    "data_vencimento": lancamento.data_lancamento,
+                    "status": LancamentoFinanceiro.Status.PAGO,
+                    "descricao": "Repasse de ingresso",
+                }
+                atribuir_carteiras_padrao(dados)
+                LancamentoFinanceiro.objects.create(**dados)
+                aplicar_ajustes(
                     centro_custo=centro_org,
-                    tipo=LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
-                    valor=lancamento.valor,
-                    data_lancamento=lancamento.data_lancamento,
-                    data_vencimento=lancamento.data_lancamento,
-                    status=LancamentoFinanceiro.Status.PAGO,
-                    descricao="Repasse de ingresso",
+                    carteira=dados.get("carteira"),
+                    centro_delta=lancamento.valor,
                 )
-                CentroCusto.objects.filter(pk=centro_org.id).update(saldo=F("saldo") + lancamento.valor)
 
 
 def distribuir_receita_evento(
@@ -74,17 +86,23 @@ def distribuir_receita_evento(
             )
             if not centro_nucleo:
                 raise ValidationError("Núcleo sem centro de custo")
-            lanc = LancamentoFinanceiro.objects.create(
+            dados_lanc = {
+                "centro_custo": centro_nucleo,
+                "conta_associado": conta_associado,
+                "tipo": LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
+                "valor": valor,
+                "data_lancamento": timezone.now(),
+                "data_vencimento": timezone.now(),
+                "status": LancamentoFinanceiro.Status.PAGO,
+                "descricao": f"Receita evento {evento.titulo}",
+            }
+            atribuir_carteiras_padrao(dados_lanc)
+            lanc = LancamentoFinanceiro.objects.create(**dados_lanc)
+            aplicar_ajustes(
                 centro_custo=centro_nucleo,
-                conta_associado=conta_associado,
-                tipo=LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
-                valor=valor,
-                data_lancamento=timezone.now(),
-                data_vencimento=timezone.now(),
-                status=LancamentoFinanceiro.Status.PAGO,
-                descricao=f"Receita evento {evento.titulo}",
+                carteira=dados_lanc.get("carteira"),
+                centro_delta=valor,
             )
-            CentroCusto.objects.filter(pk=centro_nucleo.id).update(saldo=F("saldo") + valor)
             log_financeiro(
                 FinanceiroLog.Acao.DISTRIBUIR_RECEITA,
                 None,
@@ -95,18 +113,26 @@ def distribuir_receita_evento(
                 repasses = []
                 for conta_p, perc in participantes:
                     valor_repasse = (valor * Decimal(perc)) / Decimal("100")
-                    lanc_r = LancamentoFinanceiro.objects.create(
+                    dados_repasse = {
+                        "centro_custo": centro_nucleo,
+                        "conta_associado": conta_p,
+                        "tipo": LancamentoFinanceiro.Tipo.REPASSE,
+                        "valor": valor_repasse,
+                        "data_lancamento": timezone.now(),
+                        "data_vencimento": timezone.now(),
+                        "status": LancamentoFinanceiro.Status.PAGO,
+                        "descricao": f"Repasse evento {evento.titulo}",
+                    }
+                    atribuir_carteiras_padrao(dados_repasse)
+                    lanc_r = LancamentoFinanceiro.objects.create(**dados_repasse)
+                    aplicar_ajustes(
                         centro_custo=centro_nucleo,
+                        carteira=dados_repasse.get("carteira"),
+                        centro_delta=-valor_repasse,
                         conta_associado=conta_p,
-                        tipo=LancamentoFinanceiro.Tipo.REPASSE,
-                        valor=valor_repasse,
-                        data_lancamento=timezone.now(),
-                        data_vencimento=timezone.now(),
-                        status=LancamentoFinanceiro.Status.PAGO,
-                        descricao=f"Repasse evento {evento.titulo}",
+                        carteira_contraparte=dados_repasse.get("carteira_contraparte"),
+                        contraparte_delta=valor_repasse,
                     )
-                    CentroCusto.objects.filter(pk=centro_nucleo.id).update(saldo=F("saldo") - valor_repasse)
-                    ContaAssociado.objects.filter(pk=conta_p.id).update(saldo=F("saldo") + valor_repasse)
                     repasses.append({"lancamento": str(lanc_r.id), "valor": str(valor_repasse)})
                 log_financeiro(
                     FinanceiroLog.Acao.REPASSE,
@@ -122,28 +148,33 @@ def distribuir_receita_evento(
             if not centro_evento or not centro_org:
                 raise ValidationError("Centros de custo indisponíveis")
             metade = valor / 2
-            lanc_e = LancamentoFinanceiro.objects.create(
+            dados_evento = {
+                "centro_custo": centro_evento,
+                "conta_associado": conta_associado,
+                "tipo": LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
+                "valor": metade,
+                "data_lancamento": timezone.now(),
+                "data_vencimento": timezone.now(),
+                "status": LancamentoFinanceiro.Status.PAGO,
+                "descricao": f"Receita evento {evento.titulo}",
+            }
+            atribuir_carteiras_padrao(dados_evento)
+            lanc_e = LancamentoFinanceiro.objects.create(**dados_evento)
+            aplicar_ajustes(
                 centro_custo=centro_evento,
-                conta_associado=conta_associado,
-                tipo=LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
-                valor=metade,
-                data_lancamento=timezone.now(),
-                data_vencimento=timezone.now(),
-                status=LancamentoFinanceiro.Status.PAGO,
-                descricao=f"Receita evento {evento.titulo}",
+                carteira=dados_evento.get("carteira"),
+                centro_delta=metade,
             )
-            lanc_o = LancamentoFinanceiro.objects.create(
+            dados_org = dados_evento.copy()
+            dados_org["centro_custo"] = centro_org
+            dados_org.pop("carteira", None)
+            atribuir_carteiras_padrao(dados_org)
+            lanc_o = LancamentoFinanceiro.objects.create(**dados_org)
+            aplicar_ajustes(
                 centro_custo=centro_org,
-                conta_associado=conta_associado,
-                tipo=LancamentoFinanceiro.Tipo.INGRESSO_EVENTO,
-                valor=metade,
-                data_lancamento=timezone.now(),
-                data_vencimento=timezone.now(),
-                status=LancamentoFinanceiro.Status.PAGO,
-                descricao=f"Receita evento {evento.titulo}",
+                carteira=dados_org.get("carteira"),
+                centro_delta=metade,
             )
-            CentroCusto.objects.filter(pk=centro_evento.id).update(saldo=F("saldo") + metade)
-            CentroCusto.objects.filter(pk=centro_org.id).update(saldo=F("saldo") + metade)
             log_financeiro(
                 FinanceiroLog.Acao.DISTRIBUIR_RECEITA,
                 None,
@@ -154,18 +185,26 @@ def distribuir_receita_evento(
                 repasses = []
                 for conta_p, perc in participantes:
                     valor_repasse = (valor * Decimal(perc)) / Decimal("100")
-                    lanc_r = LancamentoFinanceiro.objects.create(
+                    dados_repasse = {
+                        "centro_custo": centro_evento,
+                        "conta_associado": conta_p,
+                        "tipo": LancamentoFinanceiro.Tipo.REPASSE,
+                        "valor": valor_repasse,
+                        "data_lancamento": timezone.now(),
+                        "data_vencimento": timezone.now(),
+                        "status": LancamentoFinanceiro.Status.PAGO,
+                        "descricao": f"Repasse evento {evento.titulo}",
+                    }
+                    atribuir_carteiras_padrao(dados_repasse)
+                    lanc_r = LancamentoFinanceiro.objects.create(**dados_repasse)
+                    aplicar_ajustes(
                         centro_custo=centro_evento,
+                        carteira=dados_repasse.get("carteira"),
+                        centro_delta=-valor_repasse,
                         conta_associado=conta_p,
-                        tipo=LancamentoFinanceiro.Tipo.REPASSE,
-                        valor=valor_repasse,
-                        data_lancamento=timezone.now(),
-                        data_vencimento=timezone.now(),
-                        status=LancamentoFinanceiro.Status.PAGO,
-                        descricao=f"Repasse evento {evento.titulo}",
+                        carteira_contraparte=dados_repasse.get("carteira_contraparte"),
+                        contraparte_delta=valor_repasse,
                     )
-                    CentroCusto.objects.filter(pk=centro_evento.id).update(saldo=F("saldo") - valor_repasse)
-                    ContaAssociado.objects.filter(pk=conta_p.id).update(saldo=F("saldo") + valor_repasse)
                     repasses.append({"lancamento": str(lanc_r.id), "valor": str(valor_repasse)})
                 log_financeiro(
                     FinanceiroLog.Acao.REPASSE,

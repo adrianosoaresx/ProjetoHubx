@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
@@ -20,7 +20,6 @@ from accounts.models import UserType
 from .models import (
     Carteira,
     CentroCusto,
-    ContaAssociado,
     FinanceiroLog,
     FinanceiroTaskLog,
     ImportacaoPagamentos,
@@ -34,9 +33,10 @@ from .serializers import (
     ImportacaoPagamentosSerializer,
     LancamentoFinanceiroSerializer,
 )
-from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
+from .services.distribuicao import repassar_receita_ingresso
+from .services.saldos import aplicar_ajustes, vincular_carteiras_lancamento
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -138,11 +138,15 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             lancamento.status = novo_status
             lancamento.save(update_fields=["status"])
             if novo_status == LancamentoFinanceiro.Status.PAGO:
-                CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
-                if lancamento.conta_associado_id:
-                    ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
-                        saldo=F("saldo") + lancamento.valor
-                    )
+                vincular_carteiras_lancamento(lancamento)
+                aplicar_ajustes(
+                    centro_custo=lancamento.centro_custo,
+                    carteira=lancamento.carteira,
+                    centro_delta=lancamento.valor,
+                    conta_associado=lancamento.conta_associado,
+                    carteira_contraparte=lancamento.carteira_contraparte,
+                    contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+                )
                 if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
                     repassar_receita_ingresso(lancamento)
         log_financeiro(
@@ -167,11 +171,15 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
         with transaction.atomic():
             lancamento.status = LancamentoFinanceiro.Status.PAGO
             lancamento.save(update_fields=["status"])
-            CentroCusto.objects.filter(pk=lancamento.centro_custo_id).update(saldo=F("saldo") + lancamento.valor)
-            if lancamento.conta_associado_id:
-                ContaAssociado.objects.filter(pk=lancamento.conta_associado_id).update(
-                    saldo=F("saldo") + lancamento.valor
-                )
+            vincular_carteiras_lancamento(lancamento)
+            aplicar_ajustes(
+                centro_custo=lancamento.centro_custo,
+                carteira=lancamento.carteira,
+                centro_delta=lancamento.valor,
+                conta_associado=lancamento.conta_associado,
+                carteira_contraparte=lancamento.carteira_contraparte,
+                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+            )
             if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
                 repassar_receita_ingresso(lancamento)
         log_financeiro(

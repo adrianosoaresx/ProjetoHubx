@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from django.conf import settings
+from django.db import transaction
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -49,6 +50,7 @@ from ..services.importacao import ImportadorPagamentos
 from ..tasks.relatorios import gerar_relatorio_async
 from ..services.relatorios import _base_queryset, gerar_relatorio
 from ..tasks.importar_pagamentos import (
+    executar_importacao,
     importar_pagamentos_async,
     reprocessar_importacao_async,
 )
@@ -207,19 +209,44 @@ class FinanceiroViewSet(viewsets.ViewSet):
         serializer.is_valid(raise_exception=True)
         uid = serializer.validated_data["id"]
         importacao_id = serializer.validated_data["importacao_id"]
+        importacao = ImportacaoPagamentos.objects.filter(pk=importacao_id).first()
+        if importacao and importacao.status == ImportacaoPagamentos.Status.CONCLUIDO:
+            return Response({"detail": _("Importação já concluída")}, status=status.HTTP_202_ACCEPTED)
         # encontra arquivo salvo
         media_path = Path(settings.MEDIA_ROOT) / "importacoes"
         files = [f for f in media_path.glob(f"{uid}_*") if not f.name.endswith(".errors.csv")]
         if not files:
             return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
-        importar_pagamentos_async.delay(file_path, str(request.user.id), str(importacao_id))
         log_financeiro(
             FinanceiroLog.Acao.IMPORTAR,
             request.user,
             {"arquivo": file_path, "status": "iniciado"},
             {"importacao_id": str(importacao_id)},
         )
+        if settings.CELERY_TASK_ALWAYS_EAGER:
+            total, errors, status_model = executar_importacao(
+                file_path, str(request.user.id), str(importacao_id)
+            )
+            metrics.importacao_pagamentos_total.inc(total)
+            if errors:
+                metrics.financeiro_importacoes_erros_total.inc()
+            log_financeiro(
+                FinanceiroLog.Acao.IMPORTAR,
+                request.user,
+                {"arquivo": file_path, "status": "processado"},
+                {
+                    "importacao_id": str(importacao_id),
+                    "status": status_model,
+                    "total": total,
+                },
+            )
+            return Response({"detail": _("Importação concluída")}, status=status.HTTP_202_ACCEPTED)
+
+        def _enqueue_importacao() -> None:
+            importar_pagamentos_async.delay(file_path, str(request.user.id), str(importacao_id))
+
+        transaction.on_commit(_enqueue_importacao)
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
             arquivo=file_path,
             usuario=request.user,
@@ -238,7 +265,13 @@ class FinanceiroViewSet(viewsets.ViewSet):
             return Response({"detail": _("Arquivo ausente")}, status=status.HTTP_400_BAD_REQUEST)
         saved = default_storage.save(f"importacoes/{uuid.uuid4().hex}_{uploaded.name}", uploaded)
         full_path = default_storage.path(saved)
-        reprocessar_importacao_async.delay(str(err_file), full_path)
+        def _enqueue_reprocessamento() -> None:
+            reprocessar_importacao_async.delay(str(err_file), full_path)
+
+        if settings.CELERY_TASK_ALWAYS_EAGER:
+            reprocessar_importacao_async.apply(args=(str(err_file), full_path)).get()
+        else:
+            transaction.on_commit(_enqueue_reprocessamento)
         return Response({"detail": _("Reprocessamento iniciado")}, status=status.HTTP_202_ACCEPTED)
 
     @action(detail=False, methods=["get"], url_path="relatorios")

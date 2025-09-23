@@ -1,4 +1,5 @@
 import pytest
+from decimal import Decimal
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -6,12 +7,17 @@ from rest_framework.test import APIClient
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from eventos.factories import EventoFactory
-from financeiro.models import CentroCusto, LancamentoFinanceiro, FinanceiroLog
+from financeiro.models import Carteira, CentroCusto, LancamentoFinanceiro, FinanceiroLog
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def _override_urls(settings):
+    settings.ROOT_URLCONF = "tests.financeiro_api_urls"
 
 
 @pytest.fixture
@@ -27,15 +33,29 @@ def test_root_sem_acesso(api_client):
     assert resp.status_code == 403
 
 
-def test_quitar_lancamento(api_client):
+@pytest.mark.parametrize("somente_carteira", [True, False])
+def test_quitar_lancamento(api_client, settings, somente_carteira):
+    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
     admin = UserFactory(user_type=UserType.ADMIN)
     api_client.force_authenticate(user=admin)
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
     conta = admin.contas_financeiras.create()
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
     lanc = LancamentoFinanceiro.objects.create(
         centro_custo=centro,
         conta_associado=conta,
+        carteira=carteira_centro,
+        carteira_contraparte=carteira_conta,
         tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
         valor=50,
         data_lancamento=timezone.now(),
@@ -47,9 +67,17 @@ def test_quitar_lancamento(api_client):
     lanc.refresh_from_db()
     centro.refresh_from_db()
     conta.refresh_from_db()
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
-    assert centro.saldo == 50
-    assert conta.saldo == 50
+    assert carteira_centro.saldo == Decimal("50")
+    assert carteira_conta.saldo == Decimal("50")
+    if somente_carteira:
+        assert centro.saldo == 0
+        assert conta.saldo == 0
+    else:
+        assert centro.saldo == 50
+        assert conta.saldo == 50
 
 
 def test_pagar_endpoint(api_client):
@@ -58,6 +86,16 @@ def test_pagar_endpoint(api_client):
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
     conta = admin.contas_financeiras.create()
+    Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
     lanc = LancamentoFinanceiro.objects.create(
         centro_custo=centro,
         conta_associado=conta,
@@ -76,12 +114,24 @@ def test_pagar_endpoint(api_client):
     ).exists()
 
 
-def test_distribuicao_ingresso():
+@pytest.mark.parametrize("somente_carteira", [True, False])
+def test_distribuicao_ingresso(settings, somente_carteira):
+    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
     centro_nucleo = CentroCusto.objects.create(nome="CN", tipo="nucleo", nucleo=nucleo)
     evento = EventoFactory(organizacao=org, nucleo=nucleo)
     centro_evento = CentroCusto.objects.create(nome="CE", tipo="evento", evento=evento, nucleo=nucleo)
+    carteira_nucleo = Carteira.objects.create(
+        centro_custo=centro_nucleo,
+        nome="Carteira Núcleo",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    Carteira.objects.create(
+        centro_custo=centro_evento,
+        nome="Carteira Evento",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
     payload = {
         "centro_custo": str(centro_evento.id),
         "tipo": "ingresso_evento",
@@ -92,5 +142,10 @@ def test_distribuicao_ingresso():
     serializer = LancamentoFinanceiroSerializer(data=payload)
     assert serializer.is_valid(), serializer.errors
     serializer.save()
-    assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 25
+    carteira_nucleo.refresh_from_db()
+    assert carteira_nucleo.saldo == Decimal("25")
+    if somente_carteira:
+        assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 0
+    else:
+        assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 25
     assert LancamentoFinanceiro.objects.filter(descricao="Repasse de ingresso", centro_custo=centro_nucleo).exists()
