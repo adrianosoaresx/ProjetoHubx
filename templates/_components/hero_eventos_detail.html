@@ -41,14 +41,29 @@
         {% endif %}
       </div>
 
-      {% if total_inscricoes is not None or total_inscricoes_confirmadas is not None or total_inscricoes_pendentes is not None or total_inscricoes_canceladas is not None or total_presentes is not None or vagas_disponiveis is not None or media_feedback is not None %}
-        <div class="mt-4 space-y-4 text-left">
+      {% if total_inscricoes is not None or total_inscricoes_confirmadas is not None or total_inscricoes_pendentes is not None or total_inscricoes_canceladas is not None or total_presentes is not None or vagas_disponiveis is not None or media_feedback is not None or total_feedbacks is not None %}
+        <div class="mt-6 space-y-4 text-left">
           <div class="card-grid">
             {% if total_inscricoes is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Inscrições') valor=total_inscricoes icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
+            {% if total_inscricoes_confirmadas is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições confirmadas') valor=total_inscricoes_confirmadas icon_name='user-check' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_inscricoes_pendentes is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições pendentes') valor=total_inscricoes_pendentes icon_name='clock' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_inscricoes_canceladas is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Inscrições canceladas') valor=total_inscricoes_canceladas icon_name='user-x' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_presentes is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Presentes') valor=total_presentes icon_name='check-circle' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
             {% if vagas_disponiveis is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Vagas disponíveis') valor=vagas_disponiveis icon_name='ticket' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_feedbacks is not None %}
+              {% include '_partials/cards/total_card.html' with label=_('Avaliações recebidas') valor=total_feedbacks icon_name='message-circle' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
             {% if media_feedback is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Média de avaliação') valor=media_feedback|floatformat:1 icon_name='star' card_class='card-compact' body_class='card-body-compact' %}
