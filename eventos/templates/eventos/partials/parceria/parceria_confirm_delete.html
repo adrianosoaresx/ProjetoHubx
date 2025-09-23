@@ -6,7 +6,7 @@
     <p class="text-sm text-[var(--text-secondary)]">{% blocktrans %}Tem certeza que deseja remover <strong>{{ object.empresa.nome }}</strong>?{% endblocktrans %}</p>
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'eventos:parceria_list' %}?evento={{ object.evento.pk }}" class="btn btn-secondary" aria-label="{% trans 'Cancelar' %}">{% trans 'Cancelar' %}</a>
+      <a href="{% url 'eventos:parceria_list' %}?evento={{ object.evento.pk }}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
       <button type="submit" class="btn btn-primary" aria-label="{% trans 'Remover' %}">{% trans 'Remover' %}</button>
     </form>
   </div>

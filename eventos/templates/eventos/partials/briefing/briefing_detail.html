@@ -57,7 +57,12 @@
               {% endfor %}
             </div>
             <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-              <a href="{% url 'eventos:evento_detalhe' briefing.evento.pk %}" class="btn btn-secondary" aria-label="{% trans 'Ver evento' %}">{% trans 'Ver evento' %}</a>
+              <a href="{% url 'eventos:evento_detalhe' briefing.evento.pk %}"
+                 class="btn btn-secondary"
+                 aria-label="{% trans 'Voltar' %}"
+                 onclick="if (document.referrer) { try { var u = new URL(document.referrer); if (u.origin === window.location.origin) { history.back(); return false; } } catch (e) {} }">
+                {% trans 'Voltar' %}
+              </a>
               <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar alterações' %}">{% trans 'Salvar alterações' %}</button>
             </div>
           </form>
