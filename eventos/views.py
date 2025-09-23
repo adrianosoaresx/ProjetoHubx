@@ -1083,6 +1083,10 @@ class BriefingEventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
         briefing = context.get("briefing") or self.object
         context["evento"] = briefing.evento
         context["briefing_evento"] = briefing.evento
+        context["briefing_url"] = reverse(
+            "eventos:briefing_detalhe",
+            kwargs={"evento_pk": briefing.evento.pk},
+        )
         context["available_transitions"] = briefing.STATUS_TRANSITIONS.get(briefing.status, set())
         context["painel_title"] = _("Briefing de %(evento)s") % {"evento": briefing.evento.titulo}
         return context
