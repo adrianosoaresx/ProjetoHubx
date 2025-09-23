@@ -1084,6 +1084,18 @@ class ParceriaEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
             return self.form_invalid(form)
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                context.setdefault("painel_title", context["evento"].titulo)
+            except Evento.DoesNotExist:
+                pass
+        return context
+
 
 class ParceriaEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, UpdateView):
     model = ParceriaEvento

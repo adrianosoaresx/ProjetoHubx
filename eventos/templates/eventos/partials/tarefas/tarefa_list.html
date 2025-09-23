@@ -4,18 +4,16 @@
   {% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' briefing_evento=briefing_evento briefing_url=briefing_url briefing_label=briefing_label %}
   <header class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Tarefas" %}</h1>
-    {% with ev_pk=evento.pk|default:briefing_evento.evento.pk|default:briefing_evento.pk %}
-      <a href="{% url 'eventos:tarefa_criar' %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
-    {% endwith %}
+    {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
+    <a href="{% url 'eventos:tarefa_criar' %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
   </header>
   <ul class="space-y-2">
     {% for tarefa in tarefas %}
       <li>
         <article class="card">
           <div class="card-body">
-            {% with ev_pk=evento.pk|default:briefing_evento.evento.pk|default:briefing_evento.pk %}
-              <a href="{% url 'eventos:tarefa_detalhe' tarefa.pk %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="font-semibold">{{ tarefa.titulo }}</a>
-            {% endwith %}
+            {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
+            <a href="{% url 'eventos:tarefa_detalhe' tarefa.pk %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="font-semibold">{{ tarefa.titulo }}</a>
             <div class="text-sm text-[var(--text-tertiary)]">{{ tarefa.responsavel }} - {{ tarefa.status }}</div>
           </div>
         </article>

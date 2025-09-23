@@ -54,7 +54,8 @@
   </div>
 
   <div class="flex justify-end mt-6">
-    <a href="{% url 'eventos:tarefa_list' %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
+    {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
+    <a href="{% url 'eventos:tarefa_list' %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="btn btn-secondary" aria-label="{% trans 'Voltar' %}">{% trans 'Voltar' %}</a>
   </div>
 </section>
 

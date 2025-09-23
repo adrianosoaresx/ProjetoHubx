@@ -22,6 +22,9 @@
       </form>
       <p id="message" class="mt-4 text-sm"></p>
     </div>
+    <div class="mt-4 flex justify-end">
+      <a href="{% url 'eventos:parceria_list' %}?evento={{ parceria.evento.pk }}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
+    </div>
   </div>
 <script>
 const successMessage = gettext('Avaliação enviada com sucesso.');
