@@ -55,12 +55,9 @@
 
   <div class="flex justify-end mt-6">
     {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
-    <a href="{% url 'eventos:tarefa_list' %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}"
-       class="btn btn-secondary"
-       aria-label="{% trans 'Voltar' %}"
-       onclick="if (document.referrer) { try { var u = new URL(document.referrer); if (u.origin === window.location.origin) { history.back(); return false; } } catch (e) {} }">
-      {% trans 'Voltar' %}
-    </a>
+    {% if ev_pk %}{% url 'eventos:tarefa_list' as _tarefa_list %}{% endif %}
+    {% if ev_pk %}{% firstof _tarefa_list as base_href %}{% else %}{% url 'eventos:tarefa_list' as base_href %}{% endif %}
+    {% if ev_pk %}{% with href=base_href|add:'?evento='|add:ev_pk %}{% include '_components/back_button.html' with href=href %}{% endwith %}{% else %}{% include '_components/back_button.html' with href=base_href %}{% endif %}
   </div>
 </section>
 

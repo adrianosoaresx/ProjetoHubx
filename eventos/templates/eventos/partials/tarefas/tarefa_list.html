@@ -2,11 +2,14 @@
 {% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template=evento|yesno:'_components/hero_eventos_detail.html,' evento=evento %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8 space-y-6">
   {% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' briefing_evento=briefing_evento briefing_url=briefing_url briefing_label=briefing_label %}
-  {% if evento %}
-    <div class="flex justify-end">
-      <a href="{% url 'eventos:evento_detalhe' evento.pk %}" class="btn btn-secondary">{% trans 'Voltar' %}</a>
-    </div>
-  {% endif %}
+  <div class="flex justify-end">
+    <a href="{% if evento %}{% url 'eventos:evento_detalhe' evento.pk %}{% else %}{% url 'eventos:calendario' %}{% endif %}"
+       class="btn btn-secondary"
+       aria-label="{% trans 'Voltar' %}"
+       onclick="if (document.referrer) { try { var u = new URL(document.referrer); if (u.origin === window.location.origin) { history.back(); return false; } } catch (e) {} }">
+      {% trans 'Voltar' %}
+    </a>
+  </div>
   <header class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Tarefas" %}</h1>
     {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
