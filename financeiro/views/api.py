@@ -162,7 +162,10 @@ class FinanceiroViewSet(viewsets.ViewSet):
         qs = LancamentoFinanceiro.objects.select_related(
             "centro_custo__nucleo",
             "centro_custo__organizacao",
+            "carteira",
+            "carteira__centro_custo",
             "conta_associado__user",
+            "carteira_contraparte",
             "carteira_contraparte__conta_associado__user",
         )
         user = self.request.user
@@ -170,8 +173,9 @@ class FinanceiroViewSet(viewsets.ViewSet):
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
             qs = qs.filter(
-                Q(conta_associado__user=user)
-                | Q(carteira_contraparte__conta_associado__user=user)
+                Q(carteira_contraparte__conta_associado__user=user)
+                | Q(conta_associado__user=user)
+                | Q(carteira__conta_associado__user=user)
             )
         return qs
 
@@ -392,6 +396,10 @@ class FinanceiroViewSet(viewsets.ViewSet):
             item = {
                 "id": str(lanc.id),
                 "centro": lanc.centro_custo.nome,
+                "carteira_id": str(lanc.carteira_id) if lanc.carteira_id else None,
+                "carteira_contraparte_id": str(lanc.carteira_contraparte_id)
+                if lanc.carteira_contraparte_id
+                else None,
                 "conta": conta_email,
                 "status": lanc.status,
                 "valor": float(lanc.valor),

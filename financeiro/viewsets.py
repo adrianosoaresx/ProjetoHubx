@@ -48,7 +48,9 @@ def _inject_legacy_warning(payload):
         for item in payload:
             if isinstance(item, dict):
                 if "legacy_warning" not in item and {
-                    key for key in ("conta_associado", "conta") if key in item
+                    key
+                    for key in ("conta_associado", "conta", "carteira_contraparte_id")
+                    if key in item
                 }:
                     item["legacy_warning"] = message
     elif isinstance(payload, dict):
@@ -107,6 +109,9 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             "conta_associado__user",
             "centro_custo__nucleo",
             "centro_custo__organizacao",
+            "carteira",
+            "carteira__centro_custo",
+            "carteira_contraparte",
             "carteira_contraparte__conta_associado__user",
         )
         user = self.request.user
@@ -114,8 +119,9 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
             qs = qs.filter(
-                Q(conta_associado__user=user)
-                | Q(carteira_contraparte__conta_associado__user=user)
+                Q(carteira_contraparte__conta_associado__user=user)
+                | Q(conta_associado__user=user)
+                | Q(carteira__conta_associado__user=user)
             )
 
         params = self.request.query_params

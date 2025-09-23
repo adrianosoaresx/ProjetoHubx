@@ -93,13 +93,38 @@ class ContaAssociadoSerializer(serializers.ModelSerializer):
 class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
     """Serializador de ``LancamentoFinanceiro``."""
 
+    carteira = CarteiraSerializer(read_only=True)
+    carteira_id = serializers.PrimaryKeyRelatedField(
+        source="carteira",
+        queryset=Carteira.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    carteira_contraparte = CarteiraSerializer(read_only=True)
+    carteira_contraparte_id = serializers.PrimaryKeyRelatedField(
+        source="carteira_contraparte",
+        queryset=Carteira.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    conta_associado = serializers.PrimaryKeyRelatedField(
+        queryset=ContaAssociado.objects.all(),
+        required=False,
+        allow_null=True,
+        write_only=True,
+        help_text=_("Campo legado; prefira informar carteira_contraparte_id."),
+    )
+    legacy_warning = serializers.SerializerMethodField()
+
     class Meta:
         model = LancamentoFinanceiro
         fields = [
             "id",
             "centro_custo",
             "conta_associado",
+            "carteira_id",
             "carteira",
+            "carteira_contraparte_id",
             "carteira_contraparte",
             "tipo",
             "valor",
@@ -110,13 +135,43 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             "origem",
             "lancamento_original",
             "ajustado",
+            "legacy_warning",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["carteira", "carteira_contraparte"]
+        read_only_fields = [
+            "carteira",
+            "carteira_contraparte",
+            "legacy_warning",
+            "created_at",
+            "updated_at",
+        ]
+
+    def _normalize_conta_associado(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        conta = attrs.get("conta_associado")
+        carteira_contra = attrs.get("carteira_contraparte")
+        if conta:
+            self._legacy_input_used = True
+        if carteira_contra and getattr(carteira_contra, "conta_associado_id", None):
+            carteira_conta = carteira_contra.conta_associado
+            if conta and carteira_conta and carteira_conta.id != conta.id:
+                raise serializers.ValidationError(
+                    {"carteira_contraparte_id": _("Carteira não pertence ao associado informado.")}
+                )
+            attrs.setdefault("conta_associado", carteira_conta)
+        return attrs
+
+    def get_legacy_warning(self, obj: LancamentoFinanceiro) -> str:
+        if getattr(obj, "conta_associado_id", None):
+            return ContaAssociado.LEGACY_MESSAGE
+        if getattr(obj, "_legacy_input_used", False):  # pragma: no cover - fallback
+            return ContaAssociado.LEGACY_MESSAGE
+        return ""
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        """Valida vencimento e valores."""
+        """Valida vencimento, valores e normaliza carteiras."""
+
+        attrs = self._normalize_conta_associado(attrs)
         data_lanc = attrs.get("data_lancamento", timezone.now())
         venc = attrs.get("data_vencimento")
         if venc and venc < data_lanc:
@@ -133,12 +188,14 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             validated_data["data_vencimento"] = validated_data.get("data_lancamento", timezone.now())
         atribuir_carteiras_padrao(validated_data)
         lancamento = super().create(validated_data)
+        if getattr(self, "_legacy_input_used", False):
+            setattr(lancamento, "_legacy_input_used", True)
         if lancamento.status == LancamentoFinanceiro.Status.PAGO:
             aplicar_pagamento_lancamento(lancamento)
         return lancamento
 
 
-class AporteSerializer(serializers.ModelSerializer):
+class AporteSerializer(LancamentoFinanceiroSerializer):
     """Serializador específico para criação de aportes."""
 
     class Meta:
@@ -147,7 +204,9 @@ class AporteSerializer(serializers.ModelSerializer):
             "id",
             "centro_custo",
             "conta_associado",
+            "carteira_id",
             "carteira",
+            "carteira_contraparte_id",
             "carteira_contraparte",
             "tipo",
             "valor",
@@ -157,6 +216,7 @@ class AporteSerializer(serializers.ModelSerializer):
             "descricao",
             "originador",
             "origem",
+            "legacy_warning",
             "created_at",
             "updated_at",
         ]
@@ -165,6 +225,7 @@ class AporteSerializer(serializers.ModelSerializer):
             "origem",
             "carteira",
             "carteira_contraparte",
+            "legacy_warning",
             "created_at",
             "updated_at",
         ]
@@ -208,6 +269,8 @@ class AporteSerializer(serializers.ModelSerializer):
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
             aplicar_pagamento_lancamento(lancamento)
+        if getattr(self, "_legacy_input_used", False):
+            setattr(lancamento, "_legacy_input_used", True)
         conta_destino = lancamento.conta_associado_resolvida
         if conta_destino:
             try:
