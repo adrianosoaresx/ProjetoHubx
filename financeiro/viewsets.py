@@ -35,8 +35,7 @@ from .serializers import (
 )
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
-from .services.distribuicao import repassar_receita_ingresso
-from .services.saldos import aplicar_ajustes, vincular_carteiras_lancamento
+from .services.pagamentos import aplicar_pagamento_lancamento
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
 
 
@@ -120,40 +119,67 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
         return qs
 
     def partial_update(self, request, *args, **kwargs):  # type: ignore[override]
-        lancamento = self.get_object()
+        obj = self.get_object()
         novo_status = request.data.get("status")
         if novo_status not in {
             LancamentoFinanceiro.Status.PAGO,
             LancamentoFinanceiro.Status.CANCELADO,
         }:
             return Response({"detail": _("Status inválido")}, status=status.HTTP_400_BAD_REQUEST)
-        if lancamento.status != LancamentoFinanceiro.Status.PENDENTE:
-            return Response(
-                {"detail": _("Apenas lançamentos pendentes podem ser alterados")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
-        antigo = {"status": lancamento.status}
+        saldos_atualizados = False
+        status_anterior: str | None = None
         with transaction.atomic():
+            lancamento = (
+                LancamentoFinanceiro.objects.select_for_update()
+                .select_related(
+                    "centro_custo",
+                    "conta_associado",
+                    "carteira",
+                    "carteira_contraparte",
+                )
+                .get(pk=obj.pk)
+            )
+            status_anterior = lancamento.status
+            if status_anterior != LancamentoFinanceiro.Status.PENDENTE:
+                log_financeiro(
+                    FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+                    request.user,
+                    {"status": status_anterior},
+                    {
+                        "status": novo_status,
+                        "id": str(lancamento.id),
+                        "resultado": "status_invalido",
+                    },
+                )
+                return Response(
+                    {"detail": _("Apenas lançamentos pendentes podem ser alterados")},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             lancamento.status = novo_status
             lancamento.save(update_fields=["status"])
             if novo_status == LancamentoFinanceiro.Status.PAGO:
-                vincular_carteiras_lancamento(lancamento)
-                aplicar_ajustes(
-                    centro_custo=lancamento.centro_custo,
-                    carteira=lancamento.carteira,
-                    centro_delta=lancamento.valor,
-                    conta_associado=lancamento.conta_associado,
-                    carteira_contraparte=lancamento.carteira_contraparte,
-                    contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+                saldos_atualizados = aplicar_pagamento_lancamento(
+                    lancamento, status_anterior=status_anterior
                 )
-                if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
-                    repassar_receita_ingresso(lancamento)
+
+        resultado = "status_atualizado"
+        if novo_status == LancamentoFinanceiro.Status.PAGO:
+            resultado = "pago"
+        elif novo_status == LancamentoFinanceiro.Status.CANCELADO:
+            resultado = "cancelado"
+
         log_financeiro(
             FinanceiroLog.Acao.EDITAR_LANCAMENTO,
             request.user,
-            antigo,
-            {"status": novo_status, "id": str(lancamento.id)},
+            {"status": status_anterior},
+            {
+                "status": novo_status,
+                "id": str(obj.id),
+                "resultado": resultado,
+                "saldos_atualizados": saldos_atualizados,
+            },
         )
         serializer = self.get_serializer(lancamento)
         return Response(serializer.data)
@@ -161,32 +187,83 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
     @action(detail=True, methods=["post"])
     def pagar(self, request, *args, **kwargs):
         """Marca um lançamento como pago."""
-        lancamento = self.get_object()
-        if lancamento.status != LancamentoFinanceiro.Status.PENDENTE:
-            return Response(
-                {"detail": _("Apenas lançamentos pendentes podem ser pagos")},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        antigo = {"status": lancamento.status}
+        obj = self.get_object()
+        saldos_atualizados = False
+        status_anterior: str | None = None
         with transaction.atomic():
+            lancamento = (
+                LancamentoFinanceiro.objects.select_for_update()
+                .select_related(
+                    "centro_custo",
+                    "conta_associado",
+                    "carteira",
+                    "carteira_contraparte",
+                )
+                .get(pk=obj.pk)
+            )
+            status_anterior = lancamento.status
+            if status_anterior == LancamentoFinanceiro.Status.PAGO:
+                log_financeiro(
+                    FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+                    request.user,
+                    {"status": status_anterior},
+                    {
+                        "status": status_anterior,
+                        "id": str(lancamento.id),
+                        "resultado": "pagamento_duplicado",
+                    },
+                )
+                return Response(
+                    {"detail": _("Lançamento já está pago")},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if status_anterior == LancamentoFinanceiro.Status.CANCELADO:
+                log_financeiro(
+                    FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+                    request.user,
+                    {"status": status_anterior},
+                    {
+                        "status": status_anterior,
+                        "id": str(lancamento.id),
+                        "resultado": "pagamento_bloqueado",
+                    },
+                )
+                return Response(
+                    {"detail": _("Lançamentos cancelados não podem ser pagos")},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if status_anterior != LancamentoFinanceiro.Status.PENDENTE:
+                log_financeiro(
+                    FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+                    request.user,
+                    {"status": status_anterior},
+                    {
+                        "status": status_anterior,
+                        "id": str(lancamento.id),
+                        "resultado": "status_invalido",
+                    },
+                )
+                return Response(
+                    {"detail": _("Apenas lançamentos pendentes podem ser pagos")},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             lancamento.status = LancamentoFinanceiro.Status.PAGO
             lancamento.save(update_fields=["status"])
-            vincular_carteiras_lancamento(lancamento)
-            aplicar_ajustes(
-                centro_custo=lancamento.centro_custo,
-                carteira=lancamento.carteira,
-                centro_delta=lancamento.valor,
-                conta_associado=lancamento.conta_associado,
-                carteira_contraparte=lancamento.carteira_contraparte,
-                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
+            saldos_atualizados = aplicar_pagamento_lancamento(
+                lancamento, status_anterior=status_anterior
             )
-            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
-                repassar_receita_ingresso(lancamento)
+
         log_financeiro(
             FinanceiroLog.Acao.EDITAR_LANCAMENTO,
             request.user,
-            antigo,
-            {"status": LancamentoFinanceiro.Status.PAGO, "id": str(lancamento.id)},
+            {"status": status_anterior},
+            {
+                "status": LancamentoFinanceiro.Status.PAGO,
+                "id": str(obj.id),
+                "resultado": "pago",
+                "saldos_atualizados": saldos_atualizados,
+            },
         )
         serializer = self.get_serializer(lancamento)
         return Response(serializer.data)

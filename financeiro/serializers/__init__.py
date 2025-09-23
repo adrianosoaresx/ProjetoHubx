@@ -16,9 +16,9 @@ from ..models import (
     LancamentoFinanceiro,
     ImportacaoPagamentos,
 )
-from ..services.distribuicao import repassar_receita_ingresso
 from ..services.notificacoes import enviar_aporte
-from ..services.saldos import aplicar_ajustes, atribuir_carteiras_padrao, vincular_carteiras_lancamento
+from ..services.pagamentos import aplicar_pagamento_lancamento
+from ..services.saldos import atribuir_carteiras_padrao
 
 
 class CarteiraSerializer(serializers.ModelSerializer):
@@ -128,17 +128,7 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
         atribuir_carteiras_padrao(validated_data)
         lancamento = super().create(validated_data)
         if lancamento.status == LancamentoFinanceiro.Status.PAGO:
-            vincular_carteiras_lancamento(lancamento)
-            aplicar_ajustes(
-                centro_custo=lancamento.centro_custo,
-                carteira=lancamento.carteira,
-                centro_delta=lancamento.valor,
-                conta_associado=lancamento.conta_associado,
-                carteira_contraparte=lancamento.carteira_contraparte,
-                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
-            )
-            if lancamento.tipo == LancamentoFinanceiro.Tipo.INGRESSO_EVENTO:
-                repassar_receita_ingresso(lancamento)
+            aplicar_pagamento_lancamento(lancamento)
         return lancamento
 
 
@@ -211,15 +201,7 @@ class AporteSerializer(serializers.ModelSerializer):
                 originador = request.user
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
-            vincular_carteiras_lancamento(lancamento)
-            aplicar_ajustes(
-                centro_custo=lancamento.centro_custo,
-                carteira=lancamento.carteira,
-                centro_delta=lancamento.valor,
-                conta_associado=lancamento.conta_associado,
-                carteira_contraparte=lancamento.carteira_contraparte,
-                contraparte_delta=lancamento.valor if lancamento.conta_associado_id else None,
-            )
+            aplicar_pagamento_lancamento(lancamento)
         if lancamento.conta_associado:
             try:
                 enviar_aporte(lancamento.conta_associado.user, lancamento)
