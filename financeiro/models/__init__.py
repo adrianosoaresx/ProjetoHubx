@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
@@ -59,7 +60,16 @@ class CentroCusto(TimeStampedModel, SoftDeleteModel):
 
 
 class ContaAssociado(TimeStampedModel, SoftDeleteModel):
-    """Conta corrente vinculada a um usuário associado."""
+    """Modelo legado mantido apenas para compatibilidade com lançamentos antigos.
+
+    Utilize :class:`financeiro.models.Carteira` vinculada a associados para novas
+    integrações. O campo ``conta_associado`` permanece disponível apenas para
+    leitura e migração de dados existentes.
+    """
+
+    LEGACY_MESSAGE = _(
+        "ContaAssociado é um modelo legado; utilize carteiras vinculadas ao associado"
+    )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
@@ -71,12 +81,21 @@ class ContaAssociado(TimeStampedModel, SoftDeleteModel):
     saldo = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
 
     class Meta:
+        managed = False
         ordering = ["user"]
         verbose_name = "Conta do Associado"
         verbose_name_plural = "Contas dos Associados"
 
     def __str__(self) -> str:
         return f"{self.user.email} (saldo: {self.saldo})"
+
+    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+        """Impede alterações em ambiente de desenvolvimento."""
+
+        legacy_override = kwargs.pop("legacy_override", False)
+        if settings.DEBUG and not legacy_override:
+            raise RuntimeError(self.LEGACY_MESSAGE)
+        super().save(*args, **kwargs)
 
 
 class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
@@ -172,6 +191,17 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return f"{self.get_tipo_display()} - {self.valor}"
+
+    @property
+    def conta_associado_resolvida(self) -> ContaAssociado | None:
+        """Retorna a conta associada considerando a carteira contraparte."""
+
+        if getattr(self, "conta_associado_id", None):
+            return getattr(self, "conta_associado", None)
+        carteira_contra = getattr(self, "carteira_contraparte", None)
+        if carteira_contra and getattr(carteira_contra, "conta_associado_id", None):
+            return carteira_contra.conta_associado
+        return None
 
     def save(self, *args, **kwargs) -> None:
         """Define vencimento padrão e persiste o lançamento."""

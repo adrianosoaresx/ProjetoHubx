@@ -20,6 +20,7 @@ from accounts.models import UserType
 from .models import (
     Carteira,
     CentroCusto,
+    ContaAssociado,
     FinanceiroLog,
     FinanceiroTaskLog,
     ImportacaoPagamentos,
@@ -37,6 +38,25 @@ from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .services.pagamentos import aplicar_pagamento_lancamento
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
+
+
+def _inject_legacy_warning(payload):
+    message = ContaAssociado.LEGACY_MESSAGE
+    if not message:
+        return
+    if isinstance(payload, list):
+        for item in payload:
+            if isinstance(item, dict):
+                if "legacy_warning" not in item and {
+                    key for key in ("conta_associado", "conta") if key in item
+                }:
+                    item["legacy_warning"] = message
+    elif isinstance(payload, dict):
+        if "results" in payload and isinstance(payload["results"], list):
+            _inject_legacy_warning(payload["results"])
+            payload.setdefault("legacy_warning", message)
+        elif "legacy_warning" not in payload:
+            payload["legacy_warning"] = message
 
 
 class CarteiraViewSet(
@@ -87,12 +107,16 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             "conta_associado__user",
             "centro_custo__nucleo",
             "centro_custo__organizacao",
+            "carteira_contraparte__conta_associado__user",
         )
         user = self.request.user
         if user.user_type == UserType.COORDENADOR and user.nucleo_id:
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
-            qs = qs.filter(conta_associado__user=user)
+            qs = qs.filter(
+                Q(conta_associado__user=user)
+                | Q(carteira_contraparte__conta_associado__user=user)
+            )
 
         params = self.request.query_params
         if centro_id := params.get("centro"):
@@ -118,6 +142,11 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
             qs = qs.filter(data_lancamento__lt=limite)
         return qs
 
+    def list(self, request, *args, **kwargs):  # type: ignore[override]
+        response = super().list(request, *args, **kwargs)
+        _inject_legacy_warning(response.data)
+        return response
+
     def partial_update(self, request, *args, **kwargs):  # type: ignore[override]
         obj = self.get_object()
         novo_status = request.data.get("status")
@@ -137,6 +166,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
                     "conta_associado",
                     "carteira",
                     "carteira_contraparte",
+                    "carteira_contraparte__conta_associado",
                 )
                 .get(pk=obj.pk)
             )
@@ -198,6 +228,7 @@ class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin
                     "conta_associado",
                     "carteira",
                     "carteira_contraparte",
+                    "carteira_contraparte__conta_associado",
                 )
                 .get(pk=obj.pk)
             )
@@ -356,12 +387,16 @@ class RepasseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             "centro_custo__nucleo",
             "centro_custo__organizacao",
             "conta_associado__user",
+            "carteira_contraparte__conta_associado__user",
         ).filter(tipo=LancamentoFinanceiro.Tipo.REPASSE)
         user = self.request.user
         if user.user_type == UserType.COORDENADOR and user.nucleo_id:
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
-            qs = qs.filter(conta_associado__user=user)
+            qs = qs.filter(
+                Q(conta_associado__user=user)
+                | Q(carteira_contraparte__conta_associado__user=user)
+            )
         if evento_id := self.request.query_params.get("evento"):
             qs = qs.filter(centro_custo__evento_id=evento_id)
         return qs
@@ -371,9 +406,11 @@ class RepasseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         qs = self.get_queryset()
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page or qs, many=True)
+        data = serializer.data
+        _inject_legacy_warning(data)
         if page is not None:
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+            return self.get_paginated_response(data)
+        return Response(data)
 
 
 class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

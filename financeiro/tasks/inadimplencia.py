@@ -30,6 +30,7 @@ def notificar_inadimplencia() -> None:
             "conta_associado__user",
             "centro_custo__nucleo",
             "centro_custo__organizacao",
+            "carteira_contraparte__conta_associado__user",
         )
         .filter(status=LancamentoFinanceiro.Status.PENDENTE)
         .filter(Q(data_vencimento__lt=inicio) | Q(data_vencimento__lte=aviso_limite))
@@ -45,7 +46,8 @@ def notificar_inadimplencia() -> None:
     detalhes = ""
     try:
         for lancamento in pendentes:
-            user = lancamento.conta_associado.user if lancamento.conta_associado else None
+            conta_destino = lancamento.conta_associado_resolvida
+            user = conta_destino.user if conta_destino else None
             if user:
                 try:  # pragma: no branch - falhas de integração não são cobertas
                     if lancamento.data_vencimento and lancamento.data_vencimento > inicio:
