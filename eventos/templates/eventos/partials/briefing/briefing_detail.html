@@ -1,154 +1,158 @@
 {% load i18n %}
 {% include "eventos/partials/_painel_hero_oob.html" %}
-<section class="py-12 px-4 lg:px-8 space-y-6">
-  {% include "eventos/partials/eventos/_nav.html" with current_section='briefings' briefing_evento=briefing.evento %}
-  <div class="grid gap-6 lg:grid-cols-3">
-    <article class="card lg:col-span-2">
-      <div class="card-header flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 class="text-2xl font-bold text-[var(--text-primary)]">
-            {% blocktrans with titulo=briefing.evento.titulo %}Briefing de {{ titulo }}{% endblocktrans %}
-          </h1>
-          <p class="text-sm text-[var(--text-secondary)]">
-            {% blocktrans with inicio=briefing.evento.data_inicio|date:'SHORT_DATETIME_FORMAT' fim=briefing.evento.data_fim|date:'SHORT_DATETIME_FORMAT' %}
-              {{ inicio }} até {{ fim }}
-            {% endblocktrans %}
-          </p>
-        </div>
-        <span class="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-tertiary)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
-          {{ briefing.get_status_display }}
-        </span>
-      </div>
-      <div class="card-body space-y-6">
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] p-6">
-          <div class="flex flex-wrap items-center justify-between gap-4 text-sm">
-            <div class="space-y-1">
-              <p class="font-medium text-[var(--text-primary)]">{% trans "Responsável" %}</p>
-              <p class="text-[var(--text-secondary)]">{{ briefing.evento.coordenador.get_full_name|default:briefing.evento.coordenador }}</p>
-            </div>
-            <div class="space-y-1">
-              <p class="font-medium text-[var(--text-primary)]">{% trans "Local" %}</p>
-              <p class="text-[var(--text-secondary)]">{{ briefing.evento.local }}</p>
-            </div>
-            <div class="space-y-1">
-              <p class="font-medium text-[var(--text-primary)]">{% trans "Contato" %}</p>
-              <p class="text-[var(--text-secondary)]">
-                {{ briefing.evento.contato_nome }}
-                {% if briefing.evento.contato_email %}<span class="mx-1">•</span>{{ briefing.evento.contato_email }}{% endif %}
-                {% if briefing.evento.contato_whatsapp %}<span class="mx-1">•</span>{{ briefing.evento.contato_whatsapp }}{% endif %}
+<section class="py-12 px-4">
+  <div class="flex flex-col gap-6">
+    {% include "eventos/partials/eventos/_nav.html" with current_section='briefings' briefing_evento=briefing.evento %}
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <article class="card">
+        <div class="card-header">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-[var(--text-primary)]">
+                {% blocktrans with titulo=briefing.evento.titulo %}Briefing de {{ titulo }}{% endblocktrans %}
+              </h1>
+              <p class="text-sm text-[var(--text-secondary)]">
+                {% blocktrans with inicio=briefing.evento.data_inicio|date:'SHORT_DATETIME_FORMAT' fim=briefing.evento.data_fim|date:'SHORT_DATETIME_FORMAT' %}
+                  {{ inicio }} até {{ fim }}
+                {% endblocktrans %}
               </p>
             </div>
-            <div class="space-y-1">
-              <p class="font-medium text-[var(--text-primary)]">{% trans "Atualizado em" %}</p>
-              <p class="text-[var(--text-secondary)]">{{ briefing.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
-            </div>
+            <span class="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface-tertiary)] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">
+              {{ briefing.get_status_display }}
+            </span>
           </div>
         </div>
+        <div class="card-body space-y-6">
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-6">
+            <div class="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+              <div class="space-y-1">
+                <p class="font-medium text-[var(--text-primary)]">{% trans "Responsável" %}</p>
+                <p class="text-[var(--text-secondary)]">{{ briefing.evento.coordenador.get_full_name|default:briefing.evento.coordenador }}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-medium text-[var(--text-primary)]">{% trans "Local" %}</p>
+                <p class="text-[var(--text-secondary)]">{{ briefing.evento.local }}</p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-medium text-[var(--text-primary)]">{% trans "Contato" %}</p>
+                <p class="text-[var(--text-secondary)]">
+                  {{ briefing.evento.contato_nome }}
+                  {% if briefing.evento.contato_email %}<span class="mx-1">•</span>{{ briefing.evento.contato_email }}{% endif %}
+                  {% if briefing.evento.contato_whatsapp %}<span class="mx-1">•</span>{{ briefing.evento.contato_whatsapp }}{% endif %}
+                </p>
+              </div>
+              <div class="space-y-1">
+                <p class="font-medium text-[var(--text-primary)]">{% trans "Atualizado em" %}</p>
+                <p class="text-[var(--text-secondary)]">{{ briefing.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
+              </div>
+            </div>
+          </div>
 
-        <form method="post" class="space-y-4">
-          {% csrf_token %}
-          {{ form.non_field_errors }}
-          <div class="space-y-4">
-            {% for field in form %}
-              {% include '_forms/field.html' with field=field %}
-            {% endfor %}
-          </div>
-          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
-            <a href="{% url 'eventos:evento_detalhe' briefing.evento.pk %}" class="btn btn-secondary" aria-label="{% trans 'Ver evento' %}">{% trans 'Ver evento' %}</a>
-            <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar alterações' %}">{% trans 'Salvar alterações' %}</button>
-          </div>
-        </form>
-      </div>
-    </article>
+          <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="space-y-4">
+              {% for field in form %}
+                {% include '_forms/field.html' with field=field %}
+              {% endfor %}
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4">
+              <a href="{% url 'eventos:evento_detalhe' briefing.evento.pk %}" class="btn btn-secondary" aria-label="{% trans 'Ver evento' %}">{% trans 'Ver evento' %}</a>
+              <button type="submit" class="btn btn-primary" aria-label="{% trans 'Salvar alterações' %}">{% trans 'Salvar alterações' %}</button>
+            </div>
+          </form>
+        </div>
+      </article>
 
-    <aside class="card">
-      <div class="card-header">
-        <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Status e ações" %}</h2>
-      </div>
-      <div class="card-body space-y-4 text-sm">
-        <dl class="grid gap-3">
-          <div>
-            <dt class="font-medium text-[var(--text-primary)]">{% trans "Avaliado por" %}</dt>
-            <dd class="text-[var(--text-secondary)]">{{ briefing.avaliado_por|default:_('Ainda não avaliado') }}</dd>
-          </div>
-          <div>
-            <dt class="font-medium text-[var(--text-primary)]">{% trans "Avaliado em" %}</dt>
-            <dd class="text-[var(--text-secondary)]">{{ briefing.avaliado_em|date:'SHORT_DATETIME_FORMAT'|default:_('—') }}</dd>
-          </div>
-          {% if briefing.orcamento_enviado_em %}
+      <aside class="card">
+        <div class="card-header">
+          <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans "Status e ações" %}</h2>
+        </div>
+        <div class="card-body space-y-4 text-sm">
+          <dl class="grid gap-3">
             <div>
-              <dt class="font-medium text-[var(--text-primary)]">{% trans "Orçamento enviado" %}</dt>
-              <dd class="text-[var(--text-secondary)]">{{ briefing.orcamento_enviado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              <dt class="font-medium text-[var(--text-primary)]">{% trans "Avaliado por" %}</dt>
+              <dd class="text-[var(--text-secondary)]">{{ briefing.avaliado_por|default:_('Ainda não avaliado') }}</dd>
             </div>
-          {% endif %}
-          {% if briefing.prazo_limite_resposta %}
             <div>
-              <dt class="font-medium text-[var(--text-primary)]">{% trans "Prazo limite" %}</dt>
-              <dd class="text-[var(--text-secondary)]">{{ briefing.prazo_limite_resposta|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              <dt class="font-medium text-[var(--text-primary)]">{% trans "Avaliado em" %}</dt>
+              <dd class="text-[var(--text-secondary)]">{{ briefing.avaliado_em|date:'SHORT_DATETIME_FORMAT'|default:_('—') }}</dd>
             </div>
-          {% endif %}
-          {% if briefing.aprovado_em %}
-            <div>
-              <dt class="font-medium text-[var(--text-primary)]">{% trans "Aprovado em" %}</dt>
-              <dd class="text-[var(--text-secondary)]">{{ briefing.aprovado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
-            </div>
-          {% endif %}
-          {% if briefing.recusado_em %}
-            <div>
-              <dt class="font-medium text-[var(--text-primary)]">{% trans "Recusado em" %}</dt>
-              <dd class="text-[var(--text-secondary)]">{{ briefing.recusado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
-            </div>
-          {% endif %}
-          {% if briefing.motivo_recusa %}
-            <div>
-              <dt class="font-medium text-[var(--text-primary)]">{% trans "Motivo da recusa" %}</dt>
-              <dd class="text-[var(--text-secondary)]">{{ briefing.motivo_recusa }}</dd>
-            </div>
-          {% endif %}
-        </dl>
+            {% if briefing.orcamento_enviado_em %}
+              <div>
+                <dt class="font-medium text-[var(--text-primary)]">{% trans "Orçamento enviado" %}</dt>
+                <dd class="text-[var(--text-secondary)]">{{ briefing.orcamento_enviado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              </div>
+            {% endif %}
+            {% if briefing.prazo_limite_resposta %}
+              <div>
+                <dt class="font-medium text-[var(--text-primary)]">{% trans "Prazo limite" %}</dt>
+                <dd class="text-[var(--text-secondary)]">{{ briefing.prazo_limite_resposta|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              </div>
+            {% endif %}
+            {% if briefing.aprovado_em %}
+              <div>
+                <dt class="font-medium text-[var(--text-primary)]">{% trans "Aprovado em" %}</dt>
+                <dd class="text-[var(--text-secondary)]">{{ briefing.aprovado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              </div>
+            {% endif %}
+            {% if briefing.recusado_em %}
+              <div>
+                <dt class="font-medium text-[var(--text-primary)]">{% trans "Recusado em" %}</dt>
+                <dd class="text-[var(--text-secondary)]">{{ briefing.recusado_em|date:'SHORT_DATETIME_FORMAT' }}</dd>
+              </div>
+            {% endif %}
+            {% if briefing.motivo_recusa %}
+              <div>
+                <dt class="font-medium text-[var(--text-primary)]">{% trans "Motivo da recusa" %}</dt>
+                <dd class="text-[var(--text-secondary)]">{{ briefing.motivo_recusa }}</dd>
+              </div>
+            {% endif %}
+          </dl>
 
-        {% if available_transitions %}
-          <div class="space-y-4 border-t border-[var(--border)] pt-4">
-            {% if 'orcamentado' in available_transitions %}
-              <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'orcamentado' %}" class="space-y-2">
-                {% csrf_token %}
-                <label for="prazo_limite_resposta" class="text-sm font-medium text-[var(--text-primary)]">{% trans "Prazo limite para resposta" %}</label>
-                <input
-                  type="datetime-local"
-                  id="prazo_limite_resposta"
-                  name="prazo_limite_resposta"
-                  value="{{ briefing.prazo_limite_resposta|date:'Y-m-d\\TH:i' }}"
-                  required
-                  class="form-input w-full"
-                />
-                <button type="submit" class="btn btn-secondary w-full" aria-label="{% trans 'Marcar como orçado' %}">{% trans 'Marcar como orçado' %}</button>
-              </form>
-            {% endif %}
-            {% if 'aprovado' in available_transitions %}
-              <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'aprovado' %}" class="space-y-2">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary w-full" aria-label="{% trans 'Marcar como aprovado' %}">{% trans 'Marcar como aprovado' %}</button>
-              </form>
-            {% endif %}
-            {% if 'recusado' in available_transitions %}
-              <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'recusado' %}" class="space-y-2">
-                {% csrf_token %}
-                <label for="motivo_recusa" class="text-sm font-medium text-[var(--text-primary)]">{% trans "Motivo da recusa" %}</label>
-                <input
-                  type="text"
-                  id="motivo_recusa"
-                  name="motivo_recusa"
-                  required
-                  class="form-input w-full"
-                />
-                <button type="submit" class="btn btn-secondary w-full" aria-label="{% trans 'Marcar como recusado' %}">{% trans 'Marcar como recusado' %}</button>
-              </form>
-            {% endif %}
-          </div>
-        {% else %}
-          <p class="text-[var(--text-secondary)]">{% trans "Não há ações disponíveis para o status atual." %}</p>
-        {% endif %}
-      </div>
-    </aside>
+          {% if available_transitions %}
+            <div class="space-y-4 border-t border-[var(--border)] pt-4">
+              {% if 'orcamentado' in available_transitions %}
+                <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'orcamentado' %}" class="space-y-2">
+                  {% csrf_token %}
+                  <label for="prazo_limite_resposta" class="text-sm font-medium text-[var(--text-primary)]">{% trans "Prazo limite para resposta" %}</label>
+                  <input
+                    type="datetime-local"
+                    id="prazo_limite_resposta"
+                    name="prazo_limite_resposta"
+                    value="{{ briefing.prazo_limite_resposta|date:'Y-m-d\\TH:i' }}"
+                    required
+                    class="form-input w-full"
+                  />
+                  <button type="submit" class="btn btn-secondary w-full" aria-label="{% trans 'Marcar como orçado' %}">{% trans 'Marcar como orçado' %}</button>
+                </form>
+              {% endif %}
+              {% if 'aprovado' in available_transitions %}
+                <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'aprovado' %}" class="space-y-2">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary w-full" aria-label="{% trans 'Marcar como aprovado' %}">{% trans 'Marcar como aprovado' %}</button>
+                </form>
+              {% endif %}
+              {% if 'recusado' in available_transitions %}
+                <form method="post" action="{% url 'eventos:briefing_status' briefing.pk 'recusado' %}" class="space-y-2">
+                  {% csrf_token %}
+                  <label for="motivo_recusa" class="text-sm font-medium text-[var(--text-primary)]">{% trans "Motivo da recusa" %}</label>
+                  <input
+                    type="text"
+                    id="motivo_recusa"
+                    name="motivo_recusa"
+                    required
+                    class="form-input w-full"
+                  />
+                  <button type="submit" class="btn btn-secondary w-full" aria-label="{% trans 'Marcar como recusado' %}">{% trans 'Marcar como recusado' %}</button>
+                </form>
+              {% endif %}
+            </div>
+          {% else %}
+            <p class="text-[var(--text-secondary)]">{% trans "Não há ações disponíveis para o status atual." %}</p>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
   </div>
 </section>
