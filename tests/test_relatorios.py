@@ -1,6 +1,8 @@
 from unittest.mock import patch
 
 import pytest
+from django.core.cache import cache
+from django.test import override_settings
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -22,14 +24,30 @@ def api_client():
     return APIClient()
 
 
+@override_settings(
+    CACHES={
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "relatorios-tests",
+        }
+    }
+)
 def test_cache_key_multiplos_centros():
     user = UserFactory(user_type=UserType.ADMIN)
     c1 = CentroCusto.objects.create(nome="C1", tipo="organizacao")
     c2 = CentroCusto.objects.create(nome="C2", tipo="organizacao")
     factory = APIRequestFactory()
     view = FinanceiroViewSet.as_view({"get": "relatorios"})
+    cache.clear()
     with patch("financeiro.views.api.gerar_relatorio") as mock_rel:
-        mock_rel.return_value = {"saldo_atual": 0, "serie": [], "inadimplencia": [], "total_inadimplentes": 0}
+        mock_rel.return_value = {
+            "saldo_atual": 0,
+            "serie": [],
+            "inadimplencia": [],
+            "total_inadimplentes": 0,
+            "saldos_por_centro": {},
+            "classificacao_centros": [],
+        }
         req1 = factory.get("/api/financeiro/relatorios/", {"centro": [str(c1.id), str(c2.id)]})
         force_authenticate(req1, user=user)
         view(req1)
