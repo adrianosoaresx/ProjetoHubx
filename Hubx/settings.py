@@ -49,6 +49,11 @@ FERNET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() in {"1", "true", "yes"}
 
+# Feature flag para utilizar apenas carteiras como fonte de saldo no módulo financeiro
+FINANCEIRO_SOMENTE_CARTEIRA = (
+    os.getenv("FINANCEIRO_SOMENTE_CARTEIRA", "1").lower() in {"1", "true", "yes", "on"}
+)
+
 ALLOWED_HOSTS = [
     "testserver",
     "localhost",

@@ -11,6 +11,7 @@ from django.utils import timezone
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from financeiro.models import (
+    Carteira,
     CentroCusto,
     ContaAssociado,
     FinanceiroTaskLog,
@@ -19,6 +20,11 @@ from financeiro.models import (
 )
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.fixture(autouse=True)
+def _override_urls(settings):
+    settings.ROOT_URLCONF = "tests.financeiro_api_urls"
 
 
 @pytest.fixture
@@ -74,11 +80,23 @@ def test_missing_columns(api_client, user):
     assert resp.status_code == 400
 
 
-def test_preview_and_confirm(api_client, user, settings):
+@pytest.mark.parametrize("somente_carteira", [True, False])
+def test_preview_and_confirm(api_client, user, settings, somente_carteira):
     settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
     auth(api_client, user)
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
     conta = ContaAssociado.objects.create(user=user)
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
     rows = [
         [
             str(centro.id),
@@ -113,7 +131,17 @@ def test_preview_and_confirm(api_client, user, settings):
     assert resp.status_code == 202
     assert LancamentoFinanceiro.objects.count() == 2
     centro.refresh_from_db()
-    assert centro.saldo == 30
+    conta.refresh_from_db()
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
+    assert carteira_centro.saldo == Decimal("30")
+    assert carteira_conta.saldo == Decimal("30")
+    if somente_carteira:
+        assert centro.saldo == 0
+        assert conta.saldo == 0
+    else:
+        assert centro.saldo == 30
+        assert conta.saldo == 30
     assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
     importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
     assert importacao.status == ImportacaoPagamentos.Status.CONCLUIDO
