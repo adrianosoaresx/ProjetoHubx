@@ -1,7 +1,6 @@
 from decimal import Decimal
 
 import pytest
-from decimal import Decimal
 from django.utils import timezone
 
 from accounts.factories import UserFactory
@@ -12,9 +11,7 @@ from organizacoes.factories import OrganizacaoFactory
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_lancamento_atualiza_saldos(settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_lancamento_atualiza_saldos():
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
     user = UserFactory()
@@ -48,12 +45,8 @@ def test_lancamento_atualiza_saldos(settings, somente_carteira):
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("100")
     assert carteira_conta.saldo == Decimal("100")
-    if somente_carteira:
-        assert centro.saldo == Decimal("0")
-        assert conta.saldo == Decimal("0")
-    else:
-        assert centro.saldo == lanc.valor
-        assert conta.saldo == lanc.valor
+    assert centro.saldo == Decimal("0")
+    assert conta.saldo == Decimal("0")
 
 
 def test_contaassociado_str():

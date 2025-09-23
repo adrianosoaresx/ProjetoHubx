@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 from collections import defaultdict
-import warnings
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Iterable, Sequence
 
-from django.conf import settings
 from django.db.models import Case, DecimalField, Sum, Value, When
 from django.db.models.functions import TruncMonth
 
@@ -95,31 +93,7 @@ def gerar_relatorio(
 
     saldos_centros = saldos_carteiras_por_centro(centro=centro, nucleo=nucleo)
 
-    if settings.FINANCEIRO_SOMENTE_CARTEIRA:
-        saldo_atual = sum(saldos_centros.values(), Decimal("0"))
-    else:
-        warnings.warn(
-            "CentroCusto.saldo está obsoleto; habilite FINANCEIRO_SOMENTE_CARTEIRA para usar carteiras.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if centro:
-            if isinstance(centro, str):
-                saldo_atual = (
-                    CentroCusto.objects.filter(pk=centro).aggregate(total=Sum("saldo"))["total"] or Decimal("0")
-                )
-            else:
-                saldo_atual = (
-                    CentroCusto.objects.filter(pk__in=list(centro)).aggregate(total=Sum("saldo"))["total"]
-                    or Decimal("0")
-                )
-        elif nucleo:
-            saldo_atual = (
-                CentroCusto.objects.filter(nucleo_id=nucleo).aggregate(total=Sum("saldo"))["total"]
-                or Decimal("0")
-            )
-        else:
-            saldo_atual = CentroCusto.objects.aggregate(total=Sum("saldo"))["total"] or Decimal("0")
+    saldo_atual = sum(saldos_centros.values(), Decimal("0"))
 
     pendentes = qs.filter(status=LancamentoFinanceiro.Status.PENDENTE)
     quitadas = qs.filter(status=LancamentoFinanceiro.Status.PAGO)

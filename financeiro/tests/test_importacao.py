@@ -80,10 +80,8 @@ def test_missing_columns(api_client, user):
     assert resp.status_code == 400
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_preview_and_confirm(api_client, user, settings, somente_carteira):
+def test_preview_and_confirm(api_client, user, settings):
     settings.CELERY_TASK_ALWAYS_EAGER = True
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
     auth(api_client, user)
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao")
     conta = ContaAssociado.objects.create(user=user)
@@ -136,12 +134,8 @@ def test_preview_and_confirm(api_client, user, settings, somente_carteira):
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("30")
     assert carteira_conta.saldo == Decimal("30")
-    if somente_carteira:
-        assert centro.saldo == 0
-        assert conta.saldo == 0
-    else:
-        assert centro.saldo == 30
-        assert conta.saldo == 30
+    assert centro.saldo == 0
+    assert conta.saldo == 0
     assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
     importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)
     assert importacao.status == ImportacaoPagamentos.Status.CONCLUIDO

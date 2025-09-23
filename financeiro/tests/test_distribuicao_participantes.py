@@ -13,9 +13,7 @@ from organizacoes.factories import OrganizacaoFactory
 pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_repasse_para_participantes(settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_repasse_para_participantes():
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)
     centro_nucleo = CentroCusto.objects.create(nome="N", tipo="nucleo", nucleo=nucleo)
@@ -58,11 +56,7 @@ def test_repasse_para_participantes(settings, somente_carteira):
     assert carteira_p1.saldo == Decimal("30")
     assert carteira_p2.saldo == Decimal("70")
     assert centro_nucleo.saldo == Decimal("0")
-    if somente_carteira:
-        assert p1.saldo == Decimal("0")
-        assert p2.saldo == Decimal("0")
-    else:
-        assert p1.saldo == Decimal("30")
-        assert p2.saldo == Decimal("70")
+    assert p1.saldo == Decimal("0")
+    assert p2.saldo == Decimal("0")
     assert LancamentoFinanceiro.objects.filter(tipo="repasse", conta_associado=p1, valor=30).exists()
     assert LancamentoFinanceiro.objects.filter(tipo="repasse", conta_associado=p2, valor=70).exists()

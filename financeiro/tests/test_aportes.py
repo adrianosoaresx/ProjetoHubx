@@ -92,9 +92,7 @@ def test_valor_zero_valido(api_client, admin_user):
     assert resp.status_code == 201, resp.data
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_aporte_interno_registra_originador(api_client, admin_user, settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_aporte_interno_registra_originador(api_client, admin_user):
     auth(api_client, admin_user)
     centro = _create_centro(admin_user)
     url = reverse("financeiro_api:financeiro-aportes")
@@ -113,10 +111,7 @@ def test_aporte_interno_registra_originador(api_client, admin_user, settings, so
     carteira = Carteira.objects.get(centro_custo=centro)
     carteira.refresh_from_db()
     assert carteira.saldo == Decimal("10")
-    if somente_carteira:
-        assert centro.saldo == 0
-    else:
-        assert centro.saldo == lanc.valor
+    assert centro.saldo == 0
 
 
 def test_aporte_interno_sem_permissao(api_client):
@@ -135,9 +130,7 @@ def test_aporte_interno_sem_permissao(api_client):
     assert resp.status_code == 403
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_aporte_externo(api_client, settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_aporte_externo(api_client):
     user = UserFactory()
     auth(api_client, user)
     centro = _create_centro(user)
@@ -157,10 +150,7 @@ def test_aporte_externo(api_client, settings, somente_carteira):
     carteira = Carteira.objects.get(centro_custo=centro)
     carteira.refresh_from_db()
     assert carteira.saldo == Decimal("5")
-    if somente_carteira:
-        assert centro.saldo == 0
-    else:
-        assert centro.saldo == 5
+    assert centro.saldo == 0
 
 
 def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monkeypatch):
@@ -188,9 +178,7 @@ def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monke
     assert str(resp.data["recibo_url"]) in sent["body"]
 
 
-@pytest.mark.parametrize("somente_carteira", [True, False])
-def test_estornar_aporte(api_client, admin_user, settings, somente_carteira):
-    settings.FINANCEIRO_SOMENTE_CARTEIRA = somente_carteira
+def test_estornar_aporte(api_client, admin_user):
     auth(api_client, admin_user)
     centro = _create_centro(admin_user)
     carteira_centro = Carteira.objects.get(centro_custo=centro)
@@ -219,12 +207,8 @@ def test_estornar_aporte(api_client, admin_user, settings, somente_carteira):
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("10")
     assert carteira_conta.saldo == Decimal("10")
-    if somente_carteira:
-        assert centro.saldo == 0
-        assert conta.saldo == 0
-    else:
-        assert centro.saldo == 10
-        assert conta.saldo == 10
+    assert centro.saldo == 0
+    assert conta.saldo == 0
 
     estorno_url = reverse("financeiro_api:financeiro-estornar-aporte", args=[aporte_id])
     resp = api_client.post(estorno_url)
@@ -237,12 +221,8 @@ def test_estornar_aporte(api_client, admin_user, settings, somente_carteira):
     assert lanc.status == LancamentoFinanceiro.Status.CANCELADO
     assert carteira_centro.saldo == Decimal("0")
     assert carteira_conta.saldo == Decimal("0")
-    if somente_carteira:
-        assert centro.saldo == 0
-        assert conta.saldo == 0
-    else:
-        assert centro.saldo == 0
-        assert conta.saldo == 0
+    assert centro.saldo == 0
+    assert conta.saldo == 0
     assert FinanceiroLog.objects.filter(dados_novos__id=aporte_id).exists()
 
 
