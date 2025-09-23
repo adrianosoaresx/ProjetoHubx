@@ -5,6 +5,7 @@ from rest_framework import routers
 app_name = "financeiro_api"
 
 from .viewsets import (
+    CarteiraViewSet,
     FinanceiroLogViewSet,
     FinanceiroTaskLogViewSet,
     ImportacaoPagamentosViewSet,
@@ -14,6 +15,7 @@ from .viewsets import (
 from .views.api import CentroCustoViewSet, FinanceiroViewSet
 
 router = routers.DefaultRouter()
+router.register("carteiras", CarteiraViewSet, basename="carteira")
 router.register("lancamentos", LancamentoFinanceiroViewSet, basename="lancamento")
 router.register("centros", CentroCustoViewSet, basename="centro")
 router.register("importacoes", ImportacaoPagamentosViewSet, basename="importacao")

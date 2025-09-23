@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from ..models import (
+    Carteira,
     CentroCusto,
     ContaAssociado,
     FinanceiroLog,
@@ -17,6 +18,24 @@ from ..models import (
 )
 from ..services.distribuicao import repassar_receita_ingresso
 from ..services.notificacoes import enviar_aporte
+
+
+class CarteiraSerializer(serializers.ModelSerializer):
+    """Serializador para o modelo :class:`Carteira`."""
+
+    class Meta:
+        model = Carteira
+        fields = [
+            "id",
+            "centro_custo",
+            "nome",
+            "tipo",
+            "descricao",
+            "saldo",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["saldo", "created_at", "updated_at"]
 
 
 class CentroCustoSerializer(serializers.ModelSerializer):

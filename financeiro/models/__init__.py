@@ -9,6 +9,8 @@ from django.utils import timezone
 
 from core.models import SoftDeleteModel, TimeStampedModel
 
+from .carteira import Carteira
+
 """Modelos do módulo financeiro."""
 
 
