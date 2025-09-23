@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from accounts.models import UserType
 
 from .models import (
+    Carteira,
     CentroCusto,
     ContaAssociado,
     FinanceiroLog,
@@ -27,6 +28,7 @@ from .models import (
 )
 from .permissions import IsAssociadoReadOnly, IsCoordenador, IsFinanceiroOrAdmin, IsNotRoot
 from .serializers import (
+    CarteiraSerializer,
     FinanceiroLogSerializer,
     FinanceiroTaskLogSerializer,
     ImportacaoPagamentosSerializer,
@@ -36,6 +38,34 @@ from .services.distribuicao import repassar_receita_ingresso
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
+
+
+class CarteiraViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """CRUD básico das carteiras financeiras."""
+
+    serializer_class = CarteiraSerializer
+    queryset = Carteira.objects.all()
+
+    def get_permissions(self):  # type: ignore[override]
+        self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
+        return super().get_permissions()
+
+    def get_queryset(self):  # type: ignore[override]
+        qs = self.queryset.select_related("centro_custo")
+        params = self.request.query_params
+        if centro := params.get("centro_custo"):
+            qs = qs.filter(centro_custo_id=centro)
+        if tipo := params.get("tipo"):
+            qs = qs.filter(tipo=tipo)
+        if nome := params.get("nome"):
+            qs = qs.filter(nome__icontains=nome)
+        return qs
 
 
 class LancamentoFinanceiroViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
