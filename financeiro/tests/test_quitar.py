@@ -78,6 +78,11 @@ def test_quitar_lancamento(api_client, settings, somente_carteira):
     else:
         assert centro.saldo == 50
         assert conta.saldo == 50
+    log = FinanceiroLog.objects.get(
+        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
+    )
+    assert log.dados_novos["resultado"] == "pago"
+    assert log.dados_novos["saldos_atualizados"] is True
 
 
 def test_pagar_endpoint(api_client):
@@ -86,12 +91,12 @@ def test_pagar_endpoint(api_client):
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
     conta = admin.contas_financeiras.create()
-    Carteira.objects.create(
+    carteira_centro = Carteira.objects.create(
         centro_custo=centro,
         nome="Carteira Centro",
         tipo=Carteira.Tipo.OPERACIONAL,
     )
-    Carteira.objects.create(
+    carteira_conta = Carteira.objects.create(
         conta_associado=conta,
         nome="Carteira Conta",
         tipo=Carteira.Tipo.OPERACIONAL,
@@ -108,10 +113,106 @@ def test_pagar_endpoint(api_client):
     resp = api_client.post(url)
     assert resp.status_code == 200
     lanc.refresh_from_db()
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
-    assert FinanceiroLog.objects.filter(
+    assert lanc.carteira_id == carteira_centro.id
+    assert lanc.carteira_contraparte_id == carteira_conta.id
+    assert carteira_centro.saldo == Decimal("50")
+    assert carteira_conta.saldo == Decimal("50")
+    log = FinanceiroLog.objects.get(
+        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO,
+        dados_novos__id=str(lanc.id),
+        dados_novos__resultado="pago",
+    )
+    assert log.dados_novos["saldos_atualizados"] is True
+
+
+def test_pagar_endpoint_idempotente(api_client):
+    admin = UserFactory(user_type=UserType.ADMIN)
+    api_client.force_authenticate(user=admin)
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
+    conta = admin.contas_financeiras.create()
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    lanc = LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        conta_associado=conta,
+        tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+        valor=50,
+        data_lancamento=timezone.now(),
+        status=LancamentoFinanceiro.Status.PENDENTE,
+    )
+    url = reverse("financeiro_api:lancamento-pagar", args=[lanc.id])
+    first = api_client.post(url)
+    assert first.status_code == 200
+    segundo = api_client.post(url)
+    assert segundo.status_code == 400
+    assert segundo.json()["detail"] == "Lançamento já está pago"
+    lanc.refresh_from_db()
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
+    assert lanc.status == LancamentoFinanceiro.Status.PAGO
+    assert carteira_centro.saldo == Decimal("50")
+    assert carteira_conta.saldo == Decimal("50")
+    logs = list(
+        FinanceiroLog.objects.filter(
+            acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
+        ).order_by("created_at")
+    )
+    assert logs[0].dados_novos["resultado"] == "pago"
+    assert logs[0].dados_novos["saldos_atualizados"] is True
+    assert logs[-1].dados_novos["resultado"] == "pagamento_duplicado"
+    assert "saldos_atualizados" not in logs[-1].dados_novos
+
+
+def test_pagar_cancelado_bloqueado(api_client):
+    admin = UserFactory(user_type=UserType.ADMIN)
+    api_client.force_authenticate(user=admin)
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
+    conta = admin.contas_financeiras.create()
+    carteira_centro = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Carteira Centro",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    carteira_conta = Carteira.objects.create(
+        conta_associado=conta,
+        nome="Carteira Conta",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+    lanc = LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        conta_associado=conta,
+        tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+        valor=50,
+        data_lancamento=timezone.now(),
+        status=LancamentoFinanceiro.Status.CANCELADO,
+    )
+    url = reverse("financeiro_api:lancamento-pagar", args=[lanc.id])
+    resp = api_client.post(url)
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Lançamentos cancelados não podem ser pagos"
+    lanc.refresh_from_db()
+    carteira_centro.refresh_from_db()
+    carteira_conta.refresh_from_db()
+    assert lanc.status == LancamentoFinanceiro.Status.CANCELADO
+    assert carteira_centro.saldo == Decimal("0")
+    assert carteira_conta.saldo == Decimal("0")
+    log = FinanceiroLog.objects.get(
         acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
-    ).exists()
+    )
+    assert log.dados_novos["resultado"] == "pagamento_bloqueado"
 
 
 @pytest.mark.parametrize("somente_carteira", [True, False])
