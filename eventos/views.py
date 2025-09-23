@@ -462,6 +462,14 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context["painel_title"] = evento.titulo
         context["painel_hero_template"] = self.get_painel_hero_template()
 
+        briefing_evento = BriefingEvento.objects.filter(evento=evento).first()
+        if briefing_evento:
+            context["briefing_evento"] = briefing_evento
+            context["briefing_url"] = reverse(
+                "eventos:briefing_detalhe", kwargs={"evento_pk": evento.pk}
+            )
+            context.setdefault("briefing_label", _("Briefing do evento"))
+
         return context
 
 
