@@ -2,9 +2,18 @@ import os
 import django
 import pytest
 from django.conf import settings
+from django.core.files import storage as django_storage
 from django.test.utils import get_runner, setup_test_environment, teardown_test_environment
+from django.utils.module_loading import import_string
 import logging
 import threading
+
+
+if not hasattr(django_storage, "get_storage_class"):
+    def _get_storage_class(import_path: str):
+        return import_string(import_path)
+
+    django_storage.get_storage_class = _get_storage_class  # type: ignore[attr-defined]
 
 # Configurar o Django antes de qualquer operação
 if not django.apps.apps.ready:
