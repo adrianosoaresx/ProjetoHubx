@@ -106,6 +106,20 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
     conta_associado = models.ForeignKey(
         ContaAssociado, on_delete=models.CASCADE, null=True, blank=True, related_name="lancamentos"
     )
+    carteira = models.ForeignKey(
+        Carteira,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="lancamentos",
+    )
+    carteira_contraparte = models.ForeignKey(
+        Carteira,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="lancamentos_contraparte",
+    )
     originador = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -149,6 +163,11 @@ class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
                 fields=["centro_custo", "conta_associado", "status", "data_vencimento"],
                 name="idx_lanc_cc_status_venc",
             ),
+            models.Index(
+                fields=["carteira", "status", "data_vencimento"],
+                name="idx_lanc_cart_status_venc",
+            ),
+            models.Index(fields=["carteira_contraparte"], name="idx_lanc_cart_contra"),
         ]
 
     def __str__(self) -> str:

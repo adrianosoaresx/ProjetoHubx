@@ -92,6 +92,8 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             "id",
             "centro_custo",
             "conta_associado",
+            "carteira",
+            "carteira_contraparte",
             "tipo",
             "valor",
             "data_lancamento",
@@ -104,6 +106,7 @@ class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+        read_only_fields = ["carteira", "carteira_contraparte"]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """Valida vencimento e valores."""
@@ -144,6 +147,8 @@ class AporteSerializer(serializers.ModelSerializer):
             "id",
             "centro_custo",
             "conta_associado",
+            "carteira",
+            "carteira_contraparte",
             "tipo",
             "valor",
             "data_lancamento",
@@ -155,7 +160,14 @@ class AporteSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["originador", "origem", "created_at", "updated_at"]
+        read_only_fields = [
+            "originador",
+            "origem",
+            "carteira",
+            "carteira_contraparte",
+            "created_at",
+            "updated_at",
+        ]
         extra_kwargs = {"tipo": {"required": False}}
 
     def validate_valor(self, value: Any) -> Any:  # type: ignore[override]

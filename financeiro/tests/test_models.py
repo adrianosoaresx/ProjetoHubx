@@ -4,7 +4,7 @@ import pytest
 from django.utils import timezone
 
 from accounts.factories import UserFactory
-from financeiro.models import CentroCusto, ContaAssociado, FinanceiroLog, LancamentoFinanceiro
+from financeiro.models import Carteira, CentroCusto, ContaAssociado, FinanceiroLog, LancamentoFinanceiro
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from organizacoes.factories import OrganizacaoFactory
 
@@ -131,3 +131,50 @@ def test_centro_custo_descricao():
         descricao="Descricao teste",
     )
     assert centro.descricao == "Descricao teste"
+
+
+def test_lancamento_financeiro_carteira_campos_opcionais():
+    org = OrganizacaoFactory()
+    centro = CentroCusto.objects.create(
+        nome="Org",
+        tipo=CentroCusto.Tipo.ORGANIZACAO,
+        organizacao=org,
+    )
+    carteira = Carteira.objects.create(
+        centro_custo=centro,
+        nome="Operacional",
+        tipo=Carteira.Tipo.OPERACIONAL,
+    )
+
+    lancamento = LancamentoFinanceiro.objects.create(
+        centro_custo=centro,
+        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
+        valor=Decimal("1"),
+        data_lancamento=timezone.now(),
+        carteira=carteira,
+    )
+
+    assert lancamento.carteira == carteira
+
+    lancamento.carteira = None
+    lancamento.carteira_contraparte = None
+    lancamento.save(update_fields=["carteira", "carteira_contraparte"])
+    lancamento.refresh_from_db()
+
+    carteira_field = LancamentoFinanceiro._meta.get_field("carteira")
+    contraparte_field = LancamentoFinanceiro._meta.get_field("carteira_contraparte")
+
+    assert lancamento.carteira is None
+    assert lancamento.carteira_contraparte is None
+    assert carteira_field.null is True
+    assert carteira_field.blank is True
+    assert contraparte_field.null is True
+    assert contraparte_field.blank is True
+
+
+def test_lancamento_financeiro_carteiras_serializer_read_only():
+    serializer = LancamentoFinanceiroSerializer()
+    assert "carteira" in serializer.fields
+    assert serializer.fields["carteira"].read_only is True
+    assert "carteira_contraparte" in serializer.fields
+    assert serializer.fields["carteira_contraparte"].read_only is True
