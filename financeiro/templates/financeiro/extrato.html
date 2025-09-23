@@ -37,6 +37,7 @@
       </form>
     </div>
     <div class="card-body">
+      <div id="legacy-warning" class="mb-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900" data-default-warning="{{ legacy_warning }}">{{ legacy_warning }}</div>
       <div id="lista" aria-live="polite">
         <div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
         <table class="min-w-full divide-y divide-[var(--border)]">
@@ -73,6 +74,13 @@
           try {
             const data = JSON.parse(evt.detail.xhr.response);
             const itens = data.results || data;
+            const warningEl = document.getElementById('legacy-warning');
+            if (warningEl) {
+              const apiWarning = data.legacy_warning || (Array.isArray(itens) && itens.length ? itens[0].legacy_warning : null);
+              const message = apiWarning || warningEl.dataset.defaultWarning || '';
+              warningEl.textContent = message;
+              warningEl.hidden = !message;
+            }
             const rows = itens
               .map(l => `
                 <tr>

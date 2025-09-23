@@ -70,7 +70,9 @@ class CentroCustoSerializer(serializers.ModelSerializer):
 
 
 class ContaAssociadoSerializer(serializers.ModelSerializer):
-    """Serializador do modelo :class:`ContaAssociado`."""
+    """Serializador do modelo legado :class:`ContaAssociado`."""
+
+    legacy_warning = serializers.SerializerMethodField()
 
     class Meta:
         model = ContaAssociado
@@ -80,8 +82,12 @@ class ContaAssociadoSerializer(serializers.ModelSerializer):
             "saldo",
             "created_at",
             "updated_at",
+            "legacy_warning",
         ]
         read_only_fields = ["saldo", "created_at", "updated_at"]
+
+    def get_legacy_warning(self, obj: ContaAssociado) -> str:  # pragma: no cover - getter simples
+        return ContaAssociado.LEGACY_MESSAGE
 
 
 class LancamentoFinanceiroSerializer(serializers.ModelSerializer):
@@ -202,9 +208,10 @@ class AporteSerializer(serializers.ModelSerializer):
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
             aplicar_pagamento_lancamento(lancamento)
-        if lancamento.conta_associado:
+        conta_destino = lancamento.conta_associado_resolvida
+        if conta_destino:
             try:
-                enviar_aporte(lancamento.conta_associado.user, lancamento)
+                enviar_aporte(conta_destino.user, lancamento)
             except Exception:  # pragma: no cover - integração externa
                 pass
         return lancamento

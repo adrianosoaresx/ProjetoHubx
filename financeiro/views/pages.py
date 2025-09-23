@@ -4,12 +4,19 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 
 from accounts.models import UserType
 from eventos.models import Evento
 
-from ..models import CentroCusto, FinanceiroLog, FinanceiroTaskLog, LancamentoFinanceiro
+from ..models import (
+    CentroCusto,
+    ContaAssociado,
+    FinanceiroLog,
+    FinanceiroTaskLog,
+    LancamentoFinanceiro,
+)
 
 
 def _is_financeiro_or_admin(user) -> bool:
@@ -24,7 +31,8 @@ def _is_associado(user) -> bool:
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
 def importar_pagamentos_view(request):
-    return render(request, "financeiro/importar_pagamentos.html")
+    context = {"legacy_warning": ContaAssociado.LEGACY_MESSAGE}
+    return render(request, "financeiro/importar_pagamentos.html", context)
 
 
 @login_required
@@ -35,6 +43,7 @@ def relatorios_view(request):
     context = {
         "centros": centros,
         "nucleos": list(nucleos),
+        "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
     }
     return render(request, "financeiro/relatorios.html", context)
 
@@ -79,6 +88,7 @@ def lancamentos_list_view(request):
     context = {
         "centros": centros,
         "nucleos": list(nucleos),
+        "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
     }
     return render(request, "financeiro/lancamentos_list.html", context)
 
@@ -94,7 +104,11 @@ def lancamento_ajuste_modal_view(request, pk: uuid.UUID):
 @user_passes_test(_is_financeiro_or_admin)
 def repasses_view(request):
     eventos = Evento.objects.all()
-    return render(request, "financeiro/repasses.html", {"eventos": eventos})
+    return render(
+        request,
+        "financeiro/repasses.html",
+        {"eventos": eventos, "legacy_warning": ContaAssociado.LEGACY_MESSAGE},
+    )
 
 
 def logs_list_view(request):
@@ -114,6 +128,7 @@ def inadimplencias_view(request):
     context = {
         "centros": centros,
         "nucleos": list(nucleos),
+        "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
     }
     return render(request, "financeiro/inadimplencias.html", context)
 
@@ -144,8 +159,19 @@ def aportes_form_view(request):
 def extrato_view(request):
     """Lista os lançamentos financeiros do associado."""
     lancamentos = (
-        LancamentoFinanceiro.objects.filter(conta_associado__user=request.user)
-        .select_related("centro_custo")
+        LancamentoFinanceiro.objects.filter(
+            Q(conta_associado__user=request.user)
+            | Q(carteira_contraparte__conta_associado__user=request.user)
+        )
+        .select_related(
+            "centro_custo",
+            "carteira_contraparte__conta_associado__user",
+            "conta_associado__user",
+        )
         .order_by("-data_lancamento")
     )
-    return render(request, "financeiro/extrato.html", {"lancamentos": lancamentos})
+    context = {
+        "lancamentos": lancamentos,
+        "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
+    }
+    return render(request, "financeiro/extrato.html", context)

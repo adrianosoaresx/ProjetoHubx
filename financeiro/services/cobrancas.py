@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from decimal import Decimal
-from typing import Iterable
+from typing import Any, Iterable
 
 from django.conf import settings
 from django.db import transaction
@@ -13,6 +13,7 @@ from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, Financei
 from .notificacoes import enviar_cobranca
 from .auditoria import log_financeiro
 from . import metrics
+from .saldos import atribuir_carteiras_padrao
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,8 @@ def gerar_cobrancas(reajuste: Decimal | None = None) -> None:
             )
         )
 
-    lancamentos: list[LancamentoFinanceiro] = []
+    lancamentos_payload: list[dict[str, Any]] = []
+    carteiras_cache: dict[str, dict[Any, Any]] = {"centro": {}, "conta": {}}
     now = timezone.now()
     inicio_mes = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     venc_dia = getattr(settings, "MENSALIDADE_VENCIMENTO_DIA", 10)
@@ -87,18 +89,18 @@ def gerar_cobrancas(reajuste: Decimal | None = None) -> None:
             tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
             data_lancamento=inicio_mes,
         ).exists():
-            lancamentos.append(
-                LancamentoFinanceiro(
-                    centro_custo=centro_org,
-                    conta_associado=conta,
-                    tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
-                    valor=val_assoc,
-                    data_lancamento=inicio_mes,
-                    data_vencimento=data_venc,
-                    status=LancamentoFinanceiro.Status.PENDENTE,
-                    descricao="Cobrança mensalidade associação",
-                )
-            )
+            payload = {
+                "centro_custo": centro_org,
+                "conta_associado": conta,
+                "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
+                "valor": val_assoc,
+                "data_lancamento": inicio_mes,
+                "data_vencimento": data_venc,
+                "status": LancamentoFinanceiro.Status.PENDENTE,
+                "descricao": "Cobrança mensalidade associação",
+            }
+            atribuir_carteiras_padrao(payload, cache=carteiras_cache)
+            lancamentos_payload.append(payload)
         for centro, val_nucleo in _nucleos_do_usuario(conta.user):
             val_nucleo = (val_nucleo * fator).quantize(Decimal("0.01"))
             if not LancamentoFinanceiro.objects.filter(
@@ -107,32 +109,34 @@ def gerar_cobrancas(reajuste: Decimal | None = None) -> None:
                 tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_NUCLEO,
                 data_lancamento=inicio_mes,
             ).exists():
-                lancamentos.append(
-                    LancamentoFinanceiro(
-                        centro_custo=centro,
-                        conta_associado=conta,
-                        tipo=LancamentoFinanceiro.Tipo.MENSALIDADE_NUCLEO,
-                        valor=val_nucleo,
-                        data_lancamento=inicio_mes,
-                        data_vencimento=data_venc,
-                        status=LancamentoFinanceiro.Status.PENDENTE,
-                        descricao=f"Cobrança mensalidade núcleo {centro.nucleo}",
-                    )
-                )
+                payload = {
+                    "centro_custo": centro,
+                    "conta_associado": conta,
+                    "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_NUCLEO,
+                    "valor": val_nucleo,
+                    "data_lancamento": inicio_mes,
+                    "data_vencimento": data_venc,
+                    "status": LancamentoFinanceiro.Status.PENDENTE,
+                    "descricao": f"Cobrança mensalidade núcleo {centro.nucleo}",
+                }
+                atribuir_carteiras_padrao(payload, cache=carteiras_cache)
+                lancamentos_payload.append(payload)
 
     with transaction.atomic():
-        for lanc in lancamentos:
-            lanc.save()
+        for payload in lancamentos_payload:
+            lanc = LancamentoFinanceiro.objects.create(**payload)
             total += 1
+            conta_destino = lanc.conta_associado_resolvida
             log_financeiro(
                 FinanceiroLog.Acao.CRIAR_COBRANCA,
-                lanc.conta_associado.user,
+                conta_destino.user if conta_destino else None,
                 {},
                 {"lancamento": str(lanc.id), "valor": str(lanc.valor)},
             )
-            try:
-                enviar_cobranca(lanc.conta_associado.user, lanc)
-            except Exception as exc:  # pragma: no cover - integração externa
-                logger.error("Falha ao notificar cobrança: %s", exc)
+            if conta_destino:
+                try:
+                    enviar_cobranca(conta_destino.user, lanc)
+                except Exception as exc:  # pragma: no cover - integração externa
+                    logger.error("Falha ao notificar cobrança: %s", exc)
     if total:
         metrics.financeiro_cobrancas_total.inc(total)

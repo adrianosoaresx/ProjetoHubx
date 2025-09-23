@@ -6,6 +6,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -25,6 +26,7 @@ from notificacoes.services.email_client import send_email
 
 from ..models import (
     CentroCusto,
+    ContaAssociado,
     FinanceiroLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
@@ -161,12 +163,16 @@ class FinanceiroViewSet(viewsets.ViewSet):
             "centro_custo__nucleo",
             "centro_custo__organizacao",
             "conta_associado__user",
+            "carteira_contraparte__conta_associado__user",
         )
         user = self.request.user
         if user.user_type == UserType.COORDENADOR and user.nucleo_id:
             qs = qs.filter(centro_custo__nucleo_id=user.nucleo_id)
         elif user.user_type != UserType.ADMIN:
-            qs = qs.filter(conta_associado__user=user)
+            qs = qs.filter(
+                Q(conta_associado__user=user)
+                | Q(carteira_contraparte__conta_associado__user=user)
+            )
         return qs
 
     @action(detail=False, methods=["post"], url_path="importar-pagamentos")
@@ -192,6 +198,7 @@ class FinanceiroViewSet(viewsets.ViewSet):
             "importacao_id": str(import_obj.id),
             "preview": result.preview,
             "erros": result.errors,
+            "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
         }
         if result.errors_file:
             payload["token_erros"] = Path(result.errors_file).stem.replace(".errors", "")
@@ -379,18 +386,20 @@ class FinanceiroViewSet(viewsets.ViewSet):
         data = []
         now = timezone.now().date()
         for lanc in qs:
+            conta_destino = lanc.conta_associado_resolvida
+            conta_email = conta_destino.user.email if conta_destino else None
             dias_atraso = (now - lanc.data_vencimento.date()).days if lanc.data_vencimento else 0
-            data.append(
-                {
-                    "id": str(lanc.id),
-                    "centro": lanc.centro_custo.nome,
-                    "conta": lanc.conta_associado.user.email if lanc.conta_associado else None,
-                    "status": lanc.status,
-                    "valor": float(lanc.valor),
-                    "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
-                    "dias_atraso": dias_atraso,
-                }
-            )
+            item = {
+                "id": str(lanc.id),
+                "centro": lanc.centro_custo.nome,
+                "conta": conta_email,
+                "status": lanc.status,
+                "valor": float(lanc.valor),
+                "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
+                "dias_atraso": dias_atraso,
+                "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
+            }
+            data.append(item)
         fmt = params.get("format")
         if fmt in {"csv", "xlsx"}:
             return Response({"detail": _("formato indisponível")}, status=400)

@@ -47,6 +47,7 @@ def test_list_inadimplencias(api_client, user):
     resp = api_client.get(url)
     assert resp.status_code == 200
     assert len(resp.data) == 1
+    assert resp.data[0]["legacy_warning"] == ContaAssociado.LEGACY_MESSAGE
 
 
 def test_lancamentos_list_filtra_e_restringe(api_client, user):
@@ -76,6 +77,7 @@ def test_lancamentos_list_filtra_e_restringe(api_client, user):
     resp = api_client.get(url, {"status": "pago"})
     assert resp.status_code == 200
     assert len(resp.data) == 1
+    assert resp.data[0]["legacy_warning"] == ContaAssociado.LEGACY_MESSAGE
 
 
 def test_associado_nao_pode_quitar(api_client, user):
