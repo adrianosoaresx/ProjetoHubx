@@ -1,5 +1,6 @@
 {% load i18n %}
-{% include "eventos/partials/_painel_hero_oob.html" %}
+{% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template=evento|yesno:'_components/hero_eventos_detail.html,' evento=evento %}
+{% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' briefing_evento=briefing_evento briefing_url=briefing_url briefing_label=briefing_label %}
 <section class="py-12 px-4">
   <div class="card-grid gap-6">
     <article class="card">

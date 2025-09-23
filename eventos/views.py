@@ -584,6 +584,17 @@ class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         form.fields["responsavel"].queryset = User.objects.filter(organizacao=user.organizacao)
         return form
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+            except Evento.DoesNotExist:
+                pass
+        return context
+
     def form_valid(self, form):
         form.instance.organizacao = self.request.user.organizacao
         response = super().form_valid(form)
@@ -632,6 +643,18 @@ class TarefaUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
             detalhes=changes,
         )
         return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Preserva o contexto do evento se vier na querystring
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+            except Evento.DoesNotExist:
+                pass
+        return context
 
 
 class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
