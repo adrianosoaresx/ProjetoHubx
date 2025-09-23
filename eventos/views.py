@@ -106,6 +106,11 @@ class PainelRenderMixin:
 
     def get_painel_context(self, context: dict) -> dict:
         context.setdefault("painel_title", self.get_painel_title())
+        # Variáveis padrão para navegação e heros que podem ser opcionais
+        context.setdefault("briefing_url", None)
+        context.setdefault("briefing_evento", None)
+        context.setdefault("briefing_label", None)
+        context.setdefault("evento", None)
         hero_template = self.get_painel_hero_template()
         if hero_template:
             context.setdefault("painel_hero_template", hero_template)
@@ -333,12 +338,17 @@ class EventoUpdateView(
     template_name = "eventos/partials/eventos/update.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Editar Evento")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     permission_required = "eventos.change_evento"
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["evento"] = self.object
+        return context
 
     def form_valid(self, form):  # pragma: no cover
         """Registra log comparando campos alterados."""
@@ -374,12 +384,18 @@ class EventoDeleteView(
     template_name = "eventos/partials/eventos/delete.html"
     success_url = reverse_lazy("eventos:calendario")
     painel_title = _("Remover Evento")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     permission_required = "eventos.delete_evento"
 
     def get_queryset(self):  # pragma: no cover
         return _queryset_por_organizacao(self.request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # disponibiliza o objeto como `evento` para o hero de detalhes
+        context["evento"] = self.object
+        return context
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
         self.object = self.get_object()
@@ -645,7 +661,7 @@ class EventoFeedbackView(LoginRequiredMixin, NoSuperadminMixin, View):
         context = {"evento": evento}
         hero_context = {
             "painel_title": _("Avaliar evento"),
-            "painel_hero_template": "_components/hero.html",
+            "painel_hero_template": "_components/hero_eventos_detail.html",
         }
         is_htmx = request.headers.get("HX-Request") == "true"
         context.update(hero_context)
@@ -789,10 +805,10 @@ def avaliar_parceria(request, pk: int):
             }
         )
 
-    context = {"parceria": parceria}
+    context = {"parceria": parceria, "evento": parceria.evento}
     hero_context = {
         "painel_title": _("Avaliar parceria"),
-        "painel_hero_template": "_components/hero.html",
+        "painel_hero_template": "_components/hero_eventos_detail.html",
     }
     is_htmx = request.headers.get("HX-Request") == "true"
     context.update(hero_context)
@@ -809,10 +825,10 @@ def avaliar_parceria(request, pk: int):
 @no_superadmin_required
 def checkin_form(request, pk: int):
     inscricao = get_object_or_404(InscricaoEvento, pk=pk)
-    context = {"inscricao": inscricao}
+    context = {"inscricao": inscricao, "evento": inscricao.evento}
     hero_context = {
         "painel_title": _("Check-in do evento"),
-        "painel_hero_template": "_components/hero.html",
+        "painel_hero_template": "_components/hero_eventos_detail.html",
     }
     is_htmx = request.headers.get("HX-Request") == "true"
     context.update(hero_context)
@@ -957,7 +973,7 @@ class ParceriaEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
     template_name = "eventos/partials/parceria/parceria_form.html"
     success_url = reverse_lazy("eventos:parceria_list")
     painel_title = _("Editar Parceria")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -991,13 +1007,18 @@ class ParceriaEventoUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
         )
         return response
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["evento"] = self.object.evento
+        return context
+
 
 class ParceriaEventoDeleteView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, DeleteView):
     model = ParceriaEvento
     template_name = "eventos/partials/parceria/parceria_confirm_delete.html"
     success_url = reverse_lazy("eventos:parceria_list")
     painel_title = _("Remover Parceria")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     def get_queryset(self):
         qs = ParceriaEvento.objects.all()
@@ -1009,6 +1030,11 @@ class ParceriaEventoDeleteView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
                 filtro |= Q(evento__nucleo__in=nucleo_ids)
             qs = qs.filter(filtro)
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["evento"] = self.object.evento
+        return context
 
     def delete(self, request, *args, **kwargs):  # pragma: no cover
         self.object = self.get_object()

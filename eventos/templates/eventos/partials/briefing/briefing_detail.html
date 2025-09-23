@@ -1,5 +1,5 @@
 {% load i18n %}
-{% include "eventos/partials/_painel_hero_oob.html" %}
+{% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template='_components/hero_eventos_detail.html' evento=briefing.evento %}
 <section class="py-12 px-4">
   <div class="flex flex-col gap-6">
     {% include "eventos/partials/eventos/_nav.html" with current_section='briefings' briefing_evento=briefing.evento %}

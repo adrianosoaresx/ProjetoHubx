@@ -1,5 +1,7 @@
 {% load i18n widget_tweaks %}
-{% include "eventos/partials/_painel_hero_oob.html" %}
+{% with ev=object.evento|default:form.instance.evento %}
+  {% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template=ev|yesno:'_components/hero_eventos_detail.html,' evento=ev %}
+{% endwith %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8">
   <h1 class="text-2xl font-bold text-[var(--text-primary)] mb-6">{% trans "Parceria" %}</h1>
   <form method="post" enctype="multipart/form-data" class="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm p-6 space-y-6">
