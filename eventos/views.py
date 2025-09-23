@@ -114,6 +114,12 @@ class PainelRenderMixin:
         hero_template = self.get_painel_hero_template()
         if hero_template:
             context.setdefault("painel_hero_template", hero_template)
+        # Se houver um evento no contexto, forçar o hero de detalhes do evento
+        if context.get("evento") is not None:
+            context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+            # Se não houver título definido, usar o título do evento
+            if not context.get("painel_title") and getattr(context["evento"], "titulo", None):
+                context["painel_title"] = context["evento"].titulo
         action_template = self.get_painel_action_template()
         if action_template:
             context.setdefault("painel_action_template", action_template)
@@ -509,7 +515,22 @@ class TarefaDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
         context = super().get_context_data(**kwargs)
         context["logs"] = self.object.logs.select_related("usuario").all()
         context["painel_title"] = self.object.titulo
-        context["painel_hero_template"] = self.get_painel_hero_template()
+        # Se vier ?evento=, usar hero de detalhes
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                # Briefing no nav, se existir
+                briefing_evento = BriefingEvento.objects.filter(evento_id=ev_id).first()
+                if briefing_evento:
+                    context["briefing_evento"] = briefing_evento
+                    context["briefing_url"] = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": ev_id})
+                    context.setdefault("briefing_label", _("Briefing do evento"))
+            except Evento.DoesNotExist:
+                pass
+        else:
+            context["painel_hero_template"] = self.get_painel_hero_template()
         return context
 
 
@@ -530,6 +551,23 @@ class TarefaListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, G
         if nucleo_ids:
             filtro |= Q(nucleo__in=nucleo_ids)
         return qs.filter(filtro)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                context["painel_title"] = context["evento"].titulo
+                briefing_evento = BriefingEvento.objects.filter(evento_id=ev_id).first()
+                if briefing_evento:
+                    context["briefing_evento"] = briefing_evento
+                    context["briefing_url"] = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": ev_id})
+                    context.setdefault("briefing_label", _("Briefing do evento"))
+            except Evento.DoesNotExist:
+                pass
+        return context
 
 
 class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
@@ -877,13 +915,26 @@ class InscricaoEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmi
             qs = qs.filter(Q(user__username__icontains=q) | Q(evento__titulo__icontains=q))
         return qs
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                # Restringe por organização
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                context["painel_title"] = context["evento"].titulo
+            except Evento.DoesNotExist:
+                context["evento"] = None
+        return context
+
 
 class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, CreateView):
     model = InscricaoEvento
     form_class = InscricaoEventoForm
     template_name = "eventos/partials/inscricao/inscricao_form.html"
     painel_title = _("Inscrição")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
 
     def dispatch(self, request, *args, **kwargs):
         self.evento = get_object_or_404(_queryset_por_organizacao(request), pk=kwargs["pk"])
@@ -895,6 +946,7 @@ class InscricaoEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperad
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["evento"] = self.evento
+        context["painel_title"] = self.evento.titulo
         return context
 
     def form_valid(self, form):
@@ -934,10 +986,31 @@ class ParceriaEventoListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadmin
             if nucleo_ids:
                 filtro |= Q(evento__nucleo__in=nucleo_ids)
             qs = qs.filter(filtro)
+        evento_param = self.request.GET.get("evento")
+        if evento_param:
+            qs = qs.filter(evento_id=evento_param)
         nucleo = self.request.GET.get("nucleo")
         if nucleo:
             qs = qs.filter(nucleo_id=nucleo)
         return qs.order_by("-data_inicio")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ev_id = self.request.GET.get("evento")
+        if ev_id:
+            try:
+                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
+                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
+                context["painel_title"] = context["evento"].titulo
+                # também disponibiliza link do briefing se existir
+                briefing_evento = BriefingEvento.objects.filter(evento_id=ev_id).first()
+                if briefing_evento:
+                    context["briefing_evento"] = briefing_evento
+                    context["briefing_url"] = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": ev_id})
+                    context.setdefault("briefing_label", _("Briefing do evento"))
+            except Evento.DoesNotExist:
+                context["evento"] = None
+        return context
 
 
 class ParceriaEventoCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, ParceriaPermissionMixin, CreateView):
@@ -1080,7 +1153,7 @@ class BriefingEventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadm
     template_name = "eventos/partials/briefing/briefing_detail.html"
     context_object_name = "briefing"
     painel_title = _("Briefing do Evento")
-    painel_hero_template = "_components/hero.html"
+    painel_hero_template = "_components/hero_eventos_detail.html"
     pk_url_kwarg = "evento_pk"
 
     def get_queryset(self):

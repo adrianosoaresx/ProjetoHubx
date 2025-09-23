@@ -1,7 +1,7 @@
 {% load i18n %}
 {% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template=evento|yesno:'_components/hero_eventos_detail.html,' evento=evento %}
 <section class="max-w-screen-xl mx-auto pt-8 px-6 lg:px-8 space-y-6">
-  {% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' %}
+  {% include "eventos/partials/eventos/_nav.html" with current_section='tarefas' briefing_evento=briefing_evento briefing_url=briefing_url briefing_label=briefing_label %}
   <header class="flex items-center justify-between">
     <h1 class="text-2xl font-bold text-[var(--text-primary)]">{% trans "Tarefas" %}</h1>
     <a href="{% url 'eventos:tarefa_criar' %}" class="btn btn-primary">{% trans "Nova Tarefa" %}</a>
