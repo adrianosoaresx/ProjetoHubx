@@ -10,7 +10,7 @@ from organizacoes.factories import OrganizacaoFactory
 @pytest.mark.django_db
 def test_ajuste_lancamento_pago():
     org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org, saldo=Decimal("100"))
+    centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
     user = UserFactory(is_associado=True)
     conta = ContaAssociado.objects.create(user=user, saldo=Decimal("100"))
     carteira_centro = Carteira.objects.create(
@@ -42,7 +42,6 @@ def test_ajuste_lancamento_pago():
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("150")
     assert carteira_conta.saldo == Decimal("150")
-    assert centro.saldo == Decimal("100")
     assert conta.saldo == Decimal("100")
     assert lanc.ajustado is True
     ajuste = LancamentoFinanceiro.objects.filter(lancamento_original=lanc).first()

@@ -55,7 +55,6 @@ def test_repasse_para_participantes():
     assert carteira_nucleo.saldo == Decimal("0")
     assert carteira_p1.saldo == Decimal("30")
     assert carteira_p2.saldo == Decimal("70")
-    assert centro_nucleo.saldo == Decimal("0")
     assert p1.saldo == Decimal("0")
     assert p2.saldo == Decimal("0")
     assert LancamentoFinanceiro.objects.filter(tipo="repasse", conta_associado=p1, valor=30).exists()
