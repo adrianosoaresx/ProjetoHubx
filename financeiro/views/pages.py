@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import uuid
 
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q
+from django.db.models import Q, Sum, Value
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, render
 
 from accounts.models import UserType
@@ -53,7 +56,19 @@ def relatorios_view(request):
 def centros_list_view(request):
     limit = 20
     offset = int(request.GET.get("offset", 0))
-    qs = CentroCusto.objects.all().select_related("organizacao", "nucleo", "evento")
+    qs = (
+        CentroCusto.objects.all()
+        .select_related("organizacao", "nucleo", "evento")
+        .annotate(
+            saldo_carteiras=Coalesce(
+                Sum(
+                    "carteiras__saldo",
+                    filter=Q(carteiras__deleted=False),
+                ),
+                Value(Decimal("0")),
+            )
+        )
+    )
     total = qs.count()
     centros = qs[offset : offset + limit]
     next_offset = offset + limit if total > offset + limit else None

@@ -52,11 +52,10 @@ class CentroCustoSerializer(serializers.ModelSerializer):
             "nucleo",
             "evento",
             "descricao",
-            "saldo",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["saldo", "created_at", "updated_at"]
+        read_only_fields = ["created_at", "updated_at"]
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         tipo = attrs.get("tipo", getattr(self.instance, "tipo", None))
@@ -268,7 +267,6 @@ class AporteSerializer(LancamentoFinanceiroSerializer):
                 originador = request.user
             validated_data["originador"] = originador
             lancamento = super().create(validated_data)
-            aplicar_pagamento_lancamento(lancamento)
         if getattr(self, "_legacy_input_used", False):
             setattr(lancamento, "_legacy_input_used", True)
         conta_destino = lancamento.conta_associado_resolvida

@@ -111,7 +111,6 @@ def test_aporte_interno_registra_originador(api_client, admin_user):
     carteira = Carteira.objects.get(centro_custo=centro)
     carteira.refresh_from_db()
     assert carteira.saldo == Decimal("10")
-    assert centro.saldo == 0
 
 
 def test_aporte_interno_sem_permissao(api_client):
@@ -150,7 +149,6 @@ def test_aporte_externo(api_client):
     carteira = Carteira.objects.get(centro_custo=centro)
     carteira.refresh_from_db()
     assert carteira.saldo == Decimal("5")
-    assert centro.saldo == 0
 
 
 def test_aporte_retorna_recibo(api_client, admin_user, settings, tmp_path, monkeypatch):
@@ -208,7 +206,6 @@ def test_estornar_aporte(api_client, admin_user):
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("10")
     assert carteira_conta.saldo == Decimal("10")
-    assert centro.saldo == 0
     assert conta.saldo == 0
 
     estorno_url = reverse("financeiro_api:financeiro-estornar-aporte", args=[aporte_id])
@@ -222,7 +219,6 @@ def test_estornar_aporte(api_client, admin_user):
     assert lanc.status == LancamentoFinanceiro.Status.CANCELADO
     assert carteira_centro.saldo == Decimal("0")
     assert carteira_conta.saldo == Decimal("0")
-    assert centro.saldo == 0
     assert conta.saldo == 0
     assert FinanceiroLog.objects.filter(dados_novos__id=aporte_id).exists()
 

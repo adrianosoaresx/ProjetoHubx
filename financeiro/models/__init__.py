@@ -48,7 +48,6 @@ class CentroCusto(TimeStampedModel, SoftDeleteModel):
         related_name="centros_custo",
     )
     descricao = models.TextField(blank=True)
-    saldo = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
 
     class Meta:
         ordering = ["nome"]

@@ -70,7 +70,6 @@ def test_quitar_lancamento(api_client):
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
     assert carteira_centro.saldo == Decimal("50")
     assert carteira_conta.saldo == Decimal("50")
-    assert centro.saldo == 0
     assert conta.saldo == 0
     log = FinanceiroLog.objects.get(
         acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
@@ -237,5 +236,4 @@ def test_distribuicao_ingresso():
     serializer.save()
     carteira_nucleo.refresh_from_db()
     assert carteira_nucleo.saldo == Decimal("25")
-    assert CentroCusto.objects.get(id=centro_nucleo.id).saldo == 0
     assert LancamentoFinanceiro.objects.filter(descricao="Repasse de ingresso", centro_custo=centro_nucleo).exists()
