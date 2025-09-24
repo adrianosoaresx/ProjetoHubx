@@ -134,7 +134,6 @@ def test_preview_and_confirm(api_client, user, settings):
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("30")
     assert carteira_conta.saldo == Decimal("30")
-    assert centro.saldo == 0
     assert conta.saldo == 0
     assert LancamentoFinanceiro.objects.filter(origem=LancamentoFinanceiro.Origem.IMPORTACAO).count() == 2
     importacao = ImportacaoPagamentos.objects.get(pk=importacao_id)

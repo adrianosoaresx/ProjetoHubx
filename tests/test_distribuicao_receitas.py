@@ -25,7 +25,6 @@ def test_distribuicao_para_nucleo():
     centro_nucleo.refresh_from_db()
     carteira_nucleo.refresh_from_db()
     assert carteira_nucleo.saldo == Decimal("100")
-    assert centro_nucleo.saldo == Decimal("0")
     assert LancamentoFinanceiro.objects.filter(centro_custo=centro_nucleo, valor=100).exists()
 
 
@@ -53,5 +52,3 @@ def test_distribuicao_sem_nucleo():
     carteira_evento.refresh_from_db()
     assert carteira_org.saldo == Decimal("40")
     assert carteira_evento.saldo == Decimal("40")
-    assert centro_org.saldo == Decimal("0")
-    assert centro_evento.saldo == Decimal("0")

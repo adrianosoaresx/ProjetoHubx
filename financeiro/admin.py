@@ -1,7 +1,8 @@
 from decimal import Decimal
 
 from django.contrib import admin
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q, Sum, Value
+from django.db.models.functions import Coalesce
 
 from .models import (
     Carteira,
@@ -29,9 +30,12 @@ class CentroCustoAdmin(admin.ModelAdmin):
                 filter=Q(carteiras__deleted=False),
                 distinct=True,
             ),
-            saldo_carteiras_total=Sum(
-                "carteiras__saldo",
-                filter=Q(carteiras__deleted=False),
+            saldo_carteiras_total=Coalesce(
+                Sum(
+                    "carteiras__saldo",
+                    filter=Q(carteiras__deleted=False),
+                ),
+                Value(Decimal("0")),
             ),
         )
 
@@ -58,9 +62,12 @@ class ContaAssociadoAdmin(admin.ModelAdmin):
                 filter=Q(carteiras__deleted=False),
                 distinct=True,
             ),
-            saldo_carteiras_total=Sum(
-                "carteiras__saldo",
-                filter=Q(carteiras__deleted=False),
+            saldo_carteiras_total=Coalesce(
+                Sum(
+                    "carteiras__saldo",
+                    filter=Q(carteiras__deleted=False),
+                ),
+                Value(Decimal("0")),
             ),
         )
 

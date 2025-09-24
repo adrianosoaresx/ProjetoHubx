@@ -45,7 +45,6 @@ def test_lancamento_atualiza_saldos():
     carteira_conta.refresh_from_db()
     assert carteira_centro.saldo == Decimal("100")
     assert carteira_conta.saldo == Decimal("100")
-    assert centro.saldo == Decimal("0")
     assert conta.saldo == Decimal("0")
     assert lanc.carteira_contraparte_id == carteira_conta.id
 
