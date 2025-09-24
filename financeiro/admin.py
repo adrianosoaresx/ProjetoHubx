@@ -19,7 +19,7 @@ ZERO = Decimal("0")
 
 @admin.register(CentroCusto)
 class CentroCustoAdmin(admin.ModelAdmin):
-    list_display = ["nome", "tipo", "carteiras_ativas", "saldo_total_carteiras"]
+    list_display = ["nome", "tipo", "carteiras_ativas", "saldo_em_carteiras"]
     search_fields = ["nome"]
 
     def get_queryset(self, request):  # type: ignore[override]
@@ -30,7 +30,7 @@ class CentroCustoAdmin(admin.ModelAdmin):
                 filter=Q(carteiras__deleted=False),
                 distinct=True,
             ),
-            saldo_carteiras_total=Coalesce(
+            saldo_total_carteiras=Coalesce(
                 Sum(
                     "carteiras__saldo",
                     filter=Q(carteiras__deleted=False),
@@ -43,10 +43,9 @@ class CentroCustoAdmin(admin.ModelAdmin):
     def carteiras_ativas(self, obj):
         return getattr(obj, "carteiras_ativas_total", 0)
 
-    @admin.display(description="Saldo em carteiras", ordering="saldo_carteiras_total")
-    def saldo_total_carteiras(self, obj):
-        saldo = getattr(obj, "saldo_carteiras_total", None)
-        return saldo if saldo is not None else ZERO
+    @admin.display(description="Saldo em carteiras", ordering="saldo_total_carteiras")
+    def saldo_em_carteiras(self, obj):
+        return obj.saldo_total_carteiras
 
 
 @admin.register(ContaAssociado)

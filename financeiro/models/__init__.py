@@ -18,6 +18,8 @@ from .carteira import Carteira
 class CentroCusto(TimeStampedModel, SoftDeleteModel):
     """Centro de custos para organizar movimentações financeiras."""
 
+    _saldo_total_carteiras_cache: Decimal | None = None
+
     class Tipo(models.TextChoices):
         ORGANIZACAO = "organizacao", "Organização"
         NUCLEO = "nucleo", "Núcleo"
@@ -56,6 +58,32 @@ class CentroCusto(TimeStampedModel, SoftDeleteModel):
 
     def __str__(self) -> str:
         return self.nome
+
+    @property
+    def saldo_total_carteiras(self) -> Decimal:
+        """Soma os saldos das carteiras ativas vinculadas ao centro."""
+
+        if self._saldo_total_carteiras_cache is not None:
+            return self._saldo_total_carteiras_cache
+        total = (
+            self.carteiras.filter(deleted=False)
+            .aggregate(total=models.Sum("saldo"))
+            .get("total")
+        )
+        total_decimal = total if total is not None else Decimal("0")
+        self._saldo_total_carteiras_cache = total_decimal
+        return total_decimal
+
+    @saldo_total_carteiras.setter
+    def saldo_total_carteiras(self, value: Decimal | None) -> None:
+        """Permite que anotações de queryset preencham o cache."""
+
+        if value is None:
+            self._saldo_total_carteiras_cache = Decimal("0")
+        elif isinstance(value, Decimal):
+            self._saldo_total_carteiras_cache = value
+        else:
+            self._saldo_total_carteiras_cache = Decimal(value)
 
 
 class ContaAssociado(TimeStampedModel, SoftDeleteModel):
