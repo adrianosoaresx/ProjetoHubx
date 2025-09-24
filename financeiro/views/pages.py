@@ -60,7 +60,7 @@ def centros_list_view(request):
         CentroCusto.objects.all()
         .select_related("organizacao", "nucleo", "evento")
         .annotate(
-            saldo_carteiras=Coalesce(
+            saldo_total_carteiras=Coalesce(
                 Sum(
                     "carteiras__saldo",
                     filter=Q(carteiras__deleted=False),

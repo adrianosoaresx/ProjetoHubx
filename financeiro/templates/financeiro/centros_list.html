@@ -30,7 +30,7 @@
           <td class="px-3 py-2">
             {% if c.organizacao %}{{ c.organizacao }}{% elif c.nucleo %}{{ c.nucleo }}{% elif c.evento %}{{ c.evento }}{% endif %}
           </td>
-          <td class="px-3 py-2">{{ c.saldo_carteiras }}</td>
+          <td class="px-3 py-2">{{ c.saldo_total_carteiras }}</td>
           <td class="px-3 py-2 text-right space-x-2">
               <button class="btn btn-primary" hx-get="{% url 'financeiro:centro_form_edit' c.id %}" hx-target="#modal" hx-trigger="click">{% trans "Editar" %}</button>
                 <button class="btn btn-secondary" hx-delete="/api/financeiro/centros/{{ c.id }}/" hx-target="closest tr" hx-confirm='{% trans "Tem certeza?" %}' hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans "Excluir" %}</button>
