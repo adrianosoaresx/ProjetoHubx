@@ -64,7 +64,6 @@ urlpatterns = [
         name="inscricao_checkin",
     ),
     path("api/eventos/<uuid:pk>/orcamento/", views.evento_orcamento, name="evento_orcamento"),
-    path("api/eventos/<uuid:pk>/espera/", views.fila_espera, name="fila_espera"),
     path("parceria/<int:pk>/avaliar/", views.avaliar_parceria, name="parceria_avaliar"),
     path("eventos_por_dia/", views.eventos_por_dia, name="eventos_por_dia"),
     path("inscricoes/", InscricaoEventoListView.as_view(), name="inscricao_list"),

@@ -19,7 +19,6 @@
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Usuário" %}</th>
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Evento" %}</th>
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Status" %}</th>
-              <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Posição na espera" %}</th>
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Presente" %}</th>
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Valor Pago" %}</th>
               <th class="px-4 py-2 text-left font-semibold text-[var(--text-secondary)]">{% trans "Método de Pagamento" %}</th>
@@ -34,13 +33,6 @@
                 <td class="px-4 py-2">{{ inscricao.user }}</td>
                 <td class="px-4 py-2">{{ inscricao.evento }}</td>
                 <td class="px-4 py-2">{{ inscricao.get_status_display }}</td>
-                <td class="px-4 py-2">
-                  {% if inscricao.status == 'pendente' %}
-                    {{ inscricao.posicao_espera }}
-                  {% else %}
-                    -
-                  {% endif %}
-                </td>
                 <td class="px-4 py-2">{{ inscricao.presente }}</td>
                 <td class="px-4 py-2">{{ inscricao.valor_pago }}</td>
                 <td class="px-4 py-2">{{ inscricao.get_metodo_pagamento_display }}</td>

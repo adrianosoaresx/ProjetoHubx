@@ -85,8 +85,6 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
     data_confirmacao = models.DateTimeField(null=True, blank=True)
     qrcode_url = models.URLField(null=True, blank=True)
     check_in_realizado_em = models.DateTimeField(null=True, blank=True)
-    posicao_espera = models.PositiveIntegerField(null=True, blank=True)
-
     objects = SoftDeleteManager()
     all_objects = models.Manager()
 
@@ -95,15 +93,12 @@ class InscricaoEvento(TimeStampedModel, SoftDeleteModel):
 
     def confirmar_inscricao(self) -> None:
         with transaction.atomic():
-            if self.evento.participantes_maximo and self.evento.espera_habilitada:
-                confirmados = self.evento.inscricoes.filter(status="confirmada").count()
-                if confirmados >= self.evento.participantes_maximo:
-                    pendentes = self.evento.inscricoes.filter(status="pendente").select_for_update()
-                    ultimo = pendentes.aggregate(mx=models.Max("posicao_espera")).get("mx") or 0
-                    self.status = "pendente"
-                    self.posicao_espera = ultimo + 1
-                    self.save(update_fields=["status", "posicao_espera", "updated_at"])
-                    return
+            evento = Evento.objects.select_for_update().get(pk=self.evento.pk)
+            self.evento = evento
+            if evento.participantes_maximo:
+                confirmados = evento.inscricoes.filter(status="confirmada").count()
+                if confirmados >= evento.participantes_maximo:
+                    raise ValueError(_("Evento lotado."))
             self.status = "confirmada"
             self.data_confirmacao = timezone.now()
             if not self.qrcode_url:
@@ -216,7 +211,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
-    espera_habilitada = models.BooleanField(default=False)
     cronograma = models.TextField(blank=True)
     informacoes_adicionais = models.TextField(blank=True)
     contato_nome = models.CharField(max_length=100)

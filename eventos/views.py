@@ -696,11 +696,14 @@ class EventoSubscribeView(LoginRequiredMixin, NoSuperadminMixin, View):
             except ValueError as exc:
                 messages.error(request, str(exc))
         else:
-            inscricao.confirmar_inscricao()
-            if inscricao.status == "confirmada":
-                messages.success(request, _("Inscrição realizada."))  # pragma: no cover
+            try:
+                inscricao.confirmar_inscricao()
+            except ValueError as exc:
+                if created:
+                    inscricao.delete()
+                messages.error(request, str(exc))
             else:
-                messages.success(request, _("Você está na lista de espera."))  # pragma: no cover
+                messages.success(request, _("Inscrição realizada."))  # pragma: no cover
         return redirect("eventos:evento_detalhe", pk=pk)
 
 
@@ -842,20 +845,6 @@ def evento_orcamento(request, pk: int):
 
     data = {"orcamento_estimado": evento.orcamento_estimado, "valor_gasto": evento.valor_gasto}
     return JsonResponse(data)
-
-
-@login_required
-@no_superadmin_required
-def fila_espera(request, pk: int):
-    evento = get_object_or_404(_queryset_por_organizacao(request), pk=pk)
-    inscritos = list(
-        evento.inscricoes.filter(status="pendente")
-        .order_by("posicao_espera")
-        .values("user__username", "posicao_espera")
-    )
-    return JsonResponse({"fila": inscritos})
-
-
 @login_required
 @no_superadmin_required
 def avaliar_parceria(request, pk: int):

@@ -163,7 +163,6 @@ def main() -> None:
                         "orcamento_estimado": None,
                         "valor_gasto": None,
                         "participantes_maximo": None,
-                        "espera_habilitada": False,
                         "cronograma": "",
                         "informacoes_adicionais": "",
                         "contato_nome": "Contato",
