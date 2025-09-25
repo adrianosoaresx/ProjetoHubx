@@ -207,7 +207,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
     numero_convidados = models.PositiveIntegerField()
     numero_presentes = models.PositiveIntegerField(default=0, editable=False)
     valor_ingresso = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    orcamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     orcamento_estimado = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     valor_gasto = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     participantes_maximo = models.PositiveIntegerField(null=True, blank=True)
@@ -253,7 +252,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         positive_fields = [
             "numero_convidados",
             "valor_ingresso",
-            "orcamento",
             "orcamento_estimado",
             "valor_gasto",
             "participantes_maximo",

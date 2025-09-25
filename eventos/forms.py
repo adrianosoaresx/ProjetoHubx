@@ -30,7 +30,6 @@ class EventoForm(forms.ModelForm):
             "numero_convidados",
             "participantes_maximo",
             "valor_ingresso",
-            "orcamento",
             "cronograma",
             "informacoes_adicionais",
             "contato_nome",

@@ -22,7 +22,6 @@ def test_evento_data_fim_posterior_data_inicio():
     [
         ("numero_convidados", -1),
         ("valor_ingresso", Decimal("-1")),
-        ("orcamento", Decimal("-1")),
         ("orcamento_estimado", Decimal("-1")),
         ("valor_gasto", Decimal("-1")),
         ("participantes_maximo", -1),

@@ -30,7 +30,6 @@ class EventoFactory(DjangoModelFactory):
     numero_convidados = factory.Faker("pyint", min_value=10, max_value=100)
     numero_presentes = factory.LazyAttribute(lambda o: o.numero_convidados // 2)
     valor_ingresso = factory.Faker("pydecimal", left_digits=2, right_digits=2, positive=True)
-    orcamento = factory.Faker("pydecimal", left_digits=3, right_digits=2, positive=True)
     cronograma = factory.Faker("paragraph", locale="pt_BR")
     informacoes_adicionais = factory.Faker("paragraph", locale="pt_BR")
     contato_nome = factory.Faker("name", locale="pt_BR")
