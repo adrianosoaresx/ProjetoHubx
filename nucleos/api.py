@@ -15,7 +15,6 @@ from rest_framework.views import APIView
 
 from core.cache import get_cache_version
 from feed.api import NucleoPostSerializer
-from financeiro import atualizar_cobranca
 from services.nucleos import user_belongs_to_nucleo
 from services.nucleos_metrics import (
     get_membros_por_status,
@@ -368,7 +367,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao.status_suspensao = True
         participacao.data_suspensao = timezone.now()
         participacao.save(update_fields=["status_suspensao", "data_suspensao"])
-        atualizar_cobranca(nucleo.id, participacao.user_id, "inativo")
         membros_suspensos_total.inc()
         logger.info(
             "membro_suspenso",
@@ -395,7 +393,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao.status_suspensao = False
         participacao.data_suspensao = None
         participacao.save(update_fields=["status_suspensao", "data_suspensao"])
-        atualizar_cobranca(nucleo.id, participacao.user_id, "ativo")
         logger.info(
             "membro_reativado",
             extra={
@@ -469,7 +466,6 @@ class NucleoViewSet(viewsets.ModelViewSet):
         participacao = get_object_or_404(ParticipacaoNucleo, nucleo=nucleo, user_id=user_id, status="ativo")
         user_pk = participacao.user_id
         participacao.delete()
-        atualizar_cobranca(nucleo.id, user_pk, "inativo")
         logger.info(
             "membro_removido",
             extra={

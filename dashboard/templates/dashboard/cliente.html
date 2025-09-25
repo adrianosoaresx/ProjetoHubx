@@ -23,13 +23,6 @@
           hx-swap="outerHTML"
         ></section>
         <section
-          id="tasks"
-          hx-get="{% url 'dashboard:tarefas-partial' %}"
-          hx-trigger="load, every 20s"
-          hx-target="this"
-          hx-swap="outerHTML"
-        ></section>
-        <section
           id="notifications"
           hx-get="{% url 'dashboard:notificacoes-partial' %}"
           hx-trigger="load, every 20s"

@@ -35,7 +35,6 @@ class UserQuerySet(models.QuerySet):
 class UserType(models.TextChoices):
     ROOT = "root", "Root"
     ADMIN = "admin", "Admin"
-    FINANCEIRO = "financeiro", "Financeiro"
     COORDENADOR = "coordenador", "Coordenador"
     NUCLEADO = "nucleado", "Nucleado"
     ASSOCIADO = "associado", "Associado"

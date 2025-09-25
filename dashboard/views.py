@@ -418,28 +418,6 @@ def metrics_partial(request):
         messages.error(request, _("Erro ao carregar métricas."))
         html = render_to_string("_partials/toasts.html", request=request)
         return HttpResponse(html, status=500)
-
-
-def lancamentos_partial(request):
-    """Últimos lançamentos financeiros."""
-    if not request.user.is_authenticated:
-        return HttpResponse(status=401)
-    if not request.user.has_perm("dashboard.view_metrics"):
-        return HttpResponse(status=403)
-    try:
-        lancamentos = DashboardService.ultimos_lancamentos(request.user)
-        html = render_to_string(
-            "_partials/latest_transactions.html",
-            {"lancamentos": lancamentos},
-            request=request,
-        )
-        return HttpResponse(html)
-    except Exception:  # pragma: no cover - logado
-        logger.exception("Erro ao carregar lançamentos")
-        messages.error(request, _("Erro ao carregar lançamentos."))
-        return HttpResponse(status=500)
-
-
 def notificacoes_partial(request):
     """Notificações recentes para HTMX."""
     if not request.user.is_authenticated:
@@ -457,26 +435,6 @@ def notificacoes_partial(request):
     except Exception:  # pragma: no cover
         logger.exception("Erro ao carregar notificações")
         messages.error(request, _("Erro ao carregar notificações."))
-        return HttpResponse(status=500)
-
-
-def tarefas_partial(request):
-    """Tarefas pendentes para HTMX."""
-    if not request.user.is_authenticated:
-        return HttpResponse(status=401)
-    if not request.user.has_perm("dashboard.view_metrics"):
-        return HttpResponse(status=403)
-    try:
-        tarefas = DashboardService.tarefas_pendentes(request.user)
-        html = render_to_string(
-            "_partials/pending_tasks.html",
-            {"tarefas": tarefas},
-            request=request,
-        )
-        return HttpResponse(html)
-    except Exception:  # pragma: no cover
-        logger.exception("Erro ao carregar tarefas")
-        messages.error(request, _("Erro ao carregar tarefas."))
         return HttpResponse(status=500)
 
 

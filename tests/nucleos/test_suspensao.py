@@ -47,20 +47,16 @@ def _auth(client, user):
     client.force_authenticate(user=user)
 
 
-def test_suspender_e_reativar(api_client, admin_user, membro_user, organizacao, monkeypatch):
+def test_suspender_e_reativar(api_client, admin_user, membro_user, organizacao):
     nucleo = Nucleo.objects.create(nome="N", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=membro_user, nucleo=nucleo, status="ativo")
     _auth(api_client, admin_user)
-    calls = []
-    monkeypatch.setattr("nucleos.api.atualizar_cobranca", lambda *a: calls.append(a))
-
     before = membros_suspensos_total._value.get()
     url = reverse("nucleos_api:nucleo-suspender-membro", args=[nucleo.pk, membro_user.pk])
     resp = api_client.post(url)
     assert resp.status_code == 200
     part = ParticipacaoNucleo.objects.get(user=membro_user, nucleo=nucleo)
     assert part.status_suspensao is True and part.data_suspensao is not None
-    assert calls[-1] == (nucleo.id, membro_user.id, "inativo")
     assert membros_suspensos_total._value.get() == before + 1
 
     url = reverse("nucleos_api:nucleo-reativar-membro", args=[nucleo.pk, membro_user.pk])
@@ -68,7 +64,6 @@ def test_suspender_e_reativar(api_client, admin_user, membro_user, organizacao, 
     assert resp.status_code == 200
     part.refresh_from_db()
     assert part.status_suspensao is False and part.data_suspensao is None
-    assert calls[-1] == (nucleo.id, membro_user.id, "ativo")
 
 
 def test_membro_status_endpoint(api_client, membro_user, organizacao):

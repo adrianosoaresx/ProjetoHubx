@@ -44,8 +44,6 @@
       {% include '_components/chart.html' with chart_id='metrics_chart' title=_('Distribuição de Métricas') labels=labels|safe data=chart_data %}
       {% endwith %}
 
-      <div hx-get="{% url 'dashboard:lancamentos-partial' %}" hx-trigger="load, every 30s" hx-target="#lancamentos" hx-swap="innerHTML"></div>
-
       <div hx-get="{% url 'dashboard:notificacoes-partial' %}" hx-trigger="load, every 10s" hx-target="#notifications" hx-swap="innerHTML"></div>
 
       <section id="feed-metrics" class="my-8" aria-labelledby="feed-metrics-title" data-feed-metrics-url="{% url 'dashboard_api:feed-metrics' %}">
@@ -67,10 +65,6 @@
           <a href="{% url 'admin:accounts_user_changelist' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Administrar Usuários' %}">
             {% lucide 'user-cog' class='mb-2 mx-auto w-6 h-6' %}
             <span class="block">{% trans "Administrar Usuários" %}</span>
-          </a>
-          <a href="{% url 'financeiro:relatorios' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Relatórios Financeiros' %}">
-            {% lucide 'receipt-text' class='mb-2 mx-auto w-6 h-6' %}
-            <span class="block">{% trans "Relatórios Financeiros" %}</span>
           </a>
           <a href="{% url 'notificacoes:logs_list' %}" class="btn btn-secondary flex flex-col items-center" aria-label="{% trans 'Logs de Notificações' %}">
             {% lucide 'bell' class='mb-2 mx-auto w-6 h-6' %}

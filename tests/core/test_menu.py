@@ -10,7 +10,7 @@ from core.menu import MenuItem, build_menu
 @pytest.mark.parametrize(
     ("user_type", "expected_children"),
     [
-        (UserType.FINANCEIRO, ["child_fin"]),
+        (UserType.ASSOCIADO, ["child_assoc"]),
         (UserType.ADMIN, ["child_admin"]),
     ],
 )
@@ -22,14 +22,14 @@ def test_build_menu_filters_nested_items(monkeypatch, user_type, expected_childr
                 path="/parent/",
                 label="Parent",
                 icon="icon",
-                permissions=[UserType.ADMIN.value, UserType.FINANCEIRO.value],
+                permissions=[UserType.ADMIN.value, UserType.ASSOCIADO.value],
                 children=[
                     MenuItem(
-                        id="child_fin",
-                        path="/child-fin/",
-                        label="Financeiro",
+                        id="child_assoc",
+                        path="/child-assoc/",
+                        label="Associado",
                         icon="icon",
-                        permissions=[UserType.FINANCEIRO.value],
+                        permissions=[UserType.ASSOCIADO.value],
                     ),
                     MenuItem(
                         id="child_admin",

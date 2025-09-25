@@ -17,7 +17,6 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Geração automatizada de massa de dados para testes
 - Serviço central de notificações assíncronas
 - Notificações push em tempo real via WebSocket
-- Automação financeira e API para lançamentos financeiros
 - Denúncia e moderação básica de posts do feed
 - Dashboard com métricas do feed e gráficos interativos
 - Rotação automática de tokens de API
@@ -307,7 +306,6 @@ Os valores padrão ficam em `Hubx/settings.py` e podem ser ajustados:
 - `MENSALIDADE_NUCLEO`
 - `MENSALIDADE_VENCIMENTO_DIA`
 
-Consulte `docs/financeiro.md` para detalhes.
 
 ---
 

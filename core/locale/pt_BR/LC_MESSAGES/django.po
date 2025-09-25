@@ -100,11 +100,11 @@ msgid "Encontre grupos de interesse e colabore."
 msgstr ""
 
 #: templates/core/home.html:50
-msgid "Dashboard/Financeiro"
+msgid "Dashboard"
 msgstr ""
 
 #: templates/core/home.html:51
-msgid "Acompanhe métricas e controle financeiro."
+msgid "Acompanhe métricas e indicadores em tempo real."
 msgstr ""
 
 #: templates/core/home.html:56

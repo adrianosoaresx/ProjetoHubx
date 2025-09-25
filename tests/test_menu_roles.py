@@ -34,7 +34,6 @@ def test_token_menu_visible_for_roles(client, role, expected, settings):
 @pytest.mark.parametrize(
     "role",
     [
-        UserType.FINANCEIRO,
         UserType.NUCLEADO,
         UserType.ASSOCIADO,
         UserType.CONVIDADO,

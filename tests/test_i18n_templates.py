@@ -68,8 +68,6 @@ def _context(template_name: str):
     ctx = {"request": request}
     if template_name == "dashboard/export_pdf.html":
         ctx["metrics"] = {}
-    if template_name == "financeiro/relatorios.html":
-        ctx.update({"centros": [], "nucleos": []})
     return ctx
 
 

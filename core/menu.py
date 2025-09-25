@@ -77,16 +77,6 @@ ICON_FEED = """
 </svg>
 """
 
-ICON_FINANCEIRO = """
-<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-5 h-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
-  <path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\" />
-  <path d=\"m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\" />
-  <path d=\"m2 16 6 6\" />
-  <circle cx=\"16\" cy=\"9\" r=\"2.9\" />
-  <circle cx=\"6\" cy=\"5\" r=\"3\" />
-</svg>
-"""
-
 ICON_ORGS = """
 <svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-5 h-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
   <rect x=\"16\" y=\"16\" width=\"6\" height=\"6\" rx=\"1\" />
@@ -195,33 +185,6 @@ ICON_PLUS = """
 </svg>
 """
 
-ICON_ARROWS = """
-<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
-  <path d=\"m21 16-4 4-4-4\" />
-  <path d=\"M17 20V4\" />
-  <path d=\"m3 8 4-4 4 4\" />
-  <path d=\"M7 4v16\" />
-</svg>
-"""
-
-ICON_PIGGY_BANK = """
-<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
-  <path d=\"M5 11c-1.1 0-2 .9-2 2v1c0 1.7 1.3 3 3 3h.3a3 3 0 0 0 2.7 2h4a3 3 0 0 0 2.7-2H18c1.7 0 3-1.3 3-3v-3l1-1v-2h-3.3a6.5 6.5 0 0 0-11.7 0H5Z\" />
-  <path d=\"M16 11h.01\" />
-  <path d=\"M2 16v-2a2 2 0 0 1 2-2\" />
-</svg>
-"""
-
-ICON_FILE_TEXT = """
-<svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
-  <path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z\" />
-  <path d=\"M14 2v6h6\" />
-  <path d=\"M16 13H8\" />
-  <path d=\"M16 17H8\" />
-  <path d=\"M10 9H8\" />
-</svg>
-"""
-
 ICON_CHART = """
 <svg aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" class=\"w-4 h-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">
   <path d=\"M3 3v18h18\" />
@@ -312,7 +275,6 @@ def _get_menu_items() -> List[MenuItem]:
     nucleos_url = reverse("nucleos:list")
     eventos_url = reverse("eventos:lista")
     feed_url = reverse("feed:listar")
-    financeiro_repasses = reverse("financeiro:repasses")
 
     perfil_children = [
         MenuItem(
@@ -373,7 +335,6 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_EVENTOS,
             permissions=[
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -397,7 +358,6 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_PLUS,
             permissions=[
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -411,7 +371,6 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_STAR,
             permissions=[
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -425,64 +384,11 @@ def _get_menu_items() -> List[MenuItem]:
             icon=ICON_CHAT,
             permissions=[
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
                 "convidado",
             ],
-        ),
-    ]
-
-    financeiro_children = [
-        MenuItem(
-            id="financeiro_repasses",
-            path=financeiro_repasses,
-            label="Repasses",
-            icon=ICON_ARROWS,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_importar_pagamentos",
-            path=reverse("financeiro:importar_pagamentos"),
-            label="Importar Pagamentos",
-            icon=ICON_UPLOAD,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_relatorios",
-            path=reverse("financeiro:relatorios"),
-            label="Relatórios",
-            icon=ICON_CHART,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_lancamentos",
-            path=reverse("financeiro:lancamentos"),
-            label="Lançamentos",
-            icon=ICON_TABLE,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_importacoes",
-            path=reverse("financeiro:importacoes"),
-            label="Importações",
-            icon=ICON_DOWNLOAD,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_extrato",
-            path=reverse("financeiro:extrato"),
-            label="Extrato",
-            icon=ICON_FILE_TEXT,
-            permissions=["associado"],
-        ),
-        MenuItem(
-            id="financeiro_aportes",
-            path=reverse("financeiro:aportes_form"),
-            label="Aportes",
-            icon=ICON_PIGGY_BANK,
-            permissions=["associado"],
         ),
     ]
 
@@ -505,7 +411,6 @@ def _get_menu_items() -> List[MenuItem]:
             ICON_USERS,
             [
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -519,7 +424,6 @@ def _get_menu_items() -> List[MenuItem]:
             "Meus Núcleos",
             ICON_USERS,
             [
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -533,7 +437,6 @@ def _get_menu_items() -> List[MenuItem]:
             ICON_EVENTOS,
             [
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
@@ -548,21 +451,12 @@ def _get_menu_items() -> List[MenuItem]:
             ICON_FEED,
             [
                 "admin",
-                "financeiro",
                 "coordenador",
                 "nucleado",
                 "associado",
                 "convidado",
             ],
             children=feed_children,
-        ),
-        MenuItem(
-            "financeiro",
-            financeiro_repasses,
-            "Financeiro",
-            ICON_FINANCEIRO,
-            ["admin", "financeiro", "associado"],
-            children=financeiro_children,
         ),
         MenuItem("organizacoes", reverse("organizacoes:list"), "Organizações", ICON_ORGS, ["root"]),
     MenuItem(
@@ -646,26 +540,12 @@ def _mark_active(items: List[MenuItem], current_path: str, current_full_path: st
         item.is_expanded = item.is_active
         any_active = any_active or item.is_active
     return any_active
-
-
-def _adjust_item_paths(items: List[MenuItem], user) -> None:
-    for item in items:
-        if item.id == "financeiro" and item.children and getattr(user, "user_type", None) == "associado":
-            for child in item.children:
-                if child.id == "financeiro_extrato":
-                    item.path = child.path
-                    break
-        if item.children:
-            _adjust_item_paths(item.children, user)
-
-
 def build_menu(request) -> List[MenuItem]:
     """Retorna itens de menu filtrados por tipo de usuário."""
 
     items = _get_menu_items()
     user = request.user
     filtered = _filter_items(items, user)
-    _adjust_item_paths(filtered, user)
     current_path = request.path
     current_full_path = request.get_full_path()
     _mark_active(filtered, current_path, current_full_path)
