@@ -11,28 +11,65 @@
       <div class="card-header">
         <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
       </div>
-      <div class="card-body space-y-2 text-sm">
-        <p><strong>{% trans "Início" %}:</strong> {{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</p>
-        <p><strong>{% trans "Fim" %}:</strong> {{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</p>
-        <p><strong>{% trans "Local" %}:</strong> {{ object.local }}</p>
-        <p><strong>{% trans "Cidade" %}:</strong> {{ object.cidade }}</p>
-        <p><strong>{% trans "Estado" %}:</strong> {{ object.estado }}</p>
-        <p><strong>{% trans "CEP" %}:</strong> {{ object.cep }}</p>
-        <p>
-          <strong>{% trans "Contato" %}:</strong>
-          {{ object.contato_nome }}
-          {% if object.contato_email %}- {{ object.contato_email }}{% endif %}
-          {% if object.contato_whatsapp %}- {{ object.contato_whatsapp }}{% endif %}
-        </p>
-        {% if object.participantes_maximo %}
-          <p><strong>{% trans "Participantes máximo" %}:</strong> {{ object.participantes_maximo }}</p>
-        {% endif %}
-        {% if object.orcamento_estimado %}
-          <p><strong>{% trans "Orçamento estimado" %}:</strong> {{ object.orcamento_estimado }}</p>
-        {% endif %}
-        {% if object.valor_gasto %}
-          <p><strong>{% trans "Valor gasto" %}:</strong> {{ object.valor_gasto }}</p>
-        {% endif %}
+      <div class="card-body">
+        <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Início" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.data_inicio|date:'SHORT_DATETIME_FORMAT' }}</dd>
+          </div>
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Fim" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.data_fim|date:'SHORT_DATETIME_FORMAT' }}</dd>
+          </div>
+          {% if object.local %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Local" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.local }}</dd>
+          </div>
+          {% endif %}
+          {% if object.cidade or object.estado %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Cidade / Estado" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">
+              {{ object.cidade }}{% if object.cidade and object.estado %} - {% endif %}{{ object.estado }}
+            </dd>
+          </div>
+          {% endif %}
+          {% if object.cep %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "CEP" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.cep }}</dd>
+          </div>
+          {% endif %}
+          {% if object.contato_nome or object.contato_email or object.contato_whatsapp %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Contato" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)] space-y-1">
+              {% if object.contato_nome %}<span>{{ object.contato_nome }}</span>{% endif %}
+              {% if object.contato_email %}<span>{{ object.contato_email }}</span>{% endif %}
+              {% if object.contato_whatsapp %}<span>{{ object.contato_whatsapp }}</span>{% endif %}
+            </dd>
+          </div>
+          {% endif %}
+          {% if object.participantes_maximo %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Participantes máximo" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.participantes_maximo }}</dd>
+          </div>
+          {% endif %}
+          {% if object.orcamento_estimado %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Orçamento estimado" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.orcamento_estimado }}</dd>
+          </div>
+          {% endif %}
+          {% if object.valor_gasto %}
+          <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+            <dt class="text-[var(--text-secondary)]">{% trans "Valor gasto" %}</dt>
+            <dd class="font-medium text-[var(--text-primary)]">{{ object.valor_gasto }}</dd>
+          </div>
+          {% endif %}
+        </dl>
       </div>
     </article>
 
