@@ -241,17 +241,6 @@ def test_membros_ativos_endpoint(api_client, admin_user, outro_user, organizacao
     assert resp.data["results"][0]["papel"] == "coordenador"
 
 
-def test_financeiro_signal(api_client, admin_user, outro_user, organizacao, monkeypatch):
-    nucleo = Nucleo.objects.create(nome="N10", organizacao=organizacao)
-    ParticipacaoNucleo.objects.create(user=outro_user, nucleo=nucleo)
-    calls: list[tuple] = []
-    monkeypatch.setattr("nucleos.signals.atualizar_cobranca", lambda *args: calls.append(args))
-    _auth(api_client, admin_user)
-    url = reverse("nucleos_api:nucleo-aprovar-membro", args=[nucleo.pk, outro_user.pk])
-    api_client.post(url)
-    assert calls and calls[0][2] == "ativo"
-
-
 def test_metrics_endpoint_cache(api_client, admin_user, organizacao, outro_user):
     nucleo = Nucleo.objects.create(nome="N7", organizacao=organizacao)
     ParticipacaoNucleo.objects.create(user=admin_user, nucleo=nucleo, status="ativo")

@@ -3,9 +3,7 @@ Script para popular o banco de dados Django Hubx com dados de demonstração.
 
 Este script utiliza o ORM do Django para criar um usuário root, dois
 administradores, duas organizações com seus respectivos núcleos, usuários
-associados, nucleados e convidados, eventos de demonstração e registros
-financeiros. O saldo de cada centro de custo é calculado automaticamente
-com base nos lançamentos de aportes externos e despesas.
+associados, nucleados e convidados, além de eventos de demonstração.
 
 Para executar este script, basta rodá‑lo com um interpretador Python no
 ambiente virtual do projeto. Ele espera que as configurações do Django
@@ -42,11 +40,9 @@ def main() -> None:
     """Popula o banco de dados com dados iniciais usando o ORM do Django."""
     from django.contrib.auth import get_user_model
     from django.db import transaction
-    from django.db.models import Case, DecimalField, F, Sum, Value, When
     from django.utils.text import slugify
 
     from eventos.models import Evento
-    from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
     from nucleos.models import Nucleo, ParticipacaoNucleo
     from organizacoes.models import Organizacao
     from faker import Faker
@@ -136,22 +132,6 @@ def main() -> None:
                 nucleos.append(nucleo)
             nucleos_por_org[org] = nucleos
 
-        # Centros de custo por organização
-        centro_custo_por_org: dict = {}
-        for org_idx, org in enumerate(organizacoes, start=1):
-            cc, _ = CentroCusto.objects.get_or_create(
-                organizacao=org,
-                nucleo=None,
-                evento=None,
-                defaults={
-                    "nome": "Centro de Custo Principal",
-                    "tipo": "organizacao",
-                    "descricao": "",
-                    "saldo": Decimal("0"),
-                },
-            )
-            centro_custo_por_org[org] = cc
-
         # Eventos de demonstração (3 por organização)
         for org, admin in zip(organizacoes, admins):
             nucleos = nucleos_por_org[org]
@@ -221,7 +201,6 @@ def main() -> None:
                 elif user.organizacao != org or user.organizacao is None:
                     user.organizacao = org
                     user.save(update_fields=["organizacao"])
-                ContaAssociado.objects.get_or_create(user=user)
                 if (i + 1) % 10 == 0:
                     print(f"Criados {i + 1}/50 associados para {org.nome}")
             # 30 nucleados
@@ -263,7 +242,6 @@ def main() -> None:
                     nucleo=nucleo,
                     defaults={"papel": "membro", "status": "ativo"},
                 )
-                ContaAssociado.objects.get_or_create(user=user)
                 if (i + 1) % 10 == 0:
                     print(f"Criados {i + 1}/30 nucleados para {org.nome}")
             # 5 convidados
@@ -292,53 +270,6 @@ def main() -> None:
                     user.organizacao = org
                     user.save(update_fields=["organizacao"])
                 print(f"Criados {i + 1}/5 convidados para {org.nome}")
-
-        # Registros financeiros (3 meses) e atualização de saldo
-        for org_idx, org in enumerate(organizacoes, start=1):
-            cc = centro_custo_por_org[org]
-            for month_offset in range(3, 0, -1):
-                date_ref = timezone.now() - timedelta(days=30 * month_offset)
-                # Aporte externo (receita)
-                LancamentoFinanceiro.objects.get_or_create(
-                    centro_custo=cc,
-                    tipo=LancamentoFinanceiro.Tipo.APORTE_EXTERNO,
-                    data_lancamento=date_ref,
-                    defaults={
-                        "valor": Decimal("5000.00"),
-                        "data_vencimento": date_ref,
-                        "status": LancamentoFinanceiro.Status.PAGO,
-                        "origem": LancamentoFinanceiro.Origem.MANUAL,
-                        "descricao": f"Aporte externo referente ao mês {date_ref.strftime('%Y-%m')}",
-                    },
-                )
-                # Despesa (saída)
-                LancamentoFinanceiro.objects.get_or_create(
-                    centro_custo=cc,
-                    tipo=LancamentoFinanceiro.Tipo.DESPESA,
-                    data_lancamento=date_ref + timedelta(days=2),
-                    defaults={
-                        "valor": Decimal("2000.00"),
-                        "data_vencimento": date_ref + timedelta(days=2),
-                        "status": LancamentoFinanceiro.Status.PAGO,
-                        "origem": LancamentoFinanceiro.Origem.MANUAL,
-                        "descricao": f"Despesa operacional referente ao mês {date_ref.strftime('%Y-%m')}",
-                    },
-                )
-                print(f"Registros financeiros criados {3 - month_offset + 1}/3 para {org.nome}")
-            # Calcula o saldo: receitas (aportes externos) menos despesas
-            saldo = LancamentoFinanceiro.objects.filter(centro_custo=cc).aggregate(
-                saldo=Sum(
-                    Case(
-                        When(tipo=LancamentoFinanceiro.Tipo.APORTE_EXTERNO, then=F("valor")),
-                        When(tipo=LancamentoFinanceiro.Tipo.DESPESA, then=F("valor") * -1),
-                        default=Value(0),
-                        output_field=DecimalField(),
-                    )
-                )
-            ).get("saldo") or Decimal("0")
-            if cc.saldo != saldo:
-                cc.saldo = saldo
-                cc.save(update_fields=["saldo"])
 
         print("Base de dados populada com sucesso!")
 

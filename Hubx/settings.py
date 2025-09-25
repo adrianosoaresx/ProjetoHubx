@@ -89,7 +89,6 @@ INSTALLED_APPS = [
     "eventos.apps.EventosConfig",
     "feed",
     "configuracoes",
-    "financeiro.apps.FinanceiroConfig",
     "notificacoes.apps.NotificacoesConfig",
     "audit",
     "webhooks.apps.WebhooksConfig",
@@ -329,10 +328,6 @@ CELERY_BEAT_SCHEDULE = {
     "enviar_relatorios_semanais": {
         "task": "notificacoes.tasks.enviar_relatorios_semanais",
         "schedule": crontab(minute="*"),
-    },
-    "gerar_cobrancas_mensais": {
-        "task": "financeiro.tasks.cobrancas.gerar_cobrancas_mensais",
-        "schedule": crontab(minute=0, hour=0, day_of_month=1),
     },
     "expirar_solicitacoes_pendentes": {
         "task": "nucleos.tasks.expirar_solicitacoes_pendentes",

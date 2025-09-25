@@ -22,7 +22,6 @@ except Exception:  # ImportError ou qualquer falha ao carregar
     TopicoDiscussao = None  # type: ignore
     DISCUSSAO_INSTALLED = False
 from feed.models import Post, PostView, Reacao, Tag
-from financeiro.models import LancamentoFinanceiro
 from notificacoes.models import NotificationLog, NotificationStatus
 from nucleos.models import Nucleo
 from organizacoes.models import Organizacao
@@ -443,25 +442,11 @@ class DashboardService:
         return {"total": atual, "crescimento": crescimento}
 
     @staticmethod
-    def ultimos_lancamentos(user: User, limit: int = 5):
-        qs = LancamentoFinanceiro.objects.select_related("centro_custo")
-        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
-            qs = qs.filter(centro_custo__organizacao=user.organizacao)
-        return qs.order_by("-data_lancamento")[:limit]
-
-    @staticmethod
     def ultimas_notificacoes(user: User, limit: int = 5):
         qs = NotificationLog.objects.select_related("template").exclude(status=NotificationStatus.LIDA)
         if user.user_type not in {UserType.ROOT, UserType.ADMIN}:
             qs = qs.filter(user=user)
         return qs.order_by("-data_envio")[:limit]
-
-    @staticmethod
-    def tarefas_pendentes(user: User, limit: int = 5):
-        qs = LancamentoFinanceiro.objects.filter(status=LancamentoFinanceiro.Status.PENDENTE)
-        if user.user_type in {UserType.ADMIN, UserType.COORDENADOR}:
-            qs = qs.filter(centro_custo__organizacao=user.organizacao)
-        return qs.order_by("data_vencimento")[:limit]
 
     @staticmethod
     def proximos_eventos(user: User, limit: int = 5):
@@ -585,12 +570,6 @@ class DashboardMetricsService:
                 Post.objects.select_related("organizacao", "nucleo", "evento", "autor__organizacao"),
                 "created_at",
             ),
-            "lancamentos_pendentes": (
-                LancamentoFinanceiro.objects.select_related("centro_custo").filter(
-                    status=LancamentoFinanceiro.Status.PENDENTE
-                ),
-                "data_lancamento",
-            ),
         }
 
         # Acrescenta métricas de discussão se disponíveis
@@ -623,8 +602,6 @@ class DashboardMetricsService:
                     qs = qs.filter(pk=organizacao_id)
                 elif name == "num_nucleos":
                     qs = qs.filter(organizacao_id=organizacao_id)
-                elif name == "lancamentos_pendentes":
-                    qs = qs.filter(centro_custo__organizacao_id=organizacao_id)
                 elif name == "num_topicos":
                     qs = qs.filter(categoria__organizacao_id=organizacao_id)
                 elif name == "num_respostas":
@@ -638,8 +615,6 @@ class DashboardMetricsService:
                     qs = qs.filter(nucleo_id=nucleo_id)
                 if name == "num_posts_feed_total":
                     qs = qs.filter(nucleo_id=nucleo_id)
-                if name == "lancamentos_pendentes":
-                    qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
                 if name == "num_topicos":
                     qs = qs.filter(Q(nucleo_id=nucleo_id) | Q(categoria__nucleo_id=nucleo_id))
                 if name == "num_respostas":
@@ -649,8 +624,6 @@ class DashboardMetricsService:
                     qs = qs.filter(pk=evento_id)
                 if name == "num_posts_feed_total":
                     qs = qs.filter(evento_id=evento_id)
-                if name == "lancamentos_pendentes":
-                    qs = qs.filter(centro_custo__evento_id=evento_id)
                 if name == "num_topicos":
                     qs = qs.filter(Q(evento_id=evento_id) | Q(categoria__evento_id=evento_id))
                 if name == "num_respostas":

@@ -379,14 +379,6 @@ msgstr ""
 msgid "Meus filtros"
 msgstr ""
 
-#: templates/dashboard/partials/latest_transactions.html:3
-msgid "Últimos Lançamentos"
-msgstr ""
-
-#: templates/dashboard/partials/latest_transactions.html:11
-msgid "Nenhum lançamento encontrado."
-msgstr ""
-
 #: templates/dashboard/partials/notifications_list.html:3
 msgid "Notificações Recentes"
 msgstr ""
@@ -397,14 +389,6 @@ msgstr ""
 
 #: templates/dashboard/partials/notifications_list.html:29
 msgid "Nenhuma notificação."
-msgstr ""
-
-#: templates/dashboard/partials/pending_tasks.html:3
-msgid "Tarefas Pendentes"
-msgstr ""
-
-#: templates/dashboard/partials/pending_tasks.html:11
-msgid "Nenhuma tarefa pendente."
 msgstr ""
 
 #: templates/dashboard/partials/upcoming_events.html:3

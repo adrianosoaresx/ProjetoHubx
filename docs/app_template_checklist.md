@@ -10,7 +10,6 @@ Este checklist ajuda a garantir consistência nos templates durante as revisões
 | dashboard | Diego | [x] | [x] | [x] | [x] | [x] | [x] |
 | eventos | Fernando | [x] | [x] | [x] | [x] | [x] | [x] |
 | feed | Gabriela | [x] | [x] | [x] | [x] | [x] | [x] |
-| financeiro | Henrique | [x] | [x] | [x] | [x] | [x] | [x] |
 | nucleos | Isabela | [x] | [x] | [x] | [x] | [x] | [x] |
 | notificacoes | João | [x] | [x] | [x] | [x] | [x] | [x] |
 | organizacoes | Karina | [x] | [x] | [x] | [x] | [x] | [x] |

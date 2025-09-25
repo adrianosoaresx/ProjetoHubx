@@ -14,7 +14,6 @@ from dashboard.services import DashboardMetricsService, DashboardService
 from discussao.models import CategoriaDiscussao, RespostaDiscussao, TopicoDiscussao
 from feed.factories import PostFactory
 from feed.models import Post
-from financeiro.models import CentroCusto, LancamentoFinanceiro
 from organizacoes.factories import OrganizacaoFactory
 
 pytestmark = pytest.mark.django_db
@@ -258,14 +257,3 @@ def test_get_metrics_inscricoes_confirmadas(admin_user, evento, cliente_user):
     assert metrics["inscricoes_confirmadas"]["crescimento"] == pytest.approx(100.0)
 
 
-def test_get_metrics_lancamentos_pendentes(admin_user, organizacao):
-    centro = CentroCusto.objects.create(nome="c", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=organizacao)
-    LancamentoFinanceiro.objects.create(
-        centro_custo=centro,
-        tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
-        valor=10,
-    )
-    metrics, _ = DashboardMetricsService.get_metrics(
-        admin_user, metricas=["lancamentos_pendentes"], escopo="organizacao", organizacao_id=organizacao.id
-    )
-    assert metrics["lancamentos_pendentes"]["total"] >= 1
