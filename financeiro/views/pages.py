@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
@@ -10,13 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from accounts.models import UserType
 from eventos.models import Evento
 
-from ..models import (
-    CentroCusto,
-    ContaAssociado,
-    FinanceiroLog,
-    FinanceiroTaskLog,
-    LancamentoFinanceiro,
-)
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 
 
 def _is_financeiro_or_admin(user) -> bool:
@@ -84,29 +77,6 @@ def repasses_view(request):
         "financeiro/repasses.html",
         {"eventos": eventos, "legacy_warning": ContaAssociado.LEGACY_MESSAGE},
     )
-
-
-def logs_list_view(request):
-    User = get_user_model()
-    context = {
-        "acoes": FinanceiroLog.Acao.choices,
-        "usuarios": User.objects.all(),
-    }
-    return render(request, "financeiro/logs_list.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def task_logs_view(request):
-    logs = FinanceiroTaskLog.objects.all()
-    return render(request, "financeiro/task_logs.html", {"logs": logs})
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def task_log_detail_view(request, pk):
-    log = get_object_or_404(FinanceiroTaskLog, pk=pk)
-    return render(request, "financeiro/task_log_detail.html", {"log": log})
 
 
 @login_required

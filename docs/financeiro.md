@@ -59,9 +59,8 @@ no aplicativo usando o app `notificacoes` com o template
 A função `distribuir_receita_evento(evento_id, valor, conta_associado)` aloca as
 receitas de ingressos. Quando o evento pertence a um núcleo, todo o valor é
 creditado à carteira operacional do núcleo. Sem vínculo, o valor é dividido 50/50
-entre a carteira do evento e a da organização. As operações são registradas no
-`FinanceiroLog` com a ação `distribuir_receita` e notificações são enviadas aos
-coordenadores ou organizadores.
+entre a carteira do evento e a da organização. Após a distribuição, notificações
+são enviadas aos coordenadores ou organizadores responsáveis.
 
 ## Ajustes de Lançamentos
 

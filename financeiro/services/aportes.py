@@ -3,8 +3,7 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
-from ..models import FinanceiroLog, LancamentoFinanceiro
-from .auditoria import log_financeiro
+from ..models import LancamentoFinanceiro
 from .notificacoes import enviar_estorno_aporte
 from .saldos import aplicar_ajustes, debitar, vincular_carteiras_lancamento
 
@@ -41,13 +40,6 @@ def estornar_aporte(aporte_id: str, usuario=None) -> LancamentoFinanceiro:
             contraparte_delta=debitar(lancamento.valor) if conta_destino else None,
         )
         lancamento.status = LancamentoFinanceiro.Status.CANCELADO
-
-    log_financeiro(
-        FinanceiroLog.Acao.EDITAR_LANCAMENTO,
-        usuario,
-        {"status": LancamentoFinanceiro.Status.PAGO},
-        {"status": LancamentoFinanceiro.Status.CANCELADO, "id": str(lancamento.id)},
-    )
 
     conta_destino = lancamento.conta_associado_resolvida
     if conta_destino:

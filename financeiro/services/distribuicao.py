@@ -8,8 +8,7 @@ from django.utils import timezone
 
 from eventos.models import Evento
 
-from ..models import CentroCusto, ContaAssociado, FinanceiroLog, LancamentoFinanceiro
-from .auditoria import log_financeiro
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from .notificacoes import enviar_distribuicao
 from .saldos import aplicar_ajustes, atribuir_carteiras_padrao
 
@@ -103,12 +102,6 @@ def distribuir_receita_evento(
                 carteira=dados_lanc.get("carteira"),
                 centro_delta=valor,
             )
-            log_financeiro(
-                FinanceiroLog.Acao.DISTRIBUIR_RECEITA,
-                None,
-                {},
-                {"lancamento": str(lanc.id), "valor": str(valor)},
-            )
             if participantes:
                 repasses = []
                 for conta_p, perc in participantes:
@@ -134,12 +127,6 @@ def distribuir_receita_evento(
                         contraparte_delta=valor_repasse,
                     )
                     repasses.append({"lancamento": str(lanc_r.id), "valor": str(valor_repasse)})
-                log_financeiro(
-                    FinanceiroLog.Acao.REPASSE,
-                    None,
-                    {},
-                    {"evento": str(evento.id), "repasses": repasses},
-                )
             for coord in evento.nucleo.coordenadores:
                 enviar_distribuicao(coord, evento, valor)
         else:
@@ -175,12 +162,6 @@ def distribuir_receita_evento(
                 carteira=dados_org.get("carteira"),
                 centro_delta=metade,
             )
-            log_financeiro(
-                FinanceiroLog.Acao.DISTRIBUIR_RECEITA,
-                None,
-                {},
-                {"lancamentos": [str(lanc_e.id), str(lanc_o.id)], "valor": str(valor)},
-            )
             if participantes:
                 repasses = []
                 for conta_p, perc in participantes:
@@ -206,10 +187,4 @@ def distribuir_receita_evento(
                         contraparte_delta=valor_repasse,
                     )
                     repasses.append({"lancamento": str(lanc_r.id), "valor": str(valor_repasse)})
-                log_financeiro(
-                    FinanceiroLog.Acao.REPASSE,
-                    None,
-                    {},
-                    {"evento": str(evento.id), "repasses": repasses},
-                )
             enviar_distribuicao(evento.coordenador, evento, valor)

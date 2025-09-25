@@ -14,7 +14,6 @@ from financeiro.models import (
     Carteira,
     CentroCusto,
     ContaAssociado,
-    FinanceiroTaskLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
 )
@@ -216,9 +215,6 @@ def test_reprocessar_erros(api_client, user, settings):
     resp = api_client.post(err_url, {"file": file2}, format="multipart")
     assert resp.status_code == 202
     assert LancamentoFinanceiro.objects.count() == 2
-    log = FinanceiroTaskLog.objects.filter(nome_tarefa="reprocessar_importacao_async").first()
-    assert log is not None
-    assert log.status == "sucesso"
 
 
 def test_email_nao_cadastrado(api_client, user):

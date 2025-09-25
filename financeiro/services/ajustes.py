@@ -6,8 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 
-from ..models import FinanceiroLog, LancamentoFinanceiro
-from .auditoria import log_financeiro
+from ..models import LancamentoFinanceiro
 from .notificacoes import enviar_ajuste
 from .saldos import aplicar_ajustes, vincular_carteiras_lancamento
 
@@ -54,12 +53,6 @@ def ajustar_lancamento(
         )
         lancamento.ajustado = True
         lancamento.save(update_fields=["ajustado"])
-    log_financeiro(
-        FinanceiroLog.Acao.AJUSTE_LANCAMENTO,
-        usuario,
-        {"valor": str(lancamento.valor)},
-        {"valor_corrigido": str(valor_corrigido), "delta": str(delta)},
-    )
     conta_destino = lancamento.conta_associado_resolvida
     if conta_destino:
         enviar_ajuste(conta_destino.user, lancamento, delta)

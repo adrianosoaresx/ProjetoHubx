@@ -9,9 +9,8 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.utils import timezone
 
-from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro, FinanceiroLog
+from ..models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 from .notificacoes import enviar_cobranca
-from .auditoria import log_financeiro
 from . import metrics
 from .saldos import atribuir_carteiras_padrao
 
@@ -127,12 +126,6 @@ def gerar_cobrancas(reajuste: Decimal | None = None) -> None:
             lanc = LancamentoFinanceiro.objects.create(**payload)
             total += 1
             conta_destino = lanc.conta_associado_resolvida
-            log_financeiro(
-                FinanceiroLog.Acao.CRIAR_COBRANCA,
-                conta_destino.user if conta_destino else None,
-                {},
-                {"lancamento": str(lanc.id), "valor": str(lanc.valor)},
-            )
             if conta_destino:
                 try:
                     enviar_cobranca(conta_destino.user, lanc)

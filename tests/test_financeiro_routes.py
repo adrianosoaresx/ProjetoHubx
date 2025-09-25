@@ -5,7 +5,6 @@ from rest_framework.test import APITestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from accounts.models import UserType
-from financeiro.models import FinanceiroTaskLog
 
 
 class FinanceiroRoutesTests(APITestCase):
@@ -18,12 +17,6 @@ class FinanceiroRoutesTests(APITestCase):
             user_type=UserType.ADMIN,
         )
         self.client.force_login(self.user)
-
-    def test_task_log_detail_route(self):
-        log = FinanceiroTaskLog.objects.create(nome_tarefa="t", status="ok")
-        url = reverse("financeiro:task_log_detail", kwargs={"pk": log.pk})
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 200)
 
     def test_reprocessar_erros_route(self):
         url = reverse("financeiro_api:financeiro-reprocessar-erros", args=[uuid.uuid4()])
