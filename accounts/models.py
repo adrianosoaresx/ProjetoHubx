@@ -39,6 +39,8 @@ class UserType(models.TextChoices):
     NUCLEADO = "nucleado", "Nucleado"
     ASSOCIADO = "associado", "Associado"
     CONVIDADO = "convidado", "Convidado"
+    OPERADOR = "operador", "Operador"
+    CONSULTOR = "consultor", "Consultor"
 
 
 class CustomUserManager(DjangoUserManager.from_queryset(UserQuerySet)):
@@ -226,7 +228,7 @@ class User(AbstractUser, TimeStampedModel, SoftDeleteModel):
             return UserType.NUCLEADO.value
         if self.is_associado and not self.nucleo:
             return UserType.ASSOCIADO.value
-        return UserType.CONVIDADO.value
+        return self.user_type
 
     def save(self, *args, **kwargs):
         if self.cnpj:
