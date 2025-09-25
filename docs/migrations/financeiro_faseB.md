@@ -31,18 +31,10 @@ classificador e `ContaAssociado` permanece apenas por compatibilidade.
 
 ## Endpoints afetados
 
-- `GET /api/financeiro/carteiras/` e `POST /api/financeiro/carteiras/` – novos
-  para CRUD das carteiras e leitura de saldos oficiais.
-- `GET /api/financeiro/lancamentos/` – respostas incluem `carteira` e
-  `carteira_contraparte`. Associados continuam recebendo aviso `legacy_warning`
-  quando houver referências à `ContaAssociado`.
-- `PATCH /api/financeiro/lancamentos/<id>/` e endpoint de ajuste – atualização de
-  status recalcula diretamente `Carteira.saldo` via serviços de pagamentos.
-- `POST /api/financeiro/aportes/` – créditos são aplicados à carteira operacional
-  do centro em vez de alterar `CentroCusto.saldo`.
-- Relatórios e importações passam a calcular os totais a partir das carteiras
-  operacionais, com criação automática de carteiras ausentes durante o processo
-  de importação.
+Com a remoção das APIs do módulo financeiro, o checklist acima deve ser seguido
+antes de disponibilizar novamente o acesso manual via administração do Django.
+As operações listadas anteriormente (carteiras, lançamentos, aportes e
+importações) passaram a ser controladas internamente pela equipe financeira.
 
 ## Notas de depreciação
 

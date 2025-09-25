@@ -20,7 +20,6 @@ urlpatterns = [
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
-    path("discussao/", include(("discussao.urls", "discussao"), namespace="discussao")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
     path("organizacoes/", include(("organizacoes.urls", "organizacoes"), namespace="organizacoes")),
@@ -29,10 +28,6 @@ urlpatterns = [
     path(
         "configuracoes/",
         include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
-    ),
-    path(
-        "api/financeiro/",
-        include(("financeiro.api_urls", "financeiro_api"), namespace="financeiro_api"),
     ),
     path(
         "api/nucleos/",

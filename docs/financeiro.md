@@ -64,74 +64,23 @@ são enviadas aos coordenadores ou organizadores responsáveis.
 
 ## Ajustes de Lançamentos
 
-Lançamentos pagos podem ser ajustados via `POST
-/api/financeiro/lancamentos/<uuid:id>/ajustar/`. O serviço cria um lançamento do
-tipo `ajuste` com a diferença de valores, marca o original como ajustado e
-recalcula os saldos das carteiras envolvidas. A requisição deve conter
-`valor_corrigido` e `descricao_motivo` e é restrita a usuários financeiros ou
-administradores.
+Os ajustes de lançamentos pagos passaram a ser executados manualmente via
+administração do Django. A equipe financeira deve editar o lançamento original,
+registrar a justificativa nos campos de observação e atualizar os saldos
+utilizando as ferramentas internas de conciliação.
 
 ## Registro de Aportes
 
-Endpoint: `POST /api/financeiro/aportes/`
-
-Campos obrigatórios:
-
-- `centro_custo` — ID do centro de custo
-- `valor` — valor positivo do aporte
-- `descricao` — texto descritivo
-
-Campos opcionais:
-
-- `tipo` — `aporte_interno` (padrão) ou `aporte_externo`
-- `data_lancamento` e `data_vencimento`
-- `patrocinador` — para aportes externos
-
-Somente usuários administradores podem registrar `aporte_interno`. Após criado,
-o saldo da carteira operacional do centro de custo é atualizado imediatamente.
-
-## Endpoints
-
-| Método e rota | Permissão | Descrição |
-|---------------|-----------|-----------|
-|`GET /api/financeiro/carteiras/`|Financeiro/Admin|Consulta carteiras e saldos oficiais|
-|`POST /api/financeiro/carteiras/`|Financeiro/Admin|Cria ou ajusta carteiras|
-|`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação; retorna `token_erros` quando houver rejeições|
-|`POST /api/financeiro/importar-pagamentos/confirmar/`|Financeiro/Admin|Confirma importação assíncrona|
-|`POST /api/financeiro/importar-pagamentos/reprocessar/<token>/`|Financeiro/Admin|Reprocessa linhas corrigidas|
-|`GET /api/financeiro/importacoes/`|Financeiro/Admin|Lista importações com filtros e paginação|
-|`GET /api/financeiro/importacoes/<uuid:id>/`|Financeiro/Admin|Detalha uma importação específica|
-|`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
-|`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
-|`PATCH /api/financeiro/lancamentos/<uuid:id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
-|`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
-
-A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`,
-`data_lancamento`, `status` e pelo menos uma das colunas `conta_associado_id` ou
-`email`. Durante o processamento, as carteiras do centro e da contraparte são
-criadas automaticamente quando necessário.
+Os aportes são solicitados pelos associados e executados manualmente pela
+equipe financeira. O formulário disponível no painel web gera apenas a
+solicitação; toda a contabilização é feita por meio do Django Admin.
 
 ## Importações de Pagamentos
 
-`GET /api/financeiro/importacoes/`
+Com a remoção das APIs, os arquivos CSV ou XLSX devem ser encaminhados para o
+time financeiro, que realiza a importação localmente. Após o processamento, os
+registros continuam sendo armazenados em `ImportacaoPagamentos` para auditoria.
 
-Parâmetros opcionais: `usuario`, `arquivo`, `periodo_inicial`, `periodo_final`.
-
-Exemplo:
-
-```http
-GET /api/financeiro/importacoes/?usuario=<id>&periodo_inicial=2024-01
-```
-
-Retorna itens paginados com `arquivo`, `total_processado`, `erros` e `status`.
-
-```mermaid
-flowchart LR
-    upload[Upload] --> previa[Prévia]
-    previa --> confirm[Confirmação]
-    confirm --> worker[Processamento assíncrono]
-    worker --> registro[ImportacaoPagamentos]
-```
 ### Permissões
 - Importação de pagamentos, geração de cobranças e relatórios completos: apenas administradores financeiros (root não possui acesso).
 - Relatórios por núcleo: admin ou coordenador do núcleo.
@@ -139,41 +88,17 @@ flowchart LR
 
 ## Relatórios Financeiros
 
-`GET /api/financeiro/relatorios/`
-
-Parâmetros opcionais:
-
-- `centro`: ID do centro de custo
-- `nucleo`: ID do núcleo
-- `periodo_inicial`: `YYYY-MM`
-- `periodo_final`: `YYYY-MM`
-- `tipo`: `receitas`, `despesas` ou ambos
-
-Resposta:
-
-```json
-{
-  "saldo_atual": 100.0,
-  "serie": [
-    {"mes": "2025-07", "receitas": 50.0, "despesas": 20.0, "saldo": 30.0}
-  ],
-  "saldos_por_centro": {
-    "<centro_id>": 40.0
-  },
-  "classificacao_centros": [
-    {"id": "<centro_id>", "nome": "Centro A", "tipo": "organizacao", "saldo": 40.0}
-  ]
-}
-```
+Os relatórios consolidados são gerados sob demanda pela equipe financeira e
+compartilhados em formato PDF ou planilha. A visão web continua exibindo links
+informativos, porém não há mais processamento em tempo real pelo navegador.
 
 ## Interface Web
 
 ### Importar Pagamentos
 
-1. Acesse **Financeiro → Importar**.
-2. Escolha um arquivo `.csv` ou `.xlsx` e selecione **Pré-visualizar**. O envio é feito via HTMX e a pré-visualização aparece abaixo do formulário.
-3. Erros de validação são exibidos na região de mensagens. Quando não houver problemas, o botão **Confirmar Importação** é habilitado.
-4. Ao confirmar, a tarefa roda em segundo plano. Futuras integrações com o módulo de Notificações avisarão sobre erros encontrados.
+1. Acesse **Financeiro → Importar** para encontrar instruções de envio.
+2. Encaminhe o arquivo `.csv` ou `.xlsx` para a equipe financeira conforme orientado na página.
+3. Após o processamento manual, consulte a listagem de importações para acompanhar o histórico.
 
 ### Centros de Custo
 
@@ -183,9 +108,8 @@ Resposta:
 
 ### Relatórios
 
-1. Acesse **Financeiro → Relatórios**.
-2. Defina filtros de centro, núcleo e período e clique em **Gerar Relatório** para obter o saldo e a série temporal.
-3. Visualize os dados com os filtros aplicados diretamente na interface.
+1. Acesse **Financeiro → Relatórios** para solicitar dados consolidados.
+2. Utilize os canais internos para obter o relatório gerado pela equipe financeira.
 
 > **Nota:** Todos os formulários utilizam rótulos associados, suporte a teclado e regiões `aria-live` para mensagens, atendendo às diretrizes WCAG 2.1 AA.
 
@@ -207,10 +131,10 @@ Novas métricas de observabilidade:
 
 - `financeiro_importacoes_total` – importações iniciadas.
 - `financeiro_importacoes_erros_total` – importações com erros.
-- `financeiro_relatorios_total` – relatórios solicitados pela API auxiliar.
+- `financeiro_relatorios_total` – relatórios gerados manualmente.
 - `financeiro_tasks_total` – execuções de tarefas Celery.
 
 ## Logs de Auditoria
 
-`GET /api/financeiro/logs/` – lista de ações registradas. Filtros: `acao`,
-`usuario`, `inicio`, `fim`.
+As operações críticas continuam registradas em `financeiro_financeirolog`. As
+consultas devem ser feitas diretamente no banco ou por relatórios internos.

@@ -9,103 +9,26 @@
 
 {% block content %}
   <div class="py-12 card px-4">
-    <div class="card-body">
-      <div class="mb-4">
+    <div class="card-body space-y-4">
+      <div>
         <a href="{% url 'financeiro:importacoes' %}" class="link link-hover">{% trans "Ver importações" %}</a>
       </div>
-      <div id="legacy-warning" class="mb-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900" data-default-warning="{{ legacy_warning }}">{{ legacy_warning }}</div>
-      <form id="upload-form" method="post" enctype="multipart/form-data" class="card">
-        <div class="card-body space-y-4">
-          {% csrf_token %}
-          <label for="file" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Arquivo" %}</label>
-          <input id="file" type="file" name="file" accept=".csv,.xlsx" class="block w-full form-input" required
-                 hx-post="/api/financeiro/importar-pagamentos/"
-                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                 hx-target="#preview"
-                 hx-trigger="change"
-                 hx-include="#upload-form"
-                 hx-on="htmx:afterRequest: renderPreview(event)" />
-          <p class="text-sm text-[var(--text-secondary)]">{% trans "Apenas CSV ou XLSX até 5MB" %}</p>
-        </div>
-      </form>
-      <button id="preview-btn"
-              class="mt-2 btn btn-primary"
-              hx-post="/api/financeiro/importar-pagamentos/"
-              hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-              hx-target="#preview"
-              hx-trigger="click"
-              hx-include="#upload-form"
-              hx-on="htmx:afterRequest: renderPreview(event)">
-        {% trans "Pré-visualizar" %}
-      </button>
-      <div id="preview" class="mt-6" aria-live="polite"></div>
-      <div id="messages" class="mt-4 text-sm" aria-live="polite"></div>
-      <div id="reprocess" class="mt-4"></div>
-      <form id="confirm-form">
-        {% csrf_token %}
-        <input type="hidden" id="confirm-id" name="id" />
-        <input type="hidden" id="confirm-importacao-id" name="importacao_id" />
-      </form>
-      <div class="mt-4 flex items-center gap-2">
-        <button id="confirm-btn" disabled
-                hx-post="/api/financeiro/importar-pagamentos/confirmar/"
-                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                hx-target="#messages"
-                hx-include="#confirm-form"
-                hx-indicator="#loading"
-                class="btn btn-primary">
-          {% trans "Confirmar Importação" %}
-        </button>
-        <span id="loading" class="htmx-indicator text-sm">{% trans "Processando..." %}</span>
+      <div id="legacy-warning" class="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+        {{ legacy_warning }}
       </div>
-      <script>
-        const csrfToken = "{{ csrf_token }}";
-        function renderPreview(evt) {
-          const preview = document.getElementById('preview');
-          const messages = document.getElementById('messages');
-          const reprocess = document.getElementById('reprocess');
-          preview.innerHTML = '';
-          messages.innerHTML = '';
-          reprocess.innerHTML = '';
-          try {
-            const data = JSON.parse(evt.detail.xhr.response);
-            const warningEl = document.getElementById('legacy-warning');
-            if (warningEl) {
-              const apiWarning = data.legacy_warning || null;
-              const message = apiWarning || warningEl.dataset.defaultWarning || '';
-              warningEl.textContent = message;
-              warningEl.hidden = !message;
-            }
-            if (data.preview && data.preview.length) {
-              const rows = data.preview.map(r => `<tr><td class="px-2 py-1">${r.centro_custo}</td><td class="px-2 py-1">${r.conta_associado || ''}</td><td class="px-2 py-1">${r.tipo}</td><td class="px-2 py-1">${r.valor}</td><td class="px-2 py-1">${r.data_lancamento}</td></tr>`).join('');
-              preview.innerHTML = `<div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm"><table class="min-w-full divide-y divide-[var(--border)]"><thead class="bg-[var(--bg-tertiary)]"><tr><th class="px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Centro de Custo" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Conta" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Tipo" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Valor" %}</th><th class="px-2 py-1 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Data" %}</th></tr></thead><tbody class="divide-y divide-[var(--border)]">${rows}</tbody></table></div>`;
-              document.getElementById('confirm-id').value = data.id;
-              document.getElementById('confirm-importacao-id').value = data.importacao_id;
-              document.getElementById('confirm-btn').disabled = false;
-            }
-            if (data.erros && data.erros.length) {
-              const ul = document.createElement('ul');
-              ul.className = 'list-disc text-[var(--error)] pl-5';
-              data.erros.forEach((err) => {
-                const li = document.createElement('li');
-                li.textContent = err;
-                ul.appendChild(li);
-              });
-              messages.appendChild(ul);
-              if (!data.preview || !data.preview.length) {
-                document.getElementById('confirm-btn').disabled = true;
-              }
-            }
-            if (data.token_erros) {
-              const token = data.token_erros;
-              reprocess.innerHTML = `<div class="space-y-2"><a href="/media/importacoes/${token}.errors.csv" download class="link link-hover">{% trans "Baixar arquivo de erros" %}</a><form id="reprocess-form" class="space-y-2" enctype="multipart/form-data">{% csrf_token %}<input type="file" name="file" accept=".csv,.xlsx" class="block w-full form-input" required /><button type="submit" class="btn btn-primary" hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/" hx-target="#messages" hx-include="#reprocess-form" hx-encoding="multipart/form-data" hx-headers='{"X-CSRFToken": "${csrfToken}"}'>{% trans "Reprocessar" %}</button></form></div>`;
-            }
-          } catch (e) {
-            messages.textContent = '{% trans "Erro ao processar pré-visualização" %}';
-            document.getElementById('confirm-btn').disabled = true;
-          }
-        }
-      </script>
+      <div class="card">
+        <div class="card-body space-y-3">
+          <p class="text-sm text-[var(--text-secondary)]">
+            {% trans "A importação automática foi desativada junto às APIs financeiras." %}
+          </p>
+          <p class="text-sm text-[var(--text-secondary)]">
+            {% trans "Envie o arquivo CSV ou XLSX à equipe financeira para processamento manual." %}
+          </p>
+          <p class="text-sm text-[var(--text-secondary)]">
+            {% trans "Após o processamento, o histórico seguirá disponível em ImportacaoPagamentos." %}
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}

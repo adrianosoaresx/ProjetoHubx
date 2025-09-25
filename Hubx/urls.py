@@ -69,10 +69,6 @@ urlpatterns = [
         include(("accounts.api_urls", "accounts_api"), namespace="accounts_api"),
     ),
     path(
-        "api/financeiro/",
-        include(("financeiro.api_urls", "financeiro_api"), namespace="financeiro_api"),
-    ),
-    path(
         "api/feed/",
         include(("feed.api_urls", "feed_api"), namespace="feed_api"),
     ),

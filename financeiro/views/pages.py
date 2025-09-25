@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import uuid
 
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 
@@ -21,16 +22,26 @@ def _is_associado(user) -> bool:
     return user.is_authenticated and user.user_type == UserType.ASSOCIADO
 
 
+def _require_financeiro_or_admin(user) -> None:
+    if not _is_financeiro_or_admin(user):
+        raise PermissionDenied
+
+
+def _require_associado(user) -> None:
+    if not _is_associado(user):
+        raise PermissionDenied
+
+
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def importar_pagamentos_view(request):
+    _require_financeiro_or_admin(request.user)
     context = {"legacy_warning": ContaAssociado.LEGACY_MESSAGE}
     return render(request, "financeiro/importar_pagamentos.html", context)
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def relatorios_view(request):
+    _require_financeiro_or_admin(request.user)
     centros = CentroCusto.objects.all()
     nucleos = {c.nucleo for c in centros if c.nucleo}
     context = {
@@ -42,15 +53,15 @@ def relatorios_view(request):
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def importacoes_list_view(request):
+    _require_financeiro_or_admin(request.user)
     """Lista de importações de pagamentos."""
     return render(request, "financeiro/importacoes_list.html")
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def lancamentos_list_view(request):
+    _require_financeiro_or_admin(request.user)
     centros = CentroCusto.objects.all()
     nucleos = {c.nucleo for c in centros if c.nucleo}
     context = {
@@ -62,15 +73,15 @@ def lancamentos_list_view(request):
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def lancamento_ajuste_modal_view(request, pk: uuid.UUID):
+    _require_financeiro_or_admin(request.user)
     lancamento = get_object_or_404(LancamentoFinanceiro, pk=pk)
     return render(request, "financeiro/lancamento_ajuste_modal.html", {"lancamento": lancamento})
 
 
 @login_required
-@user_passes_test(_is_financeiro_or_admin)
 def repasses_view(request):
+    _require_financeiro_or_admin(request.user)
     eventos = Evento.objects.all()
     return render(
         request,
@@ -80,15 +91,15 @@ def repasses_view(request):
 
 
 @login_required
-@user_passes_test(_is_associado)
 def aportes_form_view(request):
+    _require_associado(request.user)
     centros = CentroCusto.objects.all()
     return render(request, "financeiro/aportes_form.html", {"centros": centros})
 
 
 @login_required
-@user_passes_test(_is_associado)
 def extrato_view(request):
+    _require_associado(request.user)
     """Lista os lançamentos financeiros do associado."""
     lancamentos = (
         LancamentoFinanceiro.objects.filter(

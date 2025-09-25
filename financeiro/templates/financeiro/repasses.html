@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Repasses de Receita" %}{% endblock %}
+{% block title %}{% trans "Repasses" %}{% endblock %}
 
 {% block hero %}
   {% include '_components/hero_financeiro.html' with title=_('Repasses') %}
@@ -9,70 +9,13 @@
 
 {% block content %}
   <div class="py-12 card px-4">
-    <div class="card-header">
-      <form id="filtros" class="flex gap-4" hx-get="/api/financeiro/repasses/" hx-target="#lista" hx-swap="none" hx-trigger="change from:select,change from:input, submit" hx-on="htmx:afterRequest: renderRepasses(event)">
-        <div>
-          <label for="filtro-evento" class="block text-sm font-medium text-[var(--text-secondary)]">{% trans "Evento" %}</label>
-          <select id="filtro-evento" name="evento" class="border p-2 rounded">
-            <option value="">{% trans "Todos" %}</option>
-            {% for e in eventos %}
-              <option value="{{ e.id }}">{{ e.titulo }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </form>
-    </div>
-    <div class="card-body">
-      <div id="legacy-warning" class="mb-4 rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 text-sm text-yellow-900" data-default-warning="{{ legacy_warning }}">{{ legacy_warning }}</div>
-      <div id="lista" aria-live="polite">
-        <div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
-        <table class="min-w-full divide-y divide-[var(--border)]">
-          <thead class="bg-[var(--bg-tertiary)]">
-            <tr>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "ID" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Centro de Custo" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Conta Associada" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Valor" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Data de Lançamento" %}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--border)]"></tbody>
-        </table>
-        </div>
-      </div>
-      <script src="{% url 'javascript-catalog' %}"></script>
-      <script>
-        function renderRepasses(evt) {
-          const tbody = document.querySelector('#lista tbody');
-          tbody.innerHTML = '';
-          try {
-            const data = JSON.parse(evt.detail.xhr.response);
-            const itens = data.results || data;
-            const warningEl = document.getElementById('legacy-warning');
-            if (warningEl) {
-              const apiWarning = data.legacy_warning || (Array.isArray(itens) && itens.length ? itens[0].legacy_warning : null);
-              const message = apiWarning || warningEl.dataset.defaultWarning || '';
-              warningEl.textContent = message;
-              warningEl.hidden = !message;
-            }
-            const rows = itens.map(r => `
-              <tr>
-                <td class=\"px-3 py-2\">${r.id}</td>
-                <td class=\"px-3 py-2\">${r.centro_custo || ''}</td>
-                <td class=\"px-3 py-2\">${r.conta_associado || ''}</td>
-                <td class=\"px-3 py-2\">${r.valor}</td>
-                <td class=\"px-3 py-2\">${r.data_lancamento}</td>
-              </tr>
-            `).join('');
-            tbody.innerHTML = rows || `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Nenhum repasse')}</td></tr>`;
-          } catch (e) {
-            tbody.innerHTML = `<tr><td colspan=\"5\" class=\"px-3 py-2 text-center\">${gettext('Erro ao carregar')}</td></tr>`;
-          }
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-          htmx.trigger('#filtros', 'submit');
-        });
-      </script>
+    <div class="card-body space-y-4">
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans "O painel de repasses em tempo real foi removido." %}
+      </p>
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans "Consulte a equipe financeira para obter os relatórios consolidados." %}
+      </p>
     </div>
   </div>
 {% endblock %}

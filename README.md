@@ -294,13 +294,9 @@ make           # roda tudo acima
 
 ### Importação de Pagamentos
 
-```
-POST /api/financeiro/importar-pagamentos/
-Multipart: file=<planilha.csv>
-
-POST /api/financeiro/importar-pagamentos/confirmar
-Payload: {"id": "<token>"}
-```
+As APIs de importação foram desativadas. O envio de arquivos CSV ou XLSX deve
+ser feito diretamente para a equipe financeira, que processa os dados
+manualmente e acompanha os registros pelo Django Admin.
 
 ### Cobranças Recorrentes
 
