@@ -1,13 +1,7 @@
 {% load i18n %}
 <div class="card max-w-md">
   <div class="card-body">
-    <form
-      hx-post="/api/financeiro/aportes/"
-      hx-target="#aportes-messages"
-      hx-on="htmx:afterRequest: if(event.detail.successful){this.reset();var resp=JSON.parse(event.detail.xhr.response);var msg='{{ _('Aporte registrado com sucesso') }}';if(resp.recibo_url){msg+=' <a href=\\"'+resp.recibo_url+'\\" target=\\"_blank\\">{{ _('Baixar recibo') }}</a>'; }document.getElementById('aportes-messages').innerHTML=msg;}else{var resp=JSON.parse(event.detail.xhr.response||'{}');var err=resp.valor?resp.valor[0]:'{{ _('Erro ao registrar aporte') }}';document.getElementById('aportes-messages').textContent=err;}"
-      class="space-y-2"
-      aria-live="assertive"
-    >
+    <form method="post" class="space-y-2" aria-live="assertive">
       {% csrf_token %}
       <div>
         <label for="id_centro" class="block text-sm font-medium">{{ _('Centro de Custo') }}</label>
@@ -33,6 +27,9 @@
         <textarea id="id_descricao" name="descricao" class="form-input w-full"></textarea>
       </div>
       <button type="submit" class="btn btn-primary">{{ _('Registrar') }}</button>
+      <p class="text-sm text-[var(--text-secondary)]">
+        {{ _('Envie a solicitação para a equipe financeira; o formulário não realiza mais o registro automático.') }}
+      </p>
       <div id="aportes-messages" class="mt-2 text-sm" aria-live="polite"></div>
     </form>
   </div>

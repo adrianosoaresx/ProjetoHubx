@@ -1,147 +1,44 @@
-from decimal import Decimal
-
 import pytest
+from decimal import Decimal
 from django.utils import timezone
 
 from accounts.factories import UserFactory
-from financeiro.models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
-from financeiro.serializers import LancamentoFinanceiroSerializer
 from organizacoes.factories import OrganizacaoFactory
+from financeiro.models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
+
 
 pytestmark = pytest.mark.django_db
 
 
-def test_lancamento_atualiza_saldos():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
-    user = UserFactory()
-    conta = ContaAssociado.objects.create(user=user)
-    carteira_centro = Carteira.objects.create(
-        centro_custo=centro,
-        nome="Carteira Centro",
-        tipo=Carteira.Tipo.OPERACIONAL,
-    )
-    carteira_conta = Carteira.objects.create(
-        conta_associado=conta,
-        nome="Carteira Conta",
-        tipo=Carteira.Tipo.OPERACIONAL,
-    )
-    serializer = LancamentoFinanceiroSerializer(
-        data={
-            "centro_custo": str(centro.id),
-            "conta_associado": str(conta.id),
-            "tipo": LancamentoFinanceiro.Tipo.APORTE_INTERNO,
-            "valor": "100",
-            "data_lancamento": timezone.now(),
-            "status": LancamentoFinanceiro.Status.PAGO,
-            "descricao": "teste",
-        }
-    )
-    assert serializer.is_valid(), serializer.errors
-    lanc = serializer.save()
-    centro.refresh_from_db()
-    conta.refresh_from_db()
-    carteira_centro.refresh_from_db()
-    carteira_conta.refresh_from_db()
-    assert carteira_centro.saldo == Decimal("100")
-    assert carteira_conta.saldo == Decimal("100")
-    assert conta.saldo == Decimal("0")
-    assert lanc.carteira_contraparte_id == carteira_conta.id
-
-
 def test_contaassociado_str():
     user = UserFactory(email="teste@example.com")
-    conta = ContaAssociado.objects.create(user=user, saldo=10)
+    conta = ContaAssociado.objects.create(user=user, saldo=Decimal("10"))
     assert str(conta) == "teste@example.com (saldo: 10)"
 
 
-def test_lancamento_default_vencimento():
-    org = OrganizacaoFactory()
+def test_lancamento_default_vencimento_e_origem():
+    organizacao = OrganizacaoFactory()
     centro = CentroCusto.objects.create(
         nome="Org",
         tipo=CentroCusto.Tipo.ORGANIZACAO,
-        organizacao=org,
+        organizacao=organizacao,
     )
-    lanc = LancamentoFinanceiro.objects.create(
+    lancamento = LancamentoFinanceiro.objects.create(
         centro_custo=centro,
         tipo=LancamentoFinanceiro.Tipo.APORTE_INTERNO,
         valor=Decimal("10"),
         data_lancamento=timezone.now(),
     )
-    assert lanc.data_vencimento == lanc.data_lancamento
-    assert lanc.origem == LancamentoFinanceiro.Origem.MANUAL
+    assert lancamento.data_vencimento == lancamento.data_lancamento
+    assert lancamento.origem == LancamentoFinanceiro.Origem.MANUAL
 
 
-def test_serializer_vencimento_anterior_lancamento_error():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
-    data_lanc = timezone.now()
-    data_venc = data_lanc - timezone.timedelta(days=1)
-    serializer = LancamentoFinanceiroSerializer(
-        data={
-            "centro_custo": str(centro.id),
-            "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
-            "valor": "50",
-            "data_lancamento": data_lanc,
-            "data_vencimento": data_venc,
-            "status": LancamentoFinanceiro.Status.PENDENTE,
-        }
-    )
-    assert not serializer.is_valid()
-    assert "Vencimento" in str(serializer.errors)
-def test_lancamento_despesa_negativo():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
-    user = UserFactory()
-    conta = ContaAssociado.objects.create(user=user)
-    serializer = LancamentoFinanceiroSerializer(
-        data={
-            "centro_custo": str(centro.id),
-            "conta_associado": str(conta.id),
-            "tipo": LancamentoFinanceiro.Tipo.DESPESA,
-            "valor": "-30",
-            "data_lancamento": timezone.now(),
-            "status": LancamentoFinanceiro.Status.PAGO,
-        }
-    )
-    assert serializer.is_valid(), serializer.errors
-    lanc = serializer.save()
-    assert lanc.valor == Decimal("-30")
-
-
-def test_lancamento_negativo_outro_tipo():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
-    serializer = LancamentoFinanceiroSerializer(
-        data={
-            "centro_custo": str(centro.id),
-            "tipo": LancamentoFinanceiro.Tipo.MENSALIDADE_ASSOCIACAO,
-            "valor": "-10",
-            "data_lancamento": timezone.now(),
-            "status": LancamentoFinanceiro.Status.PENDENTE,
-        }
-    )
-    assert not serializer.is_valid()
-    assert "Valor negativo" in str(serializer.errors)
-
-
-def test_centro_custo_descricao():
-    org = OrganizacaoFactory()
+def test_lancamento_campos_carteira_opcionais():
+    organizacao = OrganizacaoFactory()
     centro = CentroCusto.objects.create(
         nome="Org",
         tipo=CentroCusto.Tipo.ORGANIZACAO,
-        organizacao=org,
-        descricao="Descricao teste",
-    )
-    assert centro.descricao == "Descricao teste"
-
-
-def test_lancamento_financeiro_carteira_campos_opcionais():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(
-        nome="Org",
-        tipo=CentroCusto.Tipo.ORGANIZACAO,
-        organizacao=org,
+        organizacao=organizacao,
     )
     carteira = Carteira.objects.create(
         centro_custo=centro,
@@ -173,51 +70,3 @@ def test_lancamento_financeiro_carteira_campos_opcionais():
     assert carteira_field.blank is True
     assert contraparte_field.null is True
     assert contraparte_field.blank is True
-
-
-def test_lancamento_financeiro_carteiras_serializer_read_only():
-    serializer = LancamentoFinanceiroSerializer()
-    assert "carteira" in serializer.fields
-    assert serializer.fields["carteira"].read_only is True
-    assert "carteira_contraparte" in serializer.fields
-    assert serializer.fields["carteira_contraparte"].read_only is True
-    assert "carteira_id" in serializer.fields
-    assert serializer.fields["carteira_id"].read_only is False
-    assert "carteira_contraparte_id" in serializer.fields
-    assert serializer.fields["carteira_contraparte_id"].read_only is False
-    assert serializer.fields["conta_associado"].write_only is True
-    assert serializer.fields["legacy_warning"].read_only is True
-
-
-def test_lancamento_serializer_aceita_carteira_ids():
-    org = OrganizacaoFactory()
-    centro = CentroCusto.objects.create(nome="Org", tipo=CentroCusto.Tipo.ORGANIZACAO, organizacao=org)
-    user = UserFactory()
-    conta = ContaAssociado.objects.create(user=user)
-    carteira_centro = Carteira.objects.create(
-        centro_custo=centro,
-        nome="Carteira Centro",
-        tipo=Carteira.Tipo.OPERACIONAL,
-    )
-    carteira_conta = Carteira.objects.create(
-        conta_associado=conta,
-        nome="Carteira Conta",
-        tipo=Carteira.Tipo.OPERACIONAL,
-    )
-    serializer = LancamentoFinanceiroSerializer(
-        data={
-            "centro_custo": str(centro.id),
-            "carteira_id": str(carteira_centro.id),
-            "carteira_contraparte_id": str(carteira_conta.id),
-            "tipo": LancamentoFinanceiro.Tipo.APORTE_INTERNO,
-            "valor": "42",
-            "data_lancamento": timezone.now(),
-            "status": LancamentoFinanceiro.Status.PAGO,
-            "descricao": "via carteiras",
-        }
-    )
-    assert serializer.is_valid(), serializer.errors
-    lanc = serializer.save()
-    assert lanc.carteira_id == carteira_centro.id
-    assert lanc.carteira_contraparte_id == carteira_conta.id
-    assert lanc.conta_associado_id == conta.id

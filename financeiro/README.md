@@ -11,13 +11,13 @@ eventuais erros no formato JSON.
 
 ## Importação de pagamentos
 
-1. Envie o arquivo para o endpoint de importação.
-2. O processamento ocorre em background e pode ser acompanhado pelo
-   registro em `ImportacaoPagamentos`.
-3. Linhas com problemas são registradas em `errors` para posterior
-   reprocessamento.
-4. Os associados referenciados devem estar pré-cadastrados no sistema;
-   se o e-mail informado não existir, a linha será rejeitada.
+O fluxo de importação é iniciado pela interface administrativa do
+próprio Django. A página de importação permite enviar o arquivo CSV e o
+processamento ocorre em background, com registro em
+`ImportacaoPagamentos`. Linhas com problemas são registradas em
+`errors` para posterior reprocessamento. Os associados referenciados
+devem estar pré-cadastrados no sistema; se o e-mail informado não
+existir, a linha será rejeitada.
 
 ## Geração de cobranças
 
@@ -50,8 +50,6 @@ python manage.py reconciliar_carteiras --csv /tmp/reconciliacao.csv
 
 ## Views
 
-As views deste módulo estão organizadas em dois arquivos separados:
-`financeiro/views/api.py` contém as APIs utilizadas pelos clientes e
-`financeiro/views/pages.py` reúne as páginas HTML. Importações devem ser
-realizadas diretamente desses módulos.
+As views deste módulo estão concentradas em `financeiro/views/pages.py`
+e atendem exclusivamente via rotas Django tradicionais.
 

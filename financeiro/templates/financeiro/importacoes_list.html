@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Importações de Pagamentos" %}{% endblock %}
+{% block title %}{% trans "Importações" %}{% endblock %}
 
 {% block hero %}
   {% include '_components/hero_financeiro.html' with title=_('Importações de Pagamentos') %}
@@ -9,76 +9,13 @@
 
 {% block content %}
   <div class="py-12 card px-4">
-    <div class="card-body">
-      <div id="importacoes"
-           
-           hx-get="/api/financeiro/importacoes/"
-           hx-trigger="load"
-           hx-target="#importacoes"
-           hx-swap="none"
-           hx-on="htmx:afterRequest: renderImportacoes(event)">
-        <div class="overflow-x-auto border border-[var(--border)] rounded-2xl card-sm">
-        <table class="min-w-full divide-y divide-[var(--border)]">
-          <thead class="bg-[var(--bg-secondary)]">
-            <tr>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Arquivo" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Status" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Processados" %}</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)]">{% trans "Ações" %}</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-[var(--border)]"></tbody>
-        </table>
-        </div>
-        <div id="paginacao" class="mt-4 flex justify-between"></div>
-      </div>
-      <script>
-        const csrfToken = "{{ csrf_token }}";
-        function basename(path) {
-          return path.split('/').pop();
-        }
-        function renderImportacoes(evt) {
-          const tbody = document.querySelector('#importacoes tbody');
-          const pag = document.getElementById('paginacao');
-          tbody.innerHTML = '';
-          pag.innerHTML = '';
-          try {
-            const data = JSON.parse(evt.detail.xhr.response);
-            const itens = data.results || data;
-            const rows = itens.map(i => {
-              const token = basename(i.arquivo);
-              const acao = (i.erros && i.erros.length)
-                ? `<div class="space-y-1">
-                     <a href="/media/importacoes/${token}.errors.csv" download class="link link-hover">{{ _('Baixar erros') }}</a>
-                     <form hx-post="/api/financeiro/importar-pagamentos/reprocessar/${token}/"
-                           hx-target="closest tr"
-                           hx-encoding="multipart/form-data"
-                           hx-headers='{"X-CSRFToken": "${csrfToken}"}'
-                           class="space-y-1">
-                         <input type="file" name="file" accept=".csv,.xlsx" class="block w-full border p-1 rounded" required />
-                         <button type="submit" class="btn btn-primary btn-sm">{{ _('Reprocessar') }}</button>
-                     </form>
-                   </div>`
-                : '';
-              return `<tr>
-                        <td class="px-3 py-2">${token}</td>
-                        <td class="px-3 py-2">${i.status}</td>
-                        <td class="px-3 py-2">${i.total_processado}</td>
-                        <td class="px-3 py-2">${acao}</td>
-                      </tr>`;
-            }).join('');
-            tbody.innerHTML = rows || `<tr><td colspan="4" class="px-3 py-2 text-center">{{ _('Nenhuma importação') }}</td></tr>`;
-            if (data.previous) {
-              pag.innerHTML += `<button class="btn btn-secondary btn-sm" hx-get="${data.previous}" hx-target="#importacoes" hx-swap="none">{{ _('Anterior') }}</button>`;
-            }
-            if (data.next) {
-              pag.innerHTML += `<button class="btn btn-secondary btn-sm ml-auto" hx-get="${data.next}" hx-target="#importacoes" hx-swap="none">{{ _('Próximo') }}</button>`;
-            }
-          } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="4" class="px-3 py-2 text-center text-[var(--error)]">{{ _('Erro ao carregar') }}</td></tr>`;
-          }
-        }
-      </script>
+    <div class="card-body space-y-4">
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans "As importações recentes ficam registradas para consulta após o processamento manual realizado pela equipe financeira." %}
+      </p>
+      <p class="text-sm text-[var(--text-secondary)]">
+        {% trans "O painel dinâmico foi desativado juntamente com as APIs." %}
+      </p>
     </div>
   </div>
 {% endblock %}

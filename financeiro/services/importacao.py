@@ -15,7 +15,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from ..models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
-from ..serializers import LancamentoFinanceiroSerializer
 from .saldos import atribuir_carteiras_padrao
 
 
@@ -141,22 +140,7 @@ class ImportadorPagamentos:
             seen: set[tuple[str | None, str, str, Decimal, Any]] = set()
             validated: list[tuple[dict[str, Any], tuple[str | None, str, str, Decimal, Any]]] = []
             for item in chunk:
-                payload = {
-                    "centro_custo": str(item["centro_custo"].id),
-                    "conta_associado": str(item["conta_associado"].id) if item.get("conta_associado") else None,
-                    "tipo": item["tipo"],
-                    "valor": str(item["valor"]),
-                    "data_lancamento": item["data_lancamento"].isoformat(),
-                    "data_vencimento": item["data_vencimento"].isoformat(),
-                    "status": item["status"],
-                    "descricao": item["descricao"],
-                    "origem": item["origem"],
-                }
-                serializer = LancamentoFinanceiroSerializer(data=payload)
-                if not serializer.is_valid():
-                    errors.append(f"Dados inválidos na linha: {serializer.errors}")
-                    continue
-                data = serializer.validated_data
+                data = dict(item)
                 atribuir_carteiras_padrao(data, cache=carteiras_cache)
                 conta = data.get("conta_associado")
                 key = (

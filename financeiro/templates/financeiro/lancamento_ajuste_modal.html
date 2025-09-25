@@ -1,19 +1,11 @@
 {% load i18n %}
-<div class="card max-w-md">
-  <div class="card-body">
-    <form hx-post="/api/financeiro/lancamentos/{{ lancamento.id }}/ajustar/"
-          hx-on="htmx:afterRequest: htmx.trigger('#filtros','submit'); this.closest('#modal').innerHTML='';"
-          class="space-y-4" hx-target="this">
-      {% csrf_token %}
-      <div>
-        <label for="id_valor_corrigido" class="block text-sm font-medium">{{ _('Valor corrigido') }}</label>
-        <input id="id_valor_corrigido" name="valor_corrigido" type="number" step="0.01" class="form-input w-full" required />
-      </div>
-      <div>
-        <label for="id_descricao_motivo" class="block text-sm font-medium">{{ _('Descrição do motivo') }}</label>
-        <textarea id="id_descricao_motivo" name="descricao_motivo" class="form-input w-full" required></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary">{{ _('Salvar') }}</button>
-    </form>
+<div class="card">
+  <div class="card-body space-y-2">
+    <p class="text-sm text-[var(--text-secondary)]">
+      {% trans "Ajustes automáticos foram desativados com a remoção das APIs." %}
+    </p>
+    <p class="text-sm text-[var(--text-secondary)]">
+      {% trans "Atualize o lançamento diretamente pela administração do Django." %}
+    </p>
   </div>
 </div>
