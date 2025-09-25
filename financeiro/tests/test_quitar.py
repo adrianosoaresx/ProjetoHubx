@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 from accounts.factories import UserFactory
 from accounts.models import UserType
 from eventos.factories import EventoFactory
-from financeiro.models import Carteira, CentroCusto, LancamentoFinanceiro, FinanceiroLog
+from financeiro.models import Carteira, CentroCusto, LancamentoFinanceiro
 from financeiro.serializers import LancamentoFinanceiroSerializer
 from nucleos.factories import NucleoFactory
 from organizacoes.factories import OrganizacaoFactory
@@ -71,13 +71,6 @@ def test_quitar_lancamento(api_client):
     assert carteira_centro.saldo == Decimal("50")
     assert carteira_conta.saldo == Decimal("50")
     assert conta.saldo == 0
-    log = FinanceiroLog.objects.get(
-        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
-    )
-    assert log.dados_novos["resultado"] == "pago"
-    assert log.dados_novos["saldos_atualizados"] is True
-
-
 def test_pagar_endpoint(api_client):
     admin = UserFactory(user_type=UserType.ADMIN)
     api_client.force_authenticate(user=admin)
@@ -113,14 +106,6 @@ def test_pagar_endpoint(api_client):
     assert lanc.carteira_contraparte_id == carteira_conta.id
     assert carteira_centro.saldo == Decimal("50")
     assert carteira_conta.saldo == Decimal("50")
-    log = FinanceiroLog.objects.get(
-        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO,
-        dados_novos__id=str(lanc.id),
-        dados_novos__resultado="pago",
-    )
-    assert log.dados_novos["saldos_atualizados"] is True
-
-
 def test_pagar_endpoint_idempotente(api_client):
     admin = UserFactory(user_type=UserType.ADMIN)
     api_client.force_authenticate(user=admin)
@@ -157,17 +142,6 @@ def test_pagar_endpoint_idempotente(api_client):
     assert lanc.status == LancamentoFinanceiro.Status.PAGO
     assert carteira_centro.saldo == Decimal("50")
     assert carteira_conta.saldo == Decimal("50")
-    logs = list(
-        FinanceiroLog.objects.filter(
-            acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
-        ).order_by("created_at")
-    )
-    assert logs[0].dados_novos["resultado"] == "pago"
-    assert logs[0].dados_novos["saldos_atualizados"] is True
-    assert logs[-1].dados_novos["resultado"] == "pagamento_duplicado"
-    assert "saldos_atualizados" not in logs[-1].dados_novos
-
-
 def test_pagar_cancelado_bloqueado(api_client):
     admin = UserFactory(user_type=UserType.ADMIN)
     api_client.force_authenticate(user=admin)
@@ -202,12 +176,6 @@ def test_pagar_cancelado_bloqueado(api_client):
     assert lanc.status == LancamentoFinanceiro.Status.CANCELADO
     assert carteira_centro.saldo == Decimal("0")
     assert carteira_conta.saldo == Decimal("0")
-    log = FinanceiroLog.objects.get(
-        acao=FinanceiroLog.Acao.EDITAR_LANCAMENTO, dados_novos__id=str(lanc.id)
-    )
-    assert log.dados_novos["resultado"] == "pagamento_bloqueado"
-
-
 def test_distribuicao_ingresso():
     org = OrganizacaoFactory()
     nucleo = NucleoFactory(organizacao=org)

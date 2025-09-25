@@ -5,13 +5,7 @@ from rest_framework.test import APIClient
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from financeiro.models import (
-    Carteira,
-    CentroCusto,
-    ContaAssociado,
-    FinanceiroLog,
-    LancamentoFinanceiro,
-)
+from financeiro.models import Carteira, CentroCusto, ContaAssociado, LancamentoFinanceiro
 
 pytestmark = pytest.mark.django_db
 
@@ -220,7 +214,6 @@ def test_estornar_aporte(api_client, admin_user):
     assert carteira_centro.saldo == Decimal("0")
     assert carteira_conta.saldo == Decimal("0")
     assert conta.saldo == 0
-    assert FinanceiroLog.objects.filter(dados_novos__id=aporte_id).exists()
 
 
 def test_estornar_aporte_sem_permissao(api_client):

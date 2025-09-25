@@ -11,8 +11,6 @@ from ..models import (
     Carteira,
     CentroCusto,
     ContaAssociado,
-    FinanceiroLog,
-    FinanceiroTaskLog,
     LancamentoFinanceiro,
     ImportacaoPagamentos,
 )
@@ -320,32 +318,3 @@ class ImportacaoPagamentosSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class FinanceiroLogSerializer(serializers.ModelSerializer):
-    """Serializador para registros de auditoria."""
-
-    class Meta:
-        model = FinanceiroLog
-        fields = [
-            "id",
-            "usuario",
-            "acao",
-            "dados_anteriores",
-            "dados_novos",
-            "created_at",
-        ]
-        read_only_fields = fields
-
-
-class FinanceiroTaskLogSerializer(serializers.ModelSerializer):
-    """Serializador para logs de tarefas."""
-
-    class Meta:
-        model = FinanceiroTaskLog
-        fields = [
-            "id",
-            "nome_tarefa",
-            "executada_em",
-            "status",
-            "detalhes",
-        ]
-        read_only_fields = fields

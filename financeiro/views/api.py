@@ -24,7 +24,7 @@ from rest_framework.response import Response
 from accounts.models import UserType
 from notificacoes.services.email_client import send_email
 
-from ..models import ContaAssociado, FinanceiroLog, ImportacaoPagamentos, LancamentoFinanceiro
+from ..models import ContaAssociado, ImportacaoPagamentos, LancamentoFinanceiro
 from ..permissions import (
     IsCoordenador,
     IsFinanceiroOrAdmin,
@@ -37,7 +37,6 @@ from ..serializers import (
 )
 from ..services import metrics
 from ..services.aportes import estornar_aporte as estornar_aporte_service
-from ..services.auditoria import log_financeiro
 from ..services.cobrancas import _nucleos_do_usuario
 from ..services.importacao import ImportadorPagamentos
 
@@ -163,12 +162,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
         if not files:
             return Response({"detail": _("Arquivo não encontrado")}, status=status.HTTP_404_NOT_FOUND)
         file_path = str(files[0])
-        log_financeiro(
-            FinanceiroLog.Acao.IMPORTAR,
-            request.user,
-            {"arquivo": file_path, "status": "iniciado"},
-            {"importacao_id": str(importacao_id)},
-        )
         if settings.CELERY_TASK_ALWAYS_EAGER:
             total, errors, status_model = executar_importacao(
                 file_path, str(request.user.id), str(importacao_id)
@@ -176,16 +169,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
             metrics.importacao_pagamentos_total.inc(total)
             if errors:
                 metrics.financeiro_importacoes_erros_total.inc()
-            log_financeiro(
-                FinanceiroLog.Acao.IMPORTAR,
-                request.user,
-                {"arquivo": file_path, "status": "processado"},
-                {
-                    "importacao_id": str(importacao_id),
-                    "status": status_model,
-                    "total": total,
-                },
-            )
             return Response({"detail": _("Importação concluída")}, status=status.HTTP_202_ACCEPTED)
 
         def _enqueue_importacao() -> None:

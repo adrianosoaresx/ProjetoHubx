@@ -9,11 +9,6 @@ Registra cada importação de pagamentos em lote, armazenando o nome do
 arquivo processado, o usuário responsável, total de linhas tratadas e
 eventuais erros no formato JSON.
 
-### FinanceiroLog
-Modelo de auditoria que guarda ações relevantes (importações, geração de
-cobranças, repasses e edições) com os dados anteriores e novos de cada
-operação.
-
 ## Importação de pagamentos
 
 1. Envie o arquivo para o endpoint de importação.

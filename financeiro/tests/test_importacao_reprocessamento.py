@@ -9,12 +9,7 @@ from django.utils import timezone
 
 from accounts.factories import UserFactory
 from accounts.models import UserType
-from financeiro.models import (
-    CentroCusto,
-    ContaAssociado,
-    FinanceiroTaskLog,
-    LancamentoFinanceiro,
-)
+from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
 
 pytestmark = pytest.mark.django_db
 
@@ -121,8 +116,5 @@ def test_reprocessamento_nao_duplica_lancamentos(api_client, user, settings):
     file2 = SimpleUploadedFile("corr.csv", corrected, content_type="text/csv")
     resp = api_client.post(err_url, {"file": file2}, format="multipart")
     assert resp.status_code == 202
-    log = FinanceiroTaskLog.objects.filter(nome_tarefa="reprocessar_importacao_async").first()
-    assert log is not None
-    assert log.status == "erro"
     assert "duplicado" in log.detalhes.lower()
     assert LancamentoFinanceiro.objects.count() == 2

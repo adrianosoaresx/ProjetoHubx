@@ -8,11 +8,8 @@ from .pages import (
     importar_pagamentos_view,
     lancamento_ajuste_modal_view,
     lancamentos_list_view,
-    logs_list_view,
     relatorios_view,
     repasses_view,
-    task_log_detail_view,
-    task_logs_view,
 )
 
 __all__ = [
@@ -27,9 +24,6 @@ __all__ = [
     "importar_pagamentos_view",
     "lancamento_ajuste_modal_view",
     "lancamentos_list_view",
-    "logs_list_view",
     "relatorios_view",
     "repasses_view",
-    "task_log_detail_view",
-    "task_logs_view",
 ]

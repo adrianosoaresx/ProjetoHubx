@@ -464,20 +464,6 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["admin", "financeiro"],
         ),
         MenuItem(
-            id="financeiro_logs",
-            path=reverse("financeiro:logs"),
-            label="Logs",
-            icon=ICON_FILE_SEARCH,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_task_logs",
-            path=reverse("financeiro:task_logs"),
-            label="Task Logs",
-            icon=ICON_CLOCK,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
             id="financeiro_importacoes",
             path=reverse("financeiro:importacoes"),
             label="Importações",

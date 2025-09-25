@@ -6,8 +6,6 @@ app_name = "financeiro_api"
 
 from .viewsets import (
     CarteiraViewSet,
-    FinanceiroLogViewSet,
-    FinanceiroTaskLogViewSet,
     ImportacaoPagamentosViewSet,
     LancamentoFinanceiroViewSet,
     RepasseViewSet,
@@ -18,8 +16,6 @@ router = routers.DefaultRouter()
 router.register("carteiras", CarteiraViewSet, basename="carteira")
 router.register("lancamentos", LancamentoFinanceiroViewSet, basename="lancamento")
 router.register("importacoes", ImportacaoPagamentosViewSet, basename="importacao")
-router.register("logs", FinanceiroLogViewSet, basename="log")
-router.register("task-logs", FinanceiroTaskLogViewSet, basename="task-log")
 router.register("repasses", RepasseViewSet, basename="repasse")
 router.register("", FinanceiroViewSet, basename="financeiro")
 

@@ -9,9 +9,8 @@ from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from ..models import FinanceiroLog, FinanceiroTaskLog, ImportacaoPagamentos
+from ..models import ImportacaoPagamentos
 from ..services import metrics
-from ..services.auditoria import log_financeiro
 from ..services.importacao import ImportadorPagamentos
 
 
@@ -44,8 +43,6 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
     logger.info("Iniciando importação de pagamentos %s", file_path)
     metrics.financeiro_tasks_total.inc()
     inicio = timezone.now()
-    status = "sucesso"
-    detalhes = ""
     try:
         total, errors, status_model = executar_importacao(file_path, user_id, importacao_id)
         elapsed = (timezone.now() - inicio).total_seconds()
@@ -55,12 +52,6 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
             metrics.financeiro_importacoes_erros_total.inc()
             logger.error("Erros na importação: %s", errors)
         user = get_user_model().objects.filter(pk=user_id).first()
-        log_financeiro(
-            FinanceiroLog.Acao.IMPORTAR,
-            user,
-            {"arquivo": file_path, "total": total, "erros": errors},
-            {"status": status_model},
-        )
         if user:
             try:  # pragma: no branch - falha externa
                 enviar_para_usuario(user, "importacao_pagamentos", {"total": total})
@@ -71,15 +62,7 @@ def importar_pagamentos_async(file_path: str, user_id: str, importacao_id: str) 
         ImportacaoPagamentos.objects.filter(pk=importacao_id).update(
             erros=[str(exc)], status=ImportacaoPagamentos.Status.ERRO
         )
-        status = "erro"
-        detalhes = str(exc)
         raise
-    finally:
-        FinanceiroTaskLog.objects.create(
-            nome_tarefa="importar_pagamentos_async",
-            status=status,
-            detalhes=detalhes,
-        )
 
 
 @shared_task
@@ -87,16 +70,12 @@ def reprocessar_importacao_async(err_file_path: str, file_path: str) -> None:
     """Reprocessa importações corrigidas de forma assíncrona."""
     logger.info("Iniciando reprocessamento de importação %s", file_path)
     metrics.financeiro_tasks_total.inc()
-    status = "sucesso"
-    detalhes = ""
     try:
         service = ImportadorPagamentos(file_path)
         total, errors = service.process()
         log_path = Path(file_path).with_suffix(".log")
         if errors:
             log_path.write_text("\n".join(errors), encoding="utf-8")
-            detalhes = "\n".join(errors)
-            status = "erro"
             metrics.financeiro_importacoes_erros_total.inc()
         else:
             log_path.write_text("ok", encoding="utf-8")
@@ -105,12 +84,4 @@ def reprocessar_importacao_async(err_file_path: str, file_path: str) -> None:
         metrics.importacao_pagamentos_total.inc(total)
     except Exception as exc:  # pragma: no cover - exceção inesperada
         logger.exception("Erro no reprocessamento de importação: %s", exc)
-        status = "erro"
-        detalhes = str(exc)
         raise
-    finally:
-        FinanceiroTaskLog.objects.create(
-            nome_tarefa="reprocessar_importacao_async",
-            status=status,
-            detalhes=detalhes,
-        )

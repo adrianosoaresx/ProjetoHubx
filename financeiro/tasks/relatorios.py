@@ -6,7 +6,6 @@ from typing import Sequence
 
 from celery import shared_task  # type: ignore
 
-from ..models import FinanceiroTaskLog
 from ..services import metrics
 from ..services.relatorios import _base_queryset
 
@@ -48,9 +47,4 @@ def gerar_relatorio_async(
         for lanc in qs_csv
     ]
     headers = ["data", "categoria", "valor", "status", "centro de custo"]
-    FinanceiroTaskLog.objects.create(
-        nome_tarefa="gerar_relatorio_async",
-        status="erro",
-        detalhes="formato indisponível",
-    )
     raise RuntimeError("formato indisponível")

@@ -8,7 +8,6 @@ from .models import (
     Carteira,
     CentroCusto,
     ContaAssociado,
-    FinanceiroLog,
     ImportacaoPagamentos,
     LancamentoFinanceiro,
 )
@@ -114,11 +113,5 @@ class LancamentoFinanceiroAdmin(admin.ModelAdmin):
 class ImportacaoPagamentosAdmin(admin.ModelAdmin):
     list_display = ["arquivo", "usuario", "total_processado", "created_at"]
     search_fields = ["arquivo", "usuario__email"]
-
-
-@admin.register(FinanceiroLog)
-class FinanceiroLogAdmin(admin.ModelAdmin):
-    list_display = ["acao", "usuario", "created_at"]
-    list_filter = ["acao"]
 
 
