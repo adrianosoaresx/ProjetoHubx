@@ -52,6 +52,11 @@ class ParticipacaoNucleo(TimeStampedModel, SoftDeleteModel):
 
 
 class Nucleo(TimeStampedModel, SoftDeleteModel):
+    class Classificacao(models.TextChoices):
+        CONSTITUIDO = "constituido", _("Constituído")
+        PLANEJAMENTO = "planejamento", _("Planejamento")
+        EM_FORMACAO = "em_formacao", _("Em formação")
+
     public_id = models.UUIDField(primary_key=False, default=uuid.uuid4, unique=True, db_index=True, editable=False)
     organizacao = models.ForeignKey(
         "organizacoes.Organizacao",
@@ -61,6 +66,12 @@ class Nucleo(TimeStampedModel, SoftDeleteModel):
     )
     nome = models.CharField(max_length=255)
     descricao = models.TextField(blank=True)
+    classificacao = models.CharField(
+        max_length=20,
+        choices=Classificacao.choices,
+        default=Classificacao.PLANEJAMENTO,
+        verbose_name=_("Classificação"),
+    )
     avatar = models.ImageField(upload_to="nucleos/avatars/", blank=True, null=True)
     cover = models.ImageField(upload_to="nucleos/capas/", blank=True, null=True)
     ativo = models.BooleanField(default=True)

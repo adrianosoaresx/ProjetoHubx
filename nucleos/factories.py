@@ -13,3 +13,4 @@ class NucleoFactory(DjangoModelFactory):
     organizacao = factory.SubFactory(OrganizacaoFactory)
     nome = factory.Sequence(lambda n: f"nucleo{n}")
     descricao = factory.Faker("sentence", locale="pt_BR")
+    classificacao = factory.Iterator([choice.value for choice in Nucleo.Classificacao])

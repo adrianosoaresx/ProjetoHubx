@@ -64,6 +64,7 @@ class NucleoSerializer(serializers.ModelSerializer):
             "organizacao",
             "nome",
             "descricao",
+            "classificacao",
             "avatar",
             "cover",
             "mensalidade",

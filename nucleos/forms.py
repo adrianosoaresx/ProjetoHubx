@@ -16,6 +16,7 @@ class NucleoForm(forms.ModelForm):
         fields = [
             "nome",
             "descricao",
+            "classificacao",
             "avatar",
             "cover",
             "mensalidade",

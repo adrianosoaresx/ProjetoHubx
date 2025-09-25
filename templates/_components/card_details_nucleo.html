@@ -1,6 +1,10 @@
 {% load i18n %}
 <dl class="mt-3 grid grid-cols-3 gap-2 text-xs text-[var(--text-secondary)]">
   <div>
+    <dt class="text-[var(--text-secondary)]">{% trans 'Classificação' %}</dt>
+    <dd class="font-medium">{{ nucleo.get_classificacao_display }}</dd>
+  </div>
+  <div>
     <dt class="text-[var(--text-secondary)]">{% trans 'Membros' %}</dt>
     <dd class="font-medium">{{ nucleo.num_membros|default:nucleo.membros.count }}</dd>
   </div>
