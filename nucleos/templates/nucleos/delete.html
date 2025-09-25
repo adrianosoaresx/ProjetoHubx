@@ -17,9 +17,7 @@
 
     <form method="post" class="mt-6 flex justify-center gap-3">
       {% csrf_token %}
-      <a href="{% url 'nucleos:list' %}" class="btn btn-secondary text-sm" aria-label="{% trans 'Cancelar' %}">
-        {% trans "Cancelar" %}
-      </a>
+      {% include '_components/back_button.html' with classes='btn btn-secondary text-sm' %}
       <button type="submit" class="btn btn-primary text-sm" aria-label="{% trans 'Remover' %}">
         {% trans "Remover" %}
       </button>
