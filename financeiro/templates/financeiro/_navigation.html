@@ -1,0 +1,59 @@
+{% load i18n %}
+{% with current=request.resolver_match.url_name %}
+<nav class="flex flex-wrap items-center gap-2" aria-label="{% trans 'Navegação financeira' %}">
+  {% if request.user.user_type == 'associado' %}
+    <a
+      href="{% url 'financeiro:extrato' %}"
+      class="btn btn-sm {% if current == 'extrato' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'extrato' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Extrato' %}
+    </a>
+    <a
+      href="{% url 'financeiro:aportes_form' %}"
+      class="btn btn-sm {% if current == 'aportes_form' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'aportes_form' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Registrar aporte' %}
+    </a>
+  {% endif %}
+
+  {% if request.user.user_type == 'admin' or request.user.user_type == 'financeiro' %}
+    <a
+      href="{% url 'financeiro:importar_pagamentos' %}"
+      class="btn btn-sm {% if current == 'importar_pagamentos' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'importar_pagamentos' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Importar pagamentos' %}
+    </a>
+    <a
+      href="{% url 'financeiro:importacoes' %}"
+      class="btn btn-sm {% if current == 'importacoes' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'importacoes' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Histórico de importações' %}
+    </a>
+    <a
+      href="{% url 'financeiro:lancamentos' %}"
+      class="btn btn-sm {% if current == 'lancamentos' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'lancamentos' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Lançamentos' %}
+    </a>
+    <a
+      href="{% url 'financeiro:relatorios' %}"
+      class="btn btn-sm {% if current == 'relatorios' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'relatorios' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Relatórios' %}
+    </a>
+    <a
+      href="{% url 'financeiro:repasses' %}"
+      class="btn btn-sm {% if current == 'repasses' %}btn-primary{% else %}btn-secondary{% endif %}"
+      {% if current == 'repasses' %}aria-current="page"{% endif %}
+    >
+      {% trans 'Repasses' %}
+    </a>
+  {% endif %}
+</nav>
+{% endwith %}
