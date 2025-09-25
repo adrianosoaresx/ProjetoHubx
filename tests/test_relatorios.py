@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -43,8 +44,6 @@ def test_cache_key_multiplos_centros():
         mock_rel.return_value = {
             "saldo_atual": 0,
             "serie": [],
-            "inadimplencia": [],
-            "total_inadimplentes": 0,
             "saldos_por_centro": {},
             "classificacao_centros": [],
         }
@@ -110,7 +109,7 @@ def test_status_filter_relatorio():
     assert data["serie"][0]["receitas"] == 100.0
 
 
-def test_total_inadimplentes():
+def test_relatorio_inclui_saldos_por_centro():
     org = OrganizacaoFactory()
     centro = CentroCusto.objects.create(nome="C", tipo="organizacao", organizacao=org)
     LancamentoFinanceiro.objects.create(
@@ -125,7 +124,15 @@ def test_total_inadimplentes():
         valor=-30,
         tipo=LancamentoFinanceiro.Tipo.DESPESA,
         data_lancamento=timezone.now(),
-        status=LancamentoFinanceiro.Status.PENDENTE,
+        status=LancamentoFinanceiro.Status.PAGO,
     )
-    data = gerar_relatorio(centro=str(centro.id))
-    assert data["total_inadimplentes"] == 100.0
+
+    with patch(
+        "financeiro.services.relatorios.saldos_carteiras_por_centro",
+        return_value={str(centro.id): Decimal("70")},
+    ) as mock_saldos:
+        data = gerar_relatorio(centro=str(centro.id))
+
+    mock_saldos.assert_called_once()
+    assert data["saldos_por_centro"] == {str(centro.id): 70.0}
+    assert data["saldo_atual"] == 70.0

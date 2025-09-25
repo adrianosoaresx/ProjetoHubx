@@ -105,7 +105,6 @@ o saldo da carteira operacional do centro de custo é atualizado imediatamente.
 |`GET /api/financeiro/relatorios/`|Financeiro/Admin ou Coordenador|Relatório consolidado|
 |`GET /api/financeiro/lancamentos/`|Financeiro/Admin, Coordenador ou Associado|Lista lançamentos financeiros|
 |`PATCH /api/financeiro/lancamentos/<uuid:id>/`|Financeiro/Admin|Altera status para pago ou cancelado|
-|`GET /api/financeiro/inadimplencias/`|Financeiro/Admin, Coordenador ou Associado|Lista pendências|
 |`POST /api/financeiro/aportes/`|Admin (interno) ou público (externo)|Registra aporte|
 
 A planilha de importação deve conter `centro_custo_id`, `tipo`, `valor`,
@@ -137,7 +136,6 @@ flowchart LR
 ### Permissões
 - Importação de pagamentos, geração de cobranças e relatórios completos: apenas administradores financeiros (root não possui acesso).
 - Relatórios por núcleo: admin ou coordenador do núcleo.
-- Inadimplências individuais: admin ou o próprio associado.
 
 
 ## Relatórios Financeiros
@@ -160,8 +158,11 @@ Resposta:
   "serie": [
     {"mes": "2025-07", "receitas": 50.0, "despesas": 20.0, "saldo": 30.0}
   ],
-  "inadimplencia": [
-    {"mes": "2025-07", "pendentes": 50.0, "quitadas": 0.0}
+  "saldos_por_centro": {
+    "<centro_id>": 40.0
+  },
+  "classificacao_centros": [
+    {"id": "<centro_id>", "nome": "Centro A", "tipo": "organizacao", "saldo": 40.0}
   ]
 }
 ```
@@ -189,19 +190,10 @@ Resposta:
 
 > **Nota:** Todos os formulários utilizam rótulos associados, suporte a teclado e regiões `aria-live` para mensagens, atendendo às diretrizes WCAG 2.1 AA.
 
-## Inadimplências
-
-`GET /api/financeiro/inadimplencias/`
-
-Parâmetros opcionais: `centro`, `nucleo`, `periodo_inicial`, `periodo_final`.
-
-Retorna lista de lançamentos pendentes com `dias_atraso` e dados da conta do associado.
-
 ## Tarefas Celery
 
 - `gerar_cobrancas_mensais` – executada todo início de mês para criar cobranças.
 - `importar_pagamentos_async` – processa arquivos de importação em background.
-- `notificar_inadimplencia` – envia lembretes para lançamentos vencidos (via `financeiro.services.notificacoes`).
   Todas registram logs no módulo e podem ter métricas Prometheus associadas. O envio utiliza o [app de notificações](notificacoes.md).
 
 ## Monitoramento
@@ -216,7 +208,7 @@ Novas métricas de observabilidade:
 
 - `financeiro_importacoes_total` – importações iniciadas.
 - `financeiro_importacoes_erros_total` – importações com erros.
-- `financeiro_relatorios_total` – relatórios e consultas de inadimplências.
+- `financeiro_relatorios_total` – relatórios solicitados pela API auxiliar.
 - `financeiro_tasks_total` – execuções de tarefas Celery.
 
 ## Logs de Auditoria

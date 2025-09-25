@@ -126,7 +126,7 @@ class ContaAssociado(TimeStampedModel, SoftDeleteModel):
 
 
 class LancamentoFinanceiro(TimeStampedModel, SoftDeleteModel):
-    """Registro financeiro com data de vencimento para controle de inadimplência."""
+    """Registro financeiro com data de vencimento."""
 
     class Tipo(models.TextChoices):
         MENSALIDADE_ASSOCIACAO = "mensalidade_associacao", "Mensalidade Associação"

@@ -471,13 +471,6 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["admin", "financeiro"],
         ),
         MenuItem(
-            id="financeiro_inadimplencias",
-            path=reverse("financeiro:inadimplencias"),
-            label="Inadimplências",
-            icon=ICON_ALERT,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
             id="financeiro_task_logs",
             path=reverse("financeiro:task_logs"),
             label="Task Logs",

@@ -9,7 +9,6 @@ Regras configuráveis para disparar ações de cobrança e comunicação com bas
 ### Escopo e Parametrização
 - **Escopo**: `organizacao`, `nucleo` ou `centro`.
 - **Gatilhos**:
-  - `INADIMPLENCIA_DIAS` – pendências com atraso superior ao parâmetro `dias`.
   - `SALDO_ABAIXO` – centros com saldo menor que `limite`.
   - `LANCAMENTO_ACIMA` – lançamentos recentes com valor acima de `limite`, opcionalmente filtrados por `tipo`.
 - **Ações**:
@@ -48,17 +47,6 @@ Permissões: apenas usuários com perfil **admin/financeiro** podem criar ou exe
 - Logs estruturados por regra e execução com `trace_id` e captura de erros via Sentry.
 
 ## Exemplos
-
-### Regra de Inadimplência
-```json
-{
-  "escopo_tipo": "nucleo",
-  "escopo_id": "<uuid>",
-  "gatilho": "INADIMPLENCIA_DIAS",
-  "parametros": {"dias": 30, "usuarios_alvo": ["<uuid>"]},
-  "acao": "ENVIAR_NOTIFICACAO"
-}
-```
 
 ### Regra de Saldo Baixo
 ```json

@@ -26,7 +26,6 @@ from notificacoes.services.email_client import send_email
 
 from ..models import ContaAssociado, FinanceiroLog, ImportacaoPagamentos, LancamentoFinanceiro
 from ..permissions import (
-    IsAssociadoReadOnly,
     IsCoordenador,
     IsFinanceiroOrAdmin,
     IsNotRoot,
@@ -91,12 +90,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
         elif self.action == "relatorios":
             self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin | IsCoordenador]
-        elif self.action == "inadimplencias":
-            self.permission_classes = [
-                IsAuthenticated,
-                IsNotRoot,
-                IsFinanceiroOrAdmin | IsCoordenador | IsAssociadoReadOnly,
-            ]
         return super().get_permissions()
 
     def _lancamentos_base(self):
@@ -305,55 +298,6 @@ class FinanceiroViewSet(viewsets.ViewSet):
             as_attachment=True,
             filename=f"relatorio.{formato}",
         )
-
-    @action(detail=False, methods=["get"], url_path="inadimplencias")
-    def inadimplencias(self, request):
-        metrics.financeiro_relatorios_total.inc()
-        params = request.query_params
-        centro_id = params.get("centro")
-        nucleo_id = params.get("nucleo")
-        try:
-            inicio = parse_periodo(params.get("periodo_inicial"))
-            fim = parse_periodo(params.get("periodo_final"))
-        except ValidationError as exc:
-            return Response({"detail": str(exc)}, status=400)
-
-        qs = self._lancamentos_base().filter(status=LancamentoFinanceiro.Status.PENDENTE)
-        if centro_id:
-            qs = qs.filter(centro_custo_id=centro_id)
-        if nucleo_id:
-            qs = qs.filter(centro_custo__nucleo_id=nucleo_id)
-        if inicio:
-            qs = qs.filter(data_vencimento__gte=inicio)
-        if fim:
-            qs = qs.filter(data_vencimento__lt=fim)
-
-        data = []
-        now = timezone.now().date()
-        for lanc in qs:
-            conta_destino = lanc.conta_associado_resolvida
-            conta_email = conta_destino.user.email if conta_destino else None
-            dias_atraso = (now - lanc.data_vencimento.date()).days if lanc.data_vencimento else 0
-            item = {
-                "id": str(lanc.id),
-                "centro": lanc.centro_custo.nome,
-                "carteira_id": str(lanc.carteira_id) if lanc.carteira_id else None,
-                "carteira_contraparte_id": str(lanc.carteira_contraparte_id)
-                if lanc.carteira_contraparte_id
-                else None,
-                "conta": conta_email,
-                "status": lanc.status,
-                "valor": float(lanc.valor),
-                "data_vencimento": lanc.data_vencimento.date() if lanc.data_vencimento else None,
-                "dias_atraso": dias_atraso,
-                "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
-            }
-            data.append(item)
-        fmt = params.get("format")
-        if fmt in {"csv", "xlsx"}:
-            return Response({"detail": _("formato indisponível")}, status=400)
-
-        return Response(data)
 
     @action(detail=False, methods=["post"], url_path="aportes", permission_classes=[AportePermission])
     def aportes(self, request):

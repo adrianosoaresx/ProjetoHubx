@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from datetime import datetime
 from decimal import Decimal
 from typing import Any, Iterable, Sequence
@@ -45,7 +44,7 @@ def gerar_relatorio(
     tipo: str | None = None,
     status: str | None = None,
 ) -> dict[str, Any]:
-    """Computa séries temporais e dados de inadimplência."""
+    """Computa séries temporais e consolida saldos."""
     qs = _base_queryset(centro, nucleo, periodo_inicial, periodo_final)
     if tipo == "receitas":
         qs = qs.filter(valor__gt=0)
@@ -95,32 +94,6 @@ def gerar_relatorio(
 
     saldo_atual = sum(saldos_centros.values(), Decimal("0"))
 
-    pendentes = qs.filter(status=LancamentoFinanceiro.Status.PENDENTE)
-    quitadas = qs.filter(status=LancamentoFinanceiro.Status.PAGO)
-
-    def _serie_inadimplencia(qs_in: Iterable[LancamentoFinanceiro], key: str) -> dict[str, dict[str, float]]:
-        data: dict[str, dict[str, float]] = defaultdict(lambda: {"pendentes": 0.0, "quitadas": 0.0})
-        res = (
-            qs_in.annotate(mes=TruncMonth("data_lancamento")).values("mes").annotate(valor=Sum("valor")).order_by("mes")
-        )
-        for item in res:
-            mes = item["mes"].strftime("%Y-%m")
-            data[mes][key] = float(item["valor"] or 0)
-        return data
-
-    dados_pend = _serie_inadimplencia(pendentes, "pendentes")
-    dados_quit = _serie_inadimplencia(quitadas, "quitadas")
-
-    total_inadimplentes = pendentes.filter(valor__gt=0).aggregate(total=Sum("valor"))["total"] or Decimal("0")
-
-    meses = sorted(set(dados_pend.keys()) | set(dados_quit.keys()))
-    inadimplencia: list[dict[str, Any]] = []
-    for mes in meses:
-        item = {"mes": mes, **dados_pend.get(mes, {}), **dados_quit.get(mes, {})}
-        item.setdefault("pendentes", 0.0)
-        item.setdefault("quitadas", 0.0)
-        inadimplencia.append(item)
-
     centros_meta: dict[str, dict[str, Any]] = {}
     if saldos_centros:
         centros_meta = {
@@ -143,8 +116,6 @@ def gerar_relatorio(
     return {
         "saldo_atual": float(saldo_atual),
         "serie": serie,
-        "inadimplencia": inadimplencia,
-        "total_inadimplentes": float(total_inadimplentes),
         "saldos_por_centro": {cid: float(valor) for cid, valor in saldos_centros.items()},
         "classificacao_centros": classificacao_centros,
     }

@@ -66,13 +66,6 @@ msgstr ""
 msgid "data_vencimento anterior a data_lancamento"
 msgstr ""
 
-#: services/notificacoes.py:41
-msgid "Inadimplência"
-msgstr ""
-
-#: services/notificacoes.py:42
-msgid "Você possui lançamentos vencidos."
-msgstr ""
 
 #: templates/financeiro/aportes_form.html:5
 #: templates/financeiro/importar_pagamentos.html:52
@@ -268,10 +261,6 @@ msgstr ""
 msgid "Erro ao processar pré-visualização"
 msgstr ""
 
-#: templates/financeiro/inadimplencias.html:4
-#: templates/financeiro/inadimplencias.html:8
-msgid "Inadimplências"
-msgstr ""
 
 #: templates/financeiro/inadimplencias.html:10
 #: templates/financeiro/lancamentos_list.html:10
@@ -315,17 +304,6 @@ msgstr ""
 msgid "Data de Vencimento"
 msgstr ""
 
-#: templates/financeiro/inadimplencias.html:49
-msgid "Dias em atraso"
-msgstr ""
-
-#: templates/financeiro/inadimplencias.html:56
-msgid "Exportar inadimplências em CSV"
-msgstr ""
-
-#: templates/financeiro/inadimplencias.html:57
-msgid "Exportar inadimplências em XLSX"
-msgstr ""
 
 #: templates/financeiro/lancamentos_list.html:4
 msgid "Lançamentos Financeiros"

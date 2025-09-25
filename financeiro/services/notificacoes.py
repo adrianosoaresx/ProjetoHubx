@@ -35,22 +35,6 @@ def enviar_cobranca(user: Any, lancamento: Any) -> None:
     except Exception as exc:  # pragma: no cover - integração externa
         logger.error("Falha ao enviar cobrança: %s", exc)
 
-
-def enviar_inadimplencia(user: Any, lancamento: Any) -> None:
-    """Envia notificação de inadimplência a um usuário."""
-
-    assunto = _("Inadimplência")
-    corpo = _("Você possui lançamentos vencidos.")
-    try:
-        enviar_para_usuario(
-            user,
-            "aviso_inadimplencia",
-            {"assunto": str(assunto), "corpo": str(corpo)},
-        )
-    except Exception as exc:  # pragma: no cover - integração externa
-        logger.error("Falha ao enviar inadimplência: %s", exc)
-
-
 def enviar_aviso_vencimento(user: Any, lancamento: Any) -> None:
     """Envia aviso de vencimento próximo a um usuário."""
 
