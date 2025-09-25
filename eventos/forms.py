@@ -11,28 +11,7 @@ from .models import (
     FeedbackNota,
     InscricaoEvento,
     ParceriaEvento,
-    Tarefa,
 )
-
-
-class TarefaForm(forms.ModelForm):
-    class Meta:
-        model = Tarefa
-        fields = [
-            "titulo",
-            "descricao",
-            "data_inicio",
-            "data_fim",
-            "responsavel",
-            "status",
-        ]
-        widgets = {
-            "data_inicio": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "data_fim": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "descricao": forms.Textarea(attrs={"rows": 3}),
-        }
-
-
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento

@@ -6,7 +6,6 @@ from .models import (
     Evento,
     InscricaoEvento,
     ParceriaEvento,
-    Tarefa,
 )
 
 
@@ -31,6 +30,3 @@ class BriefingEventoAdmin(admin.ModelAdmin):
     list_display = ["evento", "objetivos"]
 
 
-@admin.register(Tarefa)
-class TarefaAdmin(admin.ModelAdmin):
-    list_display = ["titulo", "data_inicio", "data_fim", "status"]

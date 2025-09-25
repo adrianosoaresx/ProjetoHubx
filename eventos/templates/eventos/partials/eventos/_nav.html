@@ -3,7 +3,6 @@
 {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
 {% url 'eventos:inscricao_list' as base_inscricoes_url %}
 {% url 'eventos:parceria_list' as base_parcerias_url %}
-{% url 'eventos:tarefa_list' as base_tarefas_url %}
 {# URLs base definidas acima; quando existir ev_pk, os links abaixo já usam ele #}
 <nav class="{{ nav_class|default:'mb-6' }}" aria-label="{% trans 'Seções de eventos' %}">
   <ul class="flex flex-wrap gap-2">
@@ -61,15 +60,6 @@
         </li>
       {% endif %}
     {% endwith %}
-    <li>
-      <a
-        href="{% if ev_pk %}{{ base_tarefas_url }}?evento={{ ev_pk }}{% else %}{% url 'eventos:tarefa_list' %}{% endif %}"
-        class="{{ base_classes }}{% if current_section == 'tarefas' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
-        {% if current_section == 'tarefas' %}aria-current="page"{% endif %}
-      >
-        {% trans 'Tarefas' %}
-      </a>
-    </li>
   </ul>
 </nav>
 {% endwith %}
