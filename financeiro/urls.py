@@ -2,8 +2,6 @@ from django.urls import path
 
 from .views.pages import (
     aportes_form_view,
-    centro_form_view,
-    centros_list_view,
     extrato_view,
     importacoes_list_view,
     importar_pagamentos_view,
@@ -24,9 +22,6 @@ urlpatterns = [
     path("aportes/", aportes_form_view, name="aportes_form"),
     path("extrato/", extrato_view, name="extrato"),
     path("relatorios/", relatorios_view, name="relatorios"),
-    path("centros/form/", centro_form_view, name="centro_form"),
-    path("centros/form/<uuid:pk>/", centro_form_view, name="centro_form_edit"),
-    path("centros/", centros_list_view, name="centros"),
     path("importacoes/", importacoes_list_view, name="importacoes"),
     path("lancamentos/", lancamentos_list_view, name="lancamentos"),
     path("lancamentos/<uuid:pk>/ajustar/", lancamento_ajuste_modal_view, name="lancamento_ajustar"),

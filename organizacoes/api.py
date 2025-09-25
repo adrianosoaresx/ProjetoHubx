@@ -20,8 +20,6 @@ from core.cache import get_cache_version
 from core.permissions import IsOrgAdminOrSuperuser, IsRoot
 from feed.api import PostSerializer
 from feed.models import FeedPluginConfig, Post
-from financeiro.models import CentroCusto
-from financeiro.serializers import CentroCustoSerializer
 from nucleos.models import Nucleo
 from nucleos.serializers import NucleoSerializer
 
@@ -401,17 +399,6 @@ class OrganizacaoPostViewSet(OrganizacaoRelatedAssociationViewSet):
     model = Post
     serializer_class = PostSerializer
     search_field = "conteudo"
-
-
-class OrganizacaoCentroCustoViewSet(OrganizacaoRelatedModelViewSet):
-    serializer_class = CentroCustoSerializer
-
-    def get_queryset(self):
-        org = self.get_organizacao()
-        return CentroCusto.objects.filter(organizacao=org, deleted=False)
-
-    def perform_create(self, serializer):
-        serializer.save(organizacao=self.get_organizacao())
 
 
 class OrganizacaoPluginViewSet(OrganizacaoRelatedModelViewSet):

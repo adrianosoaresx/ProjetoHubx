@@ -24,13 +24,7 @@ from rest_framework.response import Response
 from accounts.models import UserType
 from notificacoes.services.email_client import send_email
 
-from ..models import (
-    CentroCusto,
-    ContaAssociado,
-    FinanceiroLog,
-    ImportacaoPagamentos,
-    LancamentoFinanceiro,
-)
+from ..models import ContaAssociado, FinanceiroLog, ImportacaoPagamentos, LancamentoFinanceiro
 from ..permissions import (
     IsAssociadoReadOnly,
     IsCoordenador,
@@ -39,7 +33,6 @@ from ..permissions import (
 )
 from ..serializers import (
     AporteSerializer,
-    CentroCustoSerializer,
     ImportarPagamentosConfirmacaoSerializer,
     ImportarPagamentosPreviewSerializer,
 )
@@ -81,58 +74,6 @@ class AportePermission(IsAuthenticated):
         if tipo == LancamentoFinanceiro.Tipo.APORTE_INTERNO:
             return request.user.user_type == UserType.ADMIN
         return True
-
-
-class CentroCustoViewSet(viewsets.ModelViewSet):
-    """CRUD dos centros de custo."""
-
-    queryset = CentroCusto.objects.all()
-    serializer_class = CentroCustoSerializer
-    permission_classes = [IsAuthenticated, IsNotRoot]
-
-    def get_permissions(self):
-        if self.action in {"create", "update", "partial_update", "destroy"}:
-            self.permission_classes = [IsAuthenticated, IsNotRoot, IsFinanceiroOrAdmin]
-        else:
-            self.permission_classes = [IsAuthenticated, IsNotRoot]
-        return super().get_permissions()
-
-    def get_queryset(self):
-        qs = super().get_queryset().select_related("organizacao", "nucleo", "evento")
-        user = self.request.user
-        if user.user_type == UserType.COORDENADOR and user.nucleo_id:
-            qs = qs.filter(nucleo_id=user.nucleo_id)
-        return qs
-
-    # registra logs de auditoria
-    def perform_create(self, serializer):
-        centro = serializer.save()
-        log_financeiro(
-            FinanceiroLog.Acao.EDITAR_CENTRO,
-            self.request.user,
-            {},
-            {"id": str(centro.id), "nome": centro.nome},
-        )
-
-    def perform_update(self, serializer):
-        antes = {"id": str(serializer.instance.id), "nome": serializer.instance.nome}
-        centro = serializer.save()
-        log_financeiro(
-            FinanceiroLog.Acao.EDITAR_CENTRO,
-            self.request.user,
-            antes,
-            {"id": str(centro.id), "nome": centro.nome},
-        )
-
-    def perform_destroy(self, instance):  # type: ignore[override]
-        antes = {"id": str(instance.id), "nome": instance.nome}
-        super().perform_destroy(instance)
-        log_financeiro(
-            FinanceiroLog.Acao.EDITAR_CENTRO,
-            self.request.user,
-            antes,
-            {},
-        )
 
 
 class FinanceiroViewSet(viewsets.ViewSet):

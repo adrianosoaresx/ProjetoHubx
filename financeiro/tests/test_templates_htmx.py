@@ -81,34 +81,6 @@ def test_fluxo_importacao_htmx(api_client, settings, admin_user):
     assert resp2.status_code == 202
 
 
-def test_centro_criacao_htmx(api_client):
-    resp = api_client.post(
-        "/api/financeiro/centros/",
-        {"nome": "N", "tipo": "organizacao", "descricao": "d"},
-        HTTP_HX_REQUEST="true",
-    )
-    assert resp.status_code == 201
-    centro = CentroCusto.objects.get(nome="N")
-    assert centro.descricao == "d"
-
-
-def test_centro_criacao_erro(api_client):
-    resp = api_client.post(
-        "/api/financeiro/centros/",
-        {"tipo": "organizacao"},
-        HTTP_HX_REQUEST="true",
-    )
-    assert resp.status_code == 400
-    assert "nome" in resp.data
-
-
-def test_centro_form_contem_descricao(client_logged):
-    resp = client_logged.get(reverse("financeiro:centro_form"))
-    assert resp.status_code == 200
-    html = resp.content.decode()
-    assert 'name="descricao"' in html
-
-
 def test_importar_pagamentos_template_sanitizes_errors(client_logged):
     resp = client_logged.get(reverse("financeiro:importar_pagamentos"))
     html = resp.content.decode()

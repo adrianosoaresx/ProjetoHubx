@@ -12,12 +12,11 @@ from .viewsets import (
     LancamentoFinanceiroViewSet,
     RepasseViewSet,
 )
-from .views.api import CentroCustoViewSet, FinanceiroViewSet
+from .views.api import FinanceiroViewSet
 
 router = routers.DefaultRouter()
 router.register("carteiras", CarteiraViewSet, basename="carteira")
 router.register("lancamentos", LancamentoFinanceiroViewSet, basename="lancamento")
-router.register("centros", CentroCustoViewSet, basename="centro")
 router.register("importacoes", ImportacaoPagamentosViewSet, basename="importacao")
 router.register("logs", FinanceiroLogViewSet, basename="log")
 router.register("task-logs", FinanceiroTaskLogViewSet, basename="task-log")
