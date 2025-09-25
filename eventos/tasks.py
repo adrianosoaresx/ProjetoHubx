@@ -2,49 +2,15 @@ import logging
 
 from celery import shared_task
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 
 from notificacoes.services.notificacoes import enviar_para_usuario
 
-from .models import (
-    BriefingEvento,
-    Evento,
-    EventoLog,
-)
+from .models import BriefingEvento
 
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task
-def promover_lista_espera(evento_id: int) -> None:
-    evento = Evento.objects.filter(pk=evento_id).first()
-    if not evento or not evento.participantes_maximo:
-        return
-    vagas = evento.participantes_maximo - evento.inscricoes.filter(status="confirmada").count()
-    if vagas <= 0:
-        return
-    pendentes = evento.inscricoes.filter(status="pendente").order_by("posicao_espera")[:vagas]
-    for ins in pendentes:
-        ins.status = "confirmada"
-        ins.posicao_espera = None
-        ins.data_confirmacao = timezone.now()
-        ins.gerar_qrcode()
-        ins.save(update_fields=["status", "posicao_espera", "data_confirmacao", "qrcode_url", "updated_at"])
-
-        enviar_para_usuario(
-            ins.user,
-            "evento_lista_espera_promovido",
-            {"evento": {"id": evento.pk, "titulo": evento.titulo}},
-            escopo_tipo="eventos.Evento",
-            escopo_id=str(evento.pk),
-        )
-        EventoLog.objects.create(
-            evento=evento,
-            usuario=ins.user,
-            acao="inscricao_promovida",
-            detalhes={"notificacao": True},
-        )
 @shared_task
 def notificar_briefing_status(
     briefing_id: int,

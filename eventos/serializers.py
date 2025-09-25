@@ -88,7 +88,6 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             "data_confirmacao",
             "qrcode_url",
             "check_in_realizado_em",
-            "posicao_espera",
             "created_at",
             "updated_at",
         )
@@ -111,7 +110,11 @@ class InscricaoEventoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Usuário já inscrito neste evento.")
         validated_data["user"] = request.user
         instance = super().create(validated_data)
-        instance.confirmar_inscricao()
+        try:
+            instance.confirmar_inscricao()
+        except ValueError as exc:
+            instance.delete()
+            raise serializers.ValidationError(str(exc))
         return instance
 class ParceriaEventoSerializer(serializers.ModelSerializer):
     class Meta:

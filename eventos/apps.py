@@ -8,4 +8,4 @@ class EventosConfig(AppConfig):
     verbose_name = "Eventos"
 
     def ready(self) -> None:  # pragma: no cover - configuração
-        from . import signals  # noqa: F401
+        return
