@@ -12,6 +12,84 @@
     <div class="card px-4">
       <div class="card-body space-y-6">
 
+        <article class="card">
+          <div class="card-header">
+            <h2 class="text-xl font-semibold">{% trans "Informações" %}</h2>
+          </div>
+          <div class="card-body">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Organização" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ object.organizacao.nome }}</dd>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Status" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">
+                  {% if object.ativo %}
+                    {% trans "Ativo" %}
+                  {% else %}
+                    {% trans "Inativo" %}
+                  {% endif %}
+                </dd>
+              </div>
+
+              {% if object.mensalidade %}
+                <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                  <dt class="text-[var(--text-secondary)]">{% trans "Mensalidade" %}</dt>
+                  <dd class="font-medium text-[var(--text-primary)]">{{ object.mensalidade|localize }}</dd>
+                </div>
+              {% endif %}
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Membros" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ total_membros }}</dd>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Coordenadores" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ coordenadores|length }}</dd>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Eventos" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos }}</dd>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Eventos ativos" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos_ativos }}</dd>
+              </div>
+
+              <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                <dt class="text-[var(--text-secondary)]">{% trans "Eventos concluídos" %}</dt>
+                <dd class="font-medium text-[var(--text-primary)]">{{ total_eventos_concluidos }}</dd>
+              </div>
+
+              {% if object.created_at %}
+                <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                  <dt class="text-[var(--text-secondary)]">{% trans "Criado em" %}</dt>
+                  <dd class="font-medium text-[var(--text-primary)]">{{ object.created_at|date:'SHORT_DATETIME_FORMAT' }}</dd>
+                </div>
+              {% endif %}
+
+              {% if object.updated_at %}
+                <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2">
+                  <dt class="text-[var(--text-secondary)]">{% trans "Atualizado em" %}</dt>
+                  <dd class="font-medium text-[var(--text-primary)]">{{ object.updated_at|date:'SHORT_DATETIME_FORMAT' }}</dd>
+                </div>
+              {% endif %}
+
+              {% if object.descricao %}
+                <div class="flex flex-col gap-1 rounded-lg border border-[var(--border)] px-3 py-2 sm:col-span-2 lg:col-span-3">
+                  <dt class="text-[var(--text-secondary)]">{% trans "Descrição" %}</dt>
+                  <dd class="font-medium text-[var(--text-primary)] whitespace-pre-line">{{ object.descricao }}</dd>
+                </div>
+              {% endif %}
+            </dl>
+          </div>
+        </article>
+
         {% with section=current_section|default:"membros" %}
           {% if section == 'membros' %}
             <section id="nucleo-membros" class="space-y-6">
