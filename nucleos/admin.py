@@ -5,7 +5,17 @@ from .models import ConviteNucleo, CoordenadorSuplente, Nucleo, ParticipacaoNucl
 
 @admin.register(Nucleo)
 class NucleoAdmin(admin.ModelAdmin):
-    list_display = ["nome", "organizacao", "created_at", "deleted", "deleted_at", "avatar", "cover"]
+    list_display = [
+        "nome",
+        "organizacao",
+        "classificacao",
+        "created_at",
+        "deleted",
+        "deleted_at",
+        "avatar",
+        "cover",
+    ]
+    list_filter = ["organizacao", "classificacao", "ativo"]
 
 
 @admin.register(ParticipacaoNucleo)
