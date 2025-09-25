@@ -97,19 +97,6 @@ def logs_list_view(request):
 
 @login_required
 @user_passes_test(_is_financeiro_or_admin)
-def inadimplencias_view(request):
-    centros = CentroCusto.objects.all()
-    nucleos = {c.nucleo for c in centros if c.nucleo}
-    context = {
-        "centros": centros,
-        "nucleos": list(nucleos),
-        "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
-    }
-    return render(request, "financeiro/inadimplencias.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
 def task_logs_view(request):
     logs = FinanceiroTaskLog.objects.all()
     return render(request, "financeiro/task_logs.html", {"logs": logs})

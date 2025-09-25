@@ -5,7 +5,6 @@ from .views.pages import (
     extrato_view,
     importacoes_list_view,
     importar_pagamentos_view,
-    inadimplencias_view,
     lancamento_ajuste_modal_view,
     lancamentos_list_view,
     logs_list_view,
@@ -27,7 +26,6 @@ urlpatterns = [
     path("lancamentos/<uuid:pk>/ajustar/", lancamento_ajuste_modal_view, name="lancamento_ajustar"),
     path("repasses/", repasses_view, name="repasses"),
     path("logs/", logs_list_view, name="logs"),
-    path("inadimplencias/", inadimplencias_view, name="inadimplencias"),
     path("task-logs/", task_logs_view, name="task_logs"),
     path("task-logs/<int:pk>/", task_log_detail_view, name="task_log_detail"),
 ]

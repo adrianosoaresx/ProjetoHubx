@@ -318,10 +318,6 @@ MENSALIDADE_VENCIMENTO_DIA = 10
 FEED_PLUGINS_INTERVAL_MINUTES = int(os.getenv("FEED_PLUGINS_INTERVAL_MINUTES", "1"))
 
 CELERY_BEAT_SCHEDULE = {
-    "notificar_inadimplencia": {
-        "task": "financeiro.tasks.inadimplencia.notificar_inadimplencia",
-        "schedule": crontab(minute=0, hour=7),
-    },
     "remover_logs_antigos": {
         "task": "tokens.tasks.remover_logs_antigos",
         "schedule": crontab(minute=0, hour=0),

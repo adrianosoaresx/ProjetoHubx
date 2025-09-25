@@ -17,7 +17,7 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Geração automatizada de massa de dados para testes
 - Serviço central de notificações assíncronas
 - Notificações push em tempo real via WebSocket
-- Automação de inadimplências e API para lançamentos financeiros
+- Automação financeira e API para lançamentos financeiros
 - Denúncia e moderação básica de posts do feed
 - Dashboard com métricas do feed e gráficos interativos
 - Rotação automática de tokens de API
