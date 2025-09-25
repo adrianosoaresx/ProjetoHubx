@@ -7,7 +7,7 @@ from core.models import SoftDeleteModel, TimeStampedModel
 
 
 class AuditLog(TimeStampedModel, SoftDeleteModel):
-    """Immutable audit log for dashboard actions."""
+    """Immutable audit log for user-facing actions."""
 
     class Status(models.TextChoices):
         SUCCESS = "SUCCESS", "Success"

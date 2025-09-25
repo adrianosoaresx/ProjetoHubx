@@ -8,8 +8,11 @@ from .services import hash_ip, log_audit_async
 from tokens.utils import get_client_ip
 
 
+AUDITED_PATH_PREFIXES: tuple[str, ...] = ("/associados/",)
+
+
 class AuditMiddleware:
-    """Middleware that logs dashboard requests for auditing."""
+    """Middleware that logs selected requests for auditing."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -17,7 +20,7 @@ class AuditMiddleware:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         response = self.get_response(request)
         try:
-            if request.path.startswith("/dashboard"):
+            if request.path.startswith(AUDITED_PATH_PREFIXES):
                 user = request.user if request.user.is_authenticated else None
                 ip = get_client_ip(request)
                 metadata = request.GET.dict() if request.method == "GET" else request.POST.dict()

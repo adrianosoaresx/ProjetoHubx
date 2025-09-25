@@ -89,7 +89,7 @@ responsivos. Ela traz links contextualizados pelo tipo de usuário e alterna
 entre visual mobile e desktop automaticamente.
 
 ```django
-{% include "_partials/sidebar.html" with active="dashboard" %}
+{% include "_partials/sidebar.html" with active="feed" %}
 ```
 
 ### Hero

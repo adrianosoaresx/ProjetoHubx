@@ -1,12 +1,12 @@
-// Service worker for Hubx Dashboard PWA
+// Service worker for Hubx PWA
 // Cache version. Update the suffix (e.g., -v2) to force cache refresh on deploys.
-const CACHE_NAME = "dashboard-static-v2";
+const CACHE_NAME = "hubx-static-v1";
 
 // List of core resources to pre-cache for offline usage.
-const CORE_ASSETS = ["/dashboard/"];
+const CORE_ASSETS = ["/"];
 
 self.addEventListener("install", event => {
-  // Pre-cache core assets so the dashboard shell is available offline.
+  // Pre-cache core assets so the primary shell is available offline.
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS))
   );
@@ -41,9 +41,8 @@ async function staleWhileRevalidate(request) {
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
   const url = new URL(event.request.url);
-  const isStatic = /\.css$|\.js$|\.png$|\.svg$/.test(url.pathname);
-  const isDashboardPartial =
-    url.pathname.startsWith("/dashboard/") && url.pathname.endsWith("-partial/");
-  if (!(isStatic || isDashboardPartial)) return;
+  const isStatic = /\.(css|js|png|svg|jpg|jpeg|gif|woff2?)$/.test(url.pathname);
+  const isCoreRoute = CORE_ASSETS.includes(url.pathname);
+  if (!(isStatic || isCoreRoute)) return;
   event.respondWith(staleWhileRevalidate(event.request));
 });

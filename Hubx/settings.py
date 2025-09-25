@@ -80,7 +80,6 @@ INSTALLED_APPS = [
     "storages",
     # ‑‑‑‑ Apps da sua solução ‑‑‑‑
     "core",
-    "dashboard",
     "accounts.apps.AccountsConfig",
     "organizacoes",
     "tokens.apps.TokensConfig",
@@ -109,7 +108,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
-    "dashboard.middleware.DashboardTimingMiddleware",
     "audit.middleware.AuditMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
     "core.middleware.EndpointMetricsMiddleware",

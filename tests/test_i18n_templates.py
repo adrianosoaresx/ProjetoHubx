@@ -65,10 +65,7 @@ def _build_request(template_name: str):
 
 def _context(template_name: str):
     request = _build_request(template_name)
-    ctx = {"request": request}
-    if template_name == "dashboard/export_pdf.html":
-        ctx["metrics"] = {}
-    return ctx
+    return {"request": request}
 
 
 @pytest.mark.parametrize("template_name,_path", FULL_TEMPLATES)

@@ -67,7 +67,7 @@ def test_log_audit_creates_entry(root_user) -> None:
     log_audit(
         root_user,
         "EXPORT_PDF",
-        "Dashboard",
+        "Associados",
         "1",
         hash_ip("127.0.0.1"),
         "SUCCESS",
@@ -78,11 +78,11 @@ def test_log_audit_creates_entry(root_user) -> None:
 
 def test_middleware_logs_success_and_failure(client, admin_user, cliente_user) -> None:
     client.force_login(admin_user)
-    client.get(reverse("dashboard:admin"))
+    client.get(reverse("associados_lista"))
     assert AuditLog.objects.filter(user=admin_user, status="SUCCESS").exists()
 
     client.force_login(cliente_user)
-    client.get(reverse("dashboard:admin"))
+    client.get(reverse("associados_lista"))
     assert AuditLog.objects.filter(user=cliente_user, status="FAILURE").exists()
 
 

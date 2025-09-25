@@ -319,46 +319,6 @@
   </svg>
 </div>
 
-  {% elif selected_bg == 'dashboard' %}
-<!-- Dashboard Background -->
-<div class="neural-bg-dashboard absolute inset-0 overflow-hidden">
-  <svg class="w-full h-full" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
-    <!-- Grid pattern -->
-    <defs>
-      <pattern id="grid" width="80" height="60" patternUnits="userSpaceOnUse">
-        <path d="M 80 0 L 0 0 0 60" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.3"/>
-      </pattern>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#grid)"/>
-    
-    <!-- Data visualization nodes -->
-    <g opacity="0.8">
-      <!-- Chart-like connections -->
-      <path d="M100,500 L200,400 L300,350 L400,300 L500,250 L600,200 L700,150" 
-            stroke="#0ea5e9" stroke-width="3" fill="none"/>
-      <path d="M100,450 L200,380 L300,320 L400,280 L500,240 L600,220 L700,180" 
-            stroke="#3b82f6" stroke-width="2" fill="none" opacity="0.7"/>
-      
-      <!-- Data points -->
-      <circle cx="100" cy="500" r="8" fill="#0ea5e9"/>
-      <circle cx="200" cy="400" r="10" fill="#0ea5e9"/>
-      <circle cx="300" cy="350" r="9" fill="#3b82f6"/>
-      <circle cx="400" cy="300" r="11" fill="#3b82f6"/>
-      <circle cx="500" cy="250" r="8" fill="#1e40af"/>
-      <circle cx="600" cy="200" r="10" fill="#1e40af"/>
-      <circle cx="700" cy="150" r="9" fill="#0ea5e9"/>
-      
-      <!-- Secondary data points -->
-      <circle cx="150" cy="480" r="5" fill="#3b82f6" opacity="0.6"/>
-      <circle cx="250" cy="390" r="6" fill="#1e40af" opacity="0.6"/>
-      <circle cx="350" cy="340" r="5" fill="#0ea5e9" opacity="0.6"/>
-      <circle cx="450" cy="290" r="7" fill="#3b82f6" opacity="0.6"/>
-      <circle cx="550" cy="235" r="5" fill="#1e40af" opacity="0.6"/>
-      <circle cx="650" cy="190" r="6" fill="#0ea5e9" opacity="0.6"/>
-    </g>
-  </svg>
-</div>
-
   {% elif selected_bg == 'tokens' %}
 <!-- Tokens Background -->
 <div class="neural-bg-tokens absolute inset-0 overflow-hidden">
