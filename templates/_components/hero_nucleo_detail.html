@@ -47,13 +47,7 @@
             {% if total_membros is not None %}
               {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
-            {% if total_eventos_ativos is not None %}
-              {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-            {% if total_eventos_concluidos is not None %}
-              {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos icon_name='check' card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
-          </div>
+           </div>
         </div>
       {% endif %}
     </div>

@@ -12,7 +12,7 @@
     <div class="card px-4">
       <div class="card-body space-y-6">
 
-        {% include "_components/nucleo_detail_nav.html" with nucleo=object current_section=current_section %}
+        
 
         {% with section=current_section|default:"membros" %}
           {% if section == 'membros' %}
@@ -27,151 +27,8 @@
               >
                 {% include 'nucleos/partials/membros_list.html' %}
               </div>
-
-              {% if membros_pendentes %}
-                <div class="space-y-3">
-                  <h3 class="font-semibold">{% trans 'Pendentes' %}</h3>
-                  <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-[var(--border)] text-left" id="pendentes">
-                      <thead class="bg-[var(--bg-secondary)]">
-                        <tr>
-                          <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Usuário' %}</th>
-                          <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]">{% trans 'Solicitado em' %}</th>
-                          <th class="px-2 py-1 text-left font-medium text-[var(--text-secondary)]"></th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-[var(--border)]">
-                        {% for part in membros_pendentes %}
-                          <tr id="pendente-{{ part.id }}">
-                            <td>{{ part.user.display_name }}</td>
-                            <td>{{ part.data_solicitacao|date:'d/m/Y' }}</td>
-                            <td class="space-x-2">
-                              <button class="btn btn-primary btn-sm" hx-post="{% url 'nucleos_api:nucleo-aprovar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar aprovação?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Aprovar' %}</button>
-                              <button class="btn btn-danger btn-sm" hx-post="{% url 'nucleos_api:nucleo-recusar-membro' object.pk part.user.pk %}" hx-target="#pendente-{{ part.id }}" hx-swap="none" hx-on="htmx:afterRequest: this.closest('tr').remove()" hx-confirm="{% trans 'Confirmar recusa?' %}" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>{% trans 'Recusar' %}</button>
-                            </td>
-                          </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              {% endif %}
-
-              {% if suplentes %}
-                <div class="space-y-3">
-                  <h3 class="font-semibold">{% trans 'Suplentes' %}</h3>
-                  <ul class="list-disc pl-5 text-sm text-[var(--text-secondary)]">
-                    {% for s in suplentes %}
-                      <li>
-                        {{ s.usuario.display_name }} —
-                        {{ s.periodo_inicio|date:'d/m/Y' }} a {{ s.periodo_fim|date:'d/m/Y' }}
-                      </li>
-                    {% endfor %}
-                  </ul>
-                </div>
-              {% endif %}
-
-              {% if mostrar_solicitar and request.user.user_type != 'admin' and request.user.user_type != 'coordenador' %}
-                <div>
-                  <button id="solicitar-btn" type="button" class="btn btn-primary" hx-get="{% url 'nucleos:solicitar_modal' object.pk %}" hx-target="#modal">{% trans 'Solicitar participação' %}</button>
-                </div>
-              {% endif %}
             </section>
-          {% elif section == 'eventos' %}
-            <section id="nucleo-eventos" class="space-y-6">
-              <h2 class="text-lg font-semibold text-[var(--text-primary)]">{% trans 'Eventos do núcleo' %}</h2>
-              <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                {% for evento in eventos %}
-                  {% include '_components/card_evento.html' %}
-                {% empty %}
-                  <p class="col-span-full text-center text-[var(--text-secondary)]">{% trans 'Nenhum evento encontrado para este núcleo.' %}</p>
-                {% endfor %}
-              </div>
-            </section>
-          {% elif section == 'feed' %}
-            <section id="nucleo-feed" class="space-y-6">
-              {% if pode_postar %}
-                <div class="flex justify-end">
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    hx-get="{% url 'nucleos:postar_modal' object.pk %}"
-                    hx-target="#modal"
-                  >
-                    {% trans 'Nova postagem' %}
-                  </button>
-                </div>
-              {% endif %}
-
-              {% if nucleo_posts %}
-                <div class="space-y-4">
-                  {% for post in nucleo_posts %}
-                    <article class="card">
-                      <div class="card-body space-y-3">
-                        {% with author_name=post.autor.display_name|default:post.autor.username %}
-                          <div class="flex items-center gap-3">
-                            <div
-                              class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--bg-tertiary)] text-sm font-semibold text-[var(--text-secondary)]"
-                              role="img"
-                              aria-label="{{ author_name }}"
-                            >
-                              {{ author_name|slice:':1'|upper }}
-                            </div>
-                            <div>
-                              <p class="text-sm font-medium text-[var(--text-primary)]">{{ author_name }}</p>
-                              <p class="text-xs text-[var(--text-secondary)]">{{ post.created_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-                            </div>
-                          </div>
-                        {% endwith %}
-
-                        {% if post.conteudo %}
-                          <div class="text-sm text-[var(--text-primary)]">
-                            {{ post.conteudo|linebreaks }}
-                          </div>
-                        {% endif %}
-
-                        {% if post.image %}
-                          <div class="overflow-hidden rounded-lg">
-                            <img src="{{ post.image.url }}" alt="{% trans 'Imagem da postagem' %}" class="max-h-80 w-full object-cover" loading="lazy">
-                          </div>
-                        {% endif %}
-
-                        {% if post.video %}
-                          <div class="overflow-hidden rounded-lg">
-                            <video src="{{ post.video.url }}" controls class="w-full rounded-lg"></video>
-                          </div>
-                        {% endif %}
-
-                        {% if post.pdf %}
-                          <div>
-                            <a href="{{ post.pdf.url }}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                              {% trans 'Abrir PDF' %}
-                            </a>
-                          </div>
-                        {% endif %}
-
-                        {% if post.tags.all %}
-                          <div class="flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
-                            {% for tag in post.tags.all %}
-                              <span class="rounded-full bg-[var(--bg-tertiary)] px-3 py-1">{{ tag.nome }}</span>
-                            {% endfor %}
-                          </div>
-                        {% endif %}
-                      </div>
-                    </article>
-                  {% endfor %}
-                </div>
-              {% else %}
-                <div class="card text-center text-[var(--text-secondary)]">
-                  <div class="card-body space-y-2">
-                    <p>{% trans 'Ainda não há postagens neste núcleo.' %}</p>
-                    {% if pode_postar %}
-                      <p class="text-sm">{% trans 'Que tal iniciar a conversa?' %}</p>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endif %}
-            </section>
+          
           {% endif %}
         {% endwith %}
 
