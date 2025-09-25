@@ -17,7 +17,6 @@ urlpatterns = [
     path("api/notificacoes/", include("notificacoes.api_urls")),
     path("notificacoes/", include(("notificacoes.urls", "notificacoes"), namespace="notificacoes")),
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
-    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     path("eventos/", include(("eventos.urls", "eventos"), namespace="eventos")),
     path("feed/", include(("feed.urls", "feed"), namespace="feed")),
     path("nucleos/", include(("nucleos.urls", "nucleos"), namespace="nucleos")),
@@ -47,10 +46,6 @@ urlpatterns = [
     path(
         "api/eventos/",
         include(("eventos.api_urls", "eventos_api"), namespace="eventos_api"),
-    ),
-    path(
-        "api/dashboard/",
-        include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
     ),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),

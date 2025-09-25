@@ -1,7 +1,7 @@
 {
-  "name": "Hubx Dashboard",
-  "short_name": "Dashboard",
-  "start_url": "/dashboard/",
+  "name": "Hubx",
+  "short_name": "Hubx",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0f172a",

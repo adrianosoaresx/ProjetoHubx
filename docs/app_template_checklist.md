@@ -7,7 +7,6 @@ Este checklist ajuda a garantir consistência nos templates durante as revisões
 | accounts | Ana | [x] | [x] | [x] | [x] | [x] | [x] |
 | configuracoes | Bruno | [x] | [x] | [x] | [ ] | [ ] | [x] |
 | core | Carla | [x] | [x] | [x] | [x] | [x] | [x] |
-| dashboard | Diego | [x] | [x] | [x] | [x] | [x] | [x] |
 | eventos | Fernando | [x] | [x] | [x] | [x] | [x] | [x] |
 | feed | Gabriela | [x] | [x] | [x] | [x] | [x] | [x] |
 | nucleos | Isabela | [x] | [x] | [x] | [x] | [x] | [x] |

@@ -18,7 +18,6 @@ Inclui também geração de dados de teste e suporte a interface moderna com Tai
 - Serviço central de notificações assíncronas
 - Notificações push em tempo real via WebSocket
 - Denúncia e moderação básica de posts do feed
-- Dashboard com métricas do feed e gráficos interativos
 - Rotação automática de tokens de API
 
 ### Limitações de Design
@@ -184,11 +183,6 @@ npm run build
 - **Membro Status**: consulta de papel e suspensão em `GET /api/nucleos/<id>/membro-status/`.
 - **Feed do Núcleo**: membros ativos podem publicar via `POST /api/nucleos/<id>/posts/`.
 
-
-### Dashboard
-- **Dashboard**: Estatísticas de eventos, inscrições e interações.
-- É possível registrar novas fontes de dados para métricas em tempo de execução
-  com `DashboardCustomMetricService.register_source("chave", Modelo, {"campo"})`.
 
 ### Parcerias de Eventos
 

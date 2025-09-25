@@ -13,7 +13,7 @@ Após oito sprints de evolução contínua, o módulo de chat do Hubx já oferec
 ## Tarefas priorizadas
 ### 1. Painel de métricas e estatísticas
 - **API de agregação**: Desenvolver endpoints no backend (DRF) que retornem estatísticas agregadas, como mensagens enviadas por dia/semana/mês, número de mensagens por canal, top usuários ativos, total de reações por tipo, e quantidade de mensagens sinalizadas. Utilizar agregações do Django ORM e otimizar com índices e cache.
-- **Dashboard administrativo**: Criar uma página no frontend (HTMX/React se necessário) acessível apenas a administradores, que consuma essas APIs e exiba gráficos (via Chart.js ou similar) e tabelas interativas. Incluir filtros por período e canal. Assegurar acessibilidade nos gráficos (descrições textuais).
+- **Relatórios administrativos**: Criar uma página no frontend (HTMX/React se necessário) acessível apenas a administradores, que consuma essas APIs e exiba gráficos (via Chart.js ou similar) e tabelas interativas. Incluir filtros por período e canal. Assegurar acessibilidade nos gráficos (descrições textuais).
 - **Exportação de relatórios**: Permitir que admins exportem os dados agregados em CSV/JSON para análise externa. Utilizar Celery para processamento assíncrono se os conjuntos forem grandes.
 
 ### 2. Categorias e filtros de canais
@@ -37,7 +37,7 @@ Após oito sprints de evolução contínua, o módulo de chat do Hubx já oferec
 - **Feedback ao usuário**: No frontend, mostrar avisos quando o usuário estiver próximo do limite de envio ou se uma mensagem for sinalizada como spam, com orientações sobre boas práticas.
 
 ## Critérios de aceite
-- As estatísticas fornecem dados corretos e são carregadas em menos de 2 segundos para intervalos de até 30 dias; dashboards são acessíveis e responsivos.
+- As estatísticas fornecem dados corretos e são carregadas em menos de 2 segundos para intervalos de até 30 dias; relatórios são acessíveis e responsivos.
 - Canais estão organizados por categoria na UI; criação/edição/exclusão de categorias respeita permissões e é refletida na navegação.
 - Uploads grandes mostram barra de progresso e são reconstituídos corretamente.
 - Usuários podem personalizar tema, salvar buscas e receber resumos diários; todas as preferências são persistidas e podem ser atualizadas via API.

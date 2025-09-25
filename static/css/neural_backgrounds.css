@@ -52,12 +52,6 @@
   );
 }
 
-.neural-bg-dashboard {
-  background: linear-gradient(45deg, transparent 49%, rgba(59, 130, 246, 0.1) 50%, transparent 51%),
-    linear-gradient(-45deg, transparent 49%, rgba(30, 64, 175, 0.05) 50%, transparent 51%);
-  background-size: 20px 20px;
-}
-
 .neural-bg-tokens {
   background: repeating-linear-gradient(
       90deg,

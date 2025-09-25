@@ -77,10 +77,6 @@ msgstr ""
 msgid "Vibração"
 msgstr ""
 
-#: templates/base.html:98
-msgid "Dashboard"
-msgstr ""
-
 #: templates/base.html:101
 msgid "Empresas"
 msgstr ""

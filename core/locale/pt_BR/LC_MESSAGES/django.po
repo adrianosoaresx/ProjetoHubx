@@ -49,12 +49,12 @@ msgstr ""
 msgid "Plataforma colaborativa que conecta organizações, empresas e pessoas."
 msgstr ""
 
-#: templates/core/home.html:13
-msgid "Ir para Dashboard"
-msgstr ""
-
 #: templates/core/home.html:14
 msgid "Ver Feed"
+msgstr ""
+
+#: templates/core/home.html:15
+msgid "Ver Eventos"
 msgstr ""
 
 #: templates/core/home.html:18
@@ -100,11 +100,11 @@ msgid "Encontre grupos de interesse e colabore."
 msgstr ""
 
 #: templates/core/home.html:50
-msgid "Dashboard"
+msgid "Organizações"
 msgstr ""
 
 #: templates/core/home.html:51
-msgid "Acompanhe métricas e indicadores em tempo real."
+msgid "Gerencie empresas, equipes e hierarquias."
 msgstr ""
 
 #: templates/core/home.html:56

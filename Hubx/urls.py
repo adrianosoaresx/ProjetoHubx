@@ -15,8 +15,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # Página inicial (app core)
     path("", include(("core.urls", "core"), namespace="core")),
-    # Dashboard web
-    path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
     # Apps de autenticação/usuário
     path("accounts/", include(("accounts.urls", "accounts"), namespace="accounts")),
     path("tokens/", include(("tokens.urls", "tokens"), namespace="tokens")),
@@ -42,10 +40,6 @@ urlpatterns = [
     path(
         "api/nucleos/",
         include(("nucleos.api_urls", "nucleos_api"), namespace="nucleos_api"),
-    ),
-    path(
-        "api/dashboard/",
-        include(("dashboard.api_urls", "dashboard_api"), namespace="dashboard_api"),
     ),
     path(
         "api/audit/",
