@@ -2,12 +2,9 @@ from __future__ import annotations
 
 import uuid
 
-from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q, Sum, Value
-from django.db.models.functions import Coalesce
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render
 
 from accounts.models import UserType
@@ -49,43 +46,6 @@ def relatorios_view(request):
         "legacy_warning": ContaAssociado.LEGACY_MESSAGE,
     }
     return render(request, "financeiro/relatorios.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def centros_list_view(request):
-    limit = 20
-    offset = int(request.GET.get("offset", 0))
-    qs = (
-        CentroCusto.objects.all()
-        .select_related("organizacao", "nucleo", "evento")
-        .annotate(
-            saldo_total_carteiras=Coalesce(
-                Sum(
-                    "carteiras__saldo",
-                    filter=Q(carteiras__deleted=False),
-                ),
-                Value(Decimal("0")),
-            )
-        )
-    )
-    total = qs.count()
-    centros = qs[offset : offset + limit]
-    next_offset = offset + limit if total > offset + limit else None
-    prev_offset = offset - limit if offset - limit >= 0 else None
-    context = {
-        "centros": centros,
-        "next": next_offset,
-        "prev": prev_offset,
-    }
-    return render(request, "financeiro/centros_list.html", context)
-
-
-@login_required
-@user_passes_test(_is_financeiro_or_admin)
-def centro_form_view(request, pk: uuid.UUID | None = None):
-    centro = get_object_or_404(CentroCusto, pk=pk) if pk is not None else None
-    return render(request, "financeiro/centro_form.html", {"centro": centro})
 
 
 @login_required

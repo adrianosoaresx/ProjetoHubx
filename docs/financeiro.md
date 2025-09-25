@@ -95,8 +95,6 @@ o saldo da carteira operacional do centro de custo é atualizado imediatamente.
 
 | Método e rota | Permissão | Descrição |
 |---------------|-----------|-----------|
-|`GET /api/financeiro/centros/`|Usuário autenticado|Lista centros de custo|
-|`POST /api/financeiro/centros/`|Financeiro/Admin|Cria centro de custo|
 |`GET /api/financeiro/carteiras/`|Financeiro/Admin|Consulta carteiras e saldos oficiais|
 |`POST /api/financeiro/carteiras/`|Financeiro/Admin|Cria ou ajusta carteiras|
 |`POST /api/financeiro/importar-pagamentos/`|Financeiro/Admin|Pré-visualiza arquivo de importação; retorna `token_erros` quando houver rejeições|

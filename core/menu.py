@@ -485,20 +485,6 @@ def _get_menu_items() -> List[MenuItem]:
             permissions=["admin", "financeiro"],
         ),
         MenuItem(
-            id="financeiro_centros",
-            path=reverse("financeiro:centros"),
-            label="Centros de Custo",
-            icon=ICON_BUILDING,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
-            id="financeiro_centro_novo",
-            path=reverse("financeiro:centro_form"),
-            label="Novo Centro",
-            icon=ICON_PLUS,
-            permissions=["admin", "financeiro"],
-        ),
-        MenuItem(
             id="financeiro_importacoes",
             path=reverse("financeiro:importacoes"),
             label="Importações",

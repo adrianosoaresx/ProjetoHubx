@@ -1,10 +1,9 @@
 import inspect
 
 from financeiro.models import CentroCusto, ContaAssociado, LancamentoFinanceiro
-from financeiro.serializers import AporteSerializer, CentroCustoSerializer, LancamentoFinanceiroSerializer
+from financeiro.serializers import AporteSerializer, LancamentoFinanceiroSerializer
 from financeiro.tasks import gerar_cobrancas_mensais
 from financeiro.tasks.importar_pagamentos import importar_pagamentos_async
-from financeiro.views.api import CentroCustoViewSet
 
 
 def test_public_docstrings():
@@ -12,9 +11,7 @@ def test_public_docstrings():
         CentroCusto,
         ContaAssociado,
         LancamentoFinanceiro,
-        CentroCustoSerializer,
         AporteSerializer,
-        CentroCustoViewSet,
         gerar_cobrancas_mensais,
         importar_pagamentos_async,
     ]

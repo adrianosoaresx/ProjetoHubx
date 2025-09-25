@@ -37,7 +37,7 @@ from .serializers import (
 from .services.auditoria import log_financeiro
 from .services.ajustes import ajustar_lancamento
 from .services.pagamentos import aplicar_pagamento_lancamento
-from .views.api import CentroCustoViewSet, FinanceiroViewSet, parse_periodo
+from .views.api import FinanceiroViewSet, parse_periodo
 
 
 def _inject_legacy_warning(payload):
@@ -447,7 +447,6 @@ class FinanceiroTaskLogViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
 
 __all__ = [
-    "CentroCustoViewSet",
     "FinanceiroViewSet",
     "LancamentoFinanceiroViewSet",
     "ImportacaoPagamentosViewSet",
