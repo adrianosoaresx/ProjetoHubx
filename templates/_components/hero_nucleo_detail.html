@@ -10,32 +10,50 @@
          style="--hero-from: var(--color-primary-500); --hero-to: var(--color-primary-700);"></div>
   {% endif %}
   <div class="hero-content relative z-10 w-full">
-    <div class="max-w-7xl mx-auto w-full px-4 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-      <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div class="shrink-0">
-          {% if nucleo.avatar %}
-            <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
-          {% else %}
-            <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
-                 role="img" aria-label="{{ nucleo.nome }}">
-              {{ nucleo.nome|slice:':1'|upper }}
-            </div>
-          {% endif %}
+    <div class="max-w-7xl mx-auto w-full px-4 py-10 space-y-8">
+      <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+          <div class="shrink-0">
+            {% if nucleo.avatar %}
+              <img src="{{ nucleo.avatar.url }}" alt="{{ nucleo.nome }}" class="h-20 w-20 rounded-full object-cover ring-4 ring-white/50" loading="lazy">
+            {% else %}
+              <div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-semibold uppercase ring-4 ring-white/30"
+                   role="img" aria-label="{{ nucleo.nome }}">
+                {{ nucleo.nome|slice:':1'|upper }}
+              </div>
+            {% endif %}
+          </div>
+          <div class="inline-flex min-w-0 max-w-full items-center bg-white/80 px-4 py-2 rounded shadow-md backdrop-blur-sm text-gray-900">
+            <h1 class="text-3xl font-bold md:text-4xl">{{ nucleo.nome }}</h1>
+          </div>
         </div>
-        <div class="inline-flex min-w-0 max-w-full items-center bg-white/80 px-4 py-2 rounded shadow-md backdrop-blur-sm text-gray-900">
-          <h1 class="text-3xl font-bold md:text-4xl">{{ nucleo.nome }}</h1>
-        </div>
+        {% if perms.nucleos.change_nucleo or perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+          <div class="flex flex-wrap gap-3 md:justify-end">
+            {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+              <a href="{% url 'nucleos:update' nucleo.pk %}" class="btn btn-secondary"
+                 aria-label="{% trans 'Editar núcleo' %}">{% trans 'Editar' %}</a>
+            {% endif %}
+            {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
+              <a href="{% url 'nucleos:delete' nucleo.pk %}" class="btn btn-danger"
+                 aria-label="{% trans 'Excluir núcleo' %}">{% trans 'Excluir' %}</a>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
-      {% if perms.nucleos.change_nucleo or perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-        <div class="flex flex-wrap gap-3 md:justify-end">
-          {% if perms.nucleos.change_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-            <a href="{% url 'nucleos:update' nucleo.pk %}" class="btn btn-secondary"
-               aria-label="{% trans 'Editar núcleo' %}">{% trans 'Editar' %}</a>
-          {% endif %}
-          {% if perms.nucleos.delete_nucleo or request.user.user_type == 'admin' or request.user.user_type == 'coordenador' %}
-            <a href="{% url 'nucleos:delete' nucleo.pk %}" class="btn btn-danger"
-               aria-label="{% trans 'Excluir núcleo' %}">{% trans 'Excluir' %}</a>
-          {% endif %}
+
+      {% if total_membros is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
+        <div class="mt-6 space-y-4 text-left">
+          <div class="card-grid">
+            {% if total_membros is not None %}
+              {% include "_partials/cards/total_card.html" with label=_('Membros') valor=total_membros icon_name='users' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_eventos_ativos is not None %}
+              {% include "_partials/cards/total_card.html" with label=_('Eventos ativos') valor=total_eventos_ativos icon_name='activity' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+            {% if total_eventos_concluidos is not None %}
+              {% include "_partials/cards/total_card.html" with label=_('Eventos realizados') valor=total_eventos_concluidos icon_name='check' card_class='card-compact' body_class='card-body-compact' %}
+            {% endif %}
+          </div>
         </div>
       {% endif %}
     </div>
