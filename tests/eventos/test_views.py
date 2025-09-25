@@ -68,7 +68,6 @@ def evento(organizacao, usuario_logado):
         numero_convidados=100,
         numero_presentes=0,
         valor_ingresso=50.00,
-        orcamento=5000.00,
         orcamento_estimado=5500.00,
         valor_gasto=4500.00,
         participantes_maximo=150,
@@ -105,7 +104,6 @@ def test_evento_detail_view_htmx(evento, client):
     assert evento.contato_email in content
     assert evento.contato_whatsapp in content
     assert str(evento.participantes_maximo) in content
-    assert str(int(evento.orcamento)) in content
     assert str(int(evento.orcamento_estimado)) in content
     assert str(int(evento.valor_gasto)) in content
 

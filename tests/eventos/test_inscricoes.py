@@ -48,7 +48,6 @@ def evento(organizacao, usuario_logado):
         numero_convidados=100,
         numero_presentes=0,
         valor_ingresso=50.00,
-        orcamento=5000.00,
     )
 
 

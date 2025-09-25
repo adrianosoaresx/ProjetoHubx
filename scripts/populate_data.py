@@ -159,7 +159,6 @@ def main() -> None:
                         "numero_convidados": 5,
                         "numero_presentes": 0,
                         "valor_ingresso": None,
-                        "orcamento": None,
                         "orcamento_estimado": None,
                         "valor_gasto": None,
                         "participantes_maximo": None,
