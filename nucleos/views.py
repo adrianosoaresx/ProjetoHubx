@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import logging
 
+from urllib.parse import urlparse
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -230,7 +232,14 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
         if request.user.user_type == UserType.ADMIN and nucleo.organizacao != request.user.organizacao:
             return redirect("nucleos:list")
-        return render(request, "nucleos/delete.html", {"object": nucleo})
+        return render(
+            request,
+            "nucleos/delete.html",
+            {
+                "object": nucleo,
+                "back_href": self._resolve_back_href(request, nucleo),
+            },
+        )
 
     def post(self, request, pk):
         nucleo = get_object_or_404(Nucleo, pk=pk, deleted=False)
@@ -239,6 +248,18 @@ class NucleoDeleteView(NoSuperadminMixin, AdminRequiredMixin, LoginRequiredMixin
         nucleo.soft_delete()
         messages.success(request, _("Núcleo removido."))
         return redirect("nucleos:list")
+
+    def _resolve_back_href(self, request, nucleo: Nucleo) -> str:
+        referer = request.META.get("HTTP_REFERER")
+        if referer:
+            parsed = urlparse(referer)
+            if parsed.netloc == request.get_host():
+                path = parsed.path
+                if parsed.query:
+                    path = f"{path}?{parsed.query}"
+                if path and path != request.path:
+                    return path
+        return reverse("nucleos:detail", args=[nucleo.pk])
 
 
 class NucleoDetailView(NoSuperadminMixin, LoginRequiredMixin, DetailView):
