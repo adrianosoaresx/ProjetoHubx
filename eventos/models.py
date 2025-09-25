@@ -426,60 +426,6 @@ class FeedbackNota(TimeStampedModel, SoftDeleteModel):
         unique_together = ("usuario", "evento")
 
 
-class Tarefa(TimeStampedModel, SoftDeleteModel):
-    """Tarefas simples."""
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    titulo = models.CharField(max_length=150)
-    descricao = models.TextField(blank=True)
-    data_inicio = models.DateTimeField()
-    data_fim = models.DateTimeField()
-    responsavel = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        related_name="tarefas_criadas",
-    )
-    organizacao = models.ForeignKey(Organizacao, on_delete=models.CASCADE)
-    nucleo = models.ForeignKey(Nucleo, on_delete=models.SET_NULL, null=True, blank=True)
-    status = models.CharField(
-        max_length=20,
-        choices=[("pendente", "Pendente"), ("concluida", "Concluída")],
-        default="pendente",
-    )
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    def get_absolute_url(self):
-        from django.urls import reverse
-
-        return reverse("eventos:tarefa_detalhe", args=[self.pk])
-
-    class Meta:
-        verbose_name = "Tarefa"
-        verbose_name_plural = "Tarefas"
-
-
-class TarefaLog(TimeStampedModel, SoftDeleteModel):
-    tarefa = models.ForeignKey(Tarefa, on_delete=models.CASCADE, related_name="logs")
-    usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
-    acao = models.CharField(max_length=50)
-    detalhes = models.JSONField(default=dict, blank=True, encoder=DjangoJSONEncoder)
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        ordering = ["-created_at"]
-        verbose_name = "Log de Tarefa"
-        verbose_name_plural = "Logs de Tarefa"
-
-
 class EventoLog(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name="logs")
     usuario = models.ForeignKey(

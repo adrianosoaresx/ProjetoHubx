@@ -18,10 +18,6 @@ from .views import (
     ParceriaEventoDeleteView,
     ParceriaEventoListView,
     ParceriaEventoUpdateView,
-    TarefaDetailView,
-    TarefaCreateView,
-    TarefaListView,
-    TarefaUpdateView,
 )
 
 app_name = "eventos"
@@ -87,8 +83,4 @@ urlpatterns = [
         BriefingEventoStatusView.as_view(),
         name="briefing_status",
     ),
-    path("tarefas/", TarefaListView.as_view(), name="tarefa_list"),
-    path("tarefa/nova/", TarefaCreateView.as_view(), name="tarefa_criar"),
-    path("tarefa/<uuid:pk>/editar/", TarefaUpdateView.as_view(), name="tarefa_editar"),
-    path("tarefa/<uuid:pk>/", TarefaDetailView.as_view(), name="tarefa_detalhe"),
 ]

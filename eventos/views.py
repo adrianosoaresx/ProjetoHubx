@@ -34,13 +34,7 @@ from django.utils.functional import Promise
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    UpdateView,
-)
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from accounts.models import UserType
 from core.permissions import (
@@ -56,15 +50,12 @@ from .forms import (
     EventoForm,
     InscricaoEventoForm,
     ParceriaEventoForm,
-    TarefaForm,
 )
 from .models import (
     BriefingEvento,
     Evento,
     EventoLog,
     FeedbackNota,
-    Tarefa,
-    TarefaLog,
     InscricaoEvento,
     ParceriaEvento,
 )
@@ -514,168 +505,6 @@ class EventoDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin,
             )
             context.setdefault("briefing_label", _("Briefing do evento"))
 
-        return context
-
-
-class TarefaDetailView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, DetailView):
-    model = Tarefa
-    template_name = "eventos/partials/tarefas/tarefa_detail.html"
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        qs = Tarefa.objects.select_related("organizacao")
-        user = self.request.user
-        if user.user_type == UserType.ROOT:
-            return qs
-        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-        filtro = Q(organizacao=user.organizacao)
-        if nucleo_ids:
-            filtro |= Q(nucleo__in=nucleo_ids)
-        return qs.filter(filtro)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["logs"] = self.object.logs.select_related("usuario").all()
-        context["painel_title"] = self.object.titulo
-        # Se vier ?evento=, usar hero de detalhes
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-                # Briefing no nav, se existir
-                briefing_evento = BriefingEvento.objects.filter(evento_id=ev_id).first()
-                if briefing_evento:
-                    context["briefing_evento"] = briefing_evento
-                    context["briefing_url"] = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": ev_id})
-                    context.setdefault("briefing_label", _("Briefing do evento"))
-            except Evento.DoesNotExist:
-                pass
-        else:
-            context["painel_hero_template"] = self.get_painel_hero_template()
-        return context
-
-
-class TarefaListView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, ListView):
-    model = Tarefa
-    template_name = "eventos/partials/tarefas/tarefa_list.html"
-    context_object_name = "tarefas"
-    painel_title = _("Tarefas")
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        qs = Tarefa.objects.select_related("organizacao", "responsavel")
-        user = self.request.user
-        if user.user_type == UserType.ROOT:
-            return qs
-        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-        filtro = Q(organizacao=user.organizacao)
-        if nucleo_ids:
-            filtro |= Q(nucleo__in=nucleo_ids)
-        return qs.filter(filtro)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-                context["painel_title"] = context["evento"].titulo
-                briefing_evento = BriefingEvento.objects.filter(evento_id=ev_id).first()
-                if briefing_evento:
-                    context["briefing_evento"] = briefing_evento
-                    context["briefing_url"] = reverse("eventos:briefing_detalhe", kwargs={"evento_pk": ev_id})
-                    context.setdefault("briefing_label", _("Briefing do evento"))
-            except Evento.DoesNotExist:
-                pass
-        return context
-
-
-class TarefaCreateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, CreateView):
-    model = Tarefa
-    form_class = TarefaForm
-    template_name = "eventos/partials/tarefas/tarefa_form.html"
-    success_url = reverse_lazy("eventos:tarefa_list")
-    painel_title = _("Nova Tarefa")
-    painel_hero_template = "_components/hero.html"
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        user = self.request.user
-        form.fields["responsavel"].queryset = User.objects.filter(organizacao=user.organizacao)
-        return form
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-            except Evento.DoesNotExist:
-                pass
-        return context
-
-    def form_valid(self, form):
-        form.instance.organizacao = self.request.user.organizacao
-        response = super().form_valid(form)
-        TarefaLog.objects.create(tarefa=self.object, usuario=self.request.user, acao="tarefa_criada")
-        return response
-
-
-class TarefaUpdateView(PainelRenderMixin, LoginRequiredMixin, NoSuperadminMixin, GerenteRequiredMixin, UpdateView):
-    model = Tarefa
-    form_class = TarefaForm
-    template_name = "eventos/partials/tarefas/tarefa_form.html"
-    success_url = reverse_lazy("eventos:tarefa_list")
-    painel_title = _("Editar Tarefa")
-    painel_hero_template = "_components/hero.html"
-
-    def get_queryset(self):
-        qs = Tarefa.objects.select_related("organizacao")
-        user = self.request.user
-        if user.user_type == UserType.ROOT:
-            return qs
-        nucleo_ids = list(user.nucleos.values_list("id", flat=True))
-        filtro = Q(organizacao=user.organizacao)
-        if nucleo_ids:
-            filtro |= Q(nucleo__in=nucleo_ids)
-        return qs.filter(filtro)
-
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        user = self.request.user
-        form.fields["responsavel"].queryset = User.objects.filter(organizacao=user.organizacao)
-        return form
-
-    def form_valid(self, form):
-        old_instance = Tarefa.objects.get(pk=self.object.pk)
-        response = super().form_valid(form)
-        changes = {}
-        for field in form.changed_data:
-            before = getattr(old_instance, field)
-            after = getattr(self.object, field)
-            if before != after:
-                changes[field] = {"antes": before, "depois": after}
-        TarefaLog.objects.create(
-            tarefa=self.object,
-            usuario=self.request.user,
-            acao="tarefa_atualizada",
-            detalhes=changes,
-        )
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Preserva o contexto do evento se vier na querystring
-        ev_id = self.request.GET.get("evento")
-        if ev_id:
-            try:
-                context["evento"] = _queryset_por_organizacao(self.request).get(pk=ev_id)
-                context["painel_hero_template"] = "_components/hero_eventos_detail.html"
-            except Evento.DoesNotExist:
-                pass
         return context
 
 

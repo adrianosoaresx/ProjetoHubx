@@ -18,8 +18,6 @@ from .models import (
     FeedbackNota,
     InscricaoEvento,
     ParceriaEvento,
-    Tarefa,
-    TarefaLog,
 )
 from .permissions import IsAdminOrCoordenadorOrReadOnly
 from .serializers import (
@@ -27,7 +25,6 @@ from .serializers import (
     EventoSerializer,
     InscricaoEventoSerializer,
     ParceriaEventoSerializer,
-    TarefaSerializer,
 )
 from .tasks import notificar_briefing_status
 
@@ -115,27 +112,6 @@ class InscricaoEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(inscricao).data, status=status.HTTP_200_OK)
 
 
-class TarefaViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
-    serializer_class = TarefaSerializer
-    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
-    pagination_class = DefaultPagination
-    queryset = Tarefa.objects.select_related("organizacao", "nucleo").all()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        return self.filter_by_organizacao(qs)
-
-    def perform_destroy(self, instance: Tarefa) -> None:
-        TarefaLog.objects.create(tarefa=instance, usuario=self.request.user, acao="tarefa_excluida")
-        instance.soft_delete()
-
-    @action(detail=True, methods=["post"])
-    def concluir(self, request, pk=None):
-        tarefa = self.get_object()
-        tarefa.status = "concluida"
-        tarefa.save(update_fields=["status", "updated_at"])
-        TarefaLog.objects.create(tarefa=tarefa, usuario=request.user, acao="tarefa_concluida")
-        return Response(self.get_serializer(tarefa).data)
 class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
     serializer_class = ParceriaEventoSerializer
     permission_classes = [IsAdminOrCoordenadorOrReadOnly]
