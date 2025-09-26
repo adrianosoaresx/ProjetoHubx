@@ -402,7 +402,13 @@ def _get_menu_items() -> List[MenuItem]:
             classes="flex items-center hover:text-primary transition",
             children=perfil_children,
         ),
-        MenuItem("associados", reverse("associados_lista"), "Associados", ICON_USERS, ["admin", "coordenador"]),
+        MenuItem(
+            "associados",
+            reverse("associados_lista"),
+            "Associados",
+            ICON_USERS,
+            ["admin", "coordenador", "operador"],
+        ),
         MenuItem(
             "nucleos",
             nucleos_url,

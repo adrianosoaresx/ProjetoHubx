@@ -11,7 +11,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.password_validation import validate_password
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile, File
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
@@ -24,12 +24,12 @@ from django.http import (
     HttpResponseNotAllowed,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
-from django.views.generic import ListView
+from django.views.generic import FormView, ListView
 from django_ratelimit.decorators import ratelimit
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -41,7 +41,7 @@ from accounts.tasks import (
     send_password_reset_email,
 )
 from core.permissions import (
-    GerenteRequiredMixin,
+    AssociadosRequiredMixin,
     IsAdmin,
     IsCoordenador,
     NoSuperadminMixin,
@@ -49,7 +49,12 @@ from core.permissions import (
 from nucleos.models import ConviteNucleo
 from tokens.models import TokenAcesso
 from tokens.utils import get_client_ip
-from .forms import EmailLoginForm, InformacoesPessoaisForm, MediaForm
+from .forms import (
+    EmailLoginForm,
+    InformacoesPessoaisForm,
+    MediaForm,
+    OrganizacaoUserCreateForm,
+)
 from .models import AccountToken, SecurityEvent, UserMedia, UserType
 from .validators import cpf_validator
 
@@ -1052,7 +1057,59 @@ def registro_sucesso(request):
     return render(request, "register/registro_sucesso.html")
 
 
-class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMixin, ListView):
+class OrganizacaoUserCreateView(NoSuperadminMixin, LoginRequiredMixin, FormView):
+    template_name = "associados/usuario_form.html"
+    form_class = OrganizacaoUserCreateForm
+    success_url = reverse_lazy("accounts:associados_lista")
+
+    def dispatch(self, request, *args, **kwargs):
+        allowed_types = self.get_allowed_user_types()
+        if not allowed_types or getattr(request.user, "organizacao_id", None) is None:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_allowed_user_types(self) -> list[str]:
+        tipo_usuario = getattr(self.request.user, "get_tipo_usuario", None)
+        if tipo_usuario in {UserType.ADMIN.value, UserType.ROOT.value}:
+            return [UserType.ASSOCIADO.value, UserType.OPERADOR.value]
+        if tipo_usuario == UserType.OPERADOR.value:
+            return [UserType.ASSOCIADO.value]
+        return []
+
+    def get_initial(self):
+        initial = super().get_initial()
+        requested_type = self.request.GET.get("tipo")
+        if requested_type in self.get_allowed_user_types():
+            initial["user_type"] = requested_type
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["allowed_user_types"] = self.get_allowed_user_types()
+        return kwargs
+
+    def form_valid(self, form):
+        organizacao = getattr(self.request.user, "organizacao", None)
+        if organizacao is None:
+            raise PermissionDenied
+
+        new_user = form.save(organizacao=organizacao)
+        type_labels = {value: label for value, label in UserType.choices}
+        tipo_display = type_labels.get(new_user.user_type, new_user.user_type)
+        messages.success(
+            self.request,
+            _(
+                "Usuário %(username)s (%(tipo)s) adicionado com sucesso."
+            )
+            % {
+                "username": new_user.get_full_name(),
+                "tipo": tipo_display,
+            },
+        )
+        return super().form_valid(form)
+
+
+class AssociadoListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequiredMixin, ListView):
     template_name = "associados/associado_list.html"
     context_object_name = "associados"
     paginate_by = 10

@@ -1,2 +1,18 @@
 {% load i18n %}
-<a href="{% url 'tokens:gerar_convite' %}" class="btn btn-primary">{% trans 'Gerar Convite' %}</a>
+<div class="flex flex-wrap items-center gap-3">
+  {% with tipo=request.user.get_tipo_usuario %}
+    {% if tipo == 'admin' or tipo == 'operador' or tipo == 'root' %}
+      <div class="flex flex-wrap gap-2">
+        <a href="{% url 'accounts:associados_adicionar' %}?tipo=associado" class="btn btn-secondary">
+          {% trans 'Adicionar associado' %}
+        </a>
+        {% if tipo == 'admin' or tipo == 'root' %}
+          <a href="{% url 'accounts:associados_adicionar' %}?tipo=operador" class="btn btn-secondary">
+            {% trans 'Adicionar operador' %}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <a href="{% url 'tokens:gerar_convite' %}" class="btn btn-primary">{% trans 'Gerar Convite' %}</a>
+</div>
