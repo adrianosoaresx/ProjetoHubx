@@ -10,14 +10,18 @@
 {% block content %}
 
 <div class="py-12 card px-4">
-  <div id="associados-grid">
-    {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
+  <div class="card-header">
+      <h2 class="text-xl font-semibold">{% trans "Associados" %}</h2>
   </div>
-
-  <div id="associados-loading" class="htmx-indicator mt-6 text-center text-sm text-base-content/70" role="status" aria-live="polite">
-    {% trans 'Carregando associados...' %}
+  <div class="card-body">
+    <div id="associados-grid">
+      {% include 'associados/_grid.html' with associados=associados page_obj=page_obj request=request %}
+    </div>
+  
+    <div id="associados-loading" class="htmx-indicator mt-6 text-center text-sm text-base-content/70" role="status" aria-live="polite">
+      {% trans 'Carregando associados...' %}
+    </div>
   </div>
-
 </div>
 
 {% endblock %}
