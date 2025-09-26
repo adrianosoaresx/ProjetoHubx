@@ -1107,6 +1107,8 @@ class AssociadoListView(NoSuperadminMixin, GerenteRequiredMixin, LoginRequiredMi
         context["associados_filter_url"] = build_url("associados")
         context["nucleados_filter_url"] = build_url("nucleados")
         context["todos_filter_url"] = build_url(None)
+        context["is_associados_filter_active"] = current_filter == "associados"
+        context["is_nucleados_filter_active"] = current_filter == "nucleados"
 
         org = getattr(self.request.user, "organizacao", None)
         if org:
