@@ -1,7 +1,6 @@
 {% load i18n %}
 {# Card de Membro do Núcleo, inspirado nos cards de associados #}
-{% with return_path=request.get_full_path %}
-<a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}{% if return_path %}?next={{ return_path|urlencode }}{% endif %}"
+<a href="{% url 'accounts:perfil_publico_uuid' part.user.public_id %}"
    class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
    aria-label="{{ part.user.display_name|default:part.user.username }}">
   <article class="card overflow-hidden" role="article">
@@ -42,4 +41,3 @@
   </article>
   <span class="sr-only">{% trans 'Ver perfil do membro' %}</span>
 </a>
-{% endwith %}

@@ -10,11 +10,6 @@
 
 
   <div class="container relative mx-auto px-6 pb-10 lg:pb-14 z-10 sm:-mt-12 md:-mt-16 lg:-mt-24 xl:-mt-28">
-    {% if back_href %}
-      <div class="mb-4 flex justify-start">
-        {% include '_components/back_button.html' with href=back_href classes='btn btn-secondary btn-sm bg-white/80 text-gray-900 hover:bg-white focus-visible:ring-offset-0' disable_history=True %}
-      </div>
-    {% endif %}
     <div class="rounded-2xl border border-[var(--border)] bg-transparent p-4 md:p-6 shadow-lg transition-colors">
       {% with display_name=hero_title|default:profile.display_name subtitle=hero_subtitle %}
         <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start sm:gap-6">
