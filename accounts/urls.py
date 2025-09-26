@@ -9,6 +9,11 @@ urlpatterns = [
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
+    path(
+        "associados/promover/",
+        views.AssociadoPromoverListView.as_view(),
+        name="associados_promover",
+    ),
     path("associados/novo/", views.OrganizacaoUserCreateView.as_view(), name="associados_adicionar"),
     # Registro de usuário
     path("resend-confirmation/", views.resend_confirmation, name="resend_confirmation"),

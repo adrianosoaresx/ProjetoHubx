@@ -331,10 +331,17 @@ def _get_menu_items() -> List[MenuItem]:
         MenuItem(
             id="associados_adicionar",
             path=reverse("accounts:associados_adicionar"),
-            label="Adicionar usuário",
+            label="Adicionar associado",
             icon=ICON_PLUS,
             permissions=["admin", "operador"],
-        )
+        ),
+        MenuItem(
+            id="associados_promover",
+            path=reverse("accounts:associados_promover"),
+            label="Promover associado",
+            icon=ICON_STAR,
+            permissions=["admin", "coordenador", "operador"],
+        ),
     ]
 
     eventos_children = [
