@@ -16,9 +16,7 @@
             <p class="text-lg text-white/90">{{ subtitle }}</p>
           {% endif %}
         </div>
-        {% if action_template %}
-          <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
-        {% endif %}
+        
       </div>
       {% if total_nucleos is not None or total_membros is not None or total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
         <div class="mt-10 space-y-4 text-left">

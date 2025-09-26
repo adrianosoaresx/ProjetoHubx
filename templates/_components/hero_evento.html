@@ -18,19 +18,15 @@
             <p class="text-lg text-white/90">{{ subtitle }}</p>
           {% endif %}
         </div>
-        {% if action_template %}
-          <div class="flex justify-center md:justify-end md:self-start">{% include action_template %}</div>
-        {% endif %}
+
       </div>
       {% if total_eventos is not None or total_eventos_ativos is not None or total_eventos_concluidos is not None %}
-        {% lucide 'calendar' class='h-5 w-5' as icon_total_eventos %}
+        
         {% lucide 'activity' class='h-5 w-5' as icon_total_ativos %}
         {% lucide 'check' class='h-5 w-5' as icon_total_concluidos %}
         <div class="mt-10 space-y-4 text-left">
           <div class="card-grid">
-            {% if total_eventos is not None %}
-              {% include '_partials/cards/total_card.html' with label=_('Eventos') valor=total_eventos icon_svg=icon_total_eventos card_class='card-compact' body_class='card-body-compact' %}
-            {% endif %}
+
             {% if total_eventos_ativos is not None %}
               {% include '_partials/cards/total_card.html' with label=_('Ativos') valor=total_eventos_ativos icon_svg=icon_total_ativos card_class='card-compact' body_class='card-body-compact' %}
             {% endif %}
