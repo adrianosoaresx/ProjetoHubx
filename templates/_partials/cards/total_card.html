@@ -1,9 +1,5 @@
 {% load lucide_icons %}
-{% if as_button %}
-  {% with element='button' %}
-{% else %}
-  {% with element='article' %}
-{% endif %}
+{% with element=as_button|yesno:'button,article,article' %}
 <{{ element }}
   class="card{% if card_class %} {{ card_class }}{% endif %}{% if is_active and active_class %} {{ active_class }}{% endif %}"
   {% if as_button %}type="{{ button_type|default:'button' }}" aria-pressed="{{ is_active|yesno:'true,false,false' }}"{% endif %}
