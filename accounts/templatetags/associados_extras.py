@@ -52,10 +52,13 @@ def usuario_badges(user):
         if participacao.papel == "coordenador":
             papel = participacao.get_papel_coordenador_display() if participacao.papel_coordenador else ""
             if papel:
-                label = _("Coordenador · %(papel)s · %(nucleo)s") % {
-                    "papel": papel,
-                    "nucleo": nucleo_nome,
-                }
+                if nucleo_nome:
+                    label = _("%(papel)s · %(nucleo)s") % {
+                        "papel": papel,
+                        "nucleo": nucleo_nome,
+                    }
+                else:
+                    label = papel
             elif nucleo_nome:
                 label = _("Coordenador · %(nucleo)s") % {"nucleo": nucleo_nome}
             else:
