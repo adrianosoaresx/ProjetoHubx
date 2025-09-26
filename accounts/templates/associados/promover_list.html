@@ -7,37 +7,6 @@
   {% include '_components/hero_associados.html' with title=_('Promover associado') action_template='associados/hero_action.html' total_usuarios=None total_associados=None total_nucleados=None %}
 {% endblock %}
 
-{% block scripts %}
-  {{ block.super }}
-  <script>
-    (function () {
-      const form = document.querySelector('[data-promover-search-form]');
-      if (!form) {
-        return;
-      }
-      const input = form.querySelector('[data-search-input]');
-      const clearButton = form.querySelector('[data-clear-search]');
-      if (!input || !clearButton) {
-        return;
-      }
-
-      const toggleClearButton = () => {
-        const hasValue = Boolean(input.value && input.value.trim());
-        clearButton.classList.toggle('hidden', !hasValue);
-      };
-
-      toggleClearButton();
-      input.addEventListener('input', toggleClearButton);
-      clearButton.addEventListener('click', function () {
-        input.value = '';
-        toggleClearButton();
-        input.focus();
-        form.submit();
-      });
-    })();
-  </script>
-{% endblock %}
-
 {% block content %}
 <div class="py-12 card px-4">
   <div class="card-header">
@@ -91,5 +60,19 @@
         return;
       }
 
+      const toggleClearButton = () => {
+        const hasValue = Boolean(input.value && input.value.trim());
+        clearButton.classList.toggle('hidden', !hasValue);
+      };
 
+      toggleClearButton();
+      input.addEventListener('input', toggleClearButton);
+      clearButton.addEventListener('click', function () {
+        input.value = '';
+        toggleClearButton();
+        input.focus();
+        form.submit();
+      });
+    })();
+  </script>
 {% endblock %}
