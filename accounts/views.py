@@ -1222,6 +1222,7 @@ class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                         UserType.COORDENADOR.value,
                         UserType.CONSULTOR.value,
                         UserType.ASSOCIADO.value,
+                        UserType.NUCLEADO.value,
                     ]
                 )
                 | Q(is_associado=True)

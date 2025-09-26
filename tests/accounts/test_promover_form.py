@@ -9,6 +9,39 @@ from organizacoes.factories import OrganizacaoFactory
 
 
 @pytest.mark.django_db
+def test_promover_list_includes_nucleados(client):
+    organizacao = OrganizacaoFactory()
+    nucleo = NucleoFactory(organizacao=organizacao)
+    User = get_user_model()
+
+    admin = User.objects.create_user(
+        username="admin",
+        email="admin@example.com",
+        password="pass",
+        user_type=UserType.ADMIN,
+        organizacao=organizacao,
+    )
+    nucleado = User.objects.create_user(
+        username="nucleado",
+        email="nucleado@example.com",
+        password="pass",
+        user_type=UserType.NUCLEADO,
+        organizacao=organizacao,
+        is_associado=True,
+        nucleo=nucleo,
+    )
+
+    client.force_login(admin)
+
+    url = reverse("accounts:associados_promover")
+    response = client.get(url)
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert nucleado.username in content
+
+
+@pytest.mark.django_db
 def test_promover_form_get(client):
     organizacao = OrganizacaoFactory()
     User = get_user_model()
