@@ -5,13 +5,7 @@ from django_select2 import forms as s2forms
 from validate_docbr import CNPJ
 
 from .validators import validate_uploaded_file
-from .models import (
-    BriefingEvento,
-    Evento,
-    FeedbackNota,
-    InscricaoEvento,
-    ParceriaEvento,
-)
+from .models import Evento, FeedbackNota, InscricaoEvento, ParceriaEvento
 class EventoForm(forms.ModelForm):
     class Meta:
         model = Evento
@@ -93,26 +87,6 @@ class FeedbackForm(forms.ModelForm):
     class Meta:
         model = FeedbackNota
         fields = ["nota", "comentario"]
-class BriefingEventoForm(forms.ModelForm):
-    class Meta:
-        model = BriefingEvento
-        fields = [
-            "objetivos",
-            "publico_alvo",
-            "requisitos_tecnicos",
-            "cronograma_resumido",
-            "conteudo_programatico",
-            "observacoes",
-        ]
-
-
-class BriefingEventoCreateForm(BriefingEventoForm):
-    """Formulário de criação que inclui o evento associado."""
-
-    class Meta(BriefingEventoForm.Meta):
-        fields = ["evento", *BriefingEventoForm.Meta.fields]
-
-
 class ParceriaEventoForm(forms.ModelForm):
     class Meta:
         model = ParceriaEvento

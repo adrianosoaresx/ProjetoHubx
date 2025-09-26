@@ -1,15 +1,14 @@
 {% load i18n %}
 {% include "eventos/partials/_painel_hero_oob.html" with painel_hero_template=evento|yesno:'_components/hero_eventos_detail.html,' evento=evento %}
   <div class="py-12 px-4 space-y-6">
-    {% include "eventos/partials/eventos/_nav.html" with current_section='parcerias' briefing_evento=briefing_evento briefing_url=briefing_url briefing_label=briefing_label %}
+    {% include "eventos/partials/eventos/_nav.html" with current_section='parcerias' %}
     <div class="flex justify-end">
       {% if evento %}{% url 'eventos:evento_detalhe' evento.pk as back_href %}{% else %}{% url 'eventos:calendario' as back_href %}{% endif %}
       {% include '_components/back_button.html' with href=back_href label=_('Voltar') %}
     </div>
     <div class="card px-4">
       <div class="card-header flex items-center justify-between">
-        {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
-        <a href="{% url 'eventos:parceria_criar' %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="btn btn-primary">{% trans "Nova Parceria" %}</a>
+        <a href="{% url 'eventos:parceria_criar' %}{% if evento %}?evento={{ evento.pk }}{% endif %}" class="btn btn-primary">{% trans "Nova Parceria" %}</a>
       </div>
       <div class="card-body">
         <div class="overflow-x-auto bg-[var(--bg-secondary)] border border-[var(--border)] rounded-2xl card-sm">
@@ -38,12 +37,11 @@
                     <td class="px-4 py-2">-</td>
                   {% endif %}
                   <td class="px-4 py-2 space-x-2">
-                    {% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
                     {% if parceria.avaliacao is None %}
-                      <a href="{% url 'eventos:parceria_avaliar' parceria.pk %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="text-[var(--success)] hover:underline">{% trans "Avaliar" %}</a>
+                      <a href="{% url 'eventos:parceria_avaliar' parceria.pk %}{% if evento %}?evento={{ evento.pk }}{% endif %}" class="text-[var(--success)] hover:underline">{% trans "Avaliar" %}</a>
                     {% endif %}
-                    <a href="{% url 'eventos:parceria_editar' parceria.pk %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="link link-hover">{% trans "Editar" %}</a>
-                    <a href="{% url 'eventos:parceria_excluir' parceria.pk %}{% if ev_pk %}?evento={{ ev_pk }}{% endif %}" class="text-[var(--error)] hover:underline">{% trans "Excluir" %}</a>
+                    <a href="{% url 'eventos:parceria_editar' parceria.pk %}{% if evento %}?evento={{ evento.pk }}{% endif %}" class="link link-hover">{% trans "Editar" %}</a>
+                    <a href="{% url 'eventos:parceria_excluir' parceria.pk %}{% if evento %}?evento={{ evento.pk }}{% endif %}" class="text-[var(--error)] hover:underline">{% trans "Excluir" %}</a>
                   </td>
                 </tr>
               {% empty %}

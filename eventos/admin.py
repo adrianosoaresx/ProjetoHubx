@@ -1,12 +1,7 @@
 from django.contrib import admin
 
 from .forms import EventoForm
-from .models import (
-    BriefingEvento,
-    Evento,
-    InscricaoEvento,
-    ParceriaEvento,
-)
+from .models import Evento, InscricaoEvento, ParceriaEvento
 
 
 @admin.register(Evento)
@@ -23,10 +18,5 @@ class InscricaoEventoAdmin(admin.ModelAdmin):
 @admin.register(ParceriaEvento)
 class ParceriaEventoAdmin(admin.ModelAdmin):
     list_display = ["evento", "tipo_parceria"]
-
-
-@admin.register(BriefingEvento)
-class BriefingEventoAdmin(admin.ModelAdmin):
-    list_display = ["evento", "objetivos"]
 
 

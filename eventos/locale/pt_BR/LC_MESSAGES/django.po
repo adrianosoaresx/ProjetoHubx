@@ -30,11 +30,6 @@ msgstr ""
 msgid "Material devolvido com sucesso."
 msgstr ""
 
-#: eventos/api.py:323 eventos/api.py:342 eventos/api.py:359
-#: eventos/views.py:1069
-msgid "Transição de status inválida."
-msgstr ""
-
 #: eventos/forms.py:107
 msgid "O valor pago deve ser positivo."
 msgstr ""
@@ -61,112 +56,6 @@ msgstr ""
 
 #: eventos/models.py:270
 msgid "Deve ser um valor positivo."
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_form.html:4
-#: eventos/views.py:1023
-msgid "Editar Briefing"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_form.html:4
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:6
-#: eventos/views.py:1000
-msgid "Novo Briefing"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_form.html:13
-#: eventos/templates/eventos/partials/eventos/create.html:18
-#: eventos/templates/eventos/partials/eventos/delete.html:9
-#: eventos/templates/eventos/partials/eventos/tarefa_form.html:13
-#: eventos/templates/eventos/partials/eventos/update.html:21
-#: eventos/templates/eventos/partials/inscricao/inscricao_form.html:15
-#: eventos/templates/eventos/partials/parceria/parceria_confirm_delete.html:8
-#: eventos/templates/eventos/partials/parceria/parceria_form.html:15
-msgid "Cancelar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_form.html:14
-#: eventos/templates/eventos/partials/eventos/create.html:19
-#: eventos/templates/eventos/partials/eventos/tarefa_form.html:14
-#: eventos/templates/eventos/partials/eventos/update.html:22
-#: eventos/templates/eventos/partials/eventos/update.html:38
-#: eventos/templates/eventos/partials/inscricao/inscricao_form.html:16
-#: eventos/templates/eventos/partials/parceria/parceria_form.html:16
-msgid "Salvar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:10
-msgid "Buscar por evento"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:11
-msgid "Filtrar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:18
-#: eventos/templates/eventos/partials/inscricao/inscricao_list.html:14
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:14
-msgid "Evento"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:19
-msgid "Objetivos"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:20
-msgid "Público Alvo"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:21
-msgid "Requisitos Técnicos"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:22
-msgid "Cronograma Resumido"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:23
-msgid "Conteúdo Programático"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:24
-msgid "Observações"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:25
-#: eventos/templates/eventos/partials/inscricao/inscricao_list.html:22
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:18
-msgid "Ações"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:39
-#: eventos/templates/eventos/partials/parceria/parceria_list.html:38
-msgid "Editar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:43
-msgid "Orçar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:47
-msgid "Aprovar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:51
-msgid "Motivo"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:52
-msgid "Recusar"
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:58
-msgid "Nenhum briefing encontrado."
-msgstr ""
-
-#: eventos/templates/eventos/partials/briefing/briefing_list.html:66
-#: eventos/templates/eventos/partials/inscricao/inscricao_list.html:64
-msgid "Voltar aos eventos"
 msgstr ""
 
 #: eventos/templates/eventos/partials/calendario/_lista_eventos_dia.html:4
@@ -225,14 +114,6 @@ msgstr ""
 #: eventos/templates/eventos/partials/eventos/_nav.html:29 eventos/views.py:858
 msgid "Parcerias"
 msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/_nav.html:38
-msgid "Briefings"
-msgstr ""
-
-#: eventos/templates/eventos/partials/eventos/_nav.html:46
-msgid "Briefing do evento"
-msgstr "Briefing do evento"
 
 #: eventos/templates/eventos/partials/eventos/_nav.html:47
 #: eventos/templates/eventos/partials/eventos/tarefa_list.html:5
@@ -665,20 +546,8 @@ msgstr ""
 msgid "Editar Parceria"
 msgstr ""
 
-#: eventos/views.py:977
-msgid "Briefings de Eventos"
-msgstr ""
-
-#: eventos/views.py:1006
-msgid "Já existe briefing para este evento."
-msgstr ""
-
 #: eventos/views.py:1012
 msgid "Evento de outra organização ou núcleo"
-msgstr ""
-
-#: eventos/views.py:1014
-msgid "Briefing criado com sucesso."
 msgstr ""
 
 #: eventos/views.py:1079
@@ -691,8 +560,4 @@ msgstr ""
 
 #: eventos/views.py:1099
 msgid "Informe o motivo da recusa."
-msgstr ""
-
-#: eventos/views.py:1117
-msgid "Status do briefing atualizado."
 msgstr ""

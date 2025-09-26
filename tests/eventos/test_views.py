@@ -184,7 +184,6 @@ def test_evento_create_view_post_valido(usuario_logado, organizacao, client):
         "descricao": "Descrição",
         "data_inicio": make_aware(datetime.now()).isoformat(),
         "data_fim": make_aware(datetime.now() + timedelta(hours=1)).isoformat(),
-        "briefing": "",
         "local": "Rua A",
         "cidade": "Cidade",
         "estado": "ST",

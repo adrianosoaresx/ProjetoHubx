@@ -11,22 +11,9 @@ from rest_framework.exceptions import ValidationError
 
 from accounts.models import UserType
 
-from .models import (
-    BriefingEvento,
-    Evento,
-    EventoLog,
-    FeedbackNota,
-    InscricaoEvento,
-    ParceriaEvento,
-)
+from .models import Evento, EventoLog, FeedbackNota, InscricaoEvento, ParceriaEvento
 from .permissions import IsAdminOrCoordenadorOrReadOnly
-from .serializers import (
-    BriefingEventoSerializer,
-    EventoSerializer,
-    InscricaoEventoSerializer,
-    ParceriaEventoSerializer,
-)
-from .tasks import notificar_briefing_status
+from .serializers import EventoSerializer, InscricaoEventoSerializer, ParceriaEventoSerializer
 
 
 class DefaultPagination(PageNumberPagination):
@@ -189,84 +176,3 @@ class ParceriaEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
         return Response(data)
 
 
-class BriefingEventoViewSet(OrganizacaoFilterMixin, viewsets.ModelViewSet):
-    serializer_class = BriefingEventoSerializer
-    permission_classes = [IsAdminOrCoordenadorOrReadOnly]
-    pagination_class = DefaultPagination
-
-    def get_queryset(self):
-        qs = BriefingEvento.objects.select_related("evento")
-        qs = self.filter_by_organizacao(qs, "evento")
-        return qs
-
-    def perform_destroy(self, instance: BriefingEvento) -> None:
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=self.request.user,
-            acao="briefing_excluido",
-            detalhes={"briefing": instance.pk},
-        )
-        instance.soft_delete()
-
-    @action(detail=True, methods=["post"])
-    def orcamentar(self, request, pk=None):
-        briefing = self.get_object()
-        if not briefing.can_transition_to("orcamentado"):
-            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
-        briefing.status = "orcamentado"
-        briefing.orcamento_enviado_em = timezone.now()
-        prazo = request.data.get("prazo_limite_resposta")
-        if prazo:
-            briefing.prazo_limite_resposta = prazo
-        briefing.save(update_fields=["status", "orcamento_enviado_em", "prazo_limite_resposta", "updated_at"])
-        EventoLog.objects.create(
-            evento=briefing.evento,
-            usuario=request.user,
-            acao="briefing_orcamentado",
-        )
-        notificar_briefing_status.delay(briefing.pk, briefing.status)
-        return Response(self.get_serializer(briefing).data)
-
-    @action(detail=True, methods=["post"])
-    def aprovar(self, request, pk=None):
-        briefing = self.get_object()
-        if not briefing.can_transition_to("aprovado"):
-            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
-        briefing.status = "aprovado"
-        briefing.aprovado_em = timezone.now()
-        briefing.coordenadora_aprovou = True
-        briefing.save(update_fields=["status", "aprovado_em", "coordenadora_aprovou", "updated_at"])
-        EventoLog.objects.create(
-            evento=briefing.evento,
-            usuario=request.user,
-            acao="briefing_aprovado",
-        )
-        notificar_briefing_status.delay(briefing.pk, briefing.status)
-        return Response(self.get_serializer(briefing).data)
-
-    @action(detail=True, methods=["post"])
-    def recusar(self, request, pk=None):
-        briefing = self.get_object()
-        if not briefing.can_transition_to("recusado"):
-            return Response({"detail": _("Transição de status inválida.")}, status=status.HTTP_400_BAD_REQUEST)
-        briefing.status = "recusado"
-        briefing.motivo_recusa = request.data.get("motivo_recusa", "")
-        briefing.recusado_em = timezone.now()
-        briefing.recusado_por = request.user
-        briefing.save(
-            update_fields=[
-                "status",
-                "motivo_recusa",
-                "recusado_em",
-                "recusado_por",
-                "updated_at",
-            ]
-        )
-        EventoLog.objects.create(
-            evento=briefing.evento,
-            usuario=request.user,
-            acao="briefing_recusado",
-            detalhes={"motivo_recusa": briefing.motivo_recusa},
-        )
-        notificar_briefing_status.delay(briefing.pk, briefing.status)
-        return Response(self.get_serializer(briefing).data)

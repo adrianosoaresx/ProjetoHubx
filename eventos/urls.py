@@ -2,9 +2,6 @@ from django.urls import path
 
 from . import views
 from .views import (
-    BriefingEventoCreateView,
-    BriefingEventoDetailView,
-    BriefingEventoStatusView,
     EventoCreateView,
     EventoDeleteView,
     EventoDetailView,
@@ -67,19 +64,4 @@ urlpatterns = [
     path("parceria/novo/", ParceriaEventoCreateView.as_view(), name="parceria_criar"),
     path("parceria/<int:pk>/editar/", ParceriaEventoUpdateView.as_view(), name="parceria_editar"),
     path("parceria/<int:pk>/excluir/", ParceriaEventoDeleteView.as_view(), name="parceria_excluir"),
-    path(
-        "evento/<uuid:evento_pk>/briefing/",
-        BriefingEventoDetailView.as_view(),
-        name="briefing_detalhe",
-    ),
-    path(
-        "briefing/novo/",
-        BriefingEventoCreateView.as_view(),
-        name="briefing_criar",
-    ),
-    path(
-        "briefing/<int:pk>/status/<str:status>/",
-        BriefingEventoStatusView.as_view(),
-        name="briefing_status",
-    ),
 ]

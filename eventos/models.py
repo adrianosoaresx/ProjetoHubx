@@ -18,7 +18,6 @@ from django.core.validators import (
 )
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 from django.db import transaction
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -225,7 +224,6 @@ class Evento(TimeStampedModel, SoftDeleteModel):
         blank=True,
         null=True,
     )
-    briefing = models.TextField(blank=True, null=True)
 
     objects = SoftDeleteManager()
     all_objects = models.Manager()
@@ -329,73 +327,6 @@ class ParceriaEvento(TimeStampedModel, SoftDeleteModel):
         ordering = ["-data_inicio"]
         verbose_name = "Parceria de Evento"
         verbose_name_plural = "Parcerias de Eventos"
-
-
-class BriefingEvento(TimeStampedModel, SoftDeleteModel):
-    evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
-    objetivos = models.TextField()
-    publico_alvo = models.TextField()
-    requisitos_tecnicos = models.TextField()
-    cronograma_resumido = models.TextField(blank=True)
-    conteudo_programatico = models.TextField(blank=True)
-    observacoes = models.TextField(blank=True)
-    status = models.CharField(
-        max_length=15,
-        choices=[
-            ("rascunho", "Rascunho"),
-            ("orcamentado", "Orçamentado"),
-            ("aprovado", "Aprovado"),
-            ("recusado", "Recusado"),
-        ],
-        default="rascunho",
-    )
-    orcamento_enviado_em = models.DateTimeField(null=True, blank=True)
-    aprovado_em = models.DateTimeField(null=True, blank=True)
-    recusado_em = models.DateTimeField(null=True, blank=True)
-    motivo_recusa = models.TextField(blank=True)
-    coordenadora_aprovou = models.BooleanField(default=False)
-    recusado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="briefings_recusados",
-    )
-    prazo_limite_resposta = models.DateTimeField(null=True, blank=True)
-    avaliado_por = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="briefings_avaliados",
-    )
-    avaliado_em = models.DateTimeField(null=True, blank=True)
-
-    STATUS_TRANSITIONS = {
-        "rascunho": {"orcamentado"},
-        "orcamentado": {"aprovado", "recusado"},
-        "aprovado": set(),
-        "recusado": set(),
-    }
-
-    def can_transition_to(self, new_status: str) -> bool:
-        """Return whether status can transition to ``new_status``."""
-        return new_status in self.STATUS_TRANSITIONS.get(self.status, set())
-
-    objects = SoftDeleteManager()
-    all_objects = models.Manager()
-
-    class Meta:
-        verbose_name = "Briefing de Evento"
-        ordering = ["evento"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["evento"],
-                condition=Q(deleted=False),
-                name="unique_active_briefing_per_event",
-            )
-        ]
-
 
 class FeedbackNota(TimeStampedModel, SoftDeleteModel):
     evento = models.ForeignKey(
