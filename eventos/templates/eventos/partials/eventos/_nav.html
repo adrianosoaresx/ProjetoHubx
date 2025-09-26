@@ -1,9 +1,9 @@
 {% load i18n %}
 {% with current_section=current_section|default:'eventos' base_classes="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2 text-sm font-medium transition-colors hover:bg-[var(--surface-tertiary)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2" active_classes="is-active border-transparent bg-[var(--primary)] text-[var(--text-inverse)] shadow-sm" inactive_classes="text-[var(--text-secondary)]" %}
-{% firstof evento.pk briefing_evento.evento.pk briefing_evento.pk as ev_pk %}
+{% with evento_pk=evento.pk %}
 {% url 'eventos:inscricao_list' as base_inscricoes_url %}
 {% url 'eventos:parceria_list' as base_parcerias_url %}
-{# URLs base definidas acima; quando existir ev_pk, os links abaixo já usam ele #}
+{# URLs base definidas acima; quando existir evento_pk, os links abaixo já usam ele #}
 <nav class="{{ nav_class|default:'mb-6' }}" aria-label="{% trans 'Seções de eventos' %}">
   <ul class="flex flex-wrap gap-2">
     {% if not hide_eventos %}
@@ -19,7 +19,7 @@
     {% endif %}
     <li>
       <a
-        href="{% if ev_pk %}{{ base_inscricoes_url }}?evento={{ ev_pk }}{% else %}{% url 'eventos:inscricao_list' %}{% endif %}"
+        href="{% if evento_pk %}{{ base_inscricoes_url }}?evento={{ evento_pk }}{% else %}{% url 'eventos:inscricao_list' %}{% endif %}"
         class="{{ base_classes }}{% if current_section == 'inscricoes' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         {% if current_section == 'inscricoes' %}aria-current="page"{% endif %}
       >
@@ -28,38 +28,14 @@
     </li>
     <li>
       <a
-        href="{% if ev_pk %}{{ base_parcerias_url }}?evento={{ ev_pk }}{% else %}{% url 'eventos:parceria_list' %}{% endif %}"
+        href="{% if evento_pk %}{{ base_parcerias_url }}?evento={{ evento_pk }}{% else %}{% url 'eventos:parceria_list' %}{% endif %}"
         class="{{ base_classes }}{% if current_section == 'parcerias' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
         {% if current_section == 'parcerias' %}aria-current="page"{% endif %}
       >
         {% trans 'Parcerias' %}
       </a>
     </li>
-    {% if briefing_evento %}
-      {% firstof briefing_evento.evento.pk briefing_evento.pk as briefing_evento_pk %}
-      {% if briefing_evento_pk %}
-        {% url 'eventos:briefing_detalhe' briefing_evento_pk as resolved_briefing_url %}
-      {% endif %}
-    {% endif %}
-    {% with briefing_link=resolved_briefing_url|default:briefing_url %}
-      {% if briefing_link %}
-        <li>
-          <a
-            href="{{ briefing_link }}"
-            class="{{ base_classes }}{% if current_section == 'briefings' %} {{ active_classes }}{% else %} {{ inactive_classes }}{% endif %}"
-            {% if current_section == 'briefings' %}aria-current="page"{% endif %}
-          >
-            {% if briefing_label %}
-              {{ briefing_label }}
-            {% elif briefing_evento %}
-              {% trans 'Briefing do evento' %}
-            {% else %}
-              {% trans 'Briefings' %}
-            {% endif %}
-          </a>
-        </li>
-      {% endif %}
-    {% endwith %}
   </ul>
 </nav>
+{% endwith %}
 {% endwith %}

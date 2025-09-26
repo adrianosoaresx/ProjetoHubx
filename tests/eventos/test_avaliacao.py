@@ -36,7 +36,6 @@ def criar_evento(organizacao, usuario, inicio, fim):
         descricao="Desc",
         data_inicio=inicio,
         data_fim=fim,
-        briefing="",
         coordenador=usuario,
         status=0,
         publico_alvo=1,

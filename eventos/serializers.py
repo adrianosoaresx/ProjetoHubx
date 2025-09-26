@@ -10,13 +10,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
 from .validators import validate_uploaded_file
 
-from .models import (
-    BriefingEvento,
-    Evento,
-    EventoLog,
-    InscricaoEvento,
-    ParceriaEvento,
-)
+from .models import Evento, EventoLog, InscricaoEvento, ParceriaEvento
 
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -153,56 +147,3 @@ class ParceriaEventoSerializer(serializers.ModelSerializer):
         if evento.organizacao != request.user.organizacao:
             raise PermissionDenied("Evento de outra organização")
         return super().create(validated_data)
-
-
-class BriefingEventoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BriefingEvento
-        exclude = ("deleted", "deleted_at")
-        read_only_fields = (
-            "id",
-            "status",
-            "orcamento_enviado_em",
-            "aprovado_em",
-            "recusado_em",
-            "coordenadora_aprovou",
-            "recusado_por",
-            "prazo_limite_resposta",
-            "avaliado_por",
-            "avaliado_em",
-            "created_at",
-            "updated_at",
-        )
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        evento = validated_data["evento"]
-        if evento.organizacao != request.user.organizacao:
-            raise PermissionDenied("Evento de outra organização")
-        message = "Já existe briefing ativo para este evento."
-        if BriefingEvento.objects.filter(evento_id=evento.pk, deleted=False).exists():
-            raise serializers.ValidationError({"evento": [message]})
-        try:
-            with transaction.atomic():
-                instance = super().create(validated_data)
-        except IntegrityError as exc:
-            raise serializers.ValidationError({"evento": [message]}) from exc
-        return instance
-
-    def update(self, instance, validated_data):
-        request = self.context["request"]
-        old_instance = BriefingEvento.objects.get(pk=instance.pk)
-        instance = super().update(instance, validated_data)
-        changes: Dict[str, Dict[str, Any]] = {}
-        for field in validated_data:
-            before = getattr(old_instance, field)
-            after = getattr(instance, field)
-            if before != after:
-                changes[field] = {"antes": before, "depois": after}
-        EventoLog.objects.create(
-            evento=instance.evento,
-            usuario=request.user,
-            acao="briefing_atualizado",
-            detalhes=changes,
-        )
-        return instance
