@@ -26,6 +26,7 @@ from django.http import (
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_GET
 from django.views.generic import ListView
@@ -94,6 +95,30 @@ def _redirect_to_profile_section(request, section: str, extra_params: dict[str, 
     if query_string:
         url = f"{url}?{query_string}"
     return redirect(url)
+
+
+def _resolve_back_url(request, default: str | None = None) -> str:
+    """Return a safe back URL for profile partial views."""
+
+    allowed_hosts = {request.get_host()}
+    candidates = [
+        request.headers.get("HX-Current-URL"),
+        request.META.get("HTTP_REFERER"),
+        default,
+    ]
+
+    if default is None:
+        candidates.append(reverse("accounts:perfil"))
+
+    for candidate in candidates:
+        if candidate and url_has_allowed_host_and_scheme(
+            candidate,
+            allowed_hosts=allowed_hosts,
+            require_https=request.is_secure(),
+        ):
+            return candidate
+
+    return reverse("accounts:perfil")
 
 
 def _perfil_default_section_url(request, *, allow_owner_sections: bool = False):
@@ -292,6 +317,7 @@ def perfil_section(request, section):
                 "form": form,
                 "show_form": show_form,
                 "q": q,
+                "back_url": _resolve_back_url(request),
             }
         )
         template = "perfil/partials/portfolio.html"
@@ -518,6 +544,7 @@ def perfil_portfolio(request):
             "show_form": show_form,
             "q": q,
             "is_owner": True,
+            "back_url": _resolve_back_url(request),
         },
     )
 
