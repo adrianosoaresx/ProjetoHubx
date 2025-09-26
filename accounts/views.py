@@ -1198,6 +1198,59 @@ class AssociadoListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequire
         return super().render_to_response(context, **response_kwargs)
 
 
+class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequiredMixin, ListView):
+    template_name = "associados/promover_list.html"
+    context_object_name = "associados"
+    paginate_by = 12
+
+    def get_queryset(self):
+        User = get_user_model()
+        organizacao = getattr(self.request.user, "organizacao", None)
+        if organizacao is None:
+            self.search_term = ""
+            return User.objects.none()
+
+        base_queryset = (
+            User.objects.filter(organizacao=organizacao)
+            .filter(
+                Q(
+                    user_type__in=[
+                        UserType.COORDENADOR.value,
+                        UserType.CONSULTOR.value,
+                        UserType.ASSOCIADO.value,
+                    ]
+                )
+                | Q(is_associado=True)
+                | Q(is_coordenador=True)
+            )
+            .select_related("organizacao", "nucleo")
+        )
+
+        search_term = (self.request.GET.get("q") or "").strip()
+        self.search_term = search_term
+
+        if search_term:
+            base_queryset = base_queryset.filter(
+                Q(username__icontains=search_term)
+                | Q(contato__icontains=search_term)
+                | Q(nome_fantasia__icontains=search_term)
+                | Q(razao_social__icontains=search_term)
+                | Q(cnpj__icontains=search_term)
+            )
+
+        base_queryset = base_queryset.annotate(_order_name=Lower("username"))
+        return base_queryset.order_by("_order_name", "id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["search_term"] = getattr(self, "search_term", "")
+        context.setdefault("total_usuarios", None)
+        context.setdefault("total_associados", None)
+        context.setdefault("total_nucleados", None)
+        context["has_search"] = bool(context["search_term"].strip())
+        return context
+
+
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer

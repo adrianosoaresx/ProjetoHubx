@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Promover associado' %}{% endblock %}
+
+{% block hero %}
+  {% include '_components/hero_associados.html' with title=_('Promover associado') action_template='associados/hero_action.html' total_usuarios=None total_associados=None total_nucleados=None %}
+{% endblock %}
+
+{% block content %}
+<div class="py-12 card px-4">
+  <div class="card-header">
+    <h2 class="text-xl font-semibold">{% trans 'Promover associado' %}</h2>
+  </div>
+  <div class="card-body space-y-8">
+    <form method="get" class="space-y-3" data-promover-search-form>
+      <div>
+        <label for="associado-search" class="block text-sm font-medium text-[var(--text-muted)]">{% trans 'Buscar associado' %}</label>
+        <div class="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="relative flex-1">
+            <input
+              id="associado-search"
+              name="q"
+              type="search"
+              value="{{ search_term }}"
+              placeholder="{% trans 'Busque por nome ou CNPJ' %}"
+              class="w-full rounded-lg border border-[var(--border)] bg-[var(--bg-primary)] px-4 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              data-search-input
+            />
+            <button
+              type="button"
+              class="absolute inset-y-0 right-2 flex items-center px-2 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--text-primary)] focus:outline-none focus-visible:ring focus-visible:ring-primary/40 rounded hidden"
+              data-clear-search
+              aria-label="{% trans 'Limpar busca' %}"
+            >[x]</button>
+          </div>
+          <button type="submit" class="btn btn-primary self-start sm:self-auto">{% trans 'Buscar' %}</button>
+        </div>
+      </div>
+    </form>
+
+    {% include 'associados/_promover_grid.html' with associados=associados page_obj=page_obj request=request has_search=has_search %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const form = document.querySelector('[data-promover-search-form]');
+      if (!form) {
+        return;
+      }
+      const input = form.querySelector('[data-search-input]');
+      const clearButton = form.querySelector('[data-clear-search]');
+      if (!input || !clearButton) {
+        return;
+      }
+
+      const toggleClearButton = () => {
+        const hasValue = Boolean(input.value && input.value.trim());
+        clearButton.classList.toggle('hidden', !hasValue);
+      };
+
+      toggleClearButton();
+      input.addEventListener('input', toggleClearButton);
+      clearButton.addEventListener('click', function () {
+        input.value = '';
+        toggleClearButton();
+        input.focus();
+        form.submit();
+      });
+    })();
+  </script>
+{% endblock %}

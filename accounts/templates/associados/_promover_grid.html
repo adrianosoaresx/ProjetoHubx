@@ -1,0 +1,19 @@
+{% load i18n %}
+{% if associados %}
+  <div role="list" class="card-grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    {% for user in associados %}
+      <div role="listitem">
+        {% include 'associados/_promover_card.html' with user=user %}
+      </div>
+    {% endfor %}
+  </div>
+  {% include '_partials/pagination.html' with page_obj=page_obj querystring=request.GET.urlencode %}
+{% else %}
+  <div class="text-sm text-[var(--text-muted)]">
+    {% if has_search %}
+      {% trans 'Nenhum associado encontrado para a busca informada.' %}
+    {% else %}
+      {% trans 'Nenhum associado disponível para promoção no momento.' %}
+    {% endif %}
+  </div>
+{% endif %}

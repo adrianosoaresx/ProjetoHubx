@@ -30,6 +30,11 @@ urlpatterns = [
         include(("configuracoes.urls", "configuracoes"), namespace="configuracoes"),
     ),
     path("associados/", views.AssociadoListView.as_view(), name="associados_lista"),
+    path(
+        "associados/promover/",
+        views.AssociadoPromoverListView.as_view(),
+        name="associados_promover",
+    ),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="javascript-catalog"),
     path("select2/", include("django_select2.urls")),
     # APIs REST (subcaminhos específicos)
