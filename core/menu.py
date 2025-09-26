@@ -327,6 +327,16 @@ def _get_menu_items() -> List[MenuItem]:
         )
     ]
 
+    associados_children = [
+        MenuItem(
+            id="associados_adicionar",
+            path=reverse("accounts:associados_adicionar"),
+            label="Adicionar usuário",
+            icon=ICON_PLUS,
+            permissions=["admin", "operador"],
+        )
+    ]
+
     eventos_children = [
         MenuItem(
             id="eventos_calendario",
@@ -408,6 +418,7 @@ def _get_menu_items() -> List[MenuItem]:
             "Associados",
             ICON_USERS,
             ["admin", "coordenador", "operador"],
+            children=associados_children,
         ),
         MenuItem(
             "nucleos",
