@@ -130,6 +130,45 @@ def test_eventos_por_dia_view_sem_htmx(client, evento):
     assert response.status_code in [200, 302, 403, 404]
 
 
+def test_evento_list_filters_by_status(usuario_logado, organizacao, client, evento):
+    evento_realizado = Evento.objects.create(
+        titulo="Evento Concluído",
+        descricao="Descrição do evento realizado",
+        data_inicio=make_aware(datetime.now() - timedelta(days=2)),
+        data_fim=make_aware(datetime.now() - timedelta(days=1)),
+        local="Rua Teste, 456",
+        cidade="Cidade Teste",
+        estado="ST",
+        cep="12345-678",
+        coordenador=usuario_logado,
+        organizacao=organizacao,
+        status=1,
+        publico_alvo=0,
+        numero_convidados=80,
+        numero_presentes=60,
+        valor_ingresso=40.00,
+        orcamento_estimado=3000.00,
+        valor_gasto=2500.00,
+        participantes_maximo=120,
+        contato_nome="Contato Realizado",
+        contato_email="realizado@teste.com",
+        contato_whatsapp="12999996666",
+    )
+
+    url = reverse("eventos:lista")
+    response = client.get(url, {"status": "realizados"})
+
+    assert response.status_code == 200
+    eventos = list(response.context["eventos"])
+    assert evento_realizado in eventos
+    assert evento not in eventos
+    assert response.context["current_filter"] == "realizados"
+    assert response.context["is_realizados_filter_active"] is True
+    assert response.context["is_ativos_filter_active"] is False
+    assert response.context["realizados_filter_url"].endswith("?status=realizados")
+    assert response.context["ativos_filter_url"].endswith("?status=ativos")
+
+
 def test_evento_create_view_post_invalido(usuario_logado, client):
     url = reverse("eventos:evento_novo")
     response = client.post(url, data={"titulo": ""})  # inválido

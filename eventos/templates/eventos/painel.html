@@ -20,5 +20,54 @@
       {% include 'eventos/partials/calendario/calendario.html' %}
     {% endif %}
   </div>
+  <div id="eventos-loading" class="htmx-indicator mt-6 text-center text-sm text-[var(--text-secondary)]" role="status" aria-live="polite">
+    {% trans 'Carregando eventos...' %}
+  </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    (function() {
+      const stateId = 'eventos-filter-state';
+
+      function parseClasses(value) {
+        return value ? value.split(/\s+/).filter(Boolean) : [];
+      }
+
+      function updateFilterButtons() {
+        const stateEl = document.getElementById(stateId);
+        if (!stateEl) {
+          return;
+        }
+        const currentFilter = stateEl.dataset.currentFilter || 'todos';
+        const buttons = document.querySelectorAll('[data-eventos-filter-card]');
+
+        buttons.forEach((button) => {
+          const activeClasses = parseClasses(button.dataset.activeClass || '');
+          const isActive = button.dataset.eventosFilterCard === currentFilter;
+          button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+          activeClasses.forEach((cls) => {
+            if (cls) {
+              button.classList.toggle(cls, isActive);
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', updateFilterButtons);
+      document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.target && event.target.id === 'eventos-conteudo') {
+          updateFilterButtons();
+        }
+      });
+      document.body.addEventListener('htmx:oobAfterSwap', function(event) {
+        const target = event.detail && event.detail.target;
+        if (target && target.id === stateId) {
+          updateFilterButtons();
+        }
+      });
+    })();
+  </script>
 {% endblock %}
