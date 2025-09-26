@@ -1128,6 +1128,7 @@ class AssociadoListView(NoSuperadminMixin, AssociadosRequiredMixin, LoginRequire
                 | Q(is_coordenador=True)
             )
             .select_related("organizacao", "nucleo")
+            .prefetch_related("participacoes__nucleo", "nucleos_consultoria")
         )
         # TODO: unify "user_type" and "is_associado" fields to avoid duplicate state
         q = self.request.GET.get("q")
@@ -1227,6 +1228,7 @@ class AssociadoPromoverListView(NoSuperadminMixin, AssociadosRequiredMixin, Logi
                 | Q(is_coordenador=True)
             )
             .select_related("organizacao", "nucleo")
+            .prefetch_related("participacoes__nucleo", "nucleos_consultoria")
         )
 
         search_term = (self.request.GET.get("q") or "").strip()
