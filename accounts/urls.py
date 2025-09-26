@@ -14,6 +14,11 @@ urlpatterns = [
         views.AssociadoPromoverListView.as_view(),
         name="associados_promover",
     ),
+    path(
+        "associados/<int:pk>/promover/form/",
+        views.AssociadoPromoverFormView.as_view(),
+        name="associado_promover_form",
+    ),
     path("associados/novo/", views.OrganizacaoUserCreateView.as_view(), name="associados_adicionar"),
     # Registro de usuário
     path("resend-confirmation/", views.resend_confirmation, name="resend_confirmation"),
